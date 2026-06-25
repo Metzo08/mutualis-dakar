@@ -1,0 +1,297 @@
+import React, { useState, useEffect } from 'react';
+
+// Espace partenaire pour les structures de soins conventionnées.
+// Connexion dédiée (compte partenaire) → vérification carte CMU + déclaration tiers-payant + stats.
+export default function PartnerPortal({ lang, setView }) {
+  const [partner, setPartner] = useState(null);
+  const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const [loginError, setLoginError] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  // Outils
+  const [verifyNumber, setVerifyNumber] = useState('');
+  const [verifyResult, setVerifyResult] = useState(null);
+  const [verifyLoading, setVerifyLoading] = useState(false);
+
+  // Déclaration tiers-payant
+  const [tpForm, setTpForm] = useState({ cmuNumber: '', beneficiaryName: '', careType: 'consultation', careDescription: '', amount: '' });
+  const [tpResult, setTpResult] = useState(null);
+  const [tpLoading, setTpLoading] = useState(false);
+
+  // Stats
+  const [stats, setStats] = useState(null);
+
+  const t = lang === 'fr' ? {
+    title: 'Espace partenaire structures de soins',
+    subtitle: 'Portail dédié aux structures conventionnées — vérification CMU et tiers-payant',
+    username: 'Identifiant',
+    password: 'Mot de passe',
+    login: 'Se connecter',
+    logout: 'Déconnexion',
+    demo: 'Démo : hp@cmu.sn / partenaire2026',
+    verifyTitle: 'Vérification carte CMU',
+    verifyPlaceholder: 'N° CMU (ex: SN-DK-MED-8472)',
+    verifyBtn: 'Vérifier',
+    valid: 'Couverture active — tiers-payant autorisé',
+    invalid: 'Couverture inactive ou expirée — tiers-payant refusé',
+    tpTitle: 'Déclarer un tiers-payant',
+    tpBeneficiary: 'Nom du patient',
+    tpCareType: 'Type de soin',
+    tpAmount: 'Montant facturé (FCFA)',
+    tpDesc: 'Description (optionnel)',
+    tpSubmit: 'Enregistrer le tiers-payant',
+    consultation: 'Consultation',
+    pharmacie: 'Pharmacie',
+    hospitalisation: 'Hospitalisation',
+    acte: 'Acte médical',
+    statsTitle: 'Statistiques de ma structure',
+    statsDeclarations: 'Déclarations totales',
+    statsReimbursed: 'Total remboursé (FCFA)',
+    statsByType: 'Par type de soin',
+    statsRecent: 'Dernières déclarations',
+    noStats: 'Aucune donnée pour le moment.'
+  } : {
+    title: 'Espace partenaire fajukaay',
+    subtitle: 'Portail bu fajukaay yi nu agréer — saytu CMU ak tiers-payant',
+    username: 'Identifiant',
+    password: 'Mot de passe',
+    login: 'Duggu',
+    logout: 'Genn',
+    demo: 'Démo : hp@cmu.sn / partenaire2026',
+    verifyTitle: 'Saytu kàrt CMU',
+    verifyPlaceholder: 'N° CMU (ex: SN-DK-MED-8472)',
+    verifyBtn: 'Saytu',
+    valid: 'Couverture baax na — tiers-payant baax na',
+    invalid: 'Couverture teye na — tiers-payant baaxul',
+    tpTitle: 'Tëggal tiers-payant',
+    tpBeneficiary: 'Touru patient',
+    tpCareType: 'Anam faj',
+    tpAmount: 'Xalis (FCFA)',
+    tpDesc: 'Mbind (optionnel)',
+    tpSubmit: 'Tëggal tiers-payant',
+    consultation: 'Consultation',
+    pharmacie: 'Farmasi',
+    hospitalisation: 'Liggéeyu kër',
+    acte: 'Acte',
+    statsTitle: 'Statistiques bu sama fajukaay',
+    statsDeclarations: 'Déclaration yëpp',
+    statsReimbursed: 'Ñu fay (FCFA)',
+    statsByType: 'Ci anam faj',
+    statsRecent: 'Déclaration yi gënë mujj',
+    noStats: 'Amul data.'
+  };
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    setLoginLoading(true);
+    setLoginError('');
+    fetch('http://localhost:5000/api/auth/partner/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(loginForm)
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setLoginLoading(false);
+        if (data.success) {
+          localStorage.setItem('cmu-partner-token', data.token);
+          setPartner(data.partner);
+          fetchStats(data.token);
+        } else {
+          setLoginError(data.error || 'Erreur');
+        }
+      })
+      .catch(() => { setLoginLoading(false); setLoginError('Erreur de connexion'); });
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('cmu-partner-token');
+    setPartner(null);
+    setStats(null);
+    setVerifyResult(null);
+    setTpResult(null);
+  };
+
+  const fetchStats = (token) => {
+    fetch('http://localhost:5000/api/partner/stats', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then((res) => res.json())
+      .then(setStats)
+      .catch(() => {});
+  };
+
+  const verifyCard = (e) => {
+    e.preventDefault();
+    setVerifyLoading(true);
+    setVerifyResult(null);
+    fetch(`http://localhost:5000/api/partner/verify-card/${encodeURIComponent(verifyNumber)}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('cmu-partner-token')}` }
+    })
+      .then((res) => res.json())
+      .then((data) => { setVerifyResult(data); setVerifyLoading(false); })
+      .catch(() => { setVerifyLoading(false); setVerifyResult({ error: 'Erreur' }); });
+  };
+
+  const declareTierPayant = (e) => {
+    e.preventDefault();
+    setTpLoading(true);
+    setTpResult(null);
+    fetch('http://localhost:5000/api/partner/tier-payant', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('cmu-partner-token')}` },
+      body: JSON.stringify(tpForm)
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setTpLoading(false);
+        setTpResult(data);
+        if (data.success) {
+          setTpForm({ cmuNumber: '', beneficiaryName: '', careType: 'consultation', careDescription: '', amount: '' });
+          fetchStats(localStorage.getItem('cmu-partner-token'));
+        }
+      })
+      .catch(() => { setTpLoading(false); setTpResult({ error: 'Erreur' }); });
+  };
+
+  // ÉCRAN DE CONNEXION
+  if (!partner) {
+    return (
+      <div className="partner-portal fade-in-up" style={{ padding: '2rem 1rem', maxWidth: '450px', margin: '0 auto' }}>
+        <div className="card" style={{ padding: '2rem' }}>
+          <h1 style={{ fontSize: '1.4rem', fontWeight: '800', marginBottom: '0.5rem' }}>🏥 {t.title}</h1>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>{t.subtitle}</p>
+          <form onSubmit={handleLogin}>
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ fontSize: '0.8rem', fontWeight: '600' }}>{t.username}</label>
+              <input className="input" required value={loginForm.username} onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })} />
+            </div>
+            <div style={{ marginBottom: '1rem' }}>
+              <label style={{ fontSize: '0.8rem', fontWeight: '600' }}>{t.password}</label>
+              <input className="input" type="password" required value={loginForm.password} onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })} />
+            </div>
+            {loginError && <div style={{ color: 'var(--danger)', fontSize: '0.85rem', marginBottom: '1rem' }}>❌ {loginError}</div>}
+            <button type="submit" className="btn btn-primary" disabled={loginLoading} style={{ width: '100%' }}>
+              {loginLoading ? '...' : `🔐 ${t.login}`}
+            </button>
+          </form>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '1rem', textAlign: 'center' }}>💡 {t.demo}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ESPACE PARTENAIRE CONNECTÉ
+  return (
+    <div className="partner-portal fade-in-up" style={{ padding: '1.5rem 1rem', maxWidth: '1000px', margin: '0 auto' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
+        <div>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: '800' }}>🏥 {partner.structureName}</h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{partner.contactName} · Tiers-payant {partner.coverageRate}%</p>
+        </div>
+        <button className="btn btn-outline btn-sm" onClick={handleLogout}>{t.logout}</button>
+      </div>
+
+      <div className="grid grid-2" style={{ gap: '1.5rem', marginBottom: '1.5rem' }}>
+        {/* Vérification carte CMU */}
+        <div className="card" style={{ padding: '1.5rem' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '1rem' }}>🔍 {t.verifyTitle}</h3>
+          <form onSubmit={verifyCard} style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+            <input className="input" placeholder={t.verifyPlaceholder} value={verifyNumber} onChange={(e) => setVerifyNumber(e.target.value)} style={{ flex: 1 }} />
+            <button type="submit" className="btn btn-primary btn-sm" disabled={verifyLoading}>{verifyLoading ? '...' : t.verifyBtn}</button>
+          </form>
+          {verifyResult && !verifyResult.error && (
+            <div style={{ padding: '1rem', borderRadius: '8px', background: verifyResult.valid ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)' }}>
+              <div style={{ fontWeight: '700', color: verifyResult.valid ? '#22c55e' : '#ef4444', marginBottom: '0.5rem' }}>
+                {verifyResult.valid ? `✅ ${t.valid}` : `⚠️ ${t.invalid}`}
+              </div>
+              {verifyResult.firstName && (
+                <div style={{ fontSize: '0.85rem' }}>
+                  <strong>{verifyResult.firstName} {verifyResult.lastName}</strong><br />
+                  {verifyResult.mutuelleName} · {verifyResult.packageType}<br />
+                  {verifyResult.cotisationEnd && <span style={{ color: 'var(--text-muted)' }}>Cotisation valide jusqu'au {new Date(verifyResult.cotisationEnd).toLocaleDateString('fr-FR')}</span>}
+                </div>
+              )}
+            </div>
+          )}
+          {verifyResult?.error && <div style={{ color: 'var(--danger)', fontSize: '0.85rem' }}>❌ {verifyResult.error}</div>}
+        </div>
+
+        {/* Déclaration tiers-payant */}
+        <div className="card" style={{ padding: '1.5rem' }}>
+          <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '1rem' }}>📋 {t.tpTitle}</h3>
+          <form onSubmit={declareTierPayant}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+              <div>
+                <label style={{ fontSize: '0.75rem', fontWeight: '600' }}>N° CMU</label>
+                <input className="input" required value={tpForm.cmuNumber} onChange={(e) => setTpForm({ ...tpForm, cmuNumber: e.target.value })} />
+              </div>
+              <div>
+                <label style={{ fontSize: '0.75rem', fontWeight: '600' }}>{t.tpBeneficiary}</label>
+                <input className="input" required value={tpForm.beneficiaryName} onChange={(e) => setTpForm({ ...tpForm, beneficiaryName: e.target.value })} />
+              </div>
+              <div>
+                <label style={{ fontSize: '0.75rem', fontWeight: '600' }}>{t.tpCareType}</label>
+                <select className="input" value={tpForm.careType} onChange={(e) => setTpForm({ ...tpForm, careType: e.target.value })}>
+                  <option value="consultation">{t.consultation}</option>
+                  <option value="pharmacie">{t.pharmacie}</option>
+                  <option value="hospitalisation">{t.hospitalisation}</option>
+                  <option value="acte">{t.acte}</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: '0.75rem', fontWeight: '600' }}>{t.tpAmount}</label>
+                <input className="input" type="number" required value={tpForm.amount} onChange={(e) => setTpForm({ ...tpForm, amount: e.target.value })} />
+              </div>
+            </div>
+            <div style={{ marginTop: '0.75rem' }}>
+              <label style={{ fontSize: '0.75rem', fontWeight: '600' }}>{t.tpDesc}</label>
+              <textarea className="input" rows={2} value={tpForm.careDescription} onChange={(e) => setTpForm({ ...tpForm, careDescription: e.target.value })} />
+            </div>
+            <button type="submit" className="btn btn-primary btn-sm" disabled={tpLoading} style={{ marginTop: '0.75rem' }}>
+              {tpLoading ? '...' : `📋 ${t.tpSubmit}`}
+            </button>
+          </form>
+          {tpResult && (
+            <div style={{ marginTop: '0.75rem', padding: '0.75rem', borderRadius: '8px', background: tpResult.success ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', fontSize: '0.85rem' }}>
+              {tpResult.success ? `✅ ${tpResult.message} (Remboursé : ${new Intl.NumberFormat('fr-FR').format(tpResult.reimbursedAmount)} FCFA)` : `❌ ${tpResult.error}`}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Statistiques */}
+      <div className="card" style={{ padding: '1.5rem' }}>
+        <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '1rem' }}>📊 {t.statsTitle}</h3>
+        {!stats ? (
+          <p style={{ color: 'var(--text-muted)' }}>{t.noStats}</p>
+        ) : (
+          <>
+            <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+              <div>
+                <div style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--primary)' }}>{stats.totalDeclarations}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t.statsDeclarations}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: '1.8rem', fontWeight: '800', color: '#14b8a6' }}>{new Intl.NumberFormat('fr-FR').format(stats.totalReimbursed)}</div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t.statsReimbursed}</div>
+              </div>
+            </div>
+            {stats.byCareType && stats.byCareType.length > 0 && (
+              <div style={{ marginBottom: '1rem' }}>
+                <div style={{ fontSize: '0.8rem', fontWeight: '600', marginBottom: '0.5rem' }}>{t.statsByType}</div>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  {stats.byCareType.map((c, i) => (
+                    <span key={i} style={{ background: 'var(--bg-secondary)', padding: '0.3rem 0.8rem', borderRadius: '20px', fontSize: '0.8rem' }}>
+                      {c.care_type}: {c.count} ({new Intl.NumberFormat('fr-FR').format(c.total || 0)} FCFA)
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
