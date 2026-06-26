@@ -117,11 +117,18 @@ export default function Institutionnel({ lang }) {
     <div className="institutionnel-view fade-in-up">
       {/* Banner */}
       <section className="banner-mini" style={{
-        background: 'linear-gradient(to right, rgba(5, 150, 105, 0.9), rgba(5, 150, 105, 0.7)), url("/inst_hero_real.png") center/cover no-repeat'
+        background: 'linear-gradient(to right, rgba(5, 150, 105, 0.9), rgba(5, 150, 105, 0.7)), url("/inst_hero_real.png") center/cover no-repeat',
+        borderBottom: '1px solid var(--border-color)',
+        borderRadius: '16px',
+        padding: '2.5rem 2rem',
+        marginBottom: '2rem',
+        color: '#fff',
+        boxShadow: 'var(--shadow-md)',
+        textAlign: 'center'
       }}>
         <div className="container" style={{ position: 'relative', zIndex: 2 }}>
-          <h1>{t.title}</h1>
-          <p>{t.subtitle}</p>
+          <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>{t.title}</h1>
+          <p style={{ color: '#f8fafc', fontSize: '1rem', fontWeight: '500', maxWidth: '700px', margin: '0 auto', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>{t.subtitle}</p>
         </div>
       </section>
 

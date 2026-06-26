@@ -292,8 +292,8 @@ export default function ParrainageCSU({ lang }) {
       {/* Top Banner */}
       <div className="hero-banner" style={{ backgroundImage: 'linear-gradient(to right, rgba(5, 150, 105, 0.9), rgba(5, 150, 105, 0.7)), url("/csu_parrainage_hero_real.png")', backgroundPosition: 'center', backgroundSize: 'cover', height: '260px' }}>
         <div className="hero-content">
-          <span className="badge badge-success" style={{ padding: '0.4rem 0.8rem' }}>🤝 CMU solidarité</span>
-          <h1 style={{ fontSize: '2.5rem', fontWeight: '900', margin: '0.5rem 0' }}>
+          <span className="badge" style={{ padding: '0.4rem 0.8rem', backgroundColor: 'rgba(255, 255, 255, 0.2)', color: '#ffffff', border: 'none' }}>🤝 CMU solidarité</span>
+          <h1 style={{ fontSize: '2.5rem', fontWeight: '900', margin: '0.5rem 0', color: '#ffffff' }}>
             {lang === 'fr' ? 'Parrainage solidaire' : 'Dimbalé ak Parrainage'}
           </h1>
           <p style={{ maxWidth: '600px', fontSize: '1rem', color: '#cbd5e1' }}>
