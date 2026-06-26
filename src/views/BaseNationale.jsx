@@ -89,7 +89,9 @@ export default function BaseNationale({ lang, setView }) {
       rates: '4 500 FCFA / an (Individuel) | 1 000 FCFA carte + 3 500 FCFA/membre (Famille)',
       services: 'Prise en charge consultations (80%), pharmacie (50%), hôpital (70%)',
       certified: true,
-      lastUpdate: '18/05/2026'
+      lastUpdate: '18/05/2026',
+      landmark: "Située en face du dispensaire Blaise Diagne, Rue 22 angle Blaise Diagne.",
+      localInfo: "La Médina propose des permanences d'accueil pour la CMU tous les matins de 8h à 12h."
     },
     { 
       id: 2, 
@@ -104,7 +106,9 @@ export default function BaseNationale({ lang, setView }) {
       rates: '4 500 FCFA / an (Individuel) | 1 000 FCFA carte + 3 500 FCFA/membre (Famille)',
       services: 'Consultations de maternité (90%), pharmacie (60%), hospitalisation (75%)',
       certified: true,
-      lastUpdate: '10/06/2026'
+      lastUpdate: '10/06/2026',
+      landmark: "À côté du bureau de poste principal de Pikine, près de l'ancien cinéma.",
+      localInfo: "Idéale pour les résidents de Pikine Ouest. Permet le remboursement à 90% pour les soins de maternité de proximité."
     },
     { 
       id: 3, 
@@ -119,7 +123,9 @@ export default function BaseNationale({ lang, setView }) {
       rates: '4 500 FCFA / an',
       services: 'Soins de base (80%), pharmacie (50%)',
       certified: true,
-      lastUpdate: '04/04/2026'
+      lastUpdate: '04/04/2026',
+      landmark: "Près du grand carrefour d'Escale, à côté de la gare routière de Mbour.",
+      localInfo: "Offre une couverture maladie élargie sur toute la Petite Côte. Facile d'accès pour les commerçants du centre."
     },
     { 
       id: 4, 
@@ -134,7 +140,9 @@ export default function BaseNationale({ lang, setView }) {
       rates: '8 000 FCFA / an',
       services: 'Consultations (80%), soins pédiatriques (90%), pharmacie (60%)',
       certified: true,
-      lastUpdate: '12/03/2026'
+      lastUpdate: '12/03/2026',
+      landmark: "Quartier Ndangane, près du poste de santé local, en face du collège franco-arabe.",
+      localInfo: "Propose une prise en charge rapide au centre de santé et à l'hôpital régional de Kaolack."
     },
     { 
       id: 5, 
@@ -149,7 +157,9 @@ export default function BaseNationale({ lang, setView }) {
       rates: '7 500 FCFA / an',
       services: 'Consultations (80%), pharmacie (50%), soins spécialisés (60%)',
       certified: true,
-      lastUpdate: '20/05/2026'
+      lastUpdate: '20/05/2026',
+      landmark: "Quartier Sor, en face de la gare ferroviaire TER historique, à 100m du pont Faidherbe.",
+      localInfo: "Conventionnée avec l'hôpital régional de Saint-Louis et les pharmacies partenaires de l'île de Saint-Louis."
     },
     { 
       id: 6, 
@@ -164,7 +174,9 @@ export default function BaseNationale({ lang, setView }) {
       rates: '6 000 FCFA / an',
       services: 'Soins infirmiers (80%), pharmacie (50%), maternité (80%)',
       certified: false,
-      lastUpdate: '14/02/2026'
+      lastUpdate: '14/02/2026',
+      landmark: "Quartier Boudody, juste derrière le quai de pêche de Ziguinchor.",
+      localInfo: "Très active auprès des coopératives de transformation des produits de la mer. Propose des facilités d'adhésion."
     },
     { 
       id: 7, 
@@ -179,7 +191,9 @@ export default function BaseNationale({ lang, setView }) {
       rates: '8 000 FCFA / an',
       services: 'Prise en charge complète dans les dispensaires de Touba (85%)',
       certified: true,
-      lastUpdate: '17/06/2026'
+      lastUpdate: '17/06/2026',
+      landmark: "À 200m du grand minaret de la Grande Mosquée de Touba, en face du marché central.",
+      localInfo: "Facilite l'orientation médicale et la prise en charge à 85% dans les hôpitaux Matlaboul Fawzaini et dispensaires de Touba."
     },
     { 
       id: 8, 
@@ -194,7 +208,9 @@ export default function BaseNationale({ lang, setView }) {
       rates: '4 500 FCFA / an',
       services: 'Soins de base (70%)',
       certified: false,
-      lastUpdate: '02/01/2025'
+      lastUpdate: '02/01/2025',
+      landmark: "Centre-ville de Louga, derrière la préfecture de département.",
+      localInfo: "Cette mutuelle est actuellement en restructuration. Pour toute question urgente, veuillez vous rapprocher de l'Union Départementale de Louga."
     },
     { 
       id: 9, 
@@ -209,7 +225,9 @@ export default function BaseNationale({ lang, setView }) {
       rates: 'Cotisation des mutuelles (Fétière)',
       services: 'Coordination, appui technique, réassurance',
       certified: true,
-      lastUpdate: '15/06/2026'
+      lastUpdate: '15/06/2026',
+      landmark: "Rufisque Est, à côté de la gare TER, près de la préfecture de Rufisque.",
+      localInfo: "Structure faîtière regroupant toutes les mutuelles de santé communautaires du département de Rufisque."
     },
     { 
       id: 10, 
@@ -224,7 +242,9 @@ export default function BaseNationale({ lang, setView }) {
       rates: '4 500 FCFA / an',
       services: 'Prise en charge consultations (80%), pharmacie (50%)',
       certified: true,
-      lastUpdate: '01/04/2026'
+      lastUpdate: '01/04/2026',
+      landmark: "Près du rond-point colobane de Rufisque, à côté du centre de santé de Rufisque.",
+      localInfo: "Propose des permanences d'information tous les samedis matin pour les familles vulnérables."
     },
     { 
       id: 11, 
@@ -239,7 +259,9 @@ export default function BaseNationale({ lang, setView }) {
       rates: 'Cotisation des mutuelles (Fétière)',
       services: 'Coordination départementale, formation',
       certified: true,
-      lastUpdate: '20/05/2026'
+      lastUpdate: '20/05/2026',
+      landmark: "Quartier Golf Sud, à 300m du grand stade de Guédiawaye Amadou Barry.",
+      localInfo: "Coordonne les actions des mutuelles de la zone de Guédiawaye et aide à la numérisation des cartes CMU."
     },
     { 
       id: 12, 
@@ -254,7 +276,9 @@ export default function BaseNationale({ lang, setView }) {
       rates: '6 500 FCFA / an',
       services: 'Consultations (80%), Maternité (90%)',
       certified: true,
-      lastUpdate: '11/06/2026'
+      lastUpdate: '11/06/2026',
+      landmark: "Golf Sud, en face de la mosquée de la Cité des Enseignants.",
+      localInfo: "Prise en charge très avantageuse pour les consultations de maternité à la clinique locale conventionnée."
     },
     { 
       id: 13, 
@@ -269,7 +293,9 @@ export default function BaseNationale({ lang, setView }) {
       rates: 'Cotisation des mutuelles (Fétière)',
       services: 'Coordination départementale, supervision',
       certified: true,
-      lastUpdate: '05/01/2026'
+      lastUpdate: '05/01/2026',
+      landmark: "Thiès, près de la Place de France, à côté de l'ancienne Gare de Thiès.",
+      localInfo: "Bureau central d'appui pour toutes les mutuelles de la région et du département de Thiès."
     },
     { 
       id: 14, 
@@ -284,7 +310,9 @@ export default function BaseNationale({ lang, setView }) {
       rates: 'Cotisation des mutuelles (Fétière)',
       services: 'Gestion des risques, appui technique',
       certified: true,
-      lastUpdate: '10/02/2026'
+      lastUpdate: '10/02/2026',
+      landmark: "Ziguinchor, non loin de la préfecture, près du rond-point Aline Sitoé Diatta.",
+      localInfo: "Appui à la structuration des mutuelles communautaires en zone rurale dans toute la Casamance."
     }
   ];
 
@@ -316,7 +344,9 @@ export default function BaseNationale({ lang, setView }) {
               rates: item.rates || (localMatch ? localMatch.rates : ''),
               services: item.services || (localMatch ? localMatch.services : ''),
               certified: item.certified !== undefined ? item.certified : (localMatch ? localMatch.certified : false),
-              lastUpdate: item.last_update || item.lastUpdate || (localMatch ? localMatch.lastUpdate : '')
+              lastUpdate: item.last_update || item.lastUpdate || (localMatch ? localMatch.lastUpdate : ''),
+              landmark: item.landmark || (localMatch ? localMatch.landmark : ''),
+              localInfo: item.local_info || item.localInfo || (localMatch ? localMatch.localInfo : '')
             };
           });
           // Fusion : on ajoute les mutuelles du dataset local qui ne sont pas renvoyées par l'API
@@ -487,13 +517,18 @@ export default function BaseNationale({ lang, setView }) {
 
         const marker = window.L.marker([lat, lon], { icon: customIcon })
           .bindPopup(`
-            <div style="font-family: var(--font-body); padding: 5px; min-width: 180px;">
+            <div style="font-family: var(--font-body); padding: 10px; min-width: 220px; text-align: left; line-height: 1.4;">
               <div style="font-size: 0.65rem; color: #fff; background: ${markerColor}; display: inline-block; padding: 2px 6px; border-radius: 4px; margin-bottom: 5px; font-weight: bold;">
                 ${mutuelle.status === 'active' ? 'AGRÉÉE' : 'EN SOMMEIL'}
               </div>
-              <h4 style="margin: 0 0 5px 0; color: var(--neutral-dark);">${mutuelle.name}</h4>
-              <p style="margin: 0; font-size: 0.8rem; color: var(--text-sub);">📍 ${mutuelle.commune} (${mutuelle.region})</p>
-              <p style="margin: 5px 0 0 0; font-size: 0.8rem; font-weight: bold; color: var(--primary);">
+              <h4 style="margin: 0 0 4px 0; color: var(--neutral-dark); font-size: 0.95rem; font-weight: 800;">${mutuelle.name}</h4>
+              <p style="margin: 0 0 4px 0; font-size: 0.78rem; color: var(--text-sub);">📍 ${mutuelle.commune} (${mutuelle.region})</p>
+              ${mutuelle.landmark ? `
+                <div style="background: rgba(245, 158, 11, 0.08); border-left: 2.5px solid #f59e0b; padding: 4px 8px; border-radius: 4px; margin: 6px 0; font-size: 0.72rem; color: #b45309;">
+                  📍 <strong>Repère :</strong> ${mutuelle.landmark}
+                </div>
+              ` : ''}
+              <p style="margin: 4px 0 0 0; font-size: 0.78rem; font-weight: bold; color: var(--primary);">
                 📞 ${mutuelle.phone}
               </p>
             </div>
@@ -760,6 +795,44 @@ export default function BaseNationale({ lang, setView }) {
                 <strong style={{ fontSize: '0.85rem', color: 'var(--neutral-gray)', textTransform: 'uppercase', display: 'block' }}>{t.modalServices}</strong>
                 <span style={{ fontSize: '0.9rem', color: 'var(--neutral-dark)' }}>{selectedMutuelle.services}</span>
               </div>
+
+              {selectedMutuelle.landmark && (
+                <div style={{
+                  padding: '0.85rem',
+                  background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(251, 191, 36, 0.04) 100%)',
+                  border: '1px solid rgba(245, 158, 11, 0.2)',
+                  borderRadius: '10px',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '0.5rem',
+                  marginTop: '0.25rem'
+                }}>
+                  <span style={{ fontSize: '1.2rem' }}>📍</span>
+                  <div>
+                    <strong style={{ fontSize: '0.75rem', color: '#b45309', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px' }}>Point de repère</strong>
+                    <span style={{ fontSize: '0.85rem', color: '#78350f', fontWeight: '500' }}>{selectedMutuelle.landmark}</span>
+                  </div>
+                </div>
+              )}
+
+              {selectedMutuelle.localInfo && (
+                <div style={{
+                  padding: '0.85rem',
+                  background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.06) 0%, rgba(37, 99, 235, 0.03) 100%)',
+                  border: '1px solid rgba(59, 130, 246, 0.15)',
+                  borderRadius: '10px',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '0.5rem',
+                  marginTop: '0.25rem'
+                }}>
+                  <span style={{ fontSize: '1.2rem' }}>💡</span>
+                  <div>
+                    <strong style={{ fontSize: '0.75rem', color: '#1d4ed8', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px' }}>Conseil aux assurés de la zone</strong>
+                    <span style={{ fontSize: '0.85rem', color: '#1e3a8a', lineHeight: '1.4' }}>{selectedMutuelle.localInfo}</span>
+                  </div>
+                </div>
+              )}
 
               <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem', marginTop: '0.5rem', fontSize: '0.85rem' }}>
                 <span>{t.modalCertified} : <strong>{selectedMutuelle.certified ? t.yes : t.no}</strong></span>

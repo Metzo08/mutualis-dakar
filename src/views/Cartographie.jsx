@@ -117,7 +117,9 @@ export default function Cartographie({ lang }) {
             commune: item.commune,
             hours: item.hours,
             services: item.services,
-            coverage: item.coverage
+            coverage: item.coverage,
+            landmark: item.landmark,
+            localInfo: item.local_info || item.localInfo
           }));
           setPointsOfInterest(mapped);
         }
@@ -264,7 +266,7 @@ export default function Cartographie({ lang }) {
 
       const marker = window.L.marker([loc.lat, loc.lng], { icon: customIcon })
         .bindPopup(`
-          <div style="font-family: var(--font-body); padding: 8px; min-width: 210px; text-align: left;">
+          <div style="font-family: var(--font-body); padding: 10px; min-width: 240px; text-align: left; line-height: 1.4;">
             <div style="display: flex; gap: 4px; margin-bottom: 6px; flex-wrap: wrap;">
               <span style="background-color: ${color}20; color: ${color}; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase;">
                 ${loc.subtype || loc.type}
@@ -275,9 +277,14 @@ export default function Cartographie({ lang }) {
                 </span>
               ` : ''}
             </div>
-            <h4 style="margin: 0 0 4px 0; color: var(--neutral-dark); font-size: 0.95rem; font-weight: 700; line-height: 1.2;">${loc.name}</h4>
-            <p style="font-size: 0.75rem; color: var(--text-sub); margin: 0 0 6px 0;">📍 ${loc.commune || 'Dakar'} - ${loc.desc}</p>
-            <p style="font-size: 0.72rem; color: var(--text-sub); margin: 0 0 6px 0;">🕐 ${loc.hours || '8h-18h'}</p>
+            <h4 style="margin: 0 0 4px 0; color: var(--neutral-dark); font-size: 0.95rem; font-weight: 800; line-height: 1.2;">${loc.name}</h4>
+            <p style="font-size: 0.75rem; color: var(--text-sub); margin: 0 0 4px 0;">📍 ${loc.commune || 'Dakar'} - ${loc.desc}</p>
+            ${loc.landmark ? `
+              <div style="background: rgba(245, 158, 11, 0.08); border-left: 2.5px solid #f59e0b; padding: 4px 8px; border-radius: 4px; margin: 6px 0; font-size: 0.72rem; color: #b45309;">
+                📍 <strong>Repère :</strong> ${loc.landmark}
+              </div>
+            ` : ''}
+            <p style="font-size: 0.72rem; color: var(--text-sub); margin: 0 0 4px 0;">🕐 ${loc.hours || '8h-18h'}</p>
             <p style="font-size: 0.75rem; font-weight: bold; margin: 0; color: var(--primary);">📞 ${loc.phone}</p>
           </div>
         `, { closeButton: false });
@@ -500,6 +507,48 @@ export default function Cartographie({ lang }) {
                         📞 <strong>Téléphone:</strong> {selectedItem.phone}
                       </p>
                     </div>
+
+                    {/* Landmark / Point de repère */}
+                    {selectedItem.landmark && (
+                      <div style={{
+                        marginTop: '1rem',
+                        padding: '1rem',
+                        background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(251, 191, 36, 0.04) 100%)',
+                        border: '1px solid rgba(245, 158, 11, 0.2)',
+                        borderRadius: '12px',
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '0.75rem',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+                      }}>
+                        <span style={{ fontSize: '1.5rem', marginTop: '-2px' }}>📍</span>
+                        <div>
+                          <strong style={{ fontSize: '0.8rem', color: '#b45309', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px', marginBottom: '0.25rem' }}>Point de repère pour s'orienter</strong>
+                          <span style={{ fontSize: '0.9rem', color: '#78350f', fontWeight: '500' }}>{selectedItem.landmark}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Citizen Tips / Conseils utiles */}
+                    {selectedItem.localInfo && (
+                      <div style={{
+                        marginTop: '1rem',
+                        padding: '1rem',
+                        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.06) 0%, rgba(37, 99, 235, 0.03) 100%)',
+                        border: '1px solid rgba(59, 130, 246, 0.15)',
+                        borderRadius: '12px',
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '0.75rem',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+                      }}>
+                        <span style={{ fontSize: '1.5rem', marginTop: '-2px' }}>💡</span>
+                        <div>
+                          <strong style={{ fontSize: '0.8rem', color: '#1d4ed8', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px', marginBottom: '0.25rem' }}>Conseils utiles aux Sénégalais</strong>
+                          <span style={{ fontSize: '0.9rem', color: '#1e3a8a', lineHeight: '1.45', display: 'block' }}>{selectedItem.localInfo}</span>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Coverage info */}
                     {selectedItem.coverage && selectedItem.coverage !== 'N/A' && (

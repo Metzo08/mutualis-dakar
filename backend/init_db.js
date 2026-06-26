@@ -1,5 +1,7 @@
 const { pool } = require('./db');
 const bcrypt = require('bcrypt');
+const fs = require('fs');
+const path = require('path');
 
 const createTablesQuery = `
   DROP TABLE IF EXISTS family_members CASCADE;
@@ -75,7 +77,9 @@ const createTablesQuery = `
     commune VARCHAR(255),
     hours VARCHAR(100),
     services TEXT,
-    coverage VARCHAR(100)
+    coverage VARCHAR(100),
+    landmark TEXT,
+    local_info TEXT
   );
 
   CREATE TABLE IF NOT EXISTS beneficiaries (
@@ -388,54 +392,7 @@ const mutuellesData = [
   ]
 ];
 
-const locationsData = [
-  ['Siège régional URMSCD', 'office', 'régional', 14.7008, -17.4651, 'Cité Keur Gorgui, immeuble Serigne Mérina SYLLA', '+221 33 859 15 15', 'Mermoz-Sacré Coeur', '8h-17h', 'Administration régionale, support mutuelles', 'N/A'],
-  ['Union départementale de Dakar', 'office', 'départemental', 14.6865, -17.4475, 'Dakar Plateau, immeuble municipal', '+221 33 821 10 10', 'Dakar Plateau', '8h-16h', 'Bureau départemental de coordination', 'N/A'],
-  ['Union départementale de Pikine', 'office', 'départemental', 14.7523, -17.4011, 'Pikine Ouest, Centre d\'Appui local', '+221 33 851 44 22', 'Pikine Ouest', '8h-16h', 'Bureau départemental de coordination', 'N/A'],
-  ['Union départementale de Guédiawaye', 'office', 'départemental', 14.7812, -17.4124, 'Golf Sud, cité des enseignants', '+221 33 862 33 44', 'Golf Sud', '8h-16h', 'Bureau départemental de coordination', 'N/A'],
-  ['Union départementale de Rufisque', 'office', 'départemental', 14.7154, -17.2721, 'Rufisque Nord, siège administratif', '+221 33 871 12 12', 'Rufisque Nord', '8h-16h', 'Bureau départemental de coordination', 'N/A'],
-  ['Union départementale de Keur Massar', 'office', 'départemental', 14.7891, -17.3012, 'Keur Massar Nord, cité ouvrière', '+221 33 892 20 20', 'Keur Massar Nord', '8h-16h', 'Bureau départemental de coordination', 'N/A'],
-  ['Mutuelle de la Médina', 'mutuelle', 'mutuelle', 14.6851, -17.4523, 'Commune de la Médina, rue 22', '+221 77 500 11 22', 'Médina', '8h-18h', 'Adhésion, renouvellement, conseil', 'N/A'],
-  ['Mutuelle de Pikine Ouest', 'mutuelle', 'mutuelle', 14.7562, -17.4082, 'Pikine Ouest, rue de la poste', '+221 77 622 33 44', 'Pikine Ouest', '8h-18h', 'Adhésion, renouvellement, conseil', 'N/A'],
-  ['Mutuelle de Rufisque Est', 'mutuelle', 'mutuelle', 14.7161, -17.2681, 'Rufisque Est, quartier Mérina', '+221 77 411 55 66', 'Rufisque Est', '8h-18h', 'Adhésion, renouvellement, conseil', 'N/A'],
-  ['Hôpital principal de Dakar', 'hospital', 'hôpital', 14.6645, -17.4328, 'Avenue Nelson Mandela, Dakar', '+221 33 839 50 50', 'Dakar Plateau', '24h/24', 'Urgences, chirurgie, cardiologie, pédiatrie, maternité', 'Tiers-payant CMU : 80%'],
-  ['Hôpital de Fann', 'hospital', 'hôpital', 14.6912, -17.4721, 'Avenue Cheikh Anta Diop, Fann', '+221 33 869 18 18', 'Fann-Point E', '24h/24', 'Neurologie, cardiologie, maladies infectieuses, urgences', 'Tiers-payant CMU : 80%'],
-  ['Hôpital Dalal Jamm', 'hospital', 'hôpital', 14.7678, -17.3821, 'Guédiawaye, voie de contournement', '+221 33 879 40 40', 'Guédiawaye', '24h/24', 'Oncologie, dialyse, médecine générale, urgences', 'Tiers-payant CMU : 80%'],
-  ['Hôpital Albert Royer', 'hospital', 'hôpital', 14.6930, -17.4750, 'Avenue Cheikh Anta Diop (Fann)', '+221 33 869 18 00', 'Fann', '24h/24', 'Pédiatrie spécialisée, urgences pédiatriques', 'Tiers-payant CMU : 80%'],
-  ['Centre de santé de la Médina', 'hospital', 'centre', 14.6890, -17.4560, 'Avenue Blaise Diagne, Médina', '+221 33 822 24 24', 'Médina', '24h/24', 'Médecine générale, maternité, vaccination, soins infirmiers', 'Tiers-payant CMU : 80%'],
-  ['Centre de santé Philippe M. Senghor', 'hospital', 'centre', 14.7580, -17.4720, 'Yoff, Route de l\'Aéroport', '+221 33 820 02 02', 'Yoff', '24h/24', 'Médecine générale, pédiatrie, gynécologie, urgences', 'Tiers-payant CMU : 80%'],
-  ['Centre de santé de Pikine', 'hospital', 'centre', 14.7585, -17.4040, 'Pikine Est, quartier Darou Salam', '+221 33 852 11 11', 'Pikine Est', '24h/24', 'Maternité, médecine générale, laboratoire d\'analyses', 'Tiers-payant CMU : 80%'],
-  ['Poste de santé de Fass', 'hospital', 'poste', 14.6895, -17.4605, 'Fass Delorme, rue 2B', '+221 33 821 45 45', 'Fass-Colobane', '8h-18h', 'Soins primaires, consultations, pansements', 'Tiers-payant CMU : 50%'],
-  ['Poste de santé de Grand Yoff', 'hospital', 'poste', 14.7390, -17.4580, 'Grand Yoff, près de la mairie', '+221 33 827 99 99', 'Grand Yoff', '8h-18h', 'Soins infirmiers, consultations générales', 'Tiers-payant CMU : 50%'],
-  ['Poste de santé de Keur Massar', 'hospital', 'poste', 14.7830, -17.2990, 'Keur Massar Centre, route de Boune', '+221 33 893 11 11', 'Keur Massar', '8h-18h', 'Soins généraux, maternité de proximité', 'Tiers-payant CMU : 50%'],
-  ['Pharmacie du Plateau', 'pharmacy', 'pharmacie', 14.6710, -17.4385, 'Avenue Albert Sarraut, Dakar', '+221 33 823 23 23', 'Dakar Plateau', '24h/24', 'Médicaments prescrits, parapharmacie', 'Tiers-payant CMU : 50% sur génériques'],
-  ['Pharmacie de Pikine', 'pharmacy', 'pharmacie', 14.7510, -17.4030, 'Tally Boubess, Pikine', '+221 33 851 15 15', 'Pikine', '8h-23h', 'Médicaments prescrits, parapharmacie', 'Tiers-payant CMU : 50% sur génériques'],
-  ['Pharmacie Nation', 'pharmacy', 'pharmacie', 14.6920, -17.4480, 'Avenue Blaise Diagne, Colobane', '+221 33 822 55 55', 'Colobane', '8h-22h', 'Médicaments prescrits, parapharmacie', 'Tiers-payant CMU : 50% sur génériques'],
-  ['Pharmacie Guédiawaye', 'pharmacy', 'pharmacie', 14.7790, -17.4100, 'Golf Sud, près du stade de Guédiawaye', '+221 33 861 22 22', 'Guédiawaye', '8h-22h', 'Médicaments prescrits, parapharmacie', 'Tiers-payant CMU : 50% sur génériques'],
-  ['Clinique de la Madeleine', 'hospital', 'clinique', 14.6725, -17.4410, 'Avenue Hassan II (ex Sarraut), Dakar', '+221 33 889 94 94', 'Dakar Plateau', '24h/24', 'Chirurgie, médecine spécialisée, maternité privée, pédiatrie', 'Tiers-payant conventionné (mutuelles privées)'],
-  ['Clinique du Cap', 'hospital', 'clinique', 14.6780, -17.4690, 'Avenue de la Corniche Ouest, Dakar', '+221 33 889 02 02', 'Fann-Corniche', '24h/24', 'Urgences privées, chirurgie esthétique, cardiologie', 'Tiers-payant conventionné (mutuelles privées)'],
-  ['Centre de tradithérapie de Dakar', 'hospital', 'tradipraticien', 14.7040, -17.4520, 'Fann-Hock, route de la Corniche', '+221 77 344 55 66', 'Fann-Hock', '8h-18h', 'Médecine par les plantes, soins traditionnels des articulations', 'Tiers-payant CMU : prise en charge 30% (conventionné)'],
-  ['Cabinet traditionnel Serigne Fallou', 'hospital', 'tradipraticien', 14.7550, -17.3980, 'Pikine, près du marché aux poissons', '+221 77 655 44 33', 'Pikine', '8h-17h', 'Consultations phytothérapiques, remèdes traditionnels', 'Tiers-payant CMU : prise en charge 30% (conventionné)'],
-  ['Cabinet Keur Massar tradipratique', 'hospital', 'tradipraticien', 14.7920, -17.2910, 'Keur Massar Sud, quartier Aladji Pathe', '+221 77 522 11 00', 'Keur Massar', '8h-17h', 'Traitements à base de plantes locales, tradithérapie', 'Tiers-payant CMU : prise en charge 30% (conventionné)'],
-  ['Hôpital Aristide Le Dantec', 'hospital', 'hôpital', 14.6616, -17.4323, 'Avenue Pasteur, Dakar Plateau', '+221 33 889 38 00', 'Dakar Plateau', '24h/24', 'Maternité, chirurgie générale, pédiatrie, oncologie', 'Tiers-payant CMU : 80%'],
-  ['Hôpital Abass Ndao', 'hospital', 'hôpital', 14.6853, -17.4589, 'Avenue Cheikh Anta Diop, Gueule Tapée', '+221 33 849 78 00', 'Fann-Point E-Amitié', '24h/24', 'Diabétologie, pédiatrie, médecine interne, urgences', 'Tiers-payant CMU : 80%'],
-  ['Hôpital militaire de Ouakam', 'hospital', 'hôpital', 14.7224, -17.4891, 'Route de la Corniche Ouest, Ouakam', '+221 33 820 08 30', 'Ouakam', '24h/24', 'Chirurgie, médecine d\'urgence, radiologie, traumatologie', 'Tiers-payant CMU : 80%'],
-  ['Hôpital de Grand Yoff (HOGIP)', 'hospital', 'hôpital', 14.7431, -17.4503, 'Grand Yoff, voie de dégagement Nord (VDN)', '+221 33 869 40 50', 'Grand Yoff', '24h/24', 'Urgences médicales, traumatologie, cardiologie, chirurgie', 'Tiers-payant CMU : 80%'],
-  ['Centre de santé de Nabil Choucair', 'hospital', 'centre', 14.7475, -17.4423, 'Patte d\'Oie Builders, Dakar', '+221 33 855 12 12', 'Patte d\'Oie', '24h/24', 'Médecine générale, gynécologie, pédiatrie, maternité, urgences', 'Tiers-payant CMU : 80%'],
-  ['Centre de santé de Yeumbeul', 'hospital', 'centre', 14.7795, -17.3450, 'Yeumbeul Nord, Route de Boune', '+221 33 874 15 15', 'Yeumbeul Nord', '24h/24', 'Médecine générale, maternité, pédiatrie, vaccination, pharmacie d\'urgence', 'Tiers-payant CMU : 80%'],
-  ['Centre de santé de Mbao', 'hospital', 'centre', 14.7392, -17.3195, 'Mbao, route nationale 1', '+221 33 836 20 20', 'Mbao', '24h/24', 'Consultations, maternité, soins infirmiers, pédiatrie, laboratoire', 'Tiers-payant CMU : 80%'],
-  ['Poste de santé de Ouakam', 'hospital', 'poste', 14.7245, -17.4920, 'Ouakam Centre, rue des Mamelles', '+221 33 860 11 11', 'Ouakam', '8h-18h', 'Soins infirmiers, consultations de base, planification familiale', 'Tiers-payant CMU : 50%'],
-  ['Poste de santé de Hann Bel-Air', 'hospital', 'poste', 14.7120, -17.4280, 'Hann Bel-Air, route de la pyrotechnie', '+221 33 832 40 40', 'Hann Bel-Air', '8h-18h', 'Consultations de médecine générale, soins de proximité, vaccination', 'Tiers-payant CMU : 50%'],
-  ['Poste de santé de Yoff Tonghor', 'hospital', 'poste', 14.7610, -17.4810, 'Yoff Tonghor, près du port de pêche', '+221 33 820 44 44', 'Yoff', '8h-18h', 'Consultations générales, petite chirurgie, pharmacie de garde', 'Tiers-payant CMU : 50%'],
-  ['Pharmacie Guigon', 'pharmacy', 'pharmacie', 14.6698, -17.4344, '1 Avenue Georges Pompidou, Dakar Plateau', '+221 33 823 03 33', 'Dakar Plateau', '24h/24', 'Médicaments prescrits, parapharmacie, matériel médical', 'Tiers-payant CMU : 50% sur génériques'],
-  ['Pharmacie Atlantique', 'pharmacy', 'pharmacie', 14.6865, -17.4764, 'Avenue Cheikh Anta Diop, Fann', '+221 33 825 21 00', 'Fann-Point E-Amitié', '24h/24', 'Médicaments prescrits, homéopathie, parapharmacie', 'Tiers-payant CMU : 50% sur génériques'],
-  ['Pharmacie de la République', 'pharmacy', 'pharmacie', 14.6675, -17.4363, 'Avenue de la République, Dakar Plateau', '+221 33 822 20 80', 'Dakar Plateau', '8h-23h', 'Médicaments prescrits, parapharmacie, produits orthopédiques', 'Tiers-payant CMU : 50% sur génériques'],
-  ['Pharmacie des Almadies', 'pharmacy', 'pharmacie', 14.7482, -17.5147, 'Route des Almadies, Ngor', '+221 33 820 78 88', 'Ngor-Almadies', '24h/24', 'Médicaments prescrits, produits vétérinaires, parapharmacie', 'Tiers-payant CMU : 50% sur génériques'],
-  ['Clinique Casahous', 'hospital', 'clinique', 14.6653, -17.4370, 'Rue Amadou Assane Ndoye, Dakar Plateau', '+221 33 821 21 50', 'Dakar Plateau', '24h/24', 'Gynécologie-obstétrique, pédiatrie, chirurgie esthétique', 'Tiers-payant conventionné (mutuelles privées)'],
-  ['Clinique du Cap', 'hospital', 'clinique', 14.6898, -17.4735, 'Rue Aimé Césaire, Fann Résidence', '+221 33 824 24 24', 'Fann-Point E-Amitié', '24h/24', 'Cardiologie, chirurgie cardiaque, réanimation, urgences 24h', 'Tiers-payant conventionné (mutuelles privées)'],
-  ['Cabinet GIE ethnobotanique', 'hospital', 'tradipraticien', 14.7850, -17.3050, 'Keur Massar Nord, cité ouvrière', '+221 77 430 11 22', 'Keur Massar', '8h-18h', 'Médecine traditionnelle holistique, tisanes, traitements cutanés', 'Tiers-payant CMU : prise en charge 30% (conventionné)'],
-  ['Pharmacopée traditionnelle de la Médina', 'hospital', 'tradipraticien', 14.6860, -17.4510, 'Avenue Blaise Diagne, Médina rue 11', '+221 77 580 99 88', 'Médina', '8h-17h', 'Consultations par les plantes, remèdes articulaires, huiles naturelles', 'Tiers-payant CMU : prise en charge 30% (conventionné)']
-];
+// locationsData static array is removed to read dynamically from locations_data.json
 
 const newsData = [
   [
@@ -476,14 +433,20 @@ async function initializeDatabase() {
     console.log('Données des mutuelles insérées.');
 
     // Seed Locations
-    for (const row of locationsData) {
-      await pool.query(
-        `INSERT INTO locations (name, type, subtype, lat, lng, description, phone, commune, hours, services, coverage)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-        row
-      );
+    const locationsDataPath = path.join(__dirname, 'locations_data.json');
+    if (fs.existsSync(locationsDataPath)) {
+      const locationsData = JSON.parse(fs.readFileSync(locationsDataPath, 'utf8'));
+      for (const row of locationsData) {
+        await pool.query(
+          `INSERT INTO locations (name, type, subtype, lat, lng, description, phone, commune, hours, services, coverage, landmark, local_info)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+          [row.name, row.type, row.subtype, row.lat, row.lng, row.description, row.phone, row.commune, row.hours, row.services, row.coverage, row.landmark, row.local_info]
+        );
+      }
+      console.log(`${locationsData.length} données géographiques de la carte insérées.`);
+    } else {
+      console.warn("Fichier locations_data.json introuvable, insertion des localisations ignorée.");
     }
-    console.log('Données géographiques de la carte insérées.');
 
     // Seed News
     for (const row of newsData) {
