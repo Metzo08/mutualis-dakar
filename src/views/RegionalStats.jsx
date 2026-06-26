@@ -86,13 +86,23 @@ export default function RegionalStats({ lang }) {
           {data.byRegion && data.byRegion.filter((r) => r.region).length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={data.byRegion.filter((r) => r.region).map((r) => ({ région: r.region, bénéficiaires: parseInt(r.beneficiaries), actifs: parseInt(r.active) }))}>
+                <defs>
+                  <linearGradient id="gradBeneficiaries" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.85}/>
+                    <stop offset="100%" stopColor="#3b82f6" stopOpacity={0.2}/>
+                  </linearGradient>
+                  <linearGradient id="gradActive" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10b981" stopOpacity={0.85}/>
+                    <stop offset="100%" stopColor="#10b981" stopOpacity={0.2}/>
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
                 <XAxis dataKey="région" fontSize="0.7rem" angle={-20} textAnchor="end" height={60} />
                 <YAxis fontSize="0.7rem" allowDecimals={false} />
                 <Tooltip />
                 <Legend wrapperStyle={{ fontSize: '0.75rem' }} />
-                <Bar dataKey="bénéficiaires" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="actifs" fill="#22c55e" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="bénéficiaires" fill="url(#gradBeneficiaries)" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="actifs" fill="url(#gradActive)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : <Empty />}
@@ -104,13 +114,23 @@ export default function RegionalStats({ lang }) {
           {data.claimsByRegion && data.claimsByRegion.filter((r) => r.region).length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={data.claimsByRegion.filter((r) => r.region).map((r) => ({ région: r.region, demandes: parseInt(r.claims), remboursé: parseInt(r.reimbursed) }))} layout="vertical">
+                <defs>
+                  <linearGradient id="gradDemandes" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#ec4899" stopOpacity={0.85}/>
+                    <stop offset="100%" stopColor="#ec4899" stopOpacity={0.2}/>
+                  </linearGradient>
+                  <linearGradient id="gradRembourse" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#14b8a6" stopOpacity={0.85}/>
+                    <stop offset="100%" stopColor="#14b8a6" stopOpacity={0.2}/>
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
                 <XAxis type="number" fontSize="0.7rem" allowDecimals={false} />
                 <YAxis type="category" dataKey="région" fontSize="0.7rem" width={100} />
                 <Tooltip />
                 <Legend wrapperStyle={{ fontSize: '0.75rem' }} />
-                <Bar dataKey="demandes" fill="#ec4899" radius={[0, 4, 4, 0]} />
-                <Bar dataKey="remboursé" fill="#14b8a6" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="demandes" fill="url(#gradDemandes)" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="remboursé" fill="url(#gradRembourse)" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : <Empty />}
@@ -122,11 +142,17 @@ export default function RegionalStats({ lang }) {
           {data.topMutuelles && data.topMutuelles.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={data.topMutuelles.map((m) => ({ name: m.name?.replace('Mutuelle de ', '') || '—', adhérents: parseInt(m.beneficiaries) }))} layout="vertical">
+                <defs>
+                  <linearGradient id="gradAdherents" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.85}/>
+                    <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.2}/>
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
                 <XAxis type="number" fontSize="0.7rem" allowDecimals={false} />
                 <YAxis type="category" dataKey="name" fontSize="0.7rem" width={120} />
                 <Tooltip />
-                <Bar dataKey="adhérents" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="adhérents" fill="url(#gradAdherents)" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : <Empty />}
