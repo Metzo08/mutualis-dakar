@@ -157,10 +157,26 @@ export default function PartnerPortal({ lang, setView }) {
   // ÉCRAN DE CONNEXION
   if (!partner) {
     return (
-      <div className="partner-portal fade-in-up" style={{ padding: '2rem 1rem', maxWidth: '450px', margin: '0 auto' }}>
-        <div className="card" style={{ padding: '2rem' }}>
-          <h1 style={{ fontSize: '1.4rem', fontWeight: '800', marginBottom: '0.5rem' }}>🏥 {t.title}</h1>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>{t.subtitle}</p>
+      <div className="partner-portal fade-in-up">
+        {/* Banner */}
+        <section className="banner-mini" style={{
+          background: 'linear-gradient(to right, rgba(5, 150, 105, 0.9), rgba(5, 150, 105, 0.7)), url("/csu_partner_hero.png") center/cover no-repeat',
+          borderBottom: '1px solid var(--border-color)',
+          borderRadius: '16px',
+          padding: '2.5rem 2rem',
+          marginBottom: '2rem',
+          color: '#fff',
+          boxShadow: 'var(--shadow-md)',
+          textAlign: 'center'
+        }}>
+          <div className="container" style={{ position: 'relative', zIndex: 2 }}>
+            <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>🏥 {t.title}</h1>
+            <p style={{ color: '#f8fafc', fontSize: '1rem', fontWeight: '500', maxWidth: '700px', margin: '0 auto', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>{t.subtitle}</p>
+          </div>
+        </section>
+
+        <div style={{ maxWidth: '450px', margin: '0 auto', padding: '0 1rem' }}>
+          <div className="card" style={{ padding: '2rem' }}>
           <form onSubmit={handleLogin}>
             <div style={{ marginBottom: '1rem' }}>
               <label style={{ fontSize: '0.8rem', fontWeight: '600' }}>{t.username}</label>
@@ -177,20 +193,35 @@ export default function PartnerPortal({ lang, setView }) {
           </form>
           <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '1rem', textAlign: 'center' }}>💡 {t.demo}</p>
         </div>
+        </div>
       </div>
     );
   }
 
   // ESPACE PARTENAIRE CONNECTÉ
   return (
-    <div className="partner-portal fade-in-up" style={{ padding: '1.5rem 1rem', maxWidth: '1000px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
-        <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: '800' }}>🏥 {partner.structureName}</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{partner.contactName} · Tiers-payant {partner.coverageRate}%</p>
+    <div className="partner-portal fade-in-up">
+      {/* Banner */}
+      <section className="banner-mini" style={{
+        background: 'linear-gradient(to right, rgba(5, 150, 105, 0.9), rgba(5, 150, 105, 0.7)), url("/csu_partner_hero.png") center/cover no-repeat',
+        borderBottom: '1px solid var(--border-color)',
+        borderRadius: '16px',
+        padding: '2.5rem 2rem',
+        marginBottom: '2rem',
+        color: '#fff',
+        boxShadow: 'var(--shadow-md)',
+        textAlign: 'center'
+      }}>
+        <div className="container" style={{ position: 'relative', zIndex: 2 }}>
+          <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>🏥 {partner.structureName}</h1>
+          <p style={{ color: '#f8fafc', fontSize: '1rem', fontWeight: '500', maxWidth: '700px', margin: '0 auto', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>{partner.contactName} · Tiers-payant {partner.coverageRate}%</p>
         </div>
-        <button className="btn btn-outline btn-sm" onClick={handleLogout}>{t.logout}</button>
-      </div>
+      </section>
+
+      <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1.5rem' }}>
+          <button className="btn btn-outline btn-sm" onClick={handleLogout}>{t.logout}</button>
+        </div>
 
       <div className="grid grid-2" style={{ gap: '1.5rem', marginBottom: '1.5rem' }}>
         {/* Vérification carte CMU */}
@@ -291,6 +322,7 @@ export default function PartnerPortal({ lang, setView }) {
             )}
           </>
         )}
+      </div>
       </div>
     </div>
   );

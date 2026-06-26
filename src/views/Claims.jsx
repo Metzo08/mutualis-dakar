@@ -199,16 +199,26 @@ export default function Claims({ lang, portalMode, citizenUser, agentUser }) {
   };
 
   return (
-    <div className="claims-view fade-in-up" style={{ padding: '1.5rem 1rem', maxWidth: '1200px', margin: '0 auto' }}>
-      {/* Header section with page meta */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
-        <div>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: '800', fontFamily: 'var(--font-title)', letterSpacing: '-0.5px' }}>
-            💊 {t.title}
-          </h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.25rem' }}>{t.subtitle}</p>
+    <div className="claims-view fade-in-up">
+      {/* Banner */}
+      <section className="banner-mini" style={{
+        background: 'linear-gradient(to right, rgba(5, 150, 105, 0.9), rgba(5, 150, 105, 0.7)), url("/csu_claims_hero.png") center/cover no-repeat',
+        borderBottom: '1px solid var(--border-color)',
+        borderRadius: '16px',
+        padding: '2.5rem 2rem',
+        marginBottom: '2rem',
+        color: '#fff',
+        boxShadow: 'var(--shadow-md)',
+        textAlign: 'center'
+      }}>
+        <div className="container" style={{ position: 'relative', zIndex: 2 }}>
+          <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>💊 {t.title}</h1>
+          <p style={{ color: '#f8fafc', fontSize: '1rem', fontWeight: '500', maxWidth: '700px', margin: '0 auto', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>{t.subtitle}</p>
         </div>
-        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+      </section>
+
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', alignItems: 'center', marginBottom: '2rem' }}>
           <div style={{ position: 'relative' }}>
             <select 
               className="input" 
@@ -257,7 +267,6 @@ export default function Claims({ lang, portalMode, citizenUser, agentUser }) {
             </button>
           )}
         </div>
-      </div>
 
       {submitMsg && (
         <div className="alert fade-in-up" style={{ 
@@ -515,5 +524,6 @@ export default function Claims({ lang, portalMode, citizenUser, agentUser }) {
         )}
       </div>
     </div>
+  </div>
   );
 }

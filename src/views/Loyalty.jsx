@@ -88,18 +88,32 @@ export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
   }
 
   return (
-    <div className="loyalty-view fade-in-up" style={{ padding: '1.5rem 1rem', maxWidth: '900px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
-        <div>
-          <h1 style={{ fontSize: '1.6rem', fontWeight: '800' }}>⭐ {t.title}</h1>
-          <p style={{ color: 'var(--text-muted)' }}>{t.subtitle}</p>
+    <div className="loyalty-view fade-in-up">
+      {/* Banner */}
+      <section className="banner-mini" style={{
+        background: 'linear-gradient(to right, rgba(5, 150, 105, 0.9), rgba(5, 150, 105, 0.7)), url("/csu_loyalty_hero.png") center/cover no-repeat',
+        borderBottom: '1px solid var(--border-color)',
+        borderRadius: '16px',
+        padding: '2.5rem 2rem',
+        marginBottom: '2rem',
+        color: '#fff',
+        boxShadow: 'var(--shadow-md)',
+        textAlign: 'center'
+      }}>
+        <div className="container" style={{ position: 'relative', zIndex: 2 }}>
+          <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>⭐ {t.title}</h1>
+          <p style={{ color: '#f8fafc', fontSize: '1rem', fontWeight: '500', maxWidth: '700px', margin: '0 auto', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>{t.subtitle}</p>
         </div>
+      </section>
+
+      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 1rem' }}>
         {isAgent && (
-          <button className="btn btn-outline btn-sm" onClick={() => setShowLeaderboard(!showLeaderboard)}>
-            🏆 {t.leaderboard}
-          </button>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1.5rem' }}>
+            <button className="btn btn-outline btn-sm" onClick={() => setShowLeaderboard(!showLeaderboard)}>
+              🏆 {t.leaderboard}
+            </button>
+          </div>
         )}
-      </div>
 
       {/* Carte solde de points + niveau */}
       <div className="card" style={{ padding: '2rem', marginBottom: '1.5rem', background: 'linear-gradient(135deg, #059669 0%, #047857 100%)', color: '#fff', textAlign: 'center' }}>
@@ -187,6 +201,7 @@ export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
           ) : <p style={{ color: 'var(--text-muted)' }}>{t.noData}</p>}
         </div>
       )}
+      </div>
     </div>
   );
 }

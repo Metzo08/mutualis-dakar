@@ -184,11 +184,26 @@ export default function Payments({ lang, citizenUser }) {
   };
 
   return (
-    <div className="payments-view fade-in-up" style={{ padding: '1.5rem 1rem', maxWidth: '600px', margin: '0 auto' }}>
-      <h1 style={{ fontSize: '1.6rem', fontWeight: '800', marginBottom: '0.25rem' }}>💳 {t.title}</h1>
-      <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>{t.subtitle}</p>
+    <div className="payments-view fade-in-up">
+      {/* Banner */}
+      <section className="banner-mini" style={{
+        background: 'linear-gradient(to right, rgba(5, 150, 105, 0.9), rgba(5, 150, 105, 0.7)), url("/csu_payments_hero.png") center/cover no-repeat',
+        borderBottom: '1px solid var(--border-color)',
+        borderRadius: '16px',
+        padding: '2.5rem 2rem',
+        marginBottom: '2rem',
+        color: '#fff',
+        boxShadow: 'var(--shadow-md)',
+        textAlign: 'center'
+      }}>
+        <div className="container" style={{ position: 'relative', zIndex: 2 }}>
+          <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>💳 {t.title}</h1>
+          <p style={{ color: '#f8fafc', fontSize: '1rem', fontWeight: '500', maxWidth: '700px', margin: '0 auto', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>{t.subtitle}</p>
+        </div>
+      </section>
 
-      <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
+      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '0 1rem' }}>
+        <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
         <form onSubmit={handlePay}>
           <div style={{ marginBottom: '1rem' }}>
             <label style={{ fontSize: '0.8rem', fontWeight: '600' }}>{t.provider}</label>
@@ -289,6 +304,7 @@ export default function Payments({ lang, citizenUser }) {
             })}
           </div>
         )}
+      </div>
       </div>
     </div>
   );

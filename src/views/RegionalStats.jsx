@@ -70,14 +70,28 @@ export default function RegionalStats({ lang }) {
   const fmt = (n) => new Intl.NumberFormat('fr-FR').format(n || 0);
 
   return (
-    <div className="regional-stats fade-in-up" style={{ padding: '1.5rem 1rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
-        <div>
-          <h1 style={{ fontSize: '1.6rem', fontWeight: '800' }}>🗺️ {t.title}</h1>
-          <p style={{ color: 'var(--text-muted)' }}>{t.subtitle}</p>
+    <div className="regional-stats fade-in-up">
+      {/* Banner */}
+      <section className="banner-mini" style={{
+        background: 'linear-gradient(to right, rgba(5, 150, 105, 0.9), rgba(5, 150, 105, 0.7)), url("/csu_stats_hero.png") center/cover no-repeat',
+        borderBottom: '1px solid var(--border-color)',
+        borderRadius: '16px',
+        padding: '2.5rem 2rem',
+        marginBottom: '2rem',
+        color: '#fff',
+        boxShadow: 'var(--shadow-md)',
+        textAlign: 'center'
+      }}>
+        <div className="container" style={{ position: 'relative', zIndex: 2 }}>
+          <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>🗺️ {t.title}</h1>
+          <p style={{ color: '#f8fafc', fontSize: '1rem', fontWeight: '500', maxWidth: '700px', margin: '0 auto', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>{t.subtitle}</p>
         </div>
-        <button className="btn btn-outline btn-sm" onClick={fetchStats}>🔄 {t.refresh}</button>
-      </div>
+      </section>
+
+      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1.5rem' }}>
+          <button className="btn btn-outline btn-sm" onClick={fetchStats}>🔄 {t.refresh}</button>
+        </div>
 
       <div className="grid grid-2" style={{ gap: '1.5rem', marginBottom: '1.5rem' }}>
         {/* Bénéficiaires par région */}
@@ -189,6 +203,7 @@ export default function RegionalStats({ lang }) {
             ))}
           </div>
         ) : <Empty />}
+      </div>
       </div>
     </div>
   );
