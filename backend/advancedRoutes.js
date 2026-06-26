@@ -303,7 +303,7 @@ router.post('/api/payments/webhook/:provider', async (req, res) => {
 
     const finalStatus = status === 'success' ? 'success' : status === 'failed' ? 'failed' : 'pending';
     await client.query(
-      `UPDATE payments SET status = $1, provider_transaction_id = COALESCE($2, provider_transaction_id), webhook_received = TRUE, webhook_payload = $3, completed_at = CASE WHEN $1 IN ('success','failed') THEN NOW() ELSE completed_at END WHERE reference = $4`,
+      `UPDATE payments SET status = $1, provider_transaction_id = COALESCE($2, provider_transaction_id), webhook_received = TRUE, webhook_payload = $3, completed_at = CASE WHEN $1::text IN ('success','failed') THEN NOW() ELSE completed_at END WHERE reference = $4`,
       [finalStatus, provider_transaction_id || null, JSON.stringify(req.body), reference]
     );
 
