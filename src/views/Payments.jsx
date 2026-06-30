@@ -218,7 +218,14 @@ export default function Payments({ lang, citizenUser }) {
                     background: form.provider === p ? 'rgba(5,150,105,0.1)' : 'transparent', cursor: 'pointer', fontWeight: '600', fontSize: '0.85rem'
                   }}
                 >
-                  {p === 'wave' ? '🌊' : '🟠'} {t.providers[p]}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                    <img 
+                      src={p === 'wave' ? '/logo_wave.png' : '/logo_orange_money.png'} 
+                      alt={t.providers[p]} 
+                      style={{ height: '20px', borderRadius: '4px' }}
+                    />
+                    <span>{t.providers[p]}</span>
+                  </div>
                 </button>
               ))}
             </div>
@@ -289,9 +296,14 @@ export default function Payments({ lang, citizenUser }) {
               return (
                 <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem', background: 'var(--bg-secondary)', borderRadius: '8px' }}>
                   <div>
-                    <div style={{ fontSize: '0.85rem', fontWeight: '600' }}>
-                      {p.provider === 'wave' ? '🌊' : '🟠'} {new Intl.NumberFormat('fr-FR').format(p.amount)} FCFA
-                    </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <img 
+                          src={p.provider === 'wave' ? '/logo_wave.png' : '/logo_orange_money.png'} 
+                          alt={p.provider} 
+                          style={{ height: '14px', borderRadius: '2px' }}
+                        />
+                        <span>{new Intl.NumberFormat('fr-FR').format(p.amount)} FCFA</span>
+                      </div>
                     <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
                       {t.purposes[p.purpose] || p.purpose} · {p.initiated_at ? new Date(p.initiated_at).toLocaleDateString('fr-FR') : ''}
                     </div>

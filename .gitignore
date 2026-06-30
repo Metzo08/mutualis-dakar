@@ -30,3 +30,9 @@ backend/.env.*
 *.njsproj
 *.sln
 *.sw?
+
+# Temporary data source files
+*.zip
+*.xlsx
+dev-dist/
+

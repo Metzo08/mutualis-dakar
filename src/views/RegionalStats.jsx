@@ -69,6 +69,17 @@ export default function RegionalStats({ lang }) {
 
   const fmt = (n) => new Intl.NumberFormat('fr-FR').format(n || 0);
 
+  const tooltipStyle = {
+    contentStyle: {
+      backgroundColor: 'var(--bg-card)',
+      borderColor: 'var(--border-color)',
+      borderRadius: '8px',
+      color: 'var(--text-main)'
+    },
+    itemStyle: { color: 'var(--text-main)' },
+    labelStyle: { color: 'var(--text-sub)' }
+  };
+
   return (
     <div className="regional-stats fade-in-up">
       {/* Banner */}
@@ -113,7 +124,7 @@ export default function RegionalStats({ lang }) {
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
                 <XAxis dataKey="région" fontSize="0.7rem" angle={-20} textAnchor="end" height={60} />
                 <YAxis fontSize="0.7rem" allowDecimals={false} />
-                <Tooltip />
+                <Tooltip {...tooltipStyle} />
                 <Legend wrapperStyle={{ fontSize: '0.75rem' }} />
                 <Bar dataKey="bénéficiaires" fill="url(#gradBeneficiaries)" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="actifs" fill="url(#gradActive)" radius={[4, 4, 0, 0]} />
@@ -141,7 +152,7 @@ export default function RegionalStats({ lang }) {
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
                 <XAxis type="number" fontSize="0.7rem" allowDecimals={false} />
                 <YAxis type="category" dataKey="région" fontSize="0.7rem" width={100} />
-                <Tooltip />
+                <Tooltip {...tooltipStyle} />
                 <Legend wrapperStyle={{ fontSize: '0.75rem' }} />
                 <Bar dataKey="demandes" fill="url(#gradDemandes)" radius={[0, 4, 4, 0]} />
                 <Bar dataKey="remboursé" fill="url(#gradRembourse)" radius={[0, 4, 4, 0]} />
@@ -150,12 +161,18 @@ export default function RegionalStats({ lang }) {
           ) : <Empty />}
         </div>
 
-        {/* Top 10 mutuelles */}
-        <div className="card" style={{ padding: '1.5rem' }}>
+         <div className="card" style={{ padding: '1.5rem' }}>
           <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '1rem' }}>🏆 {t.topMutuelles}</h3>
           {data.topMutuelles && data.topMutuelles.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={data.topMutuelles.map((m) => ({ name: m.name?.replace('Mutuelle de ', '') || '—', adhérents: parseInt(m.beneficiaries) }))} layout="vertical">
+            <ResponsiveContainer width="100%" height={450}>
+              <BarChart data={data.topMutuelles.map((m) => {
+                let n = m.name || '';
+                n = n.replace('Mutuelle de ', '');
+                n = n.replace('Union Départementale de ', 'UD ');
+                n = n.replace('Union Departementale de ', 'UD ');
+                n = n.replace(/\(UDMS.*\)/, '');
+                return { name: n.trim() || '—', adhérents: parseInt(m.beneficiaries) };
+              })} layout="vertical">
                 <defs>
                   <linearGradient id="gradAdherents" x1="0" y1="0" x2="1" y2="0">
                     <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.85}/>
@@ -164,8 +181,8 @@ export default function RegionalStats({ lang }) {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
                 <XAxis type="number" fontSize="0.7rem" allowDecimals={false} />
-                <YAxis type="category" dataKey="name" fontSize="0.7rem" width={120} />
-                <Tooltip />
+                <YAxis type="category" dataKey="name" fontSize="0.7rem" width={150} />
+                <Tooltip {...tooltipStyle} />
                 <Bar dataKey="adhérents" fill="url(#gradAdherents)" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -181,7 +198,7 @@ export default function RegionalStats({ lang }) {
                 <Pie data={data.cotisationsByStatus.map((c) => ({ name: c.status, value: parseInt(c.count), total: parseInt(c.total) }))} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} label>
                   {data.cotisationsByStatus.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                 </Pie>
-                <Tooltip />
+                <Tooltip {...tooltipStyle} />
                 <Legend wrapperStyle={{ fontSize: '0.75rem' }} />
               </PieChart>
             </ResponsiveContainer>

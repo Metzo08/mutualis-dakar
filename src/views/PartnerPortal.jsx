@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 // Espace partenaire pour les structures de soins conventionnées.
 // Connexion dédiée (compte partenaire) → vérification carte CMU + déclaration tiers-payant + stats.
-export default function PartnerPortal({ lang, setView }) {
+export default function PartnerPortal({ lang, setView, portalMode, agentUser }) {
   const [partner, setPartner] = useState(null);
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
   const [loginError, setLoginError] = useState('');
@@ -20,6 +20,83 @@ export default function PartnerPortal({ lang, setView }) {
 
   // Stats
   const [stats, setStats] = useState(null);
+
+  const isAgent = portalMode === 'agent' && agentUser;
+
+  const [structures, setStructures] = useState([]);
+  const [newStructure, setNewStructure] = useState({
+    name: '',
+    type: 'hopital',
+    commune: '',
+    phone: '',
+    email: '',
+    address: '',
+    agreementNumber: '',
+    coverageRate: 85
+  });
+  const [structureLoading, setStructureLoading] = useState(false);
+  const [agentToast, setAgentToast] = useState('');
+
+  const fetchStructures = () => {
+    const token = localStorage.getItem('cmu-token') || '';
+    fetch('http://localhost:5000/api/partners/structures', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) setStructures(data);
+      })
+      .catch((err) => console.error('Error fetching structures:', err));
+  };
+
+  useEffect(() => {
+    if (isAgent) {
+      fetchStructures();
+    }
+  }, [isAgent]);
+
+  const handleCreateStructure = (e) => {
+    e.preventDefault();
+    if (!newStructure.name || !newStructure.agreementNumber || !newStructure.phone) {
+      setAgentToast('Veuillez remplir les champs obligatoires.');
+      return;
+    }
+    setStructureLoading(true);
+    setAgentToast('');
+    const token = localStorage.getItem('cmu-token') || '';
+    fetch('http://localhost:5000/api/partners/structures', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify(newStructure)
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setStructureLoading(false);
+        if (data.success) {
+          setAgentToast('Structure conventionnée créée avec succès !');
+          setNewStructure({
+            name: '',
+            type: 'hopital',
+            commune: '',
+            phone: '',
+            email: '',
+            address: '',
+            agreementNumber: '',
+            coverageRate: 85
+          });
+          fetchStructures();
+        } else {
+          setAgentToast(data.error || 'Erreur lors de la création.');
+        }
+      })
+      .catch(() => {
+        setStructureLoading(false);
+        setAgentToast('Erreur de connexion.');
+      });
+  };
 
   const t = lang === 'fr' ? {
     title: 'Espace partenaire structures de soins',
@@ -153,6 +230,143 @@ export default function PartnerPortal({ lang, setView }) {
       })
       .catch(() => { setTpLoading(false); setTpResult({ error: 'Erreur' }); });
   };
+
+  // ESPACE AGENT : GESTION DES PARTENAIRES CONVENTIONNÉS
+  if (isAgent) {
+    return (
+      <div className="partner-portal fade-in-up">
+        {/* Banner */}
+        <section className="banner-mini" style={{
+          background: 'linear-gradient(to right, rgba(5, 150, 105, 0.9), rgba(5, 150, 105, 0.7)), url("/csu_partner_hero.png") center/cover no-repeat',
+          borderBottom: '1px solid var(--border-color)',
+          borderRadius: '16px',
+          padding: '2.5rem 2rem',
+          marginBottom: '2rem',
+          color: '#fff',
+          boxShadow: 'var(--shadow-md)',
+          textAlign: 'center'
+        }}>
+          <div className="container" style={{ position: 'relative', zIndex: 2 }}>
+            <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>💼 {lang === 'fr' ? 'Gestion des structures partenaires' : 'Saytu kër gu conventionné'}</h1>
+            <p style={{ color: '#f8fafc', fontSize: '1rem', fontWeight: '500', maxWidth: '700px', margin: '0 auto', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
+              {lang === 'fr' 
+                ? 'Enregistrez de nouvelles structures partenaires ou suivez les conventions de tiers-payant actives.' 
+                : 'Mbind ak saytu kër gu conventionné yëpp ci région bi.'}
+            </p>
+          </div>
+        </section>
+
+        <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 1rem' }}>
+          <div className="grid grid-2" style={{ gap: '1.5rem', marginBottom: '1.5rem', alignItems: 'start' }}>
+            {/* Formulaire de création */}
+            <div className="card text-left" style={{ padding: '1.5rem' }}>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: '750', marginBottom: '1rem', color: 'var(--primary)' }}>
+                🏥 {lang === 'fr' ? 'Conventionner une structure' : 'Mbind kër gu conventionné'}
+              </h3>
+              <form onSubmit={handleCreateStructure}>
+                <div style={{ marginBottom: '0.8rem' }}>
+                  <label style={{ fontSize: '0.8rem', fontWeight: '600' }}>{lang === 'fr' ? 'Nom de la structure *' : 'Tour kër gu *'}</label>
+                  <input className="input" required value={newStructure.name} onChange={(e) => setNewStructure({ ...newStructure, name: e.target.value })} />
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', marginBottom: '0.8rem' }}>
+                  <div>
+                    <label style={{ fontSize: '0.8rem', fontWeight: '600' }}>{lang === 'fr' ? 'Type *' : 'Anam *'}</label>
+                    <select className="input" value={newStructure.type} onChange={(e) => setNewStructure({ ...newStructure, type: e.target.value })}>
+                      <option value="hopital">{lang === 'fr' ? 'Hôpital' : 'Hôpital'}</option>
+                      <option value="clinique">{lang === 'fr' ? 'Clinique' : 'Clinique'}</option>
+                      <option value="centre_de_sante">{lang === 'fr' ? 'Centre de santé' : 'Centre de santé'}</option>
+                      <option value="poste_de_sante">{lang === 'fr' ? 'Poste de santé' : 'Poste de santé'}</option>
+                      <option value="pharmacie">{lang === 'fr' ? 'Pharmacie' : 'Farmasi'}</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '0.8rem', fontWeight: '600' }}>{lang === 'fr' ? 'Taux de couverture (%) *' : 'Taux (%) *'}</label>
+                    <input className="input" type="number" min="0" max="100" required value={newStructure.coverageRate} onChange={(e) => setNewStructure({ ...newStructure, coverageRate: parseInt(e.target.value) || 85 })} />
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', marginBottom: '0.8rem' }}>
+                  <div>
+                    <label style={{ fontSize: '0.8rem', fontWeight: '600' }}>{lang === 'fr' ? 'Commune *' : 'Commune *'}</label>
+                    <input className="input" required placeholder="Ex: Grand Dakar" value={newStructure.commune} onChange={(e) => setNewStructure({ ...newStructure, commune: e.target.value })} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '0.8rem', fontWeight: '600' }}>{lang === 'fr' ? 'N° Agrément *' : 'N° Agrément *'}</label>
+                    <input className="input" required placeholder="Ex: AGR-2026-DK" value={newStructure.agreementNumber} onChange={(e) => setNewStructure({ ...newStructure, agreementNumber: e.target.value })} />
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', marginBottom: '0.8rem' }}>
+                  <div>
+                    <label style={{ fontSize: '0.8rem', fontWeight: '600' }}>{lang === 'fr' ? 'Téléphone *' : 'Portable *'}</label>
+                    <input className="input" required placeholder="77XXXXXXX" value={newStructure.phone} onChange={(e) => setNewStructure({ ...newStructure, phone: e.target.value })} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: '0.8rem', fontWeight: '600' }}>{lang === 'fr' ? 'Email' : 'Email'}</label>
+                    <input className="input" type="email" placeholder="contact@structure.sn" value={newStructure.email} onChange={(e) => setNewStructure({ ...newStructure, email: e.target.value })} />
+                  </div>
+                </div>
+                <div style={{ marginBottom: '1rem' }}>
+                  <label style={{ fontSize: '0.8rem', fontWeight: '600' }}>{lang === 'fr' ? 'Adresse physique' : 'Adresse'}</label>
+                  <input className="input" placeholder="Ex: Avenue Bourguiba" value={newStructure.address} onChange={(e) => setNewStructure({ ...newStructure, address: e.target.value })} />
+                </div>
+                {agentToast && <div style={{ 
+                  padding: '0.75rem', 
+                  borderRadius: '8px', 
+                  marginBottom: '1rem',
+                  fontSize: '0.82rem',
+                  background: agentToast.includes('succès') ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
+                  color: agentToast.includes('succès') ? '#22c55e' : '#ef4444',
+                  fontWeight: '600',
+                  textAlign: 'left'
+                }}>
+                  {agentToast.includes('succès') ? '✅' : '❌'} {agentToast}
+                </div>}
+                <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={structureLoading}>
+                  {structureLoading ? '...' : `✍️ ${lang === 'fr' ? 'Créer le partenaire' : 'Créer'}`}
+                </button>
+              </form>
+            </div>
+
+            {/* Liste des partenaires */}
+            <div className="card" style={{ padding: '1.5rem', alignSelf: 'stretch', display: 'flex', flexDirection: 'column' }}>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: '750', marginBottom: '1rem', textAlign: 'left' }}>
+                🤝 {lang === 'fr' ? 'Partenaires enregistrés' : 'Partenaire conventionné yi'}
+              </h3>
+              <div style={{ flex: 1, overflowY: 'auto', maxHeight: '420px', paddingRight: '0.25rem' }}>
+                {structures.length === 0 ? (
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', textAlign: 'center', marginTop: '2rem' }}>
+                    {lang === 'fr' ? 'Aucune structure partenaire conventionnée.' : 'Amul kër gu conventionné.'}
+                  </p>
+                ) : (
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+                    <thead>
+                      <tr style={{ background: 'var(--bg-secondary)', borderBottom: '2px solid var(--border-color)', textAlign: 'left' }}>
+                        <th style={{ padding: '0.5rem' }}>{lang === 'fr' ? 'Nom' : 'Tour'}</th>
+                        <th style={{ padding: '0.5rem' }}>Type</th>
+                        <th style={{ padding: '0.5rem' }}>Commune</th>
+                        <th style={{ padding: '0.5rem' }}>Agrément</th>
+                        <th style={{ padding: '0.5rem' }}>Taux</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {structures.map((s) => (
+                        <tr key={s.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                          <td style={{ padding: '0.6rem 0.5rem', fontWeight: 'bold', textAlign: 'left' }}>{s.name}</td>
+                          <td style={{ padding: '0.6rem 0.5rem', textTransform: 'capitalize', fontSize: '0.75rem', textAlign: 'left' }}>{s.type.replace(/_/g, ' ')}</td>
+                          <td style={{ padding: '0.6rem 0.5rem', fontSize: '0.75rem', textAlign: 'left' }}>{s.commune}</td>
+                          <td style={{ padding: '0.6rem 0.5rem', fontFamily: 'monospace', fontSize: '0.75rem', textAlign: 'left' }}>{s.agreement_number}</td>
+                          <td style={{ padding: '0.6rem 0.5rem', fontWeight: 'bold', color: 'var(--primary)', textAlign: 'left' }}>{s.coverage_rate}%</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // ÉCRAN DE CONNEXION
   if (!partner) {

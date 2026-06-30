@@ -3,6 +3,10 @@ import React, { useState, useEffect } from 'react';
 export default function AuditLogs({ lang }) {
   const [logs, setLogs] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrev, setHasPrev] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const dict = {
@@ -34,9 +38,9 @@ export default function AuditLogs({ lang }) {
 
   useEffect(() => {
     setLoading(true);
-    let url = 'http://localhost:5000/api/audit-logs';
+    let url = `http://localhost:5000/api/audit-logs?page=${page}`;
     if (searchQuery) {
-      url += `?search=${encodeURIComponent(searchQuery)}`;
+      url += `&search=${encodeURIComponent(searchQuery)}`;
     }
 
     fetch(url, {
@@ -45,7 +49,12 @@ export default function AuditLogs({ lang }) {
       .then(res => res.json())
       .then(payload => {
         const list = Array.isArray(payload) ? payload : (payload.data || []);
+        const pag = payload.pagination || { page: 1, totalPages: 1, hasNext: false, hasPrev: false };
         setLogs(list);
+        setPage(pag.page);
+        setTotalPages(pag.totalPages);
+        setHasNext(pag.hasNext);
+        setHasPrev(pag.hasPrev);
         setLoading(false);
       })
       .catch(() => {
@@ -57,8 +66,12 @@ export default function AuditLogs({ lang }) {
           { created_at: '2026-06-18T18:12:00.000Z', action: 'CONNEXION_CITOYEN', actor: '771234567', details: 'Connexion réussie de l\'assuré Modou Diop.' }
         ];
         setLogs(localLogs);
+        setPage(1);
+        setTotalPages(1);
+        setHasNext(false);
+        setHasPrev(false);
       });
-  }, [searchQuery]);
+  }, [searchQuery, page]);
 
   const formatDate = (isoString) => {
     try {
@@ -108,7 +121,10 @@ export default function AuditLogs({ lang }) {
             className="form-control"
             placeholder={t.searchPlaceholder}
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setPage(1);
+            }}
           />
         </div>
         <button className="btn btn-outline btn-sm" onClick={() => {
@@ -158,8 +174,8 @@ export default function AuditLogs({ lang }) {
                     {formatDate(log.created_at)}
                   </td>
                   <td style={{ padding: '1rem 1.25rem', textAlign: 'left' }}>
-                    <span className={`badge ${getActionBadgeClass(log.action)}`} style={{ fontSize: '0.65rem', textTransform: 'uppercase' }}>
-                      {log.action}
+                    <span className={`badge ${getActionBadgeClass(log.action)}`} style={{ fontSize: '0.65rem' }}>
+                      {log.action ? (log.action.charAt(0).toUpperCase() + log.action.slice(1).toLowerCase().replace(/_/g, ' ')) : ''}
                     </span>
                   </td>
                   <td style={{ padding: '1rem 1.25rem', textAlign: 'left', fontWeight: '600', fontSize: '0.88rem' }}>
@@ -180,6 +196,29 @@ export default function AuditLogs({ lang }) {
           </tbody>
         </table>
       </div>
+
+      {/* Dynamic pagination controls */}
+      {totalPages > 1 && (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '1.5rem' }}>
+          <button
+            className="btn btn-outline btn-sm"
+            disabled={!hasPrev}
+            onClick={() => setPage(prev => Math.max(1, prev - 1))}
+          >
+            ⬅️ Précédent / Bi weesu
+          </button>
+          <span style={{ fontSize: '0.9rem', color: 'var(--text-sub)', fontWeight: '600' }}>
+            Page {page} sur {totalPages}
+          </span>
+          <button
+            className="btn btn-outline btn-sm"
+            disabled={!hasNext}
+            onClick={() => setPage(prev => Math.min(totalPages, prev + 1))}
+          >
+            Suivant / Bi ci top ➡️
+          </button>
+        </div>
+      )}
     </div>
   );
 }

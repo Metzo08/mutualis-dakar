@@ -12,6 +12,7 @@ const { validate } = require('./validateMiddleware');
 const { parsePagination } = require('./pagination');
 const csuRoutes = require('./csuRoutes');
 const additionalRoutes = require('./additionalRoutes');
+const dynamicRoutes = require('./dynamicRoutes');
 const { router: advancedRoutes, awardPoints } = require('./advancedRoutes');
 const {
   citizenLoginSchema,
@@ -461,6 +462,18 @@ app.get('/api/locations', async (req, res) => {
   }
 });
 
+app.post('/api/log', (req, res) => {
+  try {
+    const fs = require('fs');
+    const logPath = require('path').join(__dirname, 'frontend_error.log');
+    const { message, stack } = req.body;
+    fs.appendFileSync(logPath, `[${new Date().toISOString()}] ERROR: ${message}\nStack: ${stack}\n\n`);
+    res.json({ status: 'logged' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // 3. Get News Articles
 app.get('/api/news', async (req, res) => {
   try {
@@ -730,7 +743,7 @@ app.get('/api/donations/stats', async (req, res) => {
 // 7. Bilingual Gemini 1.5 Chatbot with local rules fallback
 app.post('/api/chatbot', validate(chatbotSchema), async (req, res) => {
   try {
-    const { message, lang, history } = req.body;
+    const { message, lang, history, isVoiceInput } = req.body;
 
     const apiKey = process.env.GEMINI_API_KEY;
 
@@ -738,8 +751,8 @@ app.post('/api/chatbot', validate(chatbotSchema), async (req, res) => {
       const genAI = new GoogleGenerativeAI(apiKey);
       let userMessageToProcess = message;
 
-      // Décodage STT Wolof si langue = Wolof
-      if (lang === 'wo') {
+      // Décodage STT Wolof si langue = Wolof et qu'il s'agit d'une entrée vocale
+      if (lang === 'wo' && isVoiceInput) {
         try {
           console.log("Tentative de décodage STT Wolof...");
           const decodeModel = genAI.getGenerativeModel({
@@ -757,28 +770,43 @@ app.post('/api/chatbot', validate(chatbotSchema), async (req, res) => {
         }
       }
 
-      // Cascade list of models to try
-      const modelsToTry = ['gemini-1.5-flash', 'gemini-flash-latest', 'gemini-2.5-flash'];
-      let lastError = null;
+      // Try only the main model with a fast timeout (1500ms) to ensure instantaneous response
+      const modelName = 'gemini-1.5-flash';
+      try {
+        console.log(`Tentative de réponse avec le modèle ${modelName}...`);
 
-      for (const modelName of modelsToTry) {
-        try {
-          console.log(`Tentative de réponse avec le modèle ${modelName}...`);
+        const systemInstructionText = lang === 'wo' 
+          ? `Vous êtes "Zahara", l'assistante virtuelle officielle de MUTUALIS DAKAR, le portail numérique régional de l'union régionale des mutuelles de santé communautaires de Dakar (URMSCD).
 
-          // genAI est déjà instancié plus haut ; on évite la redéclaration
-          const model = genAI.getGenerativeModel({
-            model: modelName,
-            systemInstruction: `Vous êtes "Zahara", l'assistante virtuelle officielle de MUTUALIS DAKAR, le portail numérique régional de l'union régionale des mutuelles de santé communautaires de Dakar (URMSCD).
+Votre personnalité :
+- Vous êtes une femme sénégalaise chaleureuse, bienveillante et professionnelle. Vous vous exprimez avec empathie et respect.
+- Vous utilisez des emojis de façon modérée.
+
+Vos règles linguistiques de réponse (OBLIGATOIRE WOLOF) :
+- Vous devez répondre UNIQUEMENT en WOLOF (Sénégal). Ne répondez pas en français ni en anglais.
+- Utilisez un Wolof naturel, fluide et poli.
+- Respectez l'orthographe officielle standardisée du Wolof (ex: écrivez "laaj" pour questionner, "tontu" pour répondre, "ngir" pour dans le but de, "bëgg" pour vouloir/aimer, "dimbali" ou "ndimbal" pour aider/aide, "faj" ou "faju" pour soigner, "fajukaay" pour établissement de santé, "fay" pour payer).
+- Évitez les orthographes phonétiques francisées (ne pas écrire "faye", "ouakh", "n'ga").
+- Utilisez des salutations sénégalaises polies et chaleureuses (ex: "Salamaalekum !", "Mingi lay nuyu !", "Nanga def !").
+- Répondez de façon concise (3-4 phrases maximum).
+- Ne mélangez pas le français avec le Wolof, sauf pour les termes techniques ou marques inévitables (ex: "carte CMU", "Wave", "Orange Money").
+- Terminez toujours en demandant si l'usager a d'autres questions : "Ndax am nga yeneen laaj yoo bëgg ma tontu ?" (Avez-vous d'autres questions auxquelles vous souhaitez que je réponde ?).
+
+Contenu informatif à intégrer :
+- Les tarifs : Formule Individuelle (4 500 FCFA / an, comprenant 1 000 FCFA pour la carte et 3 500 FCFA de cotisation) et Formule Familiale (1 000 FCFA pour la carte de l'adhérent principal + 3 500 FCFA de cotisation par membre). Parrainage Solidaire (4 500 FCFA / bénéficiaire) et CSU Élèves/Daaras (1 000 FCFA / élève).
+- Les paiements mobiles acceptés sont Orange Money et Wave.
+- Les structures conventionnées incluent : Hôpital Principal, Hôpital de Fann, Dalal Jamm, centres de santé et pharmacies agréées.
+- Le taux de prise en charge varie de 50% à 80% selon la formule choisie.`
+          : `Vous êtes "Zahara", l'assistante virtuelle officielle de MUTUALIS DAKAR, le portail numérique régional de l'union régionale des mutuelles de santé communautaires de Dakar (URMSCD).
 
 Votre personnalité :
 - Vous êtes une femme sénégalaise chaleureuse, bienveillante et professionnelle.
 - Vous vous exprimez avec empathie et respect.
-- Vous utilisez des emojis modérément pour rendre la conversation conviviale.
+- Vous utilisez des emojis modérément.
 
-Vos règles de réponse :
-- Répondre de manière concise (max 3-4 phrases), bienveillante et professionnelle.
+Vos règles de réponse (FRANÇAIS) :
+- Répondre de manière concise (max 3-4 phrases), bienveillante et professionnelle. Vous devez répondre uniquement en Français.
 - Aider les usagers à comprendre l'adhésion, le renouvellement de cotisation et la cartographie.
-- Langue de réponse requise : ${lang === 'wo' ? 'WOLOF (Sénégal) obligatoire. Vous devez répondre uniquement en Wolof. Ne répondez pas en français ni en anglais.' : 'FRANÇAIS obligatoire. Vous devez répondre uniquement en Français. Ne répondez pas en Wolof ni en anglais.'}
 - Expliquer les tarifs : Formule Individuelle (4 500 FCFA / an, comprenant 1 000 FCFA pour la carte et 3 500 FCFA de cotisation) et Formule Familiale (1 000 FCFA pour la carte de l'adhérent principal + 3 500 FCFA de cotisation par membre). Expliquer aussi le Parrainage Solidaire (4 500 FCFA / bénéficiaire parrainé) et le tarif subventionné CSU Élèves / Daaras (1 000 FCFA / élève).
 - Les paiements mobiles acceptés sont Orange Money et Wave.
 - Les structures conventionnées incluent : Hôpital Principal, Hôpital de Fann, Dalal Jamm, centres de santé départementaux et pharmacies agréées.
@@ -786,38 +814,48 @@ Vos règles de réponse :
 - La CMU (Couverture Maladie Universelle) est le programme national du Sénégal pour l'accès aux soins.
 - Le portail MUTUALIS DAKAR couvre les 14 départements de la région de Dakar.
 - Les mutuelles sont des organisations communautaires d'assurance santé.
-- Toujours terminer en demandant si l'usager a d'autres questions.`
-          });
+- Toujours terminer en demandant si l'usager a d'autres questions.`;
 
-          // Build chat history for context (ensuring strictly alternating roles and ending with 'model')
-          let chatHistory = [];
-          let expectedRole = 'user'; // Gemini starts with user
-          for (const h of (history || [])) {
-            const role = h.sender === 'user' ? 'user' : 'model';
-            if (role === expectedRole) {
-              chatHistory.push({
-                role,
-                parts: [{ text: h.text || '' }]
-              });
-              expectedRole = expectedRole === 'user' ? 'model' : 'user';
-            }
-          }
-          // If the history ends with user, pop it to let the incoming message be user
-          if (chatHistory.length > 0 && chatHistory[chatHistory.length - 1].role === 'user') {
-            chatHistory.pop();
-          }
+        const model = genAI.getGenerativeModel({
+          model: modelName,
+          systemInstruction: systemInstructionText
+        });
 
-          const chat = model.startChat({ history: chatHistory });
-          const result = await chat.sendMessage(userMessageToProcess);
-          const responseText = result.response.text();
-          console.log(`Succès avec le modèle ${modelName}`);
-          return res.json({ response: responseText, decodedText: (userMessageToProcess !== message) ? userMessageToProcess : undefined });
-        } catch (geminiErr) {
-          console.warn(`Échec avec le modèle ${modelName}:`, geminiErr.message);
-          lastError = geminiErr;
+        let chatHistory = [];
+        let expectedRole = 'user';
+        for (const h of (history || [])) {
+          const role = h.sender === 'user' ? 'user' : 'model';
+          if (role === expectedRole) {
+            chatHistory.push({
+              role,
+              parts: [{ text: h.text || '' }]
+            });
+            expectedRole = expectedRole === 'user' ? 'model' : 'user';
+          }
         }
+        if (chatHistory.length > 0 && chatHistory[chatHistory.length - 1].role === 'user') {
+          chatHistory.pop();
+        }
+
+        const chat = model.startChat({ history: chatHistory });
+        
+        // Fast timeout promise (1500ms)
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Gemini Timeout')), 1500)
+        );
+        
+        const result = await Promise.race([
+          chat.sendMessage(userMessageToProcess),
+          timeoutPromise
+        ]);
+        
+        const responseText = result.response.text();
+        console.log(`Succès avec le modèle ${modelName}`);
+        return res.json({ response: responseText, decodedText: (userMessageToProcess !== message) ? userMessageToProcess : undefined });
+      } catch (geminiErr) {
+        console.warn(`Échec ou timeout avec le modèle ${modelName}:`, geminiErr.message);
       }
-      console.warn('Tous les modèles Gemini ont échoué, utilisation du fallback local.');
+      console.warn('Utilisation instantanée du fallback local.');
     }
 
     // Fallback Local Simulation
@@ -826,15 +864,15 @@ Vos règles de réponse :
 
     if (lang === 'wo') {
       if (msg.includes('naka') || msg.includes('salaam') || msg.includes('mën') || msg.includes('bonjour') || msg.includes('def')) {
-        reply = "Nanga def ! Man la Zahara, assistante virtuelle bu MUTUALIS DAKAR. Nu ma la mënë dimbalé tay ? 😊";
+        reply = "Salamaalekum ! Nanga def ! Man la Zahara, assistante virtuelle bu MUTUALIS DAKAR. Naka la la mënee dimbali tey ? 😊";
       } else if (msg.includes('fay') || msg.includes('cotisation') || msg.includes('xaalis') || msg.includes('bopp') || msg.includes('ñata') || msg.includes('combien')) {
-        reply = "Waw, mën nga fay sa cotisation ci portal bi. Demal ci tab 'Fayal sa yéf / Renouvellement' walla 'Bokk bu bees / Nouvelle Adhésion'. Fay bi ci Orange Money walla Wave la. 💳";
+        reply = "Waaw, mën nga fay sa cotisation ci portal bi. Demal ci tab 'Bokk bu bees / Nouvelle adhésion' walla 'Fayal sa yeneen / Renouvellement'. Fay bi mën na am ci Orange Money walla Wave. 💳";
       } else if (msg.includes('mutuelle') || msg.includes('jege') || msg.includes('fan') || msg.includes('proche')) {
-        reply = "Am na nu mutuelle yu bari ci Ndakaaru (Médina, Pikine, Golf Sud...). Xoolal kàrt bi ci portal bi ngir xam bi la gënë jege. 📍";
+        reply = "Am na mutuelle yu bari ci Ndakaaru (Médina, Pikine, Golf Sud...). Xoolal kàrt bi ci portal bi ngir xam bi la gëna jege. 📍";
       } else if (msg.includes('fajj') || msg.includes('hôpital') || msg.includes('dispensaire') || msg.includes('clinique')) {
-        reply = "Hôpital Principal, Fann ak Dalal Jamm bokk nañu ci fajukaay yi nu agréer. Tiers-payant bi mën na la dimbalé ba 80% ci say frais. 🏥";
+        reply = "Hôpital Principal, Fann ak Dalal Jamm bokk nañu ci fajukaay yi nu agréer. Tiers-payant bi mën na la dimbali ba 80% ci say frais. 🏥";
       } else {
-        reply = "Jërëjëf ci sa message. Mën nga ma laaj ci cotisation, adhésion walla mutuelle yi nekk ci Ndakaaru. 🙏";
+        reply = "Jërëjëf ci sa mesaas. Mën nga ma laaj ci wallu cotisation, adhésion walla mutuelle yi nekk ci Ndakaaru. 🙏";
       }
     } else {
       // French
@@ -860,15 +898,83 @@ Vos règles de réponse :
   }
 });
 
-// 7b. TTS désactivé : le proxy vers Google Translate violait ses ToS.
-// La synthèse vocale est désormais assurée côté navigateur via l'API Web Speech
-// (SpeechSynthesis), native, gratuite et offline. Cet endpoint renvoie simplement
-// une indication pour les anciens clients qui l'appelleraient encore.
-app.get('/api/tts', (req, res) => {
-  res.status(410).json({
-    error: 'Endpoint TTS déprécié.',
-    message: 'Utilisez l\'API Web Speech (window.speechSynthesis) côté navigateur.'
-  });
+// 7b. Synthèse vocale (TTS) avec proxy pour ElevenLabs et Open-source (GalsenAI/xTTS)
+app.get('/api/tts', async (req, res) => {
+  try {
+    const { text, provider, lang } = req.query;
+    if (!text) {
+      return res.status(400).json({ error: 'Le paramètre text est requis.' });
+    }
+
+    if (!provider) {
+      return res.status(410).json({
+        error: 'Endpoint TTS déprécié.',
+        message: 'Spécifiez un provider (elevenlabs ou opensource) pour utiliser les voix neuronales.'
+      });
+    }
+
+    if (provider === 'elevenlabs') {
+      const apiKey = process.env.ELEVENLABS_API_KEY;
+      const voiceId = process.env.ELEVENLABS_VOICE_ID || 'EXAVITQu4vr4xnSDxMaL'; // Rachel/Bella
+      if (!apiKey) {
+        return res.status(400).json({ error: 'Clé API ElevenLabs non configurée.' });
+      }
+
+      console.log(`[ElevenLabs TTS] Synthèse pour: "${text.substring(0, 30)}..."`);
+      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+        method: 'POST',
+        headers: {
+          'xi-api-key': apiKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          text: text,
+          model_id: 'eleven_multilingual_v2',
+          voice_settings: {
+            stability: 0.5,
+            similarity_boost: 0.75
+          }
+        })
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`ElevenLabs error: ${response.status} - ${errText}`);
+      }
+
+      const buffer = await response.arrayBuffer();
+      res.setHeader('Content-Type', 'audio/mpeg');
+      return res.send(Buffer.from(buffer));
+    }
+
+    if (provider === 'opensource') {
+      const ttsUrl = process.env.OPEN_SOURCE_TTS_URL;
+      if (!ttsUrl) {
+        return res.status(400).json({ error: 'OPEN_SOURCE_TTS_URL non configuré.' });
+      }
+
+      console.log(`[OpenSource TTS] Envoi à ${ttsUrl} pour: "${text.substring(0, 30)}..."`);
+      const response = await fetch(ttsUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, language: lang || 'wo' })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Open-source TTS returned status ${response.status}`);
+      }
+
+      const buffer = await response.arrayBuffer();
+      // On s'adapte au type de retour de l'API open-source (souvent wav)
+      res.setHeader('Content-Type', response.headers.get('content-type') || 'audio/wav');
+      return res.send(Buffer.from(buffer));
+    }
+
+    res.status(400).json({ error: 'Moteur TTS non valide ou non spécifié.' });
+  } catch (err) {
+    console.error('Erreur synthétiseur vocale backend :', err.message);
+    res.status(500).json({ error: 'Erreur lors de la génération de la voix.' });
+  }
 });
 
 // 8. GET /api/beneficiaries (List all beneficiaries with optional query search)
@@ -1087,6 +1193,29 @@ app.get('/api/audit-logs', authenticateToken, requireRole('agent', 'admin'), asy
   }
 });
 
+// GET /api/coverage/regions (Get regional coverage stats)
+app.get('/api/coverage/regions', async (req, res) => {
+  try {
+    const result = await query('SELECT * FROM regional_coverage');
+    // Format numeric strings correctly
+    const formatted = result.rows.map(r => ({
+      id: r.id,
+      name: r.name,
+      x: parseInt(r.x),
+      y: parseInt(r.y),
+      couv: parseFloat(r.couv),
+      color: r.color,
+      mutuelles: parseInt(r.mutuelles),
+      assures: r.assures,
+      structures: parseInt(r.structures)
+    }));
+    res.json(formatted);
+  } catch (err) {
+    console.error('Erreur API regions:', err);
+    res.status(500).json({ error: 'Erreur lors de la récupération des données de couverture.' });
+  }
+});
+
 // 13. GET /api/coverage-items (Get medicines & care covered list)
 app.get('/api/coverage-items', async (req, res) => {
   try {
@@ -1294,11 +1423,76 @@ app.use(csuRoutes);
 // ROUTES ADDITIONNELLES (cotisations + rappels, espace partenaire, stats régionales)
 // ============================================================================
 app.use(additionalRoutes);
+app.use(dynamicRoutes);
 
 // ============================================================================
 // ROUTES AVANCÉES (fidélité, paiements OM/Wave, sync hors-ligne)
 // ============================================================================
 app.use(advancedRoutes);
+
+// ============================================================================
+// API PHARMACIES AGRÉÉES — Source : ARP (arp.sn)
+// ============================================================================
+const pharmaciesDataPath = require('path').join(__dirname, 'pharmacies_data.json');
+let pharmaciesCache = null;
+
+app.get('/api/pharmacies', (req, res) => {
+  try {
+    if (!pharmaciesCache) {
+      pharmaciesCache = require(pharmaciesDataPath);
+    }
+    let data = pharmaciesCache;
+    const { region, commune, q } = req.query;
+
+    if (region && region !== 'all') {
+      data = data.filter(p => p.region?.toLowerCase() === region.toLowerCase());
+    }
+    if (commune) {
+      data = data.filter(p => p.commune?.toLowerCase().includes(commune.toLowerCase()));
+    }
+    if (q) {
+      const query = q.toLowerCase();
+      data = data.filter(p =>
+        p.nom?.toLowerCase().includes(query) ||
+        p.adresse?.toLowerCase().includes(query) ||
+        p.commune?.toLowerCase().includes(query) ||
+        p.titulaire?.toLowerCase().includes(query)
+      );
+    }
+    res.json(data);
+  } catch (err) {
+    console.error('Erreur chargement pharmacies:', err.message);
+    res.status(500).json({ error: 'Données pharmacies non disponibles' });
+  }
+});
+
+app.get('/api/pharmacies/regions', (req, res) => {
+  try {
+    if (!pharmaciesCache) {
+      pharmaciesCache = require(pharmaciesDataPath);
+    }
+    const regions = [...new Set(pharmaciesCache.map(p => p.region).filter(Boolean))].sort();
+    res.json(regions);
+  } catch (err) {
+    res.status(500).json({ error: 'Données non disponibles' });
+  }
+});
+
+
+// Ensure indexes exist for better query performance under concurrency
+(async () => {
+  try {
+    await query('CREATE INDEX IF NOT EXISTS idx_beneficiaries_phone ON beneficiaries(phone)');
+    await query('CREATE INDEX IF NOT EXISTS idx_beneficiaries_cmu ON beneficiaries(cmu_number)');
+    await query('CREATE INDEX IF NOT EXISTS idx_family_members_beneficiary ON family_members(beneficiary_id)');
+    await query('CREATE INDEX IF NOT EXISTS idx_partner_users_structure ON partner_users(structure_id)');
+    await query('CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at DESC)');
+    console.log('Indexation PostgreSQL vérifiée avec succès.');
+  } catch (err) {
+    console.warn('Vérification des index PostgreSQL reportée (les tables ne sont peut-être pas encore initialisées) :', err.message);
+  }
+})();
+
 
 // Start the server
 if (process.env.NODE_ENV !== 'test') {

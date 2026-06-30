@@ -103,9 +103,9 @@ export default defineConfig({
             }
           },
           {
-            // Images et assets statiques : CacheFirst
+            // Images et assets statiques : StaleWhileRevalidate (mise à jour en tâche de fond)
             urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
-            handler: 'CacheFirst',
+            handler: 'StaleWhileRevalidate',
             options: {
               cacheName: 'images-cache',
               expiration: { maxEntries: 200, maxAgeSeconds: 604800 }

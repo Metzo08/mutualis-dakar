@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mutualis.sn/sitemap.xml

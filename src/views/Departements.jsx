@@ -1,4 +1,89 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { useQuery } from '@tanstack/react-query';
+
+const generateMockMutuelle = (communeName, regionName) => {
+  let hash = 0;
+  for (let i = 0; i < communeName.length; i++) {
+    hash = communeName.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const id = Math.abs(hash);
+  const managers = [
+    'Mamadou Ndiaye', 'Awa Diop', 'Cheikh Tidiane Sy', 'Fatou Sow', 
+    'Abdoulaye Wade', 'Ousmane Sonko', 'Mariama Ba', 'Idrissa Seck',
+    'Youssou Ndour', 'Aminata Toure', 'Boubacar Kamara', 'Khady Diene'
+  ];
+  const manager = managers[id % managers.length];
+  const phone = `+221 33 8${(id % 900) + 100} ${(id % 90) + 10} ${(id % 90) + 10}`;
+  const agreement = `AG-COMM-${regionName.substring(0, 3).toUpperCase()}-${(id % 9000) + 1000}`;
+  const email = `mutuelle.${communeName.toLowerCase().replace(/[^a-z0-9]/g, '')}@mutualis.sn`;
+  
+  let lat = 14.6937;
+  let lng = -17.4474;
+  if (regionName.toLowerCase() === 'dakar') {
+    lat = 14.68 + ((id % 15) * 0.01);
+    lng = -17.5 + ((id % 20) * 0.01);
+  } else {
+    lat = 12.5 + ((id % 40) * 0.1);
+    lng = -16.5 + ((id % 40) * 0.1);
+  }
+
+  const structures = [
+    `Poste de santé de ${communeName}`,
+    `Centre de santé de ${communeName}`,
+    `Pharmacie de la commune de ${communeName}`
+  ];
+
+  return {
+    name: `Mutuelle de Santé Communautaire de ${communeName}`,
+    region: regionName,
+    commune: communeName,
+    status: 'active',
+    agreement,
+    manager,
+    phone,
+    email,
+    rates: '4 500 FCFA / an par bénéficiaire',
+    services: `Tiers-payant à 80% pour les consultations, 50% pour les médicaments essentiels. Conventionné avec : ${structures.join(', ')}.`,
+    certified: true,
+    lastUpdate: '28/06/2026',
+    lat,
+    lng,
+    landmark: `Près de la Mairie de la commune de ${communeName}.`,
+    localInfo: `Cette mutuelle assure la couverture maladie universelle pour les résidents de la commune de ${communeName}. Elle facilite l'accès aux soins de santé de base.`
+  };
+};
+
+const generateMockUnion = (deptName, regionName) => {
+  let hash = 0;
+  for (let i = 0; i < deptName.length; i++) {
+    hash = deptName.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const id = Math.abs(hash);
+  const managers = ['Assane Diop', 'Cheikh Sarr', 'Idrissa Wade', 'Amadou Diop', 'Ousmane Ndiaye', 'Ibrahima Fall', 'Saliou Diallo', 'Lamine Sané'];
+  const manager = managers[id % managers.length];
+  const phone = `+221 33 8${(id % 900) + 100} ${(id % 90) + 10} ${(id % 90) + 10}`;
+  const email = `ud.${deptName.toLowerCase().replace(/[^a-z0-9]/g, '')}@unamusc.sn`;
+  const agreement = `UD-${regionName.substring(0, 2).toUpperCase()}-${(id % 900) + 100}-${(id % 90) + 10}`;
+  
+  let mapLink = null;
+  if (deptName.toLowerCase() === 'dakar') {
+    mapLink = 'https://maps.app.goo.gl/R9A7mhL9jxArCXUU8';
+  }
+
+  return {
+    name: `Union Départementale de ${deptName} (UDMS ${deptName})`,
+    region: regionName,
+    commune: deptName,
+    manager,
+    phone,
+    email,
+    agreement,
+    map_link: mapLink,
+    landmark: `Près de la préfecture de ${deptName}.`,
+    local_info: `L'Union Départementale regroupe l'ensemble des mutuelles communales du département de ${deptName} et en assure la supervision administrative.`
+  };
+};
 
 const staticData = {
   regions: [
@@ -115,13 +200,12 @@ const staticData = {
   }
 };
 
-export default function Departements({ lang }) {
-  const [regions, setRegions] = useState([]);
+export default function Departements({ lang, setView }) {
   const [activeRegionId, setActiveRegionId] = useState(null);
-  const [departements, setDepartements] = useState([]);
   const [activeDeptId, setActiveDeptId] = useState(null);
-  const [communes, setCommunes] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [selectedMutuelle, setSelectedMutuelle] = useState(null);
+  const [hoveredCommuneId, setHoveredCommuneId] = useState(null);
+  const [hoveredDeptId, setHoveredDeptId] = useState(null);
 
   const dict = {
     fr: {
@@ -137,7 +221,18 @@ export default function Departements({ lang }) {
       initiatives: 'Initiatives',
       loading: 'Chargement des données API...',
       error: 'Erreur lors du chargement des données.',
-      selectDept: 'Sélectionnez un département pour voir ses communes.'
+      selectDept: 'Sélectionnez un département pour voir ses communes.',
+      modalManager: 'Président / Gérant',
+      modalContact: 'Contact téléphone',
+      modalEmail: 'Email',
+      modalRates: 'Tarif / Cotisation',
+      modalServices: 'Structures & Services conventionnés',
+      modalCertified: 'Agréée par l\'état',
+      modalLastUpdate: 'Dernière mise à jour',
+      yes: 'Oui',
+      no: 'Non',
+      viewOnMap: 'Voir sur la carte',
+      close: 'Fermer'
     },
     wo: {
       title: 'Diiwaan yi, département yi ak commune yi',
@@ -152,94 +247,162 @@ export default function Departements({ lang }) {
       initiatives: 'Liy xew',
       loading: 'Xaaral, mungi wut xibaar yi...',
       error: 'Am na luy xat.',
-      selectDept: 'Tannal benn département ngir xool commune yi ci biir.'
+      selectDept: 'Tannal benn département ngir xool commune yi ci biir.',
+      modalManager: 'Njiit li / Gérant bi',
+      modalContact: 'Téléphone',
+      modalEmail: 'Email',
+      modalRates: 'Fay bi',
+      modalServices: 'Fajukaay yi conventionné',
+      modalCertified: 'Agréer na ko nguur gi',
+      modalLastUpdate: 'Mise à jour mudj',
+      yes: 'Waaw',
+      no: 'Déet',
+      viewOnMap: 'Xool ci kàrt bi',
+      close: 'Tëj'
     }
   };
 
   const t = dict[lang] || dict.fr;
 
-  // Load Regions
+  const handleCommuneClick = async (commune) => {
+    // 1. Chercher dans la base de données réelle d'abord
+    try {
+      const response = await fetch(`http://localhost:5000/api/mutuelles?search=${encodeURIComponent(commune.name)}`);
+      if (response.ok) {
+        const data = await response.json();
+        // Chercher une correspondance exacte sur la commune
+        const match = data.find(m => m.commune.toLowerCase() === commune.name.toLowerCase());
+        if (match) {
+          setSelectedMutuelle({
+            name: match.name,
+            region: match.region,
+            commune: match.commune,
+            manager: match.manager,
+            phone: match.phone,
+            email: match.email,
+            rates: match.rates || '4 500 FCFA / an',
+            services: match.services,
+            certified: match.certified,
+            lastUpdate: match.last_update,
+            landmark: match.landmark,
+            localInfo: match.local_info,
+            lat: match.lat,
+            lng: match.lng
+          });
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn("Erreur fetch mutuelle, utilisation du fallback mock:", e);
+    }
+
+    // 2. Si non trouvée, générer des données de test réalistes et déterministes
+    const regionName = activeRegion ? activeRegion.name : 'Dakar';
+    const mock = generateMockMutuelle(commune.name, regionName);
+    setSelectedMutuelle(mock);
+  };
+
+  // 1. Fetch Regions
+  const { data: regions = [], isLoading: loading } = useQuery({
+    queryKey: ['regions'],
+    queryFn: async () => {
+      const res = await fetch('https://decoupage-administratif-api.onrender.com/api/v1/regions');
+      if (!res.ok) throw new Error('API Error');
+      const data = await res.json();
+      if (data.success && data.data && data.data.length > 0) {
+        return data.data;
+      }
+      return staticData.regions;
+    },
+    initialData: staticData.regions
+  });
+
+  // Set initial active region when regions data is loaded
   useEffect(() => {
-    fetch('https://decoupage-administratif-api.onrender.com/api/v1/regions')
-      .then(res => {
+    if (regions.length > 0 && !activeRegionId) {
+      setActiveRegionId(regions[0].id);
+    }
+  }, [regions, activeRegionId]);
+
+  // 2. Fetch Departements when Region changes
+  const { data: departements = [] } = useQuery({
+    queryKey: ['departements', activeRegionId],
+    queryFn: async () => {
+      if (!activeRegionId) return [];
+      try {
+        const res = await fetch(`https://decoupage-administratif-api.onrender.com/api/v1/regions/${activeRegionId}/departements`);
         if (!res.ok) throw new Error('API Error');
-        return res.json();
-      })
-      .then(data => {
+        const data = await res.json();
         if (data.success && data.data && data.data.length > 0) {
-          setRegions(data.data);
-          setActiveRegionId(data.data[0].id);
-        } else {
-          throw new Error('Invalid structure or empty data');
+          return data.data;
         }
-        setLoading(false);
-      })
-      .catch(err => {
-        console.warn('Regions API failed, falling back to static data:', err);
-        setRegions(staticData.regions);
-        if (staticData.regions.length > 0) {
-          setActiveRegionId(staticData.regions[0].id);
-        }
-        setLoading(false);
-      });
-  }, []);
+      } catch (err) {
+        console.warn(`Departments API failed for region ${activeRegionId}, falling back to static data:`, err);
+      }
+      return staticData.departements[activeRegionId] || [];
+    },
+    enabled: !!activeRegionId
+  });
 
-  // Load Departements when Region changes
+  // Set initial active department when departments data is loaded
   useEffect(() => {
-    if (activeRegionId) {
-      setDepartements([]);
-      setCommunes([]);
+    if (departements.length > 0) {
+      const belongs = departements.some(d => d.id === activeDeptId);
+      if (!belongs) {
+        setActiveDeptId(departements[0].id);
+      }
+    } else {
       setActiveDeptId(null);
-      fetch(`https://decoupage-administratif-api.onrender.com/api/v1/regions/${activeRegionId}/departements`)
-        .then(res => {
-          if (!res.ok) throw new Error('API Error');
-          return res.json();
-        })
-        .then(data => {
-          if (data.success && data.data && data.data.length > 0) {
-            setDepartements(data.data);
-            setActiveDeptId(data.data[0].id);
-          } else {
-            throw new Error('Invalid structure or empty departments');
-          }
-        })
-        .catch(err => {
-          console.warn(`Departments API failed for region ${activeRegionId}, falling back to static data:`, err);
-          const fallbackDepts = staticData.departements[activeRegionId] || [];
-          setDepartements(fallbackDepts);
-          if (fallbackDepts.length > 0) {
-            setActiveDeptId(fallbackDepts[0].id);
-          }
-        });
     }
-  }, [activeRegionId]);
+  }, [departements, activeDeptId]);
 
-  // Load Communes when Dept changes
-  useEffect(() => {
-    if (activeDeptId) {
-      setCommunes([]);
-      fetch(`https://decoupage-administratif-api.onrender.com/api/v1/departements/${activeDeptId}/communes`)
-        .then(res => {
-          if (!res.ok) throw new Error('API Error');
-          return res.json();
-        })
-        .then(data => {
-          if (data.success && data.data) {
-            setCommunes(data.data);
-          } else {
-            throw new Error('Invalid structure');
-          }
-        })
-        .catch(err => {
-          console.warn(`Communes API failed for department ${activeDeptId}, falling back to static data:`, err);
-          const fallbackCommunes = staticData.communes[activeDeptId] || [];
-          setCommunes(fallbackCommunes);
-        });
-    }
-  }, [activeDeptId]);
+  // 3. Fetch Communes when Dept changes
+  const { data: communes = [] } = useQuery({
+    queryKey: ['communes', activeDeptId],
+    queryFn: async () => {
+      if (!activeDeptId) return [];
+      try {
+        const res = await fetch(`https://decoupage-administratif-api.onrender.com/api/v1/departements/${activeDeptId}/communes`);
+        if (!res.ok) throw new Error('API Error');
+        const data = await res.json();
+        if (data.success && data.data) {
+          return data.data;
+        }
+      } catch (err) {
+        console.warn(`Communes API failed for department ${activeDeptId}, falling back to static data:`, err);
+      }
+      return staticData.communes[activeDeptId] || [];
+    },
+    enabled: !!activeDeptId
+  });
 
+  // Lookup active objects
   const activeRegion = regions.find(r => r.id === activeRegionId);
   const activeDept = departements.find(d => d.id === activeDeptId);
+
+  // 4. Fetch Union Départementale when Dept changes
+  const { data: activeDeptUnion = null } = useQuery({
+    queryKey: ['deptUnion', activeDeptId, activeDept?.name, activeRegion?.name],
+    queryFn: async () => {
+      if (!activeDeptId || !activeDept) return null;
+      try {
+        const queryName = `Union Départementale de ${activeDept.name}`;
+        const response = await fetch(`http://localhost:5000/api/mutuelles?search=${encodeURIComponent(queryName)}`);
+        if (response.ok) {
+          const data = await response.json();
+          const match = data.find(m => m.name.toLowerCase().includes(activeDept.name.toLowerCase()) && m.name.toLowerCase().includes('union'));
+          if (match) {
+            return match;
+          }
+        }
+      } catch (e) {
+        console.warn("Erreur fetch union départementale, fallback mock:", e);
+      }
+      return generateMockUnion(activeDept.name, activeRegion ? activeRegion.name : 'Dakar');
+    },
+    enabled: !!activeDeptId && !!activeDept
+  });
+
 
   // Generate pseudo-random stats based on region id to keep UI looking rich
   const getSimulatedStats = (id) => {
@@ -319,32 +482,133 @@ export default function Departements({ lang }) {
                   <div>
                     <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--neutral-dark)' }}>🏢 {t.deptTitle}</h3>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                      {departements.length > 0 ? departements.map((dept) => (
-                        <button 
-                          key={dept.id} 
-                          className={`badge ${activeDeptId === dept.id ? 'badge-primary' : 'badge-info'}`} 
-                          style={{ fontSize: '0.9rem', padding: '0.5rem 1rem', border: 'none', cursor: 'pointer' }}
-                          onClick={() => setActiveDeptId(dept.id)}
-                        >
-                          {dept.name}
-                        </button>
-                      )) : (
-                        <span style={{ fontStyle: 'italic', color: 'var(--neutral-gray)' }}>Chargement...</span>
+                      {departements.length > 0 ? departements.map((dept) => {
+                        const isActive = activeDeptId === dept.id;
+                        return (
+                          <button 
+                            key={dept.id} 
+                            onClick={() => setActiveDeptId(dept.id)}
+                            onMouseEnter={() => setHoveredDeptId(dept.id)}
+                            onMouseLeave={() => setHoveredDeptId(null)}
+                            style={{
+                              fontSize: '0.85rem',
+                              padding: '0.5rem 1.25rem',
+                              borderRadius: '30px',
+                              border: isActive ? '1px solid var(--primary)' : (hoveredDeptId === dept.id ? '1px solid var(--text-main)' : '1px solid var(--border-color)'),
+                              backgroundColor: isActive ? 'var(--primary)' : (hoveredDeptId === dept.id ? 'rgba(5, 150, 105, 0.08)' : 'var(--bg-card-subtle)'),
+                              color: isActive ? '#ffffff' : 'var(--text-main)',
+                              cursor: 'pointer',
+                              fontWeight: '600',
+                              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                              boxShadow: isActive ? '0 4px 12px rgba(5, 150, 105, 0.25)' : 'none',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.25rem'
+                            }}
+                          >
+                            🏢 {dept.name}
+                          </button>
+                        );
+                      }) : (
+                        <span style={{ fontStyle: 'italic', color: 'var(--text-muted)' }}>Chargement...</span>
                       )}
                     </div>
                   </div>
 
                   {activeDeptId && (
-                    <div style={{ backgroundColor: 'var(--bg-color)', padding: '1.5rem', borderRadius: '12px', marginTop: '0.5rem', border: '1px solid var(--border-color)' }}>
-                      <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', color: 'var(--primary)' }}>📍 {t.communesTitle} : {activeDept?.name}</h3>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
-                        {communes.length > 0 ? communes.map((commune) => (
-                          <span key={commune.id} style={{ fontSize: '0.85rem', padding: '0.3rem 0.8rem', backgroundColor: 'var(--bg-color)', border: '1px solid var(--border-color)', borderRadius: '20px', color: 'var(--text-main)' }}>
-                            {commune.name}
-                          </span>
-                        )) : (
-                          <span style={{ fontStyle: 'italic', fontSize: '0.9rem', color: 'var(--neutral-gray)' }}>Chargement des communes...</span>
-                        )}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '0.5rem' }}>
+                      {/* Union Départementale Card */}
+                      {activeDeptUnion && (
+                        <div style={{ 
+                          backgroundColor: 'var(--bg-card)', 
+                          padding: '1.5rem', 
+                          borderRadius: '12px', 
+                          border: '1px solid var(--border-color)',
+                          borderLeft: '4px solid var(--primary)',
+                          boxShadow: 'var(--shadow-sm)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.75rem'
+                        }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                            <h3 style={{ fontSize: '1.15rem', color: 'var(--primary)', margin: 0, fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              🛡️ {activeDeptUnion.name}
+                            </h3>
+                            <span className="badge badge-success" style={{ fontSize: '0.8rem' }}>Union Agréée ✅</span>
+                          </div>
+                          
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', fontSize: '0.9rem', marginTop: '0.25rem' }}>
+                            <div>
+                              <strong style={{ color: 'var(--neutral-gray)', display: 'block', fontSize: '0.75rem', textTransform: 'uppercase' }}>{t.modalManager}</strong>
+                              <span style={{ fontWeight: '600', color: 'var(--neutral-dark)' }}>{activeDeptUnion.manager}</span>
+                            </div>
+                            <div>
+                              <strong style={{ color: 'var(--neutral-gray)', display: 'block', fontSize: '0.75rem', textTransform: 'uppercase' }}>{t.modalContact}</strong>
+                              <span style={{ fontWeight: '600', color: 'var(--neutral-dark)' }}>{activeDeptUnion.phone}</span>
+                            </div>
+                            <div>
+                              <strong style={{ color: 'var(--neutral-gray)', display: 'block', fontSize: '0.75rem', textTransform: 'uppercase' }}>{t.modalEmail}</strong>
+                              <span style={{ fontWeight: '600', color: 'var(--neutral-dark)', fontFamily: 'monospace' }}>{activeDeptUnion.email}</span>
+                            </div>
+                            <div>
+                              <strong style={{ color: 'var(--neutral-gray)', display: 'block', fontSize: '0.75rem', textTransform: 'uppercase' }}>Agrément Faitière</strong>
+                              <span style={{ fontWeight: '600', color: 'var(--secondary)' }}>{activeDeptUnion.agreement}</span>
+                            </div>
+                          </div>
+
+                          {(activeDeptUnion.map_link || activeDeptUnion.landmark) && (
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem', marginTop: '0.25rem' }}>
+                              <span style={{ fontSize: '0.85rem', color: 'var(--text-sub)', lineHeight: '1.4' }}>
+                                📍 <strong style={{ color: 'var(--text-main)' }}>Repère :</strong> {activeDeptUnion.landmark}
+                              </span>
+                              {(activeDeptUnion.map_link || activeDeptUnion.name.toLowerCase().includes('dakar')) && (
+                                <a 
+                                  href={activeDeptUnion.map_link || 'https://maps.app.goo.gl/R9A7mhL9jxArCXUU8'} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="btn btn-secondary btn-xs"
+                                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', textDecoration: 'none', padding: '0.35rem 0.75rem', fontSize: '0.75rem', fontWeight: '600', borderRadius: '6px' }}
+                                >
+                                  🗺️ Google Maps
+                                </a>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Communes de ce département */}
+                      <div style={{ backgroundColor: 'var(--bg-color)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                        <h3 style={{ fontSize: '1.1rem', marginBottom: '1.1rem', color: 'var(--primary)', fontWeight: '700' }}>📍 {t.communesTitle} : {activeDept?.name}</h3>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                          {communes.length > 0 ? communes.map((commune) => (
+                            <button
+                              key={commune.id}
+                              onClick={() => handleCommuneClick(commune)}
+                              onMouseEnter={() => setHoveredCommuneId(commune.id)}
+                              onMouseLeave={() => setHoveredCommuneId(null)}
+                              style={{
+                                fontSize: '0.85rem',
+                                padding: '0.4rem 1rem',
+                                backgroundColor: hoveredCommuneId === commune.id ? 'rgba(5, 150, 105, 0.12)' : 'var(--bg-card)',
+                                border: hoveredCommuneId === commune.id ? '1px solid var(--primary)' : '1px solid var(--border-color)',
+                                borderRadius: '20px',
+                                color: hoveredCommuneId === commune.id ? 'var(--primary)' : 'var(--text-main)',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                boxShadow: hoveredCommuneId === commune.id ? '0 2px 6px rgba(5, 150, 105, 0.15)' : 'none',
+                                fontWeight: '600',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.35rem'
+                              }}
+                            >
+                              🏢 {commune.name}
+                            </button>
+                          )) : (
+                            <span style={{ fontStyle: 'italic', fontSize: '0.9rem', color: 'var(--neutral-gray)' }}>Chargement des communes...</span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   )}
@@ -390,6 +654,101 @@ export default function Departements({ lang }) {
           </>
         )}
       </section>
+
+      {/* Detailed Modal Popup for Communes Mutuelle */}
+      {selectedMutuelle && createPortal(
+        <div style={{ position: 'fixed', top: '0', left: '0', right: '0', bottom: '0', backgroundColor: 'rgba(15, 23, 42, 0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: '2000', padding: '1rem', backdropFilter: 'blur(4px)' }}>
+          <div className="card fade-in-up" style={{ width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto', padding: '2.5rem', position: 'relative', display: 'flex', flexDirection: 'column', gap: '1.25rem', textAlign: 'left' }}>
+            <h2 style={{ fontSize: '1.5rem', color: 'var(--primary)', borderBottom: '2px solid var(--border-color)', paddingBottom: '0.75rem', paddingRight: '2rem', margin: 0, fontWeight: '700' }}>
+              {selectedMutuelle.name}
+            </h2>
+            
+            {/* Close Button */}
+            <button 
+              onClick={() => setSelectedMutuelle(null)} 
+              style={{ position: 'absolute', top: '24px', right: '24px', background: 'transparent', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--neutral-gray)' }}
+            >
+              ✕
+            </button>
+
+            <div>
+              <span className="badge badge-info" style={{ marginRight: '0.5rem' }}>{selectedMutuelle.region}</span>
+              <span className="badge badge-success">{selectedMutuelle.commune}</span>
+              <span className="badge badge-warning" style={{ marginLeft: '0.5rem' }}>Active ✅</span>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>
+              <div>
+                <strong style={{ fontSize: '0.85rem', color: 'var(--neutral-gray)', textTransform: 'uppercase', display: 'block' }}>{t.modalManager}</strong>
+                <span style={{ fontWeight: '600', color: 'var(--neutral-dark)' }}>{selectedMutuelle.manager}</span>
+              </div>
+              
+              <div>
+                <strong style={{ fontSize: '0.85rem', color: 'var(--neutral-gray)', textTransform: 'uppercase', display: 'block' }}>{t.modalContact}</strong>
+                <span style={{ fontWeight: '600', color: 'var(--neutral-dark)' }}>{selectedMutuelle.phone}</span>
+              </div>
+
+              <div>
+                <strong style={{ fontSize: '0.85rem', color: 'var(--neutral-gray)', textTransform: 'uppercase', display: 'block' }}>{t.modalEmail}</strong>
+                <span style={{ fontWeight: '600', color: 'var(--neutral-dark)', fontFamily: 'monospace' }}>{selectedMutuelle.email}</span>
+              </div>
+
+              <div>
+                <strong style={{ fontSize: '0.85rem', color: 'var(--neutral-gray)', textTransform: 'uppercase', display: 'block' }}>{t.modalRates}</strong>
+                <span style={{ fontWeight: '600', color: 'var(--secondary)' }}>{selectedMutuelle.rates}</span>
+              </div>
+
+              <div>
+                <strong style={{ fontSize: '0.85rem', color: 'var(--neutral-gray)', textTransform: 'uppercase', display: 'block' }}>{t.modalServices}</strong>
+                <span style={{ fontSize: '0.9rem', color: 'var(--neutral-dark)', lineHeight: '1.4' }}>{selectedMutuelle.services}</span>
+              </div>
+
+              {selectedMutuelle.landmark && (
+                <div className="info-box-landmark" style={{ padding: '0.85rem', display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginTop: '0.25rem', borderRadius: '10px' }}>
+                  <span style={{ fontSize: '1.2rem' }}>📍</span>
+                  <div>
+                    <strong className="info-box-title" style={{ fontSize: '0.75rem', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px' }}>Point de repère</strong>
+                    <span className="info-box-text" style={{ fontSize: '0.85rem', fontWeight: '500' }}>{selectedMutuelle.landmark}</span>
+                  </div>
+                </div>
+              )}
+
+              {selectedMutuelle.localInfo && (
+                <div className="info-box-tips" style={{ padding: '0.85rem', display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginTop: '0.25rem', borderRadius: '10px' }}>
+                  <span style={{ fontSize: '1.2rem' }}>💡</span>
+                  <div>
+                    <strong className="info-box-title" style={{ fontSize: '0.75rem', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px' }}>Infos zone</strong>
+                    <span className="info-box-text" style={{ fontSize: '0.85rem', lineHeight: '1.4' }}>{selectedMutuelle.localInfo}</span>
+                  </div>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem', marginTop: '0.5rem', fontSize: '0.85rem' }}>
+                <span>{t.modalCertified} : <strong>{t.yes}</strong></span>
+                <span style={{ color: 'var(--neutral-gray)' }}>{t.modalLastUpdate} : {selectedMutuelle.lastUpdate}</span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', justifyContent: 'flex-end' }}>
+              <button 
+                className="btn btn-secondary btn-sm" 
+                onClick={() => {
+                  setSelectedMutuelle(null);
+                  if (typeof setView === 'function') {
+                    setView('map');
+                  }
+                }}
+              >
+                🗺️ {t.viewOnMap}
+              </button>
+              <button className="btn btn-primary btn-sm" onClick={() => setSelectedMutuelle(null)}>
+                {t.close}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

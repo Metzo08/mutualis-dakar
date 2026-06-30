@@ -130,6 +130,7 @@ const messageCreateSchema = z.object({
 const chatbotSchema = z.object({
   message: z.string().min(1, 'Message requis.').max(2000),
   lang: z.enum(['fr', 'wo']).optional().default('fr'),
+  isVoiceInput: z.boolean().optional().default(false),
   history: z
     .array(
       z.object({

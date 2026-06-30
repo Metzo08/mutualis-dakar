@@ -116,6 +116,9 @@ export default function Header({
     }).catch(() => {});
     localStorage.removeItem('cmu-token');
     localStorage.removeItem('cmu-refresh-token');
+    localStorage.removeItem('cmu-citizen-user');
+    localStorage.removeItem('cmu-agent-user');
+    localStorage.removeItem('cmu-portal-mode');
     cacheSet('citizenUser', null).catch(() => {});
     setCitizenUser(null);
     setAgentUser(null);
@@ -357,8 +360,8 @@ export default function Header({
           {t.directory}
         </button>
 
-        {/* Option 8: Departmental stats (Agent mode only) */}
-        {portalMode === 'agent' && agentUser && (
+        {/* Option 8: Departmental stats (Agent & Citizen modes) */}
+        {((portalMode === 'agent' && agentUser) || (portalMode === 'citizen' && citizenUser)) && (
           <button 
             className={`nav-item ${currentView === 'depts' ? 'active' : ''}`}
             onClick={() => navigateTo('depts')}
@@ -434,14 +437,16 @@ export default function Header({
           </button>
         )}
 
-        {/* Option 15: Espace partenaire (accessible à tous, connexion dédiée) */}
-        <button
-          className={`nav-item ${currentView === 'partner' ? 'active' : ''}`}
-          onClick={() => setView('partner')}
-        >
-          <span className="nav-icon">🏥</span>
-          {t.partner}
-        </button>
+        {/* Option 15: Espace partenaire (accessible aux agents/partenaires, pas aux citoyens) */}
+        {portalMode !== 'citizen' && (
+          <button
+            className={`nav-item ${currentView === 'partner' ? 'active' : ''}`}
+            onClick={() => setView('partner')}
+          >
+            <span className="nav-icon">🏥</span>
+            {t.partner}
+          </button>
+        )}
 
         {/* Option 16: Paiement en ligne (citoyen connecté) */}
         {citizenUser && (

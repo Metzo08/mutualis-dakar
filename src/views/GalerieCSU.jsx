@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 export default function GalerieCSU({ lang }) {
   const [filter, setFilter] = useState('all');
@@ -35,86 +36,78 @@ export default function GalerieCSU({ lang }) {
 
   const t = dict[lang] || dict.fr;
 
-  const galleryItems = [
+  const defaultGalleryItems = [
     {
       id: 1,
-      image: '/csu_sesame_real.png',
+      image: '/csu_claims_hero.png',
       category: 'programmes',
-      title: lang === 'fr' ? 'Plan Sésame - personnes âgées' : 'Plan Sésame - magg ñi',
-      description: lang === 'fr' 
-        ? 'Consultations, soins et médicaments gratuits octroyés au troisième âge (60 ans et plus) dans le cadre de l\'initiative de solidarité nationale.' 
-        : 'Fajj ak garab yu gratuit ngir mag ñi am 60 at walla lu ko ko raw ci bir Sénégal.',
-      location: 'Hôpital Fann, Dakar',
-      date: 'Mai 2026',
-      impact: lang === 'fr' ? '12 500+ aînés couverts' : '12 500+ magg ñi fajjoo',
-      tags: ['Sésame', 'Gratuité', 'Séniors']
+      title_fr: 'Distribution de cartes CMU à Dakar Plateau',
+      title_wo: 'Joxé kàrt CMU ci Dakar Plateau',
+      description_fr: 'Remise officielle des cartes biométriques CMU aux familles parrainées par la mairie.',
+      description_wo: 'Joxé kàrt biométrique CMU ci ndimbalu mairie bi.',
+      location_fr: 'Dakar Plateau',
+      location_wo: 'Dakar Plateau',
+      date_fr: '15 Mai 2026',
+      date_wo: '15 Mai 2026',
+      impact_fr: '150 familles enrôlées',
+      impact_wo: '150 keur mbindu',
+      tags: ['Dakar', 'Enrôlement']
     },
     {
       id: 2,
-      image: '/csu_bsf_real.png',
-      category: 'communautaire',
-      title: lang === 'fr' ? 'Bourse de sécurité familiale (BSF)' : 'Mbindu BSF',
-      description: lang === 'fr' 
-        ? 'Campagne massive d\'enrôlement gratuit des ménages vulnérables bénéficiaires du programme national de Bourses de Sécurité Familiale.' 
-        : 'Duggalal njabot yu amul doole yi nekk ci përogaraam national bourses de sécurité familiale.',
-      location: 'Pikine, Dakar',
-      date: 'Avril 2026',
-      impact: lang === 'fr' ? '45 000+ familles affiliées' : '45 000+ njabot yu duggu',
-      tags: ['Social', 'Enrôlement', 'Solidarité']
+      image: '/csu_payments_hero.png',
+      category: 'cliniques',
+      title_fr: 'Conventionnement de la clinique Bel-Air',
+      title_wo: 'Convention Bel-Air',
+      description_fr: 'Signature du partenariat tiers-payant permettant le remboursement immédiat à 80% des soins.',
+      description_wo: 'Signature partenariat tiers-payant ngir fajj 80% gox bi.',
+      location_fr: 'Hann Bel-Air',
+      location_wo: 'Hann Bel-Air',
+      date_fr: '20 Avril 2026',
+      date_wo: '20 Avril 2026',
+      impact_fr: 'Accès direct pour 5 000 assurés',
+      impact_wo: 'Fajj 5 000 assuré yi',
+      tags: ['Tiers-payant', 'Bel-Air']
     },
     {
       id: 3,
-      image: '/csu_dialysis_real.png',
-      category: 'cliniques',
-      title: lang === 'fr' ? 'Gratuité des séances de dialyse' : 'Dialyse bu gratuit',
-      description: lang === 'fr' 
-        ? 'Prise en charge intégrale des séances de dialyse pour les malades d\'insuffisance rénale dans les centres publics conventionnés.' 
-        : 'Fajj dialyse bi amul benn fay ngir ñi yore insuffisance rénale ci hôpitaux publics yi.',
-      location: 'Hôpital Général Idrissa Pouye de Grand Yoff',
-      date: 'Juin 2026',
-      impact: lang === 'fr' ? '1 800+ patients réguliers' : '1 800+ patients ñi fajjoo',
-      tags: ['Dialyse', 'Néphrologie', 'Haut niveau']
-    },
-    {
-      id: 4,
-      image: '/csu_kids_real.png',
-      category: 'programmes',
-      title: lang === 'fr' ? 'Soins gratuits pour les moins de 5 ans' : 'Fajj xale yu amul 5 at',
-      description: lang === 'fr' 
-        ? 'Politique de gratuité des soins de santé essentiels pour tous les enfants de moins de cinq ans dans les postes et centres de santé.' 
-        : 'Politique de gratuité ngir xale yi amul 5 at ci consultation, vaccin ak fajj.',
-      location: 'Districts sanitaires de Guédiawaye',
-      date: 'Mars 2026',
-      impact: lang === 'fr' ? '30 000+ consultations pédiatriques' : '30 000+ consultation xale',
-      tags: ['Pédiatrie', 'Enfance', 'Vaccins']
-    },
-    {
-      id: 5,
-      image: '/csu_students_real.png',
-      category: 'programmes',
-      title: lang === 'fr' ? 'CSU élèves & daaras' : 'CSU élèves ak daara',
-      description: lang === 'fr' 
-        ? 'Campagne de sensibilisation et d\'affiliation collective des élèves et des talibés des Daaras de la région de Dakar sous l\'égide du Ministère.' 
-        : 'Mbindu élèves yi ak talibé daara yi ci Dakar ngir ñu am assurance wér-gi-yaram.',
-      location: 'Keur Massar, Dakar',
-      date: 'Février 2026',
-      impact: lang === 'fr' ? '18 écoles & 24 Daaras enrôlés' : '18 écoles ak 24 Daara yu duggu',
-      tags: ['Éducation', 'Daara', 'Jeunesse']
-    },
-    {
-      id: 6,
-      image: '/inst_hero_real.png',
+      image: '/csu_dashboard_hero.png',
       category: 'communautaire',
-      title: lang === 'fr' ? 'Inauguration des unions départementales' : 'Ubbi bureau CSU',
-      description: lang === 'fr' 
-        ? 'Cérémonie officielle d\'ouverture des bureaux départementaux de la CSU pour rapprocher l\'administration sanitaire des populations.' 
-        : 'Ubbi bureau départemental cmu ngir diapalé askan wi ci séni mbindu.',
-      location: 'Dakar Plateau',
-      date: 'Janvier 2026',
-      impact: lang === 'fr' ? '4 départements opérationnels' : '4 département yu ubbi',
-      tags: ['Institutionnel', 'Dakar', 'Administration']
+      title_fr: 'Sensibilisation sur la santé numérique',
+      title_wo: 'Leral santé numérique',
+      description_fr: 'Atelier de formation à la Médina pour l\'utilisation de l\'application de paiement Wave/OM.',
+      description_wo: 'Atelier formation Médina ngir ubbil askan wi fay bi ci mobile.',
+      location_fr: 'Médina',
+      location_wo: 'Médina',
+      date_fr: '10 Juin 2026',
+      date_wo: '10 Juin 2026',
+      impact_fr: '300 participants formés',
+      impact_wo: '300 bokk ci formation bi',
+      tags: ['Digital', 'Formation']
     }
   ];
+
+  const { data: galleryRaw = [] } = useQuery({
+    queryKey: ['galleryList'],
+    queryFn: async () => {
+      const res = await fetch('http://localhost:5000/api/gallery');
+      if (!res.ok) throw new Error('API Error');
+      return res.json();
+    }
+  });
+
+  const gallerySource = galleryRaw && galleryRaw.length > 0 ? galleryRaw : defaultGalleryItems;
+  const galleryItems = gallerySource.map(item => ({
+    id: item.id,
+    image: item.image,
+    category: item.category,
+    title: lang === 'fr' ? item.title_fr : item.title_wo,
+    description: lang === 'fr' ? item.description_fr : item.description_wo,
+    location: lang === 'fr' ? item.location_fr : item.location_wo,
+    date: lang === 'fr' ? item.date_fr : item.date_wo,
+    impact: lang === 'fr' ? item.impact_fr : item.impact_wo,
+    tags: item.tags || []
+  }));
 
   const filteredItems = filter === 'all' 
     ? galleryItems 
@@ -192,7 +185,8 @@ export default function GalerieCSU({ lang }) {
             <div style={{ width: '100%', height: '200px', overflow: 'hidden', position: 'relative' }}>
               <img 
                 src={item.image} 
-                alt={item.title} 
+                alt={item.title}
+                onError={(e) => { e.target.onerror = null; e.target.src = '/csu_gallery_hero_real.png'; }}
                 style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
               <span className="badge badge-info" style={{ position: 'absolute', top: '10px', right: '10px', backdropFilter: 'blur(4px)', background: 'rgba(59, 130, 246, 0.85)', color: '#fff' }}>
@@ -249,7 +243,8 @@ export default function GalerieCSU({ lang }) {
               <div style={{ height: '100%', minHeight: '350px', position: 'relative' }}>
                 <img 
                   src={selectedItem.image} 
-                  alt={selectedItem.title} 
+                  alt={selectedItem.title}
+                  onError={(e) => { e.target.onerror = null; e.target.src = '/csu_gallery_hero_real.png'; }}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               </div>

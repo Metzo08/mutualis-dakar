@@ -126,6 +126,17 @@ export default function AgentDashboard({ lang, agentUser }) {
     ? Math.round((stats.beneficiaries.active / stats.beneficiaries.total) * 100)
     : 0;
 
+  const tooltipStyle = {
+    contentStyle: {
+      backgroundColor: 'var(--bg-card)',
+      borderColor: 'var(--border-color)',
+      borderRadius: '8px',
+      color: 'var(--text-main)'
+    },
+    itemStyle: { color: 'var(--text-main)' },
+    labelStyle: { color: 'var(--text-sub)' }
+  };
+
   return (
     <div className="dashboard-view fade-in-up">
       {/* Banner */}
@@ -174,7 +185,7 @@ export default function AgentDashboard({ lang, agentUser }) {
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
                 <XAxis dataKey="date" fontSize="0.7rem" />
                 <YAxis fontSize="0.7rem" allowDecimals={false} />
-                <Tooltip />
+                <Tooltip {...tooltipStyle} />
                 <Line type="monotone" dataKey="adhesions" stroke="#059669" strokeWidth={2} dot={{ r: 3 }} />
               </LineChart>
             </ResponsiveContainer>
@@ -187,10 +198,10 @@ export default function AgentDashboard({ lang, agentUser }) {
           {stats.byPackage && stats.byPackage.length > 0 ? (
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
-                <Pie data={stats.byPackage.map((p) => ({ name: p.package_type, value: parseInt(p.count) }))} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
+                 <Pie data={stats.byPackage.map((p) => ({ name: p.package_type, value: parseInt(p.count) }))} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
                   {stats.byPackage.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                 </Pie>
-                <Tooltip />
+                <Tooltip {...tooltipStyle} />
                 <Legend wrapperStyle={{ fontSize: '0.75rem' }} />
               </PieChart>
             </ResponsiveContainer>
@@ -198,15 +209,22 @@ export default function AgentDashboard({ lang, agentUser }) {
         </div>
 
         {/* Top 10 mutuelles */}
-        <div className="card" style={{ padding: '1.5rem' }}>
+         <div className="card" style={{ padding: '1.5rem' }}>
           <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '1rem' }}>🏆 {t.byMutuelle}</h3>
           {stats.byMutuelle && stats.byMutuelle.length > 0 ? (
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={stats.byMutuelle.map((m) => ({ name: m.mutuelle_name?.replace('Mutuelle de ', '') || '—', bénéficiaires: parseInt(m.count) }))} layout="vertical">
+            <ResponsiveContainer width="100%" height={400}>
+              <BarChart data={stats.byMutuelle.map((m) => {
+                let n = m.mutuelle_name || '';
+                n = n.replace('Mutuelle de ', '');
+                n = n.replace('Union Départementale de ', 'UD ');
+                n = n.replace('Union Departementale de ', 'UD ');
+                n = n.replace(/\(UDMS.*\)/, '');
+                return { name: n.trim() || '—', bénéficiaires: parseInt(m.count) };
+              })} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
                 <XAxis type="number" fontSize="0.7rem" allowDecimals={false} />
-                <YAxis type="category" dataKey="name" fontSize="0.7rem" width={100} />
-                <Tooltip />
+                <YAxis type="category" dataKey="name" fontSize="0.7rem" width={150} />
+                <Tooltip {...tooltipStyle} />
                 <Bar dataKey="bénéficiaires" fill="#3b82f6" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -218,11 +236,11 @@ export default function AgentDashboard({ lang, agentUser }) {
           <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '1rem' }}>📍 {t.byCommune}</h3>
           {stats.byCommune && stats.byCommune.filter((c) => c.commune).length > 0 ? (
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={stats.byCommune.filter((c) => c.commune).map((c) => ({ commune: c.commune, count: parseInt(c.count) }))}>
+               <BarChart data={stats.byCommune.filter((c) => c.commune).map((c) => ({ commune: c.commune, count: parseInt(c.count) }))}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
                 <XAxis dataKey="commune" fontSize="0.7rem" angle={-30} textAnchor="end" height={60} />
                 <YAxis fontSize="0.7rem" allowDecimals={false} />
-                <Tooltip />
+                <Tooltip {...tooltipStyle} />
                 <Bar dataKey="count" fill="#f59e0b" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
@@ -235,15 +253,29 @@ export default function AgentDashboard({ lang, agentUser }) {
         <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '1rem' }}>📋 {t.claimsByStatus}</h3>
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
           {stats.claims.byStatus && stats.claims.byStatus.length > 0 ? (
-            stats.claims.byStatus.map((s, i) => (
-              <div key={i} style={{
-                background: 'var(--bg-secondary)', padding: '1rem 1.5rem', borderRadius: '12px',
-                textAlign: 'center', minWidth: '120px'
-              }}>
-                <div style={{ fontSize: '1.5rem', fontWeight: '800', color: COLORS[i % COLORS.length] }}>{s.count}</div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'capitalize' }}>{s.status}</div>
-              </div>
-            ))
+            stats.claims.byStatus.map((s, i) => {
+              const statusLabel = lang === 'fr' ? {
+                pending: 'En attente',
+                approved: 'Approuvé',
+                paid: 'Payé',
+                rejected: 'Rejeté'
+              }[s.status.toLowerCase()] || s.status : {
+                pending: 'Xaar',
+                approved: 'Nangu',
+                paid: 'Fay',
+                rejected: 'Bagn'
+              }[s.status.toLowerCase()] || s.status;
+
+              return (
+                <div key={i} style={{
+                  background: 'var(--bg-secondary)', padding: '1rem 1.5rem', borderRadius: '12px',
+                  textAlign: 'center', minWidth: '120px'
+                }}>
+                  <div style={{ fontSize: '1.5rem', fontWeight: '800', color: COLORS[i % COLORS.length] }}>{s.count}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{statusLabel}</div>
+                </div>
+              );
+            })
           ) : <EmptyChart />}
         </div>
       </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Component } from 'react';
 import Header from './components/Header';
 import ChatbotWidget from './components/ChatbotWidget';
 import AudioReader from './components/AudioReader';
@@ -37,6 +37,43 @@ import { syncOutbox, outboxCount, cacheSet, cacheGet } from './utils/offline';
 import './index.css';
 import './styles/components.css';
 import './styles/views.css';
+
+class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("ErrorBoundary caught rendering exception:", error, errorInfo);
+    fetch('http://localhost:5000/api/log', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: error.message || 'Unknown render error', stack: error.stack || '' })
+    }).catch(() => {});
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="card text-center" style={{ padding: '3rem', margin: '2rem auto', maxWidth: '600px', borderLeft: '6px solid var(--danger)' }}>
+          <h2 style={{ color: 'var(--danger)', fontSize: '1.4rem', marginBottom: '1rem' }}>⚠️ Erreur d'affichage</h2>
+          <p style={{ fontSize: '0.95rem', color: 'var(--text-sub)', marginBottom: '1.5rem' }}>
+            Une erreur inattendue est survenue lors du rendu de cette section. L'incident a été automatiquement signalé à l'équipe technique.
+          </p>
+          <div style={{ textAlign: 'left', background: 'var(--card-bg-subtle)', padding: '1rem', borderRadius: '8px', overflowX: 'auto', fontSize: '0.8rem', fontFamily: 'monospace', color: 'var(--text-main)', border: '1px solid var(--border-color)', marginBottom: '1.5rem' }}>
+            {this.state.error?.toString()}
+          </div>
+          <button className="btn btn-primary btn-sm" onClick={() => window.location.reload()}>
+            Actualiser l'application
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 export default function App() {
   // Liste des vues valides (pour valider le hash URL)
@@ -198,34 +235,9 @@ export default function App() {
 
   // View Router with Authentication Guards
   const renderView = () => {
-    // Agent Authentication Guard
-    if (portalMode === 'agent' && !agentUser && ['home', 'beneficiaries', 'depts', 'audit-logs', 'complaints'].includes(view)) {
-      return (
-        <Login 
-          lang={lang} 
-          setView={setView} 
-          portalMode={portalMode} 
-          setPortalMode={setPortalMode}
-          setCitizenUser={setCitizenUser}
-          setAgentUser={setAgentUser}
-        />
-      );
-    }
-
-    switch (view) {
-      case 'home':
-        return (
-          <Home 
-            lang={lang} 
-            setView={setView} 
-            setViewTab={handleSetViewTab}
-            portalMode={portalMode} 
-            setPortalMode={setPortalMode}
-            citizenUser={citizenUser}
-            setCitizenUser={setCitizenUser}
-          />
-        );
-      case 'login':
+    const getActiveView = () => {
+      // Agent Authentication Guard
+      if (portalMode === 'agent' && !agentUser && ['home', 'beneficiaries', 'depts', 'audit-logs', 'complaints'].includes(view)) {
         return (
           <Login 
             lang={lang} 
@@ -236,131 +248,164 @@ export default function App() {
             setAgentUser={setAgentUser}
           />
         );
-      case 'beneficiaries':
-        return <Beneficiaries lang={lang} agentUser={agentUser} />;
-      case 'services':
-        return (
-          <ServicesEnLigne 
-            lang={lang} 
-            initialTab={servicesTab} 
-            initialPackage={servicesPackage} 
-            setView={setView}
-            setViewTab={handleSetViewTab}
-          />
-        );
-      case 'map':
-        return <Cartographie lang={lang} />;
-      case 'directory':
-        return <BaseNationale lang={lang} setView={setView} />;
-      case 'depts':
-        return <Departements lang={lang} />;
-      case 'programmes':
-        return <ProgrammesCSU lang={lang} setViewTab={handleSetViewTab} />;
-      case 'about':
-        return <Institutionnel lang={lang} />;
-      case 'medicaments':
-        return <Medicaments lang={lang} />;
-      case 'audit-logs':
-        return <AuditLogs lang={lang} />;
-      case 'galerie':
-        return <GalerieCSU lang={lang} />;
-      case 'infos-csu':
-        return <InfosCSU lang={lang} />;
-      case 'blog-experts':
-        return (
-          <BlogExperts 
-            lang={lang} 
-            portalMode={portalMode} 
-            agentUser={agentUser} 
-          />
-        );
-      case 'parrainage-solidaire':
-        return <ParrainageCSU lang={lang} />;
-      case 'partnership':
-        return (
-          <Partnership 
-            lang={lang} 
-            portalMode={portalMode} 
-            agentUser={agentUser} 
-          />
-        );
-      case 'verify':
-        return <VerifyCard lang={lang} />;
-      case 'dashboard':
-        return <AgentDashboard lang={lang} agentUser={agentUser} />;
-      case 'claims':
-        return (
-          <Claims
-            lang={lang}
-            portalMode={portalMode}
-            citizenUser={citizenUser}
-            agentUser={agentUser}
-          />
-        );
-      case 'notifications':
-        return (
-          <Notifications
-            lang={lang}
-            portalMode={portalMode}
-            agentUser={agentUser}
-          />
-        );
-      case 'cotisations':
-        return (
-          <Cotisations
-            lang={lang}
-            portalMode={portalMode}
-            citizenUser={citizenUser}
-            agentUser={agentUser}
-          />
-        );
-      case 'partner':
-        return <PartnerPortal lang={lang} setView={setView} />;
-      case 'regional-stats':
-        return <RegionalStats lang={lang} />;
-      case 'loyalty':
-        return (
-          <Loyalty
-            lang={lang}
-            citizenUser={citizenUser}
-            agentUser={agentUser}
-            portalMode={portalMode}
-          />
-        );
-      case 'payments':
-        return <Payments lang={lang} citizenUser={citizenUser} />;
-      case 'complaints':
-        return (
-          <Complaints 
-            lang={lang} 
-            portalMode={portalMode} 
-            citizenUser={citizenUser} 
-            agentUser={agentUser} 
-          />
-        );
-      case 'profile':
-        return (
-          <Profile
-            lang={lang}
-            portalMode={portalMode}
-            citizenUser={citizenUser}
-            agentUser={agentUser}
-            setView={setView}
-            setViewTab={handleSetViewTab}
-          />
-        );
-      default:
-        return (
-          <Home 
-            lang={lang} 
-            setView={setView} 
-            portalMode={portalMode} 
-            setPortalMode={setPortalMode}
-            citizenUser={citizenUser}
-            setCitizenUser={setCitizenUser}
-          />
-        );
-    }
+      }
+
+      switch (view) {
+        case 'home':
+          return (
+            <Home 
+              lang={lang} 
+              setView={setView} 
+              setViewTab={handleSetViewTab}
+              portalMode={portalMode} 
+              setPortalMode={setPortalMode}
+              citizenUser={citizenUser}
+              setCitizenUser={setCitizenUser}
+            />
+          );
+        case 'login':
+          return (
+            <Login 
+              lang={lang} 
+              setView={setView} 
+              portalMode={portalMode} 
+              setPortalMode={setPortalMode}
+              setCitizenUser={setCitizenUser}
+              setAgentUser={setAgentUser}
+            />
+          );
+        case 'beneficiaries':
+          return <Beneficiaries lang={lang} agentUser={agentUser} />;
+        case 'services':
+          return (
+            <ServicesEnLigne 
+              lang={lang} 
+              initialTab={servicesTab} 
+              initialPackage={servicesPackage} 
+              setView={setView}
+              setViewTab={handleSetViewTab}
+            />
+          );
+        case 'map':
+          return <Cartographie lang={lang} />;
+        case 'directory':
+          return <BaseNationale lang={lang} setView={setView} />;
+        case 'depts':
+          return <Departements lang={lang} />;
+        case 'programmes':
+          return <ProgrammesCSU lang={lang} setViewTab={handleSetViewTab} />;
+        case 'about':
+          return <Institutionnel lang={lang} />;
+        case 'medicaments':
+          return <Medicaments lang={lang} />;
+        case 'audit-logs':
+          return <AuditLogs lang={lang} />;
+        case 'galerie':
+          return <GalerieCSU lang={lang} />;
+        case 'infos-csu':
+          return <InfosCSU lang={lang} />;
+        case 'blog-experts':
+          return (
+            <BlogExperts 
+              lang={lang} 
+              portalMode={portalMode} 
+              agentUser={agentUser} 
+            />
+          );
+        case 'parrainage-solidaire':
+          return <ParrainageCSU lang={lang} />;
+        case 'partnership':
+          return (
+            <Partnership 
+              lang={lang} 
+              portalMode={portalMode} 
+              agentUser={agentUser} 
+            />
+          );
+        case 'verify':
+          return <VerifyCard lang={lang} />;
+        case 'dashboard':
+          return <AgentDashboard lang={lang} agentUser={agentUser} />;
+        case 'claims':
+          return (
+            <Claims
+              lang={lang}
+              portalMode={portalMode}
+              citizenUser={citizenUser}
+              agentUser={agentUser}
+            />
+          );
+        case 'notifications':
+          return (
+            <Notifications
+              lang={lang}
+              portalMode={portalMode}
+              agentUser={agentUser}
+            />
+          );
+        case 'cotisations':
+          return (
+            <Cotisations
+              lang={lang}
+              portalMode={portalMode}
+              citizenUser={citizenUser}
+              agentUser={agentUser}
+            />
+          );
+        case 'partner':
+          return <PartnerPortal lang={lang} setView={setView} />;
+        case 'regional-stats':
+          return <RegionalStats lang={lang} />;
+        case 'loyalty':
+          return (
+            <Loyalty
+              lang={lang}
+              citizenUser={citizenUser}
+              agentUser={agentUser}
+              portalMode={portalMode}
+            />
+          );
+        case 'payments':
+          return <Payments lang={lang} citizenUser={citizenUser} />;
+        case 'complaints':
+          return (
+            <Complaints 
+              lang={lang} 
+              portalMode={portalMode} 
+              citizenUser={citizenUser} 
+              agentUser={agentUser} 
+            />
+          );
+        case 'profile':
+          return (
+            <Profile
+              lang={lang}
+              portalMode={portalMode}
+              citizenUser={citizenUser}
+              agentUser={agentUser}
+              setView={setView}
+              setViewTab={handleSetViewTab}
+            />
+          );
+        default:
+          return (
+            <Home 
+              lang={lang} 
+              setView={setView} 
+              portalMode={portalMode} 
+              setPortalMode={setPortalMode}
+              citizenUser={citizenUser}
+              setCitizenUser={setCitizenUser}
+            />
+          );
+      }
+    };
+
+    return (
+      <ErrorBoundary key={view}>
+        {getActiveView()}
+      </ErrorBoundary>
+    );
   };
 
   return (

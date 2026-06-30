@@ -1,4 +1,5 @@
 import React from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 export default function Institutionnel({ lang }) {
   const dict = {
@@ -106,12 +107,20 @@ export default function Institutionnel({ lang }) {
     URL.revokeObjectURL(url);
   };
 
-  const members = [
-    { name: 'Birame Fall', role: lang === 'fr' ? 'Président de l\'URMSCD' : 'Njiitu Mbootaay bi', desc: lang === 'fr' ? 'Plus de 15 ans d\'expérience dans l\'économie sociale et solidaire.' : 'Am na 15 at ci wéru économie sociale.' },
-    { name: 'Ndèye Fatou Seye', role: lang === 'fr' ? 'Vice-Présidente' : 'Njiitu-Taat bi', desc: lang === 'fr' ? 'Spécialiste de la santé communautaire et de l\'inclusion des femmes.' : 'Spécialiste ci wér-gi-yaramu jigéen yi.' },
-    { name: 'Ousmane Diop', role: lang === 'fr' ? 'Secrétaire Général' : 'Bindakat bi', desc: lang === 'fr' ? 'Gestionnaire de projets de santé et expert en gouvernance associative.' : 'Expert ci wéru yore mbootaay yi.' },
-    { name: 'Abdoulaye Sow', role: lang === 'fr' ? 'Trésorier Général' : 'Korekat bi', desc: lang === 'fr' ? 'Comptable agréé dédié à la transparence financière des mutuelles.' : 'Comptable bu liggéey ci wéru xaalis.' }
-  ];
+  const { data: instData } = useQuery({
+    queryKey: ['institutionnelContent'],
+    queryFn: async () => {
+      const res = await fetch('http://localhost:5000/api/dynamic-content/institutionnel');
+      if (!res.ok) throw new Error('API Error');
+      return res.json();
+    }
+  });
+
+  const members = (instData?.members || []).map(m => ({
+    name: m.name,
+    role: lang === 'fr' ? m.role_fr : m.role_wo,
+    desc: lang === 'fr' ? m.description_fr : m.description_wo
+  }));
 
   return (
     <div className="institutionnel-view fade-in-up">

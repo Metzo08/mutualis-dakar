@@ -1418,7 +1418,10 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                         checked={paymentMethod === 'wave'} 
                         onChange={() => setPaymentMethod('wave')}
                       />
-                      Wave 🌊
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <img src="/logo_wave.png" alt="Wave" style={{ height: '16px', borderRadius: '2px' }} />
+                        <span>Wave</span>
+                      </div>
                     </label>
                     <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 'bold' }}>
                       <input 
@@ -1428,7 +1431,10 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                         checked={paymentMethod === 'om'} 
                         onChange={() => setPaymentMethod('om')}
                       />
-                      Orange Money 🍊
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <img src="/logo_orange_money.png" alt="Orange Money" style={{ height: '16px', borderRadius: '2px' }} />
+                        <span>Orange Money</span>
+                      </div>
                     </label>
                   </div>
 
@@ -1832,7 +1838,10 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                           checked={donatePaymentMethod === 'wave'} 
                           onChange={() => setDonatePaymentMethod('wave')}
                         />
-                        Wave 🌊
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <img src="/logo_wave.png" alt="Wave" style={{ height: '16px', borderRadius: '2px' }} />
+                          <span>Wave</span>
+                        </div>
                       </label>
                       <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 'bold' }}>
                         <input 
@@ -1842,7 +1851,10 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                           checked={donatePaymentMethod === 'om'} 
                           onChange={() => setDonatePaymentMethod('om')}
                         />
-                        Orange Money 🍊
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                          <img src="/logo_orange_money.png" alt="Orange Money" style={{ height: '16px', borderRadius: '2px' }} />
+                          <span>Orange Money</span>
+                        </div>
                       </label>
                     </div>
 

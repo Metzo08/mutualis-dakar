@@ -1,0 +1,1882 @@
+[
+  {
+    "id": 1,
+    "nom": "Pharmacie Point-E",
+    "titulaire": "Dieynaba Soumaré BOCOUM",
+    "adresse": "Boulevard de l'est, Point-E",
+    "commune": "Fann Point-E Amitié",
+    "region": "Dakar",
+    "lat": 14.6960,
+    "lng": -17.4620
+  },
+  {
+    "id": 2,
+    "nom": "Pharmacie Aimé Césaire",
+    "titulaire": "Sokhna Soumare BOYE",
+    "adresse": "Rue Aimé Césaire, Fann-Résidence",
+    "commune": "Fann Point-E Amitié",
+    "region": "Dakar",
+    "lat": 14.6960,
+    "lng": -17.4610
+  },
+  {
+    "id": 3,
+    "nom": "Pharmacie Résidence Serigne Malick Dièye",
+    "titulaire": "Gnagna Fall DIEYE",
+    "adresse": "Point-E à la rue Axrue 3 et 4",
+    "commune": "Fann Point-E Amitié",
+    "region": "Dakar",
+    "lat": 14.6960,
+    "lng": -17.4600
+  },
+  {
+    "id": 4,
+    "nom": "Pharmacie Birago Diop, Point-E",
+    "titulaire": "Alioune Badara DIOP",
+    "adresse": "Avenue Birago Diop, Point-E",
+    "commune": "Fann Point-E Amitié",
+    "region": "Dakar",
+    "lat": 14.6940,
+    "lng": -17.4610
+  },
+  {
+    "id": 5,
+    "nom": "Pharmacie Fann-Hock",
+    "titulaire": "Cathy Ndiaye GAYE",
+    "adresse": "Rue 55 x 70, Fann-Hock",
+    "commune": "Fann Point-E Amitié",
+    "region": "Dakar",
+    "lat": 14.6940,
+    "lng": -17.4600
+  },
+  {
+    "id": 6,
+    "nom": "Pharmacie Signara",
+    "titulaire": "Oumar MBAYE",
+    "adresse": "Km 4,5 avenue Cheikh Anta Diop",
+    "commune": "Fann Point-E Amitié",
+    "region": "Dakar",
+    "lat": 14.6930,
+    "lng": -17.4610
+  },
+  {
+    "id": 7,
+    "nom": "Pharmacie Keur Jaraff",
+    "titulaire": "Anta NDIAYE",
+    "adresse": "Allées Seydou Nourou Tall",
+    "commune": "Fann Point-E Amitié",
+    "region": "Dakar",
+    "lat": 14.6930,
+    "lng": -17.4600
+  },
+  {
+    "id": 8,
+    "nom": "Pharmacie Besse",
+    "titulaire": "Ndèye Rokhaya NDOYE",
+    "adresse": "Avenue Bourguiba face Ecole de Police TF 6341",
+    "commune": "Fann Point-E Amitié",
+    "region": "Dakar",
+    "lat": 14.6930,
+    "lng": -17.4590
+  },
+  {
+    "id": 9,
+    "nom": "Pharmacie Selma",
+    "titulaire": "André César Ernest SENE",
+    "adresse": "Amitié III n° 4418",
+    "commune": "Fann Point-E Amitié",
+    "region": "Dakar",
+    "lat": 14.6930,
+    "lng": -17.4600
+  },
+  {
+    "id": 10,
+    "nom": "Pharmacie Ndoss",
+    "titulaire": "Diasse SECK",
+    "adresse": "Avenue Cheikh Anta, Point-E",
+    "commune": "Fann Point-E Amitié",
+    "region": "Dakar",
+    "lat": 14.6940,
+    "lng": -17.4610
+  },
+  {
+    "id": 11,
+    "nom": "Pharmacie Sedami",
+    "titulaire": "Brigitte Moussou THANGAI",
+    "adresse": "Amitié III, VDN",
+    "commune": "Fann Point-E Amitié",
+    "region": "Dakar",
+    "lat": 14.6950,
+    "lng": -17.4620
+  },
+  {
+    "id": 12,
+    "nom": "Pharmacie le Parcours",
+    "titulaire": "Yaye Saty Koné SAKHO",
+    "adresse": "Sicap Amitié I, villa n°3037",
+    "commune": "Fann Point-E Amitié",
+    "region": "Dakar",
+    "lat": 14.6950,
+    "lng": -17.4600
+  },
+  {
+    "id": 13,
+    "nom": "Pharmacie Incha Allah",
+    "titulaire": "Ibrahima AIDARA",
+    "adresse": "Rue 11, Grand-Dakar",
+    "commune": "Grand-Dakar Zone A Zone B",
+    "region": "Dakar",
+    "lat": 14.7100,
+    "lng": -17.4520
+  },
+  {
+    "id": 14,
+    "nom": "Pharmacie des Allees",
+    "titulaire": "Cheikh Sidy El Khaïr BEYE",
+    "adresse": "Zone B",
+    "commune": "Grand-Dakar Zone A Zone B",
+    "region": "Dakar",
+    "lat": 14.7090,
+    "lng": -17.4510
+  },
+  {
+    "id": 15,
+    "nom": "Pharmacie Borom Daradji",
+    "titulaire": "Badara Louis NDIAYE",
+    "adresse": "143, Grand-Dakar",
+    "commune": "Grand-Dakar Zone A Zone B",
+    "region": "Dakar",
+    "lat": 14.7090,
+    "lng": -17.4500
+  },
+  {
+    "id": 16,
+    "nom": "Pharmacie Mame Fatou BA",
+    "titulaire": "Soukeyna Mbodj",
+    "adresse": "Zone A, Boulevard Général De Gaulle",
+    "commune": "Grand-Dakar Zone A Zone B",
+    "region": "Dakar",
+    "lat": 14.7100,
+    "lng": -17.4510
+  },
+  {
+    "id": 17,
+    "nom": "Pharmacie Dabakh Malick GD",
+    "titulaire": "Thierno Ahmadou KA",
+    "adresse": "Rue Abébé bikila n°308",
+    "commune": "Grand-Dakar Zone A Zone B",
+    "region": "Dakar",
+    "lat": 14.7110,
+    "lng": -17.4520
+  },
+  {
+    "id": 18,
+    "nom": "Pharmacie CAP-SANTE",
+    "titulaire": "Léon Simone NDIAYE",
+    "adresse": "Grand-Dakar, rue CL FayeXGD 35, Zone A, villa n°74",
+    "commune": "Grand-Dakar Zone A Zone B",
+    "region": "Dakar",
+    "lat": 14.7100,
+    "lng": -17.4500
+  },
+  {
+    "id": 19,
+    "nom": "Pharmacie Darabis",
+    "titulaire": "Nafissatou MBAYE BAO",
+    "adresse": "Sicap Darabis",
+    "commune": "Grand-Dakar Zone A Zone B",
+    "region": "Dakar",
+    "lat": 14.7090,
+    "lng": -17.4510
+  },
+  {
+    "id": 20,
+    "nom": "Pharmacie de L'EMMANUEL",
+    "titulaire": "Prisque Germaine Chérita SAGBO",
+    "adresse": "Grand Dakar, parcelle n°370",
+    "commune": "Grand-Dakar Zone A Zone B",
+    "region": "Dakar",
+    "lat": 14.7110,
+    "lng": -17.4500
+  },
+  {
+    "id": 21,
+    "nom": "Pharmacie Masaalikul Jinaan",
+    "titulaire": "Maty Sarr SEYE",
+    "adresse": "Cerf volant à l'ouest de la mosquée Mazalikul Jinaan",
+    "commune": "Grand-Dakar Zone A Zone B",
+    "region": "Dakar",
+    "lat": 14.7100,
+    "lng": -17.4510
+  },
+  {
+    "id": 22,
+    "nom": "Pharmacie Diadji Abdou Diodio",
+    "titulaire": "Fatou Diadji BA",
+    "adresse": "Usine Ben Tally",
+    "commune": "Biscuiterie Bopp/Ouagou Niaye",
+    "region": "Dakar",
+    "lat": 14.7230,
+    "lng": -17.4430
+  },
+  {
+    "id": 23,
+    "nom": "Bass ak Bara",
+    "titulaire": "Cheikh Tidiane Gaye",
+    "adresse": "X Cheikh Hadmadou Bamba",
+    "commune": "BEN TALLY",
+    "region": "Dakar",
+    "lat": 14.7250,
+    "lng": -17.4410
+  },
+  {
+    "id": 24,
+    "nom": "Pharmacie Coopé",
+    "titulaire": "Joséphine KONATE",
+    "adresse": "Usine Ben Tally",
+    "commune": "Biscuiterie Bopp/Ouagou Niaye",
+    "region": "Dakar",
+    "lat": 14.7220,
+    "lng": -17.4420
+  },
+  {
+    "id": 25,
+    "nom": "Pharmacie Tidjany Mouhamed El Habib",
+    "titulaire": "Maguette Fara DIOP",
+    "adresse": "Niary Tally, Usines, n° 206",
+    "commune": "Biscuiterie Bopp/Ouagou Niaye",
+    "region": "Dakar",
+    "lat": 14.7220,
+    "lng": -17.4420
+  },
+  {
+    "id": 26,
+    "nom": "Pharmacie Macha-allah",
+    "titulaire": "Khady Dieng DIA",
+    "adresse": "Rue 9, Bopp, villa n° 186",
+    "commune": "Biscuiterie Bopp/Ouagou Niaye",
+    "region": "Dakar",
+    "lat": 14.7220,
+    "lng": -17.4430
+  },
+  {
+    "id": 27,
+    "nom": "Pharmacie Biscuiterie",
+    "titulaire": "René Jean François D'Alvaringa",
+    "adresse": "Niary Tally face marché guelaw n°1139",
+    "commune": "Biscuiterie Bopp/Ouagou Niaye",
+    "region": "Dakar",
+    "lat": 14.7220,
+    "lng": -17.4420
+  },
+  {
+    "id": 28,
+    "nom": "Pharmacie du Grand-Dakar",
+    "titulaire": "Binata BALL",
+    "adresse": "Niary Tally, Usines",
+    "commune": "Biscuiterie Bopp/Ouagou Niaye",
+    "region": "Dakar",
+    "lat": 14.7210,
+    "lng": -17.4410
+  },
+  {
+    "id": 29,
+    "nom": "Pharmacie Ouagou-Niayes",
+    "titulaire": "Alexandre DIEDHIOU",
+    "adresse": "Ouagou-Niayes n° 206",
+    "commune": "Biscuiterie Bopp/Ouagou Niaye",
+    "region": "Dakar",
+    "lat": 14.7220,
+    "lng": -17.4420
+  },
+  {
+    "id": 30,
+    "nom": "Pharmacie Kader DIOP",
+    "titulaire": "Aissatou DIOP",
+    "adresse": "Ouagou-Niayes I, Usine Parc n° 2789",
+    "commune": "Biscuiterie Bopp/Ouagou Niaye",
+    "region": "Dakar",
+    "lat": 14.7230,
+    "lng": -17.4430
+  },
+  {
+    "id": 31,
+    "nom": "Pharmacie El Hadji Mamadou Seydou BA",
+    "titulaire": "Aissatou BATHILY",
+    "adresse": "Rue Casamance bis 92Xrue Diackao bis 63, villa n°133",
+    "commune": "Biscuiterie Bopp/Ouagou Niaye",
+    "region": "Dakar",
+    "lat": 14.7250,
+    "lng": -17.4440
+  },
+  {
+    "id": 32,
+    "nom": "Pharmacie ben Tally",
+    "titulaire": "MAIMOUNA SOUMA",
+    "adresse": "Usine ben Tally N°2050",
+    "commune": "BEN TALLY",
+    "region": "Dakar",
+    "lat": 14.7260,
+    "lng": -17.4420
+  },
+  {
+    "id": 33,
+    "nom": "Pharmacie Mariama Mbacke",
+    "titulaire": "Hadji Amadou Makhtar GAYE",
+    "adresse": "Cité bissap, parcelle n°03, Usine ben tally",
+    "commune": "Biscuiterie Bopp/Ouagou Niaye",
+    "region": "Dakar",
+    "lat": 14.7230,
+    "lng": -17.4430
+  },
+  {
+    "id": 34,
+    "nom": "Pharmacie Hamet Bathily",
+    "titulaire": "Cheikh Tidiane BATHILY",
+    "adresse": "HLM III n° 880",
+    "commune": "HLM",
+    "region": "Dakar",
+    "lat": 14.7060,
+    "lng": -17.4360
+  },
+  {
+    "id": 35,
+    "nom": "Pharmacie Espérance HLM Sokhna Rokh",
+    "titulaire": "Aita COULIBALY",
+    "adresse": "HLM III n° 108",
+    "commune": "HLM",
+    "region": "Dakar",
+    "lat": 14.7060,
+    "lng": -17.4350
+  },
+  {
+    "id": 36,
+    "nom": "Pharmacie Léopold Sédar Senghor",
+    "titulaire": "Doudou Francois DIONE",
+    "adresse": "Immeuble Vanner, Marché HLM, HLM V",
+    "commune": "HLM",
+    "region": "Dakar",
+    "lat": 14.7060,
+    "lng": -17.4360
+  },
+  {
+    "id": 37,
+    "nom": "Pharmacie Corniche des HLM V",
+    "titulaire": "Isidore GOMIS",
+    "adresse": "HLM V villa n° 1918",
+    "commune": "HLM",
+    "region": "Dakar",
+    "lat": 14.7070,
+    "lng": -17.4370
+  },
+  {
+    "id": 38,
+    "nom": "Pharmacie Giga Santé",
+    "titulaire": "Ibrahima KA",
+    "adresse": "7 bis, rue 14 Domaine de la SODIDA",
+    "commune": "HLM",
+    "region": "Dakar",
+    "lat": 14.7060,
+    "lng": -17.4360
+  },
+  {
+    "id": 39,
+    "nom": "Pharmacie Mamadou Racine SY",
+    "titulaire": "Abibatou KANE",
+    "adresse": "HLM VI, villa n° 2906",
+    "commune": "HLM",
+    "region": "Dakar",
+    "lat": 14.7050,
+    "lng": -17.4350
+  },
+  {
+    "id": 40,
+    "nom": "Pharmacie Serigne Souhaibou Mbacké",
+    "titulaire": "Mady SIDIBE",
+    "adresse": "Rue 13, Avenue Cheikh Ahmadou Bamba, Cité-Port-Bopp",
+    "commune": "HLM",
+    "region": "Dakar",
+    "lat": 14.7060,
+    "lng": -17.4360
+  },
+  {
+    "id": 41,
+    "nom": "Pharmacie LA CLEMENCE",
+    "titulaire": "Abdoulaye LO",
+    "adresse": "Hlm II, pelle n°679",
+    "commune": "HLM",
+    "region": "Dakar",
+    "lat": 14.7060,
+    "lng": -17.4370
+  },
+  {
+    "id": 42,
+    "nom": "Pharmacie Mouhamed",
+    "titulaire": "Moussa DIONGUE",
+    "adresse": "HLM, Angle Mouss, villa n°2964",
+    "commune": "HLM",
+    "region": "Dakar",
+    "lat": 14.7060,
+    "lng": -17.4360
+  },
+  {
+    "id": 43,
+    "nom": "Pharmacie Radja",
+    "titulaire": "Ndoumbe BA",
+    "adresse": "Scat-Urbam de Hann-Mariste J 84",
+    "commune": "Hann, Bel-Air",
+    "region": "Dakar",
+    "lat": 14.7320,
+    "lng": -17.3980
+  },
+  {
+    "id": 44,
+    "nom": "Pharmacie de l'étrier",
+    "titulaire": "Muhamed AYACH",
+    "adresse": "Hann, km 5",
+    "commune": "Hann, Bel-Air",
+    "region": "Dakar",
+    "lat": 14.7320,
+    "lng": -17.3990
+  },
+  {
+    "id": 45,
+    "nom": "Pharmacie HLM Maristes",
+    "titulaire": "Bineta BALLE",
+    "adresse": "HLM Maristes",
+    "commune": "Hann, Bel-Air",
+    "region": "Dakar",
+    "lat": 14.7320,
+    "lng": -17.3980
+  },
+  {
+    "id": 46,
+    "nom": "Pharmacie Couro",
+    "titulaire": "Mohdio DIA NIANE",
+    "adresse": "Hann-Mariste II n° 197 R",
+    "commune": "Hann, Bel-Air",
+    "region": "Dakar",
+    "lat": 14.7330,
+    "lng": -17.3990
+  },
+  {
+    "id": 47,
+    "nom": "Pharmacie Mouhamadoul Amine",
+    "titulaire": "Astou DIAO",
+    "adresse": "Yarakh-Kip, Hann",
+    "commune": "Hann, Bel-Air",
+    "region": "Dakar",
+    "lat": 14.7330,
+    "lng": -17.3980
+  },
+  {
+    "id": 48,
+    "nom": "Pharmacie Touba",
+    "titulaire": "Awa DIONGUE",
+    "adresse": "Hann-Mariste",
+    "commune": "Hann, Bel-Air",
+    "region": "Dakar",
+    "lat": 14.7320,
+    "lng": -17.3990
+  },
+  {
+    "id": 49,
+    "nom": "Pharmacie Carrosserie",
+    "titulaire": "Amina DIOP",
+    "adresse": "Carrosserie Marchand",
+    "commune": "Hann, Bel-Air",
+    "region": "Dakar",
+    "lat": 14.7320,
+    "lng": -17.3980
+  },
+  {
+    "id": 50,
+    "nom": "Pharmacie de la Rocade",
+    "titulaire": "Ndèye Mané DIOP",
+    "adresse": "Rocade Fann-Bel-air",
+    "commune": "Hann, Bel-Air",
+    "region": "Dakar",
+    "lat": 14.7330,
+    "lng": -17.3990
+  },
+  {
+    "id": 51,
+    "nom": "Pharmacie Hann-Yarakh",
+    "titulaire": "Adnane HALAOUI",
+    "adresse": "Km 8, Boulevard du Centenaire Hann-Yarakh",
+    "commune": "Hann, Bel-Air",
+    "region": "Dakar",
+    "lat": 14.7330,
+    "lng": -17.4000
+  },
+  {
+    "id": 52,
+    "nom": "Pharmacie Marinas",
+    "titulaire": "Abdou DIOP",
+    "adresse": "Hann-Bel-Air, Route des Hydrocarbures, villa n° 2",
+    "commune": "Hann, Bel-Air",
+    "region": "Dakar",
+    "lat": 14.7320,
+    "lng": -17.3990
+  },
+  {
+    "id": 53,
+    "nom": "Pharmacie Alliance Maristes",
+    "titulaire": "Arfang FAYE",
+    "adresse": "km 7, tableau Ferraille, Hann",
+    "commune": "Hann, Bel-Air",
+    "region": "Dakar",
+    "lat": 14.7330,
+    "lng": -17.3980
+  },
+  {
+    "id": 54,
+    "nom": "Pharmacie du Potou",
+    "titulaire": "Chadia KASSEM",
+    "adresse": "Nationale, route de Rufisque x rue 6",
+    "commune": "Hann, Bel-Air",
+    "region": "Dakar",
+    "lat": 14.7320,
+    "lng": -17.3990
+  },
+  {
+    "id": 55,
+    "nom": "Pharmacie Abdourahmane",
+    "titulaire": "Binta MBENGUE",
+    "adresse": "Scat-Urbam de Hann Mariste B65",
+    "commune": "Hann, Bel-Air",
+    "region": "Dakar",
+    "lat": 14.7320,
+    "lng": -17.3980
+  },
+  {
+    "id": 56,
+    "nom": "Pharmacie Hann-Mariste",
+    "titulaire": "Aissatou Marie NDAW",
+    "adresse": "Hann, Route du Service Géographique",
+    "commune": "Hann, Bel-Air",
+    "region": "Dakar",
+    "lat": 14.7330,
+    "lng": -17.3990
+  },
+  {
+    "id": 57,
+    "nom": "Pharmacie Hann-Pecheurs",
+    "titulaire": "Aichatou NIANG",
+    "adresse": "Hann-Pêcheurs face dépôt Mobil Oil",
+    "commune": "Hann, Bel-Air",
+    "region": "Dakar",
+    "lat": 14.7320,
+    "lng": -17.4000
+  },
+  {
+    "id": 58,
+    "nom": "Pharmacie Zahra",
+    "titulaire": "Marieme SAMB",
+    "adresse": "HLM de Hann-Mariste",
+    "commune": "Hann, Bel-Air",
+    "region": "Dakar",
+    "lat": 14.7330,
+    "lng": -17.3990
+  },
+  {
+    "id": 59,
+    "nom": "Pharmacie Espace Residence",
+    "titulaire": "Rokhaya SAMB",
+    "adresse": "Espace Résidence III Hann Mariste",
+    "commune": "Hann, Bel-Air",
+    "region": "Dakar",
+    "lat": 14.7330,
+    "lng": -17.3980
+  },
+  {
+    "id": 60,
+    "nom": "Pharmacie Thierno Amadou Barro",
+    "titulaire": "Abdoulaye THIAW",
+    "adresse": "Km 2,5 Route de Rufisque",
+    "commune": "Hann, Bel-Air",
+    "region": "Dakar",
+    "lat": 14.7320,
+    "lng": -17.3990
+  },
+  {
+    "id": 61,
+    "nom": "Pharmacie NabY Rassoul",
+    "titulaire": "Dieynaba SEYE",
+    "adresse": "HannMariste, villa n°9 TF 11091",
+    "commune": "Hann, Bel-Air",
+    "region": "Dakar",
+    "lat": 14.7320,
+    "lng": -17.4000
+  },
+  {
+    "id": 62,
+    "nom": "Pharmacie les Dunes",
+    "titulaire": "Aissatou LEYE",
+    "adresse": "Hann Mariste espace résidence Immeuble orange n 504",
+    "commune": "Hann, Bel-Air",
+    "region": "Dakar",
+    "lat": 14.7330,
+    "lng": -17.3990
+  },
+  {
+    "id": 63,
+    "nom": "Pharmacie Pluss",
+    "titulaire": "Papa Birama NDIAYE",
+    "adresse": "Mariste axe ITA Lot 7 T/F 4500DG",
+    "commune": "Hann, Bel-Air",
+    "region": "Dakar",
+    "lat": 14.7320,
+    "lng": -17.3980
+  },
+  {
+    "id": 64,
+    "nom": "Pharmacie Anarogil",
+    "titulaire": "Reine Elise AKOUNAN",
+    "adresse": "Cité CPI n° 100 lib extension",
+    "commune": "Sicap Liberté",
+    "region": "Dakar",
+    "lat": 14.7010,
+    "lng": -17.4590
+  },
+  {
+    "id": 65,
+    "nom": "Pharmacie de la Paix",
+    "titulaire": "Khadidiatou BODIAN",
+    "adresse": "Sicap Liberté VI",
+    "commune": "Sicap Liberté",
+    "region": "Dakar",
+    "lat": 14.7010,
+    "lng": -17.4580
+  },
+  {
+    "id": 66,
+    "nom": "Pharmacie Manata",
+    "titulaire": "Abdoulaye DIEYE",
+    "adresse": "Liberté VI extension VDN",
+    "commune": "Sicap Liberté",
+    "region": "Dakar",
+    "lat": 14.7020,
+    "lng": -17.4590
+  },
+  {
+    "id": 67,
+    "nom": "Pharmacie Adji Maguette",
+    "titulaire": "Andree Marie Francois DIEME",
+    "adresse": "Liberté VI, face Camp Pénal",
+    "commune": "Sicap Liberté",
+    "region": "Dakar",
+    "lat": 14.7010,
+    "lng": -17.4580
+  },
+  {
+    "id": 68,
+    "nom": "Pharmacie Jarraf Mbor Ndoye",
+    "titulaire": "Oumy Ndoye FALL",
+    "adresse": "Liberté V n° 5496",
+    "commune": "Sicap Liberté",
+    "region": "Dakar",
+    "lat": 14.7010,
+    "lng": -17.4590
+  },
+  {
+    "id": 69,
+    "nom": "Grande Pharmacie Nouvelle Baobab",
+    "titulaire": "Pierre FAYEMI",
+    "adresse": "rue 11, Sicap Baobab",
+    "commune": "Sicap Liberté",
+    "region": "Dakar",
+    "lat": 14.7010,
+    "lng": -17.4580
+  },
+  {
+    "id": 70,
+    "nom": "Pharmacie Nassou Keïta",
+    "titulaire": "Fatoumata Seydi GAYE",
+    "adresse": "Cité Coop amb France nord lib VI n°15",
+    "commune": "Sicap Liberté",
+    "region": "Dakar",
+    "lat": 14.7020,
+    "lng": -17.4590
+  },
+  {
+    "id": 71,
+    "nom": "Pharmacie Adja Sokhna Fall",
+    "titulaire": "Ndeye Sokhna Ami KA",
+    "adresse": "Cité des Jeunes Cadres Lébous Nord lib VI n°16",
+    "commune": "Sicap Liberté",
+    "region": "Dakar",
+    "lat": 14.7010,
+    "lng": -17.4580
+  },
+  {
+    "id": 72,
+    "nom": "Pharmacie Liberte",
+    "titulaire": "Magatte NDIAYE",
+    "adresse": "Rond-Point, Sicap, Liberté III",
+    "commune": "Sicap Liberté",
+    "region": "Dakar",
+    "lat": 14.7010,
+    "lng": -17.4590
+  },
+  {
+    "id": 73,
+    "nom": "Pharmacie El Mansour",
+    "titulaire": "Marianne LO",
+    "adresse": "Boulevard Dial Diop, Amitié",
+    "commune": "Sicap Liberté",
+    "region": "Dakar",
+    "lat": 14.7010,
+    "lng": -17.4580
+  },
+  {
+    "id": 74,
+    "nom": "Pharmacie Cheikhna Cheikh Saad Bou",
+    "titulaire": "Mbery MARE",
+    "adresse": "Liberté VI, face Marché, n° 6371 bis",
+    "commune": "Sicap Liberté",
+    "region": "Dakar",
+    "lat": 14.7020,
+    "lng": -17.4590
+  },
+  {
+    "id": 75,
+    "nom": "Pharmacie Lahad",
+    "titulaire": "Ndèye Peya NDAO",
+    "adresse": "Terminus Nord-Liberté VI",
+    "commune": "Sicap Liberté",
+    "region": "Dakar",
+    "lat": 14.7020,
+    "lng": -17.4580
+  },
+  {
+    "id": 76,
+    "nom": "Pharmacie Terminus Liberté V",
+    "titulaire": "Marieme NDIAYE",
+    "adresse": "Terminus Liberté V",
+    "commune": "Sicap Liberté",
+    "region": "Dakar",
+    "lat": 14.7010,
+    "lng": -17.4590
+  },
+  {
+    "id": 77,
+    "nom": "Pharmacie A, K, Ababacar SY",
+    "titulaire": "Mame Anta Gone NDOUR",
+    "adresse": "Allées Khalifa Ababacar Sy, Liberté III, n°1979",
+    "commune": "Sicap Liberté",
+    "region": "Dakar",
+    "lat": 14.7010,
+    "lng": -17.4580
+  },
+  {
+    "id": 78,
+    "nom": "Pharmacie Seydina Limamoulaye AL Mahdi",
+    "titulaire": "Mame Aita PAYE BA",
+    "adresse": "Liberté IV face Sapeurs Pompiers",
+    "commune": "Sicap Liberté",
+    "region": "Dakar",
+    "lat": 14.7010,
+    "lng": -17.4590
+  },
+  {
+    "id": 79,
+    "nom": "Pharmacie Daya",
+    "titulaire": "Lanto M RASOANAIVO",
+    "adresse": "Rue Daya x Rue 10 Sicap Baobab n° 470",
+    "commune": "Sicap Liberté",
+    "region": "Dakar",
+    "lat": 14.7010,
+    "lng": -17.4580
+  },
+  {
+    "id": 80,
+    "nom": "Pharmacie Camp Leclerc",
+    "titulaire": "Aminata SECK",
+    "adresse": "Liberté VI n° 8018",
+    "commune": "Sicap Liberté",
+    "region": "Dakar",
+    "lat": 14.7020,
+    "lng": -17.4590
+  },
+  {
+    "id": 81,
+    "nom": "Pharmacie MADIBA",
+    "titulaire": "Mbaye AW",
+    "adresse": "Liberté 5 VILLA N°5443",
+    "commune": "Sicap Liberté",
+    "region": "Dakar",
+    "lat": 14.7010,
+    "lng": -17.4580
+  },
+  {
+    "id": 82,
+    "nom": "Pharmacie El Hadji Malick Coura",
+    "titulaire": "Marieme Mbaye SENE",
+    "adresse": "Sicap Liberté 2 villa N°1399",
+    "commune": "Sicap Liberté",
+    "region": "Dakar",
+    "lat": 14.7010,
+    "lng": -17.4590
+  },
+  {
+    "id": 83,
+    "nom": "Pharmacie Salam",
+    "titulaire": "Amadou Moctar BA",
+    "adresse": "Rue 13 Castor",
+    "commune": "Dieupeul Derkle",
+    "region": "Dakar",
+    "lat": 14.7080,
+    "lng": -17.4530
+  },
+  {
+    "id": 84,
+    "nom": "Pharmacie Front de Terre",
+    "titulaire": "nourou",
+    "adresse": "Avenue Bourguiba X Route du Front de Terre",
+    "commune": "Dieupeul Derkle",
+    "region": "Dakar",
+    "lat": 14.7090,
+    "lng": -17.4540
+  },
+  {
+    "id": 85,
+    "nom": "Pharmacie Derkle",
+    "titulaire": "Anatole D'ALMEIDA",
+    "adresse": "Derkle",
+    "commune": "Dieupeul Derkle",
+    "region": "Dakar",
+    "lat": 14.7090,
+    "lng": -17.4530
+  },
+  {
+    "id": 86,
+    "nom": "Pharmacie Nourou Dareyni",
+    "titulaire": "Assane kala",
+    "adresse": "Derkle Rue 1",
+    "commune": "Dieupeul Derkle",
+    "region": "Dakar",
+    "lat": 14.7090,
+    "lng": -17.4540
+  },
+  {
+    "id": 87,
+    "nom": "Pharmacie El Hadji Ibrahima Niass",
+    "titulaire": "Alioune DIOUF",
+    "adresse": "Cité GIA Bourguiba",
+    "commune": "Dieupeul Derkle",
+    "region": "Dakar",
+    "lat": 14.7080,
+    "lng": -17.4530
+  },
+  {
+    "id": 88,
+    "nom": "Pharmacie la Miséricorde",
+    "titulaire": "Ramatou INOUSSA",
+    "adresse": "Derkle n°6",
+    "commune": "Dieupeul Derkle",
+    "region": "Dakar",
+    "lat": 14.7080,
+    "lng": -17.4540
+  },
+  {
+    "id": 89,
+    "nom": "Pharmacie Bourguiba",
+    "titulaire": "Diaguily DRAME",
+    "adresse": "Avenue Bourguiba n°2201 Dieupeul",
+    "commune": "Dieupeul Derkle",
+    "region": "Dakar",
+    "lat": 14.7090,
+    "lng": -17.4530
+  },
+  {
+    "id": 90,
+    "nom": "Pharmacie Sacré-Coeur",
+    "titulaire": "Oumou Khary SAMB",
+    "adresse": "Dieupeul III X 8",
+    "commune": "Dieupeul Derkle",
+    "region": "Dakar",
+    "lat": 14.7090,
+    "lng": -17.4540
+  },
+  {
+    "id": 91,
+    "nom": "Pharmacie carrefour",
+    "titulaire": "Medoune THIAM",
+    "adresse": "10 Avenue Bourguiba X Rue 12",
+    "commune": "Dieupeul Derkle",
+    "region": "Dakar",
+    "lat": 14.7080,
+    "lng": -17.4530
+  },
+  {
+    "id": 92,
+    "nom": "Pharmacie Mabousso Thiam",
+    "titulaire": "Youga Fally THIAM",
+    "adresse": "11, Front de Terre",
+    "commune": "Dieupeul Derkle",
+    "region": "Dakar",
+    "lat": 14.7080,
+    "lng": -17.4540
+  },
+  {
+    "id": 93,
+    "nom": "Pharmacie Kalounaye Diamorale",
+    "titulaire": "Keba Mamadou Noi TAMBA",
+    "adresse": "Marché Castors n°6",
+    "commune": "Dieupeul Derkle",
+    "region": "Dakar",
+    "lat": 14.7090,
+    "lng": -17.4530
+  },
+  {
+    "id": 94,
+    "nom": "Pharmacie Fakeita",
+    "titulaire": "Diadié AIDARA",
+    "adresse": "Dieupeul 4 Villa N°2900/C",
+    "commune": "Dieupeul Derkle",
+    "region": "Dakar",
+    "lat": 14.7090,
+    "lng": -17.4540
+  },
+  {
+    "id": 95,
+    "nom": "Pharmacie CAPA",
+    "titulaire": "FATOUMATA LY",
+    "adresse": "km 6,1 Route de Rufisque",
+    "commune": "Hann, Bel-Air",
+    "region": "Dakar",
+    "lat": 14.7340,
+    "lng": -17.3980
+  },
+  {
+    "id": 96,
+    "nom": "Pharmacie de la Famille",
+    "titulaire": "Adiouma KONE",
+    "adresse": "Cité Front de Terre en face Zakat House",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7380,
+    "lng": -17.4510
+  },
+  {
+    "id": 97,
+    "nom": "Pharmacie Wore Fall",
+    "titulaire": "Fatou Bop BA",
+    "adresse": "Quartier Santhiaba, Grand-yoff, Lot 23",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7390,
+    "lng": -17.4520
+  },
+  {
+    "id": 98,
+    "nom": "Pharmacie Maty",
+    "titulaire": "Ouleymatou BOYE",
+    "adresse": "Grand-Yoff, face Liberté VI, Lot n° 15",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7390,
+    "lng": -17.4510
+  },
+  {
+    "id": 99,
+    "nom": "Pharmacie Sainte Face",
+    "titulaire": "Pélagie Alice D'ALMEIDA",
+    "adresse": "HLM-Grand-Yoff n° 1222",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7380,
+    "lng": -17.4520
+  },
+  {
+    "id": 100,
+    "nom": "Pharmacie Lamine Konate",
+    "titulaire": "Saran DIANE",
+    "adresse": "Grand-Yoff, route des niayes infléchies",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7390,
+    "lng": -17.4510
+  },
+  {
+    "id": 101,
+    "nom": "Pharmacie Serigne Cheikh Saliou Mbacke",
+    "titulaire": "Marieme DIALLO",
+    "adresse": "Grand-Yoff Cité Millionnaire n°110",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7390,
+    "lng": -17.4520
+  },
+  {
+    "id": 102,
+    "nom": "Pharmacie Rahma",
+    "titulaire": "Papa Ascher DIARRA",
+    "adresse": "Grand-Yoff, face CEM",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7380,
+    "lng": -17.4510
+  },
+  {
+    "id": 103,
+    "nom": "Pharmacie Sud foire",
+    "titulaire": "Moussa DIOP",
+    "adresse": "Cité SICA, Sud Foire",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7380,
+    "lng": -17.4520
+  },
+  {
+    "id": 104,
+    "nom": "Pharmacie SHELTER",
+    "titulaire": "Amath DIOUF",
+    "adresse": "HLM-Grand-Yoff",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7390,
+    "lng": -17.4510
+  },
+  {
+    "id": 105,
+    "nom": "Pharmacie Maodo Malick",
+    "titulaire": "Mariéme DIOUF",
+    "adresse": "Scat-Urbam-Grand-Yoff",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7390,
+    "lng": -17.4520
+  },
+  {
+    "id": 106,
+    "nom": "Pharmacie Hafia",
+    "titulaire": "Awa FALL",
+    "adresse": "HLM-Grand-Yoff",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7380,
+    "lng": -17.4510
+  },
+  {
+    "id": 107,
+    "nom": "Pharmacie Papa Malick Sy",
+    "titulaire": "Seynabou GNING",
+    "adresse": "HLM Grand-Yoff villa n° 55 1ère tranche",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7380,
+    "lng": -17.4520
+  },
+  {
+    "id": 108,
+    "nom": "Pharmacie Aminata Kane",
+    "titulaire": "Salamata KANE",
+    "adresse": "HLM Grand-Yoff n° 574",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7390,
+    "lng": -17.4510
+  },
+  {
+    "id": 109,
+    "nom": "Pharmacie Conseil",
+    "titulaire": "Gustave Crepin MANDIOUBA",
+    "adresse": "Grand-Yoff, sud Cité Sonatel II",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7390,
+    "lng": -17.4520
+  },
+  {
+    "id": 110,
+    "nom": "Pharmacie Scat-Urbam",
+    "titulaire": "Maimouna NIANG NDIAYE",
+    "adresse": "Scat-Urbam-Grand-Yoff",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7380,
+    "lng": -17.4510
+  },
+  {
+    "id": 111,
+    "nom": "Pharmacie Arafat",
+    "titulaire": "Jeanne VIDAL SALL",
+    "adresse": "Immeuble 498, Grand-Yoff",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7390,
+    "lng": -17.4520
+  },
+  {
+    "id": 112,
+    "nom": "Pharmacie Mouna",
+    "titulaire": "Khadidiatou SECK",
+    "adresse": "Grand-Yoff, face HOGGY",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7380,
+    "lng": -17.4510
+  },
+  {
+    "id": 113,
+    "nom": "Pharmacie Mignel",
+    "titulaire": "Fatimata Omar SY",
+    "adresse": "Marché Grand-Yoff",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7380,
+    "lng": -17.4520
+  },
+  {
+    "id": 114,
+    "nom": "Pharmacie Ibrahima",
+    "titulaire": "Amy THIAM",
+    "adresse": "HLM-Grand-Yoff, face «les Pédagogues»",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7390,
+    "lng": -17.4510
+  },
+  {
+    "id": 115,
+    "nom": "Pharmacie Mouhamed Archou Tidiani",
+    "titulaire": "Aminata TIDIANI",
+    "adresse": "SCAT URBAM, cité Gérard Sénec",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7390,
+    "lng": -17.4520
+  },
+  {
+    "id": 116,
+    "nom": "Pharmacie Serigne Bamba Deymane",
+    "titulaire": "Mavelout DIENG",
+    "adresse": "227 MAKA 3 GRAND YOFF",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7380,
+    "lng": -17.4510
+  },
+  {
+    "id": 117,
+    "nom": "Pharmacie Cité Millionnaire",
+    "titulaire": "Babacar DIOP",
+    "adresse": "Cité Millionnaire n°135",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7390,
+    "lng": -17.4520
+  },
+  {
+    "id": 118,
+    "nom": "Pharmacie Thierno Tylere",
+    "titulaire": "Selly ANNE",
+    "adresse": "Grand Yoff, Zone de captage n°3",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7380,
+    "lng": -17.4510
+  },
+  {
+    "id": 119,
+    "nom": "Pharmacie Mactar Diaw",
+    "titulaire": "Fatou Diaw CISSE",
+    "adresse": "Grand Yoff, Zone de captage n°67",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7390,
+    "lng": -17.4520
+  },
+  {
+    "id": 120,
+    "nom": "Pharmacie Djiddah",
+    "titulaire": "Yankhoba FAYE",
+    "adresse": "Khar Yalla n°33",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7390,
+    "lng": -17.4510
+  },
+  {
+    "id": 121,
+    "nom": "Pharmacie Fatou Ideu Sy",
+    "titulaire": "Khady SY",
+    "adresse": "Grand-yoff, Zone de captage n°20",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7390,
+    "lng": -17.4520
+  },
+  {
+    "id": 122,
+    "nom": "Pharmacie le coin santé",
+    "titulaire": "Daniel Gayky SARR",
+    "adresse": "Quartier Léona, villa n°30",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7380,
+    "lng": -17.4510
+  },
+  {
+    "id": 123,
+    "nom": "Pharmacie Bagdad Khar Yalla",
+    "titulaire": "Ndiaga NDIAYE",
+    "adresse": "Quartier Bagdad, villa n° 39",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7380,
+    "lng": -17.4520
+  },
+  {
+    "id": 124,
+    "nom": "Pharmacie El Hadji Haïdara AWA",
+    "titulaire": "Dado FALL",
+    "adresse": "HLM Grand Yoff, n°158",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7390,
+    "lng": -17.4510
+  },
+  {
+    "id": 125,
+    "nom": "Pharmacie Sonatel 1",
+    "titulaire": "Abdoulaye MBAYE",
+    "adresse": "Cité Sonatel 1, villa n117, Grand yoff",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7390,
+    "lng": -17.4520
+  },
+  {
+    "id": 126,
+    "nom": "Darou Habibi",
+    "titulaire": "Papa Ndiack NDIAYE",
+    "adresse": "Liberté 6 extension camp pénal, lot N°2, Grand Yoff",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7380,
+    "lng": -17.4510
+  },
+  {
+    "id": 127,
+    "nom": "Pharmacie Marie Saliou",
+    "titulaire": "Marie Thérèse Diop FALL",
+    "adresse": "Cité Des Magistrats SICES Lot N°490 Grand yoff",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7380,
+    "lng": -17.4520
+  },
+  {
+    "id": 128,
+    "nom": "Pharmacie Omar",
+    "titulaire": "Rokhaya Daba Sy DIAGNE",
+    "adresse": "Hamo Grand Yoff, villa S13",
+    "commune": "Grand-Yoff",
+    "region": "Dakar",
+    "lat": 14.7390,
+    "lng": -17.4510
+  },
+  {
+    "id": 129,
+    "nom": "Pharmacie Mame Diarra Bousso",
+    "titulaire": "Amy DIENG",
+    "adresse": "Cité Soprim",
+    "commune": "Patte D'oie Grand-Médine",
+    "region": "Dakar",
+    "lat": 14.7210,
+    "lng": -17.4630
+  },
+  {
+    "id": 130,
+    "nom": "Pharmacie Cité Al Amal",
+    "titulaire": "Pape Diene DIOUF",
+    "adresse": "Patte D'oie Builders, face Cité El Almal",
+    "commune": "Patte D'oie Grand-Médine",
+    "region": "Dakar",
+    "lat": 14.7210,
+    "lng": -17.4620
+  },
+  {
+    "id": 131,
+    "nom": "Pharmacie Impots et Domaines",
+    "titulaire": "Bisse FALL",
+    "adresse": "Cité Impots et Domaines",
+    "commune": "Patte D'oie Grand-Médine",
+    "region": "Dakar",
+    "lat": 14.7200,
+    "lng": -17.4630
+  },
+  {
+    "id": 132,
+    "nom": "Pharmacie El Hadji Daouda Dia",
+    "titulaire": "Coura GUISSE",
+    "adresse": "Patte D'oie Builders",
+    "commune": "Patte D'oie Grand-Médine",
+    "region": "Dakar",
+    "lat": 14.7200,
+    "lng": -17.4620
+  },
+  {
+    "id": 133,
+    "nom": "Pharmacie Serigne Mouhamadou Fadilou Mbacké",
+    "titulaire": "Mame Mbacké NDIAYE",
+    "adresse": "Patte D'oie Builders",
+    "commune": "Patte D'oie Grand-Médine",
+    "region": "Dakar",
+    "lat": 14.7200,
+    "lng": -17.4630
+  },
+  {
+    "id": 134,
+    "nom": "Pharmacie de la Patte D'oie",
+    "titulaire": "Marie Laure KONATE",
+    "adresse": "Face HLM Patte D'oie",
+    "commune": "Patte D'oie Grand-Médine",
+    "region": "Dakar",
+    "lat": 14.7210,
+    "lng": -17.4620
+  },
+  {
+    "id": 135,
+    "nom": "Pharmacie Serigne Ababacar Sy",
+    "titulaire": "Papa Demba NIANE",
+    "adresse": "Soprim extension",
+    "commune": "Patte D'oie Grand-Médine",
+    "region": "Dakar",
+    "lat": 14.7210,
+    "lng": -17.4630
+  },
+  {
+    "id": 136,
+    "nom": "Pharmacie Cheikh Issa Aw",
+    "titulaire": "Aissatou AW",
+    "adresse": "HLM Grand-Médine",
+    "commune": "Patte D'oie Grand-Médine",
+    "region": "Dakar",
+    "lat": 14.7200,
+    "lng": -17.4620
+  },
+  {
+    "id": 137,
+    "nom": "Pharmacie Rahmane",
+    "titulaire": "Dior BEYE",
+    "adresse": "HLM Grand-Médine",
+    "commune": "Patte D'oie Grand-Médine",
+    "region": "Dakar",
+    "lat": 14.7200,
+    "lng": -17.4630
+  },
+  {
+    "id": 138,
+    "nom": "Pharmacie Rassoul",
+    "titulaire": "Binta Sow NIANG",
+    "adresse": "Villa no 84, cité impots et domaines",
+    "commune": "Patte D'oie Grand-Médine",
+    "region": "Dakar",
+    "lat": 14.7210,
+    "lng": -17.4620
+  },
+  {
+    "id": 139,
+    "nom": "Pharmacie Cherifatou",
+    "titulaire": "Ndeye Fatou NDIAYE",
+    "adresse": "Cité Socabeg en Face du stade 106 Grand Yoff",
+    "commune": "Patte D'oie Grand-Médine",
+    "region": "Dakar",
+    "lat": 14.7200,
+    "lng": -17.4630
+  },
+  {
+    "id": 140,
+    "nom": "Pharmacie la Parcelloise",
+    "titulaire": "Moustapha BADJI",
+    "adresse": "Unité 18, Parcelles Assainies",
+    "commune": "Parcelles Assainies",
+    "region": "Dakar",
+    "lat": 14.7660,
+    "lng": -17.4400
+  },
+  {
+    "id": 141,
+    "nom": "Pharmacie de L'Amitié",
+    "titulaire": "Fatou Ndiaye DEME",
+    "adresse": "Unité 8, Parcelles Assainies",
+    "commune": "Parcelles Assainies",
+    "region": "Dakar",
+    "lat": 14.7660,
+    "lng": -17.4390
+  },
+  {
+    "id": 142,
+    "nom": "Pharmacie du Stade Léopold Sédar Senghor",
+    "titulaire": "Hélène D'ALMEIDA",
+    "adresse": "Unité 25, n° 89, Parcelles Assainies",
+    "commune": "Parcelles Assainies",
+    "region": "Dakar",
+    "lat": 14.7660,
+    "lng": -17.4400
+  },
+  {
+    "id": 143,
+    "nom": "Pharmacie Ceerno Yaal",
+    "titulaire": "Cheikhou Oumar DIA",
+    "adresse": "Unité 26, lot 805, Parcelles Assainies",
+    "commune": "Parcelles Assainies",
+    "region": "Dakar",
+    "lat": 14.7660,
+    "lng": -17.4390
+  },
+  {
+    "id": 144,
+    "nom": "Pharmacie Tekrour",
+    "titulaire": "Lise Adrienne Allier TOURE",
+    "adresse": "Unité 12, n° 348, Parcelles Assainies",
+    "commune": "Parcelles Assainies",
+    "region": "Dakar",
+    "lat": 14.7660,
+    "lng": -17.4400
+  },
+  {
+    "id": 145,
+    "nom": "Pharmacie Cherif",
+    "titulaire": "Mamadou Cherif DIA",
+    "adresse": "Unité 3, Parcelles Assainies",
+    "commune": "Parcelles Assainies",
+    "region": "Dakar",
+    "lat": 14.7660,
+    "lng": -17.4390
+  },
+  {
+    "id": 146,
+    "nom": "Pharmacie la Corniche",
+    "titulaire": "Madiare DIAKHATE",
+    "adresse": "Unité 19, n° 175",
+    "commune": "Parcelles Assainies",
+    "region": "Dakar",
+    "lat": 14.7650,
+    "lng": -17.4400
+  },
+  {
+    "id": 147,
+    "nom": "Pharmacie Kéléfa Diakité",
+    "titulaire": "Marieme DIAKITE",
+    "adresse": "Quartier Diagnène parcelle 366",
+    "commune": "Parcelles Assainies",
+    "region": "Dakar",
+    "lat": 14.7660,
+    "lng": -17.4390
+  },
+  {
+    "id": 148,
+    "nom": "Pharmacie Populaire",
+    "titulaire": "Cheikh Tidiane DIAW",
+    "adresse": "Unité 13, n° 418, Parcelles Assainies",
+    "commune": "Parcelles Assainies",
+    "region": "Dakar",
+    "lat": 14.7660,
+    "lng": -17.4400
+  },
+  {
+    "id": 149,
+    "nom": "Pharmacie Serigne Abdou Aziz Sy",
+    "titulaire": "Mamadou Lamine SARR",
+    "adresse": "Unité 22, Parcelles Assainies",
+    "commune": "Parcelles Assainies",
+    "region": "Dakar",
+    "lat": 14.7660,
+    "lng": -17.4390
+  },
+  {
+    "id": 150,
+    "nom": "Pharmacie Wassila",
+    "titulaire": "Aissatou DIOP",
+    "adresse": "Unité 4, n° 17, Parcelles Assainies",
+    "commune": "Parcelles Assainies",
+    "region": "Dakar",
+    "lat": 14.7660,
+    "lng": -17.4400
+  },
+  {
+    "id": 151,
+    "nom": "Pharmacie Serigne Saliou Mbacké",
+    "titulaire": "Racky Drame DIOP",
+    "adresse": "Unité 24, Parcelles Assainies",
+    "commune": "Parcelles Assainies",
+    "region": "Dakar",
+    "lat": 14.7660,
+    "lng": -17.4390
+  },
+  {
+    "id": 152,
+    "nom": "Pharmacie Bousso Dramé",
+    "titulaire": "Fatou Diagne FALL",
+    "adresse": "Unité 20 n° 571",
+    "commune": "Parcelles Assainies",
+    "region": "Dakar",
+    "lat": 14.7650,
+    "lng": -17.4400
+  },
+  {
+    "id": 153,
+    "nom": "Pharmacie Résidence II",
+    "titulaire": "Arama FALL",
+    "adresse": "Unité 12, Parcelles Assainies",
+    "commune": "Parcelles Assainies",
+    "region": "Dakar",
+    "lat": 14.7650,
+    "lng": -17.4390
+  },
+  {
+    "id": 154,
+    "nom": "Pharmacie Yacine",
+    "titulaire": "Ndeye Issa FAYE",
+    "adresse": "Unité 17, Parcelles Assainies",
+    "commune": "Parcelles Assainies",
+    "region": "Dakar",
+    "lat": 14.7650,
+    "lng": -17.4400
+  },
+  {
+    "id": 155,
+    "nom": "Pharmacie Unite 3",
+    "titulaire": "Aminata Sanokho GUEYE",
+    "adresse": "Unité 4, n° 360, Parcelles Assainies",
+    "commune": "Parcelles Assainies",
+    "region": "Dakar",
+    "lat": 14.7660,
+    "lng": -17.4390
+  },
+  {
+    "id": 156,
+    "nom": "Pharmacie Baraka",
+    "titulaire": "Moustapha DIAWARA",
+    "adresse": "Unité 7 n°414",
+    "commune": "Parcelles Assainies",
+    "region": "Dakar",
+    "lat": 14.7650,
+    "lng": -17.4400
+  },
+  {
+    "id": 157,
+    "nom": "Pharmacie Thierno Mountaga Tall",
+    "titulaire": "Marieme TALL LY",
+    "adresse": "Unité 11 n° 378, Parcelles Assainies",
+    "commune": "Parcelles Assainies",
+    "region": "Dakar",
+    "lat": 14.7650,
+    "lng": -17.4390
+  },
+  {
+    "id": 158,
+    "nom": "Pharmacie El Hadji Oumar Diaw",
+    "titulaire": "Ibrahima NDIR",
+    "adresse": "Unité 22, n°245, Parcelles Assainies",
+    "commune": "Parcelles Assainies",
+    "region": "Dakar",
+    "lat": 14.7660,
+    "lng": -17.4400
+  },
+  {
+    "id": 159,
+    "nom": "Pharmacie Mariama",
+    "titulaire": "Louise NGOM",
+    "adresse": "Unité 15, n° 170, Parcelles Assainies",
+    "commune": "Parcelles Assainies",
+    "region": "Dakar",
+    "lat": 14.7660,
+    "lng": -17.4390
+  },
+  {
+    "id": 160,
+    "nom": "Pharmacie Allah",
+    "titulaire": "Boubacar NIANE",
+    "adresse": "Unité 5, n° 114, Parcelles Assainies",
+    "commune": "Parcelles Assainies",
+    "region": "Dakar",
+    "lat": 14.7660,
+    "lng": -17.4400
+  },
+  {
+    "id": 161,
+    "nom": "Pharmacie du Royaume Sibuk",
+    "titulaire": "Jackson Edward SAMB",
+    "adresse": "Unité 17, n° 3, Parcelles Assainies",
+    "commune": "Parcelles Assainies",
+    "region": "Dakar",
+    "lat": 14.7660,
+    "lng": -17.4390
+  },
+  {
+    "id": 162,
+    "nom": "Pharmacie Moultazam",
+    "titulaire": "Rokhaya SAMB SARR",
+    "adresse": "Unité 25 n° 502",
+    "commune": "Parcelles Assainies",
+    "region": "Dakar",
+    "lat": 14.7650,
+    "lng": -17.4400
+  },
+  {
+    "id": 163,
+    "nom": "Pharmacie du Plateau",
+    "titulaire": "Pharmacien responsable",
+    "adresse": "Avenue Albert Sarraut, Dakar",
+    "commune": "Dakar Plateau",
+    "region": "Dakar",
+    "lat": 14.6700,
+    "lng": -17.4390
+  },
+  {
+    "id": 164,
+    "nom": "Pharmacie Guigon",
+    "titulaire": "Pharmacien responsable",
+    "adresse": "1 Avenue Georges Pompidou, Dakar Plateau",
+    "commune": "Dakar Plateau",
+    "region": "Dakar",
+    "lat": 14.6700,
+    "lng": -17.4380
+  },
+  {
+    "id": 165,
+    "nom": "Pharmacie Atlantique",
+    "titulaire": "Pharmacien responsable",
+    "adresse": "Avenue Cheikh Anta Diop, Fann",
+    "commune": "Fann Point-E Amitié",
+    "region": "Dakar",
+    "lat": 14.6930,
+    "lng": -17.4610
+  },
+  {
+    "id": 166,
+    "nom": "Pharmacie de la République",
+    "titulaire": "Pharmacien responsable",
+    "adresse": "Avenue de la République, Dakar Plateau",
+    "commune": "Dakar Plateau",
+    "region": "Dakar",
+    "lat": 14.6710,
+    "lng": -17.4390
+  },
+  {
+    "id": 167,
+    "nom": "Pharmacie des Almadies",
+    "titulaire": "Pharmacien responsable",
+    "adresse": "Route des Almadies, Ngor",
+    "commune": "Ngor-Almadies",
+    "region": "Dakar",
+    "lat": 14.7450,
+    "lng": -17.5130
+  },
+  {
+    "id": 168,
+    "nom": "Pharmacie de Pikine",
+    "titulaire": "Pharmacien responsable",
+    "adresse": "Tally Boubess, Pikine",
+    "commune": "Pikine",
+    "region": "Dakar",
+    "lat": 14.7510,
+    "lng": -17.3960
+  },
+  {
+    "id": 169,
+    "nom": "Pharmacie Nation",
+    "titulaire": "Pharmacien responsable",
+    "adresse": "Avenue Blaise Diagne, Colobane",
+    "commune": "Médina",
+    "region": "Dakar",
+    "lat": 14.6860,
+    "lng": -17.4570
+  },
+  {
+    "id": 170,
+    "nom": "Pharmacie Guédiawaye",
+    "titulaire": "Pharmacien responsable",
+    "adresse": "Golf Sud, près du stade de Guédiawaye",
+    "commune": "Guédiawaye",
+    "region": "Dakar",
+    "lat": 14.7790,
+    "lng": -17.4110
+  },
+  {
+    "id": 171,
+    "nom": "Pharmacie de Thiès",
+    "titulaire": "Pharmacien responsable",
+    "adresse": "Avenue Léopold Sédar Senghor, Thiès",
+    "commune": "Thiès commune",
+    "region": "Thiès",
+    "lat": 14.7875,
+    "lng": -16.9264
+  },
+  {
+    "id": 172,
+    "nom": "Pharmacie Pasteur",
+    "titulaire": "Pharmacien responsable",
+    "adresse": "Rue Pasteur, Thiès Nord",
+    "commune": "Thiès commune",
+    "region": "Thiès",
+    "lat": 14.7885,
+    "lng": -16.9275
+  },
+  {
+    "id": 173,
+    "nom": "Pharmacie Mbour",
+    "titulaire": "Pharmacien responsable",
+    "adresse": "Avenue Senghor, Mbour",
+    "commune": "Mbour",
+    "region": "Thiès",
+    "lat": 14.3986,
+    "lng": -16.9698
+  },
+  {
+    "id": 174,
+    "nom": "Pharmacie Tivaouane",
+    "titulaire": "Pharmacien responsable",
+    "adresse": "Place Cherif, Tivaouane",
+    "commune": "Tivaouane",
+    "region": "Thiès",
+    "lat": 14.9519,
+    "lng": -16.8136
+  },
+  {
+    "id": 175,
+    "nom": "Pharmacie Saint-Louis",
+    "titulaire": "Pharmacien responsable",
+    "adresse": "Rue Dodds, Saint-Louis",
+    "commune": "Saint-Louis commune",
+    "region": "Saint-Louis",
+    "lat": 16.0326,
+    "lng": -16.5003
+  },
+  {
+    "id": 176,
+    "nom": "Pharmacie du Fleuve",
+    "titulaire": "Pharmacien responsable",
+    "adresse": "Pont Faidherbe, Saint-Louis",
+    "commune": "Saint-Louis commune",
+    "region": "Saint-Louis",
+    "lat": 16.0336,
+    "lng": -16.5014
+  },
+  {
+    "id": 177,
+    "nom": "Pharmacie de Ziguinchor",
+    "titulaire": "Pharmacien responsable",
+    "adresse": "Avenue Emile Badiane, Ziguinchor",
+    "commune": "Ziguinchor commune",
+    "region": "Ziguinchor",
+    "lat": 12.5681,
+    "lng": -16.2719
+  },
+  {
+    "id": 178,
+    "nom": "Pharmacie Kaolack",
+    "titulaire": "Pharmacien responsable",
+    "adresse": "Avenue du Sénégal, Kaolack",
+    "commune": "Kaolack commune",
+    "region": "Kaolack",
+    "lat": 14.1663,
+    "lng": -16.0768
+  },
+  {
+    "id": 179,
+    "nom": "Pharmacie Fatick",
+    "titulaire": "Pharmacien responsable",
+    "adresse": "Quartier Ndorong, Fatick",
+    "commune": "Fatick commune",
+    "region": "Fatick",
+    "lat": 14.3392,
+    "lng": -16.4083
+  },
+  {
+    "id": 180,
+    "nom": "Pharmacie Kolda",
+    "titulaire": "Pharmacien responsable",
+    "adresse": "Quartier Télémaque, Kolda",
+    "commune": "Kolda commune",
+    "region": "Kolda",
+    "lat": 12.8953,
+    "lng": -14.9428
+  },
+  {
+    "id": 181,
+    "nom": "Pharmacie Tambacounda",
+    "titulaire": "Pharmacien responsable",
+    "adresse": "Avenue Faidherbe, Tambacounda",
+    "commune": "Tambacounda commune",
+    "region": "Tambacounda",
+    "lat": 13.7717,
+    "lng": -13.6684
+  },
+  {
+    "id": 182,
+    "nom": "Pharmacie Diourbel",
+    "titulaire": "Pharmacien responsable",
+    "adresse": "Avenue de l'Indépendance, Diourbel",
+    "commune": "Diourbel commune",
+    "region": "Diourbel",
+    "lat": 14.6563,
+    "lng": -16.2330
+  },
+  {
+    "id": 183,
+    "nom": "Pharmacie Touba",
+    "titulaire": "Pharmacien responsable",
+    "adresse": "Résidence Serigne Touba, Touba",
+    "commune": "Touba",
+    "region": "Diourbel",
+    "lat": 14.8333,
+    "lng": -15.8833
+  },
+  {
+    "id": 184,
+    "nom": "Pharmacie Mbacké",
+    "titulaire": "Pharmacien responsable",
+    "adresse": "Place de l'Indépendance, Mbacké",
+    "commune": "Mbacké",
+    "region": "Diourbel",
+    "lat": 14.8072,
+    "lng": -15.9108
+  },
+  {
+    "id": 185,
+    "nom": "Pharmacie Matam",
+    "titulaire": "Pharmacien responsable",
+    "adresse": "Quartier Ndorong, Matam",
+    "commune": "Matam commune",
+    "region": "Matam",
+    "lat": 15.6570,
+    "lng": -13.2564
+  },
+  {
+    "id": 186,
+    "nom": "Pharmacie Kédougou",
+    "titulaire": "Pharmacien responsable",
+    "adresse": "Avenue Kennedy, Kédougou",
+    "commune": "Kédougou commune",
+    "region": "Kédougou",
+    "lat": 12.5574,
+    "lng": -12.1758
+  },
+  {
+    "id": 187,
+    "nom": "Pharmacie Sédhiou",
+    "titulaire": "Pharmacien responsable",
+    "adresse": "Avenue Léopold Senghor, Sédhiou",
+    "commune": "Sédhiou commune",
+    "region": "Sédhiou",
+    "lat": 12.7093,
+    "lng": -15.5575
+  },
+  {
+    "id": 188,
+    "nom": "Pharmacie Kaffrine",
+    "titulaire": "Pharmacien responsable",
+    "adresse": "Avenue du Président, Kaffrine",
+    "commune": "Kaffrine commune",
+    "region": "Kaffrine",
+    "lat": 14.1063,
+    "lng": -15.5519
+  }
+]

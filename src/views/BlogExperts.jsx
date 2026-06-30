@@ -1,20 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 export default function BlogExperts({ lang, portalMode, agentUser }) {
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [comments, setComments] = useState({});
   const [newComment, setNewComment] = useState({ author: '', text: '' });
-
-  // Custom articles list written by admins/experts
-  const [customArticles, setCustomArticles] = useState([]);
   const [showEditor, setShowEditor] = useState(false);
-
-  // Likes state: mapping article ID to number of likes, and session tracking
   const [likes, setLikes] = useState({});
   const [likedArticles, setLikedArticles] = useState({});
   const [toastMessage, setToastMessage] = useState('');
-
-  // New Article Form State
   const [newArticle, setNewArticle] = useState({
     title: '',
     author: '',
@@ -60,55 +54,7 @@ export default function BlogExperts({ lang, portalMode, agentUser }) {
 
   const t = dict[lang] || dict.fr;
 
-  // Preset articles with numeric timestamps relative to June 22, 2026 (1782155297000)
-  const defaultArticles = [
-    {
-      id: 1,
-      title: lang === 'fr' ? 'Prévenir le paludisme en saison des pluies à Dakar' : 'Wanni malaria bi ci hivernage bi ci Ndakaaru',
-      author: 'Dr. Aminata Sow',
-      role: lang === 'fr' ? 'Épidémiologiste, Dakar' : 'Docteur épidémiologiste',
-      avatar: '👩‍⚕️',
-      date: new Date('2026-06-15T12:00:00Z').getTime(), // 7 days ago
-      readTime: lang === 'fr' ? '4 min de lecture' : '4 min ci jang',
-      preview: lang === 'fr' 
-        ? 'L\'hivernage est propice au développement des moustiques. Voici les mesures collectives et individuelles indispensables pour protéger votre famille.' 
-        : 'Naka la gnu di wanni malaria ak moustiques yi ci saison des pluies bi ci Ndakaaru.',
-      content: lang === 'fr' 
-        ? `L'hivernage s'installe à Dakar et avec lui, le risque accru de transmission du paludisme. En tant que médecin épidémiologiste, je rappelle que le paludisme reste une des causes majeures de consultation dans nos structures de santé.\n\nVoici 4 conseils simples mais cruciaux :\n1. Dormez sous une moustiquaire imprégnée : C'est le moyen de prévention le plus efficace. Assurez-vous qu'elle est bien fermée et sans trous.\n2. Éliminez les eaux stagnantes : Les moustiques y pondent leurs œufs. Videz les récipients d'eau inutilisés autour de votre maison.\n3. Utilisez des répulsifs corporels : Surtout en fin de journée lorsque l'activité des moustiques augmente.\n4. Consultez au premier symptôme : La fièvre est le premier signe d'alerte. Grâce à la gratuité des soins pour les enfants de moins de 5 ans et à la couverture CMU, le diagnostic et le traitement (ACT) sont immédiats et accessibles dans tous les postes de santé conventionnés.`
-        : `Saison des pluies bi dafa ubbil yoon moustiques yi ngir gnu bari. Loolu day andil malaria.\n\nDigle yi gënë rëy :\n1. Moustiquaire : Sangal sa bop ak sa njabot ak moustiquaire bu baax at mi yëpp.\n2. Dindi ndox yi tégu ci bountou keur yi ngir moustiques yi bagn fa egg.\n3. Fajjoo : Soo amé fievre, demal ci poste de santé bi gënë jege téy.`
-    },
-    {
-      id: 2,
-      title: lang === 'fr' ? 'Données de santé et RGPD : comment Mutualis protège votre vie privée' : 'Données wér-gi-yaram ak RGPD ci Mutualis',
-      author: 'Dr. Ibrahima Diagne',
-      role: lang === 'fr' ? 'Expert en e-santé & sécurité' : 'Docteur e-santé & sécurité',
-      avatar: '👨‍⚕️',
-      date: new Date('2026-06-18T10:00:00Z').getTime(), // 4 days ago
-      readTime: lang === 'fr' ? '6 min de lecture' : '6 min ci jang',
-      preview: lang === 'fr' 
-        ? 'La numérisation de la couverture maladie nécessite une sécurité maximale. Décryptage de nos protocoles d\'isolation et de chiffrement.' 
-        : 'Assurance maladie numérique dafa wara am sécurité bu dëgër. Leral naka la gnu di aar sa vie privée.',
-      content: lang === 'fr' 
-        ? `Avec le lancement de la plateforme Mutualis Dakar, nous passons à une vitesse supérieure dans la numérisation des données médicales. Mais qui dit numérisation dit responsabilité.\n\nDans le cadre de la conformité au RGPD et aux règles sénégalaises de protection des données personnelles :\n- Vos données sont cryptées : Les mots de passe et les informations personnelles sont chiffrés. Aucun tiers ne peut y avoir accès.\n- Jeton d'authentification (JWT) : Chaque connexion génère un jeton temporaire qui authentifie de manière unique l'assuré ou l'agent.\n- Droit à l'oubli : Vous pouvez à tout moment demander la suppression définitive de vos données depuis votre espace profil.\n- Consentement obligatoire : Aucune donnée n'est traitée sans votre acceptation préalable lors de l'adhésion en ligne.`
-        : `Mbindu numérique bi dafa wara andak aar askan wi.\n\nCi bir Mutualis Dakar :\n- Sa mot de passe dafa crypté, amul kenn kou koy guiss.\n- Jeton JWT : Day sécurisé sa connexion.\n- Droit à l'oubli : Mën nga dindi sa account ak say données saa soo ko beugué ci sa profil.`
-    },
-    {
-      id: 3,
-      title: lang === 'fr' ? 'Nutrition et Hypertension : préserver le cœur au quotidien' : 'Hypertension ak lekk bu baax ngir sa xol',
-      author: 'Dr. Ousmane Diagne',
-      role: lang === 'fr' ? 'Cardiologue, Hôpital de Dakar' : 'Cardiologue, Hôpital Dakar',
-      avatar: '🩺',
-      date: new Date('2026-06-20T16:00:00Z').getTime(), // 2 days ago
-      readTime: lang === 'fr' ? '5 min de lecture' : '5 min ci jang',
-      preview: lang === 'fr' 
-        ? 'L\'hypertension artérielle est un fléau silencieux. Découvrez les changements alimentaires simples à adopter pour préserver votre xol.' 
-        : 'Hypertension artérielle dafa bari ci Sénégal. Xoolal naka la gnu di lekk ngir aar sa xol.',
-      content: lang === 'fr' 
-        ? `L'hypertension artérielle (HTA) est souvent surnommée le "tueur silencieux" car elle se développe sans symptômes apparents. Pourtant, elle cause de nombreuses complications cardiologiques et vasculaires.\n\nQuelques conseils simples de cardiologie :\n1. Réduisez le sel : La consommation excessive de sel augmente la tension artérielle. Évitez les bouillons industriels très salés et limitez le sel à table.\n2. Mangez des fruits et légumes : Riches en potassium, ils aident à réguler la tension.\n3. Pratiquez une activité physique : Marcher 30 minutes par jour à un rythme soutenu est excellent pour le cœur.\n4. Contrôlez votre tension régulièrement : Les mutuelles de santé conventionnées organisent régulièrement des campagnes de dépistage gratuites. Profitez-en !`
-        : `Hypertension artérielle dafa andil diafé-diafé xol bou bari.\n\nDigle cardiologue :\n1. Wanni xorom : Bagn lekk bouillon industriels yi xorom bi bari.\n2. Lekkal fruits ak légumes.\n3. Doxaal : Defal marche 30 minutes ci at mi ngir sa xol wér.\n4. Saytul sa tension régulièrement ci sa mutuelle.`
-    }
-  ];
-
+  // Preset articles with numeric timestamps relative to June 22
   const flashTips = [
     { title: lang === 'fr' ? 'Sel & coeur' : 'Xorom ak xol', text: lang === 'fr' ? 'Réduire le sel de 2g par jour diminue de 20% le risque d\'accident cardiovasculaire.' : 'Wannil xorom bi ngir sa xol bagn am diafé-diafé.' },
     { title: lang === 'fr' ? 'Moustiquaire' : 'Moustiquaire', text: lang === 'fr' ? 'Bordez bien votre moustiquaire sous le matelas avant la nuit.' : 'Sangal sa moustiquaire bu baax avant nga teud.' },
@@ -123,35 +69,79 @@ export default function BlogExperts({ lang, portalMode, agentUser }) {
     }, 3000);
   };
 
-  // Load custom articles, comments, and likes from localStorage on mount
+  const queryClient = useQueryClient();
+
+  // Load articles dynamically
+  const { data: blogArticles = [] } = useQuery({
+    queryKey: ['blogArticlesList'],
+    queryFn: async () => {
+      const res = await fetch('http://localhost:5000/api/blog/articles');
+      if (!res.ok) throw new Error('API Error');
+      const data = await res.json();
+      const toSentenceCase = (str) => {
+        if (!str) return '';
+        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+      };
+      return data.map(item => ({
+        id: item.id,
+        title: toSentenceCase(lang === 'fr' ? item.title_fr : item.title_wo),
+        author: item.author,
+        role: lang === 'fr' ? item.role_fr : item.role_wo,
+        avatar: item.avatar,
+        date: parseInt(item.date),
+        readTime: lang === 'fr' ? item.read_time_fr : item.read_time_wo,
+        preview: toSentenceCase(lang === 'fr' ? item.preview_fr : item.preview_wo),
+        content: toSentenceCase(lang === 'fr' ? item.content_fr : item.content_wo),
+        imageUrl: item.image_url ? `${item.image_url}?v=1.1` : '',
+        likes: item.likes,
+        comment_count: item.comment_count || 0
+      }));
+    }
+  });
+
+  const allArticles = blogArticles;
+
+  // Load comments dynamically for selected article
+  const { data: articleComments = [] } = useQuery({
+    queryKey: ['articleComments', selectedArticle?.id],
+    queryFn: async () => {
+      if (!selectedArticle) return [];
+      const res = await fetch(`http://localhost:5000/api/blog/articles/${selectedArticle.id}/comments`);
+      if (!res.ok) throw new Error('API Error');
+      return res.json();
+    },
+    enabled: !!selectedArticle
+  });
+
+  // Populate likes and comment counts mapping
   useEffect(() => {
-    const storedArticles = localStorage.getItem('cmu-blog-articles');
-    if (storedArticles) {
-      try {
-        setCustomArticles(JSON.parse(storedArticles));
-      } catch (e) {
-        console.error('Error parsing custom articles:', e);
-      }
+    if (blogArticles.length > 0) {
+      const initialLikes = {};
+      const initialComments = {};
+      blogArticles.forEach(art => {
+        initialLikes[art.id] = art.likes;
+        // Use empty array - actual comments are loaded when article is selected
+        initialComments[art.id] = [];
+      });
+      setLikes(initialLikes);
+      setComments(initialComments);
     }
+  }, [blogArticles]);
 
-    const storedComments = localStorage.getItem('cmu-blog-comments');
-    if (storedComments) {
-      try {
-        setComments(JSON.parse(storedComments));
-      } catch (e) {
-        console.error('Error parsing comments:', e);
-      }
+  // Synchronize actual loaded comments for selected article
+  useEffect(() => {
+    if (selectedArticle && articleComments) {
+      setComments(prev => ({
+        ...prev,
+        [selectedArticle.id]: articleComments.map(c => ({
+          id: c.id,
+          author: c.author,
+          text: c.text,
+          date: new Date(c.created_at).toLocaleDateString('fr-FR')
+        }))
+      }));
     }
-
-    const storedLikes = localStorage.getItem('cmu-blog-likes');
-    if (storedLikes) {
-      try {
-        setLikes(JSON.parse(storedLikes));
-      } catch (e) {
-        console.error('Error parsing likes:', e);
-      }
-    }
-  }, []);
+  }, [selectedArticle, articleComments]);
 
   // Autofill author details if connected as agent/admin
   useEffect(() => {
@@ -164,7 +154,7 @@ export default function BlogExperts({ lang, portalMode, agentUser }) {
     }
   }, [portalMode, agentUser, lang]);
 
-  const allArticles = [...customArticles, ...defaultArticles];
+
 
   // Helper to calculate relative time dynamically
   const getRelativeTime = (article) => {
@@ -226,83 +216,86 @@ export default function BlogExperts({ lang, portalMode, agentUser }) {
 
   // Dynamic Likes toggle handler
   const handleLike = (articleId, e) => {
-    if (e) e.stopPropagation(); // prevent opening details view from list card click
+    if (e) e.stopPropagation();
 
     const isLiked = likedArticles[articleId];
-    const currentCount = likes[articleId] || 0;
     
-    let newCount = currentCount;
-    if (isLiked) {
-      newCount = Math.max(0, currentCount - 1);
-    } else {
-      newCount = currentCount + 1;
-    }
-
-    const updatedLikes = {
-      ...likes,
-      [articleId]: newCount
-    };
-
-    const updatedLikedArticles = {
-      ...likedArticles,
-      [articleId]: !isLiked
-    };
-
-    setLikes(updatedLikes);
-    setLikedArticles(updatedLikedArticles);
-    localStorage.setItem('cmu-blog-likes', JSON.stringify(updatedLikes));
-
-    if (!isLiked) {
-      triggerToast(lang === 'fr' ? 'Vous aimez cet article !' : 'Beug nga article bi !');
-    }
+    fetch(`http://localhost:5000/api/blog/articles/${articleId}/like`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ decrement: !!isLiked })
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Error liking');
+        return res.json();
+      })
+      .then(() => {
+        setLikedArticles(prev => ({ ...prev, [articleId]: !isLiked }));
+        queryClient.invalidateQueries(['blogArticlesList']);
+        if (!isLiked) {
+          triggerToast(lang === 'fr' ? 'Vous aimez cet article !' : 'Beug nga article bi !');
+        }
+      })
+      .catch(err => console.error('Error liking:', err));
   };
 
   // Create article handler
   const handleCreateArticle = (e) => {
     e.preventDefault();
-    if (!newArticle.title || !newArticle.author || !newArticle.content) {
-      setEditorError(lang === 'fr' ? 'Veuillez remplir les champs obligatoires (Titre, Auteur, Contenu).' : 'Bindal titre, author ak content.');
+    if (!newArticle.title || !newArticle.content) {
+      setEditorError(lang === 'fr' ? 'Veuillez remplir le titre et le contenu.' : 'Remplir yeup.');
       return;
     }
 
-    const createdArticle = {
-      id: Date.now(),
-      title: newArticle.title,
+    const payload = {
+      titleFr: newArticle.title,
+      titleWo: newArticle.title,
       author: newArticle.author,
-      role: newArticle.role || (lang === 'fr' ? 'Expert CSU' : 'Njiit CSU'),
-      avatar: newArticle.avatar || '📝',
-      date: Date.now(), // Store numeric timestamp for relative time calculation
-      readTime: lang === 'fr' ? `${newArticle.readTime} de lecture` : `${newArticle.readTime} ci jang`,
-      preview: newArticle.content.substring(0, 160) + '...',
-      content: newArticle.content,
-      imageUrl: newArticleImage || null
+      roleFr: newArticle.role,
+      roleWo: newArticle.role,
+      avatar: newArticle.avatar,
+      readTimeFr: newArticle.readTime,
+      readTimeWo: newArticle.readTime,
+      previewFr: newArticle.content.substring(0, 120) + '...',
+      previewWo: newArticle.content.substring(0, 120) + '...',
+      contentFr: newArticle.content,
+      contentWo: newArticle.content,
+      imageUrl: newArticleImage
     };
 
-    const updatedList = [createdArticle, ...customArticles];
-    setCustomArticles(updatedList);
-    localStorage.setItem('cmu-blog-articles', JSON.stringify(updatedList));
-
-    // Reset Form
-    setNewArticle({
-      title: '',
-      author: portalMode === 'agent' && agentUser ? `${agentUser.firstName} ${agentUser.lastName}` : '',
-      role: portalMode === 'agent' && agentUser ? (agentUser.role || (lang === 'fr' ? 'Administrateur régional' : 'Njiit gobal')) : '',
-      avatar: '🩺',
-      readTime: '5 min',
-      content: ''
-    });
-    setNewArticleImage(null);
-    setEditorError('');
-
-    const fileInput = document.getElementById('blog-image-input');
-    if (fileInput) fileInput.value = '';
-
-    setEditorSuccess(lang === 'fr' ? 'Article publié avec succès !' : 'Article bi soti na !');
-    triggerToast(lang === 'fr' ? 'Article publié avec succès !' : 'Article bi soti na !');
-    setTimeout(() => {
-      setEditorSuccess('');
-      setShowEditor(false);
-    }, 2000);
+    fetch('http://localhost:5000/api/blog/articles', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('cmu-token') || ''}`
+      },
+      body: JSON.stringify(payload)
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Error saving article');
+        return res.json();
+      })
+      .then(() => {
+        setEditorSuccess(lang === 'fr' ? 'Article publié avec succès !' : 'Article soti na !');
+        setNewArticle({
+          title: '',
+          author: portalMode === 'agent' && agentUser ? `${agentUser.firstName} ${agentUser.lastName}` : '',
+          role: portalMode === 'agent' && agentUser ? agentUser.role || 'Administrateur' : '',
+          avatar: '🩺',
+          readTime: '5 min',
+          content: ''
+        });
+        setNewArticleImage(null);
+        queryClient.invalidateQueries(['blogArticlesList']);
+        setTimeout(() => {
+          setEditorSuccess('');
+          setShowEditor(false);
+        }, 2000);
+      })
+      .catch(err => {
+        console.error('Error saving article:', err);
+        setEditorError('Erreur lors de la publication.');
+      });
   };
 
   // Add Comment handler
@@ -310,27 +303,25 @@ export default function BlogExperts({ lang, portalMode, agentUser }) {
     e.preventDefault();
     if (!newComment.author || !newComment.text || !selectedArticle) return;
 
-    const articleId = selectedArticle.id;
-    const list = comments[articleId] || [];
-    const updatedList = [
-      ...list,
-      {
-        id: Date.now(),
-        author: newComment.author,
-        text: newComment.text,
-        date: new Date().toLocaleDateString('fr-FR')
-      }
-    ];
-
-    const updatedComments = {
-      ...comments,
-      [articleId]: updatedList
-    };
-
-    setComments(updatedComments);
-    localStorage.setItem('cmu-blog-comments', JSON.stringify(updatedComments));
-    setNewComment({ author: '', text: '' });
-    triggerToast(t.alertSuccess);
+    fetch(`http://localhost:5000/api/blog/articles/${selectedArticle.id}/comments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newComment)
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Error posting comment');
+        return res.json();
+      })
+      .then(() => {
+        setNewComment({ author: '', text: '' });
+        triggerToast(t.alertSuccess);
+        queryClient.invalidateQueries(['articleComments', selectedArticle.id]);
+        queryClient.invalidateQueries(['blogArticlesList']);
+      })
+      .catch(err => {
+        console.error('Error posting comment:', err);
+        triggerToast('Erreur lors de la publication.');
+      });
   };
 
   return (
@@ -355,22 +346,19 @@ export default function BlogExperts({ lang, portalMode, agentUser }) {
         </div>
       </section>
 
-      {/* Editor collapsible form */}
-      {(showEditor || (portalMode === 'agent' && agentUser)) && (
+      {(showEditor && portalMode === 'agent' && agentUser) && (
         <div className="card text-left fade-in-up" style={{ padding: '2rem', marginBottom: '2rem', borderLeft: '5px solid var(--primary)', borderRadius: '16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
             <h3 style={{ margin: 0, fontSize: '1.35rem', fontWeight: '850', color: 'var(--primary)' }}>
               ✍️ {lang === 'fr' ? 'Rédiger et publier un article d\'expert' : 'Bind sa article expert'}
             </h3>
-            {!(portalMode === 'agent' && agentUser) && (
-              <button 
-                className="btn-text" 
-                style={{ color: 'var(--text-sub)', fontWeight: 'bold' }} 
-                onClick={() => setShowEditor(false)}
-              >
-                {lang === 'fr' ? 'Masquer' : 'Dindi'}
-              </button>
-            )}
+            <button 
+              className="btn-text" 
+              style={{ color: 'var(--text-sub)', fontWeight: 'bold' }} 
+              onClick={() => setShowEditor(false)}
+            >
+              {lang === 'fr' ? 'Masquer' : 'Dindi'}
+            </button>
           </div>
 
           <form onSubmit={handleCreateArticle}>
@@ -523,7 +511,8 @@ export default function BlogExperts({ lang, portalMode, agentUser }) {
                 {selectedArticle.imageUrl && (
                   <img 
                     src={selectedArticle.imageUrl} 
-                    alt={selectedArticle.title} 
+                    alt={selectedArticle.title}
+                    onError={(e) => { e.target.onerror = null; e.target.src = '/csu_blog_hero.png'; }}
                     style={{ 
                       width: '100%', 
                       maxHeight: '360px', 
@@ -610,7 +599,7 @@ export default function BlogExperts({ lang, portalMode, agentUser }) {
                 {/* Comments List */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', marginBottom: '2rem' }}>
                   {comments[selectedArticle.id] && comments[selectedArticle.id].length > 0 ? (
-                    comments[selectedArticle.id].map(comment => (
+                    comments[selectedArticle.id].filter(Boolean).map(comment => (
                       <div 
                         key={comment.id}
                         style={{
@@ -719,7 +708,7 @@ export default function BlogExperts({ lang, portalMode, agentUser }) {
                       <span>{article.author} — {getRelativeTime(article)}</span>
                       <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
                         <span>⏱️ {article.readTime}</span>
-                        <span>💬 {comments[article.id]?.length || 0}</span>
+                        <span>💬 {article.comment_count || 0}</span>
                         <button 
                           onClick={(e) => handleLike(article.id, e)}
                           style={{
@@ -760,7 +749,8 @@ export default function BlogExperts({ lang, portalMode, agentUser }) {
                   {article.imageUrl && (
                     <img 
                       src={article.imageUrl} 
-                      alt={article.title} 
+                      alt={article.title}
+                      onError={(e) => { e.target.onerror = null; e.target.src = '/csu_blog_hero.png'; }}
                       style={{ 
                         width: '120px', 
                         height: '120px', 
@@ -793,16 +783,16 @@ export default function BlogExperts({ lang, portalMode, agentUser }) {
               </div>
             </div>
 
-            {/* General Blog Note / Contribution trigger */}
-            {!(portalMode === 'agent' && agentUser) && (
+            {/* General Blog Note / Contribution trigger (Agent/Admin only) */}
+            {(portalMode === 'agent' && agentUser) && (
               <div className="card text-left" style={{ padding: '1.5rem', background: 'var(--bg-card-subtle)', border: '1px dashed var(--border-color)', borderRadius: '16px' }}>
                 <span style={{ fontWeight: 'bold', color: 'var(--text-main)', fontSize: '0.85rem', display: 'block', marginBottom: '0.5rem' }}>
-                  ✍️ {lang === 'fr' ? 'Participez au débat !' : 'Bokk ci waxtaan bi !'}
+                  ✍️ {lang === 'fr' ? 'Rédiger un article' : 'Bind sa article'}
                 </span>
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-sub)', lineHeight: '1.4', marginBottom: '1rem' }}>
                   {lang === 'fr' 
-                    ? 'Vous êtes médecin, chercheur ou acteur de la CSU au Sénégal ? Contribuez en publiant votre article d\'analyse.' 
-                    : 'Soo doné médecin walla doctor, duggalal sa article ngir leral askan wi.'}
+                    ? 'Ajoutez un nouvel article d\'analyse ou conseil d\'expert pour informer les assurés.' 
+                    : 'Bindal article bu bees ngir leral askan wi.'}
                 </p>
                 <button 
                   className="btn btn-outline btn-sm" 
@@ -810,8 +800,8 @@ export default function BlogExperts({ lang, portalMode, agentUser }) {
                   onClick={() => setShowEditor(!showEditor)}
                 >
                   {showEditor 
-                    ? (lang === 'fr' ? 'Masquer l\'éditeur' : 'Rédiger un article') 
-                    : (lang === 'fr' ? 'Rédiger un article' : 'Rédiger un article')}
+                    ? (lang === 'fr' ? 'Masquer l\'éditeur' : 'Dindi éditeur') 
+                    : (lang === 'fr' ? 'Rédiger un article' : 'Bind article')}
                 </button>
               </div>
             )}

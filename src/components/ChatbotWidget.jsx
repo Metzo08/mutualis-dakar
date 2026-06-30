@@ -12,6 +12,7 @@ export default function ChatbotWidget({ lang, setView }) {
   const [hasNewMessage, setHasNewMessage] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [voiceProvider, setVoiceProvider] = useState(() => localStorage.getItem('cmu-voice-provider') || 'local');
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const chatEndRef = useRef(null);
@@ -39,6 +40,10 @@ export default function ChatbotWidget({ lang, setView }) {
       voiceOff: 'Voix désactivée',
       typing: 'Zahara écrit...',
       online: 'En ligne — Gemini 1.5',
+      voiceEngine: 'Voix :',
+      voicePremium: 'ElevenLabs',
+      voiceOpenSource: 'Open-Source',
+      voiceBrowser: 'Navigateur'
     },
     wo: {
       botName: 'Zahara — Woyofal IA',
@@ -53,6 +58,10 @@ export default function ChatbotWidget({ lang, setView }) {
       voiceOff: 'Baat bi dafa tëdd',
       typing: 'Zahara mungi bind...',
       online: 'Ci internet — Gemini 1.5',
+      voiceEngine: 'Baat :',
+      voicePremium: 'ElevenLabs',
+      voiceOpenSource: 'Open-Source',
+      voiceBrowser: 'Navigateur'
     }
   };
 
@@ -113,31 +122,13 @@ export default function ChatbotWidget({ lang, setView }) {
     }
   };
 
-  // Text-to-Speech function
-  const speakText = useCallback((text) => {
-    if (!voiceEnabled) return;
-
-    // Stop toute synthèse vocale en cours (API Web Speech native)
-    if (synthRef.current) {
-      synthRef.current.cancel();
-    }
-    if (window.activeAudioChatbot) {
-      window.activeAudioChatbot.pause();
-      window.activeAudioChatbot = null;
-    }
-    setIsSpeaking(false);
-
-    const cleanText = cleanTextForTTS(text);
-    if (!cleanText) return;
-
-    const isWolof = isWolofText(cleanText);
-    const textToSpeak = isWolof ? convertWolofToFrenchPhonetics(cleanText) : cleanText;
-
-    // Synthèse vocale native du navigateur (gratuite, offline, conforme aux ToS)
+  const fallbackWebSpeech = useCallback((cleanText) => {
     if (!synthRef.current) {
       console.warn('SpeechSynthesis non supporté par ce navigateur.');
       return;
     }
+    const isWolof = isWolofText(cleanText);
+    const textToSpeak = isWolof ? convertWolofToFrenchPhonetics(cleanText) : cleanText;
 
     const utterance = new SpeechSynthesisUtterance(textToSpeak);
     utterance.rate = isWolof ? 0.9 : 0.95;
@@ -157,7 +148,55 @@ export default function ChatbotWidget({ lang, setView }) {
     utterance.onerror = () => setIsSpeaking(false);
 
     synthRef.current.speak(utterance);
-  }, [voiceEnabled]);
+  }, []);
+
+  // Text-to-Speech function
+  const speakText = useCallback((text) => {
+    if (!voiceEnabled) return;
+
+    if (synthRef.current) {
+      synthRef.current.cancel();
+    }
+    if (window.activeAudioChatbot) {
+      window.activeAudioChatbot.pause();
+      window.activeAudioChatbot = null;
+    }
+    setIsSpeaking(false);
+
+    const cleanText = cleanTextForTTS(text);
+    if (!cleanText) return;
+
+    if (voiceProvider === 'local') {
+      fallbackWebSpeech(cleanText);
+    } else {
+      setIsSpeaking(true);
+      const isWolof = isWolofText(cleanText);
+      const langParam = isWolof ? 'wo' : 'fr';
+      
+      const ttsUrl = `http://localhost:5000/api/tts?text=${encodeURIComponent(cleanText)}&provider=${voiceProvider}&lang=${langParam}`;
+      const audio = new Audio(ttsUrl);
+      window.activeAudioChatbot = audio;
+      
+      audio.play()
+        .then(() => {
+          setIsSpeaking(true);
+        })
+        .catch(err => {
+          console.warn("Échec de la lecture TTS distante, repli sur Web Speech...", err.message);
+          fallbackWebSpeech(cleanText);
+        });
+
+      audio.onended = () => {
+        setIsSpeaking(false);
+        window.activeAudioChatbot = null;
+      };
+
+      audio.onerror = () => {
+        console.warn("Erreur lecture audio TTS distante, repli sur Web Speech...");
+        fallbackWebSpeech(cleanText);
+      };
+    }
+  }, [voiceEnabled, voiceProvider, fallbackWebSpeech]);
 
   const stopSpeaking = () => {
     if (synthRef.current) {
@@ -299,7 +338,7 @@ export default function ChatbotWidget({ lang, setView }) {
     fetch('http://localhost:5000/api/chatbot', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: textToSend, lang: messageLang, history: historyForAPI })
+      body: JSON.stringify({ message: textToSend, lang: messageLang, history: historyForAPI, isVoiceInput })
     })
     .then(res => res.json())
     .then(data => {
@@ -477,6 +516,47 @@ export default function ChatbotWidget({ lang, setView }) {
               </button>
             </div>
           </div>
+
+          {/* Sub-header or Settings bar */}
+          {voiceEnabled && (
+            <div className="chatbot-settings-bar" style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '0.4rem 1rem',
+              backgroundColor: 'rgba(5, 150, 105, 0.08)',
+              borderBottom: '1px solid var(--border-color)',
+              fontSize: '0.78rem',
+              color: 'var(--text-muted)'
+            }}>
+              <span>{t.voiceEngine}</span>
+              <select 
+                value={voiceProvider}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setVoiceProvider(val);
+                  localStorage.setItem('cmu-voice-provider', val);
+                  if (isSpeaking) {
+                    stopSpeaking();
+                  }
+                }}
+                style={{
+                  fontSize: '0.75rem',
+                  padding: '2px 6px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--border-color)',
+                  backgroundColor: 'var(--bg-card)',
+                  color: 'var(--text-main)',
+                  outline: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="local">{t.voiceBrowser}</option>
+                <option value="elevenlabs">{t.voicePremium}</option>
+                <option value="opensource">{t.voiceOpenSource}</option>
+              </select>
+            </div>
+          )}
 
           {/* Messages body */}
           <div className="chatbot-messages">

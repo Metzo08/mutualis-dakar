@@ -111,6 +111,17 @@ export default function Cotisations({ lang, portalMode, citizenUser, agentUser }
     return <span style={{ background: color, color: '#fff', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.7rem', fontWeight: '700', whiteSpace: 'nowrap' }}>{icon} {label}</span>;
   };
 
+  const activeCotisation = cotisations.find(c => {
+    const end = new Date(c.period_end);
+    return c.status === 'paid' && end > new Date();
+  });
+
+  let daysRemaining = 0;
+  if (activeCotisation) {
+    const end = new Date(activeCotisation.period_end);
+    daysRemaining = Math.ceil((end - new Date()) / (1000 * 60 * 60 * 24));
+  }
+
   return (
     <div className="cotisations-view fade-in-up">
       {/* Banner */}
@@ -131,6 +142,33 @@ export default function Cotisations({ lang, portalMode, citizenUser, agentUser }
       </section>
 
       <div style={{ padding: '0 1rem' }}>
+        {!isAgent && activeCotisation && daysRemaining > 0 && (
+          <div className="card text-left fade-in-up" style={{ 
+            padding: '1.25rem 1.5rem', 
+            marginBottom: '1.5rem', 
+            borderLeft: daysRemaining <= 60 ? '5px solid #f59e0b' : '5px solid #22c55e', 
+            background: daysRemaining <= 60 ? 'rgba(245, 158, 11, 0.04)' : 'rgba(34, 197, 94, 0.04)',
+            borderRadius: '12px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.25rem'
+          }}>
+            <span style={{ fontWeight: 'bold', color: daysRemaining <= 60 ? '#d97706' : '#15803d', fontSize: '0.95rem' }}>
+              🕒 {lang === 'fr' ? 'Statut de votre couverture santé' : 'Dundu sa wér-gi-yaram'}
+            </span>
+            <p style={{ fontSize: '0.82rem', color: 'var(--text-sub)', margin: 0, lineHeight: '1.4' }}>
+              {lang === 'fr' 
+                ? `Il vous reste ${daysRemaining} jours de couverture active. Votre cotisation (N° CMU : ${activeCotisation.cmu_number}) expire le ${new Date(activeCotisation.period_end).toLocaleDateString('fr-FR')}.`
+                : `Am nga ${daysRemaining} fan ci wér-gi-yaram bu baax. Sa mbind (N° CMU : ${activeCotisation.cmu_number}) day jeex le ${new Date(activeCotisation.period_end).toLocaleDateString('fr-FR')}.`}
+            </p>
+            {daysRemaining <= 60 && (
+              <span style={{ fontSize: '0.78rem', color: '#b45309', fontWeight: 'bold', marginTop: '0.25rem' }}>
+                ⚠️ {lang === 'fr' ? 'Pensez à renouveler dès maintenant pour éviter toute interruption.' : 'Fayal sa cotisation léegi ngir bagn ko jeexal.'}
+              </span>
+            )}
+          </div>
+        )}
+
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1.5rem' }}>
           <select className="input" value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} style={{ width: 'auto', minWidth: '150px' }}>
             <option value="">{t.all}</option>

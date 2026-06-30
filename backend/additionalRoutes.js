@@ -101,25 +101,27 @@ router.get('/api/cotisations', authenticateToken, async (req, res) => {
   }
 });
 
-// Rappels automatiques : détecte les cotisations expirant dans ≤ 30 jours ou expirées
-// et non déjà rappelées, puis crée des notifications (et optionnellement envoie SMS).
-// Accessible agent/admin (typiquement appelé par un cron quotidien).
+// Rappels de renouvellement : détecte les cotisations expirant dans ≤ 60 jours ou déjà expirées,
+// et génère une relance uniquement si aucun rappel n'a été envoyé au cours des 7 derniers jours.
 router.post('/api/cotisations/send-reminders', authenticateToken, requireRole('agent', 'admin'), async (req, res) => {
   try {
-    // Cotisations expirant dans les 30 prochains jours, non rappelées
-    const expiring = await query(
+    const toRemind = await query(
       `SELECT id, beneficiary_id, phone, cmu_number, period_end, amount
-       FROM cotisations
-       WHERE status = 'paid' AND reminder_sent = FALSE
-         AND period_end <= NOW() + INTERVAL '30 days'
-         AND period_end >= NOW()
-       ORDER BY period_end ASC LIMIT 500`
-    );
-    // Cotisations déjà expirées, non rappelées
-    const expired = await query(
-      `SELECT id, beneficiary_id, phone, cmu_number, period_end, amount
-       FROM cotisations
-       WHERE status = 'paid' AND reminder_sent = FALSE AND period_end < NOW()
+       FROM cotisations c1
+       WHERE status = 'paid'
+         AND period_end <= NOW() + INTERVAL '60 days'
+         AND NOT EXISTS (
+           SELECT 1 FROM cotisations c2
+           WHERE c2.beneficiary_id = c1.beneficiary_id
+             AND c2.status = 'paid'
+             AND c2.period_end > NOW() + INTERVAL '60 days'
+         )
+         AND NOT EXISTS (
+           SELECT 1 FROM notifications n
+           WHERE n.beneficiary_id = c1.beneficiary_id
+             AND n.type = 'rappel'
+             AND n.created_at > NOW() - INTERVAL '7 days'
+         )
        ORDER BY period_end ASC LIMIT 500`
     );
 
@@ -127,17 +129,17 @@ router.post('/api/cotisations/send-reminders', authenticateToken, requireRole('a
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
-      for (const c of [...expiring.rows, ...expired.rows]) {
+      for (const c of toRemind.rows) {
         const isExpired = new Date(c.period_end) < new Date();
         const msg = isExpired
           ? `Votre cotisation CMU a expiré le ${new Date(c.period_end).toLocaleDateString('fr-FR')}. Renouvelez-la via le portail MUTUALIS DAKAR pour maintenir votre couverture.`
-          : `Rappel : votre cotisation CMU expire le ${new Date(c.period_end).toLocaleDateString('fr-FR')}. Renouvelez-la avant cette date.`;
+          : `Rappel : votre cotisation CMU expire le ${new Date(c.period_end).toLocaleDateString('fr-FR')}. Pensez à la renouveler en ligne.`;
+        
         await client.query(
           `INSERT INTO notifications (beneficiary_id, channel, recipient, type, title, body, status)
            VALUES ($1, 'sms', $2, 'rappel', 'Rappel cotisation', $3, 'pending')`,
           [c.beneficiary_id, c.phone, msg]
         );
-        await client.query(`UPDATE cotisations SET reminder_sent = TRUE WHERE id = $1`, [c.id]);
         sentCount++;
       }
       await client.query('COMMIT');
@@ -148,17 +150,18 @@ router.post('/api/cotisations/send-reminders', authenticateToken, requireRole('a
       client.release();
     }
 
+    const actor = req.user.username || 'agent';
     await query(
       `INSERT INTO audit_logs (action, actor, details) VALUES ($1, $2, $3)`,
-      ['ENVOI_RAPPELS_COTISATION', req.user.username || 'agent', `${sentCount} rappels de cotisation générés (${expiring.rows.length} à venir, ${expired.rows.length} expirées).`]
+      ['ENVOI_RAPPELS_COTISATION', actor, `${sentCount} rappels hebdomadaires de cotisation générés.`]
     );
 
     res.json({
       success: true,
       remindersSent: sentCount,
-      expiringSoon: expiring.rows.length,
-      expired: expired.rows.length,
-      message: `${sentCount} rappels générés et enregistrés.`
+      expiringSoon: toRemind.rows.filter(r => new Date(r.period_end) >= new Date()).length,
+      expired: toRemind.rows.filter(r => new Date(r.period_end) < new Date()).length,
+      message: `${sentCount} rappels hebdomadaires envoyés avec succès.`
     });
   } catch (err) {
     console.error('Erreur envoi rappels :', err);
@@ -324,7 +327,7 @@ router.get('/api/partner/stats', authenticatePartner, async (req, res) => {
   }
 });
 
-// Gestion des structures (admin)
+// Gestion des structures (admin/agent)
 router.get('/api/partners/structures', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     const result = await query('SELECT * FROM partner_structures ORDER BY name ASC');

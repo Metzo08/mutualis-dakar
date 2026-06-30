@@ -44,22 +44,38 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
 
   const [hoveredRegion, setHoveredRegion] = useState(null);
 
-  const regionsMapData = [
-    { id: 'dakar', name: 'Dakar', x: 80, y: 180, couv: 89.4, color: 'var(--primary)' },
-    { id: 'thies', name: 'Thiès', x: 120, y: 170, couv: 75.2, color: 'var(--success)' },
-    { id: 'diourbel', name: 'Diourbel', x: 150, y: 180, couv: 71.0, color: 'var(--success)' },
-    { id: 'fatick', name: 'Fatick', x: 150, y: 205, couv: 64.2, color: 'var(--success)' },
-    { id: 'kaolack', name: 'Kaolack', x: 190, y: 210, couv: 62.3, color: 'var(--success)' },
-    { id: 'kaffrine', name: 'Kaffrine', x: 230, y: 215, couv: 58.7, color: 'var(--secondary)' },
-    { id: 'saintlouis', name: 'Saint-Louis', x: 180, y: 110, couv: 68.5, color: 'var(--success)' },
-    { id: 'louga', name: 'Louga', x: 160, y: 140, couv: 60.1, color: 'var(--success)' },
-    { id: 'matam', name: 'Matam', x: 300, y: 120, couv: 49.8, color: 'var(--danger)' },
-    { id: 'tambacounda', name: 'Tambacounda', x: 340, y: 230, couv: 53.1, color: 'var(--secondary)' },
-    { id: 'kedougou', name: 'Kédougou', x: 420, y: 280, couv: 45.2, color: 'var(--danger)' },
-    { id: 'kolda', name: 'Kolda', x: 200, y: 280, couv: 55.6, color: 'var(--secondary)' },
-    { id: 'sedhiou', name: 'Sédhiou', x: 150, y: 290, couv: 51.3, color: 'var(--secondary)' },
-    { id: 'ziguinchor', name: 'Ziguinchor', x: 110, y: 300, couv: 65.4, color: 'var(--success)' }
+  const defaultRegionsMapData = [
+    { id: 'dakar', name: 'Dakar', x: 80, y: 180, couv: 89.4, color: 'var(--primary)', mutuelles: 52, assures: '1 240 000', structures: 128 },
+    { id: 'thies', name: 'Thiès', x: 120, y: 170, couv: 75.2, color: 'var(--success)', mutuelles: 38, assures: '850 000', structures: 74 },
+    { id: 'diourbel', name: 'Diourbel', x: 150, y: 180, couv: 71.0, color: 'var(--success)', mutuelles: 24, assures: '620 000', structures: 42 },
+    { id: 'fatick', name: 'Fatick', x: 150, y: 205, couv: 64.2, color: 'var(--success)', mutuelles: 18, assures: '310 000', structures: 28 },
+    { id: 'kaolack', name: 'Kaolack', x: 190, y: 210, couv: 62.3, color: 'var(--success)', mutuelles: 22, assures: '450 000', structures: 35 },
+    { id: 'kaffrine', name: 'Kaffrine', x: 230, y: 215, couv: 58.7, color: 'var(--secondary)', mutuelles: 14, assures: '210 000', structures: 18 },
+    { id: 'saintlouis', name: 'Saint-Louis', x: 180, y: 110, couv: 68.5, color: 'var(--success)', mutuelles: 29, assures: '530 000', structures: 49 },
+    { id: 'louga', name: 'Louga', x: 160, y: 140, couv: 60.1, color: 'var(--success)', mutuelles: 16, assures: '340 000', structures: 22 },
+    { id: 'matam', name: 'Matam', x: 300, y: 120, couv: 49.8, color: 'var(--danger)', mutuelles: 12, assures: '180 000', structures: 15 },
+    { id: 'tambacounda', name: 'Tambacounda', x: 340, y: 230, couv: 53.1, color: 'var(--secondary)', mutuelles: 15, assures: '290 000', structures: 19 },
+    { id: 'kedougou', name: 'Kédougou', x: 420, y: 280, couv: 45.2, color: 'var(--danger)', mutuelles: 8, assures: '95 000', structures: 9 },
+    { id: 'kolda', name: 'Kolda', x: 200, y: 280, couv: 55.6, color: 'var(--secondary)', mutuelles: 14, assures: '240 000', structures: 16 },
+    { id: 'sedhiou', name: 'Sédhiou', x: 150, y: 290, couv: 51.3, color: 'var(--secondary)', mutuelles: 10, assures: '150 000', structures: 12 },
+    { id: 'ziguinchor', name: 'Ziguinchor', x: 110, y: 300, couv: 65.4, color: 'var(--success)', mutuelles: 20, assures: '380 000', structures: 31 }
   ];
+
+  const [regionsMapData, setRegionsMapData] = useState(defaultRegionsMapData);
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/coverage/regions')
+      .then(res => {
+        if (!res.ok) throw new Error('API Error');
+        return res.json();
+      })
+      .then(data => {
+        if (data && data.length > 0) {
+          setRegionsMapData(data);
+        }
+      })
+      .catch(err => console.warn('Failed to fetch regional coverage, using local fallback:', err));
+  }, []);
 
   useEffect(() => {
     fetch('http://localhost:5000/api/donations/stats')
@@ -210,10 +226,14 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
               ? 'Récemment' 
               : logDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
             
+            const formattedText = log.action 
+              ? log.action.charAt(0).toUpperCase() + log.action.slice(1).toLowerCase().replace(/_/g, ' ')
+              : '';
+            
             return {
               id: log.id,
               type,
-              text: log.action.replace(/_/g, ' '),
+              text: formattedText,
               detail: log.details,
               time: timeStr,
               source: log.actor || 'Système'
@@ -896,6 +916,11 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
                         key={reg.id} 
                         onMouseEnter={() => setHoveredRegion(reg.id)}
                         onMouseLeave={() => setHoveredRegion(null)}
+                        onClick={() => setHoveredRegion(hoveredRegion === reg.id ? null : reg.id)}
+                        onTouchStart={(e) => {
+                          e.preventDefault();
+                          setHoveredRegion(hoveredRegion === reg.id ? null : reg.id);
+                        }}
                         style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
                       >
                         <circle 
@@ -941,6 +966,49 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
                     );
                   })}
                 </svg>
+
+                {hoveredRegion && (() => {
+                  const reg = regionsMapData.find(r => r.id === hoveredRegion);
+                  if (!reg) return null;
+                  return (
+                    <div style={{
+                      position: 'absolute',
+                      left: `${(reg.x / 500) * 100}%`,
+                      top: `${(reg.y / 350) * 100}%`,
+                      transform: 'translate(-50%, -110%)',
+                      background: 'var(--bg-card)',
+                      border: '2px solid var(--primary)',
+                      borderRadius: '12px',
+                      padding: '0.75rem 1rem',
+                      boxShadow: 'var(--shadow-lg)',
+                      zIndex: 10,
+                      pointerEvents: 'none',
+                      width: '180px',
+                      fontSize: '0.8rem',
+                      color: 'var(--text-main)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.35rem'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: '800', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.25rem', marginBottom: '0.25rem' }}>
+                        <span style={{ color: 'var(--primary)' }}>📍 {reg.name}</span>
+                        <span className="badge badge-success" style={{ fontSize: '0.7rem', padding: '0.1rem 0.4rem', backgroundColor: reg.color, color: '#fff' }}>{reg.couv}%</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Assurés' : 'Assuré yi'} :</span>
+                        <span style={{ fontWeight: 'bold' }}>{reg.assures}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Mutuelles' : 'Mutuelle'} :</span>
+                        <span style={{ fontWeight: 'bold' }}>{reg.mutuelles}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Structures' : 'Fajukaay'} :</span>
+                        <span style={{ fontWeight: 'bold' }}>{reg.structures}</span>
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 <div style={{
                   position: 'absolute',

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 export default function Partnership({ lang, portalMode, agentUser }) {
-  const [requests, setRequests] = useState([]);
+  const [page, setPage] = useState(1);
   const [formData, setFormData] = useState({
     companyName: '',
     sector: 'mécénat',
@@ -73,45 +74,21 @@ export default function Partnership({ lang, portalMode, agentUser }) {
     setTimeout(() => setToastMessage(''), 3000);
   };
 
-  // Load requests on mount
-  useEffect(() => {
-    const stored = localStorage.getItem('cmu-partnership-requests');
-    if (stored) {
-      try {
-        setRequests(JSON.parse(stored));
-      } catch (e) {
-        console.error('Error loading requests:', e);
-      }
-    } else {
-      // Seed default requests for demo
-      const seed = [
-        {
-          id: 1,
-          companyName: 'Fondation Orange Sénégal',
-          sector: 'mécénat',
-          contactPerson: 'Seynabou Diop',
-          email: 'sdiop@orange.sn',
-          phone: '77 645 32 10',
-          message: 'Souhait de financer la CMU pour 500 élèves de Daara à Medina.',
-          status: 'approved',
-          date: '22/06/2026'
-        },
-        {
-          id: 2,
-          companyName: 'Clinique de la Paix',
-          sector: 'médical',
-          contactPerson: 'Dr. Cheikh Tidiane',
-          email: 'contact@cliniquedelapaix.sn',
-          phone: '33 822 40 40',
-          message: 'Proposition de convention pour appliquer la gratuité du ticket modérateur.',
-          status: 'pending',
-          date: '23/06/2026'
-        }
-      ];
-      setRequests(seed);
-      localStorage.setItem('cmu-partnership-requests', JSON.stringify(seed));
-    }
-  }, []);
+  const queryClient = useQueryClient();
+
+  const { data: partnershipsPayload = { data: [] } } = useQuery({
+    queryKey: ['partnershipsList', page],
+    queryFn: async () => {
+      const res = await fetch(`http://localhost:5000/api/partnerships?page=${page}`, {
+        headers: { 'Authorization': `Bearer ${localStorage.getItem('cmu-token') || ''}` }
+      });
+      if (!res.ok) throw new Error('API Error');
+      return res.json();
+    },
+    enabled: portalMode === 'agent' && !!agentUser
+  });
+
+  const requests = partnershipsPayload.data || [];
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -120,41 +97,56 @@ export default function Partnership({ lang, portalMode, agentUser }) {
       return;
     }
 
-    const newRequest = {
-      ...formData,
-      id: Date.now(),
-      status: 'pending',
-      date: new Date().toLocaleDateString('fr-FR')
-    };
-
-    const updated = [newRequest, ...requests];
-    setRequests(updated);
-    localStorage.setItem('cmu-partnership-requests', JSON.stringify(updated));
-
-    setFormData({
-      companyName: '',
-      sector: 'mécénat',
-      contactPerson: '',
-      email: '',
-      phone: '',
-      message: ''
-    });
-
-    setSuccess(true);
-    triggerToast(t.successMsg);
-    setTimeout(() => setSuccess(false), 4000);
+    fetch('http://localhost:5000/api/partnerships', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Error submitting');
+        return res.json();
+      })
+      .then(() => {
+        setFormData({
+          companyName: '',
+          sector: 'mécénat',
+          contactPerson: '',
+          email: '',
+          phone: '',
+          message: ''
+        });
+        setSuccess(true);
+        triggerToast(t.successMsg);
+        setTimeout(() => setSuccess(false), 4000);
+        queryClient.invalidateQueries(['partnershipsList']);
+      })
+      .catch(err => {
+        console.error('Error submitting partnership:', err);
+        triggerToast('Erreur lors de la soumission de la demande.');
+      });
   };
 
   const handleUpdateStatus = (id, newStatus) => {
-    const updated = requests.map(req => {
-      if (req.id === id) {
-        return { ...req, status: newStatus };
-      }
-      return req;
-    });
-    setRequests(updated);
-    localStorage.setItem('cmu-partnership-requests', JSON.stringify(updated));
-    triggerToast(lang === 'fr' ? `Statut mis à jour : ${newStatus}` : `Statut changé : ${newStatus}`);
+    fetch(`http://localhost:5000/api/partnerships/${id}/status`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('cmu-token') || ''}`
+      },
+      body: JSON.stringify({ status: newStatus })
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Error updating status');
+        return res.json();
+      })
+      .then(() => {
+        triggerToast(lang === 'fr' ? `Statut mis à jour : ${newStatus}` : `Statut changé : ${newStatus}`);
+        queryClient.invalidateQueries(['partnershipsList']);
+      })
+      .catch(err => {
+        console.error('Error updating status:', err);
+        triggerToast('Erreur lors de la mise à jour du statut.');
+      });
   };
 
   return (
@@ -265,6 +257,29 @@ export default function Partnership({ lang, portalMode, agentUser }) {
               </tbody>
             </table>
           </div>
+          
+          {/* Pagination controls */}
+          {partnershipsPayload.pagination && partnershipsPayload.pagination.totalPages > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '1.5rem' }}>
+              <button
+                className="btn btn-outline btn-sm"
+                disabled={!partnershipsPayload.pagination.hasPrev}
+                onClick={() => setPage(prev => Math.max(1, prev - 1))}
+              >
+                ⬅️ Précédent / Bi weesu
+              </button>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-sub)', fontWeight: '600' }}>
+                Page {page} sur {partnershipsPayload.pagination.totalPages}
+              </span>
+              <button
+                className="btn btn-outline btn-sm"
+                disabled={!partnershipsPayload.pagination.hasNext}
+                onClick={() => setPage(prev => Math.min(partnershipsPayload.pagination.totalPages, prev + 1))}
+              >
+                Suivant / Bi ci top ➡️
+              </button>
+            </div>
+          )}
         </div>
       ) : (
         // Public partnership form & presentation
