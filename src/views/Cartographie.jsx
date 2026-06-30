@@ -785,7 +785,7 @@ export default function Cartographie({ lang }) {
       {/* Banner with Animated Background like PharmaciesAgrees */}
       <section className="banner-mini" style={{
         position: 'relative',
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+        background: 'linear-gradient(135deg, var(--success) 0%, var(--success-dark) 100%)',
         borderBottom: '1px solid var(--border-color)',
         borderRadius: '16px',
         padding: '2.5rem 2rem',
@@ -796,34 +796,34 @@ export default function Cartographie({ lang }) {
         overflow: 'hidden'
       }}>
         {/* Animated Background Icons */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.05, overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.2, overflow: 'hidden' }}>
           {[...Array(20)].map((_, i) => (
             <span key={i} style={{
               position: 'absolute',
-              fontSize: `${Math.random() * 30 + 10}px`,
+              fontSize: `${Math.random() * 24 + 12}px`,
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-              animation: `float ${Math.random() * 10 + 10}s linear infinite`,
-              animationDelay: `-${Math.random() * 20}s`
+              animation: `float-banner ${Math.random() * 8 + 6}s linear infinite`,
+              animationDelay: `-${Math.random() * 10}s`
             }}>
               {i % 2 === 0 ? '💊' : '➕'}
             </span>
           ))}
           <style>
             {`
-              @keyframes float {
-                0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-                10% { opacity: 1; }
-                90% { opacity: 1; }
-                100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+              @keyframes float-banner {
+                0% { transform: translateY(120px) rotate(0deg); opacity: 0; }
+                10% { opacity: 0.7; }
+                90% { opacity: 0.7; }
+                100% { transform: translateY(-30px) rotate(360deg); opacity: 0; }
               }
             `}
           </style>
         </div>
-
+ 
         <div className="container" style={{ position: 'relative', zIndex: 2 }}>
           <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>{t.title}</h1>
-          <p style={{ color: '#cbd5e1', fontSize: '1rem', fontWeight: '500', maxWidth: '600px', margin: '0 auto' }}>{t.subtitle}</p>
+          <p style={{ color: 'rgba(255, 255, 255, 0.9)', fontSize: '1rem', fontWeight: '500', maxWidth: '600px', margin: '0 auto', textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}>{t.subtitle}</p>
         </div>
       </section>
 
