@@ -475,9 +475,14 @@ describe('Statistiques inter-régions', () => {
     expect(res.status).toBe(401);
   });
 
-  test('GET /api/dashboard/regional-comparison avec token agent → 200', async () => {
-    query.mockResolvedValue({ rows: [] }); // toutes les requêtes d'agrégation
+  test('GET /api/dashboard/regional-comparison avec token agent → 403', async () => {
     const res = await request(app).get('/api/dashboard/regional-comparison').set(authAgent);
+    expect(res.status).toBe(403);
+  });
+
+  test('GET /api/dashboard/regional-comparison avec token admin → 200', async () => {
+    query.mockResolvedValue({ rows: [] }); // toutes les requêtes d'agrégation
+    const res = await request(app).get('/api/dashboard/regional-comparison').set(authAdmin);
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('byRegion');
     expect(res.body).toHaveProperty('claimsByRegion');

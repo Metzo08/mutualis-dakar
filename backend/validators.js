@@ -48,7 +48,7 @@ const adhesionSchema = z.object({
   email: emailSchema.optional().default(''),
   address: z.string().max(255).optional().default(''),
   mutuelleName: z.string().min(1, 'Mutuelle requise.').max(255),
-  packageType: z.enum(['individuel', 'familial', 'parrainage', 'csu_eleves', 'csu_daara'], {
+  packageType: z.enum(['individuel', 'familial', 'parrainage', 'csu_eleves', 'csu_daara', 'adhesion_masse'], {
     message: 'Formule invalide.'
   }),
   paymentMethod: z.enum(['om', 'wave', 'cash', 'card'], { message: 'Moyen de paiement invalide.' }),

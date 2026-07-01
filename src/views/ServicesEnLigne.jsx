@@ -277,6 +277,9 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
     if (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara') {
       return Math.max(1, familyMembers.length) * 1000;
     }
+    if (selectedPackage === 'adhesion_masse') {
+      return Math.max(1, familyMembers.length) * 4500;
+    }
     return 4500;
   };
 
@@ -313,22 +316,22 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
           parrainageType === 'eleves' ? 'Parrainage Élèves (École/Daara)' :
           'Parrainage Individuel'
         ) : 
-        selectedPackage === 'csu_eleves' ? 'CSU Élèves' : 'CSU Daaras'
+        selectedPackage === 'csu_eleves' ? 'CSU Élèves' : selectedPackage === 'adhesion_masse' ? 'Adhésion Groupe / Masse' : 'CSU Daaras'
       }`,
       `Montant payé  : ${calculateTotalCost().toLocaleString('fr-FR')} FCFA`,
       `Moyen paiement: ${paymentMethod === 'wave' ? 'Wave' : 'Orange Money'}`,
       `Validité      : 12 / 2027`,
-      schoolName ? `Établissement : ${schoolName}` : '',
+      schoolName ? (selectedPackage === 'adhesion_masse' ? `Organisation  : ${schoolName}` : `Établissement : ${schoolName}`) : '',
       sponsorPhone ? `Sponsor Tél   : ${sponsorPhone}` : '',
       '',
       familyMembers.length > 0 && selectedPackage !== 'parrainage' ? '───────────────────────────────────────────────' : '',
       familyMembers.length > 0 && selectedPackage !== 'parrainage' ? (
-        (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara') ? '  Liste des élèves / talibés' : 
+        (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara') ? '  Liste des élèves / talibés' : selectedPackage === 'adhesion_masse' ? '  Liste des membres du groupe' : 
         '  Ayants droit'
       ) : '',
       familyMembers.length > 0 && selectedPackage !== 'parrainage' ? '───────────────────────────────────────────────' : '',
       ...(familyMembers.length > 0 && selectedPackage !== 'parrainage' ? familyMembers.map((m, i) => `  ${i + 1}. ${m.name} (${
-        (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara') ? `Classe/Niveau: ${m.relation}` : 
+        (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara') ? `Classe/Niveau: ${m.relation}` : selectedPackage === 'adhesion_masse' ? `Rôle/Relation: ${m.relation}` : 
         m.relation
       }) - ${m.age} ans`) : []),
       selectedPackage === 'parrainage' ? '───────────────────────────────────────────────' : '',
@@ -377,8 +380,8 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
       return;
     }
     if (regStep === 3) {
-      if ((selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || (selectedPackage === 'parrainage' && parrainageType === 'eleves')) && !schoolName) {
-        showError(lang === 'fr' ? 'Veuillez saisir le nom de l\'établissement scolaire.' : 'Bindal tourou daara/ecole bi.');
+      if ((selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || selectedPackage === 'adhesion_masse' || (selectedPackage === 'parrainage' && parrainageType === 'eleves')) && !schoolName) {
+        showError(lang === 'fr' ? "Veuillez saisir le nom de l'organisation / établissement." : "Bindal tourou mboloo bi.");
         return;
       }
       if (!formData.firstName || !formData.lastName || !formData.phone) {
@@ -405,9 +408,9 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
             return;
           }
         }
-      } else if (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara') {
+      } else if (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || selectedPackage === 'adhesion_masse') {
         if (familyMembers.length === 0) {
-          showError(lang === 'fr' ? 'Veuillez ajouter au moins un élève.' : 'Duggalal élève bu bokk.');
+          showError(lang === 'fr' ? 'Veuillez ajouter au moins un bénéficiaire.' : 'Duggalal kën bu bokk.');
           return;
         }
       }
@@ -751,6 +754,10 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
 
             {/* Stepper Card */}
             <div className="card stepper-content-card">
+              {/* DEBUG */}
+              <div style={{ color: '#ffffff', fontSize: '0.85rem', padding: '0.5rem 1rem', background: '#3b82f6', borderRadius: '6px', marginBottom: '1rem', textAlign: 'center', fontWeight: 'bold' }}>
+                DEBUG: regStep = {regStep} | activeTab = {activeTab} | selectedPackage = {selectedPackage}
+              </div>
               {/* Step 1: select package */}
               {regStep === 1 && (
                 <div className="fade-in-up">
@@ -812,6 +819,18 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                       <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem' }}>{lang === 'fr' ? 'CSU Élèves ou Daara' : 'CSU Élèves ak Daara'}</h3>
                       <div className="stat-number" style={{ fontSize: '1.5rem', margin: '0.5rem 0', color: 'var(--info)' }}>1 000 FCFA / élève</div>
                       <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Tarif collectif scolaire subventionné par l\'État pour les écoles et Daaras.' : 'Fay subventionné par État bi ngir daara yi ak écoles yi.'}</p>
+                    </div>
+
+                    {/* Adhésion Groupe / Masse */}
+                    <div 
+                      className={`card text-center ${selectedPackage === 'adhesion_masse' ? 'active-border' : ''}`} 
+                      onClick={() => setSelectedPackage('adhesion_masse')}
+                      style={{ border: selectedPackage === 'adhesion_masse' ? '2px solid var(--primary)' : '1px solid var(--border-color)', cursor: 'pointer', padding: '1.5rem' }}
+                    >
+                      <div style={{ fontSize: '2rem' }}>📊</div>
+                      <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem' }}>{lang === 'fr' ? 'Adhésion Groupe / Masse' : 'Mbindum Mboloo'}</h3>
+                      <div className="stat-number" style={{ fontSize: '1.5rem', margin: '0.5rem 0', color: 'var(--primary)' }}>4 500 FCFA / pers.</div>
+                      <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Importez un fichier CSV ou saisissez une liste pour inscrire tout un groupe (carte + cotisation).' : 'Importé listou mboloo (carte + cotisation) ci CSV.'}</p>
                     </div>
                   </div>
 
@@ -911,15 +930,19 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                     </div>
                   )}
 
-                  {(selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || (selectedPackage === 'parrainage' && parrainageType === 'eleves')) && (
+                  {(selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || selectedPackage === 'adhesion_masse' || (selectedPackage === 'parrainage' && parrainageType === 'eleves')) && (
                     <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-                      <label className="form-label" style={{ fontWeight: 'bold' }}>{lang === 'fr' ? "Nom de l'établissement (École ou Daara)" : "Tourou daara bi walla ecole bi"}</label>
+                      <label className="form-label" style={{ fontWeight: 'bold' }}>
+                        {selectedPackage === 'adhesion_masse' 
+                          ? (lang === 'fr' ? "Nom de l'Organisation / Association / Entreprise" : "Tourou Mboloo / Association bi")
+                          : (lang === 'fr' ? "Nom de l'établissement (École ou Daara)" : "Tourou daara bi walla ecole bi")}
+                      </label>
                       <input 
                         type="text" 
                         className="form-control" 
                         value={schoolName}
                         onChange={(e) => setSchoolName(e.target.value)}
-                        placeholder="Ex: École élémentaire Grand-Dakar, Daara Serigne Saliou"
+                        placeholder={selectedPackage === 'adhesion_masse' ? "Ex: Association des tailleurs de Dakar, GIE Gorgui" : "Ex: École élémentaire Grand-Dakar, Daara Serigne Saliou"}
                         required
                       />
                     </div>
@@ -928,7 +951,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                   <div className="form-row">
                     <div className="form-group">
                       <label className="form-label">
-                        {selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' ? (lang === 'fr' ? 'Prénom du Responsable' : 'Tourou Directeur') : (lang === 'fr' ? 'Prénom' : 'Tour')}
+                        {selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || selectedPackage === 'adhesion_masse' ? (lang === 'fr' ? 'Prénom du Responsable' : 'Tourou Responsable') : (lang === 'fr' ? 'Prénom' : 'Tour')}
                       </label>
                       <input 
                         type="text" 
@@ -939,7 +962,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                     </div>
                     <div className="form-group">
                       <label className="form-label">
-                        {selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' ? (lang === 'fr' ? 'Nom du Responsable' : 'Santou Directeur') : (lang === 'fr' ? 'Nom' : 'Sant')}
+                        {selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || selectedPackage === 'adhesion_masse' ? (lang === 'fr' ? 'Nom du Responsable' : 'Santou Responsable') : (lang === 'fr' ? 'Nom' : 'Sant')}
                       </label>
                       <input 
                         type="text" 
@@ -1007,7 +1030,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                       parrainageType === 'eleves' ? (lang === 'fr' ? 'Élèves parrainés dans l\'école' : 'Mbindu élèves/talibé') :
                       (lang === 'fr' ? 'Filleuls individuels parrainés' : 'Njabaat gnu parrainer')
                     ) :
-                     (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara') ? (lang === 'fr' ? 'Liste des élèves / talibés à inscrire' : 'Mbindu élèves/talibé') :
+                     (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || selectedPackage === 'adhesion_masse') ? (lang === 'fr' ? (selectedPackage === 'adhesion_masse' ? 'Liste des membres du groupe à inscrire' : 'Liste des élèves / talibés à inscrire') : 'Mbindu bénéficiaire/élève') :
                      t.step4Title}
                   </h2>
                   <p style={{ marginBottom: '2rem' }}>
@@ -1015,7 +1038,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                       parrainageType === 'menages' ? (lang === 'fr' ? 'Déclarez les ménages et leurs membres à parrainer.' : 'Duggalal njaboot yi.') :
                       (lang === 'fr' ? 'Ajoutez les personnes pour qui vous financez l\'adhésion solidaire.' : 'Duggalal gni nga beug parrainer.')
                     ) :
-                     (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara') ? (lang === 'fr' ? 'Saisissez la liste des élèves/talibés de votre établissement.' : 'Duggalal mboloo élèves/talibé yi.') :
+                     (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || selectedPackage === 'adhesion_masse') ? (lang === 'fr' ? (selectedPackage === 'adhesion_masse' ? 'Saisissez la liste des membres ou importez-la ci-dessous.' : 'Saisissez la liste des élèves/talibés de votre établissement.') : 'Duggalal mboloo bénéficiaires yi.') :
                      t.step4Desc}
                   </p>
                   
@@ -1168,6 +1191,94 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                     </div>
                   ) : (
                     <div>
+                      {/* CSV Import Module for Bulk Enrollments */}
+                      {(selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || selectedPackage === 'adhesion_masse' || (selectedPackage === 'parrainage' && parrainageType === 'eleves')) && (
+                        <div style={{
+                          border: '2px dashed var(--primary, #10b981)',
+                          borderRadius: '12px',
+                          padding: '1.5rem',
+                          backgroundColor: 'var(--bg-card-subtle, rgba(16, 185, 129, 0.03))',
+                          marginBottom: '1.5rem',
+                          textAlign: 'center'
+                        }}>
+                          <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>📋</div>
+                          <h4 style={{ margin: '0 0 0.25rem 0', fontSize: '1rem', fontWeight: '700' }}>
+                            {lang === 'fr' ? "Importation collective en masse" : "Mbindum mboloo (CSV)"}
+                          </h4>
+                          <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)', marginBottom: '1rem' }}>
+                            {lang === 'fr' 
+                              ? "Téléchargez notre modèle CSV, remplissez-le avec la liste de vos bénéficiaires et importez-le ci-dessous."
+                              : "Télécharger modèle CSV, bindal liste bi te importé ko."}
+                          </p>
+                          <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                            <button 
+                              type="button"
+                              className="btn btn-outline btn-sm"
+                              onClick={() => {
+                                // Generate a template CSV for download
+                                const headers = lang === 'fr' ? 'Prenom,Nom,Age,Classe_ou_Relation\nModou,Diop,12,6eme\nAwa,Ndiaye,10,CM2\n' : 'Prenom,Nom,Age,Classe_ou_Relation\nModou,Diop,12,6eme\n';
+                                const blob = new Blob([headers], { type: 'text/csv;charset=utf-8;' });
+                                const url = URL.createObjectURL(blob);
+                                const link = document.createElement('a');
+                                link.href = url;
+                                link.download = 'mutualis_modele_import.csv';
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                              }}
+                              style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
+                            >
+                              📥 {lang === 'fr' ? 'Télécharger le modèle' : 'Modèle CSV'}
+                            </button>
+                            <label 
+                              className="btn btn-secondary btn-sm"
+                              style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem', cursor: 'pointer', margin: 0 }}
+                            >
+                              📤 {lang === 'fr' ? 'Sélectionner le fichier CSV' : 'Choisir CSV'}
+                              <input 
+                                type="file" 
+                                accept=".csv" 
+                                style={{ display: 'none' }} 
+                                onChange={(e) => {
+                                  const file = e.target.files[0];
+                                  if (!file) return;
+                                  const reader = new FileReader();
+                                  reader.onload = (event) => {
+                                    const text = event.target.result;
+                                    const lines = text.split('\n');
+                                    const newMembers = [];
+                                    // Parse CSV (skip headers)
+                                    for (let i = 1; i < lines.length; i++) {
+                                      const line = lines[i].trim();
+                                      if (!line) continue;
+                                      // Split by comma or semicolon
+                                      const cols = line.split(/[;,]/);
+                                      if (cols.length >= 3) {
+                                        newMembers.push({
+                                          name: `${cols[0].trim()} ${cols[1].trim()}`,
+                                          age: parseInt(cols[2].trim()) || 10,
+                                          relation: cols[3] ? cols[3].trim() : 'Bénéficiaire'
+                                        });
+                                      }
+                                    }
+                                    if (newMembers.length > 0) {
+                                      setFamilyMembers(prev => [...prev, ...newMembers]);
+                                      alert(lang === 'fr' 
+                                        ? `${newMembers.length} bénéficiaires importés avec succès !`
+                                        : `${newMembers.length} bénéficiaires importés.`
+                                      );
+                                    } else {
+                                      alert(lang === 'fr' ? 'Aucune ligne valide trouvée dans le CSV.' : 'CSV invalide.');
+                                    }
+                                  };
+                                  reader.readAsText(file);
+                                }}
+                              />
+                            </label>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Dynamic inputs */}
                       <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
                         <input 
@@ -1180,6 +1291,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                               (lang === 'fr' ? 'Prénom & Nom du filleul' : 'Tour ak Santou Filleul')
                             ) :
                             (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara') ? (lang === 'fr' ? 'Prénom & Nom de l\'élève' : 'Tour ak Santou élève') :
+                            selectedPackage === 'adhesion_masse' ? (lang === 'fr' ? 'Prénom & Nom du membre' : 'Tour ak Santou bokk') :
                             (lang === 'fr' ? 'Prénom & Nom' : 'Tour ak Sant')
                           }
                           value={newFamilyMember.name}
@@ -1187,12 +1299,16 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                         />
                         
                         {(selectedPackage !== 'parrainage' || parrainageType === 'eleves') && (
-                          selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || parrainageType === 'eleves' ? (
+                          selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || selectedPackage === 'adhesion_masse' || parrainageType === 'eleves' ? (
                             <input 
                               type="text"
                               className="form-control"
                               style={{ flex: '1' }}
-                              placeholder={lang === 'fr' ? 'Classe / Niveau' : 'Classe'}
+                              placeholder={
+                                selectedPackage === 'adhesion_masse' 
+                                  ? (lang === 'fr' ? 'Rôle / Relation' : 'Rôle')
+                                  : (lang === 'fr' ? 'Classe / Niveau' : 'Classe')
+                              }
                               value={newFamilyMember.relation}
                               onChange={(e) => setNewFamilyMember({...newFamilyMember, relation: e.target.value})}
                             />
@@ -1231,6 +1347,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                                 parrainageType === 'eleves' ? ` (Élève - Classe/Niveau: ${m.relation}) ` : ` (Filleul) `
                               ) :
                                (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara') ? ` (Classe/Niveau: ${m.relation}) ` :
+                               selectedPackage === 'adhesion_masse' ? ` (Rôle/Relation: ${m.relation}) ` :
                                ` (${m.relation === 'conjoint' ? 'Conjoint' : m.relation === 'parent' ? 'Parent' : 'Enfant'}) `}
                               - {m.age} {lang === 'fr' ? 'ans' : 'at'}
                             </div>
@@ -1300,19 +1417,19 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                            parrainageType === 'eleves' ? 'Parrainage Élèves / Daara 🤝' :
                            'Parrainage Individuel 🤝'
                          ) : 
-                         selectedPackage === 'csu_eleves' ? 'CSU Élèves 🎓' : 'CSU Daaras 🎓'}
+                          selectedPackage === 'csu_eleves' ? 'CSU Élèves 🎓' : selectedPackage === 'adhesion_masse' ? 'Adhésion Groupe / Masse 📊' : 'CSU Daaras 🎓'}
                       </div>
                     </div>
-                    {schoolName && (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || (selectedPackage === 'parrainage' && parrainageType === 'eleves')) && (
+                    {schoolName && (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || selectedPackage === 'adhesion_masse' || (selectedPackage === 'parrainage' && parrainageType === 'eleves')) && (
                       <div>
-                        <span style={{ color: 'var(--neutral-gray)', textTransform: 'uppercase', fontSize: '0.75rem' }}>Établissement</span>
+                        <span style={{ color: 'var(--neutral-gray)', textTransform: 'uppercase', fontSize: '0.75rem' }}>{selectedPackage === 'adhesion_masse' ? (lang === 'fr' ? 'Organisation' : 'Mboloo') : (lang === 'fr' ? 'Établissement' : 'Établissement')}</span>
                         <div style={{ fontWeight: '700' }}>{schoolName}</div>
                       </div>
                     )}
                     <div>
                       <span style={{ color: 'var(--neutral-gray)', textTransform: 'uppercase', fontSize: '0.75rem' }}>
                         {selectedPackage === 'parrainage' ? 'Parrain / Sponsor' : 
-                         (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara') ? 'Responsable Établissement' : 
+                          (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || selectedPackage === 'adhesion_masse') ? 'Responsable Groupe / Établissement' : 
                          'Adhérent Principal'}
                       </span>
                       <div style={{ fontWeight: '700' }}>{formData.firstName} {formData.lastName}</div>
@@ -1349,7 +1466,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                       <div>
                         <span style={{ color: 'var(--neutral-gray)', textTransform: 'uppercase', fontSize: '0.75rem' }}>
                           {selectedPackage === 'parrainage' ? `Filleuls parrainés (${familyMembers.length})` : 
-                           (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara') ? `Élèves / Talibés inscrits (${familyMembers.length})` : 
+                            (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara') ? `Élèves / Talibés inscrits (${familyMembers.length})` : selectedPackage === 'adhesion_masse' ? `Membres inscrits (${familyMembers.length})` : 
                            `Membres rattachés (${familyMembers.length})`}
                         </span>
                         <ul style={{ paddingLeft: '1.25rem', fontWeight: '600', fontSize: '0.9rem', marginTop: '0.25rem' }}>
@@ -1359,7 +1476,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                               {selectedPackage === 'parrainage' ? (
                                 parrainageType === 'eleves' ? ` (Élève - Classe: ${m.relation})` : ' (Filleul)'
                               ) : 
-                               (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara') ? ` (Classe: ${m.relation})` : 
+                               (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara') ? ` (Classe: ${m.relation})` : selectedPackage === 'adhesion_masse' ? ` (Rôle/Relation: ${m.relation})` : 
                                ` (${m.relation === 'conjoint' ? 'Conjoint' : m.relation === 'parent' ? 'Parent' : 'Enfant'})`} 
                               {` - ${m.age} ans`}
                             </li>
@@ -1385,6 +1502,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                               : `Détail : ${familyMembers.length} filleul(s) × 4 500 FCFA (1 000 carte + 3 500 cotisation)`
                         )}
                         {(selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara') && `Détail : ${familyMembers.length} élèves × 1 000 FCFA (tarif subventionné)`}
+                        {selectedPackage === 'adhesion_masse' && `Détail : ${familyMembers.length} membre(s) × 4 500 FCFA (1 000 FCFA carte + 3 500 FCFA cotisation)`}
                       </div>
                     </div>
                   </div>
@@ -1520,13 +1638,13 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                       <div>
                         <div className="digital-card-label">
                           {selectedPackage === 'parrainage' ? 'Parrain / Sponsor' : 
-                           (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara') ? 'Établissement' : 
+                           (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || selectedPackage === 'adhesion_masse') ? (selectedPackage === 'adhesion_masse' ? 'Organisation' : 'Établissement') : 
                            'Adhérent'}
                         </div>
                         <div className="digital-card-value" style={{ fontSize: '1.1rem' }}>
                           {selectedPackage === 'parrainage' && parrainageType === 'eleves'
                             ? schoolName
-                            : (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara')
+                            : (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || selectedPackage === 'adhesion_masse')
                               ? schoolName 
                               : `${formData.firstName} ${formData.lastName}`}
                         </div>
@@ -1536,11 +1654,11 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                               ? `Ménages parrainés (${sponsoredHouseholds.length})` 
                               : `Filleuls parrainés (${familyMembers.length})`
                           ) : 
-                           (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara') ? `Élèves inscrits (${familyMembers.length})` : 
+                           (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara') ? `Élèves inscrits (${familyMembers.length})` : selectedPackage === 'adhesion_masse' ? `Membres inscrits (${familyMembers.length})` : 
                            'Mutuelle'}
                         </div>
                         <div className="digital-card-value">
-                          {selectedPackage === 'parrainage' || selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara'
+                          {selectedPackage === 'parrainage' || selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || selectedPackage === 'adhesion_masse'
                             ? (lang === 'fr' ? 'Dossiers en cours de traitement' : 'Saytu dossiers yi')
                             : selectedMutuelle}
                         </div>

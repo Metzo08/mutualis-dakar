@@ -313,7 +313,12 @@ export default function App() {
             />
           );
         case 'parrainage-solidaire':
-          return <ParrainageCSU lang={lang} />;
+          return (
+            <ParrainageCSU 
+              lang={lang} 
+              initialPackage={servicesPackage} 
+            />
+          );
         case 'partnership':
           return (
             <Partnership 

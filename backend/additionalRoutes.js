@@ -78,6 +78,10 @@ router.get('/api/cotisations', authenticateToken, async (req, res) => {
       whereSql += ` AND (beneficiary_id = $${paramIdx} OR phone = $${paramIdx + 1})`;
       params.push(req.user.id, req.user.phone || '');
       paramIdx += 2;
+    } else if (req.user && req.user.role !== 'Super Admin' && req.user.department) {
+      whereSql += ` AND beneficiary_id IN (SELECT id FROM beneficiaries WHERE department = $${paramIdx})`;
+      params.push(req.user.department);
+      paramIdx++;
     }
     if (status) {
       whereSql += ` AND status = $${paramIdx}`;
@@ -359,7 +363,7 @@ router.post('/api/partners/structures', authenticateToken, requireRole('admin'),
 // ============================================================================
 
 // Comparaison des indicateurs CSU entre départements/régions de Dakar
-router.get('/api/dashboard/regional-comparison', authenticateToken, requireRole('agent', 'admin'), async (req, res) => {
+router.get('/api/dashboard/regional-comparison', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
     // Bénéficiaires par mutuelle avec commune + région
     const byRegion = await query(

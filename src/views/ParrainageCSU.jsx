@@ -2,10 +2,16 @@ import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
 import { outboxAdd } from '../utils/offline';
 
-export default function ParrainageCSU({ lang }) {
+export default function ParrainageCSU({ lang, initialPackage = 'individuel' }) {
   // Stepper State
   const [regStep, setRegStep] = useState(1);
-  const [parrainageType, setParrainageType] = useState('individuel');
+  const [parrainageType, setParrainageType] = useState(initialPackage);
+  
+  useEffect(() => {
+    if (initialPackage) {
+      setParrainageType(initialPackage);
+    }
+  }, [initialPackage]);
   const [selectedMutuelle, setSelectedMutuelle] = useState('');
   
   // Form State
@@ -288,7 +294,7 @@ export default function ParrainageCSU({ lang }) {
   };
 
   return (
-    <div className="view-container">
+    <div className="parrainage-solidaire-view">
       {/* Top Banner */}
       <div className="hero-banner" style={{ backgroundImage: 'linear-gradient(to right, rgba(5, 150, 105, 0.9), rgba(5, 150, 105, 0.7)), url("/csu_parrainage_hero_real.png")', backgroundPosition: 'center', backgroundSize: 'cover', height: '260px' }}>
         <div className="hero-content">
@@ -402,7 +408,7 @@ export default function ParrainageCSU({ lang }) {
               <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', fontWeight: '800' }}>{lang === 'fr' ? '1. Sélectionnez la formule de parrainage' : '1. Tannal sa formule parrainage'}</h2>
               <p style={{ color: 'var(--text-sub)', marginBottom: '2rem' }}>{lang === 'fr' ? 'Choisissez le groupe cible que vous désirez soutenir financièrement pour une année.' : 'Tannal gni nga beug fayal sa cotisation bu at bi.'}</p>
               
-              <div className="grid grid-3" style={{ gap: '1.25rem' }}>
+              <div className="grid grid-4" style={{ gap: '1.25rem' }}>
                 
                 {/* Individuel */}
                 <div 
@@ -465,6 +471,36 @@ export default function ParrainageCSU({ lang }) {
                   <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem', fontWeight: '700' }}>{lang === 'fr' ? 'Élèves / daara' : 'Élèves / daara'}</h3>
                   <div style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--success)', margin: '0.5rem 0' }}>1 000 FCFA <span style={{ fontSize: '0.8rem', fontWeight: 'normal' }}>/ élève</span></div>
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Tarif groupe subventionné par l\'État pour les écoles élémentaires et Daaras.' : 'Fay subventionné par État bi ngir daara yi ak écoles yi.'}</p>
+                </div>
+
+                {/* Packs Collectifs Solidaires */}
+                <div 
+                  className={`card text-center ${parrainageType === 'collectif' ? 'active-border' : ''}`}
+                  onClick={() => {
+                    setParrainageType('collectif');
+                    // Prepopulate with a default pack of 10 solidary students
+                    const mocks = Array.from({ length: 10 }, (_, i) => ({
+                      name: `Élève Collectif #${i + 1}`,
+                      age: 10 + (i % 5),
+                      relation: 'Classe/Pack'
+                    }));
+                    setFamilyMembers(mocks);
+                  }}
+                  style={{ 
+                    border: parrainageType === 'collectif' ? '2.5px solid var(--primary)' : '1px solid var(--border-color)', 
+                    backgroundColor: parrainageType === 'collectif' ? 'rgba(59, 130, 246, 0.05)' : 'var(--card-bg)',
+                    transform: parrainageType === 'collectif' ? 'translateY(-4px)' : 'none',
+                    boxShadow: parrainageType === 'collectif' ? '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' : 'var(--shadow-sm)',
+                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                    cursor: 'pointer', 
+                    padding: '1.75rem 1.5rem',
+                    borderRadius: '12px'
+                  }}
+                >
+                  <div style={{ fontSize: '2.5rem' }}>🎁</div>
+                  <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem', fontWeight: '700' }}>{lang === 'fr' ? 'Packs collectifs' : 'Packs collectifs'}</h3>
+                  <div style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--primary)', margin: '0.5rem 0' }}>10 000 FCFA <span style={{ fontSize: '0.8rem', fontWeight: 'normal' }}>/ pack 10</span></div>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Parrainez directement un lot d\'élèves ou talibés sans devoir saisir de données.' : 'Parrainer un lot d\'enfants.'}</p>
                 </div>
 
               </div>
@@ -593,14 +629,65 @@ export default function ParrainageCSU({ lang }) {
               <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', fontWeight: '800' }}>
                 {parrainageType === 'menages' ? (lang === 'fr' ? '4. Déclaration des ménages parrainés' : '4. Njaboot yi parrainer') :
                  parrainageType === 'eleves' ? (lang === 'fr' ? '4. Liste des élèves / talibés à inscrire' : '4. Mbindu élèves/talibés') :
+                 parrainageType === 'collectif' ? (lang === 'fr' ? '4. Sélection du pack de parrainage collectif' : '4. Pack collectif parrainage') :
                  (lang === 'fr' ? '4. Liste des filleuls à parrainer' : '4. Filleuls gnu parrainer')}
               </h2>
               <p style={{ color: 'var(--text-sub)', marginBottom: '2rem' }}>
                 {parrainageType === 'menages' ? (lang === 'fr' ? 'Ajoutez les ménages/familles et listez leurs membres.' : 'Duggalal njaboot yi.') :
+                 parrainageType === 'collectif' ? (lang === 'fr' ? 'Choisissez la taille du pack collectif à parrainer pour cette mutuelle.' : 'Tannal taille pack bi.') :
                  (lang === 'fr' ? 'Saisissez les informations nominatives des personnes bénéficiaires.' : 'Duggalal tourou gni nga beug fayal.')}
               </p>
 
-              {parrainageType === 'menages' ? (
+              {parrainageType === 'collectif' ? (
+                <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+                  <h4 style={{ fontSize: '1.2rem', marginBottom: '1.5rem', fontWeight: 'bold' }}>
+                    {lang === 'fr' ? 'Choisissez la taille du pack collectif :' : 'Tannal taille pack bi :'}
+                  </h4>
+                  <div className="grid grid-3" style={{ gap: '1.5rem', marginBottom: '2rem' }}>
+                    {[
+                      { count: 10, price: 10000, desc: lang === 'fr' ? '10 élèves parrainés' : '10 élèves' },
+                      { count: 50, price: 50000, desc: lang === 'fr' ? '50 élèves parrainés' : '50 élèves' },
+                      { count: 100, price: 100000, desc: lang === 'fr' ? '100 élèves parrainés' : '100 élèves' }
+                    ].map(pack => {
+                      const isSelected = familyMembers.length === pack.count;
+                      return (
+                        <div
+                          key={pack.count}
+                          onClick={() => {
+                            const mocks = Array.from({ length: pack.count }, (_, i) => ({
+                              name: `Élève Collectif #${i + 1}`,
+                              age: 10 + (i % 5),
+                              relation: 'Classe/Pack'
+                            }));
+                            setFamilyMembers(mocks);
+                          }}
+                          style={{
+                            border: isSelected ? '2.5px solid var(--primary)' : '1px solid var(--border-color)',
+                            backgroundColor: isSelected ? 'rgba(4, 120, 87, 0.05)' : 'var(--card-bg)',
+                            borderRadius: '12px',
+                            padding: '1.5rem 1rem',
+                            cursor: 'pointer',
+                            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                            transform: isSelected ? 'translateY(-2px)' : 'none',
+                            boxShadow: isSelected ? 'var(--shadow-md)' : 'var(--shadow-sm)'
+                          }}
+                        >
+                          <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🎁</div>
+                          <strong style={{ fontSize: '1.1rem', display: 'block' }}>{pack.desc}</strong>
+                          <span style={{ fontSize: '1.3rem', fontWeight: '800', color: 'var(--primary)', display: 'block', marginTop: '0.5rem' }}>
+                            {pack.price.toLocaleString()} FCFA
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div style={{ padding: '1rem', backgroundColor: 'var(--bg-card-subtle, rgba(255, 255, 255, 0.05))', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-sub)', fontSize: '0.85rem' }}>
+                    💡 {lang === 'fr' 
+                      ? "Ce pack permet de financer anonymement des enfants dans le besoin en attente de parrainage dans la mutuelle sélectionnée."
+                      : "Pack bi day dimbale niou niak té beug bokk."}
+                  </div>
+                </div>
+              ) : parrainageType === 'menages' ? (
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                     <h4 style={{ margin: 0, fontSize: '1.1rem', color: 'var(--primary)' }}>
@@ -749,6 +836,94 @@ export default function ParrainageCSU({ lang }) {
                 </div>
               ) : (
                 <div>
+                  {/* CSV Import Module for Bulk Sponsor Enrollments */}
+                  {parrainageType === 'eleves' && (
+                    <div style={{
+                      border: '2px dashed var(--primary, #10b981)',
+                      borderRadius: '12px',
+                      padding: '1.5rem',
+                      backgroundColor: 'var(--bg-card-subtle, rgba(16, 185, 129, 0.03))',
+                      marginBottom: '1.5rem',
+                      textAlign: 'center'
+                    }}>
+                      <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>📋</div>
+                      <h4 style={{ margin: '0 0 0.25rem 0', fontSize: '1rem', fontWeight: '700' }}>
+                        {lang === 'fr' ? "Importation collective en masse (CSV)" : "Mbindum mboloo (CSV)"}
+                      </h4>
+                      <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)', marginBottom: '1rem' }}>
+                        {lang === 'fr' 
+                          ? "Téléchargez notre modèle CSV, remplissez-le avec la liste de vos élèves/filleuls et importez-le ci-dessous."
+                          : "Télécharger modèle CSV, bindal liste bi te importé ko."}
+                      </p>
+                      <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                        <button 
+                          type="button"
+                          className="btn btn-outline btn-sm"
+                          onClick={() => {
+                            // Generate a template CSV for download
+                            const headers = lang === 'fr' ? 'Prenom,Nom,Age,Classe\nModou,Diop,12,6eme\nAwa,Ndiaye,10,CM2\n' : 'Prenom,Nom,Age,Classe\nModou,Diop,12,6eme\n';
+                            const blob = new Blob([headers], { type: 'text/csv;charset=utf-8;' });
+                            const url = URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = 'mutualis_modele_import.csv';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                          }}
+                          style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
+                        >
+                          📥 {lang === 'fr' ? 'Télécharger le modèle' : 'Modèle CSV'}
+                        </button>
+                        <label 
+                          className="btn btn-secondary btn-sm"
+                          style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem', cursor: 'pointer', margin: 0 }}
+                        >
+                          📤 {lang === 'fr' ? 'Sélectionner le fichier CSV' : 'Choisir CSV'}
+                          <input 
+                            type="file" 
+                            accept=".csv" 
+                            style={{ display: 'none' }} 
+                            onChange={(e) => {
+                              const file = e.target.files[0];
+                              if (!file) return;
+                              const reader = new FileReader();
+                              reader.onload = (event) => {
+                                const text = event.target.result;
+                                const lines = text.split('\n');
+                                const newMembers = [];
+                                // Parse CSV (skip headers)
+                                for (let i = 1; i < lines.length; i++) {
+                                  const line = lines[i].trim();
+                                  if (!line) continue;
+                                  // Split by comma or semicolon
+                                  const cols = line.split(/[;,]/);
+                                  if (cols.length >= 3) {
+                                    newMembers.push({
+                                      name: `${cols[0].trim()} ${cols[1].trim()}`,
+                                      age: parseInt(cols[2].trim()) || 10,
+                                      relation: cols[3] ? cols[3].trim() : 'Classe'
+                                    });
+                                  }
+                                }
+                                if (newMembers.length > 0) {
+                                  setFamilyMembers([...familyMembers, ...newMembers]);
+                                  alert(lang === 'fr' 
+                                    ? `${newMembers.length} élèves importés avec succès !`
+                                    : `${newMembers.length} élèves importés.`
+                                  );
+                                } else {
+                                  alert(lang === 'fr' ? 'Aucune ligne valide trouvée dans le CSV.' : 'CSV invalide.');
+                                }
+                              };
+                              reader.readAsText(file);
+                            }}
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Dynamic inputs for Filleuls / Students */}
                   <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
                     <input 

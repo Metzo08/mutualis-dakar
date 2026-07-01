@@ -426,8 +426,8 @@ export default function Header({
           </button>
         )}
 
-        {/* Option 14: Stats inter-régions (Agent mode only) */}
-        {portalMode === 'agent' && agentUser && (
+        {/* Option 14: Stats inter-régions (Super Admin only) */}
+        {portalMode === 'agent' && agentUser && agentUser.role === 'Super Admin' && (
           <button
             className={`nav-item ${currentView === 'regional-stats' ? 'active' : ''}`}
             onClick={() => setView('regional-stats')}

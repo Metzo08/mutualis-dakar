@@ -313,7 +313,7 @@ app.post('/api/auth/agent/login', validate(agentLoginSchema), async (req, res) =
     }
 
     // Generate JWT (access token)
-    const agentPayload = { id: agent.id, role: agent.role, username: agent.username };
+    const agentPayload = { id: agent.id, role: agent.role, username: agent.username, department: agent.department };
     const token = jwt.sign(agentPayload, EFFECTIVE_JWT_SECRET, { expiresIn: ACCESS_TOKEN_TTL.agent });
     // Émet un refresh token
     const refreshToken = await issueRefreshToken(agentPayload);
@@ -334,7 +334,8 @@ app.post('/api/auth/agent/login', validate(agentLoginSchema), async (req, res) =
         firstName: agent.first_name,
         lastName: agent.last_name,
         role: agent.role,
-        photoUrl: agent.photo_url
+        photoUrl: agent.photo_url,
+        department: agent.department
       }
     });
   } catch (err) {
@@ -600,13 +601,14 @@ app.post('/api/adhesions', validate(adhesionSchema), async (req, res) => {
             [beneficiaryId, member.name, member.relation, parseInt(member.age || '0')]
           );
 
-          if (packageType === 'csu_eleves' || packageType === 'csu_daara') {
-            // Create separate account for student
+          if (packageType === 'csu_eleves' || packageType === 'csu_daara' || packageType === 'adhesion_masse') {
+            // Create separate account for member/student
             const bRand = Math.floor(1000 + Math.random() * 9000);
-            const bCmu = `SN-DK-EDU-${bRand}`;
+            const prefix = packageType === 'adhesion_masse' ? 'SN-DK-GRP' : 'SN-DK-EDU';
+            const bCmu = `${prefix}-${bRand}`;
             const nameParts = member.name.trim().split(' ');
-            const fName = nameParts[0] || 'Élève';
-            const lName = nameParts.slice(1).join(' ') || 'Scolaire';
+            const fName = nameParts[0] || (packageType === 'adhesion_masse' ? 'Membre' : 'Élève');
+            const lName = nameParts.slice(1).join(' ') || (packageType === 'adhesion_masse' ? 'Collectif' : 'Scolaire');
 
             await client.query(
               `INSERT INTO beneficiaries (first_name, last_name, birth_date, phone, email, address, mutuelle_name, package_type, payment_method, cmu_number, status, school_name)
@@ -987,6 +989,13 @@ app.get('/api/beneficiaries', authenticateToken, requireRole('agent', 'admin'), 
     const params = [];
     let paramIdx = 1;
 
+    // Union Départementale logic: restrict to their department if not Super Admin
+    if (req.user && req.user.role !== 'Super Admin' && req.user.department) {
+      whereSql += ` AND department = $${paramIdx}`;
+      params.push(req.user.department);
+      paramIdx++;
+    }
+
     if (mutuelle && mutuelle !== 'all') {
       whereSql += ` AND mutuelle_name = $${paramIdx}`;
       params.push(mutuelle);
@@ -1256,9 +1265,27 @@ app.get('/api/coverage-items', async (req, res) => {
 app.get('/api/complaints', authenticateToken, requireRole('agent', 'admin'), async (req, res) => {
   try {
     const { page, limit, offset } = parsePagination(req);
-    const countRes = await query('SELECT COUNT(*) FROM complaints');
+    let countSql = 'SELECT COUNT(*) FROM complaints c';
+    let dataSql = 'SELECT c.* FROM complaints c';
+    let whereSql = '';
+    const params = [];
+
+    if (req.user && req.user.role !== 'Super Admin' && req.user.department) {
+      countSql = 'SELECT COUNT(*) FROM complaints c JOIN beneficiaries b ON c.phone = b.phone';
+      dataSql = 'SELECT c.* FROM complaints c JOIN beneficiaries b ON c.phone = b.phone';
+      whereSql = ' WHERE b.department = $1';
+      params.push(req.user.department);
+    }
+
+    const countRes = await query(`${countSql}${whereSql}`, params);
     const total = parseInt(countRes.rows[0].count || '0', 10);
-    const result = await query('SELECT * FROM complaints ORDER BY id DESC LIMIT $1 OFFSET $2', [limit, offset]);
+
+    const limitParamIdx = params.length + 1;
+    const offsetParamIdx = params.length + 2;
+    const result = await query(
+      `${dataSql}${whereSql} ORDER BY c.id DESC LIMIT $${limitParamIdx} OFFSET $${offsetParamIdx}`,
+      [...params, limit, offset]
+    );
     res.json({
       data: result.rows,
       pagination: {

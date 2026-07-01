@@ -109,6 +109,7 @@ const createTablesQuery = `
     photo_url TEXT,
     sponsor_phone VARCHAR(50),
     school_name VARCHAR(255),
+    department VARCHAR(100) DEFAULT 'Dakar',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -142,7 +143,8 @@ const createTablesQuery = `
     first_name VARCHAR(100),
     last_name VARCHAR(100),
     role VARCHAR(50) DEFAULT 'agent',
-    photo_url TEXT
+    photo_url TEXT,
+    department VARCHAR(100) DEFAULT NULL
   );
 
   CREATE TABLE IF NOT EXISTS audit_logs (
@@ -904,22 +906,22 @@ async function initializeDatabase() {
       [
         'Modou', 'Diop', '1990-05-12', '771234567', 'modou.diop@example.com',
         'Médina Rue 22, Dakar', 'Mutuelle de la Médina', 'individuel', 'wave',
-        'SN-DK-MED-8472', 'active', '1234'
+        'SN-DK-MED-8472', 'active', '1234', 'Dakar'
       ],
       [
         'Awa', 'Ndiaye', '1985-08-22', '779876543', 'awa.ndiaye@example.com',
         'Pikine Ouest Quartier Tally Boubess, Dakar', 'Mutuelle de Pikine Ouest', 'familial', 'om',
-        'SN-DK-PIK-9021', 'active', '1234'
+        'SN-DK-PIK-9021', 'active', '1234', 'Pikine'
       ],
       [
         'Amadou', 'Sow', '1993-02-14', '764551122', 'amadou.sow@example.com',
         'Commune de la Médina, Rue 10, Dakar', 'Mutuelle de la Médina', 'individuel', 'wave',
-        'SN-DK-MED-1284', 'pending', '1234'
+        'SN-DK-MED-1284', 'pending', '1234', 'Dakar'
       ],
       [
         'Fatou', 'Fall', '1979-11-30', '775123456', 'fatou.fall@example.com',
         'Rufisque Est, quartier Mérina, Dakar', 'Mutuelle de Rufisque Est', 'familial', 'wave',
-        'SN-DK-RUF-3382', 'active', '1234'
+        'SN-DK-RUF-3382', 'active', '1234', 'Rufisque'
       ]
     ];
 
@@ -929,10 +931,10 @@ async function initializeDatabase() {
     for (const b of demoBeneficiaries) {
       // Le dernier élément ('1234') est remplacé par son hash bcrypt avant insertion
       const row = [...b];
-      row[row.length - 1] = hashedDefaultPin;
+      row[row.length - 2] = hashedDefaultPin; // shift pin hachage by 1 index because of department added at the end
       const res = await pool.query(
-        `INSERT INTO beneficiaries (first_name, last_name, birth_date, phone, email, address, mutuelle_name, package_type, payment_method, cmu_number, status, pin_code)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id`,
+        `INSERT INTO beneficiaries (first_name, last_name, birth_date, phone, email, address, mutuelle_name, package_type, payment_method, cmu_number, status, pin_code, department)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING id`,
         row
       );
       insertedIds.push(res.rows[0].id);
@@ -964,9 +966,9 @@ async function initializeDatabase() {
     const hashSuperAdmin = await bcrypt.hash('superadmin2026', salt);
 
     await pool.query(
-      `INSERT INTO agents (username, password_hash, first_name, last_name, role) VALUES
-       ('agent@cmu.sn', $1, 'Amadou', 'Sall', 'Admin Régional'),
-       ('superadmin@cmu.sn', $2, 'Moussa', 'Ndiaye', 'Super Admin')`,
+      `INSERT INTO agents (username, password_hash, first_name, last_name, role, department) VALUES
+       ('agent@cmu.sn', $1, 'Amadou', 'Sall', 'Admin Régional', 'Pikine'),
+       ('superadmin@cmu.sn', $2, 'Moussa', 'Ndiaye', 'Super Admin', NULL)`,
        [hashAgent, hashSuperAdmin]
     );
     console.log('Agent CMU de démonstration créé.');

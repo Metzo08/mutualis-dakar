@@ -462,6 +462,34 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, setV
                 )}
               </div>
 
+              {/* Citizen Card 4: Adhésions & Parrainages en Masse */}
+              <div className="card text-left" style={{ padding: '1.5rem' }}>
+                <h3 style={{ fontSize: '1.1rem', color: 'var(--primary)', marginBottom: '1rem' }}>
+                  📊 {lang === 'fr' ? 'Adhésions & Parrainages en Masse' : 'Mbindum Mboloo & Dimbalé'}
+                </h3>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', marginBottom: '1.5rem' }}>
+                  {lang === 'fr' 
+                    ? "Inscrivez plusieurs bénéficiaires à la fois (élèves de Daara, employés, membres d'association) ou parrainez des packs collectifs."
+                    : "Duggalal mboloo (élèves walla talibé) walla parrainé packs collectifs ci sa compte."}
+                </p>
+                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  <button 
+                    className="btn btn-outline btn-sm" 
+                    onClick={() => setViewTab('services', 'register', 'adhesion_masse')}
+                    style={{ flex: '1', minWidth: '150px', justifyContent: 'center' }}
+                  >
+                    📋 {lang === 'fr' ? 'Adhésion Groupe / Masse' : 'Mbindum Mboloo'}
+                  </button>
+                  <button 
+                    className="btn btn-success btn-sm" 
+                    onClick={() => setViewTab('parrainage-solidaire', 'register', 'collectif')}
+                    style={{ flex: '1', minWidth: '150px', justifyContent: 'center', backgroundColor: 'var(--success)', border: 'none', color: '#fff' }}
+                  >
+                    🤝 {lang === 'fr' ? 'Parrainage de Masse' : 'Dimbalé Packs'}
+                  </button>
+                </div>
+              </div>
+
               {/* Citizen Card: Loyalty & Badges */}
               {loyaltyData && (
                 <div className="card text-left" style={{ padding: '1.5rem' }}>

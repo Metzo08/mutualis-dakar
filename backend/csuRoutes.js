@@ -134,6 +134,10 @@ router.get('/api/claims', authenticateToken, async (req, res) => {
       whereSql += ` AND beneficiary_id = $${paramIdx}`;
       params.push(req.user.id);
       paramIdx++;
+    } else if (req.user && req.user.role !== 'Super Admin' && req.user.department) {
+      whereSql += ` AND beneficiary_id IN (SELECT id FROM beneficiaries WHERE department = $${paramIdx})`;
+      params.push(req.user.department);
+      paramIdx++;
     }
     if (status) {
       whereSql += ` AND status = $${paramIdx}`;
@@ -228,12 +232,16 @@ router.get('/api/notifications', authenticateToken, async (req, res) => {
   try {
     const { page, limit, offset } = parsePagination(req);
     const isAgent = ['agent', 'admin'].includes(req.user.role);
-    let whereSql = '';
+    let whereSql = ' WHERE 1=1';
     const params = [];
     let paramIdx = 1;
     if (!isAgent) {
-      whereSql = ` WHERE beneficiary_id = $${paramIdx}`;
+      whereSql += ` AND beneficiary_id = $${paramIdx}`;
       params.push(req.user.id);
+      paramIdx++;
+    } else if (req.user && req.user.role !== 'Super Admin' && req.user.department) {
+      whereSql += ` AND beneficiary_id IN (SELECT id FROM beneficiaries WHERE department = $${paramIdx})`;
+      params.push(req.user.department);
       paramIdx++;
     }
     const countRes = await query(`SELECT COUNT(*) FROM notifications${whereSql}`, params);
@@ -296,48 +304,90 @@ router.get('/api/cmu-card/:cmuNumber', async (req, res) => {
 
 router.get('/api/dashboard/stats', authenticateToken, requireRole('agent', 'admin'), async (req, res) => {
   try {
-    // Compteurs globaux
-    const totalBeneficiaries = await query('SELECT COUNT(*) FROM beneficiaries');
-    const activeBeneficiaries = await query("SELECT COUNT(*) FROM beneficiaries WHERE status = 'active'");
-    const pendingBeneficiaries = await query("SELECT COUNT(*) FROM beneficiaries WHERE status = 'pending'");
-    const totalMutuelles = await query('SELECT COUNT(*) FROM mutuelles');
-    const totalDonations = await query('SELECT COALESCE(SUM(amount),0) AS sum FROM donations');
+    const isAgent = ['agent', 'admin'].includes(req.user.role);
+    const isSuperAdmin = req.user.role === 'Super Admin';
+    const dept = (isAgent && !isSuperAdmin && req.user.department) ? req.user.department : null;
 
-    // Demandes de prise en charge par statut
-    const claimsByStatus = await query(
-      `SELECT status, COUNT(*) AS count FROM claims GROUP BY status ORDER BY count DESC`
-    );
-    const claimsTotal = await query('SELECT COUNT(*) FROM claims');
-    const claimsAmount = await query("SELECT COALESCE(SUM(reimbursed_amount),0) AS sum FROM claims WHERE status IN ('approved','paid')");
+    let totalBeneficiaries, activeBeneficiaries, pendingBeneficiaries, totalMutuelles, totalDonations;
+    let claimsByStatus, claimsTotal, claimsAmount, byPackage, byMutuelle, byCommune, adhesionsTrend, complaintsByStatus;
 
-    // Bénéficiaires par formule
-    const byPackage = await query(
-      `SELECT package_type, COUNT(*) AS count FROM beneficiaries GROUP BY package_type ORDER BY count DESC`
-    );
+    if (dept) {
+      // Filtré par département
+      totalBeneficiaries = await query('SELECT COUNT(*) FROM beneficiaries WHERE department = $1', [dept]);
+      activeBeneficiaries = await query("SELECT COUNT(*) FROM beneficiaries WHERE status = 'active' AND department = $1", [dept]);
+      pendingBeneficiaries = await query("SELECT COUNT(*) FROM beneficiaries WHERE status = 'pending' AND department = $1", [dept]);
+      totalMutuelles = await query('SELECT COUNT(*) FROM mutuelles');
+      totalDonations = await query('SELECT COALESCE(SUM(amount),0) AS sum FROM donations');
 
-    // Bénéficiaires par mutuelle (top 10)
-    const byMutuelle = await query(
-      `SELECT mutuelle_name, COUNT(*) AS count FROM beneficiaries GROUP BY mutuelle_name ORDER BY count DESC LIMIT 10`
-    );
+      claimsByStatus = await query(
+        `SELECT c.status, COUNT(*) AS count FROM claims c JOIN beneficiaries b ON c.beneficiary_id = b.id WHERE b.department = $1 GROUP BY c.status ORDER BY count DESC`,
+        [dept]
+      );
+      claimsTotal = await query('SELECT COUNT(*) FROM claims c JOIN beneficiaries b ON c.beneficiary_id = b.id WHERE b.department = $1', [dept]);
+      claimsAmount = await query(
+        "SELECT COALESCE(SUM(c.reimbursed_amount),0) AS sum FROM claims c JOIN beneficiaries b ON c.beneficiary_id = b.id WHERE c.status IN ('approved','paid') AND b.department = $1",
+        [dept]
+      );
 
-    // Bénéficiaires par commune (via la mutuelle)
-    const byCommune = await query(
-      `SELECT m.commune, COUNT(b.id) AS count
-       FROM beneficiaries b LEFT JOIN mutuelles m ON b.mutuelle_name = m.name
-       GROUP BY m.commune ORDER BY count DESC LIMIT 10`
-    );
+      byPackage = await query(
+        `SELECT package_type, COUNT(*) AS count FROM beneficiaries WHERE department = $1 GROUP BY package_type ORDER BY count DESC`,
+        [dept]
+      );
+      byMutuelle = await query(
+        `SELECT mutuelle_name, COUNT(*) AS count FROM beneficiaries WHERE department = $1 GROUP BY mutuelle_name ORDER BY count DESC LIMIT 10`,
+        [dept]
+      );
+      byCommune = await query(
+        `SELECT m.commune, COUNT(b.id) AS count
+         FROM beneficiaries b LEFT JOIN mutuelles m ON b.mutuelle_name = m.name
+         WHERE b.department = $1
+         GROUP BY m.commune ORDER BY count DESC LIMIT 10`,
+        [dept]
+      );
+      adhesionsTrend = await query(
+        `SELECT DATE(created_at) AS date, COUNT(*) AS count
+         FROM beneficiaries WHERE created_at >= NOW() - INTERVAL '30 days' AND department = $1
+         GROUP BY DATE(created_at) ORDER BY date ASC`,
+        [dept]
+      );
+      complaintsByStatus = await query(
+        `SELECT c.status, COUNT(*) AS count FROM complaints c JOIN beneficiaries b ON c.phone = b.phone WHERE b.department = $1 GROUP BY c.status`,
+        [dept]
+      );
+    } else {
+      // Super Admin ou Global
+      totalBeneficiaries = await query('SELECT COUNT(*) FROM beneficiaries');
+      activeBeneficiaries = await query("SELECT COUNT(*) FROM beneficiaries WHERE status = 'active'");
+      pendingBeneficiaries = await query("SELECT COUNT(*) FROM beneficiaries WHERE status = 'pending'");
+      totalMutuelles = await query('SELECT COUNT(*) FROM mutuelles');
+      totalDonations = await query('SELECT COALESCE(SUM(amount),0) AS sum FROM donations');
 
-    // Évolution des adhésions (30 derniers jours)
-    const adhesionsTrend = await query(
-      `SELECT DATE(created_at) AS date, COUNT(*) AS count
-       FROM beneficiaries WHERE created_at >= NOW() - INTERVAL '30 days'
-       GROUP BY DATE(created_at) ORDER BY date ASC`
-    );
+      claimsByStatus = await query(
+        `SELECT status, COUNT(*) AS count FROM claims GROUP BY status ORDER BY count DESC`
+      );
+      claimsTotal = await query('SELECT COUNT(*) FROM claims');
+      claimsAmount = await query("SELECT COALESCE(SUM(reimbursed_amount),0) AS sum FROM claims WHERE status IN ('approved','paid')");
 
-    // Réclamations par statut
-    const complaintsByStatus = await query(
-      `SELECT status, COUNT(*) AS count FROM complaints GROUP BY status`
-    );
+      byPackage = await query(
+        `SELECT package_type, COUNT(*) AS count FROM beneficiaries GROUP BY package_type ORDER BY count DESC`
+      );
+      byMutuelle = await query(
+        `SELECT mutuelle_name, COUNT(*) AS count FROM beneficiaries GROUP BY mutuelle_name ORDER BY count DESC LIMIT 10`
+      );
+      byCommune = await query(
+        `SELECT m.commune, COUNT(b.id) AS count
+         FROM beneficiaries b LEFT JOIN mutuelles m ON b.mutuelle_name = m.name
+         GROUP BY m.commune ORDER BY count DESC LIMIT 10`
+      );
+      adhesionsTrend = await query(
+        `SELECT DATE(created_at) AS date, COUNT(*) AS count
+         FROM beneficiaries WHERE created_at >= NOW() - INTERVAL '30 days'
+         GROUP BY DATE(created_at) ORDER BY date ASC`
+      );
+      complaintsByStatus = await query(
+        `SELECT status, COUNT(*) AS count FROM complaints GROUP BY status`
+      );
+    }
 
     res.json({
       beneficiaries: {

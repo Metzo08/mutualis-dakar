@@ -785,7 +785,7 @@ export default function Cartographie({ lang }) {
       {/* Banner with Animated Background like PharmaciesAgrees */}
       <section className="banner-mini" style={{
         position: 'relative',
-        background: 'linear-gradient(135deg, var(--success) 0%, var(--success-dark) 100%)',
+        background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)',
         borderBottom: '1px solid var(--border-color)',
         borderRadius: '16px',
         padding: '2.5rem 2rem',
@@ -796,26 +796,27 @@ export default function Cartographie({ lang }) {
         overflow: 'hidden'
       }}>
         {/* Animated Background Icons */}
-        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.2, overflow: 'hidden' }}>
-          {[...Array(20)].map((_, i) => (
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.85, overflow: 'hidden' }}>
+          {[...Array(25)].map((_, i) => (
             <span key={i} style={{
               position: 'absolute',
-              fontSize: `${Math.random() * 24 + 12}px`,
+              fontSize: `${Math.random() * 32 + 18}px`,
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-              animation: `float-banner ${Math.random() * 8 + 6}s linear infinite`,
-              animationDelay: `-${Math.random() * 10}s`
+              animation: `float-banner ${Math.random() * 6 + 5}s linear infinite`,
+              animationDelay: `-${Math.random() * 8}s`,
+              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))'
             }}>
-              {i % 2 === 0 ? '💊' : '➕'}
+              {i % 3 === 0 ? '💊' : i % 3 === 1 ? '➕' : '🏥'}
             </span>
           ))}
           <style>
             {`
               @keyframes float-banner {
-                0% { transform: translateY(120px) rotate(0deg); opacity: 0; }
-                10% { opacity: 0.7; }
-                90% { opacity: 0.7; }
-                100% { transform: translateY(-30px) rotate(360deg); opacity: 0; }
+                0% { transform: translateY(140px) rotate(0deg); opacity: 0; }
+                15% { opacity: 0.95; }
+                85% { opacity: 0.95; }
+                100% { transform: translateY(-40px) rotate(360deg); opacity: 0; }
               }
             `}
           </style>
