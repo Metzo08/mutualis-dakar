@@ -1053,6 +1053,8 @@ app.get('/api/beneficiaries', authenticateToken, requireRole('agent', 'admin'), 
         cmuNumber: b.cmu_number,
         status: b.status,
         createdAt: b.created_at,
+        sponsorPhone: b.sponsor_phone,
+        schoolName: b.school_name,
         familyMembers: familyMap.get(b.id) || []
       };
     });

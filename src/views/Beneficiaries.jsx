@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
+import { jsPDF } from 'jspdf';
 
 export default function Beneficiaries({ lang, agentUser }) {
   const [beneficiaries, setBeneficiaries] = useState([]);
@@ -31,6 +32,234 @@ export default function Beneficiaries({ lang, agentUser }) {
   const displayedBeneficiaries = selectedStatus === 'all' 
     ? beneficiaries 
     : beneficiaries.filter(b => b.status === selectedStatus);
+
+  const handleDownloadSponsorReceipt = (sponsor) => {
+    const now = new Date(sponsor.createdAt || new Date());
+    
+    // Find all beneficiaries sponsored by this sponsor
+    const sponsored = beneficiaries.filter(b => b.sponsorPhone === sponsor.phone && b.id !== sponsor.id);
+    
+    // Detect parrainageType
+    let parrainageType = 'individuel';
+    let schoolName = '';
+    if (sponsored.length > 0) {
+      const firstCmu = sponsored[0].cmuNumber || '';
+      if (firstCmu.startsWith('SN-DK-EDU')) parrainageType = 'eleves';
+      else if (firstCmu.startsWith('SN-DK-COL')) parrainageType = 'collectif';
+      else if (firstCmu.includes('-HH-')) parrainageType = 'menages';
+      
+      schoolName = sponsored[0].schoolName || '';
+    }
+    
+    // Reconstruct sponsored lists
+    const sponsoredHouseholds = parrainageType === 'menages' ? sponsored.map(chef => ({
+      chefName: `${chef.firstName} ${chef.lastName}`,
+      chefPhone: chef.phone,
+      members: chef.familyMembers || []
+    })) : [];
+    
+    const familyMembers = parrainageType !== 'menages' ? sponsored.map(b => ({
+      name: `${b.firstName} ${b.lastName}`,
+      relation: b.schoolName || 'Scolaire',
+      age: 12
+    })) : [];
+    
+    // Calculate total cost
+    const calculateTotalCost = () => {
+      if (parrainageType === 'menages') {
+        return sponsoredHouseholds.reduce((acc, curr) => {
+          return acc + 1000 + (curr.members.length + 1) * 3500;
+        }, 0);
+      }
+      if (parrainageType === 'eleves' || parrainageType === 'collectif') {
+        return Math.max(1, familyMembers.length) * 1000;
+      }
+      return Math.max(1, familyMembers.length) * 4500;
+    };
+    
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+    
+    // Top bar green
+    doc.setFillColor(5, 150, 105);
+    doc.rect(0, 0, 210, 8, 'F');
+    
+    // Logo / Title
+    doc.setTextColor(5, 150, 105);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.text("MUTUALIS DAKAR", 20, 25);
+    
+    doc.setTextColor(100, 116, 139);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text("Régime de Couverture Maladie Universelle (CMU) du Sénégal", 20, 30);
+    
+    // Header box
+    doc.setFillColor(248, 250, 252);
+    doc.rect(20, 38, 170, 18, 'F');
+    doc.setDrawColor(226, 232, 240);
+    doc.rect(20, 38, 170, 18, 'D');
+    
+    doc.setTextColor(30, 41, 59);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.text("REÇU NUMÉRIQUE DE PARRAINAGE SOLIDAIRE", 25, 45);
+    
+    doc.setTextColor(100, 116, 139);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text(`Date de transaction : ${now.toLocaleDateString('fr-FR')} à ${now.toLocaleTimeString('fr-FR')}`, 25, 51);
+    doc.text(`N° Membre / Dossier : ${sponsor.cmuNumber || 'SN-DK-SPN-1001'}`, 120, 51);
+    
+    let y = 68;
+    const drawSectionHeader = (title) => {
+      doc.setFillColor(241, 245, 249);
+      doc.rect(20, y, 170, 7, 'F');
+      doc.setTextColor(5, 150, 105);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.text(title, 23, y + 5);
+      y += 12;
+    };
+    
+    // Parrain Details Section
+    drawSectionHeader("INFORMATIONS DU PARRAIN / SPONSOR");
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139);
+    doc.text("Prénom & Nom :", 25, y);
+    doc.text("Téléphone :", 25, y + 6);
+    doc.text("Adresse :", 25, y + 12);
+    doc.text("E-mail :", 120, y);
+    
+    doc.setTextColor(30, 41, 59);
+    doc.setFont("helvetica", "bold");
+    doc.text(`${sponsor.firstName} ${sponsor.lastName}`, 55, y);
+    doc.text(`${sponsor.phone}`, 55, y + 6);
+    doc.text(`${sponsor.address || 'Dakar, Sénégal'}`, 55, y + 12);
+    doc.text(`${sponsor.email || 'Non renseigné'}`, 135, y);
+    
+    y += 22;
+    
+    // Sponsoring Details Section
+    drawSectionHeader("DÉTAILS DU PARRAINAGE SOLIDAIRE");
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139);
+    doc.text("Mutuelle Cible :", 25, y);
+    doc.text("Type de parrainage :", 25, y + 6);
+    doc.text("Moyen de règlement :", 25, y + 12);
+    doc.text("Validité :", 120, y);
+    doc.text("Statut paiement :", 120, y + 6);
+    
+    doc.setTextColor(30, 41, 59);
+    doc.setFont("helvetica", "bold");
+    doc.text(`${sponsor.mutuelleName}`, 65, y);
+    
+    const typeLabel = parrainageType === 'menages' ? 'Parrainage de Ménages 👨‍👩‍👧‍👦' :
+                      parrainageType === 'eleves' ? 'Parrainage scolaire (Écoles/Daaras) 🎓' :
+                      parrainageType === 'collectif' ? 'Packs collectifs solidaires 🎁' :
+                      'Filleuls individuels 👤';
+    doc.text(typeLabel, 65, y + 6);
+    doc.text(sponsor.paymentMethod === 'wave' ? 'Wave Pay' : 'Orange Money', 65, y + 12);
+    doc.text("12 / 2027", 155, y);
+    doc.setTextColor(5, 150, 105);
+    doc.text("Paiement validé", 155, y + 6);
+    
+    y += 22;
+    
+    // Total Amount Box
+    doc.setFillColor(254, 243, 199);
+    doc.rect(20, y, 170, 15, 'F');
+    doc.setDrawColor(245, 158, 11);
+    doc.rect(20, y, 170, 15, 'D');
+    
+    doc.setTextColor(217, 119, 6);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text("MONTANT TOTAL PAYÉ :", 25, y + 9);
+    doc.setFontSize(16);
+    doc.text(`${calculateTotalCost().toLocaleString('fr-FR')} FCFA`, 95, y + 10);
+    
+    y += 25;
+    
+    // Beneficiaries Section
+    if (parrainageType === 'menages') {
+      if (sponsoredHouseholds && sponsoredHouseholds.length > 0) {
+        drawSectionHeader("LISTE DES MÉNAGES PARRAINÉS");
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8.5);
+        doc.setTextColor(30, 41, 59);
+        
+        sponsoredHouseholds.forEach((hh, i) => {
+          if (y > 270) {
+            doc.addPage();
+            y = 20;
+          }
+          doc.setFont("helvetica", "bold");
+          doc.text(`Ménage #${i + 1} : Chef ${hh.chefName} (${hh.chefPhone || 'Non renseigné'})`, 22, y);
+          doc.setFont("helvetica", "normal");
+          y += 4.5;
+          if (hh.members && hh.members.length > 0) {
+            doc.text(`  Membres: ${hh.members.map(m => `${m.name} (${m.relation || 'parent'}, ${m.age} ans)`).join(', ')}`, 22, y);
+            y += 5.5;
+          }
+        });
+      }
+    } else {
+      if (familyMembers && familyMembers.length > 0) {
+        drawSectionHeader("LISTE DES BÉNÉFICIAIRES PARRAINÉS");
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8.5);
+        doc.setTextColor(30, 41, 59);
+        
+        let colWidth = 53;
+        let startX = 22;
+        let startY = y;
+        let currentY = startY;
+        
+        familyMembers.forEach((m, idx) => {
+          let col = idx % 3;
+          if (col === 0 && idx > 0) {
+            currentY += 4.5;
+          }
+          
+          if (currentY > 275) {
+            doc.addPage();
+            currentY = 20;
+          }
+          
+          let posX = startX + col * colWidth;
+          const detailStr = parrainageType === 'eleves' ? `(Cl: ${m.relation})` : ``;
+          let displayName = m.name;
+          if (displayName.length > 18) {
+            displayName = displayName.substring(0, 15) + '...';
+          }
+          doc.text(`${idx + 1}. ${displayName} ${detailStr}`, posX, currentY);
+        });
+        y = currentY + 10;
+      }
+    }
+    
+    // Add page footer to all pages
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setDrawColor(226, 232, 240);
+      doc.line(20, 282, 190, 282);
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(8);
+      doc.setTextColor(148, 163, 184);
+      doc.text("Mutualis Dakar - Portail Régional CMU - support@mutualisdakar.sn", 20, 288);
+      doc.text(`Page ${i} sur ${pageCount}`, 175, 288);
+    }
+    
+    doc.save(`recu_parrainage_${sponsor.cmuNumber || 'MUTUALIS'}.pdf`);
+  };
 
   const dict = {
     fr: {
@@ -353,8 +582,26 @@ export default function Beneficiaries({ lang, agentUser }) {
               displayedBeneficiaries.map((b) => (
                 <tr key={b.id} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background 0.2s' }}>
                   <td style={{ padding: '1.2rem 1.5rem' }}>
-                    <div style={{ fontWeight: '700', color: 'var(--text-main)' }}>{b.firstName} {b.lastName}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-sub)' }}>{b.phone}</div>
+                    <div style={{ fontWeight: '700', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      {b.firstName} {b.lastName}
+                      {b.sponsorPhone && (
+                        <span style={{ 
+                          fontSize: '0.65rem', 
+                          fontWeight: 'bold', 
+                          color: '#b45309', 
+                          backgroundColor: '#fef3c7', 
+                          padding: '2px 6px', 
+                          borderRadius: '4px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '2px'
+                        }}>🎁 {lang === 'fr' ? 'Parrainé' : 'Parrainé'}</span>
+                      )}
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-sub)' }}>
+                      {b.phone}
+                      {b.sponsorPhone && ` (Sponsor: ${b.sponsorPhone})`}
+                    </div>
                   </td>
                   <td style={{ padding: '1.2rem 1.5rem', color: 'var(--text-sub)' }}>{b.mutuelleName}</td>
                   <td style={{ padding: '1.2rem 1.5rem', fontFamily: 'monospace', fontSize: '0.85rem', color: 'var(--primary)' }}>
@@ -362,12 +609,13 @@ export default function Beneficiaries({ lang, agentUser }) {
                   </td>
                   <td style={{ padding: '1.2rem 1.5rem' }}>
                     <span className="badge" style={{
-                      backgroundColor: b.packageType === 'familial' ? 'rgba(255, 127, 17, 0.1)' : 'rgba(59, 130, 246, 0.1)',
-                      color: b.packageType === 'familial' ? 'var(--secondary)' : 'var(--primary)',
+                      backgroundColor: b.packageType === 'parrainage' ? 'rgba(5, 150, 105, 0.15)' : b.packageType === 'familial' ? 'rgba(255, 127, 17, 0.1)' : 'rgba(59, 130, 246, 0.1)',
+                      color: b.packageType === 'parrainage' ? 'var(--primary)' : b.packageType === 'familial' ? 'var(--secondary)' : 'var(--primary)',
                       textTransform: 'uppercase',
-                      fontSize: '0.65rem'
+                      fontSize: '0.65rem',
+                      fontWeight: 'bold'
                     }}>
-                      {b.packageType}
+                      {b.packageType === 'parrainage' ? 'Sponsor / Parrain' : b.packageType}
                     </span>
                   </td>
                   <td style={{ padding: '1.2rem 1.5rem' }}>
@@ -564,35 +812,114 @@ export default function Beneficiaries({ lang, agentUser }) {
                 </div>
               </div>
 
-              {/* Ayants droit section */}
-              <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
-                <strong style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '0.5rem' }}>
-                  {t.modalFamily} ({selectedBeneficiary.familyMembers ? selectedBeneficiary.familyMembers.length : 0})
-                </strong>
-                
-                {selectedBeneficiary.familyMembers && selectedBeneficiary.familyMembers.length > 0 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                    {selectedBeneficiary.familyMembers.map((member, i) => (
-                      <div key={i} style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        padding: '0.6rem 0.8rem',
-                        background: 'rgba(255,255,255,0.01)',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: '8px',
-                        fontSize: '0.85rem'
-                      }}>
-                        <span style={{ fontWeight: '600', color: 'var(--text-main)' }}>{member.name}</span>
-                        <span style={{ color: 'var(--text-sub)' }}>
-                          {member.relation === 'conjoint' ? (lang === 'fr' ? 'Conjoint' : 'Jëkër/Jabar') : member.relation === 'parent' ? (lang === 'fr' ? 'Parent' : 'Waajur') : (lang === 'fr' ? 'Enfant' : 'Doom')} — {member.age} {lang === 'fr' ? 'ans' : 'at'}
-                        </span>
-                      </div>
-                    ))}
+               {/* Ayants droit section (if not a sponsor) */}
+              {selectedBeneficiary.packageType !== 'parrainage' && (
+                <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
+                  <strong style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '0.5rem' }}>
+                    {t.modalFamily} ({selectedBeneficiary.familyMembers ? selectedBeneficiary.familyMembers.length : 0})
+                  </strong>
+                  
+                  {selectedBeneficiary.familyMembers && selectedBeneficiary.familyMembers.length > 0 ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                      {selectedBeneficiary.familyMembers.map((member, i) => (
+                        <div key={i} style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          padding: '0.6rem 0.8rem',
+                          background: 'rgba(255,255,255,0.01)',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: '8px',
+                          fontSize: '0.85rem'
+                        }}>
+                          <span style={{ fontWeight: '600', color: 'var(--text-main)' }}>{member.name}</span>
+                          <span style={{ color: 'var(--text-sub)' }}>
+                            {member.relation === 'conjoint' ? (lang === 'fr' ? 'Conjoint' : 'Jëkër/Jabar') : member.relation === 'parent' ? (lang === 'fr' ? 'Parent' : 'Waajur') : (lang === 'fr' ? 'Enfant' : 'Doom')} — {member.age} {lang === 'fr' ? 'ans' : 'at'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{t.modalNoFamily}</span>
+                  )}
+                </div>
+              )}
+
+              {/* Sponsor view details (list of sponsored filleuls + download receipt) */}
+              {selectedBeneficiary.packageType === 'parrainage' && (
+                <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                    <strong style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                      Filleuls parrainés ({beneficiaries.filter(b => b.sponsorPhone === selectedBeneficiary.phone && b.id !== selectedBeneficiary.id).length})
+                    </strong>
+                    <button 
+                      className="btn btn-primary btn-sm"
+                      onClick={() => handleDownloadSponsorReceipt(selectedBeneficiary)}
+                      style={{ fontSize: '0.75rem', padding: '0.3rem 0.75rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                    >
+                      📄 Reçu Parrainage (PDF)
+                    </button>
                   </div>
-                ) : (
-                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{t.modalNoFamily}</span>
-                )}
-              </div>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', maxHeight: '180px', overflowY: 'auto', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.5rem', backgroundColor: 'var(--bg-card-subtle)' }}>
+                    {beneficiaries.filter(b => b.sponsorPhone === selectedBeneficiary.phone && b.id !== selectedBeneficiary.id).length > 0 ? (
+                      beneficiaries.filter(b => b.sponsorPhone === selectedBeneficiary.phone && b.id !== selectedBeneficiary.id).map((member, i) => (
+                        <div key={i} style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          padding: '0.4rem 0.6rem',
+                          borderBottom: i < beneficiaries.filter(b => b.sponsorPhone === selectedBeneficiary.phone && b.id !== selectedBeneficiary.id).length - 1 ? '1px solid var(--border-color)' : 'none',
+                          fontSize: '0.8rem'
+                        }}>
+                          <span style={{ fontWeight: '600', color: 'var(--text-main)' }}>{member.firstName} {member.lastName}</span>
+                          <span style={{ color: 'var(--primary)', fontFamily: 'monospace', fontSize: '0.75rem' }}>{member.cmuNumber}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', padding: '0.5rem', textAlign: 'center' }}>
+                        Aucun filleul individuel en base de données.
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Sponsored beneficiary view details (link back to sponsor + download receipt) */}
+              {selectedBeneficiary.sponsorPhone && (
+                <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'var(--bg-card-subtle)', padding: '0.75rem 1rem', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
+                    <div>
+                      <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '0.2rem' }}>
+                        Parrainage Social / Sponsor
+                      </strong>
+                      <span style={{ fontSize: '0.85rem', color: 'var(--text-main)', fontWeight: '700' }}>
+                        👤 {
+                          beneficiaries.find(b => b.phone === selectedBeneficiary.sponsorPhone && b.packageType === 'parrainage') 
+                            ? `${beneficiaries.find(b => b.phone === selectedBeneficiary.sponsorPhone && b.packageType === 'parrainage').firstName} ${beneficiaries.find(b => b.phone === selectedBeneficiary.sponsorPhone && b.packageType === 'parrainage').lastName} (${selectedBeneficiary.sponsorPhone})`
+                            : `Sponsor Tél: ${selectedBeneficiary.sponsorPhone}`
+                        }
+                      </span>
+                    </div>
+                    
+                    <button 
+                      className="btn btn-outline btn-sm"
+                      onClick={() => {
+                        const sponsor = beneficiaries.find(b => b.phone === selectedBeneficiary.sponsorPhone && b.packageType === 'parrainage') || {
+                          firstName: "Parrain",
+                          lastName: "Solidaire",
+                          phone: selectedBeneficiary.sponsorPhone,
+                          mutuelleName: selectedBeneficiary.mutuelleName,
+                          paymentMethod: selectedBeneficiary.paymentMethod,
+                          createdAt: selectedBeneficiary.createdAt
+                        };
+                        handleDownloadSponsorReceipt(sponsor);
+                      }}
+                      style={{ fontSize: '0.75rem', padding: '0.3rem 0.75rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}
+                    >
+                      📄 Reçu du Parrain (PDF)
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Status and Action Buttons */}
               <div style={{
