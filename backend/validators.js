@@ -69,7 +69,7 @@ const adhesionSchema = z.object({
     .default([]),
   sponsorPhone: z.string().max(50).optional().nullable(),
   schoolName: z.string().max(255).optional().nullable(),
-  parrainageType: z.enum(['eleves', 'menages', 'individuel']).optional().nullable(),
+  parrainageType: z.enum(['eleves', 'menages', 'individuel', 'collectif']).optional().nullable(),
   sponsoredHouseholds: z
     .array(
       z.object({

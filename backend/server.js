@@ -579,10 +579,13 @@ app.post('/api/adhesions', validate(adhesionSchema), async (req, res) => {
         // Individual or students parrainage
         for (const member of familyMembers) {
           const bRand = Math.floor(1000 + Math.random() * 9000);
-          const bCmu = parrainageType === 'eleves' ? `SN-DK-EDU-${bRand}` : `SN-DK-SPN-${bRand}`;
+          const prefix = parrainageType === 'eleves' ? 'SN-DK-EDU' :
+                         parrainageType === 'collectif' ? 'SN-DK-COL' :
+                         'SN-DK-SPN';
+          const bCmu = `${prefix}-${bRand}`;
           const nameParts = member.name.trim().split(' ');
-          const fName = nameParts[0] || (parrainageType === 'eleves' ? 'Élève' : 'Filleul');
-          const lName = nameParts.slice(1).join(' ') || (parrainageType === 'eleves' ? 'Scolaire' : 'Parrainé');
+          const fName = nameParts[0] || (parrainageType === 'eleves' ? 'Élève' : parrainageType === 'collectif' ? 'Bénéficiaire' : 'Filleul');
+          const lName = nameParts.slice(1).join(' ') || (parrainageType === 'eleves' ? 'Scolaire' : parrainageType === 'collectif' ? 'Collectif' : 'Parrainé');
 
           await client.query(
             `INSERT INTO beneficiaries (first_name, last_name, birth_date, phone, email, address, mutuelle_name, package_type, payment_method, cmu_number, status, sponsor_phone, school_name)

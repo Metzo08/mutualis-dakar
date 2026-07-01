@@ -92,7 +92,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel' }) {
         return acc + 1000 + (curr.members.length + 1) * 3500;
       }, 0);
     }
-    if (parrainageType === 'eleves') {
+    if (parrainageType === 'eleves' || parrainageType === 'collectif') {
       return Math.max(1, familyMembers.length) * 1000;
     }
     return Math.max(1, familyMembers.length) * 4500;
@@ -1038,6 +1038,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel' }) {
                       <div style={{ fontWeight: 'bold' }}>
                         {parrainageType === 'menages' ? 'Ménages / familles 🤝' :
                          parrainageType === 'eleves' ? 'Élèves scolaires (écoles/daaras) 🎓' :
+                         parrainageType === 'collectif' ? 'Packs collectifs solidaires 🎁' :
                          'Filleuls individuels 👤'}
                       </div>
                     </div>
@@ -1084,6 +1085,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel' }) {
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>
                   {parrainageType === 'menages' && `Détail : ${sponsoredHouseholds.length} ménage(s) [1 000 FCFA carte + 3 500 FCFA/pers. par ménage]`}
                   {parrainageType === 'eleves' && `Détail : ${familyMembers.length} élève(s) × 1 000 FCFA (tarif subventionné)`}
+                  {parrainageType === 'collectif' && `Détail : Pack collectif de ${familyMembers.length} élève(s) × 1 000 FCFA (tarif pack)`}
                   {parrainageType === 'individuel' && `Détail : ${familyMembers.length} filleul(s) × 4 500 FCFA (1 000 carte + 3 500 cotisation)`}
                 </div>
               </div>
