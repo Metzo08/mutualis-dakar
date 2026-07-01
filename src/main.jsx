@@ -32,26 +32,16 @@ if (typeof document !== 'undefined') {
     const consoleDiv = document.createElement('div');
     consoleDiv.id = 'diag-console-root';
     consoleDiv.style.position = 'fixed';
-    consoleDiv.style.bottom = '10px';
-    consoleDiv.style.left = '10px';
+    consoleDiv.style.bottom = '20px';
+    consoleDiv.style.right = '20px';
     consoleDiv.style.zIndex = '999999';
     consoleDiv.style.fontFamily = 'monospace';
     consoleDiv.style.fontSize = '11px';
     document.body.appendChild(consoleDiv);
 
     consoleDiv.innerHTML = `
-      <button id="diag-toggle-btn" style="
-        background: #0f172a;
-        color: #38bdf8;
-        border: 1px solid #334155;
-        padding: 6px 10px;
-        border-radius: 6px;
-        cursor: pointer;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-        font-weight: bold;
-      ">🛠️ Diagnostics</button>
       <div id="diag-panel" style="
-        display: none;
+        display: flex;
         width: 480px;
         height: 280px;
         background: rgba(15, 23, 42, 0.95);
@@ -60,7 +50,7 @@ if (typeof document !== 'undefined') {
         border-radius: 10px;
         box-shadow: 0 8px 24px rgba(0,0,0,0.6);
         flex-direction: column;
-        margin-top: 6px;
+        margin-bottom: 6px;
         overflow: hidden;
       ">
         <div style="padding: 6px 10px; background: #1e293b; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; color: #fff;">
@@ -68,6 +58,18 @@ if (typeof document !== 'undefined') {
           <button id="diag-clear-btn" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 11px;">Effacer</button>
         </div>
         <div id="diag-logs-container" style="flex: 1; padding: 8px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; background: #0b0f19;"></div>
+      </div>
+      <div style="display: flex; justify-content: flex-end;">
+        <button id="diag-toggle-btn" style="
+          background: #0f172a;
+          color: #38bdf8;
+          border: 1px solid #334155;
+          padding: 6px 10px;
+          border-radius: 6px;
+          cursor: pointer;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+          font-weight: bold;
+        ">🛠️ Diagnostics</button>
       </div>
     `;
 
