@@ -17,6 +17,9 @@ export default function AgentDashboard({ lang, agentUser }) {
     kpiActive: 'Assurés actifs',
     kpiPending: 'Dossiers en attente',
     kpiMutuelles: 'Mutuelles actives',
+    kpiSponsors: 'Sponsors actifs',
+    kpiSponsored: 'Filleuls parrainés',
+    kpiParrainageFunds: 'Fonds parrainage (FCFA)',
     kpiClaims: 'Demandes de prise en charge',
     kpiReimbursed: 'Montant remboursé (FCFA)',
     kpiDonations: 'Dons collectés (FCFA)',
@@ -38,6 +41,9 @@ export default function AgentDashboard({ lang, agentUser }) {
     kpiActive: 'Assuré yi baax',
     kpiPending: 'Mbind yi nëbb',
     kpiMutuelles: 'Mutuelle yi baax',
+    kpiSponsors: 'Sponsor yi baax',
+    kpiSponsored: 'Filleuls parrainés',
+    kpiParrainageFunds: 'Xalis parrainage (FCFA)',
     kpiClaims: 'Demande yi ci prise en charge',
     kpiReimbursed: 'Xalis yi ñu fay (FCFA)',
     kpiDonations: 'Dons yi (FCFA)',
@@ -168,10 +174,16 @@ export default function AgentDashboard({ lang, agentUser }) {
         <KpiCard icon="✅" label={t.kpiActive} value={formatNumber(stats.beneficiaries.active)} color="#22c55e" />
         <KpiCard icon="⏳" label={t.kpiPending} value={formatNumber(stats.beneficiaries.pending)} color="#f59e0b" />
         <KpiCard icon="🏥" label={t.kpiMutuelles} value={formatNumber(stats.mutuelles)} color="#8b5cf6" />
+        
+        {/* Parrainage Stats */}
+        <KpiCard icon="🤝" label={t.kpiSponsors} value={formatNumber(stats.parrainage?.sponsorsCount)} color="#059669" />
+        <KpiCard icon="🎁" label={t.kpiSponsored} value={formatNumber(stats.parrainage?.sponsoredCount)} color="#d97706" />
+        <KpiCard icon="🪙" label={t.kpiParrainageFunds} value={formatNumber(stats.parrainage?.totalAmount)} color="#10b981" />
+        
         <KpiCard icon="📋" label={t.kpiClaims} value={formatNumber(stats.claims.total)} color="#ec4899" />
         <KpiCard icon="💰" label={t.kpiReimbursed} value={formatNumber(stats.claims.reimbursedAmount)} color="#14b8a6" />
-        <KpiCard icon="🎁" label={t.kpiDonations} value={formatNumber(stats.donations)} color="#6366f1" />
-        <KpiCard icon="📈" label={t.coverage} value={`${coverageRate}%`} color="#059669" />
+        <KpiCard icon="❤️" label={t.kpiDonations} value={formatNumber(stats.donations)} color="#6366f1" />
+        <KpiCard icon="📈" label={t.coverage} value={`${coverageRate}%`} color="#0ea5e9" />
       </div>
 
       {/* Graphiques */}

@@ -389,6 +389,60 @@ router.get('/api/dashboard/stats', authenticateToken, requireRole('agent', 'admi
       );
     }
 
+    // Calculate parrainage statistics (Sponsors, Filleuls, and Total Amount)
+    let sponsorsQuery = "SELECT id, phone, mutuelle_name FROM beneficiaries WHERE package_type = 'parrainage'";
+    let sponsoredQuery = "SELECT id, sponsor_phone, cmu_number, school_name FROM beneficiaries WHERE sponsor_phone IS NOT NULL AND package_type != 'parrainage'";
+    const sponsorsParams = [];
+    const sponsoredParams = [];
+    
+    if (dept) {
+      sponsorsQuery += " AND department = $1";
+      sponsorsParams.push(dept);
+      sponsoredQuery += " AND department = $1";
+      sponsoredParams.push(dept);
+    }
+    
+    const sponsorsRes = await query(sponsorsQuery, sponsorsParams);
+    const sponsoredRes = await query(sponsoredQuery, sponsoredParams);
+    
+    let sponsorsCount = sponsorsRes.rows.length;
+    let sponsoredCount = sponsoredRes.rows.length;
+    let parrainageTotalAmount = 0;
+    
+    // Group sponsored members by sponsor phone
+    let sponsoredBySponsor = new Map();
+    for (const b of sponsoredRes.rows) {
+      if (!sponsoredBySponsor.has(b.sponsor_phone)) {
+        sponsoredBySponsor.set(b.sponsor_phone, []);
+      }
+      sponsoredBySponsor.get(b.sponsor_phone).push(b);
+    }
+    
+    // Reconstruct/compute cost for each sponsor
+    for (const sponsor of sponsorsRes.rows) {
+      const sponsoredList = sponsoredBySponsor.get(sponsor.phone) || [];
+      if (sponsoredList.length === 0) continue;
+      
+      let detectedType = 'individuel';
+      const firstCmu = sponsoredList[0].cmu_number || '';
+      if (firstCmu.startsWith('SN-DK-EDU')) detectedType = 'eleves';
+      else if (firstCmu.startsWith('SN-DK-COL')) detectedType = 'collectif';
+      else if (firstCmu.includes('-HH-')) detectedType = 'menages';
+      
+      let amount = 0;
+      if (detectedType === 'menages') {
+        const chefIds = sponsoredList.map(chef => chef.id);
+        const fRes = await query("SELECT COUNT(*) FROM family_members WHERE beneficiary_id = ANY($1::int[])", [chefIds]);
+        const familyCount = parseInt(fRes.rows[0].count || '0', 10);
+        amount = sponsoredList.length * 1000 + (familyCount + sponsoredList.length) * 3500;
+      } else if (detectedType === 'eleves' || detectedType === 'collectif') {
+        amount = sponsoredList.length * 1000;
+      } else {
+        amount = sponsoredList.length * 4500;
+      }
+      parrainageTotalAmount += amount;
+    }
+
     res.json({
       beneficiaries: {
         total: parseInt(totalBeneficiaries.rows[0].count || '0', 10),
@@ -402,6 +456,11 @@ router.get('/api/dashboard/stats', authenticateToken, requireRole('agent', 'admi
         total: parseInt(claimsTotal.rows[0].count || '0', 10),
         byStatus: claimsByStatus.rows,
         reimbursedAmount: parseInt(claimsAmount.rows[0].sum || '0', 10)
+      },
+      parrainage: {
+        sponsorsCount,
+        sponsoredCount,
+        totalAmount: parrainageTotalAmount
       },
       byPackage: byPackage.rows,
       byMutuelle: byMutuelle.rows,

@@ -1094,6 +1094,56 @@ app.put('/api/beneficiaries/:id/status', authenticateToken, requireRole('agent',
 
     await query('UPDATE beneficiaries SET status = $1 WHERE id = $2', [status, id]);
 
+    // If status is updated to 'active', automatically create a corresponding cotisation entry
+    if (status === 'active' && b.status !== 'active') {
+      let amount = 4500;
+      if (b.package_type === 'familial') {
+        const fRes = await query("SELECT COUNT(*) FROM family_members WHERE beneficiary_id = $1", [b.id]);
+        const count = parseInt(fRes.rows[0].count || '0', 10);
+        amount = 1000 + (count + 1) * 3500;
+      } else if (b.package_type === 'csu_eleves' || b.package_type === 'csu_daara') {
+        amount = 1000;
+      } else if (b.package_type === 'adhesion_masse') {
+        const fRes = await query("SELECT COUNT(*) FROM family_members WHERE beneficiary_id = $1", [b.id]);
+        const count = parseInt(fRes.rows[0].count || '0', 10);
+        amount = count * 4500;
+      } else if (b.package_type === 'parrainage') {
+        const sponsoredRes = await query("SELECT id, cmu_number FROM beneficiaries WHERE sponsor_phone = $1 AND package_type != 'parrainage'", [b.phone]);
+        const sponsoredList = sponsoredRes.rows;
+        if (sponsoredList.length > 0) {
+          let detectedType = 'individuel';
+          const firstCmu = sponsoredList[0].cmu_number || '';
+          if (firstCmu.startsWith('SN-DK-EDU')) detectedType = 'eleves';
+          else if (firstCmu.startsWith('SN-DK-COL')) detectedType = 'collectif';
+          else if (firstCmu.includes('-HH-')) detectedType = 'menages';
+          
+          if (detectedType === 'menages') {
+            const chefIds = sponsoredList.map(chef => chef.id);
+            const fRes = await query("SELECT COUNT(*) FROM family_members WHERE beneficiary_id = ANY($1::int[])", [chefIds]);
+            const familyCount = parseInt(fRes.rows[0].count || '0', 10);
+            amount = sponsoredList.length * 1000 + (familyCount + sponsoredList.length) * 3500;
+          } else if (detectedType === 'eleves' || detectedType === 'collectif') {
+            amount = sponsoredList.length * 1000;
+          } else {
+            amount = sponsoredList.length * 4500;
+          }
+        } else {
+          amount = 4500;
+        }
+      }
+
+      const periodStart = new Date();
+      const periodEnd = new Date();
+      periodEnd.setFullYear(periodEnd.getFullYear() + 1);
+      const payRef = `REG-ACT-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+
+      await query(
+        `INSERT INTO cotisations (beneficiary_id, cmu_number, phone, amount, payment_method, payment_reference, period_start, period_end, status)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'paid')`,
+        [b.id, b.cmu_number, b.phone, amount, b.payment_method || 'wave', payRef, periodStart, periodEnd]
+      );
+    }
+
     // Log audit
     const actionName = status === 'active' ? 'APPROBATION_DOSSIER' : 'MODIFICATION_STATUT';
     await query(
