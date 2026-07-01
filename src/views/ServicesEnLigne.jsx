@@ -444,7 +444,12 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
   // Confirm Payment
   const handlePayment = (e) => {
     e.preventDefault();
-    if (otpCode === '7842') {
+    const cleanOtp = String(otpCode || '').replace(/[\s\D]+/g, '');
+    if (window.addLog) {
+      window.addLog('INFO', `Adhésion : Validation du paiement. OTP saisi = "${otpCode}", nettoyé = "${cleanOtp}"`);
+    }
+
+    if (cleanOtp === '7842') {
       const payload = {
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -457,12 +462,13 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
         paymentMethod: paymentMethod,
         familyMembers: familyMembers,
         sponsorPhone: selectedPackage === 'parrainage' ? formData.phone : null,
-        schoolName: (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || (selectedPackage === 'parrainage' && parrainageType === 'eleves')) ? schoolName : null,
+        schoolName: (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || selectedPackage === 'adhesion_masse' || (selectedPackage === 'parrainage' && parrainageType === 'eleves')) ? schoolName : null,
         parrainageType: selectedPackage === 'parrainage' ? parrainageType : null,
         sponsoredHouseholds: (selectedPackage === 'parrainage' && parrainageType === 'menages') ? sponsoredHouseholds : null
       };
 
       if (!navigator.onLine) {
+        if (window.addLog) window.addLog('WARN', 'Adhésion : Mode hors-ligne détecté. Enregistrement en cache local...');
         outboxAdd('adhesion', payload)
           .then(() => {
             const randNum = Math.floor(1000 + Math.random() * 9000);
@@ -477,6 +483,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
           })
           .catch(err => {
             console.error('Offline queuing failed:', err);
+            if (window.addLog) window.addLog('ERROR', `Adhésion : Échec stockage local : ${err.message}`);
             setGeneratedCmuNumber('MD-OFFLINE-DK');
             setPaymentSuccess(true);
             setRegStep(8);
@@ -492,21 +499,24 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
       .then(res => res.json())
       .then(data => {
         if (data.success) {
+          if (window.addLog) window.addLog('SUCCESS', `Adhésion créée avec succès. CMU: ${data.cmuNumber}`);
           setGeneratedCmuNumber(data.cmuNumber);
           setPaymentSuccess(true);
           setRegStep(8);
         } else {
+          if (window.addLog) window.addLog('ERROR', `Adhésion rejetée par l'API : ${data.error}`);
           showError(lang === 'fr' ? 'Erreur lors de la validation : ' + (data.error || 'Erreur inconnue') : 'Erreur validation : ' + (data.error || 'Erreur inconnue'));
         }
       })
       .catch(err => {
-        console.warn('Erreur API (utilisation du stockage hors-ligne) :', err);
+        if (window.addLog) window.addLog('ERROR', `Erreur réseau lors de l'appel API : ${err.message}. Fallback simulation...`);
         outboxAdd('adhesion', payload);
         setGeneratedCmuNumber('MD-782410-DK');
         setPaymentSuccess(true);
         setRegStep(8);
       });
     } else {
+      if (window.addLog) window.addLog('WARN', `Adhésion : OTP invalide ou incorrect. Reçu: "${cleanOtp}"`);
       showError(lang === 'fr' ? 'Code OTP incorrect. Veuillez réessayer (Indice : 7842)' : 'Code OTP bi baaxul. Repantal (Indice: 7842)');
     }
   };
@@ -522,11 +532,18 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
   // Renewal Payment verification handler
   const handleRenewPayment = (e) => {
     e.preventDefault();
-    if (renewOtpCode === '7842') {
+    const cleanOtp = String(renewOtpCode || '').replace(/[\s\D]+/g, '');
+    if (window.addLog) {
+      window.addLog('INFO', `Renouvellement : Validation du paiement. OTP saisi = "${renewOtpCode}", nettoyé = "${cleanOtp}"`);
+    }
+
+    if (cleanOtp === '7842') {
+      if (window.addLog) window.addLog('SUCCESS', 'Renouvellement : OTP correct. Paiement validé.');
       setRenewStep(4);
       setRenewOtpSent(false);
       setRenewOtpCode('');
     } else {
+      if (window.addLog) window.addLog('WARN', `Renouvellement : OTP incorrect. Reçu: "${cleanOtp}"`);
       showError(lang === 'fr' ? 'Code OTP incorrect. Veuillez réessayer (Indice : 7842)' : 'Code OTP bi baaxul. Repantal (Indice: 7842)');
     }
   };
@@ -618,10 +635,16 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
 
   const handleDonateConfirm = (e) => {
     e.preventDefault();
-    if (donateOtpCode === '7842') {
+    const cleanOtp = String(donateOtpCode || '').replace(/[\s\D]+/g, '');
+    if (window.addLog) {
+      window.addLog('INFO', `Don : Validation du paiement. OTP saisi = "${donateOtpCode}", nettoyé = "${cleanOtp}"`);
+    }
+
+    if (cleanOtp === '7842') {
       const payload = { amount: donateAmount, target: donateTarget };
 
       if (!navigator.onLine) {
+        if (window.addLog) window.addLog('WARN', 'Don : Mode hors-ligne détecté. Enregistrement en cache local...');
         outboxAdd('donation', payload)
           .then(() => {
             setDonateSuccess(true);
@@ -644,6 +667,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
       })
       .then(res => res.json())
       .then(data => {
+        if (window.addLog) window.addLog('SUCCESS', `Don enregistré avec succès ! Montant: ${donateAmount} FCFA`);
         setDonateSuccess(true);
         setDonationTotals(prev => ({
           ...prev,
@@ -652,7 +676,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
         fetchDonationStats();
       })
       .catch(err => {
-        console.warn('Erreur API (utilisation du fallback local) :', err);
+        if (window.addLog) window.addLog('ERROR', `Erreur réseau lors de l'appel API Don : ${err.message}. Enregistrement local fallback...`);
         outboxAdd('donation', payload);
         setDonateSuccess(true);
         setDonationTotals(prev => ({
@@ -661,6 +685,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
         }));
       });
     } else {
+      if (window.addLog) window.addLog('WARN', `Don : OTP incorrect. Reçu: "${cleanOtp}"`);
       showError(lang === 'fr' ? 'Code OTP incorrect. Veuillez réessayer (Indice : 7842)' : 'Code OTP bi baaxul. Repantal (Indice: 7842)');
     }
   };

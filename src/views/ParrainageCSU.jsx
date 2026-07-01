@@ -161,7 +161,12 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel' }) {
 
   const handlePayment = (e) => {
     e.preventDefault();
-    if (otpCode === '7842') {
+    const cleanOtp = String(otpCode || '').replace(/[\s\D]+/g, '');
+    if (window.addLog) {
+      window.addLog('INFO', `Parrainage : Validation du paiement. OTP saisi = "${otpCode}", nettoyé = "${cleanOtp}"`);
+    }
+
+    if (cleanOtp === '7842') {
       const payload = {
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -180,6 +185,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel' }) {
       };
 
       if (!navigator.onLine) {
+        if (window.addLog) window.addLog('WARN', 'Parrainage : Mode hors-ligne détecté. Enregistrement en cache local...');
         outboxAdd('adhesion', payload)
           .then(() => {
             setGeneratedCmuNumber('SN-DK-SPN-' + Math.floor(1000 + Math.random() * 9000));
@@ -192,6 +198,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel' }) {
           })
           .catch(err => {
             console.error('Offline queuing failed:', err);
+            if (window.addLog) window.addLog('ERROR', `Parrainage : Échec stockage local : ${err.message}`);
             setGeneratedCmuNumber('SN-DK-SPN-' + Math.floor(1000 + Math.random() * 9000));
             setPaymentSuccess(true);
             setRegStep(6);
@@ -207,19 +214,23 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel' }) {
       .then(res => res.json())
       .then(data => {
         if (data.success) {
+          if (window.addLog) window.addLog('SUCCESS', `Parrainage créé avec succès. CMU: ${data.cmuNumber}`);
           setGeneratedCmuNumber(data.cmuNumber);
           setPaymentSuccess(true);
           setRegStep(6);
         } else {
+          if (window.addLog) window.addLog('ERROR', `Parrainage rejeté par l'API : ${data.error}`);
           showError(lang === 'fr' ? 'Erreur API : ' + data.error : 'Erreur API : ' + data.error);
         }
       })
-      .catch(() => {
+      .catch(err => {
+        if (window.addLog) window.addLog('ERROR', `Erreur réseau lors de l'appel API : ${err.message}. Fallback simulation...`);
         setGeneratedCmuNumber('SN-DK-SPN-' + Math.floor(1000 + Math.random() * 9000));
         setPaymentSuccess(true);
         setRegStep(6);
       });
     } else {
+      if (window.addLog) window.addLog('WARN', `Parrainage : OTP invalide ou incorrect. Reçu: "${cleanOtp}"`);
       showError(lang === 'fr' ? 'Code OTP incorrect. Veuillez réessayer (Indice : 7842)' : 'Code OTP bi baaxul (Indice: 7842)');
     }
   };
