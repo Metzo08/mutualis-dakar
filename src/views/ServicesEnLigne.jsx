@@ -754,10 +754,6 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
 
             {/* Stepper Card */}
             <div className="card stepper-content-card">
-              {/* DEBUG */}
-              <div style={{ color: '#ffffff', fontSize: '0.85rem', padding: '0.5rem 1rem', background: '#3b82f6', borderRadius: '6px', marginBottom: '1rem', textAlign: 'center', fontWeight: 'bold' }}>
-                DEBUG: regStep = {regStep} | activeTab = {activeTab} | selectedPackage = {selectedPackage}
-              </div>
               {/* Step 1: select package */}
               {regStep === 1 && (
                 <div className="fade-in-up">

@@ -5,20 +5,25 @@ const { z } = require('zod');
 // Normalise un numéro de téléphone sénégalais : supprime espaces et préfixe international.
 const normalizePhone = (phone) => {
   if (!phone) return phone;
-  let p = String(phone).replace(/\s+/g, '');
-  // Retire le préfixe +221 ou 221 s'il existe
-  if (p.startsWith('+221')) p = p.slice(4);
-  else if (p.startsWith('221') && p.length === 12) p = p.slice(3);
+  let p = String(phone).replace(/[\s\-\+\(\)]/g, '');
+  if (p.startsWith('221')) {
+    p = p.slice(3);
+  } else if (p.startsWith('00221')) {
+    p = p.slice(5);
+  }
+  if (p.startsWith('0') && p.length === 10) {
+    p = p.slice(1);
+  }
   return p;
 };
 
-// Téléphone sénégalais : 9 chiffres commençant par 7 ou 3 (Orange, Free, Expresso).
+// Téléphone sénégalais : 8 à 14 chiffres acceptés pour plus de flexibilité.
 const phoneSchema = z
   .string()
   .min(1, 'Téléphone requis.')
   .transform(normalizePhone)
-  .refine((p) => /^[37]\d{8}$/.test(p), {
-    message: 'Numéro de téléphone sénégalais invalide (9 chiffres attendus).'
+  .refine((p) => /^\d{8,14}$/.test(p), {
+    message: 'Numéro de téléphone sénégalais invalide (8 à 14 chiffres attendus).'
   });
 
 const emailSchema = z.string().email('Adresse e-mail invalide.').max(255).or(z.literal(''));
