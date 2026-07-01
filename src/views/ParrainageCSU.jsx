@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
+import { jsPDF } from 'jspdf';
 import { outboxAdd } from '../utils/offline';
 
 export default function ParrainageCSU({ lang, initialPackage = 'individuel' }) {
@@ -242,66 +243,188 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel' }) {
 
   const handleDownloadReceipt = () => {
     const now = new Date();
-    const receiptContent = [
-      '═══════════════════════════════════════════════',
-      '              MUTUALIS DAKAR',
-      '        Reçu de Parrainage solidaire',
-      '═══════════════════════════════════════════════',
-      '',
-      `Date : ${now.toLocaleDateString('fr-FR')} à ${now.toLocaleTimeString('fr-FR')}`,
-      `N° Membre : ${generatedCmuNumber}`,
-      '',
-      '───────────────────────────────────────────────',
-      '  Informations du parrain',
-      '───────────────────────────────────────────────',
-      `Prénom        : ${formData.firstName}`,
-      `Nom           : ${formData.lastName}`,
-      `Téléphone     : ${formData.phone}`,
-      `Email         : ${formData.email || 'Non renseigné'}`,
-      `Adresse       : ${formData.address || 'Non renseigné'}`,
-      '',
-      '───────────────────────────────────────────────',
-      '  Détails du sponsoring',
-      '───────────────────────────────────────────────',
-      `Mutuelle      : ${selectedMutuelle}`,
-      `Type Parrain. : ${
-        parrainageType === 'menages' ? 'Parrainage de Ménages' :
-        parrainageType === 'eleves' ? 'Parrainage scolaire (écoles/daaras)' :
-        'Parrainage Individuel'
-      }`,
-      `Montant payé  : ${calculateTotalCost().toLocaleString('fr-FR')} FCFA`,
-      `Moyen paiement: ${paymentMethod === 'wave' ? 'Wave' : 'Orange Money'}`,
-      `Validité      : 12 / 2027`,
-      '',
-      '───────────────────────────────────────────────',
-      '  Bénéficiaires solidaires',
-      '───────────────────────────────────────────────',
-      ...(parrainageType === 'menages' ? sponsoredHouseholds.flatMap((hh, i) => [
-        `  Ménage #${i + 1} : Chef ${hh.chefName} (${hh.chefPhone})`,
-        ...hh.members.map(m => `    - ${m.name} (${m.relation}) - ${m.age} ans`),
-        ''
-      ]) : (
-        parrainageType === 'eleves' ? [
-          `  Établissement : ${schoolName}`,
-          ...familyMembers.map((m, i) => `    ${i + 1}. ${m.name} (Classe: ${m.relation}) - ${m.age} ans`)
-        ] : familyMembers.map((m, i) => `    ${i + 1}. ${m.name} - ${m.age} ans`)
-      )),
-      '',
-      '═══════════════════════════════════════════════',
-      '  Reçu généré numériquement.',
-      '  Contact : support@mutualisdakar.sn',
-      '═══════════════════════════════════════════════',
-    ].filter(line => line !== undefined && line !== '').join('\n');
-
-    const blob = new Blob([receiptContent], { type: 'text/plain;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `recu_parrainage_${generatedCmuNumber}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+    
+    // Top bar green
+    doc.setFillColor(5, 150, 105);
+    doc.rect(0, 0, 210, 8, 'F');
+    
+    // Logo / Title
+    doc.setTextColor(5, 150, 105);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.text("MUTUALIS DAKAR", 20, 25);
+    
+    doc.setTextColor(100, 116, 139);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text("Régime de Couverture Maladie Universelle (CMU) du Sénégal", 20, 30);
+    
+    // Header box
+    doc.setFillColor(248, 250, 252);
+    doc.rect(20, 38, 170, 18, 'F');
+    doc.setDrawColor(226, 232, 240);
+    doc.rect(20, 38, 170, 18, 'D');
+    
+    doc.setTextColor(30, 41, 59);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.text("REÇU NUMÉRIQUE DE PARRAINAGE SOLIDAIRE", 25, 45);
+    
+    doc.setTextColor(100, 116, 139);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text(`Date de transaction : ${now.toLocaleDateString('fr-FR')} à ${now.toLocaleTimeString('fr-FR')}`, 25, 51);
+    doc.text(`N° Membre / Dossier : ${generatedCmuNumber || 'SN-DK-SPN-1001'}`, 120, 51);
+    
+    let y = 68;
+    const drawSectionHeader = (title) => {
+      doc.setFillColor(241, 245, 249);
+      doc.rect(20, y, 170, 7, 'F');
+      doc.setTextColor(5, 150, 105);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.text(title, 23, y + 5);
+      y += 12;
+    };
+    
+    // Parrain Details Section
+    drawSectionHeader("INFORMATIONS DU PARRAIN / SPONSOR");
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139);
+    doc.text("Prénom & Nom :", 25, y);
+    doc.text("Téléphone :", 25, y + 6);
+    doc.text("Adresse :", 25, y + 12);
+    doc.text("E-mail :", 120, y);
+    
+    doc.setTextColor(30, 41, 59);
+    doc.setFont("helvetica", "bold");
+    doc.text(`${formData.firstName} ${formData.lastName}`, 55, y);
+    doc.text(`${formData.phone}`, 55, y + 6);
+    doc.text(`${formData.address || 'Dakar, Sénégal'}`, 55, y + 12);
+    doc.text(`${formData.email || 'Non renseigné'}`, 135, y);
+    
+    y += 22;
+    
+    // Sponsoring Details Section
+    drawSectionHeader("DÉTAILS DU PARRAINAGE SOLIDAIRE");
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139);
+    doc.text("Mutuelle Cible :", 25, y);
+    doc.text("Type de parrainage :", 25, y + 6);
+    doc.text("Moyen de règlement :", 25, y + 12);
+    doc.text("Validité :", 120, y);
+    doc.text("Statut paiement :", 120, y + 6);
+    
+    doc.setTextColor(30, 41, 59);
+    doc.setFont("helvetica", "bold");
+    doc.text(`${selectedMutuelle}`, 65, y);
+    
+    const typeLabel = parrainageType === 'menages' ? 'Parrainage de Ménages 👨‍👩‍👧‍👦' :
+                      parrainageType === 'eleves' ? 'Parrainage scolaire (Écoles/Daaras) 🎓' :
+                      parrainageType === 'collectif' ? 'Packs collectifs solidaires 🎁' :
+                      'Filleuls individuels 👤';
+    doc.text(typeLabel, 65, y + 6);
+    doc.text(paymentMethod === 'wave' ? 'Wave Pay' : 'Orange Money', 65, y + 12);
+    doc.text("12 / 2027", 155, y);
+    doc.setTextColor(5, 150, 105);
+    doc.text("Paiement validé (Simulé)", 155, y + 6);
+    
+    y += 22;
+    
+    // Total Amount Box
+    doc.setFillColor(254, 243, 199);
+    doc.rect(20, y, 170, 15, 'F');
+    doc.setDrawColor(245, 158, 11);
+    doc.rect(20, y, 170, 15, 'D');
+    
+    doc.setTextColor(217, 119, 6);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text("MONTANT TOTAL PAYÉ :", 25, y + 9);
+    doc.setFontSize(16);
+    doc.text(`${calculateTotalCost().toLocaleString('fr-FR')} FCFA`, 95, y + 10);
+    
+    y += 25;
+    
+    // Beneficiaries Section
+    if (parrainageType === 'menages') {
+      if (sponsoredHouseholds && sponsoredHouseholds.length > 0) {
+        drawSectionHeader("LISTE DES MÉNAGES PARRAINÉS");
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8.5);
+        doc.setTextColor(30, 41, 59);
+        
+        sponsoredHouseholds.forEach((hh, i) => {
+          if (y > 270) {
+            doc.addPage();
+            y = 20;
+          }
+          doc.setFont("helvetica", "bold");
+          doc.text(`Ménage #${i + 1} : Chef ${hh.chefName} (${hh.chefPhone || 'Non renseigné'})`, 22, y);
+          doc.setFont("helvetica", "normal");
+          y += 4.5;
+          if (hh.members && hh.members.length > 0) {
+            doc.text(`  Membres: ${hh.members.map(m => `${m.name} (${m.relation || 'parent'}, ${m.age} ans)`).join(', ')}`, 22, y);
+            y += 5.5;
+          }
+        });
+      }
+    } else {
+      if (familyMembers && familyMembers.length > 0) {
+        drawSectionHeader("LISTE DES BÉNÉFICIAIRES PARRAINÉS");
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8.5);
+        doc.setTextColor(30, 41, 59);
+        
+        let colWidth = 53;
+        let startX = 22;
+        let startY = y;
+        let currentY = startY;
+        
+        familyMembers.forEach((m, idx) => {
+          let col = idx % 3;
+          if (col === 0 && idx > 0) {
+            currentY += 4.5;
+          }
+          
+          if (currentY > 275) {
+            doc.addPage();
+            currentY = 20;
+          }
+          
+          let posX = startX + col * colWidth;
+          const detailStr = parrainageType === 'eleves' ? `(Cl: ${m.relation})` : `(${m.age} ans)`;
+          let displayName = m.name;
+          if (displayName.length > 18) {
+            displayName = displayName.substring(0, 15) + '...';
+          }
+          doc.text(`${idx + 1}. ${displayName} ${detailStr}`, posX, currentY);
+        });
+        y = currentY + 10;
+      }
+    }
+    
+    // Add page footer to all pages
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setDrawColor(226, 232, 240);
+      doc.line(20, 282, 190, 282);
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(8);
+      doc.setTextColor(148, 163, 184);
+      doc.text("Mutualis Dakar - Portail Régional CMU - support@mutualisdakar.sn", 20, 288);
+      doc.text(`Page ${i} sur ${pageCount}`, 175, 288);
+    }
+    
+    doc.save(`recu_parrainage_${generatedCmuNumber || 'MUTUALIS'}.pdf`);
   };
 
   return (
