@@ -62,6 +62,10 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
   ];
 
   const [regionsMapData, setRegionsMapData] = useState(defaultRegionsMapData);
+  const regionsData = regionsMapData.map(reg => ({
+    name: reg.name,
+    value: reg.couv
+  }));
 
   useEffect(() => {
     fetch('http://localhost:5000/api/coverage/regions')
