@@ -496,4 +496,93 @@ router.get('/api/dashboard/export/beneficiaries', authenticateToken, requireRole
   }
 });
 
+// GET /api/parrainages/sponsors (List of sponsors for agent dashboard)
+router.get('/api/parrainages/sponsors', authenticateToken, requireRole('agent', 'admin'), async (req, res) => {
+  try {
+    const isAgent = ['agent', 'admin'].includes(req.user.role);
+    const isSuperAdmin = req.user.role === 'Super Admin';
+    const dept = (isAgent && !isSuperAdmin && req.user.department) ? req.user.department : null;
+
+    let sponsorsSql = "SELECT * FROM beneficiaries WHERE package_type = 'parrainage'";
+    const params = [];
+    if (dept) {
+      sponsorsSql += " AND department = $1";
+      params.push(dept);
+    }
+    sponsorsSql += " ORDER BY id DESC";
+
+    const sponsorsRes = await query(sponsorsSql, params);
+    
+    // For each sponsor, calculate their filleuls count and total amount
+    const sponsors = [];
+    for (const sponsor of sponsorsRes.rows) {
+      const filleulsRes = await query(
+        "SELECT id, cmu_number FROM beneficiaries WHERE sponsor_phone = $1 AND package_type != 'parrainage'",
+        [sponsor.phone]
+      );
+      const filleuls = filleulsRes.rows;
+      const count = filleuls.length;
+
+      let detectedType = 'individuel';
+      if (count > 0) {
+        const firstCmu = filleuls[0].cmu_number || '';
+        if (firstCmu.startsWith('SN-DK-EDU')) detectedType = 'eleves';
+        else if (firstCmu.startsWith('SN-DK-COL')) detectedType = 'collectif';
+        else if (firstCmu.includes('-HH-')) detectedType = 'menages';
+      }
+
+      let amount = 0;
+      if (count > 0) {
+        if (detectedType === 'menages') {
+          const chefIds = filleuls.map(chef => chef.id);
+          const fRes = await query("SELECT COUNT(*) FROM family_members WHERE beneficiary_id = ANY($1::int[])", [chefIds]);
+          const familyCount = parseInt(fRes.rows[0].count || '0', 10);
+          amount = count * 1000 + (familyCount + count) * 3500;
+        } else if (detectedType === 'eleves' || detectedType === 'collectif') {
+          amount = count * 1000;
+        } else {
+          amount = count * 4500;
+        }
+      }
+
+      sponsors.push({
+        ...sponsor,
+        filleulsCount: count,
+        parrainageType: detectedType,
+        totalAmount: amount
+      });
+    }
+
+    res.json(sponsors);
+  } catch (err) {
+    console.error('Erreur récupération sponsors :', err);
+    res.status(500).json({ error: 'Erreur interne du serveur' });
+  }
+});
+
+// GET /api/parrainages/sponsors/:phone/filleuls (Get all filleuls for a sponsor)
+router.get('/api/parrainages/sponsors/:phone/filleuls', authenticateToken, requireRole('agent', 'admin'), async (req, res) => {
+  try {
+    const { phone } = req.params;
+    const filleulsRes = await query(
+      "SELECT * FROM beneficiaries WHERE sponsor_phone = $1 AND package_type != 'parrainage' ORDER BY id ASC",
+      [phone]
+    );
+
+    const filleuls = [];
+    for (const f of filleulsRes.rows) {
+      const famRes = await query("SELECT * FROM family_members WHERE beneficiary_id = $1", [f.id]);
+      filleuls.push({
+        ...f,
+        familyMembers: famRes.rows
+      });
+    }
+
+    res.json(filleuls);
+  } catch (err) {
+    console.error('Erreur récupération filleuls :', err);
+    res.status(500).json({ error: 'Erreur interne du serveur' });
+  }
+});
+
 module.exports = router;

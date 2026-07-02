@@ -1206,12 +1206,14 @@ app.get('/api/stats', async (req, res) => {
     const bActiveCount = await query("SELECT COUNT(*) FROM beneficiaries WHERE status = 'active'");
     const mCount = await query('SELECT COUNT(*) FROM mutuelles');
     const dSum = await query('SELECT SUM(amount) FROM donations');
+    const cSum = await query("SELECT SUM(amount) FROM cotisations WHERE status = 'paid'");
 
     res.json({
       beneficiariesCount: parseInt(bCount.rows[0].count || '0'),
       activeBeneficiariesCount: parseInt(bActiveCount.rows[0].count || '0'),
       mutuellesCount: parseInt(mCount.rows[0].count || '0'),
-      donationsSum: parseInt(dSum.rows[0].sum || '0')
+      donationsSum: parseInt(dSum.rows[0].sum || '0'),
+      cotisationsSum: parseInt(cSum.rows[0].sum || '0')
     });
   } catch (err) {
     console.error('Erreur lors du calcul des statistiques :', err);

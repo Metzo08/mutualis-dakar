@@ -3,7 +3,17 @@ import QRCode from 'qrcode';
 import { jsPDF } from 'jspdf';
 import { outboxAdd } from '../utils/offline';
 
-export default function ParrainageCSU({ lang, initialPackage = 'individuel' }) {
+export default function ParrainageCSU({ lang, initialPackage = 'individuel', portalMode, agentUser, citizenUser }) {
+  // Agent Dashboard states & logic
+  const isAgent = portalMode === 'agent' && agentUser;
+  const [showWizard, setShowWizard] = useState(false);
+  const [sponsors, setSponsors] = useState([]);
+  const [sponsorsLoading, setSponsorsLoading] = useState(false);
+  const [sponsorsError, setSponsorsError] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedSponsor, setSelectedSponsor] = useState(null);
+  const [filleuls, setFilleuls] = useState([]);
+  const [filleulsLoading, setFilleulsLoading] = useState(false);
   // Stepper State
   const [regStep, setRegStep] = useState(1);
   const [parrainageType, setParrainageType] = useState(initialPackage);
@@ -13,6 +23,274 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel' }) {
       setParrainageType(initialPackage);
     }
   }, [initialPackage]);
+
+  const generateSponsorReceiptPDF = ({ sponsor, filleuls, dateStr }) => {
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+    
+    const now = dateStr ? new Date(dateStr) : new Date();
+    
+    // Top bar green
+    doc.setFillColor(5, 150, 105);
+    doc.rect(0, 0, 210, 8, 'F');
+    
+    // Logo / Title
+    doc.setTextColor(5, 150, 105);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.text("MUTUALIS DAKAR", 20, 25);
+    
+    doc.setTextColor(100, 116, 139);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text("Régime de Couverture Maladie Universelle (CMU) du Sénégal", 20, 30);
+    
+    // Header box
+    doc.setFillColor(248, 250, 252);
+    doc.rect(20, 38, 170, 18, 'F');
+    doc.setDrawColor(226, 232, 240);
+    doc.rect(20, 38, 170, 18, 'D');
+    
+    doc.setTextColor(30, 41, 59);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(13);
+    doc.text("REÇU NUMÉRIQUE DE PARRAINAGE SOLIDAIRE", 25, 45);
+    
+    doc.setTextColor(100, 116, 139);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text(`Date : ${now.toLocaleDateString('fr-FR')} à ${now.toLocaleTimeString('fr-FR')}`, 25, 51);
+    doc.text(`N° Membre / Dossier : ${sponsor.cmu_number || 'SN-DK-SPN-1001'}`, 115, 51);
+    
+    let y = 68;
+    const drawSectionHeader = (title) => {
+      doc.setFillColor(241, 245, 249);
+      doc.rect(20, y, 170, 7, 'F');
+      doc.setTextColor(5, 150, 105);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.text(title, 23, y + 5);
+      y += 12;
+    };
+    
+    // Parrain Details Section
+    drawSectionHeader("INFORMATIONS DU PARRAIN / SPONSOR");
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(100, 116, 139);
+    doc.text("Prénom & Nom :", 25, y);
+    doc.setTextColor(30, 41, 59);
+    doc.setFont("helvetica", "bold");
+    doc.text(`${sponsor.first_name} ${sponsor.last_name}`, 60, y);
+    
+    y += 6;
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 116, 139);
+    doc.text("Téléphone :", 25, y);
+    doc.setTextColor(30, 41, 59);
+    doc.text(`${sponsor.phone}`, 60, y);
+    
+    y += 6;
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 116, 139);
+    doc.text("Email & Adresse :", 25, y);
+    doc.setTextColor(30, 41, 59);
+    doc.text(`${sponsor.email || '—'} / ${sponsor.address || '—'}`, 60, y);
+    
+    y += 12;
+    
+    // Parrainage Details Section
+    drawSectionHeader("DÉTAILS DU PARRAINAGE SOLIDAIRE");
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 116, 139);
+    doc.text("Mutuelle d'attachement :", 25, y);
+    doc.setTextColor(30, 41, 59);
+    doc.setFont("helvetica", "bold");
+    doc.text(`${sponsor.mutuelle_name}`, 75, y);
+    
+    y += 6;
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 116, 139);
+    doc.text("Nombre de Filleuls :", 25, y);
+    doc.setTextColor(30, 41, 59);
+    doc.text(`${filleuls.length} bénéficiaire(s)`, 75, y);
+    
+    y += 6;
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 116, 139);
+    doc.text("Formule :", 25, y);
+    doc.setTextColor(30, 41, 59);
+    const typeMap = {
+      individuel: 'Individuel (4 500 FCFA / filleul)',
+      eleves: 'Scolaire / Daara (1 000 FCFA / élève)',
+      collectif: 'Collectif / Élèves (1 000 FCFA / élève)',
+      menages: 'Ménages vulnérables (1 000 FCFA enrôlement + 3 500 FCFA cotisation / personne)'
+    };
+    doc.text(typeMap[sponsor.parrainageType] || typeMap[sponsor.package_type] || sponsor.parrainageType || '—', 75, y);
+    
+    y += 6;
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 116, 139);
+    doc.text("Méthode de paiement :", 25, y);
+    doc.setTextColor(30, 41, 59);
+    doc.text(`${(sponsor.payment_method || 'wave').toUpperCase()}`, 75, y);
+    
+    y += 12;
+    
+    // Filleuls Section
+    drawSectionHeader("LISTE DES BENEFICIAIRES (FILLEULS) ASSOCIES");
+    
+    // Table headers
+    doc.setFillColor(248, 250, 252);
+    doc.rect(20, y, 170, 6, 'F');
+    doc.setTextColor(100, 116, 139);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8.5);
+    doc.text("N°", 22, y + 4.5);
+    doc.text("Bénéficiaire (Prénom & Nom)", 32, y + 4.5);
+    doc.text("N° CMU", 95, y + 4.5);
+    doc.text("Mutuelle / Département", 130, y + 4.5);
+    y += 9;
+    
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(30, 41, 59);
+    doc.setFontSize(8.5);
+    
+    filleuls.forEach((f, idx) => {
+      // Page breaking check
+      if (y > 275) {
+        doc.addPage();
+        // Top bar green
+        doc.setFillColor(5, 150, 105);
+        doc.rect(0, 0, 210, 8, 'F');
+        y = 20;
+      }
+      
+      doc.text(`${idx + 1}`, 22, y);
+      doc.setFont("helvetica", "bold");
+      doc.text(`${f.first_name} ${f.last_name}`, 32, y);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${f.cmu_number || '—'}`, 95, y);
+      doc.text(`${f.mutuelle_name || '—'} (${f.department || 'Dakar'})`, 130, y);
+      
+      // If household chef, display family members
+      if (f.familyMembers && f.familyMembers.length > 0) {
+        y += 4;
+        doc.setTextColor(100, 116, 139);
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(7.5);
+        const famStr = f.familyMembers.map(fm => `${fm.name} (${fm.relation})`).join(', ');
+        doc.text(`Ayants droit : ${famStr}`, 35, y);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(30, 41, 59);
+        doc.setFontSize(8.5);
+      }
+      
+      y += 6.5;
+    });
+    
+    y += 5;
+    
+    // Total Cost Box
+    if (y > 255) {
+      doc.addPage();
+      // Top bar green
+      doc.setFillColor(5, 150, 105);
+      doc.rect(0, 0, 210, 8, 'F');
+      y = 20;
+    }
+    
+    doc.setFillColor(236, 253, 245);
+    doc.rect(120, y, 70, 15, 'F');
+    doc.setDrawColor(167, 243, 208);
+    doc.rect(120, y, 70, 15, 'D');
+    
+    doc.setTextColor(5, 150, 105);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text("MONTANT GLOBAL PAYÉ :", 124, y + 6);
+    doc.setFontSize(14);
+    doc.text(`${new Intl.NumberFormat('fr-FR').format(sponsor.totalAmount || sponsor.amount || 0)} FCFA`, 124, y + 12);
+    
+    y += 25;
+    
+    // Signatures
+    doc.setTextColor(100, 116, 139);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.text("Signature du parrain", 30, y);
+    doc.text("Cachet Mutuelle de Dakar", 130, y);
+    
+    // Save PDF
+    doc.save(`recu_parrainage_${sponsor.cmu_number || 'MUTUALIS'}.pdf`);
+  };
+
+  const fetchSponsors = () => {
+    if (!isAgent) return;
+    setSponsorsLoading(true);
+    setSponsorsError('');
+    const token = localStorage.getItem('cmu-token') || '';
+    fetch('http://localhost:5000/api/parrainages/sponsors', {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Erreur de chargement');
+        return res.json();
+      })
+      .then(data => {
+        setSponsors(data);
+        setSponsorsLoading(false);
+      })
+      .catch(err => {
+        setSponsorsError(err.message);
+        setSponsorsLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    fetchSponsors();
+  }, [isAgent, showWizard]);
+
+  const handleViewFiche = (sponsor) => {
+    setSelectedSponsor(sponsor);
+    setFilleuls([]);
+    setFilleulsLoading(true);
+    const token = localStorage.getItem('cmu-token') || '';
+    fetch(`http://localhost:5000/api/parrainages/sponsors/${sponsor.phone}/filleuls`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Erreur');
+        return res.json();
+      })
+      .then(data => {
+        setFilleuls(data);
+        setFilleulsLoading(false);
+      })
+      .catch(() => {
+        setFilleulsLoading(false);
+      });
+  };
+
+  const handleDownloadReceiptForSponsor = (sponsor) => {
+    const token = localStorage.getItem('cmu-token') || '';
+    fetch(`http://localhost:5000/api/parrainages/sponsors/${sponsor.phone}/filleuls`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        generateSponsorReceiptPDF({
+          sponsor,
+          filleuls: data,
+          dateStr: sponsor.created_at
+        });
+      })
+      .catch(() => alert('Erreur lors du téléchargement du reçu.'));
+  };
+
   const [selectedMutuelle, setSelectedMutuelle] = useState('');
   
   // Form State
@@ -427,6 +705,295 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel' }) {
     doc.save(`recu_parrainage_${generatedCmuNumber || 'MUTUALIS'}.pdf`);
   };
 
+  if (isAgent && !showWizard) {
+    return (
+      <div className="parrainage-solidaire-view fade-in-up" style={{ padding: '2rem 1.5rem' }}>
+        {/* Banner */}
+        <section className="banner-mini" style={{
+          background: 'linear-gradient(to right, rgba(5, 150, 105, 0.9), rgba(5, 150, 105, 0.7)), url("/csu_stats_hero.png") center/cover no-repeat',
+          borderBottom: '1px solid var(--border-color)',
+          borderRadius: '16px',
+          padding: '2.5rem 2rem',
+          marginBottom: '2rem',
+          color: '#fff',
+          boxShadow: 'var(--shadow-md)',
+          textAlign: 'center'
+        }}>
+          <div className="container" style={{ position: 'relative', zIndex: 2 }}>
+            <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>🤝 {lang === 'fr' ? 'Tableau de bord du Parrainage Solidaire' : 'Tëggali parrainage'}</h1>
+            <p style={{ color: '#f8fafc', fontSize: '1rem', fontWeight: '500', maxWidth: '700px', margin: '0 auto', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
+              {lang === 'fr' ? 'Suivez et gérez les parrainages scolaires, daaras et ménages de Dakar' : 'Topal ak saytul parrainage daara, ecole ak njaboot'}
+            </p>
+          </div>
+        </section>
+
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          {/* Action buttons */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button className="btn btn-outline btn-sm" onClick={fetchSponsors}>🔄 {lang === 'fr' ? 'Actualiser' : 'Yesal'}</button>
+            </div>
+            <button className="btn btn-primary btn-sm" onClick={() => { setShowWizard(true); setRegStep(1); }}>
+              ➕ {lang === 'fr' ? 'Enregistrer un parrainage' : 'Dolli parrainage'}
+            </button>
+          </div>
+
+          {/* Statistics summary */}
+          {(() => {
+            const totalSponsors = sponsors.length;
+            const totalFilleuls = sponsors.reduce((acc, curr) => acc + (curr.filleulsCount || 0), 0);
+            const totalFunds = sponsors.reduce((acc, curr) => acc + (curr.totalAmount || 0), 0);
+
+            return (
+              <div className="grid grid-3" style={{ gap: '1rem', marginBottom: '2rem' }}>
+                <div className="card text-left" style={{ padding: '1.25rem', borderLeft: '4px solid #059669', background: 'var(--bg-card)' }}>
+                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🤝</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: '800', color: '#059669' }}>{totalSponsors}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{lang === 'fr' ? 'Sponsors / Parrains' : 'Sponsor yi'}</div>
+                </div>
+                <div className="card text-left" style={{ padding: '1.25rem', borderLeft: '4px solid #d97706', background: 'var(--bg-card)' }}>
+                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🎁</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: '800', color: '#d97706' }}>{totalFilleuls}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{lang === 'fr' ? 'Filleuls enrôlés' : 'Filleul yi'}</div>
+                </div>
+                <div className="card text-left" style={{ padding: '1.25rem', borderLeft: '4px solid #10b981', background: 'var(--bg-card)' }}>
+                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🪙</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: '800', color: '#10b981' }}>{new Intl.NumberFormat('fr-FR').format(totalFunds)} FCFA</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{lang === 'fr' ? 'Fonds mobilisés' : 'Xalis parrainage'}</div>
+                </div>
+              </div>
+            );
+          })()}
+
+          {/* Search bar */}
+          <div style={{ marginBottom: '1.5rem' }}>
+            <input 
+              type="text" 
+              className="input" 
+              placeholder={lang === 'fr' ? "🔍 Rechercher un parrain par nom, prénom ou téléphone..." : "🔍 Wër sponsor ci tour, sant walla portable..."}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{ width: '100%', maxWidth: '500px' }}
+            />
+          </div>
+
+          {/* Sponsors Table */}
+          <div className="card" style={{ padding: '1.5rem', overflowX: 'auto' }}>
+            {sponsorsLoading ? (
+              <div style={{ textAlign: 'center', padding: '2rem' }}>{lang === 'fr' ? 'Chargement...' : 'Waaral...'}</div>
+            ) : sponsorsError ? (
+              <div style={{ color: 'var(--danger)', textAlign: 'center', padding: '2rem' }}>❌ {sponsorsError}</div>
+            ) : sponsors.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+                {lang === 'fr' ? 'Aucun parrainage enregistré.' : 'Amul parrainage.'}
+              </div>
+            ) : (
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                <thead>
+                  <tr style={{ borderBottom: '1px solid var(--border-color)', textAlign: 'left', color: 'var(--text-muted)' }}>
+                    <th style={{ padding: '0.75rem' }}>{lang === 'fr' ? 'Parrain / Sponsor' : 'Parrain'}</th>
+                    <th style={{ padding: '0.75rem' }}>{lang === 'fr' ? 'Contact' : 'Portable'}</th>
+                    <th style={{ padding: '0.75rem' }}>{lang === 'fr' ? 'Mutuelle / Région' : 'Mutuelle'}</th>
+                    <th style={{ padding: '0.75rem' }}>{lang === 'fr' ? 'Formule' : 'Formule'}</th>
+                    <th style={{ padding: '0.75rem' }}>{lang === 'fr' ? 'Filleuls' : 'Filleul'}</th>
+                    <th style={{ padding: '0.75rem' }}>{lang === 'fr' ? 'Montant' : 'Montant'}</th>
+                    <th style={{ padding: '0.75rem', textAlign: 'right' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sponsors
+                    .filter(s => {
+                      const name = `${s.first_name} ${s.last_name}`.toLowerCase();
+                      const query = searchQuery.toLowerCase();
+                      return name.includes(query) || s.phone.includes(query) || (s.email && s.email.toLowerCase().includes(query));
+                    })
+                    .map((s) => (
+                      <tr key={s.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                        <td style={{ padding: '0.75rem', fontWeight: '700' }}>{s.first_name} {s.last_name}</td>
+                        <td style={{ padding: '0.75rem' }}>
+                          <div>{s.phone}</div>
+                          <small style={{ color: 'var(--text-muted)' }}>{s.email || '—'}</small>
+                        </td>
+                        <td style={{ padding: '0.75rem' }}>
+                          <span className="badge" style={{ backgroundColor: 'rgba(59, 130, 246, 0.12)', color: 'var(--primary)', fontWeight: 'bold' }}>
+                            {s.mutuelle_name}
+                          </span>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>Union : {s.department}</div>
+                        </td>
+                        <td style={{ padding: '0.75rem' }}>
+                          {(() => {
+                            const labels = {
+                              individuel: lang === 'fr' ? 'Individuel' : 'Individuel',
+                              eleves: lang === 'fr' ? 'Élèves / Scolaire' : 'Élèves',
+                              collectif: lang === 'fr' ? 'Collectif / Daara' : 'Daara',
+                              menages: lang === 'fr' ? 'Ménages' : 'Njaboot'
+                            };
+                            return (
+                              <span className="badge" style={{ 
+                                backgroundColor: s.parrainageType === 'menages' ? 'rgba(217, 119, 6, 0.12)' : 'rgba(16, 185, 129, 0.12)',
+                                color: s.parrainageType === 'menages' ? '#d97706' : '#10b981',
+                                fontWeight: 'bold'
+                              }}>
+                                {labels[s.parrainageType] || labels[s.package_type] || s.parrainageType || 'Individuel'}
+                              </span>
+                            );
+                          })()}
+                        </td>
+                        <td style={{ padding: '0.75rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{s.filleulsCount}</td>
+                        <td style={{ padding: '0.75rem', fontWeight: '800', color: 'var(--primary)' }}>
+                          {new Intl.NumberFormat('fr-FR').format(s.totalAmount || 0)} FCFA
+                        </td>
+                        <td style={{ padding: '0.75rem', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                          <button 
+                            className="btn btn-outline btn-xs" 
+                            onClick={() => handleViewFiche(s)}
+                            style={{ marginRight: '0.5rem', padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
+                          >
+                            👁️ {lang === 'fr' ? 'Fiche' : 'Fiche'}
+                          </button>
+                          <button 
+                            className="btn btn-secondary btn-xs" 
+                            onClick={() => handleDownloadReceiptForSponsor(s)}
+                            style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
+                          >
+                            📄 {lang === 'fr' ? 'Reçu (PDF)' : 'Reçu'}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+
+        {/* Sponsor Filleuls details modal */}
+        {selectedSponsor && (
+          <div className="modal-backdrop" style={{
+            position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+            backgroundColor: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999
+          }}>
+            <div className="modal-content card" style={{
+              width: '95%', maxWidth: '750px', maxHeight: '90vh', overflowY: 'auto',
+              padding: '2rem', position: 'relative', boxShadow: 'var(--shadow-xl)',
+              animation: 'scaleIn 0.2s cubic-bezier(0.4, 0, 0.2, 1)', backgroundColor: 'var(--bg-card)'
+            }}>
+              {/* Close Button */}
+              <button 
+                className="btn btn-outline btn-sm"
+                onClick={() => setSelectedSponsor(null)}
+                style={{
+                  position: 'absolute', top: '1.25rem', right: '1.25rem',
+                  borderRadius: '50%', width: '32px', height: '32px', display: 'flex',
+                  alignItems: 'center', justifyContent: 'center', padding: 0
+                }}
+              >
+                ✕
+              </button>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                <span style={{ fontSize: '2rem' }}>🤝</span>
+                <div>
+                  <h2 style={{ fontSize: '1.35rem', fontWeight: '800', color: 'var(--text-main)', margin: 0 }}>
+                    {selectedSponsor.first_name} {selectedSponsor.last_name}
+                  </h2>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
+                    {lang === 'fr' ? `Dossier Sponsoring : ${selectedSponsor.cmu_number || '—'}` : `Dossier : ${selectedSponsor.cmu_number || '—'}`}
+                  </p>
+                </div>
+              </div>
+
+              {/* Sponsor Profile Fields */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.5rem', padding: '1rem', background: 'var(--bg-secondary)', borderRadius: '12px' }}>
+                <div>
+                  <small style={{ color: 'var(--text-muted)' }}>{lang === 'fr' ? 'Téléphone & Email' : 'Téléphone'}</small>
+                  <div style={{ fontWeight: '600', fontSize: '0.85rem', color: 'var(--text-main)' }}>{selectedSponsor.phone}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{selectedSponsor.email || '—'}</div>
+                </div>
+                <div>
+                  <small style={{ color: 'var(--text-muted)' }}>{lang === 'fr' ? 'Adresse & Ville' : 'Adresse'}</small>
+                  <div style={{ fontWeight: '600', fontSize: '0.85rem', color: 'var(--text-main)' }}>{selectedSponsor.address || '—'}</div>
+                </div>
+                <div>
+                  <small style={{ color: 'var(--text-muted)' }}>{lang === 'fr' ? 'Mutuelle & Union (Département)' : 'Mutuelle'}</small>
+                  <div style={{ fontWeight: '700', fontSize: '0.85rem', color: 'var(--primary)' }}>{selectedSponsor.mutuelle_name}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Union Départementale : {selectedSponsor.department}</div>
+                </div>
+              </div>
+
+              {/* Filleuls table */}
+              <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>🎁 {lang === 'fr' ? 'Bénéficiaires (élèves/filles) parrainés' : 'Filleul yi bokk'}</span>
+                <span className="badge badge-info" style={{ fontSize: '0.75rem' }}>{filleuls.length} enrôlés</span>
+              </h3>
+
+              {filleulsLoading ? (
+                <div style={{ textAlign: 'center', padding: '1.5rem' }}>{lang === 'fr' ? 'Chargement...' : 'Waaral...'}</div>
+              ) : filleuls.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                  {lang === 'fr' ? 'Aucun filleul lié à ce parrain.' : 'Amul filleul.'}
+                </div>
+              ) : (
+                <div style={{ maxHeight: '250px', overflowY: 'auto', border: '1px solid var(--border-color)', borderRadius: '8px' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8rem' }}>
+                    <thead>
+                      <tr style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)', textAlign: 'left', color: 'var(--text-muted)' }}>
+                        <th style={{ padding: '0.5rem 0.75rem' }}>Nom</th>
+                        <th style={{ padding: '0.5rem 0.75rem' }}>CMU</th>
+                        <th style={{ padding: '0.5rem 0.75rem' }}>{lang === 'fr' ? 'Etablissement / Classe' : 'Ecole'}</th>
+                        <th style={{ padding: '0.5rem 0.75rem' }}>Mutuelle / Union</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filleuls.map((f) => (
+                        <tr key={f.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                          <td style={{ padding: '0.5rem 0.75rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{f.first_name} {f.last_name}</td>
+                          <td style={{ padding: '0.5rem 0.75rem' }}>
+                            <span className="badge" style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)', color: 'var(--primary)', fontSize: '0.7rem' }}>
+                              {f.cmu_number || '—'}
+                            </span>
+                          </td>
+                          <td style={{ padding: '0.5rem 0.75rem', color: 'var(--text-sub)' }}>{f.school_name || '—'}</td>
+                          <td style={{ padding: '0.5rem 0.75rem', color: 'var(--text-sub)' }}>
+                            <div>{f.mutuelle_name}</div>
+                            <small style={{ color: 'var(--text-muted)' }}>Union {f.department}</small>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Bottom total amount and receipt download */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border-color)' }}>
+                <div>
+                  <small style={{ color: 'var(--text-muted)', display: 'block' }}>{lang === 'fr' ? 'MONTANT GLOBAL PARRAINÉ' : 'MONTANT'}</small>
+                  <span style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--primary)' }}>
+                    {new Intl.NumberFormat('fr-FR').format(selectedSponsor.totalAmount || 0)} FCFA
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button 
+                    className="btn btn-secondary" 
+                    onClick={() => handleDownloadReceiptForSponsor(selectedSponsor)}
+                  >
+                    📄 {lang === 'fr' ? 'Télécharger Reçu PDF' : 'Télécharger Reçu'}
+                  </button>
+                  <button className="btn btn-outline" onClick={() => setSelectedSponsor(null)}>
+                    {lang === 'fr' ? 'Fermer' : 'Fermer'}
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="parrainage-solidaire-view">
       {/* Top Banner */}
@@ -443,6 +1010,29 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel' }) {
       </div>
 
       <div style={{ maxWidth: '900px', margin: '-2rem auto 3rem auto', padding: '0 1.5rem', position: 'relative', zIndex: 10 }}>
+        {isAgent && (
+          <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '1rem' }}>
+            <button 
+              className="btn btn-outline btn-sm" 
+              onClick={() => {
+                setShowWizard(false);
+                setRegStep(1);
+                setOtpSent(false);
+                setOtpCode('');
+                setPaymentSuccess(false);
+                setGeneratedCmuNumber('');
+                setQrCodeUrl('');
+                setFamilyMembers([]);
+                setSponsoredHouseholds([]);
+                setSchoolName('');
+              }}
+              style={{ backgroundColor: 'var(--bg-card)' }}
+            >
+              ⬅️ {lang === 'fr' ? 'Retour au tableau de bord' : 'Retour'}
+            </button>
+          </div>
+        )}
+
         {/* Error notification banner */}
         {error && (
           <div className="alert alert-danger fade-in-up" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', borderRadius: '12px' }}>
@@ -1383,6 +1973,25 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel' }) {
                 >
                   {lang === 'fr' ? 'Nouveau parrainage' : 'Dolli parrainage'}
                 </button>
+                {isAgent && (
+                  <button 
+                    className="btn btn-outline"
+                    onClick={() => {
+                      setShowWizard(false);
+                      setRegStep(1);
+                      setOtpSent(false);
+                      setOtpCode('');
+                      setPaymentSuccess(false);
+                      setGeneratedCmuNumber('');
+                      setQrCodeUrl('');
+                      setFamilyMembers([]);
+                      setSponsoredHouseholds([]);
+                      setSchoolName('');
+                    }}
+                  >
+                    📊 {lang === 'fr' ? 'Tableau de bord' : 'Dashboard'}
+                  </button>
+                )}
                 <button 
                   className={`btn ${syncStatus === 'success' ? 'btn-outline' : 'btn-primary'}`}
                   onClick={handleSync}

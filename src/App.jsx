@@ -317,6 +317,9 @@ export default function App() {
             <ParrainageCSU 
               lang={lang} 
               initialPackage={servicesPackage} 
+              portalMode={portalMode}
+              agentUser={agentUser}
+              citizenUser={citizenUser}
             />
           );
         case 'partnership':

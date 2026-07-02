@@ -756,7 +756,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
             <div className="card text-left" style={{ padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
               <div className="stat-label">{t.stat3Title}</div>
               <div className="stat-number" style={{ color: 'var(--text-main)', margin: '0.5rem 0' }}>
-                {statsLoading ? '...' : (stats.donationsSum ? `${stats.donationsSum.toLocaleString('fr-FR')} FCFA` : '0 FCFA')}
+                {statsLoading ? '...' : (stats.cotisationsSum !== undefined ? `${stats.cotisationsSum.toLocaleString('fr-FR')} FCFA` : '0 FCFA')}
               </div>
               <span className="badge badge-info" style={{ padding: '0.15rem 0.5rem', fontSize: '0.7rem', color: 'var(--secondary)', backgroundColor: 'rgba(255, 127, 17, 0.12)' }}>
                 💳 Wave & OM
