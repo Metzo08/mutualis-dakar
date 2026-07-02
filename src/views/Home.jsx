@@ -247,7 +247,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
         }
       })
       .catch(err => console.error('Error fetching activities:', err));
-  }, [citizenUser]);
+  }, [citizenUser, portalMode]);
 
   // Citizen Authentication (POST-based with PIN code)
   const handleCitizenLogin = (e) => {
@@ -335,7 +335,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
           {/* Card 1 */}
           <div className="card text-left" style={{ padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
             <div className="stat-label">{t.stat1Title}</div>
-            <div className="stat-number" style={{ color: 'var(--text-main)', margin: '0.5rem 0' }}>
+            <div className="stat-number" style={{ color: 'var(--text-main)', margin: '0.5rem 0', fontSize: '1.8rem', whiteSpace: 'nowrap' }}>
               {statsLoading ? '...' : (stats.activeBeneficiariesCount ? stats.activeBeneficiariesCount.toLocaleString('fr-FR') : '--')}
             </div>
             <span className="badge badge-success" style={{ padding: '0.15rem 0.5rem', fontSize: '0.7rem' }}>
@@ -349,7 +349,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
           {/* Card 2 */}
           <div className="card text-left" style={{ padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
             <div className="stat-label">{t.stat2Title}</div>
-            <div className="stat-number" style={{ color: 'var(--text-main)', margin: '0.5rem 0' }}>
+            <div className="stat-number" style={{ color: 'var(--text-main)', margin: '0.5rem 0', fontSize: '1.8rem', whiteSpace: 'nowrap' }}>
               {statsLoading ? '...' : (stats.structuresCount || stats.mutuellesCount || '--')}
             </div>
             <span className="badge badge-success" style={{ padding: '0.15rem 0.5rem', fontSize: '0.7rem' }}>
@@ -363,7 +363,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
           {/* Card 3 */}
           <div className="card text-left" style={{ padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
             <div className="stat-label">{t.stat3Title}</div>
-            <div className="stat-number" style={{ color: 'var(--text-main)', margin: '0.5rem 0' }}>
+            <div className="stat-number" style={{ color: 'var(--text-main)', margin: '0.5rem 0', fontSize: '1.8rem', whiteSpace: 'nowrap' }}>
               {statsLoading ? '...' : (stats.cotisationsSum !== undefined ? `${stats.cotisationsSum.toLocaleString('fr-FR')} FCFA` : '0 FCFA')}
             </div>
             <span className="badge badge-info" style={{ padding: '0.15rem 0.5rem', fontSize: '0.7rem', color: 'var(--secondary)', backgroundColor: 'rgba(255, 127, 17, 0.12)' }}>
@@ -377,7 +377,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
           {/* Card 4 */}
           <div className="card text-left" style={{ padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
             <div className="stat-label">{t.stat4Title}</div>
-            <div className="stat-number" style={{ color: 'var(--text-main)', margin: '0.5rem 0' }}>
+            <div className="stat-number" style={{ color: 'var(--text-main)', margin: '0.5rem 0', fontSize: '1.8rem', whiteSpace: 'nowrap' }}>
               {statsLoading ? '...' : (stats.mutuellesCount || '--')}
             </div>
             <span className="badge badge-success" style={{ padding: '0.15rem 0.5rem', fontSize: '0.7rem' }}>
@@ -441,81 +441,197 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
             <div className="card" style={{ textAlign: 'left' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <h3 style={{ fontSize: '1.1rem' }}>{t.card2Title}</h3>
-                <button className="btn-text" style={{ fontSize: '0.8rem', padding: '0', cursor: 'pointer', background: 'transparent', border: 'none', color: 'var(--primary)' }} onClick={() => setView('services')}>{t.viewAll} →</button>
+                <button className="btn-text" style={{ fontSize: '0.8rem', padding: '0', cursor: 'pointer', background: 'transparent', border: 'none', color: 'var(--primary)' }} onClick={() => setView('audit-logs')}>{t.viewAll} →</button>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {recentActivities.map(act => (
-                  <div key={act.id} style={{ display: 'flex', gap: '0.75rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
-                    <span style={{ fontSize: '1.25rem' }}>{act.icon}</span>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: '600', fontSize: '0.85rem', color: 'var(--text-main)' }}>{act.title}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{act.desc}</div>
+                  <div key={act.id} style={{ display: 'flex', gap: '0.75rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem', alignItems: 'center' }}>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      backgroundColor: act.type === 'join' ? 'rgba(59,130,246,0.1)' : act.type === 'payment' ? 'rgba(16,185,129,0.1)' : 'rgba(255,127,17,0.1)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '1rem',
+                      flexShrink: 0
+                    }}>
+                      {act.type === 'join' ? '👤' : act.type === 'payment' ? '💰' : '❤️'}
                     </div>
-                    <small style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>{act.time}</small>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: '600', fontSize: '0.85rem', color: 'var(--text-main)' }}>{act.text}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{act.detail}</div>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', flexShrink: 0 }}>
+                      <span className="badge" style={{ fontSize: '0.65rem', padding: '0.1rem 0.4rem', backgroundColor: 'rgba(0,0,0,0.03)', color: 'var(--text-muted)' }}>{act.source}</span>
+                      <small style={{ color: 'var(--text-muted)', fontSize: '0.7rem', marginTop: '0.2rem' }}>{act.time}</small>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* Right Widget Column */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {/* Card: Coverage Map / Regional stats */}
-            <div className="card text-left" style={{ display: 'flex', flexDirection: 'column' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <div>
-                  <h3 style={{ fontSize: '1.1rem', margin: 0 }}>{t.card3Title}</h3>
-                  <small style={{ color: 'var(--text-muted)' }}>Taux de pénétration par district sanitaire</small>
-                </div>
-                <button className="btn-text" style={{ fontSize: '0.8rem', padding: '0', cursor: 'pointer', background: 'transparent', border: 'none', color: 'var(--primary)' }} onClick={() => setView('map')}>Cartographie →</button>
-              </div>
+          {/* Right Widget Column - Senegal Map Coverage */}
+          <div className="card" style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
+            <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>{t.card3Title}</h3>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)', marginBottom: '1.5rem' }}>
+              Visualisation de la couverture maladie universelle par région sanitaire (points chauds).
+            </p>
 
-              {/* Map visualization layout */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                  {regionsData.map(reg => (
-                    <div key={reg.name} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
-                        <span>{reg.name}</span>
-                        <strong>{reg.value}%</strong>
-                      </div>
-                      <div style={{ height: '6px', backgroundColor: 'var(--border-color)', borderRadius: '3px', overflow: 'hidden' }}>
-                        <div style={{
-                          width: `${reg.value}%`,
-                          height: '100%',
-                          backgroundColor: reg.value > 80 ? 'var(--primary)' :
-                                           reg.value > 60 ? 'var(--success)' :
-                                           reg.value > 50 ? 'var(--secondary)' :
-                                           'var(--danger)'
-                        }}></div>
-                      </div>
+            {/* SVG Map of Senegal - Stylized Vector Layout */}
+            <div style={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'var(--bg-card-subtle)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '12px',
+              padding: '1rem',
+              position: 'relative',
+              minHeight: '280px'
+            }}>
+              <svg viewBox="0 0 500 350" style={{ width: '100%', height: '100%', maxHeight: '300px' }}>
+                {/* Stylized background paths representing Senegal outline map */}
+                <path d="M 50,150 L 150,100 L 250,120 L 350,160 L 450,140 L 480,240 L 380,320 L 280,260 L 230,300 L 150,220 L 70,260 Z" fill="none" stroke="rgba(15, 23, 42, 0.06)" strokeWidth="3" />
+                <path d="M 50,150 L 150,100 L 250,120 L 350,160 L 450,140 L 480,240 L 380,320 L 280,260 L 230,300 L 150,220 L 70,260 Z" fill="rgba(10, 88, 202, 0.02)" />
+                
+                {/* Dynamic Regions */}
+                {regionsMapData.map(reg => {
+                  const isHovered = hoveredRegion === reg.id;
+                  const rBase = reg.couv > 80 ? 6 : reg.couv > 60 ? 4 : 3;
+                  const rOuter = reg.couv > 80 ? 18 : reg.couv > 60 ? 12 : 10;
+                  
+                  return (
+                    <g 
+                      key={reg.id} 
+                      onMouseEnter={() => setHoveredRegion(reg.id)}
+                      onMouseLeave={() => setHoveredRegion(null)}
+                      onClick={() => setHoveredRegion(hoveredRegion === reg.id ? null : reg.id)}
+                      onTouchStart={(e) => {
+                        e.preventDefault();
+                        setHoveredRegion(hoveredRegion === reg.id ? null : reg.id);
+                      }}
+                      style={{ cursor: 'pointer', transition: 'all 0.2s ease' }}
+                    >
+                      <circle 
+                        cx={reg.x} 
+                        cy={reg.y} 
+                        r={isHovered ? rOuter + 4 : rOuter} 
+                        fill={reg.color} 
+                        opacity="0.15" 
+                        stroke={reg.color} 
+                        strokeWidth={isHovered ? "2" : "1"} 
+                        style={{ transition: 'all 0.3s ease' }}
+                      />
+                      <circle 
+                        cx={reg.x} 
+                        cy={reg.y} 
+                        r={isHovered ? rBase + 2 : rBase} 
+                        fill={reg.color} 
+                        style={{ transition: 'all 0.3s ease' }}
+                      />
+                      <text 
+                        x={reg.x + 12} 
+                        y={reg.y - 4} 
+                        fill="var(--text-main)" 
+                        fontSize={isHovered ? "12" : "9"} 
+                        fontWeight={isHovered ? "bold" : "normal"}
+                        style={{ transition: 'all 0.2s ease', pointerEvents: 'none' }}
+                      >
+                        {reg.name}
+                      </text>
+                      {(isHovered || reg.couv > 80) && (
+                        <text 
+                          x={reg.x + 12} 
+                          y={reg.y + 8} 
+                          fill={reg.color} 
+                          fontSize={isHovered ? "10" : "8"} 
+                          fontWeight="bold"
+                          style={{ transition: 'all 0.2s ease', pointerEvents: 'none' }}
+                        >
+                          {reg.couv}% de couv.
+                        </text>
+                      )}
+                    </g>
+                  );
+                })}
+              </svg>
+
+              {hoveredRegion && (() => {
+                const reg = regionsMapData.find(r => r.id === hoveredRegion);
+                if (!reg) return null;
+                return (
+                  <div style={{
+                    position: 'absolute',
+                    left: `${(reg.x / 500) * 100}%`,
+                    top: `${(reg.y / 350) * 100}%`,
+                    transform: 'translate(-50%, -110%)',
+                    background: 'var(--bg-card)',
+                    border: '2px solid var(--primary)',
+                    borderRadius: '12px',
+                    padding: '0.75rem 1rem',
+                    boxShadow: 'var(--shadow-lg)',
+                    zIndex: 10,
+                    pointerEvents: 'none',
+                    width: '180px',
+                    fontSize: '0.8rem',
+                    color: 'var(--text-main)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.35rem'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: '800', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.25rem', marginBottom: '0.25rem' }}>
+                      <span style={{ color: 'var(--primary)' }}>📍 {reg.name}</span>
+                      <span className="badge badge-success" style={{ fontSize: '0.7rem', padding: '0.1rem 0.4rem', backgroundColor: reg.color, color: '#fff' }}>{reg.couv}%</span>
                     </div>
-                  ))}
-                </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Assurés' : 'Assuré yi'} :</span>
+                      <span style={{ fontWeight: 'bold' }}>{reg.assures}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Mutuelles' : 'Mutuelle'} :</span>
+                      <span style={{ fontWeight: 'bold' }}>{reg.mutuelles}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Structures' : 'Fajukaay'} :</span>
+                      <span style={{ fontWeight: 'bold' }}>{reg.structures}</span>
+                    </div>
+                  </div>
+                );
+              })()}
 
-                {/* Map legend */}
-                <div style={{
-                  display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap',
-                  gap: '0.5rem', fontSize: '0.7rem', color: 'var(--text-muted)',
-                  borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--primary)' }}></span>
-                    <span>Excellent (&gt;80%)</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--success)' }}></span>
-                    <span>Bon (60%-80%)</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--secondary)' }}></span>
-                    <span>Moyen (50%-60%)</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--danger)' }}></span>
-                    <span>Faible (&lt;50%)</span>
-                  </div>
+              <div style={{
+                position: 'absolute',
+                bottom: '10px',
+                left: '10px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.25rem',
+                backgroundColor: 'var(--bg-card)',
+                padding: '0.4rem 0.6rem',
+                borderRadius: '6px',
+                border: '1px solid var(--border-color)',
+                fontSize: '0.65rem'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--primary)' }}></span>
+                  <span>Excellent (&gt;80%)</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--success)' }}></span>
+                  <span>Bon (60%-80%)</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--secondary)' }}></span>
+                  <span>Moyen (50%-60%)</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--danger)' }}></span>
+                  <span>Faible (&lt;50%)</span>
                 </div>
               </div>
             </div>
