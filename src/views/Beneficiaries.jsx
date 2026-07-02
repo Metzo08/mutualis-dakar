@@ -183,7 +183,7 @@ export default function Beneficiaries({ lang, agentUser }) {
     doc.setFontSize(11);
     doc.text("MONTANT TOTAL PAYÉ :", 25, y + 9);
     doc.setFontSize(16);
-    doc.text(`${calculateTotalCost().toLocaleString('fr-FR')} FCFA`, 95, y + 10);
+    doc.text(`${String(calculateTotalCost()).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} FCFA`, 95, y + 10);
     
     y += 25;
     

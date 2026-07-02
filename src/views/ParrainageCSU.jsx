@@ -213,7 +213,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
     doc.setFontSize(9);
     doc.text("MONTANT GLOBAL PAYÉ :", 124, y + 6);
     doc.setFontSize(14);
-    doc.text(`${new Intl.NumberFormat('fr-FR').format(sponsor.totalAmount || sponsor.amount || 0)} FCFA`, 124, y + 12);
+    doc.text(`${String(sponsor.totalAmount || sponsor.amount || 0).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} FCFA`, 124, y + 12);
     
     y += 25;
     
@@ -627,7 +627,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
     doc.setFontSize(11);
     doc.text("MONTANT TOTAL PAYÉ :", 25, y + 9);
     doc.setFontSize(16);
-    doc.text(`${calculateTotalCost().toLocaleString('fr-FR')} FCFA`, 95, y + 10);
+    doc.text(`${String(calculateTotalCost()).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} FCFA`, 95, y + 10);
     
     y += 25;
     

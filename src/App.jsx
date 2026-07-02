@@ -88,9 +88,15 @@ export default function App() {
 
   const [lang, setLang] = useState('fr'); // fr or wo (French or Wolof)
   const [view, setView] = useState(initialViewFromHash()); // home, beneficiaries, services, map, directory, depts, about, medicaments, audit-logs, complaints
-  const [portalMode, setPortalMode] = useState('citizen'); // citizen or agent
-  const [citizenUser, setCitizenUser] = useState(null); // connected citizen record (object or null)
-  const [agentUser, setAgentUser] = useState(null); // connected agent record (object or null)
+  const [portalMode, setPortalMode] = useState(localStorage.getItem('cmu-portal-mode') || 'citizen'); // citizen or agent
+  const [citizenUser, setCitizenUser] = useState(() => {
+    const cached = localStorage.getItem('cmu-citizen-user');
+    return cached ? JSON.parse(cached) : null;
+  }); // connected citizen record (object or null)
+  const [agentUser, setAgentUser] = useState(() => {
+    const cached = localStorage.getItem('cmu-agent-user');
+    return cached ? JSON.parse(cached) : null;
+  }); // connected agent record (object or null)
   const [theme, setTheme] = useState(localStorage.getItem('cmu-theme') || 'light');
   const [sidebarOpen, setSidebarOpen] = useState(false); // mobile hamburger toggle state
   const [servicesTab, setServicesTab] = useState('register'); // track tab of services (register, renew, donate)

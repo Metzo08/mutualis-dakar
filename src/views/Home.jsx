@@ -323,6 +323,204 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
       });
   };
 
+  if (portalMode === 'agent') {
+    return (
+      <div className="dashboard-view fade-in-up" style={{ padding: '2rem 1.5rem', maxWidth: '1250px', margin: '0 auto' }}>
+        {/* Main KPI Stats Row */}
+        <div className="grid grid-4" style={{ marginBottom: '2rem' }}>
+          {/* Card 1 */}
+          <div className="card text-left" style={{ padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
+            <div className="stat-label">{t.stat1Title}</div>
+            <div className="stat-number" style={{ color: 'var(--text-main)', margin: '0.5rem 0' }}>
+              {statsLoading ? '...' : (stats.activeBeneficiariesCount ? stats.activeBeneficiariesCount.toLocaleString('fr-FR') : '--')}
+            </div>
+            <span className="badge badge-success" style={{ padding: '0.15rem 0.5rem', fontSize: '0.7rem' }}>
+              ▲ +1.2% {lang === 'fr' ? 'ce mois' : 'weer bi'}
+            </span>
+            <div style={{ height: '3px', backgroundColor: 'var(--border-color)', borderRadius: '2px', overflow: 'hidden', marginTop: '0.75rem' }}>
+              <div style={{ width: '85%', height: '100%', backgroundColor: 'var(--primary)' }}></div>
+            </div>
+          </div>
+
+          {/* Card 2 */}
+          <div className="card text-left" style={{ padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
+            <div className="stat-label">{t.stat2Title}</div>
+            <div className="stat-number" style={{ color: 'var(--text-main)', margin: '0.5rem 0' }}>
+              {statsLoading ? '...' : (stats.structuresCount || stats.mutuellesCount || '--')}
+            </div>
+            <span className="badge badge-success" style={{ padding: '0.15rem 0.5rem', fontSize: '0.7rem' }}>
+              ✓ 97% {lang === 'fr' ? 'de couverture' : 'couverture'}
+            </span>
+            <div style={{ height: '3px', backgroundColor: 'var(--border-color)', borderRadius: '2px', overflow: 'hidden', marginTop: '0.75rem' }}>
+              <div style={{ width: '97%', height: '100%', backgroundColor: 'var(--success)' }}></div>
+            </div>
+          </div>
+
+          {/* Card 3 */}
+          <div className="card text-left" style={{ padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
+            <div className="stat-label">{t.stat3Title}</div>
+            <div className="stat-number" style={{ color: 'var(--text-main)', margin: '0.5rem 0' }}>
+              {statsLoading ? '...' : (stats.cotisationsSum !== undefined ? `${stats.cotisationsSum.toLocaleString('fr-FR')} FCFA` : '0 FCFA')}
+            </div>
+            <span className="badge badge-info" style={{ padding: '0.15rem 0.5rem', fontSize: '0.7rem', color: 'var(--secondary)', backgroundColor: 'rgba(255, 127, 17, 0.12)' }}>
+              💳 Wave & OM
+            </span>
+            <div style={{ height: '3px', backgroundColor: 'var(--border-color)', borderRadius: '2px', overflow: 'hidden', marginTop: '0.75rem' }}>
+              <div style={{ width: '74%', height: '100%', backgroundColor: 'var(--secondary)' }}></div>
+            </div>
+          </div>
+
+          {/* Card 4 */}
+          <div className="card text-left" style={{ padding: '1.5rem', position: 'relative', overflow: 'hidden' }}>
+            <div className="stat-label">{t.stat4Title}</div>
+            <div className="stat-number" style={{ color: 'var(--text-main)', margin: '0.5rem 0' }}>
+              {statsLoading ? '...' : (stats.mutuellesCount || '--')}
+            </div>
+            <span className="badge badge-success" style={{ padding: '0.15rem 0.5rem', fontSize: '0.7rem' }}>
+              ▲ +5 {lang === 'fr' ? 'nouvelles' : 'bees'}
+            </span>
+            <div style={{ height: '3px', backgroundColor: 'var(--border-color)', borderRadius: '2px', overflow: 'hidden', marginTop: '0.75rem' }}>
+              <div style={{ width: '90%', height: '100%', backgroundColor: 'var(--warning)' }}></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Grid Dashboard Widgets */}
+        <div className="grid grid-2">
+          {/* Left Widget Column */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            {/* Card: Coverage Type */}
+            <div className="card" style={{ flex: 1, textAlign: 'left' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <h3 style={{ fontSize: '1.1rem' }}>{t.card1Title}</h3>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <span className="badge" style={{ backgroundColor: 'var(--bg-card-subtle)', color: 'var(--text-sub)' }}>{t.showMonth}</span>
+                  <button className="btn-text" style={{ fontSize: '0.8rem', padding: '0 0.5rem', cursor: 'pointer', background: 'transparent', border: 'none', color: 'var(--primary)' }} onClick={() => window.print()}>{t.printBtn}</button>
+                </div>
+              </div>
+
+              {/* Coverage bars list */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
+                    <span>Mutuelles communautaires</span>
+                    <strong>1,720,480 <span style={{ color: 'var(--text-muted)' }}>(49.9%)</span></strong>
+                  </div>
+                  <div style={{ height: '6px', backgroundColor: 'var(--border-color)', borderRadius: '3px', overflow: 'hidden' }}>
+                    <div style={{ width: '49.9%', height: '100%', background: 'linear-gradient(90deg, var(--primary) 0%, var(--primary-hover) 100%)' }}></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
+                    <span>IPM-Tiers (entreprises)</span>
+                    <strong>650,290 <span style={{ color: 'var(--text-muted)' }}>(18.8%)</span></strong>
+                  </div>
+                  <div style={{ height: '6px', backgroundColor: 'var(--border-color)', borderRadius: '3px', overflow: 'hidden' }}>
+                    <div style={{ width: '18.8%', height: '100%', background: 'linear-gradient(90deg, var(--success) 0%, var(--success-dark) 100%)' }}></div>
+                  </div>
+                </div>
+
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
+                    <span>Reste des mutuelles (scolaires, etc.)</span>
+                    <strong>432,180 <span style={{ color: 'var(--text-muted)' }}>(12.5%)</span></strong>
+                  </div>
+                  <div style={{ height: '6px', backgroundColor: 'var(--border-color)', borderRadius: '3px', overflow: 'hidden' }}>
+                    <div style={{ width: '12.5%', height: '100%', background: 'linear-gradient(90deg, var(--secondary) 0%, #d85c00 100%)' }}></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Card: Recent Activity */}
+            <div className="card" style={{ textAlign: 'left' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <h3 style={{ fontSize: '1.1rem' }}>{t.card2Title}</h3>
+                <button className="btn-text" style={{ fontSize: '0.8rem', padding: '0', cursor: 'pointer', background: 'transparent', border: 'none', color: 'var(--primary)' }} onClick={() => setView('services')}>{t.viewAll} →</button>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {recentActivities.map(act => (
+                  <div key={act.id} style={{ display: 'flex', gap: '0.75rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem' }}>
+                    <span style={{ fontSize: '1.25rem' }}>{act.icon}</span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: '600', fontSize: '0.85rem', color: 'var(--text-main)' }}>{act.title}</div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{act.desc}</div>
+                    </div>
+                    <small style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>{act.time}</small>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Widget Column */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            {/* Card: Coverage Map / Regional stats */}
+            <div className="card text-left" style={{ display: 'flex', flexDirection: 'column' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <div>
+                  <h3 style={{ fontSize: '1.1rem', margin: 0 }}>{t.card3Title}</h3>
+                  <small style={{ color: 'var(--text-muted)' }}>Taux de pénétration par district sanitaire</small>
+                </div>
+                <button className="btn-text" style={{ fontSize: '0.8rem', padding: '0', cursor: 'pointer', background: 'transparent', border: 'none', color: 'var(--primary)' }} onClick={() => setView('map')}>Cartographie →</button>
+              </div>
+
+              {/* Map visualization layout */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                  {regionsData.map(reg => (
+                    <div key={reg.name} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+                        <span>{reg.name}</span>
+                        <strong>{reg.value}%</strong>
+                      </div>
+                      <div style={{ height: '6px', backgroundColor: 'var(--border-color)', borderRadius: '3px', overflow: 'hidden' }}>
+                        <div style={{
+                          width: `${reg.value}%`,
+                          height: '100%',
+                          backgroundColor: reg.value > 80 ? 'var(--primary)' :
+                                           reg.value > 60 ? 'var(--success)' :
+                                           reg.value > 50 ? 'var(--secondary)' :
+                                           'var(--danger)'
+                        }}></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Map legend */}
+                <div style={{
+                  display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap',
+                  gap: '0.5rem', fontSize: '0.7rem', color: 'var(--text-muted)',
+                  borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--primary)' }}></span>
+                    <span>Excellent (&gt;80%)</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--success)' }}></span>
+                    <span>Bon (60%-80%)</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--secondary)' }}></span>
+                    <span>Moyen (50%-60%)</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--danger)' }}></span>
+                    <span>Faible (&lt;50%)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="dashboard-view fade-in-up">
       {/* Hero Banner Area */}

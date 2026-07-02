@@ -72,6 +72,8 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
         if (data.success) {
           localStorage.setItem('cmu-token', data.token);
           if (data.refreshToken) localStorage.setItem('cmu-refresh-token', data.refreshToken);
+          localStorage.setItem('cmu-portal-mode', 'citizen');
+          localStorage.setItem('cmu-citizen-user', JSON.stringify(data.citizen));
           setPortalMode('citizen');
           setCitizenUser(data.citizen);
           setView('home');
@@ -119,6 +121,8 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
                   { id: 3, name: 'Abdoulaye Ndiaye', relation: 'enfant', age: 8 }
                 ]
               };
+          localStorage.setItem('cmu-portal-mode', 'citizen');
+          localStorage.setItem('cmu-citizen-user', JSON.stringify(mockUser));
           setPortalMode('citizen');
           setCitizenUser(mockUser);
           setView('home');
@@ -151,6 +155,8 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
         if (data.success) {
           localStorage.setItem('cmu-token', data.token);
           if (data.refreshToken) localStorage.setItem('cmu-refresh-token', data.refreshToken);
+          localStorage.setItem('cmu-portal-mode', 'agent');
+          localStorage.setItem('cmu-agent-user', JSON.stringify(data.agent));
           setPortalMode('agent');
           setAgentUser(data.agent);
           setView('home');
@@ -162,14 +168,17 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
         setLoading(false);
         // Offline Fallback for testing
         if (agentEmail === 'agent@cmu.sn' && agentPassword === 'senecarte') {
-          setPortalMode('agent');
-          setAgentUser({
+          const mockAgent = {
             id: 1,
             username: 'agent@cmu.sn',
             firstName: 'Amadou',
             lastName: 'Sall',
             role: 'Superviseur Régional'
-          });
+          };
+          localStorage.setItem('cmu-portal-mode', 'agent');
+          localStorage.setItem('cmu-agent-user', JSON.stringify(mockAgent));
+          setPortalMode('agent');
+          setAgentUser(mockAgent);
           setView('home');
         } else {
           setError(t.errorFail);
