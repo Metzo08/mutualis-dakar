@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
 
-export default function Home({ lang, setView, setViewTab, portalMode, setPortalMode, citizenUser, setCitizenUser }) {
+export default function Home({ lang, setView, setViewTab, portalMode, setPortalMode, citizenUser, setCitizenUser, agentUser }) {
   const [qrCodeUrl, setQrCodeUrl] = useState('');
 
   useEffect(() => {
@@ -31,7 +31,12 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
     beneficiariesCount: 0,
     activeBeneficiariesCount: 0,
     mutuellesCount: 0,
-    donationsSum: 0
+    donationsSum: 0,
+    coverageDetails: {
+      communautaires: { count: 1720480, pct: '49.9' },
+      ipm: { count: 650290, pct: '18.8' },
+      reste: { count: 432180, pct: '12.5' }
+    }
   });
 
   const [loginPhone, setLoginPhone] = useState('');
@@ -81,18 +86,29 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
       .catch(err => console.warn('Failed to fetch regional coverage, using local fallback:', err));
   }, []);
 
+  const [activeCampaign, setActiveCampaign] = useState({
+    title_fr: 'Soutenir la solidarité régionale',
+    title_wo: 'Dimbalél wa Dakar yi',
+    description_fr: 'Soutenez les familles les plus vulnérables de Dakar en finançant leur couverture santé annuelle (4 500 FCFA).',
+    description_wo: 'Dimbalél wa Dakar yi gënë néewal doole ngir ñu mënë am fajj wér-gi-yaram (4 500 FCFA).',
+    target_amount: 1000000,
+    baseline_amount: 720000,
+    collected_amount: 720000
+  });
+
   useEffect(() => {
-    fetch('http://localhost:5000/api/donations/stats')
-      .then(res => res.json())
+    fetch('http://localhost:5000/api/campaign/active')
+      .then(res => {
+        if (!res.ok) throw new Error('API Error');
+        return res.json();
+      })
       .then(data => {
-        if (data.success && data.stats) {
-          const rufStats = data.stats.find(item => item.target === 'rufisque');
-          if (rufStats) {
-            setRufisqueTotal(720000 + parseInt(rufStats.total || 0));
-          }
+        if (data && data.title_fr) {
+          setActiveCampaign(data);
+          setRufisqueTotal(data.collected_amount);
         }
       })
-      .catch(err => console.warn('Failed to fetch donation stats:', err));
+      .catch(err => console.warn('Failed to fetch active campaign, using default:', err));
   }, [citizenUser]);
 
   const [loyalty, setLoyalty] = useState(null);
@@ -199,7 +215,12 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
           beneficiariesCount: 245080,
           activeBeneficiariesCount: 210450,
           mutuellesCount: 42,
-          donationsSum: 845000
+          donationsSum: 845000,
+          coverageDetails: {
+            communautaires: { count: 1720480, pct: '49.9' },
+            ipm: { count: 650290, pct: '18.8' },
+            reste: { count: 432180, pct: '12.5' }
+          }
         });
       });
   }, [citizenUser]);
@@ -408,30 +429,30 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
                     <span>Mutuelles communautaires</span>
-                    <strong>1,720,480 <span style={{ color: 'var(--text-muted)' }}>(49.9%)</span></strong>
+                    <strong>{stats.coverageDetails?.communautaires?.count ? stats.coverageDetails.communautaires.count.toLocaleString('fr-FR') : '1 720 480'} <span style={{ color: 'var(--text-muted)' }}>({stats.coverageDetails?.communautaires?.pct || '49.9'}%)</span></strong>
                   </div>
                   <div style={{ height: '6px', backgroundColor: 'var(--border-color)', borderRadius: '3px', overflow: 'hidden' }}>
-                    <div style={{ width: '49.9%', height: '100%', background: 'linear-gradient(90deg, var(--primary) 0%, var(--primary-hover) 100%)' }}></div>
+                    <div style={{ width: `${stats.coverageDetails?.communautaires?.pct || '49.9'}%`, height: '100%', background: 'linear-gradient(90deg, var(--primary) 0%, var(--primary-hover) 100%)' }}></div>
                   </div>
                 </div>
 
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
                     <span>IPM-Tiers (entreprises)</span>
-                    <strong>650,290 <span style={{ color: 'var(--text-muted)' }}>(18.8%)</span></strong>
+                    <strong>{stats.coverageDetails?.ipm?.count ? stats.coverageDetails.ipm.count.toLocaleString('fr-FR') : '650 290'} <span style={{ color: 'var(--text-muted)' }}>({stats.coverageDetails?.ipm?.pct || '18.8'}%)</span></strong>
                   </div>
                   <div style={{ height: '6px', backgroundColor: 'var(--border-color)', borderRadius: '3px', overflow: 'hidden' }}>
-                    <div style={{ width: '18.8%', height: '100%', background: 'linear-gradient(90deg, var(--success) 0%, var(--success-dark) 100%)' }}></div>
+                    <div style={{ width: `${stats.coverageDetails?.ipm?.pct || '18.8'}%`, height: '100%', background: 'linear-gradient(90deg, var(--success) 0%, var(--success-dark) 100%)' }}></div>
                   </div>
                 </div>
 
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
                     <span>Reste des mutuelles (scolaires, etc.)</span>
-                    <strong>432,180 <span style={{ color: 'var(--text-muted)' }}>(12.5%)</span></strong>
+                    <strong>{stats.coverageDetails?.reste?.count ? stats.coverageDetails.reste.count.toLocaleString('fr-FR') : '432 180'} <span style={{ color: 'var(--text-muted)' }}>({stats.coverageDetails?.reste?.pct || '12.5'}%)</span></strong>
                   </div>
                   <div style={{ height: '6px', backgroundColor: 'var(--border-color)', borderRadius: '3px', overflow: 'hidden' }}>
-                    <div style={{ width: '12.5%', height: '100%', background: 'linear-gradient(90deg, var(--secondary) 0%, #d85c00 100%)' }}></div>
+                    <div style={{ width: `${stats.coverageDetails?.reste?.pct || '12.5'}%`, height: '100%', background: 'linear-gradient(90deg, var(--secondary) 0%, #d85c00 100%)' }}></div>
                   </div>
                 </div>
               </div>
@@ -441,7 +462,11 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
             <div className="card" style={{ textAlign: 'left' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <h3 style={{ fontSize: '1.1rem' }}>{t.card2Title}</h3>
-                <button className="btn-text" style={{ fontSize: '0.8rem', padding: '0', cursor: 'pointer', background: 'transparent', border: 'none', color: 'var(--primary)' }} onClick={() => setView('audit-logs')}>{t.viewAll} →</button>
+                {agentUser && agentUser.role === 'Super Admin' ? (
+                  <button className="btn-text" style={{ fontSize: '0.8rem', padding: '0', cursor: 'pointer', background: 'transparent', border: 'none', color: 'var(--primary)' }} onClick={() => setView('audit-logs')}>{t.viewAll} →</button>
+                ) : (
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}></span>
+                )}
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -644,49 +669,108 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
   return (
     <div className="dashboard-view fade-in-up">
       {/* Hero Banner Area */}
-      <div className="hero-banner" style={{
-        background: 'linear-gradient(to right, rgba(5, 150, 105, 0.9), rgba(5, 150, 105, 0.8)), url("/dashboard_hero_bg_real.png") center/cover no-repeat',
-        borderRadius: '24px',
+      <section className="banner-mini" style={{
+        background: 'linear-gradient(to right, rgba(5, 150, 105, 0.92), rgba(5, 150, 105, 0.75)), url("/csu_hero_bg_real.png") center/cover no-repeat',
+        borderBottom: '1px solid var(--border-color)',
+        borderRadius: '16px',
         padding: '2.5rem 3rem',
-        boxShadow: '0 10px 30px rgba(5, 150, 105, 0.15)',
-        marginBottom: '2rem',
+        marginBottom: '2.5rem',
+        color: '#fff',
+        boxShadow: 'var(--shadow-md)',
         position: 'relative',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        textAlign: 'left'
       }}>
-        {/* Dynamic Glowing background orb */}
+        {/* Subtle decorative orb */}
         <div style={{
           position: 'absolute',
           top: '-20%',
-          right: '-10%',
-          width: '300px',
-          height: '300px',
-          background: 'radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%)',
+          right: '-5%',
+          width: '280px',
+          height: '280px',
+          background: 'radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, transparent 70%)',
           pointerEvents: 'none'
         }}></div>
 
-        <div style={{ position: 'relative', zIndex: 2, maxWidth: '750px', textAlign: 'left' }}>
-          <span className="badge badge-info" style={{ marginBottom: '1rem', background: 'rgba(255, 255, 255, 0.15)', color: '#fff' }}>
+        <div className="container" style={{ position: 'relative', zIndex: 2 }}>
+          <span className="badge badge-info" style={{ marginBottom: '1rem', background: 'rgba(255, 255, 255, 0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.25)' }}>
             ✨ Couverture sanitaire universelle
           </span>
-          <h1 style={{ fontSize: '2.3rem', fontWeight: '800', marginBottom: '1rem', color: '#fff' }}>
+          <h1 style={{ fontSize: '2.3rem', fontWeight: '800', marginBottom: '1rem', color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
             {t.heroTitle}
           </h1>
-          <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '1.05rem', lineHeight: '1.6', marginBottom: '2rem' }}>
+          <p style={{ color: 'rgba(255,255,255,0.88)', fontSize: '1.05rem', lineHeight: '1.6', marginBottom: '2rem', maxWidth: '650px', textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}>
             {t.heroSub}
           </p>
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
             <button className="btn btn-secondary" onClick={() => setView('services')}>
               <span style={{ fontSize: '1.2rem', marginRight: '0.2rem' }}>+</span> {t.btnNew}
             </button>
-            <button className="btn btn-success" style={{ backgroundColor: 'var(--success)', border: 'none', color: '#fff' }} onClick={() => setView('parrainage-solidaire')}>
+            <button className="btn btn-success" style={{ backgroundColor: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.4)', color: '#fff', backdropFilter: 'blur(4px)' }} onClick={() => setView('parrainage-solidaire')}>
               🤝 {lang === 'fr' ? 'Parrainage solidaire' : 'Dimbalé (parrainage)'}
             </button>
-            <button className="btn btn-outline" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.4)' }} onClick={() => setView('directory')}>
+            <button className="btn btn-outline" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.4)', backdropFilter: 'blur(4px)' }} onClick={() => setView('directory')}>
               {lang === 'fr' ? 'Trouver une mutuelle' : 'Mutuelle yi'}
             </button>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Section : Comment ça marche */}
+      <section style={{ marginBottom: '2.5rem', textAlign: 'left', padding: '0 0.5rem' }}>
+        <h2 style={{ fontSize: '1.4rem', fontWeight: '800', marginBottom: '0.5rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          💡 {lang === 'fr' ? 'Fonctionnement de la plateforme' : 'Naka la plateforme bi di doxé'}
+        </h2>
+        <p style={{ fontSize: '0.9rem', color: 'var(--text-sub)', marginBottom: '1.5rem' }}>
+          {lang === 'fr' 
+            ? 'Découvrez comment Mutualis facilite votre couverture maladie universelle en 4 étapes simples :'
+            : 'Xoolal naka nga mënë amé sa assurance wér-gi-yaram ci 4 étapes yomb :'
+          }
+        </p>
+
+        <div className="grid grid-4" style={{ gap: '1.25rem' }}>
+          <div className="card" style={{ padding: '1.25rem', borderTop: '4px solid var(--primary)', display: 'flex', flexDirection: 'column', gap: '0.4rem', boxShadow: 'var(--shadow-sm)', transition: 'transform 0.2s' }}>
+            <span style={{ fontSize: '1.5rem' }}>👤</span>
+            <h4 style={{ margin: 0, fontWeight: '700', fontSize: '0.95rem' }}>1. {lang === 'fr' ? 'Choisir son profil' : 'Tann sa profil'}</h4>
+            <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-sub)', lineHeight: '1.4' }}>
+              {lang === 'fr' 
+                ? 'Connectez-vous en tant que citoyen, prestataire de santé ou accédez à l\'espace RSE pour parrainer.'
+                : 'Duggal en tant que citoyen, prestataire de santé walla RSE.'
+              }
+            </p>
+          </div>
+          <div className="card" style={{ padding: '1.25rem', borderTop: '4px solid var(--secondary)', display: 'flex', flexDirection: 'column', gap: '0.4rem', boxShadow: 'var(--shadow-sm)', transition: 'transform 0.2s' }}>
+            <span style={{ fontSize: '1.5rem' }}>🤝</span>
+            <h4 style={{ margin: 0, fontWeight: '700', fontSize: '0.95rem' }}>2. {lang === 'fr' ? 'Enrôler & parrainer' : 'Mbindu & parrainer'}</h4>
+            <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-sub)', lineHeight: '1.4' }}>
+              {lang === 'fr' 
+                ? 'Inscrivez votre famille ou parrainez des talibés (ndongo daaras) et élèves du primaire via l\'espace solidaire.'
+                : 'Mbindal sa njaboot walla parrainél ay élève daara walla école.'
+              }
+            </p>
+          </div>
+          <div className="card" style={{ padding: '1.25rem', borderTop: '4px solid var(--success)', display: 'flex', flexDirection: 'column', gap: '0.4rem', boxShadow: 'var(--shadow-sm)', transition: 'transform 0.2s' }}>
+            <span style={{ fontSize: '1.5rem' }}>💳</span>
+            <h4 style={{ margin: 0, fontWeight: '700', fontSize: '0.95rem' }}>3. {lang === 'fr' ? 'Cotiser en ligne' : 'Fay sa cotisation'}</h4>
+            <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-sub)', lineHeight: '1.4' }}>
+              {lang === 'fr' 
+                ? 'Réglez vos cotisations annuelles instantanément par Wave, Orange Money ou carte bancaire.'
+                : 'Fayal sa cotisation annuelle par Wave walla Orange Money ci sa téléphone.'
+              }
+            </p>
+          </div>
+          <div className="card" style={{ padding: '1.25rem', borderTop: '4px solid var(--warning)', display: 'flex', flexDirection: 'column', gap: '0.4rem', boxShadow: 'var(--shadow-sm)', transition: 'transform 0.2s' }}>
+            <span style={{ fontSize: '1.5rem' }}>🏥</span>
+            <h4 style={{ margin: 0, fontWeight: '700', fontSize: '0.95rem' }}>4. {lang === 'fr' ? 'Soins tiers-payant' : 'Fajj tiers-payant'}</h4>
+            <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-sub)', lineHeight: '1.4' }}>
+              {lang === 'fr' 
+                ? 'Présentez votre carte QR dans les hôpitaux partenaires pour bénéficier d\'une prise en charge immédiate à 80%.'
+                : 'Wane sa carte QR ci hôpital yi ngir gnu fayal la 80% ci sa fajj.'
+              }
+            </p>
+          </div>
+        </div>
+      </section>
 
       {/* ======================= PORTAL MODE CITIZEN ======================= */}
       {portalMode === 'citizen' && (
@@ -781,21 +865,21 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
                     ❤️ {lang === 'fr' ? 'Solidarité nationale' : 'Mayé & dimbelé'}
                   </span>
                   <h2 style={{ fontSize: '1.5rem', color: 'var(--text-main)', marginBottom: '1rem' }}>
-                    {lang === 'fr' ? 'Faire un don pour la santé' : 'Faire un don'}
+                    {lang === 'fr' ? (activeCampaign?.title_fr || '') : (activeCampaign?.title_wo || '')}
                   </h2>
                   <p style={{ color: 'var(--text-sub)', lineHeight: '1.6', marginBottom: '1.5rem' }}>
-                    {lang === 'fr' 
-                      ? 'Soutenez les familles les plus vulnérables de Dakar en finançant leur couverture santé annuelle (4 500 FCFA).'
-                      : 'Dimbalél wa Dakar yi gënë néewal doole ngir ñu mënë am fajj wér-gi-yaram.'}
+                    {lang === 'fr' ? (activeCampaign?.description_fr || '') : (activeCampaign?.description_wo || '')}
                   </p>
                   {/* Goal Progress bar */}
                   <div style={{ marginBottom: '1.5rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '0.4rem' }}>
                       <span>{lang === 'fr' ? 'Fonds de solidarité régionale' : 'Fonds de solidarité'}</span>
-                      <span>{Math.min(100, Math.round((rufisqueTotal / 1000000) * 100))}% ({rufisqueTotal.toLocaleString('fr-FR')} / 1 000 000 FCFA)</span>
+                      <span>
+                        {Math.min(100, Math.round(((activeCampaign?.collected_amount || 0) / (activeCampaign?.target_amount || 1)) * 100))}% ({(activeCampaign?.collected_amount || 0).toLocaleString('fr-FR')} / {(activeCampaign?.target_amount || 1).toLocaleString('fr-FR')} FCFA)
+                      </span>
                     </div>
                     <div style={{ height: '8px', backgroundColor: 'var(--border-color)', borderRadius: '4px', overflow: 'hidden' }}>
-                      <div style={{ width: `${Math.min(100, (rufisqueTotal / 1000000) * 100)}%`, height: '100%', backgroundColor: 'var(--secondary)' }}></div>
+                      <div style={{ width: `${Math.min(100, ((activeCampaign?.collected_amount || 0) / (activeCampaign?.target_amount || 1)) * 100)}%`, height: '100%', backgroundColor: 'var(--secondary)' }}></div>
                     </div>
                   </div>
                 </div>
@@ -999,21 +1083,21 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
                       ❤️ {lang === 'fr' ? 'Solidarité nationale' : 'Mayé & dimbelé'}
                     </span>
                     <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>
-                      {lang === 'fr' ? 'Soutenir la solidarité régionale' : 'Mayé ngir dimbelé'}
+                      {lang === 'fr' ? (activeCampaign?.title_fr || '') : (activeCampaign?.title_wo || '')}
                     </h3>
                     <p style={{ color: 'var(--text-sub)', fontSize: '0.82rem', lineHeight: '1.5', marginBottom: '1rem' }}>
-                      {lang === 'fr' 
-                        ? 'Soutenez les familles les plus vulnérables de Dakar en finançant leur couverture santé annuelle (4 500 FCFA).'
-                        : 'Dimbalél wa Dakar yi gënë néewal doole ngir ñu mënë am fajj wér-gi-yaram.'}
+                      {lang === 'fr' ? (activeCampaign?.description_fr || '') : (activeCampaign?.description_wo || '')}
                     </p>
                     {/* Goal Progress bar */}
                     <div style={{ marginBottom: '1rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>
                         <span>{lang === 'fr' ? 'Fonds régional' : 'Fonds de solidarité'}</span>
-                        <span>{Math.min(100, Math.round((rufisqueTotal / 1000000) * 100))}% ({rufisqueTotal.toLocaleString('fr-FR')} / 1 000 000 FCFA)</span>
+                        <span>
+                          {Math.min(100, Math.round(((activeCampaign?.collected_amount || 0) / (activeCampaign?.target_amount || 1)) * 100))}% ({(activeCampaign?.collected_amount || 0).toLocaleString('fr-FR')} / {(activeCampaign?.target_amount || 1).toLocaleString('fr-FR')} FCFA)
+                        </span>
                       </div>
                       <div style={{ height: '6px', backgroundColor: 'var(--border-color)', borderRadius: '3px', overflow: 'hidden' }}>
-                        <div style={{ width: `${Math.min(100, (rufisqueTotal / 1000000) * 100)}%`, height: '100%', backgroundColor: 'var(--secondary)' }}></div>
+                        <div style={{ width: `${Math.min(100, ((activeCampaign?.collected_amount || 0) / (activeCampaign?.target_amount || 1)) * 100)}%`, height: '100%', backgroundColor: 'var(--secondary)' }}></div>
                       </div>
                     </div>
                   </div>
@@ -1118,30 +1202,30 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
                       <span>Mutuelles communautaires</span>
-                      <strong>1,720,480 <span style={{ color: 'var(--text-muted)' }}>(49.9%)</span></strong>
+                      <strong>{stats.coverageDetails?.communautaires?.count ? stats.coverageDetails.communautaires.count.toLocaleString('fr-FR') : '1 720 480'} <span style={{ color: 'var(--text-muted)' }}>({stats.coverageDetails?.communautaires?.pct || '49.9'}%)</span></strong>
                     </div>
                     <div style={{ height: '6px', backgroundColor: 'var(--border-color)', borderRadius: '3px', overflow: 'hidden' }}>
-                      <div style={{ width: '49.9%', height: '100%', background: 'linear-gradient(90deg, var(--primary) 0%, var(--primary-hover) 100%)' }}></div>
+                      <div style={{ width: `${stats.coverageDetails?.communautaires?.pct || '49.9'}%`, height: '100%', background: 'linear-gradient(90deg, var(--primary) 0%, var(--primary-hover) 100%)' }}></div>
                     </div>
                   </div>
 
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
                       <span>IPM-Tiers (entreprises)</span>
-                      <strong>650,290 <span style={{ color: 'var(--text-muted)' }}>(18.8%)</span></strong>
+                      <strong>{stats.coverageDetails?.ipm?.count ? stats.coverageDetails.ipm.count.toLocaleString('fr-FR') : '650 290'} <span style={{ color: 'var(--text-muted)' }}>({stats.coverageDetails?.ipm?.pct || '18.8'}%)</span></strong>
                     </div>
                     <div style={{ height: '6px', backgroundColor: 'var(--border-color)', borderRadius: '3px', overflow: 'hidden' }}>
-                      <div style={{ width: '18.8%', height: '100%', background: 'linear-gradient(90deg, var(--success) 0%, var(--success-dark) 100%)' }}></div>
+                      <div style={{ width: `${stats.coverageDetails?.ipm?.pct || '18.8'}%`, height: '100%', background: 'linear-gradient(90deg, var(--success) 0%, var(--success-dark) 100%)' }}></div>
                     </div>
                   </div>
 
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
                       <span>Reste des mutuelles (scolaires, etc.)</span>
-                      <strong>432,180 <span style={{ color: 'var(--text-muted)' }}>(12.5%)</span></strong>
+                      <strong>{stats.coverageDetails?.reste?.count ? stats.coverageDetails.reste.count.toLocaleString('fr-FR') : '432 180'} <span style={{ color: 'var(--text-muted)' }}>({stats.coverageDetails?.reste?.pct || '12.5'}%)</span></strong>
                     </div>
                     <div style={{ height: '6px', backgroundColor: 'var(--border-color)', borderRadius: '3px', overflow: 'hidden' }}>
-                      <div style={{ width: '12.5%', height: '100%', background: 'linear-gradient(90deg, var(--secondary) 0%, #d85c00 100%)' }}></div>
+                      <div style={{ width: `${stats.coverageDetails?.reste?.pct || '12.5'}%`, height: '100%', background: 'linear-gradient(90deg, var(--secondary) 0%, #d85c00 100%)' }}></div>
                     </div>
                   </div>
                 </div>

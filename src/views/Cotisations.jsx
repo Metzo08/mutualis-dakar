@@ -30,7 +30,7 @@ export default function Cotisations({ lang, portalMode, citizenUser, agentUser }
     date: 'Date',
     sendReminders: 'Générer les rappels',
     reminderTitle: 'Rappels automatiques',
-    reminderDesc: 'Détecte les cotisations expirant dans ≤ 30 jours ou expirées et génère des notifications SMS.',
+    reminderDesc: 'Détecte les cotisations expirant dans 30 jours ou moins, et génère des notifications SMS automatiques.',
     noData: 'Aucune cotisation trouvée.',
     prev: 'Précédent',
     next: 'Suivant',

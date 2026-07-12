@@ -6,6 +6,12 @@ import {
 
 // Tableau de bord agent CSU : KPIs temps réel, graphiques (Recharts) et export CSV.
 export default function AgentDashboard({ lang, agentUser }) {
+  const isSuperAdmin = agentUser && (
+    agentUser.role === 'Super Admin' || 
+    agentUser.role === 'admin' || 
+    agentUser.role === 'superadmin'
+  );
+
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -23,6 +29,8 @@ export default function AgentDashboard({ lang, agentUser }) {
     kpiClaims: 'Demandes de prise en charge',
     kpiReimbursed: 'Montant remboursé (FCFA)',
     kpiDonations: 'Dons collectés (FCFA)',
+    kpiCotisations: 'Cotisations perçues (FCFA)',
+    kpiTotalFunds: 'Total des fonds mobilisés (FCFA)',
     coverage: 'Taux de couverture',
     byPackage: 'Répartition par formule',
     byMutuelle: 'Top 10 mutuelles',
@@ -47,6 +55,8 @@ export default function AgentDashboard({ lang, agentUser }) {
     kpiClaims: 'Demande yi ci prise en charge',
     kpiReimbursed: 'Xalis yi ñu fay (FCFA)',
     kpiDonations: 'Dons yi (FCFA)',
+    kpiCotisations: 'Cotisations perçues (FCFA)',
+    kpiTotalFunds: 'Mboloo xalis yi (FCFA)',
     coverage: 'Taux couverture',
     byPackage: 'Répartition formule',
     byMutuelle: 'Top 10 mutuelle',
@@ -84,6 +94,134 @@ export default function AgentDashboard({ lang, agentUser }) {
   useEffect(() => {
     fetchStats();
   }, []);
+
+  const [activeCampaignId, setActiveCampaignId] = useState(0);
+  const [campaignForm, setCampaignForm] = useState({
+    titleFr: 'Soutenir la solidarité régionale',
+    titleWo: 'Dimbalél wa Dakar yi',
+    descriptionFr: 'Soutenez les familles les plus vulnérables de Dakar en finançant leur couverture santé annuelle (4 500 FCFA).',
+    descriptionWo: 'Dimbalél wa Dakar yi gënë néewal doole ngir ñu mënë am fajj wér-gi-yaram (4 500 FCFA).',
+    targetAmount: 1000000,
+    baselineAmount: 720000
+  });
+  const [campaignSuccess, setCampaignSuccess] = useState('');
+  const [campaignError, setCampaignError] = useState('');
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/campaign/active')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.title_fr) {
+          setActiveCampaignId(data.id);
+          setCampaignForm({
+            titleFr: data.title_fr,
+            titleWo: data.title_wo,
+            descriptionFr: data.description_fr,
+            descriptionWo: data.description_wo,
+            targetAmount: data.target_amount,
+            baselineAmount: data.baseline_amount
+          });
+        }
+      })
+      .catch(err => console.warn('Failed to load active campaign settings:', err));
+  }, []);
+
+  const handleCampaignSubmit = (e) => {
+    e.preventDefault();
+    setCampaignSuccess('');
+    setCampaignError('');
+    const token = localStorage.getItem('cmu-token');
+    fetch('http://localhost:5000/api/campaign', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(campaignForm)
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Erreur lors du démarrage de la campagne.');
+        return res.json();
+      })
+      .then((data) => {
+        setCampaignSuccess('Nouvelle campagne de don démarrée avec succès !');
+        if (data && data.campaign) {
+          setActiveCampaignId(data.campaign.id);
+        }
+        setTimeout(() => setCampaignSuccess(''), 4000);
+      })
+      .catch(err => {
+        setCampaignError(err.message);
+      });
+  };
+
+  const handleCampaignUpdate = () => {
+    if (!activeCampaignId) {
+      setCampaignError('Aucune campagne active à modifier.');
+      return;
+    }
+    setCampaignSuccess('');
+    setCampaignError('');
+    const token = localStorage.getItem('cmu-token');
+    fetch(`http://localhost:5000/api/campaign/${activeCampaignId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(campaignForm)
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Erreur lors de la modification de la campagne.');
+        return res.json();
+      })
+      .then(() => {
+        setCampaignSuccess('Campagne modifiée avec succès !');
+        setTimeout(() => setCampaignSuccess(''), 4000);
+      })
+      .catch(err => {
+        setCampaignError(err.message);
+      });
+  };
+
+  const handleCampaignDelete = () => {
+    if (!activeCampaignId) {
+      setCampaignError('Aucune campagne active à supprimer.');
+      return;
+    }
+    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette campagne ? Cette action est irréversible.')) {
+      return;
+    }
+    setCampaignSuccess('');
+    setCampaignError('');
+    const token = localStorage.getItem('cmu-token');
+    fetch(`http://localhost:5000/api/campaign/${activeCampaignId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+      .then(res => {
+        if (!res.ok) throw new Error('Erreur lors de la suppression de la campagne.');
+        return res.json();
+      })
+      .then(() => {
+        setCampaignSuccess('Campagne supprimée avec succès !');
+        setActiveCampaignId(0);
+        setCampaignForm({
+          titleFr: 'Soutenir la solidarité régionale',
+          titleWo: 'Dimbalél wa Dakar yi',
+          descriptionFr: 'Soutenez les familles les plus vulnérables de Dakar en finançant leur couverture santé annuelle (4 500 FCFA).',
+          descriptionWo: 'Dimbalél wa Dakar yi gënë néewal doole ngir ñu mënë am fajj wér-gi-yaram (4 500 FCFA).',
+          targetAmount: 1000000,
+          baselineAmount: 720000
+        });
+        setTimeout(() => setCampaignSuccess(''), 4000);
+      })
+      .catch(err => {
+        setCampaignError(err.message);
+      });
+  };
 
   const COLORS = ['#059669', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#6366f1'];
 
@@ -132,6 +270,8 @@ export default function AgentDashboard({ lang, agentUser }) {
     ? Math.round((stats.beneficiaries.active / stats.beneficiaries.total) * 100)
     : 0;
 
+  const totalFundsSum = (stats.cotisationsAmount || 0) + (stats.parrainage?.totalAmount || 0) + (stats.donations || 0);
+
   const tooltipStyle = {
     contentStyle: {
       backgroundColor: 'var(--bg-card)',
@@ -157,7 +297,9 @@ export default function AgentDashboard({ lang, agentUser }) {
         textAlign: 'center'
       }}>
         <div className="container" style={{ position: 'relative', zIndex: 2 }}>
-          <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>📊 {t.title}</h1>
+          <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
+            📊 {t.title} — {isSuperAdmin ? 'Super Administration (Sénégal)' : `UDMS de ${agentUser?.department || 'Dakar'}`}
+          </h1>
           <p style={{ color: '#f8fafc', fontSize: '1rem', fontWeight: '500', maxWidth: '700px', margin: '0 auto', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>{t.subtitle}</p>
         </div>
       </section>
@@ -174,6 +316,10 @@ export default function AgentDashboard({ lang, agentUser }) {
         <KpiCard icon="✅" label={t.kpiActive} value={formatNumber(stats.beneficiaries.active)} color="#22c55e" />
         <KpiCard icon="⏳" label={t.kpiPending} value={formatNumber(stats.beneficiaries.pending)} color="#f59e0b" />
         <KpiCard icon="🏥" label={t.kpiMutuelles} value={formatNumber(stats.mutuelles)} color="#8b5cf6" />
+        
+        {/* Cotisations & Total Funds */}
+        <KpiCard icon="💳" label={t.kpiCotisations} value={formatNumber(stats.cotisationsAmount)} color="#0ea5e9" />
+        <KpiCard icon="💎" label={t.kpiTotalFunds} value={formatNumber(totalFundsSum)} color="#10b981" />
         
         {/* Parrainage Stats */}
         <KpiCard icon="🤝" label={t.kpiSponsors} value={formatNumber(stats.parrainage?.sponsorsCount)} color="#059669" />
@@ -230,6 +376,7 @@ export default function AgentDashboard({ lang, agentUser }) {
                 n = n.replace('Mutuelle de ', '');
                 n = n.replace('Union Départementale de ', 'UD ');
                 n = n.replace('Union Departementale de ', 'UD ');
+                n = n.replace('UDMS de ', 'UD ');
                 n = n.replace(/\(UDMS.*\)/, '');
                 return { name: n.trim() || '—', bénéficiaires: parseInt(m.count) };
               })} layout="vertical">
@@ -291,6 +438,104 @@ export default function AgentDashboard({ lang, agentUser }) {
           ) : <EmptyChart />}
         </div>
       </div>
+
+      {/* Configuration de la Campagne de Solidarité (Super Admin uniquement) */}
+      {isSuperAdmin && (
+        <div className="card text-left" style={{ padding: '2rem', marginBottom: '2rem', borderRadius: '16px', borderLeft: '5px solid var(--secondary)' }}>
+          <h3 style={{ fontSize: '1.2rem', fontWeight: '850', color: 'var(--primary)', marginBottom: '0.5rem' }}>
+            🤝 {lang === 'fr' ? 'Gestion de la campagne de solidarité' : 'Campagne solidarité'}
+          </h3>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', marginBottom: '1.5rem' }}>
+            {lang === 'fr' 
+              ? 'Configurez, modifiez ou supprimez les campagnes de don pour la solidarité régionale. Seul le Super Admin possède ces droits.'
+              : 'Defal yene parameters yi ngir dimbeli niou newal doole.'}
+          </p>
+
+          {campaignSuccess && <div className="alert alert-success" style={{ marginBottom: '1rem' }}>{campaignSuccess}</div>}
+          {campaignError && <div className="alert alert-danger" style={{ marginBottom: '1rem' }}>{campaignError}</div>}
+
+          <form onSubmit={handleCampaignSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem' }}>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label">{lang === 'fr' ? 'Titre de la campagne (FR)' : 'Titre (FR)'}</label>
+              <input 
+                type="text" 
+                className="form-control"
+                value={campaignForm.titleFr}
+                onChange={(e) => setCampaignForm({ ...campaignForm, titleFr: e.target.value })}
+                required 
+              />
+            </div>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label">{lang === 'fr' ? 'Titre de la campagne (Wolof)' : 'Titre (WO)'}</label>
+              <input 
+                type="text" 
+                className="form-control"
+                value={campaignForm.titleWo}
+                onChange={(e) => setCampaignForm({ ...campaignForm, titleWo: e.target.value })}
+                required 
+              />
+            </div>
+
+            <div className="form-group" style={{ gridColumn: 'span 2', margin: 0 }}>
+              <label className="form-label">{lang === 'fr' ? 'Description (FR)' : 'Description (FR)'}</label>
+              <textarea 
+                className="form-control"
+                rows="3"
+                value={campaignForm.descriptionFr}
+                onChange={(e) => setCampaignForm({ ...campaignForm, descriptionFr: e.target.value })}
+                required 
+              />
+            </div>
+            <div className="form-group" style={{ gridColumn: 'span 2', margin: 0 }}>
+              <label className="form-label">{lang === 'fr' ? 'Description (Wolof)' : 'Description (WO)'}</label>
+              <textarea 
+                className="form-control"
+                rows="3"
+                value={campaignForm.descriptionWo}
+                onChange={(e) => setCampaignForm({ ...campaignForm, descriptionWo: e.target.value })}
+                required 
+              />
+            </div>
+
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label">{lang === 'fr' ? 'Objectif financier (FCFA)' : 'Objectif (FCFA)'}</label>
+              <input 
+                type="number" 
+                className="form-control"
+                value={campaignForm.targetAmount}
+                onChange={(e) => setCampaignForm({ ...campaignForm, targetAmount: parseInt(e.target.value || '0') })}
+                required 
+              />
+            </div>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label className="form-label">{lang === 'fr' ? 'Fonds de base de départ (FCFA)' : 'Base (FCFA)'}</label>
+              <input 
+                type="number" 
+                className="form-control"
+                value={campaignForm.baselineAmount}
+                onChange={(e) => setCampaignForm({ ...campaignForm, baselineAmount: parseInt(e.target.value || '0') })}
+                required 
+              />
+            </div>
+
+            <div style={{ gridColumn: 'span 2', display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+              {activeCampaignId > 0 && (
+                <>
+                  <button type="button" className="btn btn-outline btn-sm" onClick={handleCampaignUpdate} style={{ color: 'var(--primary)', borderColor: 'var(--primary)' }}>
+                    ✏️ {lang === 'fr' ? 'Modifier la campagne' : 'Modifier'}
+                  </button>
+                  <button type="button" className="btn btn-outline btn-sm" onClick={handleCampaignDelete} style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }}>
+                    🗑️ {lang === 'fr' ? 'Supprimer' : 'Supprimer'}
+                  </button>
+                </>
+              )}
+              <button type="submit" className="btn btn-secondary btn-sm">
+                🚀 {lang === 'fr' ? 'Créer & Activer' : 'Créer'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
       </div>
     </div>
   );

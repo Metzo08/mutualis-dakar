@@ -72,7 +72,7 @@ const generateMockUnion = (deptName, regionName) => {
   }
 
   return {
-    name: `Union Départementale de ${deptName} (UDMS ${deptName})`,
+    name: `UDMS de ${deptName}`,
     region: regionName,
     commune: deptName,
     manager,
@@ -81,7 +81,7 @@ const generateMockUnion = (deptName, regionName) => {
     agreement,
     map_link: mapLink,
     landmark: `Près de la préfecture de ${deptName}.`,
-    local_info: `L'Union Départementale regroupe l'ensemble des mutuelles communales du département de ${deptName} et en assure la supervision administrative.`
+    local_info: `L'UDMS regroupe l'ensemble des mutuelles communales du département de ${deptName} et en assure la supervision administrative.`
   };
 };
 
@@ -386,11 +386,11 @@ export default function Departements({ lang, setView }) {
     queryFn: async () => {
       if (!activeDeptId || !activeDept) return null;
       try {
-        const queryName = `Union Départementale de ${activeDept.name}`;
+        const queryName = `UDMS de ${activeDept.name}`;
         const response = await fetch(`http://localhost:5000/api/mutuelles?search=${encodeURIComponent(queryName)}`);
         if (response.ok) {
           const data = await response.json();
-          const match = data.find(m => m.name.toLowerCase().includes(activeDept.name.toLowerCase()) && m.name.toLowerCase().includes('union'));
+          const match = data.find(m => m.name.toLowerCase().includes(activeDept.name.toLowerCase()) && (m.name.toLowerCase().includes('union') || m.name.toLowerCase().includes('udms')));
           if (match) {
             return match;
           }

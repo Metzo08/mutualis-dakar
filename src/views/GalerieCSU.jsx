@@ -55,7 +55,7 @@ export default function GalerieCSU({ lang }) {
     },
     {
       id: 2,
-      image: '/csu_payments_hero.png',
+      image: '/wave_mobile_payment_senegal.jpg',
       category: 'cliniques',
       title_fr: 'Conventionnement de la clinique Bel-Air',
       title_wo: 'Convention Bel-Air',
@@ -71,7 +71,7 @@ export default function GalerieCSU({ lang }) {
     },
     {
       id: 3,
-      image: '/csu_dashboard_hero.png',
+      image: '/csu_digital_health_real.jpg',
       category: 'communautaire',
       title_fr: 'Sensibilisation sur la santé numérique',
       title_wo: 'Leral santé numérique',
@@ -87,7 +87,7 @@ export default function GalerieCSU({ lang }) {
     }
   ];
 
-  const { data: galleryRaw = [] } = useQuery({
+  const { data: galleryRaw = null, isPending } = useQuery({
     queryKey: ['galleryList'],
     queryFn: async () => {
       const res = await fetch('http://localhost:5000/api/gallery');
@@ -96,7 +96,7 @@ export default function GalerieCSU({ lang }) {
     }
   });
 
-  const gallerySource = galleryRaw && galleryRaw.length > 0 ? galleryRaw : defaultGalleryItems;
+  const gallerySource = isPending ? [] : (galleryRaw && galleryRaw.length > 0 ? galleryRaw : defaultGalleryItems);
   const galleryItems = gallerySource.map(item => ({
     id: item.id,
     image: item.image,
@@ -164,31 +164,44 @@ export default function GalerieCSU({ lang }) {
       </div>
 
       {/* Grid of Gallery Cards */}
-      <div className="grid grid-3" style={{ gap: '2rem' }}>
-        {filteredItems.map(item => (
-          <div 
-            key={item.id} 
-            className="card fade-in-up" 
-            style={{ 
-              padding: 0, 
-              overflow: 'hidden', 
-              cursor: 'pointer', 
-              display: 'flex', 
-              flexDirection: 'column',
-              transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-              border: '1px solid var(--border-color)',
-              background: 'var(--bg-card)'
-            }}
-            onClick={() => setSelectedItem(item)}
-          >
-            {/* Card Image */}
-            <div style={{ width: '100%', height: '200px', overflow: 'hidden', position: 'relative' }}>
-              <img 
-                src={item.image} 
-                alt={item.title}
-                onError={(e) => { e.target.onerror = null; e.target.src = '/csu_gallery_hero_real.png'; }}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
+      {isPending ? (
+        <div className="grid grid-3" style={{ gap: '2rem' }}>
+          {[1, 2, 3].map(i => (
+            <div key={i} className="card" style={{ height: '350px', padding: 0, overflow: 'hidden', border: '1px solid var(--border-color)', background: 'var(--bg-card)', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ height: '200px', width: '100%', backgroundColor: 'rgba(255,255,255,0.03)' }} className="loading-shimmer"></div>
+              <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', flex: 1 }}>
+                <div style={{ height: '20px', width: '80%', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '4px' }} className="loading-shimmer"></div>
+                <div style={{ height: '15px', width: '50%', backgroundColor: 'rgba(255,255,255,0.03)', borderRadius: '4px' }} className="loading-shimmer"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-3" style={{ gap: '2rem' }}>
+          {filteredItems.map(item => (
+            <div 
+              key={item.id} 
+              className="card fade-in-up" 
+              style={{ 
+                padding: 0, 
+                overflow: 'hidden', 
+                cursor: 'pointer', 
+                display: 'flex', 
+                flexDirection: 'column',
+                transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                border: '1px solid var(--border-color)',
+                background: 'var(--bg-card)'
+              }}
+              onClick={() => setSelectedItem(item)}
+            >
+              {/* Card Image */}
+              <div style={{ width: '100%', height: '200px', overflow: 'hidden', position: 'relative' }}>
+                <img 
+                  src={item.image} 
+                  alt={item.title}
+                  onError={(e) => { e.target.onerror = null; e.target.src = '/csu_gallery_hero_real.png'; }}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
               <span className="badge badge-info" style={{ position: 'absolute', top: '10px', right: '10px', backdropFilter: 'blur(4px)', background: 'rgba(59, 130, 246, 0.85)', color: '#fff' }}>
                 {item.category === 'programmes' ? 'Programme' : item.category === 'cliniques' ? 'Structure' : 'Ménage'}
               </span>
@@ -211,6 +224,7 @@ export default function GalerieCSU({ lang }) {
           </div>
         ))}
       </div>
+      )}
 
       {/* Interactive Zoom Modal */}
       {selectedItem && (
@@ -229,7 +243,7 @@ export default function GalerieCSU({ lang }) {
           padding: '1.5rem'
         }} onClick={() => setSelectedItem(null)}>
           <div className="card scale-in" style={{
-            maxWidth: '800px',
+            maxWidth: '850px',
             width: '100%',
             padding: 0,
             overflow: 'hidden',
@@ -238,20 +252,20 @@ export default function GalerieCSU({ lang }) {
             boxShadow: 'var(--shadow-2xl)',
             textAlign: 'left'
           }} onClick={(e) => e.stopPropagation()}>
-            <div className="grid grid-2" style={{ gap: 0 }}>
+            <div className="grid grid-2" style={{ gap: 0, alignItems: 'stretch' }}>
               {/* Modal Left: Image */}
-              <div style={{ height: '100%', minHeight: '350px', position: 'relative' }}>
+              <div style={{ display: 'flex', height: '100%', minHeight: '400px', position: 'relative' }}>
                 <img 
                   src={selectedItem.image} 
                   alt={selectedItem.title}
                   onError={(e) => { e.target.onerror = null; e.target.src = '/csu_gallery_hero_real.png'; }}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                 />
               </div>
 
               {/* Modal Right: Details */}
-              <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                <div>
+              <div style={{ padding: '2.5rem 2rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '400px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', flex: 1 }}>
                   <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.75rem' }}>
                     {selectedItem.tags.map((tag, idx) => (
                       <span key={idx} className="badge badge-success" style={{ fontSize: '0.7rem' }}>#{tag}</span>
@@ -284,7 +298,7 @@ export default function GalerieCSU({ lang }) {
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '2rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
                   <button 
                     className="btn btn-outline btn-sm" 
                     onClick={() => setSelectedItem(null)}

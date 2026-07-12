@@ -152,13 +152,6 @@ export default function CmuCard({ citizen }) {
 
       {/* Actions carte */}
       <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginTop: '0.75rem', flexWrap: 'wrap' }}>
-        <button
-          className="btn btn-outline btn-sm"
-          onClick={() => window.print()}
-          style={{ fontSize: '0.75rem', padding: '0.4rem 0.8rem' }}
-        >
-          🖨️ Imprimer la carte
-        </button>
         {qrUrl && (
           <a
             href={qrUrl}

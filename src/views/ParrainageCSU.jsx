@@ -720,7 +720,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
           textAlign: 'center'
         }}>
           <div className="container" style={{ position: 'relative', zIndex: 2 }}>
-            <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>🤝 {lang === 'fr' ? 'Tableau de bord du Parrainage Solidaire' : 'Tëggali parrainage'}</h1>
+            <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>🤝 {lang === 'fr' ? 'Tableau de bord du parrainage solidaire' : 'Tëggali parrainage'}</h1>
             <p style={{ color: '#f8fafc', fontSize: '1rem', fontWeight: '500', maxWidth: '700px', margin: '0 auto', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
               {lang === 'fr' ? 'Suivez et gérez les parrainages scolaires, daaras et ménages de Dakar' : 'Topal ak saytul parrainage daara, ecole ak njaboot'}
             </p>

@@ -89,6 +89,36 @@ router.put('/api/partnerships/:id/status', authenticateToken, requireRole('agent
   }
 });
 
+// DELETE /api/partnerships/:id (Delete partnership request)
+router.delete('/api/partnerships/:id', authenticateToken, requireRole('agent', 'admin'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    await query('DELETE FROM partnerships WHERE id = $1', [id]);
+    res.json({ success: true, message: 'Demande de partenariat supprimée.' });
+  } catch (err) {
+    console.error('Erreur delete partnership :', err);
+    res.status(500).json({ error: 'Erreur interne du serveur.' });
+  }
+});
+
+// PUT /api/partnerships/:id (Modify partnership request)
+router.put('/api/partnerships/:id', authenticateToken, requireRole('agent', 'admin'), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { companyName, sector, contactPerson, email, phone, message } = req.body;
+    await query(
+      `UPDATE partnerships 
+       SET company_name = $1, sector = $2, contact_person = $3, email = $4, phone = $5, message = $6
+       WHERE id = $7`,
+      [companyName, sector, contactPerson, email, phone, message, id]
+    );
+    res.json({ success: true, message: 'Demande de partenariat modifiée.' });
+  } catch (err) {
+    console.error('Erreur update partnership :', err);
+    res.status(500).json({ error: 'Erreur interne du serveur.' });
+  }
+});
+
 // 2. Blog Espace
 // GET /api/blog/articles (Public list)
 router.get('/api/blog/articles', async (req, res) => {

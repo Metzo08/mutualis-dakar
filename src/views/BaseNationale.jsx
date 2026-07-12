@@ -117,7 +117,7 @@ export default function BaseNationale({ lang, setView }) {
     },
     {
       id: 3,
-      name: 'Union Départementale de Dakar (UDMS Dakar)',
+      name: 'UDMS de Dakar',
       region: 'Dakar',
       commune: 'Dakar Plateau',
       status: 'active',
@@ -136,7 +136,7 @@ export default function BaseNationale({ lang, setView }) {
     },
     {
       id: 4,
-      name: 'Union Départementale de Pikine (UDMS Pikine)',
+      name: 'UDMS de Pikine',
       region: 'Dakar',
       commune: 'Pikine Ouest',
       status: 'active',
@@ -151,11 +151,11 @@ export default function BaseNationale({ lang, setView }) {
       lat: 14.7523,
       lng: -17.4011,
       landmark: 'Pikine Ouest, Centre d\'Appui local, près du complexe culturel Léopold Sédar Senghor.',
-      localInfo: 'Point focal pour la gestion des mutuelles et du parrainage social dans le département de Pikine.'
+      localInfo: 'Point focal pour la gestion des mutuelles and du parrainage social dans le département de Pikine.'
     },
     {
       id: 5,
-      name: 'Union Départementale de Guédiawaye (UDMS Guédiawaye)',
+      name: 'UDMS de Guédiawaye',
       region: 'Dakar',
       commune: 'Golf Sud',
       status: 'active',
@@ -170,11 +170,11 @@ export default function BaseNationale({ lang, setView }) {
       lat: 14.7812,
       lng: -17.4124,
       landmark: 'Quartier Golf Sud, à 300m du grand stade de Guédiawaye Amadou Barry.',
-      localInfo: 'Coordonne les actions des mutuelles de la zone de Guédiawaye et aide à la numérisation des cartes CMU.'
+      localInfo: 'Coordonne les actions des mutuelles de la zone de Guédiawaye and aide à la numérisation des cartes CMU.'
     },
     {
       id: 6,
-      name: 'Union Départementale de Rufisque (UDMS Rufisque)',
+      name: 'UDMS de Rufisque',
       region: 'Dakar',
       commune: 'Rufisque Est',
       status: 'active',
@@ -193,7 +193,7 @@ export default function BaseNationale({ lang, setView }) {
     },
     {
       id: 7,
-      name: 'Union Départementale de Keur Massar (UDMS Keur Massar)',
+      name: 'UDMS de Keur Massar',
       region: 'Dakar',
       commune: 'Keur Massar Nord',
       status: 'active',
@@ -208,11 +208,11 @@ export default function BaseNationale({ lang, setView }) {
       lat: 14.7891,
       lng: -17.3012,
       landmark: 'Keur Massar Nord, quartier Cité Ouvrière, en face du poste de police.',
-      localInfo: 'Support technique et coordination pour les mutuelles du nouveau département de Keur Massar.'
+      localInfo: 'Support technique and coordination pour les mutuelles du nouveau département de Keur Massar.'
     },
     {
       id: 8,
-      name: 'Union Départementale de Thiès (UDMS Thiès)',
+      name: 'UDMS de Thiès',
       region: 'Thiès',
       commune: 'Thiès Nord',
       status: 'active',
@@ -227,11 +227,11 @@ export default function BaseNationale({ lang, setView }) {
       lat: 14.7932,
       lng: -16.9295,
       landmark: 'Thiès Nord, près de la Place de France, à côté de l\'ancienne Gare de Thiès.',
-      localInfo: 'Bureau central d\'appui pour toutes les mutuelles de la région et du département de Thiès.'
+      localInfo: 'Bureau central d\'appui pour toutes les mutuelles de la région and du département de Thiès.'
     },
     {
       id: 9,
-      name: 'Union Départementale de Mbour (UDMS Mbour)',
+      name: 'UDMS de Mbour',
       region: 'Thiès',
       commune: 'Mbour',
       status: 'active',
@@ -250,7 +250,7 @@ export default function BaseNationale({ lang, setView }) {
     },
     {
       id: 10,
-      name: 'Union Départementale de Saint-Louis (UDMS Saint-Louis)',
+      name: 'UDMS de Saint-Louis',
       region: 'Saint-Louis',
       commune: 'Saint-Louis Sor',
       status: 'active',
@@ -269,7 +269,7 @@ export default function BaseNationale({ lang, setView }) {
     },
     {
       id: 11,
-      name: 'Union Départementale de Ziguinchor (UDMS Ziguinchor)',
+      name: 'UDMS de Ziguinchor',
       region: 'Ziguinchor',
       commune: 'Ziguinchor',
       status: 'active',
@@ -288,7 +288,7 @@ export default function BaseNationale({ lang, setView }) {
     },
     {
       id: 12,
-      name: 'Union Départementale de Kaolack (UDMS Kaolack)',
+      name: 'UDMS de Kaolack',
       region: 'Kaolack',
       commune: 'Kaolack',
       status: 'active',
@@ -307,7 +307,7 @@ export default function BaseNationale({ lang, setView }) {
     },
     {
       id: 13,
-      name: 'Union Départementale de Louga (UDMS Louga)',
+      name: 'UDMS de Louga',
       region: 'Louga',
       commune: 'Louga',
       status: 'active',
@@ -326,7 +326,7 @@ export default function BaseNationale({ lang, setView }) {
     },
     {
       id: 14,
-      name: 'Union Départementale de Diourbel (UDMS Diourbel)',
+      name: 'UDMS de Diourbel',
       region: 'Diourbel',
       commune: 'Diourbel',
       status: 'active',
@@ -493,7 +493,7 @@ export default function BaseNationale({ lang, setView }) {
       lat: 15.6172,
       lng: -16.2255,
       landmark: "Centre-ville de Louga, derrière la préfecture de département.",
-      localInfo: "Cette mutuelle est actuellement en restructuration. Pour toute question urgente, veuillez vous rapprocher de l'Union Départementale de Louga."
+      localInfo: "Cette mutuelle est actuellement en restructuration. Pour toute question urgente, veuillez vous rapprocher de l'UDMS de Louga."
     },
     {
       id: 23,

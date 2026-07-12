@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import CmuCard from '../components/CmuCard';
 
-export default function Profile({ lang, portalMode, citizenUser, agentUser, setView, setViewTab }) {
+export default function Profile({ lang, portalMode, citizenUser, agentUser, partnerUser, setView, setViewTab }) {
   const dict = {
     fr: {
       titleCitizen: 'Mon compte assuré',
@@ -82,7 +82,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, setV
   };
 
   const t = dict[lang] || dict.fr;
-  const user = portalMode === 'citizen' ? citizenUser : agentUser;
+  const user = portalMode === 'citizen' ? citizenUser : portalMode === 'partner' ? partnerUser : agentUser;
 
   // Super Admin Agent Creation State
   const [newAgent, setNewAgent] = useState({ firstName: '', lastName: '', username: '', password: '', role: 'Admin Régional' });
@@ -259,6 +259,97 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, setV
     }
   };
 
+  // ── PARTENAIRE : vue dédiée ────────────────────────────────────────────
+  if (portalMode === 'partner') {
+    const p = partnerUser;
+    return (
+      <div className="profile-view fade-in-up">
+        {/* Banner */}
+        <section className="banner-mini" style={{
+          background: 'linear-gradient(to right, rgba(5, 150, 105, 0.75), rgba(5, 150, 105, 0.45)), url("/csu_partner_hero.png") center/cover no-repeat',
+          borderBottom: '1px solid var(--border-color)',
+          borderRadius: '16px',
+          padding: '2.5rem 2rem',
+          marginBottom: '2rem',
+          color: '#fff',
+          boxShadow: 'var(--shadow-md)'
+        }}>
+          <div style={{ textAlign: 'left', position: 'relative', zIndex: 2 }}>
+            <span className="badge badge-info" style={{ marginBottom: '0.75rem', background: 'rgba(255,255,255,0.2)', color: '#fff', border: 'none', display: 'inline-block' }}>
+              🏥 ESPACE PRESTATAIRE
+            </span>
+            <h1 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '0.5rem', fontWeight: '800', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
+              Mon profil prestataire
+            </h1>
+            <p style={{ color: '#f1f5f9', fontSize: '1rem', fontWeight: '500', textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}>
+              {p ? `${p.structureName} — ${p.contactName}` : 'Structure de soins conventionnée'}
+            </p>
+          </div>
+        </section>
+
+        <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 1rem' }}>
+          {p ? (
+            <div className="grid grid-2" style={{ gap: '1.5rem', alignItems: 'start' }}>
+              {/* Infos structure */}
+              <div className="card text-left" style={{ padding: '1.5rem' }}>
+                <h3 style={{ fontSize: '1.1rem', color: 'var(--primary)', marginBottom: '1rem' }}>🏥 Informations de la structure</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', fontSize: '0.9rem' }}>
+                  <div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Nom du contact</div>
+                    <div style={{ fontWeight: '700', fontSize: '1.05rem' }}>{p.contactName}</div>
+                  </div>
+                  <div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Identifiant de connexion</div>
+                    <div style={{ fontWeight: '600', fontFamily: 'monospace', color: 'var(--primary)' }}>{p.username}</div>
+                  </div>
+                  <div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Structure de soins</div>
+                    <div style={{ fontWeight: '600' }}>{p.structureName}</div>
+                  </div>
+                  <div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Type de structure</div>
+                    <div style={{ fontWeight: '600', textTransform: 'capitalize' }}>
+                      {p.structureType ? p.structureType.replace(/_/g, ' ') : '—'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Couverture & tiers-payant */}
+              <div className="card text-left" style={{ padding: '1.5rem' }}>
+                <h3 style={{ fontSize: '1.1rem', color: 'var(--primary)', marginBottom: '1rem' }}>💳 Couverture & tiers-payant</h3>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', fontSize: '0.9rem' }}>
+                  <div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Taux de prise en charge</div>
+                    <div style={{ fontWeight: '800', fontSize: '2.2rem', color: 'var(--primary)', lineHeight: 1.1 }}>
+                      {p.coverageRate !== undefined && p.coverageRate !== null ? `${p.coverageRate}%` : '—'}
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>prise en charge tiers-payant</div>
+                  </div>
+                  <div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Statut de la convention</div>
+                    <span className="badge badge-success" style={{ fontSize: '0.8rem' }}>✓ Conventionnée — active</span>
+                  </div>
+                  <div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Accès tiers-payant</div>
+                    <div style={{ fontWeight: '600', color: 'var(--success)' }}>✅ Autorisé pour les assurés CMU</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="card text-center" style={{ padding: '3rem', maxWidth: '500px', margin: '0 auto' }}>
+              <h2>🔒 Non connecté</h2>
+              <p>Veuillez vous connecter à l'espace partenaire pour accéder à votre profil.</p>
+              <button className="btn btn-primary" style={{ marginTop: '1rem' }} onClick={() => setView('partner')}>Se connecter</button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+  // ─────────────────────────────────────────────────────────────────────────
+
   return (
     <div className="profile-view fade-in-up">
       {/* Banner */}
@@ -389,13 +480,9 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, setV
                 <p style={{ fontSize: '0.9rem', color: 'var(--text-sub)', marginBottom: '1.5rem' }}>
                   {user.status === 'active' ? t.activeDesc : t.inactiveDesc}
                 </p>
-                {user.status !== 'active' ? (
+                {user.status !== 'active' && (
                   <button className="btn btn-secondary btn-sm" onClick={() => setView('services')}>
                     💳 {t.btnRenew}
-                  </button>
-                ) : (
-                  <button className="btn btn-outline btn-sm" onClick={() => window.print()}>
-                    🖨️ Imprimer la carte QR
                   </button>
                 )}
               </div>
@@ -604,15 +691,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, setV
                 </div>
               </div>
               
-              <div className="card text-left" style={{ padding: '1.5rem', marginTop: '1.5rem', border: '1px solid var(--danger)' }}>
-                <h3 style={{ fontSize: '1.1rem', color: 'var(--danger)', marginBottom: '0.5rem' }}>🛡️ Droit à l'oubli (RGPD)</h3>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', marginBottom: '1rem' }}>
-                  Conformément à la réglementation sur la protection des données (RGPD / HDS), vous pouvez demander la suppression définitive de toutes vos données médicales et personnelles de nos serveurs.
-                </p>
-                <button className="btn btn-outline btn-sm" style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }} onClick={handleDeleteAccount}>
-                  Supprimer définitivement mon compte
-                </button>
-              </div>
+
             </>
           ) : (
             <>
@@ -647,7 +726,9 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, setV
                 </p>
                 <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
                   <button className="btn btn-primary btn-sm" onClick={() => setView('beneficiaries')}>👥 Valider pré-inscriptions</button>
-                  <button className="btn btn-outline btn-sm" onClick={() => setView('audit-logs')}>🔒 Registre d'audit</button>
+                  {user.role === 'Super Admin' && (
+                    <button className="btn btn-outline btn-sm" onClick={() => setView('audit-logs')}>🔒 Registre d'audit</button>
+                  )}
                   <button className="btn btn-outline btn-sm" onClick={() => setView('complaints')}>📣 Réclamations</button>
                 </div>
               </div>
@@ -657,7 +738,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, setV
           {/* Super Admin Section */}
           {portalMode === 'agent' && user.role === 'Super Admin' && (
             <div className="card text-left fade-in-up" style={{ padding: '1.5rem', borderTop: '4px solid var(--secondary)', marginTop: '0.5rem' }}>
-              <h3 style={{ fontSize: '1.1rem', color: 'var(--primary)', marginBottom: '1rem' }}>👑 Gestion de la Plateforme (Super Admin)</h3>
+              <h3 style={{ fontSize: '1.1rem', color: 'var(--primary)', marginBottom: '1rem' }}>👑 Gestion de la plateforme (super admin)</h3>
               <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', marginBottom: '1rem' }}>
                 Espace dédié au pilotage global. Création et attribution des niveaux d'accès hiérarchiques aux agents locaux.
               </p>
@@ -723,7 +804,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, setV
           {/* Messaging Section (For all agents) */}
           {portalMode === 'agent' && (
             <div className="card text-left fade-in-up" style={{ padding: '1.5rem', marginTop: '0.5rem' }}>
-              <h3 style={{ fontSize: '1.1rem', color: 'var(--primary)', marginBottom: '1rem' }}>✉️ Messagerie Interne</h3>
+              <h3 style={{ fontSize: '1.1rem', color: 'var(--primary)', marginBottom: '1rem' }}>✉️ Messagerie interne</h3>
               <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', marginBottom: '1rem' }}>
                 Communiquez avec les autres administrateurs de la plateforme.
               </p>

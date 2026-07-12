@@ -31,6 +31,7 @@ import PartnerPortal from './views/PartnerPortal';
 import RegionalStats from './views/RegionalStats';
 import Loyalty from './views/Loyalty';
 import Payments from './views/Payments';
+import RsePortal from './views/RsePortal';
 import { syncOutbox, outboxCount, cacheSet, cacheGet } from './utils/offline';
 
 // Import Styles
@@ -89,14 +90,92 @@ export default function App() {
   const [lang, setLang] = useState('fr'); // fr or wo (French or Wolof)
   const [view, setView] = useState(initialViewFromHash()); // home, beneficiaries, services, map, directory, depts, about, medicaments, audit-logs, complaints
   const [portalMode, setPortalMode] = useState(localStorage.getItem('cmu-portal-mode') || 'citizen'); // citizen or agent
-  const [citizenUser, setCitizenUser] = useState(() => {
-    const cached = localStorage.getItem('cmu-citizen-user');
-    return cached ? JSON.parse(cached) : null;
+  const [citizenUser, rawSetCitizenUser] = useState(() => {
+    try {
+      const cached = localStorage.getItem('cmu-citizen-user');
+      return cached ? JSON.parse(cached) : null;
+    } catch (e) {
+      console.warn('Error parsing citizenUser:', e);
+      return null;
+    }
   }); // connected citizen record (object or null)
-  const [agentUser, setAgentUser] = useState(() => {
-    const cached = localStorage.getItem('cmu-agent-user');
-    return cached ? JSON.parse(cached) : null;
+  const [agentUser, rawSetAgentUser] = useState(() => {
+    try {
+      const cached = localStorage.getItem('cmu-agent-user');
+      return cached ? JSON.parse(cached) : null;
+    } catch (e) {
+      console.warn('Error parsing agentUser:', e);
+      return null;
+    }
   }); // connected agent record (object or null)
+  const [partnerUser, rawSetPartnerUser] = useState(() => {
+    try {
+      const cached = localStorage.getItem('cmu-partner-user');
+      return cached ? JSON.parse(cached) : null;
+    } catch (e) {
+      console.warn('Error parsing partnerUser:', e);
+      return null;
+    }
+  }); // connected partner record (object or null)
+
+  const setCitizenUser = (user) => {
+    rawSetCitizenUser(user);
+    if (user) {
+      rawSetAgentUser(null);
+      rawSetPartnerUser(null);
+      localStorage.removeItem('cmu-agent-user');
+      localStorage.removeItem('cmu-partner-user');
+      localStorage.removeItem('cmu-partner-token');
+    }
+  };
+
+  const setAgentUser = (user) => {
+    rawSetAgentUser(user);
+    if (user) {
+      rawSetCitizenUser(null);
+      rawSetPartnerUser(null);
+      localStorage.removeItem('cmu-citizen-user');
+      localStorage.removeItem('cmu-partner-user');
+      localStorage.removeItem('cmu-partner-token');
+    }
+  };
+
+  const setPartnerUser = (user) => {
+    rawSetPartnerUser(user);
+    if (user) {
+      rawSetCitizenUser(null);
+      rawSetAgentUser(null);
+      localStorage.removeItem('cmu-citizen-user');
+      localStorage.removeItem('cmu-agent-user');
+      localStorage.removeItem('cmu-token');
+      localStorage.removeItem('cmu-refresh-token');
+    }
+  };
+
+  // Enforce session mutual exclusivity on page mount
+  useEffect(() => {
+    const activeMode = localStorage.getItem('cmu-portal-mode') || 'citizen';
+    if (activeMode === 'citizen') {
+      localStorage.removeItem('cmu-agent-user');
+      localStorage.removeItem('cmu-partner-user');
+      localStorage.removeItem('cmu-partner-token');
+      rawSetAgentUser(null);
+      rawSetPartnerUser(null);
+    } else if (activeMode === 'agent') {
+      localStorage.removeItem('cmu-citizen-user');
+      localStorage.removeItem('cmu-partner-user');
+      localStorage.removeItem('cmu-partner-token');
+      rawSetCitizenUser(null);
+      rawSetPartnerUser(null);
+    } else if (activeMode === 'partner') {
+      localStorage.removeItem('cmu-citizen-user');
+      localStorage.removeItem('cmu-agent-user');
+      localStorage.removeItem('cmu-token');
+      localStorage.removeItem('cmu-refresh-token');
+      rawSetCitizenUser(null);
+      rawSetAgentUser(null);
+    }
+  }, []);
   const [theme, setTheme] = useState(localStorage.getItem('cmu-theme') || 'light');
   const [sidebarOpen, setSidebarOpen] = useState(false); // mobile hamburger toggle state
   const [servicesTab, setServicesTab] = useState('register'); // track tab of services (register, renew, donate)
@@ -252,6 +331,7 @@ export default function App() {
             setPortalMode={setPortalMode}
             setCitizenUser={setCitizenUser}
             setAgentUser={setAgentUser}
+            setPartnerUser={setPartnerUser}
           />
         );
       }
@@ -267,6 +347,7 @@ export default function App() {
               setPortalMode={setPortalMode}
               citizenUser={citizenUser}
               setCitizenUser={setCitizenUser}
+              agentUser={agentUser}
             />
           );
         case 'login':
@@ -278,6 +359,7 @@ export default function App() {
               setPortalMode={setPortalMode}
               setCitizenUser={setCitizenUser}
               setAgentUser={setAgentUser}
+              setPartnerUser={setPartnerUser}
             />
           );
         case 'beneficiaries':
@@ -305,7 +387,20 @@ export default function App() {
         case 'medicaments':
           return <Medicaments lang={lang} />;
         case 'audit-logs':
-          return <AuditLogs lang={lang} />;
+          if (portalMode === 'agent' && agentUser && agentUser.role === 'Super Admin') {
+            return <AuditLogs lang={lang} />;
+          } else {
+            return (
+              <div className="card text-center fade-in-up" style={{ padding: '3rem', margin: '2rem auto', maxWidth: '600px', borderRadius: '16px', borderTop: '4px solid var(--danger)' }}>
+                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⛔</div>
+                <h2 style={{ color: 'var(--danger)', fontWeight: '850' }}>Accès refusé</h2>
+                <p style={{ color: 'var(--text-sub)', marginTop: '0.5rem' }}>Seul le Super Admin est autorisé à consulter le journal d'audit complet de la plateforme.</p>
+                <button className="btn btn-primary" style={{ marginTop: '1.5rem', fontWeight: 'bold' }} onClick={() => setView('home')}>
+                  Retour à l'accueil
+                </button>
+              </div>
+            );
+          }
         case 'galerie':
           return <GalerieCSU lang={lang} />;
         case 'infos-csu':
@@ -328,7 +423,7 @@ export default function App() {
               citizenUser={citizenUser}
             />
           );
-        case 'partnership':
+         case 'partnership':
           return (
             <Partnership 
               lang={lang} 
@@ -336,6 +431,8 @@ export default function App() {
               agentUser={agentUser} 
             />
           );
+        case 'rse':
+          return <RsePortal lang={lang} setView={setView} portalMode={portalMode} agentUser={agentUser} />;
         case 'verify':
           return <VerifyCard lang={lang} />;
         case 'dashboard':
@@ -367,7 +464,16 @@ export default function App() {
             />
           );
         case 'partner':
-          return <PartnerPortal lang={lang} setView={setView} />;
+          return (
+            <PartnerPortal 
+              lang={lang} 
+              setView={setView} 
+              portalMode={portalMode} 
+              agentUser={agentUser}
+              partnerUser={partnerUser}
+              setPartnerUser={setPartnerUser}
+            />
+          );
         case 'regional-stats':
           return <RegionalStats lang={lang} />;
         case 'loyalty':
@@ -397,6 +503,7 @@ export default function App() {
               portalMode={portalMode}
               citizenUser={citizenUser}
               agentUser={agentUser}
+              partnerUser={partnerUser}
               setView={setView}
               setViewTab={handleSetViewTab}
             />
@@ -447,6 +554,8 @@ export default function App() {
         setCitizenUser={setCitizenUser}
         agentUser={agentUser}
         setAgentUser={setAgentUser}
+        partnerUser={partnerUser}
+        setPartnerUser={setPartnerUser}
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
       />
@@ -615,15 +724,17 @@ export default function App() {
                       ))
                     )}
                   </div>
-                  <div 
-                    style={{ padding: '0.75rem', textAlign: 'center', backgroundColor: 'var(--bg-card-subtle)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--primary)' }}
-                    onClick={() => {
-                      setView('audit-logs');
-                      setShowNotifications(false);
-                    }}
-                  >
-                    Voir tout l'historique
-                  </div>
+                  {agentUser && agentUser.role === 'Super Admin' && (
+                    <div 
+                      style={{ padding: '0.75rem', textAlign: 'center', backgroundColor: 'var(--bg-card-subtle)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--primary)' }}
+                      onClick={() => {
+                        setView('audit-logs');
+                        setShowNotifications(false);
+                      }}
+                    >
+                      Voir tout l'historique
+                    </div>
+                  )}
                 </div>
               )}
             </div>

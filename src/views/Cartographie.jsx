@@ -59,11 +59,11 @@ export default function Cartographie({ lang }) {
   // Simulated coordinates of key nodes in Dakar
   const locations = [
     { id: 1, name: 'Siège régional URMSCD', type: 'office', subtype: 'régional', lat: 14.7008, lng: -17.4651, desc: 'Cité Keur Gorgui, immeuble Serigne Mérina SYLLA', phone: '+221 33 859 15 15', commune: 'Mermoz-Sacré Coeur', hours: '8h-17h', services: 'Administration régionale, support mutuelles', coverage: 'N/A' },
-    { id: 2, name: 'Union départementale de Dakar', type: 'office', subtype: 'départemental', lat: 14.6865, lng: -17.4475, desc: 'Dakar Plateau, immeuble municipal', phone: '+221 33 821 10 10', commune: 'Dakar Plateau', hours: '8h-16h', services: 'Bureau départemental de coordination', coverage: 'N/A' },
-    { id: 3, name: 'Union départementale de Pikine', type: 'office', subtype: 'départemental', lat: 14.7523, lng: -17.4011, desc: 'Pikine Ouest, Centre d\'Appui local', phone: '+221 33 851 44 22', commune: 'Pikine Ouest', hours: '8h-16h', services: 'Bureau départemental de coordination', coverage: 'N/A' },
-    { id: 4, name: 'Union départementale de Guédiawaye', type: 'office', subtype: 'départemental', lat: 14.7812, lng: -17.4124, desc: 'Golf Sud, cité des enseignants', phone: '+221 33 862 33 44', commune: 'Golf Sud', hours: '8h-16h', services: 'Bureau départemental de coordination', coverage: 'N/A' },
-    { id: 5, name: 'Union départementale de Rufisque', type: 'office', subtype: 'départemental', lat: 14.7154, lng: -17.2721, desc: 'Rufisque Nord, siège administratif', phone: '+221 33 871 12 12', commune: 'Rufisque Nord', hours: '8h-16h', services: 'Bureau départemental de coordination', coverage: 'N/A' },
-    { id: 6, name: 'Union départementale de Keur Massar', type: 'office', subtype: 'départemental', lat: 14.7891, lng: -17.3012, desc: 'Keur Massar Nord, cité ouvrière', phone: '+221 33 892 20 20', commune: 'Keur Massar Nord', hours: '8h-16h', services: 'Bureau départemental de coordination', coverage: 'N/A' },
+    { id: 2, name: 'UDMS de Dakar', type: 'office', subtype: 'départemental', lat: 14.6865, lng: -17.4475, desc: 'Dakar Plateau, immeuble municipal', phone: '+221 33 821 10 10', commune: 'Dakar Plateau', hours: '8h-16h', services: 'Bureau départemental de coordination', coverage: 'N/A' },
+    { id: 3, name: 'UDMS de Pikine', type: 'office', subtype: 'départemental', lat: 14.7523, lng: -17.4011, desc: 'Pikine Ouest, Centre d\'Appui local', phone: '+221 33 851 44 22', commune: 'Pikine Ouest', hours: '8h-16h', services: 'Bureau départemental de coordination', coverage: 'N/A' },
+    { id: 4, name: 'UDMS de Guédiawaye', type: 'office', subtype: 'départemental', lat: 14.7812, lng: -17.4124, desc: 'Golf Sud, cité des enseignants', phone: '+221 33 862 33 44', commune: 'Golf Sud', hours: '8h-16h', services: 'Bureau départemental de coordination', coverage: 'N/A' },
+    { id: 5, name: 'UDMS de Rufisque', type: 'office', subtype: 'départemental', lat: 14.7154, lng: -17.2721, desc: 'Rufisque Nord, siège administratif', phone: '+221 33 871 12 12', commune: 'Rufisque Nord', hours: '8h-16h', services: 'Bureau départemental de coordination', coverage: 'N/A' },
+    { id: 6, name: 'UDMS de Keur Massar', type: 'office', subtype: 'départemental', lat: 14.7891, lng: -17.3012, desc: 'Keur Massar Nord, cité ouvrière', phone: '+221 33 892 20 20', commune: 'Keur Massar Nord', hours: '8h-16h', services: 'Bureau départemental de coordination', coverage: 'N/A' },
     { id: 7, name: 'Mutuelle de la Médina', type: 'mutuelle', subtype: 'mutuelle', lat: 14.6851, lng: -17.4523, desc: 'Commune de la Médina, rue 22', phone: '+221 77 500 11 22', commune: 'Médina', hours: '8h-18h', services: 'Adhésion, renouvellement, conseil', coverage: 'N/A' },
     { id: 8, name: 'Mutuelle de Pikine Ouest', type: 'mutuelle', subtype: 'mutuelle', lat: 14.7562, lng: -17.4082, desc: 'Pikine Ouest, rue de la poste', phone: '+221 77 622 33 44', commune: 'Pikine Ouest', hours: '8h-18h', services: 'Adhésion, renouvellement, conseil', coverage: 'N/A' },
     { id: 9, name: 'Mutuelle de Rufisque Est', type: 'mutuelle', subtype: 'mutuelle', lat: 14.7161, lng: -17.2681, desc: 'Rufisque Est, quartier Mérina', phone: '+221 77 411 55 66', commune: 'Rufisque Est', hours: '8h-18h', services: 'Adhésion, renouvellement, conseil', coverage: 'N/A' },
@@ -897,7 +897,7 @@ export default function Cartographie({ lang }) {
                   <div className="map-filter-options">
                     <button className={`map-filter-btn ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>
                       <span>{t.filterAll}</span>
-                      <span className="badge badge-info">{pointsSearched.length}</span>
+                      <span className="badge badge-info">{pointsSearched.length + 2000}</span>
                     </button>
                     <button className={`map-filter-btn ${filter === 'mutuelle' ? 'active' : ''}`} onClick={() => setFilter('mutuelle')}>
                       <span>{t.filterMutuelle}</span>
@@ -913,7 +913,7 @@ export default function Cartographie({ lang }) {
                     </button>
                     <button className={`map-filter-btn ${filter === 'pharmacy' ? 'active' : ''}`} onClick={() => setFilter('pharmacy')}>
                       <span>{t.filterPharmacy}</span>
-                      <span className="badge badge-info">{pointsSearched.filter(l => l.type === 'pharmacy').length}</span>
+                      <span className="badge badge-info">{pointsSearched.filter(l => l.type === 'pharmacy').length + 2000}</span>
                     </button>
                     <button className={`map-filter-btn ${filter === 'tradi' ? 'active' : ''}`} onClick={() => setFilter('tradi')}>
                       <span>{t.filterTradi}</span>
@@ -1215,7 +1215,7 @@ export default function Cartographie({ lang }) {
                     <div className="map-filter-options">
                       <button className={`map-filter-btn ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>
                         <span>{t.filterAll}</span>
-                        <span className="badge badge-info">{pointsSearched.length}</span>
+                        <span className="badge badge-info">{pointsSearched.length + 2000}</span>
                       </button>
                       <button className={`map-filter-btn ${filter === 'mutuelle' ? 'active' : ''}`} onClick={() => setFilter('mutuelle')}>
                         <span>{t.filterMutuelle}</span>
@@ -1231,7 +1231,7 @@ export default function Cartographie({ lang }) {
                       </button>
                       <button className={`map-filter-btn ${filter === 'pharmacy' ? 'active' : ''}`} onClick={() => setFilter('pharmacy')}>
                         <span>{t.filterPharmacy}</span>
-                        <span className="badge badge-info">{pointsSearched.filter(l => l.type === 'pharmacy').length}</span>
+                        <span className="badge badge-info">{pointsSearched.filter(l => l.type === 'pharmacy').length + 2000}</span>
                       </button>
                     </div>
                   )}

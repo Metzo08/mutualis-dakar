@@ -32,6 +32,7 @@ const createTablesQuery = `
   DROP TABLE IF EXISTS blog_articles CASCADE;
   DROP TABLE IF EXISTS gallery_items CASCADE;
   DROP TABLE IF EXISTS dynamic_content CASCADE;
+  DROP TABLE IF EXISTS donation_campaigns CASCADE;
 
   CREATE TABLE IF NOT EXISTS internal_messages (
     id SERIAL PRIMARY KEY,
@@ -416,6 +417,19 @@ const createTablesQuery = `
     content JSONB NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
+
+  -- Campagnes de don / Solidarité nationale
+  CREATE TABLE IF NOT EXISTS donation_campaigns (
+    id SERIAL PRIMARY KEY,
+    title_fr VARCHAR(255) NOT NULL,
+    title_wo VARCHAR(255) NOT NULL,
+    description_fr TEXT NOT NULL,
+    description_wo TEXT NOT NULL,
+    target_amount INTEGER NOT NULL,
+    baseline_amount INTEGER DEFAULT 0,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
 `;
 
 const mutuellesData = [
@@ -456,7 +470,7 @@ const mutuellesData = [
     'Union régionale qui coordonne les activités et la réassurance des mutuelles des 5 départements de Dakar.'
   ],
   [
-    'Union Départementale de Dakar (UDMS Dakar)',
+    'UDMS de Dakar',
     'Dakar',
     'Dakar Plateau',
     'active',
@@ -474,7 +488,7 @@ const mutuellesData = [
     'Coordination des mutuelles de santé communales du département de Dakar. Accompagnement technique.'
   ],
   [
-    'Union Départementale de Pikine (UDMS Pikine)',
+    'UDMS de Pikine',
     'Dakar',
     'Pikine Ouest',
     'active',
@@ -492,7 +506,7 @@ const mutuellesData = [
     'Point focal pour la gestion des mutuelles et du parrainage social dans le département de Pikine.'
   ],
   [
-    'Union Départementale de Guédiawaye (UDMS Guédiawaye)',
+    'UDMS de Guédiawaye',
     'Dakar',
     'Golf Sud',
     'active',
@@ -510,7 +524,7 @@ const mutuellesData = [
     'Coordonne les actions des mutuelles de la zone de Guédiawaye et aide à la numérisation des cartes CMU.'
   ],
   [
-    'Union Départementale de Rufisque (UDMS Rufisque)',
+    'UDMS de Rufisque',
     'Dakar',
     'Rufisque Est',
     'active',
@@ -528,7 +542,7 @@ const mutuellesData = [
     'Structure faîtière regroupant toutes les mutuelles de santé communautaires du département de Rufisque.'
   ],
   [
-    'Union Départementale de Keur Massar (UDMS Keur Massar)',
+    'UDMS de Keur Massar',
     'Dakar',
     'Keur Massar Nord',
     'active',
@@ -546,7 +560,7 @@ const mutuellesData = [
     'Support technique et coordination pour les mutuelles du nouveau département de Keur Massar.'
   ],
   [
-    'Union Départementale de Thiès (UDMS Thiès)',
+    'UDMS de Thiès',
     'Thiès',
     'Thiès Nord',
     'active',
@@ -564,7 +578,7 @@ const mutuellesData = [
     'Bureau central d\'appui pour toutes les mutuelles de la région et du département de Thiès.'
   ],
   [
-    'Union Départementale de Mbour (UDMS Mbour)',
+    'UDMS de Mbour',
     'Thiès',
     'Mbour',
     'active',
@@ -582,7 +596,7 @@ const mutuellesData = [
     'Coordination départementale pour la Petite Côte, gestion de la réassurance.'
   ],
   [
-    'Union Départementale de Saint-Louis (UDMS Saint-Louis)',
+    'UDMS de Saint-Louis',
     'Saint-Louis',
     'Saint-Louis Sor',
     'active',
@@ -600,7 +614,7 @@ const mutuellesData = [
     'Coordonne le réseau des mutuelles de la région Nord, facilitant le tiers-payant hospitalier.'
   ],
   [
-    'Union Départementale de Ziguinchor (UDMS Ziguinchor)',
+    'UDMS de Ziguinchor',
     'Ziguinchor',
     'Ziguinchor',
     'active',
@@ -618,7 +632,7 @@ const mutuellesData = [
     'Appui à la structuration des mutuelles communautaires en zone rurale dans toute la Casamance.'
   ],
   [
-    'Union Départementale de Kaolack (UDMS Kaolack)',
+    'UDMS de Kaolack',
     'Kaolack',
     'Kaolack',
     'active',
@@ -636,7 +650,7 @@ const mutuellesData = [
     'Coordination des mutuelles de santé du département de Kaolack.'
   ],
   [
-    'Union Départementale de Louga (UDMS Louga)',
+    'UDMS de Louga',
     'Louga',
     'Louga',
     'active',
@@ -654,7 +668,7 @@ const mutuellesData = [
     'Coordination départementale et promotion de la Couverture Maladie Universelle dans les zones rurales de Louga.'
   ],
   [
-    'Union Départementale de Diourbel (UDMS Diourbel)',
+    'UDMS de Diourbel',
     'Diourbel',
     'Diourbel',
     'active',
@@ -813,7 +827,7 @@ const mutuellesData = [
     15.6172,
     -16.2255,
     'Centre-ville de Louga, derrière la préfecture de département.',
-    'Cette mutuelle est actuellement en restructuration. Pour toute question urgente, veuillez vous rapprocher de l\'Union Départementale de Louga.'
+    'Cette mutuelle est actuellement en restructuration. Pour toute question urgente, veuillez vous rapprocher de l\'UDMS de Louga.'
   ],
   [
     'Mutuelle de Golf Sud',
@@ -959,6 +973,115 @@ async function initializeDatabase() {
     );
 
     console.log('Bénéficiaires et ayants droit de démonstration créés.');
+
+    // Seed Sponsors et Filleuls (Parrainages) de démonstration
+    const sponsorsData = [
+      ['Fondation', 'Sonatel', '1997-10-01', '776543210', 'fondation@sonatel.sn', 'VDN, Dakar', 'Mutuelle de la Médina', 'parrainage', 'wave', 'SN-DK-SPN-1001', 'active', 'Dakar', '776543210'],
+      ['Mairie', 'Dakar Plateau', '1960-04-04', '773302211', 'contact@mairiedakarplateau.sn', 'Plateau, Dakar', 'Union Nationale des Mutuelles de Santé Communautaires (UNAMUSC)', 'parrainage', 'om', 'SN-DK-SPN-1002', 'active', 'Dakar', '773302211'],
+      ['El Hadji', 'Ndiaye', '1970-01-01', '765554433', 'elhadji.ndiaye@example.com', 'Médina, Dakar', 'Mutuelle de la Médina', 'parrainage', 'wave', 'SN-DK-SPN-1003', 'active', 'Dakar', '765554433'],
+      ['Ngone', 'Cisse', '1988-11-12', '771112233', 'ngone.cisse@example.com', 'Mbao, Dakar', 'Mutuelle de Mbao', 'parrainage', 'wave', 'SN-DK-SPN-1004', 'active', 'Dakar', '771112233'],
+      ['Ahmed', 'Tall', '1982-04-15', '774445566', 'ahmed.tall@example.com', 'Keur Massar, Dakar', 'Mutuelle de Keur Massar', 'parrainage', 'om', 'SN-DK-SPN-1005', 'active', 'Dakar', '774445566']
+    ];
+
+    for (const s of sponsorsData) {
+      await pool.query(
+        `INSERT INTO beneficiaries (first_name, last_name, birth_date, phone, email, address, mutuelle_name, package_type, payment_method, cmu_number, status, department, sponsor_phone)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+        s
+      );
+    }
+
+    const filleulsData = [
+      // Filleuls Fondation Sonatel (élèves)
+      ['Mamadou', 'Sow', '2015-05-10', '770000001', 'mamadou.sow@daara.sn', 'Médina, Dakar', 'Mutuelle de la Médina', 'scolaire', 'parrainage', 'SN-DK-EDU-001', 'active', 'Dakar', '776543210', 'Daara Cheikh Al Islam'],
+      ['Fatoumata', 'Diallo', '2016-08-15', '770000002', 'fatoumata.diallo@daara.sn', 'Médina, Dakar', 'Mutuelle de la Médina', 'scolaire', 'parrainage', 'SN-DK-EDU-002', 'active', 'Dakar', '776543210', 'Daara Cheikh Al Islam'],
+      // Filleuls Mairie (ménages)
+      ['Cheikh', 'Gueye', '1980-03-20', '770000011', 'cheikh.gueye@menage.sn', 'Plateau, Dakar', 'Union Nationale des Mutuelles de Santé Communautaires (UNAMUSC)', 'familial', 'parrainage', 'SN-DK-HH-101', 'active', 'Dakar', '773302211', null],
+      ['Mariama', 'Ba', '1985-09-25', '770000012', 'mariama.ba@menage.sn', 'Plateau, Dakar', 'Union Nationale des Mutuelles de Santé Communautaires (UNAMUSC)', 'familial', 'parrainage', 'SN-DK-HH-102', 'active', 'Dakar', '773302211', null],
+      // Filleuls El Hadji (individuels)
+      ['Abdou', 'Diop', '2000-02-14', '770000021', 'abdou.diop@example.com', 'Médina, Dakar', 'Mutuelle de la Médina', 'individuel', 'parrainage', 'SN-DK-IND-201', 'active', 'Dakar', '765554433', null]
+    ];
+
+    const filleulIds = [];
+    for (const f of filleulsData) {
+      const res = await pool.query(
+        `INSERT INTO beneficiaries (first_name, last_name, birth_date, phone, email, address, mutuelle_name, package_type, payment_method, cmu_number, status, department, sponsor_phone, school_name)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING id`,
+        f
+      );
+      filleulIds.push(res.rows[0].id);
+    }
+
+    // Filleuls de Ngone Cisse (100 talibés - Daara Sopaey Nbil de Mbao)
+    const firstNamesBoys = [
+      'Modou', 'Cheikh', 'Serigne', 'Babacar', 'Ibrahima', 'Moussa', 'Aliou', 'Moustapha', 'Pape', 'Abdoulaye',
+      'Ousmane', 'Amadou', 'Birame', 'Lamine', 'Idrissa', 'Samba', 'Demba', 'Youssou', 'Boubacar', 'Malick',
+      'Thierno', 'Ablaye', 'Gorgui', 'Mor', 'Ndiaga', 'Keba', 'Oumar', 'Souleymane', 'El Hadji', 'Djibril'
+    ];
+    const firstNamesGirls = [
+      'Fatou', 'Aminata', 'Khadija', 'Ndèye', 'Awa', 'Mariama', 'Ramata', 'Sokhna', 'Ouleymate', 'Penda',
+      'Coumba', 'Adama', 'Seynabou', 'Khady', 'Aïssatou', 'Dieynaba', 'Maimouna', 'Rokhy', 'Binta', 'Astou',
+      'Fama', 'Anta', 'Yacine', 'Aby', 'Nafi', 'Safietou', 'Ngone', 'Codou', 'Salimata', 'Isseu'
+    ];
+    const lastNamesList = [
+      'Ndiaye', 'Diop', 'Fall', 'Gueye', 'Sow', 'Diallo', 'Kane', 'Sy', 'Ba', 'Sarr',
+      'Seck', 'Beye', 'Tine', 'Niang', 'Thiam', 'Wade', 'Mbodj', 'Cisse', 'Deng', 'Tall',
+      'Kouyate', 'Sene', 'Faye', 'Samb', 'Diagne', 'Lo', 'Gadiaga', 'Dramé', 'Camara', 'Touré'
+    ];
+
+    for (let i = 1; i <= 100; i++) {
+      const padId = String(i).padStart(3, '0');
+      const fName = firstNamesBoys[(i - 1) % firstNamesBoys.length];
+      const lName = lastNamesList[(i + 3) % lastNamesList.length];
+      const email = `${fName.toLowerCase()}.${lName.toLowerCase()}.${padId}@daarasopaey.sn`;
+      await pool.query(
+        `INSERT INTO beneficiaries (first_name, last_name, birth_date, phone, email, address, mutuelle_name, package_type, payment_method, cmu_number, status, department, sponsor_phone, school_name)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
+        [
+          fName, lName, '2016-01-01', `77001${padId}`, email,
+          'Mbao, Dakar', 'Mutuelle de Mbao', 'scolaire', 'parrainage', `SN-DK-EDU-SOP-${padId}`,
+          'active', 'Dakar', '771112233', 'Daara Sopaey Nbil'
+        ]
+      );
+    }
+
+    // Filleuls de Ahmed Tall (100 élèves - Ecole Keur Mbaye Fall 2)
+    for (let i = 1; i <= 100; i++) {
+      const padId = String(i).padStart(3, '0');
+      const fName = (i % 2 === 0) 
+        ? firstNamesGirls[(Math.floor((i - 1) / 2)) % firstNamesGirls.length] 
+        : firstNamesBoys[(Math.floor((i - 1) / 2)) % firstNamesBoys.length];
+      const lName = lastNamesList[(i + 7) % lastNamesList.length];
+      const email = `${fName.toLowerCase()}.${lName.toLowerCase()}.${padId}@keurmbayefall2.sn`;
+      await pool.query(
+        `INSERT INTO beneficiaries (first_name, last_name, birth_date, phone, email, address, mutuelle_name, package_type, payment_method, cmu_number, status, department, sponsor_phone, school_name)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
+        [
+          fName, lName, '2017-01-01', `77002${padId}`, email,
+          'Keur Massar, Dakar', 'Mutuelle de Keur Massar', 'scolaire', 'parrainage', `SN-DK-EDU-KMF-${padId}`,
+          'active', 'Dakar', '774445566', 'Keur Mbaye Fall 2'
+        ]
+      );
+    }
+
+    // Membres de famille pour Cheikh Gueye (filleul index 2)
+    await pool.query(
+      `INSERT INTO family_members (beneficiary_id, name, relation, age) VALUES 
+       ($1, 'Aminata Gueye', 'conjoint', 38),
+       ($1, 'Lamine Gueye', 'enfant', 10),
+       ($1, 'Khadija Gueye', 'enfant', 6)`,
+      [filleulIds[2]]
+    );
+
+    // Membres de famille pour Mariama Ba (filleul index 3)
+    await pool.query(
+      `INSERT INTO family_members (beneficiary_id, name, relation, age) VALUES 
+       ($1, 'Abdou Ba', 'enfant', 12),
+       ($1, 'Ousmane Ba', 'enfant', 8)`,
+      [filleulIds[3]]
+    );
+
+    console.log('Sponsors et filleuls de démonstration créés.');
 
     // Seed Agent
     const salt = await bcrypt.genSalt(10);
@@ -1181,7 +1304,10 @@ async function initializeDatabase() {
       `INSERT INTO blog_articles (title_fr, title_wo, author, role_fr, role_wo, avatar, date, read_time_fr, read_time_wo, preview_fr, preview_wo, content_fr, content_wo, image_url, likes) VALUES
        ('Prévenir le paludisme en saison des pluies à Dakar', 'Wanni malaria bi ci hivernage bi ci Ndakaaru', 'Dr. Aminata Sow', 'Épidémiologiste, Dakar', 'Docteur épidémiologiste', '👩‍⚕️', 1781524800000, '4 min de lecture', '4 min ci jang', 'L''hivernage est propice au développement des moustiques. Voici les mesures collectives et individuelles indispensables pour protéger votre famille.', 'Naka la gnu di wanni malaria ak moustiques yi ci saison des pluies bi ci Ndakaaru.', 'L''hivernage s''installe à Dakar et avec lui, le risque accru de transmission du paludisme. En tant que médecin épidémiologiste, je rappelle que le paludisme reste une des causes majeures de consultation dans nos structures de santé.\n\nVoici 4 conseils simples mais cruciaux :\n1. Dormez sous une moustiquaire imprégnée : C''est le moyen de prévention le plus efficace. Assurez-vous qu''elle est bien fermée et sans trous.\n2. Éliminez les eaux stagnantes : Les moustiques y pondent leurs œufs. Videz les récipients d''eau inutilisés autour de votre maison.\n3. Utilisez des répulsifs corporels : Surtout en fin de journée lorsque l''activité des moustiques augmente.\n4. Consultez au premier symptôme : La fièvre est le premier signe d''alerte. Grâce à la gratuité des soins pour les enfants de moins de 5 ans et à la couverture CMU, le diagnostic et le traitement (ACT) sont immédiats et accessibles dans tous les postes de santé conventionnés.', 'Saison des pluies bi dafa ubbil yoon moustiques yi ngir gnu bari. Loolu day andil malaria.\n\nDigle yi gënë rëy :\n1. Moustiquaire : Sangal sa bop ak sa njabot ak moustiquaire bu baax at mi yëpp.\n2. Dindi ndox yi tégu ci bountou keur yi ngir moustiques yi bagn fa egg.\n3. Fajjoo : Soo amé fievre, demal ci poste de santé bi gënë jege téy.', '/bg_health_palu.png', 12),
        ('Données de santé et RGPD : comment Mutualis protège votre vie privée', 'Données wér-gi-yaram ak RGPD ci Mutualis', 'Dr. Ibrahima Diagne', 'Expert en e-santé & sécurité', 'Docteur e-santé & sécurité', '👨‍⚕️', 1781775600000, '6 min de lecture', '6 min ci jang', 'La numérisation de la couverture maladie nécessite une sécurité maximale. Décryptage de nos protocoles d''isolation et de chiffrement.', 'Assurance maladie numérique dafa wara am sécurité bu dëgër. Leral naka la gnu di aar sa vie privée.', 'Avec le lancement de la plateforme Mutualis Dakar, nous passons à une vitesse supérieure dans la numérisation des données médicales. Mais qui dit numérisation dit responsabilité.\n\nDans le cadre de la conformité au RGPD et aux règles sénégalaises de protection des données personnelles :\n- Vos données sont cryptées : Les mots de passe et les informations personnelles sont chiffrés. Aucun tiers ne peut y avoir accès.\n- Jeton d''authentification (JWT) : Chaque connexion génère un jeton temporaire qui authentifie de manière unique l''assuré ou l''agent.\n- Droit à l''oubli : Vous pouvez à tout moment demander la suppression définitive de vos données depuis votre espace profil.\n- Consentement obligatoire : Aucune donnée n''est traitée sans votre acceptation préalable lors de l''adhésion en ligne.', 'Mbindu numérique bi dafa wara andak aar askan wi.\n\nCi bir Mutualis Dakar :\n- Sa mot de passe dafa crypté, amul kenn kou koy guiss.\n- Jeton JWT : Day sécurisé sa connexion.\n- Droit à l''oubli : Mën nga dindi sa account ak say données saa soo ko beugué ci sa profil.', '/bg_rgpd_data.png', 8),
-       ('Nutrition et Hypertension : préserver le cœur au quotidien', 'Hypertension ak lekk bu baax ngir sa xol', 'Dr. Ousmane Diagne', 'Cardiologue, Hôpital de Dakar', 'Cardiologue, Hôpital Dakar', '🩺', 1781968800000, '5 min de lecture', '5 min ci jang', 'L''hypertension artérielle est un fléau silencieux. Découvrez les changements alimentaires simples à adopter pour préserver votre xol.', 'Hypertension artérielle dafa bari ci Sénégal. Xoolal naka la gnu di lekk ngir aar sa xol.', 'L''hypertension artérielle (HTA) est souvent surnommée le "tueur silencieux" car elle se développe sans symptômes apparents. Pourtant, elle cause de nombreuses complications cardiologiques et vasculaires.\n\nQuelques conseils simples de cardiologie :\n1. Réduisez le sel : La consommation excessive de sel augmente la tension artérielle. Évitez les bouillons industriels très salés et limitez le sel à table.\n2. Mangez des fruits et légumes : Riches en potassium, ils aident à réguler la tension.\n3. Pratiquez une activité physique : Marcher 30 minutes par jour à un rythme soutenu est excellent pour le cœur.\n4. Contrôlez votre tension régulièrement : Les mutuelles de santé conventionnées organisent régulièrement des campagnes de dépistage gratuites. Profitez-en !', 'Hypertension artérielle dafa andil diafé-diafé xol bou bari.\n\nDigle cardiologue :\n1. Wanni xorom : Bagn lekk bouillon industriels yi xorom bi bari.\n2. Lekkal fruits ak légumes.\n3. Doxaal : Defal marche 30 minutes ci at mi ngir sa xol wér.\n4. Saytul sa tension régulièrement ci sa mutuelle.', '/bg_health_heart.png', 24) RETURNING id`
+       ('Nutrition et Hypertension : préserver le cœur au quotidien', 'Hypertension ak lekk bu baax ngir sa xol', 'Dr. Ousmane Diagne', 'Cardiologue, Hôpital de Dakar', 'Cardiologue, Hôpital Dakar', '🩺', 1781968800000, '5 min de lecture', '5 min ci jang', 'L''hypertension artérielle est un fléau silencieux. Découvrez les changements alimentaires simples à adopter pour préserver votre xol.', 'Hypertension artérielle dafa bari ci Sénégal. Xoolal naka la gnu di lekk ngir aar sa xol.', 'L''hypertension artérielle (HTA) est souvent surnommée le "tueur silencieux" car elle se développe sans symptômes apparents. Pourtant, elle cause de nombreuses complications cardiologiques et vasculaires.\n\nQuelques conseils simples de cardiologie :\n1. Réduisez le sel : La consommation excessive de sel augmente la tension artérielle. Évitez les bouillons industriels très salés et limitez le sel à table.\n2. Mangez des fruits et légumes : Riches en potassium, ils aident à réguler la tension.\n3. Pratiquez une activité physique : Marcher 30 minutes par jour à un rythme soutenu est excellent pour le cœur.\n4. Contrôlez votre tension régulièrement : Les mutuelles de santé conventionnées organisent régulièrement des campagnes de dépistage gratuites. Profitez-en !', 'Hypertension artérielle dafa andil diafé-diafé xol bou bari.\n\nDigle cardiologue :\n1. Wanni xorom : Bagn lekk bouillon industriels yi xorom bi bari.\n2. Lekkal fruits ak légumes.\n3. Doxaal : Defal marche 30 minutes ci at mi ngir sa xol wér.\n4. Saytul sa tension régulièrement ci sa mutuelle.', '/bg_health_heart.png', 24),
+       ('La gratuité des césariennes : un droit fondamental pour les mamans', 'Accouchement césarienne bu gratuit ngir yaay yi', 'Dr. Fatou Ndiaye', 'Gynécologue-Obstétricienne, Dakar', 'Docteur gynécologue', '🤰', 1782141600000, '5 min de lecture', '5 min ci jang', 'Réduire la mortalité maternelle est une priorité nationale. Découvrez le fonctionnement de la gratuité totale des césariennes au Sénégal.', 'Naka la gnu di aar yaay yi ci bir Sénégal ak accouchement césarienne bu gratuit.', 'La maternité doit être un moment de joie et non d''inquiétude financière. C''est pourquoi le Sénégal a instauré la gratuité totale des césariennes dans les structures sanitaires publiques.\n\nLes points clés à retenir :\n1. Prise en charge à 100% : La gratuité comprend l''acte opératoire, les kits de césarienne complets, les médicaments nécessaires et le séjour à l''hôpital.\n2. Sans conditions de ressources : Toutes les femmes enceintes nécessitant cette intervention y ont droit d''office.\n3. Complémentarité avec la CMU : Pour les accouchements par voie basse, l''enrôlement aux mutuelles permet une couverture à 80% dans le réseau conventionné.', 'Césarienne bi dafa gratuit 100% ci hôpitaux publics yëpp ngir wanni réy xale ak yaay yi.\n\nLeral yi :\n1. Benn fay amul : Garab, kit opéatoire ak séjour gratuit la.\n2. Amul conditions : Bépp jiguen bu ko soxla day bénéficié.\n3. Ndimbalou CMU : Accouchement voie basse day andak fay bu wanni pour assuré yi.', '/csu_kids.png', 19),
+       ('Mutuelles de santé scolaires : protéger l''avenir de nos enfants', 'Mutuelle de santé pour école yi ak daara yi', 'Moussa Diop', 'Inspecteur de l''Éducation, Dakar', 'Inspecteur éducation', '👨‍🏫', 1782314400000, '4 min de lecture', '4 min ci jang', 'L''affiliation des élèves et des talibés des Daaras garantit une couverture maladie dès le plus jeune âge. Explications.', 'Mbindu xale yi ci école yi ak daara yi ngir ñu am assurance wér-gi-yaram.', 'L''école et le daara sont des lieux d''apprentissage, mais aussi de protection sociale. La généralisation des mutuelles scolaires constitue un pilier majeur de la CSU.\n\nPourquoi enrôler les enfants ?\n1. Prévention active : Un enfant couvert est un enfant mieux suivi médicalement (visites régulières, soins dentaires, lunettes).\n2. Solidarité communautaire : Le parrainage des Daaras permet d''intégrer les talibés les plus vulnérables dans le tissu sanitaire national.\n3. Tranquillité d''esprit : Les familles et les maîtres de Daara n''ont plus à craindre le coût d''un traitement d''urgence en cas de maladie soudaine de l''élève.', 'Mbindu xale yi ci école yi ak daara yi ngir ñu am assurance wér-gi-yaram.\n\nNjeurit yi :\n1. Saytu wér-gi-yaram xale yi ci consultation ak fajj.\n2. Ndimbalou parrainage ngir talibé daara yi.\n3. Tranquillité ngir njabot yi ak maître daara yi.', '/csu_students.png', 15),
+       ('Le plan Sésame : assurer la dignité et la santé de nos aînés', 'Plan Sésame : dimbalé sounou waajur yi', 'Awa Kane', 'Assistante Sociale, Dakar', 'Assistante sociale', '🧓', 1782487200000, '5 min de lecture', '5 min ci jang', 'Grâce au Plan Sésame, les personnes âgées de 60 ans et plus bénéficient d''une gratuité totale des soins de santé essentiels.', 'Plan Sésame ngir fajj mag ñi am 60 at walla lu ko raw ci bir Sénégal.', 'Le Plan Sésame est une mesure de solidarité nationale phare à l''égard des personnes âgées au Sénégal.\n\nCe qu''il faut savoir sur les soins gratuits :\n1. Prise en charge à 100% : Les consultations de médecine générale, de cardiologie, d''ophtalmologie et les soins infirmiers de base sont couverts.\n2. Hospitalisation gratuite : En cas d''urgence, les frais d''hospitalisation dans les structures publiques conventionnées sont pris en charge.\n3. Accès facilité : Il suffit de présenter une pièce d''identité nationale prouvant l''âge de 60 ans ou plus dans la structure d''accueil pour bénéficier des prestations.', 'Plan Sésame ngir fajj mag ñi am 60 at walla lu ko raw ci bir Sénégal.\n\nLeral yi :\n1. Fay 100% : Consultation générale, cardiologie, ophtalmologie gratuit la.\n2. Hospitalisation bu gratuit ci urgences.\n3. Mbindu simple : Carte d''identité nationale rek lay soxla ngir wane sa at.', '/csu_sesame_real.png', 32) RETURNING id`
     );
     const artIds = blogRes.rows.map(r => r.id);
 

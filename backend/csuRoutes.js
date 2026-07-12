@@ -308,7 +308,7 @@ router.get('/api/dashboard/stats', authenticateToken, requireRole('agent', 'admi
     const isSuperAdmin = req.user.role === 'Super Admin';
     const dept = (isAgent && !isSuperAdmin && req.user.department) ? req.user.department : null;
 
-    let totalBeneficiaries, activeBeneficiaries, pendingBeneficiaries, totalMutuelles, totalDonations;
+    let totalBeneficiaries, activeBeneficiaries, pendingBeneficiaries, totalMutuelles, totalDonations, totalCotisations;
     let claimsByStatus, claimsTotal, claimsAmount, byPackage, byMutuelle, byCommune, adhesionsTrend, complaintsByStatus;
 
     if (dept) {
@@ -318,6 +318,13 @@ router.get('/api/dashboard/stats', authenticateToken, requireRole('agent', 'admi
       pendingBeneficiaries = await query("SELECT COUNT(*) FROM beneficiaries WHERE status = 'pending' AND department = $1", [dept]);
       totalMutuelles = await query('SELECT COUNT(*) FROM mutuelles');
       totalDonations = await query('SELECT COALESCE(SUM(amount),0) AS sum FROM donations');
+      totalCotisations = await query(
+        `SELECT COALESCE(SUM(c.amount),0) AS sum 
+         FROM cotisations c 
+         JOIN beneficiaries b ON c.beneficiary_id = b.id 
+         WHERE c.status = 'paid' AND b.department = $1`,
+        [dept]
+      );
 
       claimsByStatus = await query(
         `SELECT c.status, COUNT(*) AS count FROM claims c JOIN beneficiaries b ON c.beneficiary_id = b.id WHERE b.department = $1 GROUP BY c.status ORDER BY count DESC`,
@@ -361,6 +368,7 @@ router.get('/api/dashboard/stats', authenticateToken, requireRole('agent', 'admi
       pendingBeneficiaries = await query("SELECT COUNT(*) FROM beneficiaries WHERE status = 'pending'");
       totalMutuelles = await query('SELECT COUNT(*) FROM mutuelles');
       totalDonations = await query('SELECT COALESCE(SUM(amount),0) AS sum FROM donations');
+      totalCotisations = await query("SELECT COALESCE(SUM(amount),0) AS sum FROM cotisations WHERE status = 'paid'");
 
       claimsByStatus = await query(
         `SELECT status, COUNT(*) AS count FROM claims GROUP BY status ORDER BY count DESC`
@@ -452,6 +460,7 @@ router.get('/api/dashboard/stats', authenticateToken, requireRole('agent', 'admi
       },
       mutuelles: parseInt(totalMutuelles.rows[0].count || '0', 10),
       donations: parseInt(totalDonations.rows[0].sum || '0', 10),
+      cotisationsAmount: parseInt(totalCotisations.rows[0].sum || '0', 10),
       claims: {
         total: parseInt(claimsTotal.rows[0].count || '0', 10),
         byStatus: claimsByStatus.rows,

@@ -11,6 +11,8 @@ export default function Beneficiaries({ lang, agentUser }) {
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({ page: 1, totalPages: 1, hasPrev: false, hasNext: false });
 
   useEffect(() => {
     if (selectedBeneficiary) {
@@ -29,9 +31,59 @@ export default function Beneficiaries({ lang, agentUser }) {
     }
   }, [selectedBeneficiary]);
 
-  const displayedBeneficiaries = selectedStatus === 'all' 
-    ? beneficiaries 
-    : beneficiaries.filter(b => b.status === selectedStatus);
+  // flat-map all beneficiaries and their family members into a single flat list
+  const flatBeneficiariesList = [];
+  beneficiaries.forEach(b => {
+    // Add chef/main enrollee
+    flatBeneficiariesList.push({
+      ...b,
+      isFamilyMember: false
+    });
+    // Add family members if familial or csu package
+    if (b.familyMembers && b.familyMembers.length > 0) {
+      b.familyMembers.forEach((fm, index) => {
+        flatBeneficiariesList.push({
+          id: `fm-${b.id}-${fm.id || index}`,
+          firstName: fm.name.split(' ')[0] || '',
+          lastName: fm.name.split(' ').slice(1).join(' ') || '',
+          birthDate: null,
+          age: fm.age,
+          relation: fm.relation,
+          phone: b.phone,
+          email: b.email,
+          address: b.address,
+          mutuelleName: b.mutuelleName,
+          packageType: `${b.packageType} (Ayant droit)`,
+          paymentMethod: b.paymentMethod,
+          cmuNumber: b.cmuNumber ? `${b.cmuNumber}-${index + 1}` : 'Génération...',
+          status: b.status,
+          createdAt: b.createdAt,
+          isFamilyMember: true,
+          chefName: `${b.firstName} ${b.lastName}`,
+          familyMembers: [] // no nested family
+        });
+      });
+    }
+  });
+
+  // Filter this flat list locally by search query, status, and mutuelle
+  const filteredBeneficiaries = flatBeneficiariesList.filter(b => {
+    // Status filter
+    if (selectedStatus !== 'all' && b.status !== selectedStatus) return false;
+    // Mutuelle filter
+    if (selectedMutuelle !== 'all' && b.mutuelleName !== selectedMutuelle) return false;
+    // Search query filter
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const fullName = `${b.firstName} ${b.lastName}`.toLowerCase();
+      const phone = (b.phone || '').toLowerCase();
+      const cmu = (b.cmuNumber || '').toLowerCase();
+      const chef = (b.chefName || '').toLowerCase();
+      const packageType = (b.packageType || '').toLowerCase();
+      return fullName.includes(q) || phone.includes(q) || cmu.includes(q) || chef.includes(q) || packageType.includes(q);
+    }
+    return true;
+  });
 
   const handleDownloadSponsorReceipt = (sponsor) => {
     const now = new Date(sponsor.createdAt || new Date());
@@ -347,13 +399,11 @@ export default function Beneficiaries({ lang, agentUser }) {
   const fetchBeneficiaries = () => {
     setLoading(true);
     let url = 'http://localhost:5000/api/beneficiaries';
-    const params = [];
+    const params = [`page=${page}`];
     if (searchQuery) params.push(`q=${encodeURIComponent(searchQuery)}`);
     if (selectedMutuelle !== 'all') params.push(`mutuelle=${encodeURIComponent(selectedMutuelle)}`);
     
-    if (params.length > 0) {
-      url += '?' + params.join('&');
-    }
+    url += '?' + params.join('&');
 
     fetch(url, {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('cmu-token') || ''}` }
@@ -363,15 +413,20 @@ export default function Beneficiaries({ lang, agentUser }) {
         return res.json();
       })
       .then(payload => {
-        // L'API retourne désormais { data, pagination } ; on reste tolérant aux arrays (fallback)
-        const list = Array.isArray(payload) ? payload : (payload.data || []);
-        setBeneficiaries(list);
+        if (Array.isArray(payload)) {
+          setBeneficiaries(payload);
+          setPagination({ page: 1, totalPages: 1, hasPrev: false, hasNext: false });
+        } else {
+          setBeneficiaries(payload.data || []);
+          setPagination(payload.pagination || { page: 1, totalPages: 1, hasPrev: false, hasNext: false });
+        }
         setLoading(false);
       })
       .catch(err => {
         console.warn('API connection failed, using offline fallback data:', err);
         setError(err.message);
         setLoading(false);
+        setPagination({ page: 1, totalPages: 1, hasPrev: false, hasNext: false });
         // Fallback mockup data to prevent empty white screen
         setBeneficiaries([
           {
@@ -403,11 +458,11 @@ export default function Beneficiaries({ lang, agentUser }) {
             paymentMethod: 'om',
             cmuNumber: 'SN-DK-PIK-9021',
             status: 'active',
-            createdAt: '2026-06-16T12:00:00.000Z',
+            createdAt: '2026-06-16T14:15:00.000Z',
             familyMembers: [
-              { id: 1, name: 'Moustapha Ndiaye', relation: 'conjoint', age: 42 },
-              { id: 2, name: 'Khadija Ndiaye', relation: 'enfant', age: 12 },
-              { id: 3, name: 'Abdoulaye Ndiaye', relation: 'enfant', age: 8 }
+              { id: 10, name: 'Moustapha Ndiaye', relation: 'conjoint', age: 42 },
+              { id: 11, name: 'Khadija Ndiaye', relation: 'enfant', age: 12 },
+              { id: 12, name: 'Abdoulaye Ndiaye', relation: 'enfant', age: 8 }
             ]
           },
           {
@@ -431,8 +486,12 @@ export default function Beneficiaries({ lang, agentUser }) {
   };
 
   useEffect(() => {
-    fetchBeneficiaries();
+    setPage(1);
   }, [searchQuery, selectedMutuelle]);
+
+  useEffect(() => {
+    fetchBeneficiaries();
+  }, [page, searchQuery, selectedMutuelle]);
 
   // Toggle status (Active / Suspended)
   const handleToggleStatus = (id, currentStatus) => {
@@ -578,13 +637,26 @@ export default function Beneficiaries({ lang, agentUser }) {
             </tr>
           </thead>
           <tbody>
-            {displayedBeneficiaries.length > 0 ? (
-              displayedBeneficiaries.map((b) => (
+            {filteredBeneficiaries.length > 0 ? (
+              filteredBeneficiaries.map((b) => (
                 <tr key={b.id} style={{ borderBottom: '1px solid var(--border-color)', transition: 'background 0.2s' }}>
                   <td style={{ padding: '1.2rem 1.5rem' }}>
                     <div style={{ fontWeight: '700', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                       {b.firstName} {b.lastName}
-                      {b.sponsorPhone && (
+                      {b.isFamilyMember && (
+                        <span style={{ 
+                          fontSize: '0.65rem', 
+                          fontWeight: 'bold', 
+                          color: '#0369a1', 
+                          backgroundColor: '#e0f2fe', 
+                          padding: '2px 6px', 
+                          borderRadius: '4px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '2px'
+                        }}>👪 {lang === 'fr' ? 'Ayant droit' : 'Njabot'}</span>
+                      )}
+                      {b.sponsorPhone && !b.isFamilyMember && (
                         <span style={{ 
                           fontSize: '0.65rem', 
                           fontWeight: 'bold', 
@@ -599,8 +671,8 @@ export default function Beneficiaries({ lang, agentUser }) {
                       )}
                     </div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-sub)' }}>
-                      {b.phone}
-                      {b.sponsorPhone && ` (Sponsor: ${b.sponsorPhone})`}
+                      {b.isFamilyMember ? `📞 ${b.phone} (Chef: ${b.chefName})` : b.phone}
+                      {b.sponsorPhone && !b.isFamilyMember && ` (Sponsor: ${b.sponsorPhone})`}
                     </div>
                   </td>
                   <td style={{ padding: '1.2rem 1.5rem', color: 'var(--text-sub)' }}>{b.mutuelleName}</td>
@@ -609,13 +681,13 @@ export default function Beneficiaries({ lang, agentUser }) {
                   </td>
                   <td style={{ padding: '1.2rem 1.5rem' }}>
                     <span className="badge" style={{
-                      backgroundColor: b.packageType === 'parrainage' ? 'rgba(5, 150, 105, 0.15)' : b.packageType === 'familial' ? 'rgba(255, 127, 17, 0.1)' : 'rgba(59, 130, 246, 0.1)',
-                      color: b.packageType === 'parrainage' ? 'var(--primary)' : b.packageType === 'familial' ? 'var(--secondary)' : 'var(--primary)',
+                      backgroundColor: b.isFamilyMember ? 'rgba(3, 105, 161, 0.15)' : b.packageType === 'parrainage' ? 'rgba(5, 150, 105, 0.15)' : b.packageType === 'familial' ? 'rgba(255, 127, 17, 0.1)' : 'rgba(59, 130, 246, 0.1)',
+                      color: b.isFamilyMember ? '#0369a1' : b.packageType === 'parrainage' ? 'var(--primary)' : b.packageType === 'familial' ? 'var(--secondary)' : 'var(--primary)',
                       textTransform: 'uppercase',
                       fontSize: '0.65rem',
                       fontWeight: 'bold'
                     }}>
-                      {b.packageType === 'parrainage' ? 'Sponsor / Parrain' : b.packageType}
+                      {b.isFamilyMember ? (lang === 'fr' ? 'Famille' : 'Njabot') : b.packageType === 'parrainage' ? 'Sponsor / Parrain' : b.packageType}
                     </span>
                   </td>
                   <td style={{ padding: '1.2rem 1.5rem' }}>
@@ -682,6 +754,29 @@ export default function Beneficiaries({ lang, agentUser }) {
           </tbody>
         </table>
       </section>
+
+      {/* Pagination controls */}
+      {pagination && pagination.totalPages > 1 && (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '1.5rem', marginBottom: '1.5rem' }}>
+          <button
+            className="btn btn-outline btn-sm"
+            disabled={!pagination.hasPrev}
+            onClick={() => setPage(prev => Math.max(1, prev - 1))}
+          >
+            ⬅️ Précédent / Bi weesu
+          </button>
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-sub)', fontWeight: '600' }}>
+            Page {page} sur {pagination.totalPages}
+          </span>
+          <button
+            className="btn btn-outline btn-sm"
+            disabled={!pagination.hasNext}
+            onClick={() => setPage(prev => Math.min(pagination.totalPages, prev + 1))}
+          >
+            Suivant / Bi ci top ➡️
+          </button>
+        </div>
+      )}
 
       {/* Detailed Sheet Modal Popup */}
       {selectedBeneficiary && (
@@ -767,10 +862,10 @@ export default function Beneficiaries({ lang, agentUser }) {
 
                 <div>
                   <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>
-                    {t.modalBirthDate}
+                    {selectedBeneficiary.isFamilyMember ? 'Âge & Relation' : t.modalBirthDate}
                   </strong>
                   <span style={{ fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: '600' }}>
-                    {selectedBeneficiary.birthDate || 'N/A'}
+                    {selectedBeneficiary.isFamilyMember ? `${selectedBeneficiary.age} ans (${selectedBeneficiary.relation})` : (selectedBeneficiary.birthDate || 'N/A')}
                   </span>
                 </div>
 
@@ -812,8 +907,8 @@ export default function Beneficiaries({ lang, agentUser }) {
                 </div>
               </div>
 
-               {/* Ayants droit section (if not a sponsor) */}
-              {selectedBeneficiary.packageType !== 'parrainage' && (
+               {/* Ayants droit section (if not a sponsor and not family member itself) */}
+              {selectedBeneficiary.packageType !== 'parrainage' && !selectedBeneficiary.isFamilyMember && (
                 <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
                   <strong style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '0.5rem' }}>
                     {t.modalFamily} ({selectedBeneficiary.familyMembers ? selectedBeneficiary.familyMembers.length : 0})
@@ -841,6 +936,26 @@ export default function Beneficiaries({ lang, agentUser }) {
                   ) : (
                     <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{t.modalNoFamily}</span>
                   )}
+                </div>
+              )}
+
+              {/* Chef details (if it is a family member) */}
+              {selectedBeneficiary.isFamilyMember && (
+                <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
+                  <strong style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '0.5rem' }}>
+                    Chef de famille rattaché
+                  </strong>
+                  <div style={{
+                    padding: '0.6rem 0.8rem',
+                    background: 'rgba(59, 130, 246, 0.05)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '8px',
+                    fontSize: '0.85rem',
+                    color: 'var(--text-main)',
+                    fontWeight: '600'
+                  }}>
+                    👤 {selectedBeneficiary.chefName} (Chef de ménage)
+                  </div>
                 </div>
               )}
 

@@ -13,6 +13,12 @@ export default function Complaints({ lang, portalMode, citizenUser, agentUser })
   const [submitError, setSubmitError] = useState('');
   const [submitLoading, setSubmitLoading] = useState(false);
 
+  // Agent states
+  const [selectedComplaint, setSelectedComplaint] = useState(null);
+  const [resolvingId, setResolvingId] = useState(null);
+  const [resolutionNotes, setResolutionNotes] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all'); // all, open, resolved
+
   const dict = {
     fr: {
       titleCitizen: 'Signaler une réclamation',
@@ -137,25 +143,52 @@ export default function Complaints({ lang, portalMode, citizenUser, agentUser })
   };
 
   const handleResolve = (id) => {
+    setResolvingId(id);
+    setResolutionNotes('');
+  };
+
+  const handleSaveResolution = (e) => {
+    e.preventDefault();
+    if (!resolvingId) return;
     const actor = agentUser ? agentUser.username : 'agent@cmu.sn';
-    fetch(`http://localhost:5000/api/complaints/${id}/resolve`, {
+    fetch(`http://localhost:5000/api/complaints/${resolvingId}/resolve`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('cmu-token') || ''}`
       },
-      body: JSON.stringify({ actor })
+      body: JSON.stringify({ actor, resolutionNotes })
     })
       .then(res => {
-        if (!res.ok) throw new Error('Erreur');
+        if (!res.ok) throw new Error();
         return res.json();
       })
       .then(() => {
-        setComplaints(prev => prev.map(c => c.id === id ? { ...c, status: 'resolved' } : c));
+        setComplaints(prev => prev.map(c => c.id === resolvingId ? { ...c, status: 'resolved', resolution_notes: resolutionNotes, resolved_by: actor } : c));
+        setResolvingId(null);
+        setResolutionNotes('');
+        setSelectedComplaint(null);
       })
-      .catch(() => {
-        // Ne pas simuler la résolution si le serveur ne répond pas
-      });
+      .catch(() => alert('Erreur lors de la résolution.'));
+  };
+
+  const handleDeleteComplaint = (id) => {
+    if (!window.confirm(lang === 'fr' ? 'Voulez-vous supprimer cette réclamation ?' : 'Dax nga beug dindi plainte bi ?')) return;
+    fetch(`http://localhost:5000/api/complaints/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('cmu-token') || ''}`
+      }
+    })
+      .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
+      .then(() => {
+        setComplaints(prev => prev.filter(c => c.id !== id));
+        setSelectedComplaint(null);
+      })
+      .catch(() => alert('Erreur lors de la suppression.'));
   };
 
   return (
@@ -260,57 +293,196 @@ export default function Complaints({ lang, portalMode, citizenUser, agentUser })
 
       {/* PORTAL MODE AGENT */}
       {portalMode === 'agent' && (
-        <div className="directory-table-container">
-          <table className="directory-table">
-            <thead>
-              <tr>
-                <th style={{ padding: '1rem 1.25rem' }}>{t.thCitizen}</th>
-                <th style={{ padding: '1rem 1.25rem' }}>{t.thPhone}</th>
-                <th style={{ padding: '1rem 1.25rem' }}>{t.thTitle}</th>
-                <th style={{ padding: '1rem 1.25rem' }}>{t.thDesc}</th>
-                <th style={{ padding: '1rem 1.25rem' }}>{t.thStatus}</th>
-                <th style={{ padding: '1rem 1.25rem', textAlign: 'right' }}>{t.thAction}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {complaints.length > 0 ? (
-                complaints.map((comp) => (
-                  <tr key={comp.id}>
-                    <td style={{ padding: '1rem 1.25rem', textAlign: 'left', fontWeight: 'bold', color: 'var(--text-main)' }}>
-                      {comp.beneficiary_name}
-                    </td>
-                    <td style={{ padding: '1rem 1.25rem', textAlign: 'left', fontSize: '0.85rem' }}>
-                      {comp.phone}
-                    </td>
-                    <td style={{ padding: '1rem 1.25rem', textAlign: 'left', color: 'var(--primary)', fontWeight: '600', fontSize: '0.85rem' }}>
-                      {comp.title}
-                    </td>
-                    <td style={{ padding: '1rem 1.25rem', textAlign: 'left', color: 'var(--text-sub)', fontSize: '0.85rem', maxWidth: '300px', whiteSpace: 'normal', wordWrap: 'break-word' }}>
-                      {comp.description}
-                    </td>
-                    <td style={{ padding: '1rem 1.25rem', textAlign: 'left' }}>
-                      <span className={`badge ${comp.status === 'resolved' ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: '0.65rem' }}>
-                        {comp.status === 'resolved' ? t.statusResolved : t.statusOpen}
-                      </span>
-                    </td>
-                    <td style={{ padding: '1rem 1.25rem', textAlign: 'right' }}>
-                      {comp.status === 'open' && (
-                        <button className="btn btn-outline btn-sm" style={{ color: 'var(--success)', borderColor: 'var(--success)', padding: '0.25rem 0.6rem', borderRadius: '6px' }} onClick={() => handleResolve(comp.id)}>
-                          ✓ {t.btnResolve}
-                        </button>
-                      )}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {/* Status Filter Bar */}
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <button 
+              className={`dept-tab-btn ${statusFilter === 'all' ? 'active' : ''}`}
+              onClick={() => setStatusFilter('all')}
+              style={{ fontSize: '0.8rem', padding: '0.4rem 1rem' }}
+            >
+              Toutes ({complaints.length})
+            </button>
+            <button 
+              className={`dept-tab-btn ${statusFilter === 'open' ? 'active' : ''}`}
+              onClick={() => setStatusFilter('open')}
+              style={{ fontSize: '0.8rem', padding: '0.4rem 1rem' }}
+            >
+              Ouvertes ({complaints.filter(c => c.status !== 'resolved').length})
+            </button>
+            <button 
+              className={`dept-tab-btn ${statusFilter === 'resolved' ? 'active' : ''}`}
+              onClick={() => setStatusFilter('resolved')}
+              style={{ fontSize: '0.8rem', padding: '0.4rem 1rem' }}
+            >
+              Résolues ({complaints.filter(c => c.status === 'resolved').length})
+            </button>
+          </div>
+
+          <div className="directory-table-container">
+            <table className="directory-table">
+              <thead>
+                <tr>
+                  <th style={{ padding: '1rem 1.25rem' }}>{t.thCitizen}</th>
+                  <th style={{ padding: '1rem 1.25rem' }}>{t.thPhone}</th>
+                  <th style={{ padding: '1rem 1.25rem' }}>{t.thTitle}</th>
+                  <th style={{ padding: '1rem 1.25rem' }}>{t.thDesc}</th>
+                  <th style={{ padding: '1rem 1.25rem' }}>{t.thStatus}</th>
+                  <th style={{ padding: '1rem 1.25rem', textAlign: 'right' }}>{t.thAction}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {complaints.filter(c => statusFilter === 'all' ? true : c.status === statusFilter).length > 0 ? (
+                  complaints.filter(c => statusFilter === 'all' ? true : c.status === statusFilter).map((comp) => (
+                    <tr key={comp.id}>
+                      <td style={{ padding: '1rem 1.25rem', textAlign: 'left', fontWeight: 'bold', color: 'var(--text-main)' }}>
+                        {comp.beneficiary_name}
+                      </td>
+                      <td style={{ padding: '1rem 1.25rem', textAlign: 'left', fontSize: '0.85rem' }}>
+                        {comp.phone}
+                      </td>
+                      <td style={{ padding: '1rem 1.25rem', textAlign: 'left', color: 'var(--primary)', fontWeight: '600', fontSize: '0.85rem' }}>
+                        {comp.title}
+                      </td>
+                      <td style={{ padding: '1rem 1.25rem', textAlign: 'left', color: 'var(--text-sub)', fontSize: '0.85rem', maxWidth: '250px', whiteSpace: 'normal', wordWrap: 'break-word' }}>
+                        {comp.description}
+                      </td>
+                      <td style={{ padding: '1rem 1.25rem', textAlign: 'left' }}>
+                        <span className={`badge ${comp.status === 'resolved' ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: '0.65rem' }}>
+                          {comp.status === 'resolved' ? t.statusResolved : t.statusOpen}
+                        </span>
+                      </td>
+                      <td style={{ padding: '1rem 1.25rem', textAlign: 'right' }}>
+                        <div style={{ display: 'inline-flex', gap: '0.35rem' }}>
+                          <button 
+                            className="btn btn-outline btn-sm" 
+                            style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }} 
+                            onClick={() => setSelectedComplaint(comp)}
+                          >
+                            👁️
+                          </button>
+                          {comp.status === 'open' && (
+                            <button 
+                              className="btn btn-outline btn-sm" 
+                              style={{ color: 'var(--success)', borderColor: 'var(--success)', padding: '0.25rem 0.5rem', fontSize: '0.75rem' }} 
+                              onClick={() => handleResolve(comp.id)}
+                            >
+                              ✓
+                            </button>
+                          )}
+                          <button 
+                            className="btn btn-outline btn-sm" 
+                            style={{ color: 'var(--danger)', borderColor: 'var(--danger)', padding: '0.25rem 0.5rem', fontSize: '0.75rem' }} 
+                            onClick={() => handleDeleteComplaint(comp.id)}
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6} style={{ padding: '2rem', color: 'var(--text-muted)' }}>
+                      {loading ? '...' : t.noComplaints}
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={6} style={{ padding: '2rem', color: 'var(--text-muted)' }}>
-                    {loading ? '...' : t.noComplaints}
-                  </td>
-                </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Resolution notes dialog modal popup */}
+      {resolvingId && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(5,8,15,0.8)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999, padding: '1.5rem' }}>
+          <div className="card fade-in-up" style={{ width: '100%', maxWidth: '450px', padding: '2.5rem 2rem', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '24px', textAlign: 'left', position: 'relative' }}>
+            <h2 style={{ fontSize: '1.25rem', color: 'var(--text-main)', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem', marginBottom: '1.25rem', fontWeight: '800' }}>
+              ✓ Résoudre la réclamation
+            </h2>
+            <button onClick={() => setResolvingId(null)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'transparent', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--text-sub)' }}>
+              ✕
+            </button>
+            <form onSubmit={handleSaveResolution} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">Remarques / Notes d'intervention de l'agent</label>
+                <textarea 
+                  className="form-control" 
+                  rows="4" 
+                  placeholder="Décrivez les actions menées pour résoudre ce problème (ex: contact de la pharmacie, correction orthographe faite...)"
+                  value={resolutionNotes}
+                  onChange={(e) => setResolutionNotes(e.target.value)}
+                  required
+                />
+              </div>
+              <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }}>
+                Enregistrer la résolution
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Selected complaint details view modal */}
+      {selectedComplaint && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(5,8,15,0.8)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999, padding: '1.5rem' }}>
+          <div className="card fade-in-up" style={{ width: '100%', maxWidth: '500px', padding: '2.5rem 2rem', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '24px', textAlign: 'left', position: 'relative' }}>
+            <h2 style={{ fontSize: '1.25rem', color: 'var(--text-main)', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem', marginBottom: '1.25rem', fontWeight: '800' }}>
+              📋 Fiche de réclamation
+            </h2>
+            <button onClick={() => setSelectedComplaint(null)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'transparent', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--text-sub)' }}>
+              ✕
+            </button>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.9rem' }}>
+              <div>
+                <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase' }}>Assuré</strong>
+                <span style={{ color: 'var(--text-main)', fontWeight: '600' }}>{selectedComplaint.beneficiary_name}</span>
+              </div>
+              <div>
+                <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase' }}>Téléphone</strong>
+                <span style={{ color: 'var(--text-main)', fontWeight: '600' }}>{selectedComplaint.phone}</span>
+              </div>
+              <div>
+                <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase' }}>Objet</strong>
+                <span style={{ color: 'var(--primary)', fontWeight: '700' }}>{selectedComplaint.title}</span>
+              </div>
+              <div>
+                <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase' }}>Description de l'incident</strong>
+                <p style={{ color: 'var(--text-sub)', margin: '0.2rem 0 0 0', lineHeight: '1.5' }}>{selectedComplaint.description}</p>
+              </div>
+              
+              <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem', marginTop: '0.5rem' }}>
+                <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Statut du dossier</strong>
+                <span className={`badge ${selectedComplaint.status === 'resolved' ? 'badge-success' : 'badge-warning'}`}>
+                  {selectedComplaint.status === 'resolved' ? 'Résolu' : 'Ouvert / En cours'}
+                </span>
+              </div>
+
+              {selectedComplaint.status === 'resolved' && (
+                <div style={{ backgroundColor: 'rgba(16, 185, 129, 0.05)', padding: '0.75rem 1rem', borderRadius: '8px', borderLeft: '4px solid var(--success)', marginTop: '0.5rem' }}>
+                  <strong style={{ fontSize: '0.75rem', color: 'var(--success)', display: 'block', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Notes d'intervention de l'agent</strong>
+                  <p style={{ color: 'var(--text-main)', margin: '0 0 0.5rem 0', fontStyle: 'italic', fontSize: '0.85rem' }}>
+                    "{selectedComplaint.resolution_notes || 'Aucun détail fourni.'}"
+                  </p>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block' }}>
+                    Résolu par : {selectedComplaint.resolved_by || 'agent@cmu.sn'}
+                  </span>
+                </div>
               )}
-            </tbody>
-          </table>
+
+              {selectedComplaint.status === 'open' && (
+                <button 
+                  className="btn btn-primary" 
+                  style={{ width: '100%', marginTop: '1rem' }}
+                  onClick={() => { handleResolve(selectedComplaint.id); }}
+                >
+                  ✓ Résoudre ce problème
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

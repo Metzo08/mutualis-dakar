@@ -2,14 +2,23 @@ import React, { useState, useEffect } from 'react';
 
 // Espace partenaire pour les structures de soins conventionnées.
 // Connexion dédiée (compte partenaire) → vérification carte CMU + déclaration tiers-payant + stats.
-export default function PartnerPortal({ lang, setView, portalMode, agentUser }) {
-  const [partner, setPartner] = useState(null);
+export default function PartnerPortal({ lang, setView, portalMode, agentUser, partnerUser, setPartnerUser }) {
+  const [partner, setPartner] = useState(partnerUser || (() => {
+    try {
+      const cached = localStorage.getItem('cmu-partner-user');
+      return cached ? JSON.parse(cached) : null;
+    } catch (e) {
+      console.warn('Error parsing partner user:', e);
+      return null;
+    }
+  }));
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
   const [loginError, setLoginError] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
 
   // Outils
   const [verifyNumber, setVerifyNumber] = useState('');
+  const [verifyPhone, setVerifyPhone] = useState('');
   const [verifyResult, setVerifyResult] = useState(null);
   const [verifyLoading, setVerifyLoading] = useState(false);
 
@@ -172,7 +181,10 @@ export default function PartnerPortal({ lang, setView, portalMode, agentUser }) 
         setLoginLoading(false);
         if (data.success) {
           localStorage.setItem('cmu-partner-token', data.token);
+          localStorage.setItem('cmu-portal-mode', 'partner');
+          localStorage.setItem('cmu-partner-user', JSON.stringify(data.partner));
           setPartner(data.partner);
+          if (setPartnerUser) setPartnerUser(data.partner);
           fetchStats(data.token);
         } else {
           setLoginError(data.error || 'Erreur');
@@ -183,7 +195,10 @@ export default function PartnerPortal({ lang, setView, portalMode, agentUser }) 
 
   const handleLogout = () => {
     localStorage.removeItem('cmu-partner-token');
+    localStorage.removeItem('cmu-partner-user');
+    localStorage.removeItem('cmu-portal-mode');
     setPartner(null);
+    if (setPartnerUser) setPartnerUser(null);
     setStats(null);
     setVerifyResult(null);
     setTpResult(null);
@@ -202,12 +217,14 @@ export default function PartnerPortal({ lang, setView, portalMode, agentUser }) 
     e.preventDefault();
     setVerifyLoading(true);
     setVerifyResult(null);
-    fetch(`http://localhost:5000/api/partner/verify-card/${encodeURIComponent(verifyNumber)}`, {
+    const cmu = verifyNumber.trim() || 'none';
+    const phone = verifyPhone.trim();
+    fetch(`http://localhost:5000/api/partner/verify-card/${encodeURIComponent(cmu)}?phone=${encodeURIComponent(phone)}`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('cmu-partner-token')}` }
     })
       .then((res) => res.json())
       .then((data) => { setVerifyResult(data); setVerifyLoading(false); })
-      .catch(() => { setVerifyLoading(false); setVerifyResult({ error: 'Erreur' }); });
+      .catch(() => { setVerifyLoading(false); setVerifyResult({ error: 'Erreur de connexion.' }); });
   };
 
   const declareTierPayant = (e) => {
@@ -441,9 +458,12 @@ export default function PartnerPortal({ lang, setView, portalMode, agentUser }) 
         {/* Vérification carte CMU */}
         <div className="card" style={{ padding: '1.5rem' }}>
           <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '1rem' }}>🔍 {t.verifyTitle}</h3>
-          <form onSubmit={verifyCard} style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
-            <input className="input" placeholder={t.verifyPlaceholder} value={verifyNumber} onChange={(e) => setVerifyNumber(e.target.value)} style={{ flex: 1 }} />
-            <button type="submit" className="btn btn-primary btn-sm" disabled={verifyLoading}>{verifyLoading ? '...' : t.verifyBtn}</button>
+          <form onSubmit={verifyCard} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <input className="input" placeholder={lang === 'fr' ? 'N° CMU (Code assuré)' : 'N° CMU'} value={verifyNumber} onChange={(e) => setVerifyNumber(e.target.value)} style={{ flex: 1 }} />
+              <input className="input" placeholder={lang === 'fr' ? 'N° de téléphone' : 'Téléphone'} value={verifyPhone} onChange={(e) => setVerifyPhone(e.target.value)} style={{ flex: 1 }} />
+            </div>
+            <button type="submit" className="btn btn-primary btn-sm" disabled={verifyLoading} style={{ alignSelf: 'flex-end' }}>{verifyLoading ? '...' : t.verifyBtn}</button>
           </form>
           {verifyResult && !verifyResult.error && (
             <div style={{ padding: '1rem', borderRadius: '8px', background: verifyResult.valid ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)' }}>

@@ -702,7 +702,7 @@
 
 /* Hero Section */
 .csu-hero {
-  background: linear-gradient(to right, rgba(13, 148, 95, 0.9), rgba(13, 148, 95, 0.7)), url('/csu_hero_bg_real.png') center/cover no-repeat;
+  background: linear-gradient(to right, rgba(13, 148, 95, 0.9), rgba(13, 148, 95, 0.7)), url('/csu_family_health.png') center/cover no-repeat;
   color: white;
   padding: 5rem 1rem;
   border-radius: 0 0 30px 30px;

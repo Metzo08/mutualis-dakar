@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
-export default function Login({ lang, setView, portalMode, setPortalMode, setCitizenUser, setAgentUser }) {
-  const [activeTab, setActiveTab] = useState(portalMode); // 'citizen' or 'agent'
+export default function Login({ lang, setView, portalMode, setPortalMode, setCitizenUser, setAgentUser, setPartnerUser }) {
+  const [activeTab, setActiveTab] = useState(portalMode === 'partner' ? 'partner' : portalMode); // 'citizen', 'agent' or 'partner'
   
   // Citizen form states
   const [citizenPhone, setCitizenPhone] = useState('');
@@ -10,6 +10,10 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
   // Agent form states
   const [agentEmail, setAgentEmail] = useState('');
   const [agentPassword, setAgentPassword] = useState('');
+
+  // Partner form states
+  const [partnerEmail, setPartnerEmail] = useState('');
+  const [partnerPassword, setPartnerPassword] = useState('');
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -20,6 +24,7 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
       subtitle: 'Accédez à votre espace sécurisé couverture maladie universelle de Dakar.',
       tabCitizen: 'Espace citoyen 🇸🇳',
       tabAgent: 'Espace agent CMU 💼',
+      tabPartner: 'Espace prestataire 🏥',
       phoneLabel: 'Numéro de portable',
       pinLabel: 'Code PIN (4 chiffres)',
       emailLabel: 'Adresse e-mail professionnelle',
@@ -27,6 +32,7 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
       btnConnect: 'Se connecter',
       demoHintCitizen: 'Indice citoyen : connectez-vous avec 771234567 ou 779876543 (PIN: 1234)',
       demoHintAgent: 'Indice agent : connectez-vous avec agent@cmu.sn (mot de passe: senecarte)',
+      demoHintPartner: 'Indice prestataire : connectez-vous avec hp@cmu.sn (mot de passe: partenaire2026)',
       errorEmpty: 'Veuillez remplir tous les champs.',
       errorFail: 'Identifiants incorrects. Veuillez réessayer.'
     },
@@ -35,13 +41,15 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
       subtitle: 'Ubbil sa compte sécurisé couverture maladie universelle bu Ndakaaru.',
       tabCitizen: 'Citoyen 🇸🇳',
       tabAgent: 'Agent CMU 💼',
+      tabPartner: 'Prestataire 🏥',
       phoneLabel: 'Portable',
       pinLabel: 'Code PIN (4 chiffres)',
-      emailLabel: 'E-mail agent',
+      emailLabel: 'E-mail agent / partenaire',
       passwordLabel: 'Mot de passe',
       btnConnect: 'Duggu',
       demoHintCitizen: 'Indice citoyen : duggu ko ak 771234567 walla 779876543 (PIN: 1234)',
       demoHintAgent: 'Indice agent : duggu ko ak agent@cmu.sn (pass: senecarte)',
+      demoHintPartner: 'Indice prestataire : duggu ko ak hp@cmu.sn (pass: partenaire2026)',
       errorEmpty: 'Bindal yëf yëpp.',
       errorFail: 'Mbind yi baaxul. Recommencé wat.'
     }
@@ -186,6 +194,62 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
       });
   };
 
+  const handlePartnerSubmit = (e) => {
+    e.preventDefault();
+    if (!partnerEmail || !partnerPassword) {
+      setError(t.errorEmpty);
+      return;
+    }
+    setError('');
+    setLoading(true);
+
+    fetch('http://localhost:5000/api/auth/partner/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: partnerEmail, password: partnerPassword })
+    })
+      .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
+      .then(data => {
+        setLoading(false);
+        if (data.success) {
+          localStorage.setItem('cmu-partner-token', data.token);
+          localStorage.setItem('cmu-portal-mode', 'partner');
+          localStorage.setItem('cmu-partner-user', JSON.stringify(data.partner));
+          setPortalMode('partner');
+          setPartnerUser(data.partner);
+          setView('partner');
+        } else {
+          setError(t.errorFail);
+        }
+      })
+      .catch(() => {
+        setLoading(false);
+        // Offline Fallback for testing
+        if (partnerEmail === 'hp@cmu.sn' && partnerPassword === 'partenaire2026') {
+          const mockPartner = {
+            id: 1,
+            username: 'hp@cmu.sn',
+            contactName: 'Dr. Khady Diop',
+            structureName: 'Polyclinique de la Médina',
+            structureType: 'clinique',
+            structureId: 1,
+            coverageRate: 80,
+            role: 'partner'
+          };
+          localStorage.setItem('cmu-portal-mode', 'partner');
+          localStorage.setItem('cmu-partner-user', JSON.stringify(mockPartner));
+          setPortalMode('partner');
+          setPartnerUser(mockPartner);
+          setView('partner');
+        } else {
+          setError(t.errorFail);
+        }
+      });
+  };
+
   return (
     <div className="login-view fade-in-up">
       {/* Banner */}
@@ -274,6 +338,24 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
           }}
         >
           {t.tabAgent}
+        </button>
+        <button
+          onClick={() => { setActiveTab('partner'); setError(''); }}
+          style={{
+            flex: 1,
+            padding: '0.6rem 0.5rem',
+            fontSize: '0.82rem',
+            fontWeight: 'bold',
+            borderRadius: '8px',
+            border: 'none',
+            cursor: 'pointer',
+            backgroundColor: activeTab === 'partner' ? 'var(--bg-card)' : 'transparent',
+            color: activeTab === 'partner' ? 'var(--primary)' : 'var(--text-muted)',
+            boxShadow: activeTab === 'partner' ? 'var(--shadow-sm)' : 'none',
+            transition: 'all 0.2s'
+          }}
+        >
+          {t.tabPartner}
         </button>
       </div>
 
@@ -375,6 +457,49 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
             lineHeight: '1.4'
           }}>
             💡 {t.demoHintAgent}
+          </div>
+        </form>
+      )}
+
+      {/* Partner login form */}
+      {activeTab === 'partner' && (
+        <form onSubmit={handlePartnerSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <div className="form-group" style={{ margin: 0 }}>
+            <label className="form-label">{t.emailLabel}</label>
+            <input
+              type="email"
+              className="form-control"
+              placeholder="hp@cmu.sn"
+              value={partnerEmail}
+              onChange={(e) => setPartnerEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div className="form-group" style={{ margin: 0 }}>
+            <label className="form-label">{t.passwordLabel}</label>
+            <input
+              type="password"
+              className="form-control"
+              placeholder="••••••••"
+              value={partnerPassword}
+              onChange={(e) => setPartnerPassword(e.target.value)}
+              required
+            />
+          </div>
+          <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }} disabled={loading}>
+            {loading ? '...' : t.btnConnect}
+          </button>
+          <div style={{
+            marginTop: '1.5rem',
+            padding: '0.75rem',
+            background: 'var(--bg-card-subtle)',
+            borderRadius: '8px',
+            fontSize: '0.75rem',
+            color: 'var(--text-muted)',
+            border: '1px dashed var(--border-color)',
+            lineHeight: '1.4'
+          }}>
+            💡 {t.demoHintPartner}
           </div>
         </form>
       )}

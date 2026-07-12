@@ -13,6 +13,8 @@ export default function Header({
   setCitizenUser,
   agentUser,
   setAgentUser,
+  partnerUser,
+  setPartnerUser,
   sidebarOpen,
   setSidebarOpen
 }) {
@@ -97,10 +99,9 @@ export default function Header({
   const t = dict[lang];
 
   const navigateTo = (viewName, tabName) => {
-    if (setViewTab) {
+    setView(viewName);
+    if (setViewTab && tabName) {
       setViewTab(viewName, tabName);
-    } else {
-      setView(viewName);
     }
   };
 
@@ -118,15 +119,25 @@ export default function Header({
     localStorage.removeItem('cmu-refresh-token');
     localStorage.removeItem('cmu-citizen-user');
     localStorage.removeItem('cmu-agent-user');
+    localStorage.removeItem('cmu-partner-user');
+    localStorage.removeItem('cmu-partner-token');
     localStorage.removeItem('cmu-portal-mode');
     cacheSet('citizenUser', null).catch(() => {});
     setCitizenUser(null);
     setAgentUser(null);
+    if (setPartnerUser) setPartnerUser(null);
     setView('home');
   };
 
   // Determine current profile credentials based on portal mode and login session
   const getProfileInfo = () => {
+    if (partnerUser) {
+      return {
+        name: partnerUser.contactName || partnerUser.structureName || 'Partenaire',
+        role: partnerUser.structureName || 'Structure de soins',
+        avatar: '🏥'
+      };
+    }
     if (portalMode === 'citizen') {
       if (citizenUser) {
         return {
@@ -209,6 +220,16 @@ export default function Header({
             {t.btnLogout}
           </button>
         )}
+
+        {partnerUser && (
+          <button 
+            className="btn btn-outline btn-sm" 
+            onClick={() => handleLogout() }
+            style={{ width: '100%', padding: '0.25rem 0.5rem', fontSize: '0.7rem', borderRadius: '6px' }}
+          >
+            {t.btnLogout}
+          </button>
+        )}
       </div>
 
       {/* Sidebar Navigation Links (Filtered by Portal Mode) */}
@@ -274,6 +295,15 @@ export default function Header({
         >
           <span className="nav-icon">🤝</span>
           {lang === 'fr' ? 'Espace partenariat' : 'Pekou partenariat'}
+        </button>
+
+        {/* Espace RSE (Public) */}
+        <button 
+          className={`nav-item ${currentView === 'rse' ? 'active' : ''}`}
+          onClick={() => navigateTo('rse')}
+        >
+          <span className="nav-icon">🏢</span>
+          {lang === 'fr' ? 'Espace RSE' : 'Espace RSE'}
         </button>
 
         {/* Mon compte / Connexion (Always visible) */}
@@ -371,8 +401,8 @@ export default function Header({
           </button>
         )}
 
-        {/* Option 9: Journal d'Audit (Agent mode only when logged in) */}
-        {portalMode === 'agent' && agentUser && (
+        {/* Option 9: Journal d'Audit (Super Admin only) */}
+        {portalMode === 'agent' && agentUser && agentUser.role === 'Super Admin' && (
           <button 
             className={`nav-item ${currentView === 'audit-logs' ? 'active' : ''}`}
             onClick={() => setView('audit-logs')}
@@ -437,8 +467,8 @@ export default function Header({
           </button>
         )}
 
-        {/* Option 15: Espace partenaire (accessible aux agents/partenaires, pas aux citoyens) */}
-        {portalMode !== 'citizen' && (
+        {/* Option 15: Espace partenaire (accessible aux agents/partenaires, et visiteurs non connectés) */}
+        {(portalMode !== 'citizen' || !citizenUser) && (
           <button
             className={`nav-item ${currentView === 'partner' ? 'active' : ''}`}
             onClick={() => setView('partner')}

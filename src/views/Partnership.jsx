@@ -75,6 +75,7 @@ export default function Partnership({ lang, portalMode, agentUser }) {
   };
 
   const queryClient = useQueryClient();
+  const [editingPartnership, setEditingPartnership] = useState(null);
 
   const { data: partnershipsPayload = { data: [] } } = useQuery({
     queryKey: ['partnershipsList', page],
@@ -149,6 +150,54 @@ export default function Partnership({ lang, portalMode, agentUser }) {
       });
   };
 
+  const handleDeletePartnership = (id) => {
+    if (!window.confirm(lang === 'fr' ? 'Voulez-vous vraiment supprimer cette demande ?' : 'Dax nga beug dindi demande bi ?')) return;
+    fetch(`http://localhost:5000/api/partnerships/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('cmu-token') || ''}`
+      }
+    })
+      .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
+      .then(() => {
+        triggerToast(lang === 'fr' ? 'Demande de partenariat supprimée' : 'Dindi nanu demande bi');
+        queryClient.invalidateQueries(['partnershipsList']);
+      })
+      .catch(() => triggerToast('Erreur lors de la suppression.'));
+  };
+
+  const handleSaveEdit = (e) => {
+    e.preventDefault();
+    fetch(`http://localhost:5000/api/partnerships/${editingPartnership.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('cmu-token') || ''}`
+      },
+      body: JSON.stringify({
+        companyName: editingPartnership.company_name || editingPartnership.companyName,
+        sector: editingPartnership.sector,
+        contactPerson: editingPartnership.contact_person || editingPartnership.contactPerson,
+        email: editingPartnership.email,
+        phone: editingPartnership.phone,
+        message: editingPartnership.message
+      })
+    })
+      .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
+      .then(() => {
+        triggerToast(lang === 'fr' ? 'Demande modifiée avec succès' : 'Demande bi changer na');
+        setEditingPartnership(null);
+        queryClient.invalidateQueries(['partnershipsList']);
+      })
+      .catch(() => triggerToast('Erreur lors de la modification.'));
+  };
+
   return (
     <div className="partnership-view fade-in-up" style={{ padding: '1rem 0' }}>
       {/* Banner */}
@@ -203,9 +252,9 @@ export default function Partnership({ lang, portalMode, agentUser }) {
                   requests.map(req => (
                     <tr key={req.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                       <td style={{ padding: '0.75rem', whiteSpace: 'nowrap' }}>{req.date}</td>
-                      <td style={{ padding: '0.75rem' }}><strong>{req.companyName}</strong></td>
+                      <td style={{ padding: '0.75rem' }}><strong>{req.companyName || req.company_name}</strong></td>
                       <td style={{ padding: '0.75rem', textTransform: 'capitalize' }}>{req.sector}</td>
-                      <td style={{ padding: '0.75rem' }}>{req.contactPerson}</td>
+                      <td style={{ padding: '0.75rem' }}>{req.contactPerson || req.contact_person}</td>
                       <td style={{ padding: '0.75rem' }}>{req.phone}</td>
                       <td style={{ padding: '0.75rem', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{req.message}</td>
                       <td style={{ padding: '0.75rem' }}>
@@ -222,7 +271,7 @@ export default function Partnership({ lang, portalMode, agentUser }) {
                            req.status === 'rejected' ? t.statusRejected : t.statusPending}
                         </span>
                       </td>
-                      <td style={{ padding: '0.75rem', display: 'flex', gap: '0.5rem' }}>
+                      <td style={{ padding: '0.75rem', display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
                         {req.status === 'pending' && (
                           <>
                             <button 
@@ -250,6 +299,22 @@ export default function Partnership({ lang, portalMode, agentUser }) {
                             Réinitialiser
                           </button>
                         )}
+                        <button 
+                          className="btn btn-outline btn-sm" 
+                          onClick={() => setEditingPartnership(req)}
+                          style={{ padding: '0.25rem 0.4rem', fontSize: '0.7rem', borderColor: 'var(--primary)', color: 'var(--primary)' }}
+                          title="Modifier"
+                        >
+                          ✏️
+                        </button>
+                        <button 
+                          className="btn btn-outline btn-sm" 
+                          onClick={() => handleDeletePartnership(req.id)}
+                          style={{ padding: '0.25rem 0.4rem', fontSize: '0.7rem', borderColor: 'var(--danger)', color: 'var(--danger)' }}
+                          title="Supprimer"
+                        >
+                          🗑️
+                        </button>
                       </td>
                     </tr>
                   ))
@@ -406,6 +471,113 @@ export default function Partnership({ lang, portalMode, agentUser }) {
                 </p>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Partnership Request Modal */}
+      {editingPartnership && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(5, 8, 15, 0.8)',
+          backdropFilter: 'blur(5px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 99999,
+          padding: '1.5rem'
+        }}>
+          <div className="card fade-in-up" style={{
+            width: '100%',
+            maxWidth: '500px',
+            padding: '2.5rem 2rem',
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '24px',
+            textAlign: 'left',
+            position: 'relative'
+          }}>
+            <h2 style={{ fontSize: '1.3rem', color: 'var(--text-main)', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem', marginBottom: '1.5rem', fontWeight: '800' }}>
+              ✏️ Modifier la demande
+            </h2>
+            <button 
+              onClick={() => setEditingPartnership(null)} 
+              style={{ position: 'absolute', top: '24px', right: '24px', background: 'transparent', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--text-sub)' }}
+            >
+              ✕
+            </button>
+            <form onSubmit={handleSaveEdit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">{t.thCompany}</label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  value={editingPartnership.company_name || editingPartnership.companyName || ''} 
+                  onChange={(e) => setEditingPartnership({ ...editingPartnership, company_name: e.target.value })} 
+                  required 
+                />
+              </div>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">{t.thSector}</label>
+                <select 
+                  className="form-control" 
+                  value={editingPartnership.sector || ''} 
+                  onChange={(e) => setEditingPartnership({ ...editingPartnership, sector: e.target.value })}
+                >
+                  <option value="mécénat">Mécénat</option>
+                  <option value="clinique">Clinique / Poste</option>
+                  <option value="pharmacie">Pharmacie</option>
+                  <option value="autre">Autre</option>
+                </select>
+              </div>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">{t.thContact}</label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  value={editingPartnership.contact_person || editingPartnership.contactPerson || ''} 
+                  onChange={(e) => setEditingPartnership({ ...editingPartnership, contact_person: e.target.value })} 
+                  required 
+                />
+              </div>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">Email</label>
+                <input 
+                  type="email" 
+                  className="form-control" 
+                  value={editingPartnership.email || ''} 
+                  onChange={(e) => setEditingPartnership({ ...editingPartnership, email: e.target.value })} 
+                  required 
+                />
+              </div>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">{t.thPhone}</label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  value={editingPartnership.phone || ''} 
+                  onChange={(e) => setEditingPartnership({ ...editingPartnership, phone: e.target.value })} 
+                  required 
+                />
+              </div>
+              <div className="form-group" style={{ margin: 0 }}>
+                <label className="form-label">Message</label>
+                <textarea 
+                  className="form-control" 
+                  rows="3" 
+                  value={editingPartnership.message || ''} 
+                  onChange={(e) => setEditingPartnership({ ...editingPartnership, message: e.target.value })} 
+                  required 
+                />
+              </div>
+              <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '0.5rem' }}>
+                Enregistrer les modifications
+              </button>
+            </form>
           </div>
         </div>
       )}

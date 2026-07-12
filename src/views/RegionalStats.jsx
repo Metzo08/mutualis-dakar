@@ -166,12 +166,13 @@ export default function RegionalStats({ lang }) {
           {data.topMutuelles && data.topMutuelles.length > 0 ? (
             <ResponsiveContainer width="100%" height={450}>
               <BarChart data={data.topMutuelles.map((m) => {
-                let n = m.name || '';
-                n = n.replace('Mutuelle de ', '');
-                n = n.replace('Union Départementale de ', 'UD ');
-                n = n.replace('Union Departementale de ', 'UD ');
-                n = n.replace(/\(UDMS.*\)/, '');
-                return { name: n.trim() || '—', adhérents: parseInt(m.beneficiaries) };
+                 let n = m.name || '';
+                 n = n.replace('Mutuelle de ', '');
+                 n = n.replace('Union Départementale de ', 'UD ');
+                 n = n.replace('Union Departementale de ', 'UD ');
+                 n = n.replace('UDMS de ', 'UD ');
+                 n = n.replace(/\(UDMS.*\)/, '');
+                 return { name: n.trim() || '—', adhérents: parseInt(m.beneficiaries) };
               })} layout="vertical">
                 <defs>
                   <linearGradient id="gradAdherents" x1="0" y1="0" x2="1" y2="0">
