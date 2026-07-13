@@ -175,7 +175,7 @@ export default function Header({
     <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
       {/* Sidebar Logo */}
       <div className="sidebar-logo" style={{ cursor: 'pointer', marginBottom: '1.5rem', display: 'flex', justifyContent: 'center' }} onClick={() => setView('home')}>
-        <img src="/msdd_logo_corrected.png" alt="Mutuelle de santé départementale de Dakar" style={{ width: '100%', maxWidth: '200px', objectFit: 'contain' }} />
+        <img src="/msdd_logo_corrected.png" alt="Union nationale des mutuelles de santé du Sénégal" style={{ width: '100%', maxWidth: '200px', objectFit: 'contain' }} />
       </div>
 
       <div style={{ padding: '0 1.5rem', marginBottom: '1.5rem', display: 'flex', justifyContent: 'center' }}>

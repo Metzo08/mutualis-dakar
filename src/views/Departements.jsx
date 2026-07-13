@@ -469,7 +469,7 @@ export default function Departements({ lang, setView }) {
                     </h2>
                     {/* Show MSDD Logo if region is Dakar (Assuming ID 1 is Dakar or name is Dakar) */}
                     {activeRegion.name.toLowerCase() === 'dakar' && (
-                      <img src="/msdd_logo_corrected.png" alt="MSDD Logo" style={{ height: '50px', objectFit: 'contain' }} />
+                      <img src="/msdd_logo_corrected.png" alt="Union nationale des mutuelles de santé du Sénégal" style={{ height: '50px', objectFit: 'contain' }} />
                     )}
                   </div>
                   
