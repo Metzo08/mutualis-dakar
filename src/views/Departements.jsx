@@ -61,7 +61,7 @@ const generateMockUnion = (deptName, regionName) => {
   }
   const id = Math.abs(hash);
   const managers = ['Assane Diop', 'Cheikh Sarr', 'Idrissa Wade', 'Amadou Diop', 'Ousmane Ndiaye', 'Ibrahima Fall', 'Saliou Diallo', 'Lamine Sané'];
-  const manager = managers[id % managers.length];
+  const manager = deptName.toLowerCase() === 'dakar' ? 'Moustapha Mbengue' : managers[id % managers.length];
   const phone = `+221 33 8${(id % 900) + 100} ${(id % 90) + 10} ${(id % 90) + 10}`;
   const email = `ud.${deptName.toLowerCase().replace(/[^a-z0-9]/g, '')}@unamusc.sn`;
   const agreement = `UD-${regionName.substring(0, 2).toUpperCase()}-${(id % 900) + 100}-${(id % 90) + 10}`;
@@ -532,9 +532,14 @@ export default function Departements({ lang, setView }) {
                           gap: '0.75rem'
                         }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-                            <h3 style={{ fontSize: '1.15rem', color: 'var(--primary)', margin: 0, fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                              🛡️ {activeDeptUnion.name}
-                            </h3>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              {activeDeptUnion.name.toLowerCase().includes('dakar') && (
+                                <img src="/udmsdk_logo.png" alt="Logo UDMS Dakar" style={{ height: '35px', objectFit: 'contain' }} />
+                              )}
+                              <h3 style={{ fontSize: '1.15rem', color: 'var(--primary)', margin: 0, fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                🛡️ {activeDeptUnion.name}
+                              </h3>
+                            </div>
                             <span className="badge badge-success" style={{ fontSize: '0.8rem' }}>Union Agréée ✅</span>
                           </div>
                           
