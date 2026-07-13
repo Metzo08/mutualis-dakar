@@ -35,7 +35,7 @@ const generateMockMutuelle = (communeName, regionName) => {
   ];
 
   return {
-    name: `Mutuelle de Santé Communautaire de ${communeName}`,
+    name: `Mutuelle de santé communautaire de ${communeName}`,
     region: regionName,
     commune: communeName,
     status: 'active',
@@ -468,12 +468,6 @@ export default function Departements({ lang, setView }) {
                     <h2 style={{ color: 'var(--primary)', margin: 0 }}>
                       Région de {activeRegion.name}
                     </h2>
-                    {/* Show MSDD Logo if region is Dakar (Assuming ID 1 is Dakar or name is Dakar) */}
-                    <img 
-                      src={activeRegion.name.toLowerCase() === 'dakar' ? "/udmsdk_logo.png" : "/msdd_logo_corrected.png"} 
-                      alt={`Logo Région ${activeRegion.name}`} 
-                      style={{ height: '50px', objectFit: 'contain' }} 
-                    />
                   </div>
                   
                   <p style={{ fontSize: '1.1rem', color: 'var(--neutral-dark)' }}>

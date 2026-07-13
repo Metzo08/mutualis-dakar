@@ -375,7 +375,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
     const formulaLabel = selectedPackage === 'individuel' ? 'Individuelle' : 
                          selectedPackage === 'familial' ? 'Familiale' : 
                          selectedPackage === 'csu_eleves' ? 'CSU Élèves' : 
-                         selectedPackage === 'adhesion_masse' ? 'Adhésion Groupe / Masse' : 
+                         selectedPackage === 'adhesion_masse' ? 'Adhésion groupe / masse' : 
                          selectedPackage === 'csu_daara' ? 'CSU Daaras' : 'Parrainage';
     doc.text(formulaLabel, 65, y + 6);
     doc.text(paymentMethod === 'wave' ? 'Wave Pay' : paymentMethod === 'om' ? 'Orange Money' : 'Autre', 65, y + 12);
@@ -937,7 +937,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                       style={{ border: selectedPackage === 'adhesion_masse' ? '2px solid var(--primary)' : '1px solid var(--border-color)', cursor: 'pointer', padding: '1.5rem' }}
                     >
                       <div style={{ fontSize: '2rem' }}>📊</div>
-                      <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem' }}>{lang === 'fr' ? 'Adhésion Groupe / Masse' : 'Mbindum Mboloo'}</h3>
+                      <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem' }}>{lang === 'fr' ? 'Adhésion groupe / masse' : 'Mbindum Mboloo'}</h3>
                       <div className="stat-number" style={{ fontSize: '1.5rem', margin: '0.5rem 0', color: 'var(--primary)' }}>4 500 FCFA / pers.</div>
                       <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Importez un fichier CSV ou saisissez une liste pour inscrire tout un groupe (carte + cotisation).' : 'Importé listou mboloo (carte + cotisation) ci CSV.'}</p>
                     </div>
@@ -1526,7 +1526,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                            parrainageType === 'eleves' ? 'Parrainage Élèves / Daara 🤝' :
                            'Parrainage Individuel 🤝'
                          ) : 
-                          selectedPackage === 'csu_eleves' ? 'CSU Élèves 🎓' : selectedPackage === 'adhesion_masse' ? 'Adhésion Groupe / Masse 📊' : 'CSU Daaras 🎓'}
+                          selectedPackage === 'csu_eleves' ? 'CSU Élèves 🎓' : selectedPackage === 'adhesion_masse' ? 'Adhésion groupe / masse 📊' : 'CSU Daaras 🎓'}
                       </div>
                     </div>
                     {schoolName && (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || selectedPackage === 'adhesion_masse' || (selectedPackage === 'parrainage' && parrainageType === 'eleves')) && (

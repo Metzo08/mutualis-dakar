@@ -582,7 +582,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
                 <div className="card text-left" style={{ padding: '1.5rem' }}>
                   <h3 style={{ fontSize: '1.1rem', color: 'var(--primary)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <span>⭐ Fidélité & badges</span>
-                    <span className="badge badge-success" style={{ fontSize: '0.8rem', padding: '0.2rem 0.6rem', textTransform: 'capitalize' }}>
+                    <span className="badge badge-success" style={{ fontSize: '0.8rem', padding: '0.2rem 0.6rem', textTransform: 'none' }}>
                       Niveau {loyaltyData.level}
                     </span>
                   </h3>
