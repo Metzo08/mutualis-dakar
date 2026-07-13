@@ -475,7 +475,7 @@ const mutuellesData = [
     'Dakar Plateau',
     'active',
     'UD-DK-001-2018',
-    'Assane Diop',
+    'Moustapha Mbengue',
     '+221 33 821 10 10',
     'ud.dakar@unamusc.sn',
     'Cotisation Faitière',
