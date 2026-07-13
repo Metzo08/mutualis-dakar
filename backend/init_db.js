@@ -470,7 +470,7 @@ const mutuellesData = [
     'Union régionale qui coordonne les activités et la réassurance des mutuelles des 5 départements de Dakar.'
   ],
   [
-    'UDMS de Dakar',
+    'MSD mutuelle de santé départementale de Dakar',
     'Dakar',
     'Dakar Plateau',
     'active',
@@ -488,7 +488,7 @@ const mutuellesData = [
     'Coordination des mutuelles de santé communales du département de Dakar. Accompagnement technique.'
   ],
   [
-    'UDMS de Pikine',
+    'MSD mutuelle de santé départementale de Pikine',
     'Dakar',
     'Pikine Ouest',
     'active',
@@ -506,7 +506,7 @@ const mutuellesData = [
     'Point focal pour la gestion des mutuelles et du parrainage social dans le département de Pikine.'
   ],
   [
-    'UDMS de Guédiawaye',
+    'MSD mutuelle de santé départementale de Guédiawaye',
     'Dakar',
     'Golf Sud',
     'active',
@@ -524,7 +524,7 @@ const mutuellesData = [
     'Coordonne les actions des mutuelles de la zone de Guédiawaye et aide à la numérisation des cartes CMU.'
   ],
   [
-    'UDMS de Rufisque',
+    'MSD mutuelle de santé départementale de Rufisque',
     'Dakar',
     'Rufisque Est',
     'active',
@@ -542,7 +542,7 @@ const mutuellesData = [
     'Structure faîtière regroupant toutes les mutuelles de santé communautaires du département de Rufisque.'
   ],
   [
-    'UDMS de Keur Massar',
+    'MSD mutuelle de santé départementale de Keur Massar',
     'Dakar',
     'Keur Massar Nord',
     'active',
@@ -560,7 +560,7 @@ const mutuellesData = [
     'Support technique et coordination pour les mutuelles du nouveau département de Keur Massar.'
   ],
   [
-    'UDMS de Thiès',
+    'MSD mutuelle de santé départementale de Thiès',
     'Thiès',
     'Thiès Nord',
     'active',
@@ -578,7 +578,7 @@ const mutuellesData = [
     'Bureau central d\'appui pour toutes les mutuelles de la région et du département de Thiès.'
   ],
   [
-    'UDMS de Mbour',
+    'MSD mutuelle de santé départementale de Mbour',
     'Thiès',
     'Mbour',
     'active',
@@ -596,7 +596,7 @@ const mutuellesData = [
     'Coordination départementale pour la Petite Côte, gestion de la réassurance.'
   ],
   [
-    'UDMS de Saint-Louis',
+    'MSD mutuelle de santé départementale de Saint-Louis',
     'Saint-Louis',
     'Saint-Louis Sor',
     'active',
@@ -614,7 +614,7 @@ const mutuellesData = [
     'Coordonne le réseau des mutuelles de la région Nord, facilitant le tiers-payant hospitalier.'
   ],
   [
-    'UDMS de Ziguinchor',
+    'MSD mutuelle de santé départementale de Ziguinchor',
     'Ziguinchor',
     'Ziguinchor',
     'active',
@@ -632,7 +632,7 @@ const mutuellesData = [
     'Appui à la structuration des mutuelles communautaires en zone rurale dans toute la Casamance.'
   ],
   [
-    'UDMS de Kaolack',
+    'MSD mutuelle de santé départementale de Kaolack',
     'Kaolack',
     'Kaolack',
     'active',
@@ -650,7 +650,7 @@ const mutuellesData = [
     'Coordination des mutuelles de santé du département de Kaolack.'
   ],
   [
-    'UDMS de Louga',
+    'MSD mutuelle de santé départementale de Louga',
     'Louga',
     'Louga',
     'active',
@@ -668,7 +668,7 @@ const mutuellesData = [
     'Coordination départementale et promotion de la Couverture Maladie Universelle dans les zones rurales de Louga.'
   ],
   [
-    'UDMS de Diourbel',
+    'MSD mutuelle de santé départementale de Diourbel',
     'Diourbel',
     'Diourbel',
     'active',
@@ -827,7 +827,7 @@ const mutuellesData = [
     15.6172,
     -16.2255,
     'Centre-ville de Louga, derrière la préfecture de département.',
-    'Cette mutuelle est actuellement en restructuration. Pour toute question urgente, veuillez vous rapprocher de l\'UDMS de Louga.'
+    'Cette mutuelle est actuellement en restructuration. Pour toute question urgente, veuillez vous rapprocher de la MSD mutuelle de santé départementale de Louga.'
   ],
   [
     'Mutuelle de Golf Sud',

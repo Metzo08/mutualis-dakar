@@ -44,7 +44,7 @@ export default function RsePortal({ lang, setView, portalMode, agentUser }) {
       id: 3,
       title: "Parrainage Solidaire des Familles Vulnérables de Rufisque Est",
       targetDept: "Rufisque",
-      initiator: "Ousmane Diop (UDMS Rufisque)",
+      initiator: "Ousmane Diop (MSD Rufisque)",
       description: "Plaidoyer pour l'enrôlement de 200 mères célibataires et leurs enfants dans la mutuelle de Rufisque Est.",
       countNeeded: 200,
       annualCost: 900000,
@@ -130,7 +130,7 @@ export default function RsePortal({ lang, setView, portalMode, agentUser }) {
     setPledges([newPledge, ...pledges]);
     setPledgeForm({ companyName: '', contactEmail: '', phone: '', notes: '', agreed: false });
     setShowPledgeModal(null);
-    alert("Merci pour votre engagement RSE ! Votre promesse de parrainage a été enregistrée avec succès. Un conseiller de l'UDMS vous contactera sous 24h.");
+    alert("Merci pour votre engagement RSE ! Votre promesse de parrainage a été enregistrée avec succès. Un conseiller de la MSD vous contactera sous 24h.");
   };
 
   return (
@@ -178,7 +178,7 @@ export default function RsePortal({ lang, setView, portalMode, agentUser }) {
               <div style={{ fontSize: '2rem' }}>🎯</div>
               <h3 style={{ fontSize: '1.1rem', fontWeight: '700', margin: 0 }}>Impact direct</h3>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', margin: 0, lineHeight: '1.5' }}>
-                Enrôlez directement des enfants talibés, des élèves du primaire ou des familles à faible revenu dans les mutuelles de santé UDMS locales.
+                Enrôlez directement des enfants talibés, des élèves du primaire ou des familles à faible revenu dans les mutuelles de santé MSD locales.
               </p>
             </div>
             <div className="card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', borderTop: '4px solid #3b82f6' }}>
@@ -304,16 +304,16 @@ export default function RsePortal({ lang, setView, portalMode, agentUser }) {
               <div>
                 <label style={{ display: 'block', fontWeight: '600', fontSize: '0.9rem', marginBottom: '0.5rem' }}>🎯 Cibler un département spécifique</label>
                 <select className="input" value={selectedDept} onChange={(e) => setSelectedDept(e.target.value)} style={{ width: '100%' }}>
-                  <option value="Dakar">UDMS de Dakar</option>
-                  <option value="Pikine">UDMS de Pikine</option>
-                  <option value="Guédiawaye">UDMS de Guédiawaye</option>
-                  <option value="Rufisque">UDMS de Rufisque</option>
-                  <option value="Keur Massar">UDMS de Keur Massar</option>
-                  <option value="Thiès">UDMS de Thiès</option>
-                  <option value="Mbour">UDMS de Mbour</option>
-                  <option value="Saint-Louis">UDMS de Saint-Louis</option>
-                  <option value="Louga">UDMS de Louga</option>
-                  <option value="Kaolack">UDMS de Kaolack</option>
+                  <option value="Dakar">MSD mutuelle de santé départementale de Dakar</option>
+                  <option value="Pikine">MSD mutuelle de santé départementale de Pikine</option>
+                  <option value="Guédiawaye">MSD mutuelle de santé départementale de Guédiawaye</option>
+                  <option value="Rufisque">MSD mutuelle de santé départementale de Rufisque</option>
+                  <option value="Keur Massar">MSD mutuelle de santé départementale de Keur Massar</option>
+                  <option value="Thiès">MSD mutuelle de santé départementale de Thiès</option>
+                  <option value="Mbour">MSD mutuelle de santé départementale de Mbour</option>
+                  <option value="Saint-Louis">MSD mutuelle de santé départementale de Saint-Louis</option>
+                  <option value="Louga">MSD mutuelle de santé départementale de Louga</option>
+                  <option value="Kaolack">MSD mutuelle de santé départementale de Kaolack</option>
                 </select>
               </div>
             </div>
@@ -382,7 +382,7 @@ export default function RsePortal({ lang, setView, portalMode, agentUser }) {
                       style={{ marginTop: '0.2rem', accentColor: 'var(--primary)' }}
                     />
                     <label htmlFor="rse-agree" style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>
-                      Je confirme notre intérêt d'enrôler <strong>{beneficiariesCount}</strong> bénéficiaires pour un montant de <strong>{new Intl.NumberFormat('fr-FR').format(totalCost)} FCFA</strong> à destination de l'<strong>UDMS de {selectedDept}</strong>.
+                      Je confirme notre intérêt d'enrôler <strong>{beneficiariesCount}</strong> bénéficiaires pour un montant de <strong>{new Intl.NumberFormat('fr-FR').format(totalCost)} FCFA</strong> à destination de la <strong>MSD mutuelle de santé départementale de {selectedDept}</strong>.
                     </label>
                   </div>
 
@@ -436,16 +436,16 @@ export default function RsePortal({ lang, setView, portalMode, agentUser }) {
                   <div>
                     <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-sub)', display: 'block', marginBottom: '0.35rem' }}>Département ciblé *</label>
                     <select className="input" value={selectedDept} onChange={(e) => setSelectedDept(e.target.value)} style={{ width: '100%' }}>
-                      <option value="Dakar">UDMS de Dakar</option>
-                      <option value="Pikine">UDMS de Pikine</option>
-                      <option value="Guédiawaye">UDMS de Guédiawaye</option>
-                      <option value="Rufisque">UDMS de Rufisque</option>
-                      <option value="Keur Massar">UDMS de Keur Massar</option>
-                      <option value="Thiès">UDMS de Thiès</option>
-                      <option value="Mbour">UDMS de Mbour</option>
-                      <option value="Saint-Louis">UDMS de Saint-Louis</option>
-                      <option value="Louga">UDMS de Louga</option>
-                      <option value="Kaolack">UDMS de Kaolack</option>
+                      <option value="Dakar">MSD mutuelle de santé départementale de Dakar</option>
+                      <option value="Pikine">MSD mutuelle de santé départementale de Pikine</option>
+                      <option value="Guédiawaye">MSD mutuelle de santé départementale de Guédiawaye</option>
+                      <option value="Rufisque">MSD mutuelle de santé départementale de Rufisque</option>
+                      <option value="Keur Massar">MSD mutuelle de santé départementale de Keur Massar</option>
+                      <option value="Thiès">MSD mutuelle de santé départementale de Thiès</option>
+                      <option value="Mbour">MSD mutuelle de santé départementale de Mbour</option>
+                      <option value="Saint-Louis">MSD mutuelle de santé départementale de Saint-Louis</option>
+                      <option value="Louga">MSD mutuelle de santé départementale de Louga</option>
+                      <option value="Kaolack">MSD mutuelle de santé départementale de Kaolack</option>
                     </select>
                   </div>
                 </div>
@@ -497,7 +497,7 @@ export default function RsePortal({ lang, setView, portalMode, agentUser }) {
                     style={{ marginTop: '0.2rem', accentColor: 'var(--primary)' }}
                   />
                   <label htmlFor="rse-agree-public" style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>
-                    Je confirme notre intérêt d'enrôler <strong>{beneficiariesCount}</strong> bénéficiaires pour un montant de <strong>{new Intl.NumberFormat('fr-FR').format(totalCost)} FCFA</strong> à destination de l'<strong>UDMS de {selectedDept}</strong>.
+                    Je confirme notre intérêt d'enrôler <strong>{beneficiariesCount}</strong> bénéficiaires pour un montant de <strong>{new Intl.NumberFormat('fr-FR').format(totalCost)} FCFA</strong> à destination de la <strong>MSD mutuelle de santé départementale de {selectedDept}</strong>.
                   </label>
                 </div>
 
@@ -653,7 +653,7 @@ export default function RsePortal({ lang, setView, portalMode, agentUser }) {
                 )}
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.5rem' }}>
                   <span style={{ fontSize: '0.75rem', backgroundColor: 'var(--bg-alt)', padding: '0.2rem 0.5rem', borderRadius: '4px', fontWeight: '600' }}>
-                    📍 UDMS {campaign.targetDept}
+                    📍 MSD {campaign.targetDept}
                   </span>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-sub)' }}>
                     Par {campaign.initiator}
@@ -713,7 +713,7 @@ export default function RsePortal({ lang, setView, portalMode, agentUser }) {
                   <tr style={{ backgroundColor: 'var(--bg-alt)', borderBottom: '1px solid var(--border-color)' }}>
                     <th style={{ padding: '1rem', textAlign: 'left' }}>Entreprise</th>
                     <th style={{ padding: '1rem', textAlign: 'left' }}>Type</th>
-                    <th style={{ padding: '1rem', textAlign: 'left' }}>UDMS Cible</th>
+                    <th style={{ padding: '1rem', textAlign: 'left' }}>MSD Cible</th>
                     <th style={{ padding: '1rem', textAlign: 'center' }}>Bénéficiaires</th>
                     <th style={{ padding: '1rem', textAlign: 'right' }}>Montant Annuel</th>
                     <th style={{ padding: '1rem', textAlign: 'center' }}>Statut</th>
@@ -724,7 +724,7 @@ export default function RsePortal({ lang, setView, portalMode, agentUser }) {
                     <tr key={p.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                       <td style={{ padding: '1rem', fontWeight: '700' }}>{p.companyName}</td>
                       <td style={{ padding: '1rem', color: 'var(--text-sub)' }}>{p.advocacyTitle}</td>
-                      <td style={{ padding: '1rem' }}>UDMS de {p.targetDept}</td>
+                      <td style={{ padding: '1rem' }}>MSD de {p.targetDept}</td>
                       <td style={{ padding: '1rem', textAlign: 'center' }}>{p.beneficiariesCount}</td>
                       <td style={{ padding: '1rem', textAlign: 'right', fontWeight: '700', color: 'var(--primary)' }}>
                         {new Intl.NumberFormat('fr-FR').format(p.amount)} FCFA
@@ -772,7 +772,7 @@ export default function RsePortal({ lang, setView, portalMode, agentUser }) {
             
             <div style={{ backgroundColor: 'var(--bg-alt)', padding: '1rem', borderRadius: '8px', fontSize: '0.85rem' }}>
               <strong>Campagne :</strong> {showPledgeModal.title}<br />
-              <strong>Cible :</strong> UDMS de {showPledgeModal.targetDept}<br />
+              <strong>Cible :</strong> MSD mutuelle de santé départementale de {showPledgeModal.targetDept}<br />
               <strong>Montant annuel :</strong> {new Intl.NumberFormat('fr-FR').format(showPledgeModal.annualCost)} FCFA ({showPledgeModal.countNeeded} enfants)
             </div>
 

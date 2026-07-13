@@ -260,7 +260,7 @@ export default function InfosCSU({ lang }) {
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
                   <span>{t.statSatisfaction}</span>
-                  <span style={{ color: 'var(--success)' }}>{satisfactionRate}% ({statsData?.mutuellesCount || 0} mutuelles UDMS engagées)</span>
+                  <span style={{ color: 'var(--success)' }}>{satisfactionRate}% ({statsData?.mutuellesCount || 0} mutuelles MSD engagées)</span>
                 </div>
                 <div style={{ height: '10px', backgroundColor: 'var(--border-color)', borderRadius: '5px', overflow: 'hidden' }}>
                   <div style={{ width: `${satisfactionRate}%`, height: '100%', backgroundColor: 'var(--success)', borderRadius: '5px' }}></div>

@@ -72,7 +72,7 @@ const generateMockUnion = (deptName, regionName) => {
   }
 
   return {
-    name: `UDMS de ${deptName}`,
+    name: `MSD mutuelle de santé départementale de ${deptName}`,
     region: regionName,
     commune: deptName,
     manager,
@@ -81,7 +81,7 @@ const generateMockUnion = (deptName, regionName) => {
     agreement,
     map_link: mapLink,
     landmark: `Près de la préfecture de ${deptName}.`,
-    local_info: `L'UDMS regroupe l'ensemble des mutuelles communales du département de ${deptName} et en assure la supervision administrative.`
+    local_info: `La MSD regroupe l'ensemble des mutuelles communales du département de ${deptName} et en assure la supervision administrative.`
   };
 };
 
@@ -386,11 +386,11 @@ export default function Departements({ lang, setView }) {
     queryFn: async () => {
       if (!activeDeptId || !activeDept) return null;
       try {
-        const queryName = `UDMS de ${activeDept.name}`;
+        const queryName = `MSD mutuelle de santé départementale de ${activeDept.name}`;
         const response = await fetch(`http://localhost:5000/api/mutuelles?search=${encodeURIComponent(queryName)}`);
         if (response.ok) {
           const data = await response.json();
-          const match = data.find(m => m.name.toLowerCase().includes(activeDept.name.toLowerCase()) && (m.name.toLowerCase().includes('union') || m.name.toLowerCase().includes('udms')));
+          const match = data.find(m => m.name.toLowerCase().includes(activeDept.name.toLowerCase()) && (m.name.toLowerCase().includes('union') || m.name.toLowerCase().includes('udms') || m.name.toLowerCase().includes('msd') || m.name.toLowerCase().includes('mutuelle')));
           if (match) {
             return match;
           }
@@ -470,7 +470,7 @@ export default function Departements({ lang, setView }) {
                     </h2>
                     {/* Show MSDD Logo if region is Dakar (Assuming ID 1 is Dakar or name is Dakar) */}
                     {activeRegion.name.toLowerCase() === 'dakar' && (
-                      <img src="/udmsdk_logo.png" alt="Union Départementale des Mutuelles de Santé de Dakar" style={{ height: '50px', objectFit: 'contain' }} />
+                      <img src="/udmsdk_logo.png" alt="MSD mutuelle de santé départementale de Dakar" style={{ height: '50px', objectFit: 'contain' }} />
                     )}
                   </div>
                   
@@ -534,7 +534,7 @@ export default function Departements({ lang, setView }) {
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                               {activeDeptUnion.name.toLowerCase().includes('dakar') && (
-                                <img src="/udmsdk_logo.png" alt="Logo UDMS Dakar" style={{ height: '35px', objectFit: 'contain' }} />
+                                <img src="/udmsdk_logo.png" alt="Logo MSD Dakar" style={{ height: '35px', objectFit: 'contain' }} />
                               )}
                               <h3 style={{ fontSize: '1.15rem', color: 'var(--primary)', margin: 0, fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 🛡️ {activeDeptUnion.name}

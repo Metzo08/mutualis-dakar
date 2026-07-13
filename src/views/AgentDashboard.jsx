@@ -298,7 +298,7 @@ export default function AgentDashboard({ lang, agentUser }) {
       }}>
         <div className="container" style={{ position: 'relative', zIndex: 2 }}>
           <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
-            📊 {t.title} — {isSuperAdmin ? 'Super Administration (Sénégal)' : `UDMS de ${agentUser?.department || 'Dakar'}`}
+            📊 {t.title} — {isSuperAdmin ? 'Super Administration (Sénégal)' : `MSD mutuelle de santé départementale de ${agentUser?.department || 'Dakar'}`}
           </h1>
           <p style={{ color: '#f8fafc', fontSize: '1rem', fontWeight: '500', maxWidth: '700px', margin: '0 auto', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>{t.subtitle}</p>
         </div>
@@ -377,7 +377,10 @@ export default function AgentDashboard({ lang, agentUser }) {
                 n = n.replace('Union Départementale de ', 'UD ');
                 n = n.replace('Union Departementale de ', 'UD ');
                 n = n.replace('UDMS de ', 'UD ');
+                n = n.replace('MSD mutuelle de santé départementale de ', 'MSD ');
+                n = n.replace('MSD de ', 'MSD ');
                 n = n.replace(/\(UDMS.*\)/, '');
+                n = n.replace(/\(MSD.*\)/, '');
                 return { name: n.trim() || '—', bénéficiaires: parseInt(m.count) };
               })} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />

@@ -117,7 +117,7 @@ export default function BaseNationale({ lang, setView }) {
     },
     {
       id: 3,
-      name: 'UDMS de Dakar',
+      name: 'MSD mutuelle de santé départementale de Dakar',
       region: 'Dakar',
       commune: 'Dakar Plateau',
       status: 'active',
@@ -136,7 +136,7 @@ export default function BaseNationale({ lang, setView }) {
     },
     {
       id: 4,
-      name: 'UDMS de Pikine',
+      name: 'MSD mutuelle de santé départementale de Pikine',
       region: 'Dakar',
       commune: 'Pikine Ouest',
       status: 'active',
@@ -155,7 +155,7 @@ export default function BaseNationale({ lang, setView }) {
     },
     {
       id: 5,
-      name: 'UDMS de Guédiawaye',
+      name: 'MSD mutuelle de santé départementale de Guédiawaye',
       region: 'Dakar',
       commune: 'Golf Sud',
       status: 'active',
@@ -174,7 +174,7 @@ export default function BaseNationale({ lang, setView }) {
     },
     {
       id: 6,
-      name: 'UDMS de Rufisque',
+      name: 'MSD mutuelle de santé départementale de Rufisque',
       region: 'Dakar',
       commune: 'Rufisque Est',
       status: 'active',
@@ -193,7 +193,7 @@ export default function BaseNationale({ lang, setView }) {
     },
     {
       id: 7,
-      name: 'UDMS de Keur Massar',
+      name: 'MSD mutuelle de santé départementale de Keur Massar',
       region: 'Dakar',
       commune: 'Keur Massar Nord',
       status: 'active',
@@ -212,7 +212,7 @@ export default function BaseNationale({ lang, setView }) {
     },
     {
       id: 8,
-      name: 'UDMS de Thiès',
+      name: 'MSD mutuelle de santé départementale de Thiès',
       region: 'Thiès',
       commune: 'Thiès Nord',
       status: 'active',
@@ -231,7 +231,7 @@ export default function BaseNationale({ lang, setView }) {
     },
     {
       id: 9,
-      name: 'UDMS de Mbour',
+      name: 'MSD mutuelle de santé départementale de Mbour',
       region: 'Thiès',
       commune: 'Mbour',
       status: 'active',
@@ -250,7 +250,7 @@ export default function BaseNationale({ lang, setView }) {
     },
     {
       id: 10,
-      name: 'UDMS de Saint-Louis',
+      name: 'MSD mutuelle de santé départementale de Saint-Louis',
       region: 'Saint-Louis',
       commune: 'Saint-Louis Sor',
       status: 'active',
@@ -269,7 +269,7 @@ export default function BaseNationale({ lang, setView }) {
     },
     {
       id: 11,
-      name: 'UDMS de Ziguinchor',
+      name: 'MSD mutuelle de santé départementale de Ziguinchor',
       region: 'Ziguinchor',
       commune: 'Ziguinchor',
       status: 'active',
@@ -288,7 +288,7 @@ export default function BaseNationale({ lang, setView }) {
     },
     {
       id: 12,
-      name: 'UDMS de Kaolack',
+      name: 'MSD mutuelle de santé départementale de Kaolack',
       region: 'Kaolack',
       commune: 'Kaolack',
       status: 'active',
@@ -307,7 +307,7 @@ export default function BaseNationale({ lang, setView }) {
     },
     {
       id: 13,
-      name: 'UDMS de Louga',
+      name: 'MSD mutuelle de santé départementale de Louga',
       region: 'Louga',
       commune: 'Louga',
       status: 'active',
@@ -326,7 +326,7 @@ export default function BaseNationale({ lang, setView }) {
     },
     {
       id: 14,
-      name: 'UDMS de Diourbel',
+      name: 'MSD mutuelle de santé départementale de Diourbel',
       region: 'Diourbel',
       commune: 'Diourbel',
       status: 'active',
@@ -493,7 +493,7 @@ export default function BaseNationale({ lang, setView }) {
       lat: 15.6172,
       lng: -16.2255,
       landmark: "Centre-ville de Louga, derrière la préfecture de département.",
-      localInfo: "Cette mutuelle est actuellement en restructuration. Pour toute question urgente, veuillez vous rapprocher de l'UDMS de Louga."
+      localInfo: "Cette mutuelle est actuellement en restructuration. Pour toute question urgente, veuillez vous rapprocher de la MSD mutuelle de santé départementale de Louga."
     },
     {
       id: 23,
