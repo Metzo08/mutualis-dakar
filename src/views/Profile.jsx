@@ -552,7 +552,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
               {/* Citizen Card 4: Adhésions & Parrainages en Masse */}
               <div className="card text-left" style={{ padding: '1.5rem' }}>
                 <h3 style={{ fontSize: '1.1rem', color: 'var(--primary)', marginBottom: '1rem' }}>
-                  📊 {lang === 'fr' ? 'Adhésions & Parrainages en Masse' : 'Mbindum Mboloo & Dimbalé'}
+                  📊 {lang === 'fr' ? 'Adhésions & parrainages en masse' : 'Mbindum Mboloo & Dimbalé'}
                 </h3>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', marginBottom: '1.5rem' }}>
                   {lang === 'fr' 
@@ -565,14 +565,14 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
                     onClick={() => setViewTab('services', 'register', 'adhesion_masse')}
                     style={{ flex: '1', minWidth: '150px', justifyContent: 'center' }}
                   >
-                    📋 {lang === 'fr' ? 'Adhésion Groupe / Masse' : 'Mbindum Mboloo'}
+                    📋 {lang === 'fr' ? 'Adhésion groupe / masse' : 'Mbindum Mboloo'}
                   </button>
                   <button 
                     className="btn btn-success btn-sm" 
                     onClick={() => setViewTab('parrainage-solidaire', 'register', 'collectif')}
                     style={{ flex: '1', minWidth: '150px', justifyContent: 'center', backgroundColor: 'var(--success)', border: 'none', color: '#fff' }}
                   >
-                    🤝 {lang === 'fr' ? 'Parrainage de Masse' : 'Dimbalé Packs'}
+                    🤝 {lang === 'fr' ? 'Parrainage de masse' : 'Dimbalé Packs'}
                   </button>
                 </div>
               </div>
@@ -581,7 +581,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
               {loyaltyData && (
                 <div className="card text-left" style={{ padding: '1.5rem' }}>
                   <h3 style={{ fontSize: '1.1rem', color: 'var(--primary)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span>⭐ Fidélité & Badges</span>
+                    <span>⭐ Fidélité & badges</span>
                     <span className="badge badge-success" style={{ fontSize: '0.8rem', padding: '0.2rem 0.6rem', textTransform: 'capitalize' }}>
                       Niveau {loyaltyData.level}
                     </span>

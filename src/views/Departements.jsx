@@ -469,9 +469,11 @@ export default function Departements({ lang, setView }) {
                       Région de {activeRegion.name}
                     </h2>
                     {/* Show MSDD Logo if region is Dakar (Assuming ID 1 is Dakar or name is Dakar) */}
-                    {activeRegion.name.toLowerCase() === 'dakar' && (
-                      <img src="/udmsdk_logo.png" alt="MSD mutuelle de santé départementale de Dakar" style={{ height: '50px', objectFit: 'contain' }} />
-                    )}
+                    <img 
+                      src={activeRegion.name.toLowerCase() === 'dakar' ? "/udmsdk_logo.png" : "/msdd_logo_corrected.png"} 
+                      alt={`Logo Région ${activeRegion.name}`} 
+                      style={{ height: '50px', objectFit: 'contain' }} 
+                    />
                   </div>
                   
                   <p style={{ fontSize: '1.1rem', color: 'var(--neutral-dark)' }}>
@@ -533,9 +535,11 @@ export default function Departements({ lang, setView }) {
                         }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                              {activeDeptUnion.name.toLowerCase().includes('dakar') && (
-                                <img src="/udmsdk_logo.png" alt="Logo MSD Dakar" style={{ height: '35px', objectFit: 'contain' }} />
-                              )}
+                              <img 
+                                src={activeDeptUnion.name.toLowerCase().includes('dakar') ? "/udmsdk_logo.png" : "/msdd_logo_corrected.png"} 
+                                alt="Logo MSD" 
+                                style={{ height: '35px', objectFit: 'contain' }} 
+                              />
                               <h3 style={{ fontSize: '1.15rem', color: 'var(--primary)', margin: 0, fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 🛡️ {activeDeptUnion.name}
                               </h3>

@@ -1268,8 +1268,8 @@ async function initializeDatabase() {
     );
     await pool.query(
       `INSERT INTO loyalty_badges (beneficiary_id, badge_slug, badge_name) VALUES
-       (1, 'assure_fidele', 'Assuré Fidèle'),
-       (1, 'citoyen_modele', 'Citoyen Modèle')`
+       (1, 'assure_fidele', 'Assuré fidèle'),
+       (1, 'citoyen_modele', 'Citoyen modèle')`
     );
     // Awa Ndiaye (id=2) : parrainage + cotisation
     await pool.query(
@@ -1279,7 +1279,7 @@ async function initializeDatabase() {
     );
     await pool.query(
       `INSERT INTO loyalty_badges (beneficiary_id, badge_slug, badge_name) VALUES
-       (2, 'parrain_solidarite', 'Parrain Solidaire')`
+       (2, 'parrain_solidarite', 'Parrain solidaire')`
     );
     console.log('Points de fidélité et badges créés.');
 

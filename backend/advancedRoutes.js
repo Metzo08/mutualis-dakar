@@ -19,9 +19,9 @@ const router = express.Router();
 
 // Définition des badges disponibles et leurs seuils
 const BADGE_DEFINITIONS = [
-  { slug: 'assure_fidele', name: 'Assuré Fidèle', nameWo: 'Assuré Fidèle', icon: '🥇', description: 'Cotisation payée à temps 2 années consécutives', threshold: 50, reason: 'cotisation_a_temps' },
-  { slug: 'parrain_solidarite', name: 'Parrain Solidaire', nameWo: 'Parrain Bu Solidarité', icon: '🤝', description: 'A parrainé au moins un ménage ou élève', threshold: 40, reason: 'parrainage' },
-  { slug: 'citoyen_modele', name: 'Citoyen Modèle', nameWo: 'Citoyen Bu Baax', icon: '🌟', description: 'Aucune réclamation injustifiée pendant 1 an', threshold: 30, reason: 'sans_reclamation' },
+  { slug: 'assure_fidele', name: 'Assuré fidèle', nameWo: 'Assuré fidèle', icon: '🥇', description: 'Cotisation payée à temps 2 années consécutives', threshold: 50, reason: 'cotisation_a_temps' },
+  { slug: 'parrain_solidarite', name: 'Parrain solidaire', nameWo: 'Parrain bu solidarité', icon: '🤝', description: 'A parrainé au moins un ménage ou élève', threshold: 40, reason: 'parrainage' },
+  { slug: 'citoyen_modele', name: 'Citoyen modèle', nameWo: 'Citoyen bu baax', icon: '🌟', description: 'Aucune réclamation injustifiée pendant 1 an', threshold: 30, reason: 'sans_reclamation' },
   { slug: 'veteran_5ans', name: 'Vétéran 5 ans', nameWo: 'Vétéran 5 at', icon: '🏆', description: 'Assuré depuis 5 ans ou plus', threshold: 100, reason: 'annee_fidelite' }
 ];
 
