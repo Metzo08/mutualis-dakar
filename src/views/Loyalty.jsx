@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
 
+const formatBadgeName = (name) => {
+  if (!name) return '';
+  return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+};
+
 // Module fidélité : points, niveaux, badges et classement.
 export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
   const [data, setData] = useState(null);
@@ -31,7 +36,7 @@ export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
       sans_reclamation: 'Aucune réclamation (1 an)',
       annee_fidelite: 'Année de fidélité'
     },
-    levels: { Or: 'Or 🥇', Argent: 'Argent 🥈', Bronze: 'Bronze 🥉', Nouveau: 'Nouveau 🌱' }
+    levels: { Or: 'Or 🥇', Argent: 'Argent 🥈', Bronze: 'Bronze 🥉', Nouveau: 'Nouveau 🌱', or: 'Or 🥇', argent: 'Argent 🥈', bronze: 'Bronze 🥉', nouveau: 'Nouveau 🌱' }
   } : {
     title: 'Programme fidélité',
     subtitle: 'Sa point, sa badge ak sa récompense',
@@ -53,7 +58,7 @@ export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
       sans_reclamation: 'Amul réclamation (1 at)',
       annee_fidelite: 'Atu fidélité'
     },
-    levels: { Or: 'Or 🥇', Argent: 'Argent 🥈', Bronze: 'Bronze 🥉', Nouveau: 'Bees 🌱' }
+    levels: { Or: 'Or 🥇', Argent: 'Argent 🥈', Bronze: 'Bronze 🥉', Nouveau: 'Bees 🌱', or: 'Or 🥇', argent: 'Argent 🥈', bronze: 'Bronze 🥉', nouveau: 'Bees 🌱' }
   };
 
   const fetchData = () => {
@@ -130,7 +135,7 @@ export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <div style={{ fontSize: '2.5rem', opacity: 0.5 }}>{data.nextBadge.icon}</div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: '700', fontSize: '1rem' }}>{data.nextBadge.name}</div>
+              <div style={{ fontWeight: '700', fontSize: '1rem' }}>{formatBadgeName(data.nextBadge.name)}</div>
               <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>{data.nextBadge.description}</div>
               <div style={{ background: 'var(--bg-secondary)', borderRadius: '10px', height: '8px', overflow: 'hidden' }}>
                 <div style={{ background: '#f59e0b', height: '100%', width: `${data.nextBadge.progress}%`, transition: 'width 0.5s' }} />
@@ -155,7 +160,7 @@ export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
               opacity: b.unlocked ? 1 : 0.6
             }}>
               <div style={{ fontSize: '2rem', marginBottom: '0.5rem', filter: b.unlocked ? 'none' : 'grayscale(100%)' }}>{b.icon}</div>
-              <div style={{ fontWeight: '700', fontSize: '0.85rem', marginBottom: '0.25rem' }}>{b.name}</div>
+              <div style={{ fontWeight: '700', fontSize: '0.85rem', marginBottom: '0.25rem' }}>{formatBadgeName(b.name)}</div>
               <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{b.description}</div>
               {!b.unlocked && <div style={{ fontSize: '0.65rem', color: '#f59e0b', marginTop: '0.25rem' }}>{b.progress}%</div>}
             </div>

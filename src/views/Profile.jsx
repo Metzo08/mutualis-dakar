@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import CmuCard from '../components/CmuCard';
 
+const formatBadgeName = (name) => {
+  if (!name) return '';
+  return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+};
+
 export default function Profile({ lang, portalMode, citizenUser, agentUser, partnerUser, setView, setViewTab }) {
   const dict = {
     fr: {
@@ -611,7 +616,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
                   {loyaltyData.nextBadge && (
                     <div style={{ marginBottom: '1.25rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: '600', marginBottom: '0.4rem' }}>
-                        <span>Prochain badge : {loyaltyData.nextBadge.name}</span>
+                        <span>Prochain badge : {formatBadgeName(loyaltyData.nextBadge.name)}</span>
                         <span>{loyaltyData.totalPoints} / {loyaltyData.nextBadge.threshold || 200} pts</span>
                       </div>
                       <div style={{ height: '8px', backgroundColor: 'var(--border-color)', borderRadius: '4px', overflow: 'hidden' }}>
@@ -636,7 +641,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
                           fontSize: '0.8rem'
                         }} title={badge.description}>
                           <span>{badge.icon}</span>
-                          <span style={{ fontWeight: badge.unlocked ? '600' : 'normal' }}>{badge.name}</span>
+                          <span style={{ fontWeight: badge.unlocked ? '600' : 'normal' }}>{formatBadgeName(badge.name)}</span>
                         </div>
                       ))}
                     </div>
