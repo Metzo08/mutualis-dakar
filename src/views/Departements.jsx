@@ -407,11 +407,12 @@ export default function Departements({ lang, setView }) {
   // Generate pseudo-random stats based on region id to keep UI looking rich
   const getSimulatedStats = (id) => {
     const seed = id || 1;
+    const regionName = activeRegion ? activeRegion.name.toLowerCase() : 'dakar';
     return {
       mutuelles: 5 + (seed % 15),
       beneficiaries: (10000 + (seed * 5000)).toLocaleString('fr-FR'),
       structures: 10 + (seed % 20),
-      president: seed === 1 ? 'Mamadou Diallo' : (seed === 2 ? 'Aminata Ndiaye' : 'Ousmane Sall'),
+      president: regionName === 'dakar' ? 'Moustapha Mbengue' : (seed === 2 ? 'Aminata Ndiaye' : 'Ousmane Sall'),
       initiative: lang === 'fr' 
         ? 'Campagne de sensibilisation itinérante dans les marchés locaux et inscriptions massives.' 
         : 'Liggéey ngir jox xibaar ci marse yi ak dugal nit ñi ci mutuelle bi.'
@@ -469,7 +470,7 @@ export default function Departements({ lang, setView }) {
                     </h2>
                     {/* Show MSDD Logo if region is Dakar (Assuming ID 1 is Dakar or name is Dakar) */}
                     {activeRegion.name.toLowerCase() === 'dakar' && (
-                      <img src="/msdd_logo_corrected.png" alt="Union nationale des mutuelles de santé du Sénégal" style={{ height: '50px', objectFit: 'contain' }} />
+                      <img src="/udmsdk_logo.png" alt="Union Départementale des Mutuelles de Santé de Dakar" style={{ height: '50px', objectFit: 'contain' }} />
                     )}
                   </div>
                   
