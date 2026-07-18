@@ -68,15 +68,29 @@ export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
     fetch(`http://localhost:5000/api/loyalty/${beneficiaryId}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
-      .then((res) => res.json())
-      .then((d) => { setData(d); setLoading(false); })
+      .then((res) => {
+        if (!res.ok) throw new Error('API Error');
+        return res.json();
+      })
+      .then((d) => {
+        // Ensure badges and history are always arrays
+        if (d && !d.error) {
+          d.badges = d.badges || [];
+          d.history = d.history || [];
+          setData(d);
+        }
+        setLoading(false);
+      })
       .catch(() => setLoading(false));
 
     if (isAgent) {
       fetch('http://localhost:5000/api/loyalty/leaderboard', {
         headers: { Authorization: `Bearer ${token}` }
       })
-        .then((res) => res.json())
+        .then((res) => {
+          if (!res.ok) throw new Error('API Error');
+          return res.json();
+        })
         .then(setLeaderboard)
         .catch(() => {});
     }
@@ -152,7 +166,7 @@ export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
       <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
         <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '1rem' }}>🏅 {t.badges}</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '1rem' }}>
-          {data.badges.map((b, i) => (
+          {(data.badges || []).map((b, i) => (
             <div key={i} style={{
               padding: '1rem', borderRadius: '12px', textAlign: 'center',
               background: b.unlocked ? 'linear-gradient(135deg, rgba(34,197,94,0.1), rgba(34,197,94,0.05))' : 'var(--bg-secondary)',
