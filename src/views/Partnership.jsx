@@ -242,7 +242,7 @@ export default function Partnership({ lang, portalMode, agentUser }) {
           .partner-carousel-container {
             overflow: hidden;
             width: 100%;
-            padding: 1.25rem 0;
+            padding: 2.25rem 0;
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 16px;
@@ -273,7 +273,7 @@ export default function Partnership({ lang, portalMode, agentUser }) {
             width: max-content;
             animation: scrollMarquee 30s linear infinite;
             align-items: center;
-            gap: 4rem;
+            gap: 6rem;
           }
           .partner-carousel-track:hover {
             animation-play-state: paused;
@@ -304,8 +304,8 @@ export default function Partnership({ lang, portalMode, agentUser }) {
                     src={partner.logo} 
                     alt={partner.name} 
                     style={{ 
-                      height: '36px', 
-                      maxWidth: '150px', 
+                      height: '65px', 
+                      maxWidth: '220px', 
                       objectFit: 'contain',
                       mixBlendMode: 'normal'
                     }} 
