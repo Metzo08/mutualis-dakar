@@ -2,61 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 const PARTNERS = [
-  { name: 'UNAMUSC SÉNÉGAL', logo: '/unamusc_logo.png', isImage: true },
+  { name: 'UNAMUSC SÉNÉGAL', logo: '/logo_partner_unamusc.png', isImage: true },
+  { name: 'MINISTÈRE DE LA SANTÉ', logo: '/logo_partner_ministere_sante.png', isImage: true },
+  { name: 'MINISTÈRE DE LA FEMME', logo: '/logo_partner_ministere_femme.png', isImage: true },
+  { name: 'MEDICOS DEL MUNDO', logo: '/logo_partner_medicos.png', isImage: true },
+  { name: 'PATISEN', logo: '/logo_partner_patisen.png', isImage: true },
   { name: 'WAVE SÉNÉGAL', logo: '/logo_wave.png', isImage: true },
   { name: 'ORANGE MONEY', logo: '/logo_orange_money.png', isImage: true },
-  { 
-    name: 'MEDICOS', 
-    isImage: false,
-    svg: (
-      <svg viewBox="0 0 160 50" style={{ height: '36px' }}>
-        <rect x="5" y="8" width="30" height="30" rx="6" fill="#ef4444" />
-        <path d="M20 15 v16 M12 23 h16" stroke="white" strokeWidth="4" strokeLinecap="round" />
-        <text x="45" y="29" fill="var(--text-main)" fontSize="18" fontWeight="bold" fontFamily="sans-serif">MEDICOS</text>
-      </svg>
-    )
-  },
-  { 
-    name: 'MINISTÈRE DE LA FEMME', 
-    isImage: false,
-    svg: (
-      <svg viewBox="0 0 250 50" style={{ height: '36px' }}>
-        <circle cx="20" cy="23" r="14" fill="#15803d" />
-        <path d="M20 9 L34 23 L20 37 L6 23 Z" fill="#eab308" />
-        <circle cx="20" cy="23" r="6" fill="#dc2626" />
-        <text x="45" y="21" fill="var(--text-main)" fontSize="12" fontWeight="800" fontFamily="sans-serif">MINISTÈRE DE LA FEMME</text>
-        <text x="45" y="33" fill="var(--text-sub)" fontSize="9" fontWeight="600" fontFamily="sans-serif">de la Famille et de la Protection</text>
-      </svg>
-    )
-  },
-  { 
-    name: 'MINISTÈRE DE LA SANTÉ', 
-    isImage: false,
-    svg: (
-      <svg viewBox="0 0 250 50" style={{ height: '36px' }}>
-        <circle cx="20" cy="23" r="14" fill="#1e3a8a" />
-        <path d="M20 11 L24 19 L32 19 L26 24 L28 32 L20 27 L12 32 L14 24 L8 19 L16 19 Z" fill="#eab308" />
-        <text x="45" y="21" fill="var(--text-main)" fontSize="12" fontWeight="800" fontFamily="sans-serif">MINISTÈRE DE LA SANTÉ</text>
-        <text x="45" y="33" fill="var(--text-sub)" fontSize="9" fontWeight="600" fontFamily="sans-serif">et de l'Action Sociale</text>
-      </svg>
-    )
-  },
-  { 
-    name: 'SEN-CSU', 
-    logo: '/sencsu_logo.png', 
-    isImage: true 
-  },
-  { 
-    name: 'DONATEURS RSE', 
-    isImage: false,
-    svg: (
-      <svg viewBox="0 0 180 50" style={{ height: '36px' }}>
-        <rect x="5" y="8" width="30" height="30" rx="15" fill="#059669" />
-        <path d="M12 23 L17 28 L28 16" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-        <text x="45" y="29" fill="var(--text-main)" fontSize="16" fontWeight="bold" fontFamily="sans-serif">DONATEURS RSE</text>
-      </svg>
-    )
-  }
+  { name: 'SEN-CSU', logo: '/sencsu_logo.png', isImage: true }
 ];
 
 export default function Partnership({ lang, portalMode, agentUser }) {
