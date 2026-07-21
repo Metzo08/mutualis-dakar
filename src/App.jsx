@@ -176,6 +176,55 @@ export default function App() {
       rawSetAgentUser(null);
     }
   }, []);
+
+  // Dynamic document title update for SPA SEO and usability
+  useEffect(() => {
+    const titles = {
+      fr: {
+        home: 'Accueil - MUTUALIS DAKAR',
+        login: 'Connexion - MUTUALIS DAKAR',
+        beneficiaries: 'Bénéficiaires & Affiliations - MUTUALIS DAKAR',
+        services: 'Services en ligne - MUTUALIS DAKAR',
+        map: 'Cartographie sanitaire & structures de santé - MUTUALIS DAKAR',
+        directory: 'Annuaire des structures sanitaires - MUTUALIS DAKAR',
+        depts: 'Unions & Mutuelles de Dakar - MUTUALIS DAKAR',
+        programmes: 'Programmes & Offres - MUTUALIS DAKAR',
+        about: 'À propos - MUTUALIS DAKAR',
+        medicaments: 'Recherche de médicaments - MUTUALIS DAKAR',
+        galerie: 'Galerie média - MUTUALIS DAKAR',
+        'infos-csu': 'Informations CSU & Couverture Maladie - MUTUALIS DAKAR',
+        'blog-experts': 'Espace Blog & Experts - MUTUALIS DAKAR',
+        'parrainage-solidaire': 'Parrainage en masse - MUTUALIS DAKAR',
+        partnership: 'Espace Partenariat - MUTUALIS DAKAR',
+        complaints: 'Réclamations & Plaintes - MUTUALIS DAKAR',
+        profile: 'Profil utilisateur - MUTUALIS DAKAR',
+        verify: 'Vérification d\'affiliation - MUTUALIS DAKAR',
+        dashboard: 'Tableau de bord Agent - MUTUALIS DAKAR',
+        claims: 'Gestion des sinistres - MUTUALIS DAKAR',
+        notifications: 'Alertes & Notifications - MUTUALIS DAKAR',
+        cotisations: 'Cotisations & Paiements - MUTUALIS DAKAR',
+        partner: 'Portail Partenaire - MUTUALIS DAKAR',
+        'regional-stats': 'Statistiques Régionales - MUTUALIS DAKAR',
+        loyalty: 'Programme fidélité - MUTUALIS DAKAR',
+        payments: 'Paiements - MUTUALIS DAKAR'
+      },
+      wo: {
+        home: 'Kër - MUTUALIS DAKAR',
+        login: 'Duggal - MUTUALIS DAKAR',
+        beneficiaries: 'Bénéficiaires & Affiliations - MUTUALIS DAKAR',
+        services: 'Services en ligne - MUTUALIS DAKAR',
+        map: 'Cartographie sanitaire - MUTUALIS DAKAR',
+        directory: 'Annuaire - MUTUALIS DAKAR',
+        depts: 'Unions & Mutuelles - MUTUALIS DAKAR',
+        about: 'À propos - MUTUALIS DAKAR',
+        partnership: 'Partenariat - MUTUALIS DAKAR'
+      }
+    };
+    const defaultTitle = 'MUTUALIS DAKAR - Portail de la Mutualité de Santé Communautaire';
+    const langTitles = titles[lang] || titles.fr;
+    document.title = langTitles[view] || defaultTitle;
+  }, [view, lang]);
+
   const [theme, setTheme] = useState(localStorage.getItem('cmu-theme') || 'light');
   const [sidebarOpen, setSidebarOpen] = useState(false); // mobile hamburger toggle state
   const [servicesTab, setServicesTab] = useState('register'); // track tab of services (register, renew, donate)
