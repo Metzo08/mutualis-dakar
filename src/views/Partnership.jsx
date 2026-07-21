@@ -1,7 +1,66 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
+const PARTNERS = [
+  { name: 'UNAMUSC SÉNÉGAL', logo: '/unamusc_logo.png', isImage: true },
+  { name: 'WAVE SÉNÉGAL', logo: '/logo_wave.png', isImage: true },
+  { name: 'ORANGE MONEY', logo: '/logo_orange_money.png', isImage: true },
+  { 
+    name: 'MEDICOS', 
+    isImage: false,
+    svg: (
+      <svg viewBox="0 0 160 50" style={{ height: '36px' }}>
+        <rect x="5" y="8" width="30" height="30" rx="6" fill="#ef4444" />
+        <path d="M20 15 v16 M12 23 h16" stroke="white" strokeWidth="4" strokeLinecap="round" />
+        <text x="45" y="29" fill="var(--text-main)" fontSize="18" fontWeight="bold" fontFamily="sans-serif">MEDICOS</text>
+      </svg>
+    )
+  },
+  { 
+    name: 'MINISTÈRE DE LA FEMME', 
+    isImage: false,
+    svg: (
+      <svg viewBox="0 0 250 50" style={{ height: '36px' }}>
+        <circle cx="20" cy="23" r="14" fill="#15803d" />
+        <path d="M20 9 L34 23 L20 37 L6 23 Z" fill="#eab308" />
+        <circle cx="20" cy="23" r="6" fill="#dc2626" />
+        <text x="45" y="21" fill="var(--text-main)" fontSize="12" fontWeight="800" fontFamily="sans-serif">MINISTÈRE DE LA FEMME</text>
+        <text x="45" y="33" fill="var(--text-sub)" fontSize="9" fontWeight="600" fontFamily="sans-serif">de la Famille et de la Protection</text>
+      </svg>
+    )
+  },
+  { 
+    name: 'MINISTÈRE DE LA SANTÉ', 
+    isImage: false,
+    svg: (
+      <svg viewBox="0 0 250 50" style={{ height: '36px' }}>
+        <circle cx="20" cy="23" r="14" fill="#1e3a8a" />
+        <path d="M20 11 L24 19 L32 19 L26 24 L28 32 L20 27 L12 32 L14 24 L8 19 L16 19 Z" fill="#eab308" />
+        <text x="45" y="21" fill="var(--text-main)" fontSize="12" fontWeight="800" fontFamily="sans-serif">MINISTÈRE DE LA SANTÉ</text>
+        <text x="45" y="33" fill="var(--text-sub)" fontSize="9" fontWeight="600" fontFamily="sans-serif">et de l'Action Sociale</text>
+      </svg>
+    )
+  },
+  { 
+    name: 'SEN-CSU', 
+    logo: '/sencsu_logo.png', 
+    isImage: true 
+  },
+  { 
+    name: 'DONATEURS RSE', 
+    isImage: false,
+    svg: (
+      <svg viewBox="0 0 180 50" style={{ height: '36px' }}>
+        <rect x="5" y="8" width="30" height="30" rx="15" fill="#059669" />
+        <path d="M12 23 L17 28 L28 16" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        <text x="45" y="29" fill="var(--text-main)" fontSize="16" fontWeight="bold" fontFamily="sans-serif">DONATEURS RSE</text>
+      </svg>
+    )
+  }
+];
+
 export default function Partnership({ lang, portalMode, agentUser }) {
+  const doublePartners = [...PARTNERS, ...PARTNERS];
   const [page, setPage] = useState(1);
   const [formData, setFormData] = useState({
     companyName: '',
@@ -219,6 +278,93 @@ export default function Partnership({ lang, portalMode, agentUser }) {
           </p>
         </div>
       </section>
+
+      {/* Partners Scrolling Carousel */}
+      <div className="partner-carousel-section" style={{ marginTop: '0.5rem', marginBottom: '2rem' }}>
+        <style>{`
+          @keyframes scrollMarquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          .partner-carousel-container {
+            overflow: hidden;
+            width: 100%;
+            padding: 1.25rem 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            position: relative;
+            display: flex;
+            align-items: center;
+          }
+          .partner-carousel-container::before,
+          .partner-carousel-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100px;
+            z-index: 2;
+            pointer-events: none;
+          }
+          .partner-carousel-container::before {
+            left: 0;
+            background: linear-gradient(to right, var(--bg-card) 0%, transparent 100%);
+          }
+          .partner-carousel-container::after {
+            right: 0;
+            background: linear-gradient(to left, var(--bg-card) 0%, transparent 100%);
+          }
+          .partner-carousel-track {
+            display: flex;
+            width: max-content;
+            animation: scrollMarquee 30s linear infinite;
+            align-items: center;
+            gap: 4rem;
+          }
+          .partner-carousel-track:hover {
+            animation-play-state: paused;
+          }
+          .partner-logo-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease, filter 0.3s ease;
+            filter: grayscale(80%) opacity(80%);
+          }
+          .partner-logo-item:hover {
+            transform: scale(1.08);
+            filter: grayscale(0%) opacity(100%);
+          }
+        `}</style>
+        
+        <h4 style={{ fontSize: '0.85rem', fontWeight: '750', color: 'var(--text-sub)', marginBottom: '0.75rem', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          🤝 {lang === 'fr' ? 'Nos partenaires institutionnels & RSE' : 'Giñ bokk liggéey (Partenaires)'}
+        </h4>
+        
+        <div className="partner-carousel-container">
+          <div className="partner-carousel-track">
+            {doublePartners.map((partner, index) => (
+              <div key={index} className="partner-logo-item" title={partner.name}>
+                {partner.isImage ? (
+                  <img 
+                    src={partner.logo} 
+                    alt={partner.name} 
+                    style={{ 
+                      height: '36px', 
+                      maxWidth: '150px', 
+                      objectFit: 'contain',
+                      mixBlendMode: 'normal'
+                    }} 
+                  />
+                ) : (
+                  partner.svg
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
 
       {portalMode === 'agent' && agentUser ? (
         // Administrative view of partnerships
