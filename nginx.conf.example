@@ -1,0 +1,49 @@
+# Exemple de configuration de Proxy Inverse Nginx pour MUTUALIS DAKAR
+# Ce fichier doit être placé dans /etc/nginx/sites-available/mutualis.conf sur votre serveur Linux de production.
+
+server {
+    listen 80;
+    server_name mutualis.sn www.mutualis.sn;
+
+    # Redirection automatique de HTTP vers HTTPS
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name mutualis.sn www.mutualis.sn;
+
+    # Chemins vers vos certificats SSL (ex: Certbot Let's Encrypt)
+    ssl_certificate /etc/letsencrypt/live/mutualis.sn/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/mutualis.sn/privkey.pem;
+
+    # Paramètres de sécurité SSL robustes
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+
+    # 1. Dossier racine contenant le build du frontend (React SPA)
+    location / {
+        root /var/www/mutualis-dakar/dist;
+        index index.html;
+        # Redirection vers index.html pour gérer les routes virtuelles de React Router/SPA
+        try_files $uri $uri/ /index.html;
+    }
+
+    # 2. Proxy Inverse vers le serveur backend Node.js (Express exécutant sur le port 5000)
+    location /api/ {
+        proxy_pass http://127.0.0.1:5000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+
+        # En-têtes pour transmettre l'adresse IP et le protocole originaux au backend (crucial pour le rate-limit)
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
