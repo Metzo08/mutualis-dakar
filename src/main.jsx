@@ -11,9 +11,11 @@ window.fetch = async function (input, init) {
     if (configApiUrl) {
       url = url.replace('http://localhost:5000', configApiUrl);
     } else {
-      const host = window.location.hostname;
-      const apiHost = (host === 'localhost' || host === '127.0.0.1') ? 'localhost' : host;
-      url = url.replace('localhost', apiHost);
+      // Si on est en production, on utilise l'origin du navigateur (ex: https://autre-nom.sn)
+      // Cela évite d'avoir du mixed-content HTTP/HTTPS et gère le proxy inverse sans port :5000
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const apiBase = isLocal ? 'http://localhost:5000' : window.location.origin;
+      url = url.replace('http://localhost:5000', apiBase);
     }
   }
 
