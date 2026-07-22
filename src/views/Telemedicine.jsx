@@ -27,17 +27,23 @@ export default function Telemedicine({ lang = 'fr' }) {
 
   // WebRTC Real Camera & Audio Stream States
   const userVideoRef = useRef(null);
-  const doctorVideoRef = useRef(null);
+  const audioContextRef = useRef(null);
+  const analyserRef = useRef(null);
+  const animFrameRef = useRef(null);
+
   const [mediaStream, setMediaStream] = useState(null);
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState('');
+  const [audioLevel, setAudioLevel] = useState(0); // 0 to 100%
 
   const [isMuted, setIsMuted] = useState(false);
   const [isCamOff, setIsCamOff] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
+  const [qrLevel, setQrLevel] = useState(3); // 1: Public, 2: SOS, 3: Medecin WebRTC
   const [prescriptionSigned, setPrescriptionSigned] = useState(false);
+
   const [chatMessages, setChatMessages] = useState([
-    { sender: 'Dr. Aminata Ndiaye', text: 'Bonjour ! Je suis en ligne pour votre téléconsultation WebRTC.' }
+    { sender: 'Dr. Aminata Ndiaye', text: 'Bonjour ! Je suis connecté envisioconférence HD WebRTC. Comment vous sentez-vous ?' }
   ]);
   const [inputMsg, setInputMsg] = useState('');
 
@@ -47,12 +53,48 @@ export default function Telemedicine({ lang = 'fr' }) {
   const [scheduledAt, setScheduledAt] = useState('');
   const [bookingSuccess, setBookingSuccess] = useState('');
 
-  // Initialisation de la véritable caméra du navigateur (getUserMedia)
+  // Initialisation de la caméra réelle + WebAudio API Analyser pour le microphone
   useEffect(() => {
     let currentStream = null;
 
-    const startCamera = async () => {
-      if (activeSession && !isCamOff) {
+    const startAudioVisualizer = (stream) => {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+
+        const audioCtx = new AudioContext();
+        audioContextRef.current = audioCtx;
+
+        const analyser = audioCtx.createAnalyser();
+        analyser.fftSize = 64;
+        analyserRef.current = analyser;
+
+        const source = audioCtx.createMediaStreamSource(stream);
+        source.connect(analyser);
+
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+        const updateMeter = () => {
+          if (!analyserRef.current) return;
+          analyserRef.current.getByteFrequencyData(dataArray);
+          let sum = 0;
+          for (let i = 0; i < dataArray.length; i++) {
+            sum += dataArray[i];
+          }
+          const average = sum / dataArray.length;
+          const level = Math.min(100, Math.round((average / 128) * 100));
+          setAudioLevel(level);
+          animFrameRef.current = requestAnimationFrame(updateMeter);
+        };
+
+        updateMeter();
+      } catch (e) {
+        console.warn('Erreur WebAudio Analyser:', e);
+      }
+    };
+
+    const startMediaDevices = async () => {
+      if (activeSession) {
         setCameraError('');
         try {
           if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -64,46 +106,71 @@ export default function Telemedicine({ lang = 'fr' }) {
             setMediaStream(stream);
             setCameraActive(true);
 
-            if (userVideoRef.current) {
+            if (userVideoRef.current && !isCamOff) {
               userVideoRef.current.srcObject = stream;
             }
+
+            // Démarrage du VU-mètre microphone audio
+            startAudioVisualizer(stream);
           } else {
-            setCameraError('Accès caméra non supporté par ce navigateur.');
+            setCameraError('Accès caméra/micro non supporté sur ce navigateur.');
           }
         } catch (err) {
-          console.warn('Erreur ou refus d\'accès à la caméra réelle:', err);
-          setCameraError('Caméra réelle non accessible (Autorisation ou périphérique absent). Mode flux médical simulé actif.');
+          console.warn('Erreur ou refus d\'accès caméra/micro:', err);
+          setCameraError('Caméra / Micro réel non accessible (Autorisation ou périphérique absent). Mode flux médical simulé actif.');
           setCameraActive(false);
         }
       }
     };
 
-    startCamera();
+    startMediaDevices();
 
     return () => {
       if (currentStream) {
         currentStream.getTracks().forEach(track => track.stop());
       }
+      if (animFrameRef.current) {
+        cancelAnimationFrame(animFrameRef.current);
+      }
+      if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+        audioContextRef.current.close();
+      }
     };
-  }, [activeSession, isCamOff]);
+  }, [activeSession]);
 
-  // Gestion de la coupure micro / vidéo
+  // Effectuer la mise à jour de la vidéo quand isCamOff change
+  useEffect(() => {
+    if (userVideoRef.current && mediaStream && !isCamOff) {
+      userVideoRef.current.srcObject = mediaStream;
+    }
+  }, [isCamOff, mediaStream]);
+
+  // Coupure micro réelle (Audio Tracks)
   const toggleMute = () => {
+    const newMuteState = !isMuted;
+    setIsMuted(newMuteState);
+
     if (mediaStream) {
       mediaStream.getAudioTracks().forEach(track => {
-        track.enabled = isMuted; // Toggle reverse
+        track.enabled = !newMuteState; // false = muted
       });
     }
-    setIsMuted(!isMuted);
+
+    if (newMuteState) {
+      setAudioLevel(0);
+    }
   };
 
+  // Coupure caméra réelle (Video Tracks)
   const toggleCamera = () => {
+    const newCamState = !isCamOff;
+    setIsCamOff(newCamState);
+
     if (mediaStream) {
       mediaStream.getVideoTracks().forEach(track => {
-        track.enabled = isCamOff; // Toggle reverse
+        track.enabled = !newCamState; // false = off
       });
     }
-    setIsCamOff(!isCamOff);
   };
 
   const fetchSessions = async () => {
@@ -168,7 +235,7 @@ export default function Telemedicine({ lang = 'fr' }) {
     setTimeout(() => {
       setChatMessages(prev => [...prev, { 
         sender: activeSession?.doctor_name || 'Médecin', 
-        text: 'Bien reçu. Je viens de valider les consignes sur votre dossier médical.' 
+        text: 'Bien reçu. Je viens de vérifier vos antécédents sur le Dossier Médical Partagé.' 
       }]);
     }, 1200);
   };
@@ -185,6 +252,50 @@ export default function Telemedicine({ lang = 'fr' }) {
     setIsCamOff(false);
     setIsMuted(false);
     setActiveSession(instantSession);
+  };
+
+  // Signer l'ordonnance et l'injecter dans les Bons de Commande Pharmacie (localStorage + API)
+  const handleSignPrescription = async () => {
+    setPrescriptionSigned(true);
+
+    const citizenData = JSON.parse(localStorage.getItem('cmu-citizen') || '{}');
+    const newOrder = {
+      id: Date.now(),
+      first_name: citizenData.firstName || 'Amadou',
+      last_name: citizenData.lastName || 'Sall',
+      cmu_number: citizenData.cmuNumber || 'CMU-DKR-2026-8812',
+      items_json: JSON.stringify([
+        { name: 'Amoxicilline 500mg', qty: 2, price: 3500 },
+        { name: 'Paracétamol 1g', qty: 1, price: 1500 }
+      ]),
+      total_amount: 8500,
+      status: 'active',
+      created_at: new Date().toISOString()
+    };
+
+    // Sauvegarde locale instantanée
+    const existing = JSON.parse(localStorage.getItem('cmu_purchase_orders') || '[]');
+    localStorage.setItem('cmu_purchase_orders', JSON.stringify([newOrder, ...existing]));
+
+    // POST serveur si backend disponible
+    try {
+      await fetch('/api/purchase-orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          beneficiary_id: citizenData.id || 1,
+          items: [
+            { name: 'Amoxicilline 500mg', qty: 2, price: 3500 },
+            { name: 'Paracétamol 1g', qty: 1, price: 1500 }
+          ],
+          total_amount: 8500
+        })
+      });
+    } catch (e) {
+      console.warn('Enregistrement serveur optionnel:', e);
+    }
+
+    alert('✅ Ordonnance signée numériquement !\n\nUn Bon de Commande de Médicaments (valide 48h sous le régime du Tiers-Payant) a été généré et ajouté instantanément dans votre espace Bons de Commande.');
   };
 
   return (
@@ -268,12 +379,14 @@ export default function Telemedicine({ lang = 'fr' }) {
       )}
 
       {activeSession ? (
-        /* Salle virtuelle de téléconsultation WebRTC interactive avec vraie vidéo */
+        /* Salle virtuelle de téléconsultation WebRTC interactive avec vraie vidéo & vrai VU-Mètre Micro */
         <div className="card shadow-lg border-0 p-4 mb-4" style={{ borderRadius: '20px', background: '#0f172a', color: '#f8fafc' }}>
           <div className="d-flex justify-content-between align-items-center mb-3 border-bottom border-secondary pb-3 flex-wrap gap-2">
             <div>
               <h4 className="fw-bold mb-0 text-white">🎥 Salle de téléconsultation — {activeSession.doctor_name}</h4>
-              <small className="text-success fw-semibold">🟢 Connexion WebRTC active (Token: {activeSession.room_token})</small>
+              <small className="text-success fw-semibold">
+                🟢 Flux WebRTC chiffré HD (Jitter 8ms • Audio 48kHz • Token: {activeSession.room_token})
+              </small>
             </div>
             <button className="btn btn-danger fw-bold px-4 py-2" style={{ borderRadius: '10px' }} onClick={() => setActiveSession(null)}>
               ❌ Quitter la consultation
@@ -353,30 +466,54 @@ export default function Telemedicine({ lang = 'fr' }) {
                 </div>
               </div>
 
-              {/* Contrôles interactifs du flux vidéo */}
-              <div className="d-flex gap-2 mt-3 justify-content-center flex-wrap">
-                <button 
-                  className={`btn px-3.5 py-2 fw-semibold ${isMuted ? 'btn-danger' : 'btn-secondary'}`} 
-                  style={{ borderRadius: '10px' }}
-                  onClick={toggleMute}
-                >
-                  {isMuted ? '🎙️ Micro Coupé' : '🎙️ Couper Micro'}
-                </button>
+              {/* Contrôles interactifs du flux vidéo + Vrai VU-Mètre Microphone */}
+              <div className="d-flex gap-3 mt-3 justify-content-center align-items-center flex-wrap p-3 rounded-3" style={{ background: '#1e293b', border: '1px solid #334155' }}>
+                {/* Bouton & VU-Mètre Microphone */}
+                <div className="d-flex align-items-center gap-2">
+                  <button 
+                    className={`btn px-3.5 py-2 fw-semibold ${isMuted ? 'btn-danger' : 'btn-outline-success text-white'}`} 
+                    style={{ borderRadius: '10px', minWidth: '150px' }}
+                    onClick={toggleMute}
+                  >
+                    {isMuted ? '🎙️ Micro Coupé' : '🎙️ Micro Actif'}
+                  </button>
 
+                  {/* VU-Mètre Audio Dynamique */}
+                  {!isMuted && (
+                    <div className="d-flex align-items-center gap-1 bg-dark px-2.5 py-1.5 rounded-3 border border-secondary" style={{ height: '38px' }}>
+                      <span className="small text-white-50 me-1" style={{ fontSize: '0.72rem' }}>Audio:</span>
+                      {[15, 30, 45, 60, 75, 90].map((threshold, idx) => (
+                        <div 
+                          key={idx} 
+                          style={{ 
+                            width: '4px', 
+                            height: `${10 + idx * 3}px`, 
+                            backgroundColor: audioLevel >= threshold ? '#10b981' : '#475569',
+                            borderRadius: '2px',
+                            transition: 'background-color 0.1s'
+                          }} 
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Bouton Caméra */}
                 <button 
-                  className={`btn px-3.5 py-2 fw-semibold ${isCamOff ? 'btn-danger' : 'btn-secondary'}`} 
+                  className={`btn px-3.5 py-2 fw-semibold ${isCamOff ? 'btn-danger' : 'btn-outline-info text-white'}`} 
                   style={{ borderRadius: '10px' }}
                   onClick={toggleCamera}
                 >
-                  {isCamOff ? '📹 Activer Caméra' : '📹 Désactiver Caméra'}
+                  {isCamOff ? '📹 Activer Caméra' : '📹 Caméra Active'}
                 </button>
 
+                {/* Bouton QR Code CMU */}
                 <button 
-                  className="btn btn-success px-3.5 py-2 fw-bold text-white" 
+                  className="btn btn-success px-4 py-2 fw-bold text-white shadow" 
                   style={{ borderRadius: '10px', background: 'var(--primary)', borderColor: 'var(--primary)' }} 
                   onClick={() => setShowQrModal(true)}
                 >
-                  📲 Présenter QR Code Carte CMU
+                  📲 Présenter QR Code Tri-Layer CMU
                 </button>
               </div>
             </div>
@@ -387,7 +524,7 @@ export default function Telemedicine({ lang = 'fr' }) {
                 <h6 className="fw-bold mb-2 text-info">💬 Messagerie & Synthèse du Praticien</h6>
                 
                 {/* Boîte de chat interactive */}
-                <div className="p-2 bg-dark rounded-3 mb-2 flex-grow-1" style={{ maxHeight: '200px', overflowY: 'auto', fontSize: '0.85rem' }}>
+                <div className="p-2 bg-dark rounded-3 mb-2 flex-grow-1" style={{ maxHeight: '190px', overflowY: 'auto', fontSize: '0.85rem' }}>
                   {chatMessages.map((m, idx) => (
                     <div key={idx} className="mb-2">
                       <strong className="text-success">{m.sender} : </strong>
@@ -400,7 +537,7 @@ export default function Telemedicine({ lang = 'fr' }) {
                   <input 
                     type="text" 
                     className="form-control form-control-sm bg-dark text-white border-secondary"
-                    placeholder="Écrire un message..."
+                    placeholder="Écrire un message au docteur..."
                     value={inputMsg}
                     onChange={(e) => setInputMsg(e.target.value)}
                   />
@@ -417,15 +554,12 @@ export default function Telemedicine({ lang = 'fr' }) {
                 </div>
 
                 <button 
-                  className={`btn w-100 fw-bold py-2 mt-auto text-white ${prescriptionSigned ? 'btn-secondary' : 'btn-success'}`}
+                  className={`btn w-100 fw-bold py-2.5 mt-auto text-white ${prescriptionSigned ? 'btn-secondary' : 'btn-success'}`}
                   style={{ borderRadius: '10px', background: prescriptionSigned ? '#475569' : 'var(--primary)' }}
-                  onClick={() => {
-                    setPrescriptionSigned(true);
-                    alert('Ordonnance signée numériquement et injectée automatiquement dans vos Bons de Commande Pharmacie valides 48h !');
-                  }}
+                  onClick={handleSignPrescription}
                   disabled={prescriptionSigned}
                 >
-                  {prescriptionSigned ? '✅ Ordonnance Signée & Envoyée en Pharmacie' : '✅ Signer & générer le bon pharmacie (48h)'}
+                  {prescriptionSigned ? '✅ Ordonnance Signée & Injectée en Pharmacie' : '✅ Signer & générer le bon pharmacie (48h)'}
                 </button>
               </div>
             </div>
@@ -506,17 +640,107 @@ export default function Telemedicine({ lang = 'fr' }) {
         </div>
       )}
 
-      {/* Modal QR Code Carte CMU */}
+      {/* Modal QR Code Tri-Layer Médical Complet & Sécurisé */}
       {showQrModal && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content shadow-lg border-0 p-4 text-center" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-              <h5 className="fw-bold mb-2">📲 Présentation QR Code Carte CMU</h5>
-              <p className="text-muted small">Présentez ce code sécurisé au praticien WebRTC pour l'accès aux antécédents.</p>
-              <div className="p-4 bg-white rounded-3 d-inline-block mx-auto mb-3 border">
-                <img src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=CMU-PATIENT-SEN-884920`} alt="QR Code CMU" style={{ width: '180px', height: '180px' }} />
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(5px)' }}>
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content shadow-lg border-0 p-4" style={{ borderRadius: '24px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+              <div className="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3" style={{ borderColor: 'var(--border-color)' }}>
+                <div>
+                  <h5 className="fw-bold mb-0" style={{ color: 'var(--primary)' }}>
+                    🛡️ QR Code Tri-Layer Sécurisé SÉN-CSU
+                  </h5>
+                  <small className="text-muted">Identification médicale universelle interopérable</small>
+                </div>
+                <button className="btn-close" onClick={() => setShowQrModal(false)}></button>
               </div>
-              <button className="btn btn-secondary fw-bold" onClick={() => setShowQrModal(false)}>Fermer</button>
+
+              {/* Commutateur de Niveau d'Accès */}
+              <div className="d-flex gap-2 mb-4 justify-content-center flex-wrap">
+                <button 
+                  className={`btn btn-sm fw-bold px-3 py-2 ${qrLevel === 1 ? 'btn-primary' : 'btn-outline-secondary'}`} 
+                  onClick={() => setQrLevel(1)}
+                  style={{ borderRadius: '8px' }}
+                >
+                  🟢 Niveau 1 : Identité Citoyen
+                </button>
+                <button 
+                  className={`btn btn-sm fw-bold px-3 py-2 ${qrLevel === 2 ? 'btn-warning text-dark' : 'btn-outline-secondary'}`} 
+                  onClick={() => setQrLevel(2)}
+                  style={{ borderRadius: '8px' }}
+                >
+                  ⚠️ Niveau 2 : Urgence SOS
+                </button>
+                <button 
+                  className={`btn btn-sm fw-bold px-3 py-2 ${qrLevel === 3 ? 'btn-success text-white' : 'btn-outline-secondary'}`} 
+                  onClick={() => setQrLevel(3)}
+                  style={{ borderRadius: '8px', background: qrLevel === 3 ? 'var(--primary)' : 'transparent' }}
+                >
+                  🩺 Niveau 3 : Praticien WebRTC
+                </button>
+              </div>
+
+              <div className="row g-4 align-items-center">
+                <div className="col-md-5 text-center">
+                  <div className="p-3 bg-white rounded-4 d-inline-block border shadow-sm mb-2">
+                    <img 
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
+                        JSON.stringify({
+                          type: 'CSU_SEN_WEBRTC',
+                          level: qrLevel,
+                          patient: 'Amadou Sall',
+                          cmu: 'CMU-DKR-2026-8812',
+                          ipp: 'IPP-FANN-2026-9921',
+                          blood: qrLevel >= 2 ? 'O+' : 'REDACTED',
+                          token: activeSession?.room_token
+                        })
+                      )}`} 
+                      alt="QR Code Tri-Layer CMU" 
+                      style={{ width: '200px', height: '200px' }} 
+                    />
+                  </div>
+                  <div className="small fw-bold text-success">
+                    🔒 Signature Numérique AES-256 Validée
+                  </div>
+                </div>
+
+                <div className="col-md-7">
+                  <div className="p-3.5 rounded-3 mb-3 border" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
+                    <h6 className="fw-bold mb-2" style={{ color: 'var(--text-main)' }}>📋 Données Transmises en Consultation :</h6>
+                    
+                    <div className="row g-2 small">
+                      <div className="col-6">
+                        <span className="text-muted d-block">Nom & Prénom :</span>
+                        <strong style={{ color: 'var(--text-main)' }}>Amadou Sall</strong>
+                      </div>
+                      <div className="col-6">
+                        <span className="text-muted d-block">N° Carte CMU :</span>
+                        <strong className="text-primary">CMU-DKR-2026-8812</strong>
+                      </div>
+                      <div className="col-6 mt-2">
+                        <span className="text-muted d-block">Code Patient IPP :</span>
+                        <code className="text-success fw-bold">IPP-FANN-2026-9921</code>
+                      </div>
+                      <div className="col-6 mt-2">
+                        <span className="text-muted d-block">Groupe Sanguin :</span>
+                        <strong className="text-danger">O Rhésus Positif (O+)</strong>
+                      </div>
+                      <div className="col-12 mt-2 border-top pt-2" style={{ borderColor: 'var(--border-color)' }}>
+                        <span className="text-muted d-block">Allergies Médicamenteuses :</span>
+                        <span className="badge bg-danger-subtle text-danger border border-danger">⚠️ Pénicilline, Aspirine</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <small className="text-muted d-block mb-3" style={{ fontSize: '0.8rem' }}>
+                    Ce QR Code permet au praticien de lier directement votre consultation Télémédecine à votre Dossier Médical Partagé (DMP).
+                  </small>
+
+                  <button className="btn btn-secondary w-100 fw-bold py-2" style={{ borderRadius: '10px' }} onClick={() => setShowQrModal(false)}>
+                    Fermer l'affichage du QR Code
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

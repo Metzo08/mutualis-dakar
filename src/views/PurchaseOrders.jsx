@@ -42,17 +42,26 @@ export default function PurchaseOrders({ lang = 'fr' }) {
 
   const fetchOrders = async () => {
     setLoading(true);
+    const localPrescriptions = JSON.parse(localStorage.getItem('cmu_purchase_orders') || '[]');
+
     try {
       const res = await fetch('/api/purchase-orders');
       const json = await res.json();
       if (json.success && json.data && json.data.length > 0) {
-        setOrders(json.data);
+        // Combiner ordonnances générées et données serveur
+        const combined = [...localPrescriptions, ...json.data];
+        const unique = combined.filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
+        setOrders(unique);
       } else {
-        setOrders(defaultOrders);
+        const combined = [...localPrescriptions, ...defaultOrders];
+        const unique = combined.filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
+        setOrders(unique);
       }
     } catch (err) {
       console.warn('Utilisation des bons de commande de démonstration:', err);
-      setOrders(defaultOrders);
+      const combined = [...localPrescriptions, ...defaultOrders];
+      const unique = combined.filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
+      setOrders(unique);
     } finally {
       setLoading(false);
     }
@@ -111,7 +120,10 @@ export default function PurchaseOrders({ lang = 'fr' }) {
       console.warn(err);
     }
 
-    setOrders([newOrd, ...orders]);
+    const updated = [newOrd, ...orders];
+    setOrders(updated);
+    localStorage.setItem('cmu_purchase_orders', JSON.stringify(updated));
+
     setItems([]);
     setCreating(false);
   };
@@ -120,6 +132,7 @@ export default function PurchaseOrders({ lang = 'fr' }) {
     setRedeemSuccess('');
     const updated = orders.map(o => o.id === orderId ? { ...o, status: 'used' } : o);
     setOrders(updated);
+    localStorage.setItem('cmu_purchase_orders', JSON.stringify(updated));
 
     try {
       await fetch(`/api/purchase-orders/${orderId}/redeem`, {
