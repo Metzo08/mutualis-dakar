@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 export default function Telemedicine({ lang = 'fr' }) {
-  // Pre-loaded initial sessions for robust offline/demo testing
+  // Pre-loaded initial sessions for robust testing
   const defaultSessions = [
     {
       id: 101,
       doctor_name: 'Dr. Aminata Ndiaye',
       specialty: 'Pédiatrie & Santé Familiale',
-      scheduled_at: new Date(Date.now() + 1800000).toISOString(), // Dans 30 min
+      scheduled_at: new Date(Date.now() + 1800000).toISOString(),
       room_token: 'RTC-SN-8849-NDIAYE',
       medical_summary: 'Patient consultant pour suivi fièvre modérée et toux sèche. Ordonnance de précaution émise.'
     },
@@ -15,7 +15,7 @@ export default function Telemedicine({ lang = 'fr' }) {
       id: 102,
       doctor_name: 'Dr. Cheikh Tidiane Seck',
       specialty: 'Cardiologie & Médecine Générale',
-      scheduled_at: new Date(Date.now() + 86400000).toISOString(), // Demain
+      scheduled_at: new Date(Date.now() + 86400000).toISOString(),
       room_token: 'RTC-SN-9921-SECK',
       medical_summary: 'Consultation de contrôle de tension artérielle. Bilan biologique recommandé.'
     }
@@ -25,13 +25,19 @@ export default function Telemedicine({ lang = 'fr' }) {
   const [loading, setLoading] = useState(true);
   const [activeSession, setActiveSession] = useState(null);
 
-  // WebRTC Call Interactive Controls
+  // WebRTC Real Camera & Audio Stream States
+  const userVideoRef = useRef(null);
+  const doctorVideoRef = useRef(null);
+  const [mediaStream, setMediaStream] = useState(null);
+  const [cameraActive, setCameraActive] = useState(false);
+  const [cameraError, setCameraError] = useState('');
+
   const [isMuted, setIsMuted] = useState(false);
   const [isCamOff, setIsCamOff] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
   const [prescriptionSigned, setPrescriptionSigned] = useState(false);
   const [chatMessages, setChatMessages] = useState([
-    { sender: 'Dr. Aminata Ndiaye', text: 'Bonjour ! Je suis en ligne pour votre téléconsultation.' }
+    { sender: 'Dr. Aminata Ndiaye', text: 'Bonjour ! Je suis en ligne pour votre téléconsultation WebRTC.' }
   ]);
   const [inputMsg, setInputMsg] = useState('');
 
@@ -40,6 +46,65 @@ export default function Telemedicine({ lang = 'fr' }) {
   const [specialty, setSpecialty] = useState('Pédiatrie');
   const [scheduledAt, setScheduledAt] = useState('');
   const [bookingSuccess, setBookingSuccess] = useState('');
+
+  // Initialisation de la véritable caméra du navigateur (getUserMedia)
+  useEffect(() => {
+    let currentStream = null;
+
+    const startCamera = async () => {
+      if (activeSession && !isCamOff) {
+        setCameraError('');
+        try {
+          if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            const stream = await navigator.mediaDevices.getUserMedia({
+              video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: 'user' },
+              audio: true
+            });
+            currentStream = stream;
+            setMediaStream(stream);
+            setCameraActive(true);
+
+            if (userVideoRef.current) {
+              userVideoRef.current.srcObject = stream;
+            }
+          } else {
+            setCameraError('Accès caméra non supporté par ce navigateur.');
+          }
+        } catch (err) {
+          console.warn('Erreur ou refus d\'accès à la caméra réelle:', err);
+          setCameraError('Caméra réelle non accessible (Autorisation ou périphérique absent). Mode flux médical simulé actif.');
+          setCameraActive(false);
+        }
+      }
+    };
+
+    startCamera();
+
+    return () => {
+      if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [activeSession, isCamOff]);
+
+  // Gestion de la coupure micro / vidéo
+  const toggleMute = () => {
+    if (mediaStream) {
+      mediaStream.getAudioTracks().forEach(track => {
+        track.enabled = isMuted; // Toggle reverse
+      });
+    }
+    setIsMuted(!isMuted);
+  };
+
+  const toggleCamera = () => {
+    if (mediaStream) {
+      mediaStream.getVideoTracks().forEach(track => {
+        track.enabled = isCamOff; // Toggle reverse
+      });
+    }
+    setIsCamOff(!isCamOff);
+  };
 
   const fetchSessions = async () => {
     setLoading(true);
@@ -52,7 +117,7 @@ export default function Telemedicine({ lang = 'fr' }) {
         setSessions(defaultSessions);
       }
     } catch (err) {
-      console.warn('Erreur chargement API télémédecine, utilisation des sessions de démonstration:', err);
+      console.warn('Utilisation des sessions de démonstration:', err);
       setSessions(defaultSessions);
     } finally {
       setLoading(false);
@@ -88,7 +153,7 @@ export default function Telemedicine({ lang = 'fr' }) {
         })
       });
     } catch (err) {
-      console.warn('Enregistrement serveur optionnel:', err);
+      console.warn(err);
     }
 
     setSessions([newSession, ...sessions]);
@@ -103,7 +168,7 @@ export default function Telemedicine({ lang = 'fr' }) {
     setTimeout(() => {
       setChatMessages(prev => [...prev, { 
         sender: activeSession?.doctor_name || 'Médecin', 
-        text: 'Bien reçu. Je viens de valider les consignes sur votre dossier.' 
+        text: 'Bien reçu. Je viens de valider les consignes sur votre dossier médical.' 
       }]);
     }, 1200);
   };
@@ -117,6 +182,8 @@ export default function Telemedicine({ lang = 'fr' }) {
       room_token: 'RTC-SN-DIRECT-100% WebRTC',
       medical_summary: 'Téléconsultation WebRTC en direct démarrée. Le praticien consulte vos antécédents.'
     };
+    setIsCamOff(false);
+    setIsMuted(false);
     setActiveSession(instantSession);
   };
 
@@ -201,33 +268,42 @@ export default function Telemedicine({ lang = 'fr' }) {
       )}
 
       {activeSession ? (
-        /* Salle virtuelle de téléconsultation WebRTC interactive */
+        /* Salle virtuelle de téléconsultation WebRTC interactive avec vraie vidéo */
         <div className="card shadow-lg border-0 p-4 mb-4" style={{ borderRadius: '20px', background: '#0f172a', color: '#f8fafc' }}>
           <div className="d-flex justify-content-between align-items-center mb-3 border-bottom border-secondary pb-3 flex-wrap gap-2">
             <div>
               <h4 className="fw-bold mb-0 text-white">🎥 Salle de téléconsultation — {activeSession.doctor_name}</h4>
-              <small className="text-success fw-semibold">🟢 Flux WebRTC sécurisé HD (Jitter 12ms • Token: {activeSession.room_token})</small>
+              <small className="text-success fw-semibold">🟢 Connexion WebRTC active (Token: {activeSession.room_token})</small>
             </div>
             <button className="btn btn-danger fw-bold px-4 py-2" style={{ borderRadius: '10px' }} onClick={() => setActiveSession(null)}>
               ❌ Quitter la consultation
             </button>
           </div>
 
+          {cameraError && (
+            <div className="alert alert-warning py-2 px-3 mb-3 small rounded-3 d-flex align-items-center">
+              <span className="me-2">⚠️</span>
+              <div>{cameraError}</div>
+            </div>
+          )}
+
           <div className="row g-4">
-            {/* Écran vidéo principal */}
+            {/* Écran vidéo principal (Médecin + Votre Caméra Réelle PIP) */}
             <div className="col-lg-8">
               <div 
                 style={{ 
-                  height: '380px', 
+                  height: '420px', 
                   background: '#1e293b', 
                   borderRadius: '16px', 
                   position: 'relative',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  border: '2px solid rgba(16, 185, 129, 0.4)'
+                  border: '2px solid rgba(16, 185, 129, 0.4)',
+                  overflow: 'hidden'
                 }}
               >
+                {/* Visioconférence Médecin (Direct) */}
                 <div className="text-center p-3">
                   <span style={{ fontSize: '4.5rem' }}>👨‍⚕️</span>
                   <h4 className="mt-2 text-white fw-bold">{activeSession.doctor_name}</h4>
@@ -237,31 +313,42 @@ export default function Telemedicine({ lang = 'fr' }) {
                   </span>
                 </div>
 
-                {/* Caméra patient PIP avec bascule On/Off */}
+                {/* Fenêtre vidéo PIP de VOTRE véritable caméra vidéo (WebRTC Live Stream) */}
                 <div 
                   style={{ 
                     position: 'absolute', 
                     bottom: '15px', 
                     right: '15px', 
-                    width: '140px', 
-                    height: '100px', 
-                    background: isCamOff ? '#334155' : '#0f172a', 
+                    width: '180px', 
+                    height: '130px', 
+                    background: '#000000', 
                     borderRadius: '12px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
                     border: '2px solid #10b981',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+                    boxShadow: '0 4px 15px rgba(0,0,0,0.6)',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                   }}
                 >
                   {isCamOff ? (
-                    <span className="small text-white-50">🚫 Caméra Désactivée</span>
+                    <div className="text-center p-2">
+                      <span style={{ fontSize: '1.2rem' }}>🚫</span>
+                      <div className="small text-white-50 mt-1" style={{ fontSize: '0.72rem' }}>Caméra désactivée</div>
+                    </div>
+                  ) : cameraActive ? (
+                    <video 
+                      ref={userVideoRef} 
+                      autoPlay 
+                      playsInline 
+                      muted 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
                   ) : (
-                    <>
+                    <div className="text-center p-2">
                       <span style={{ fontSize: '1.5rem' }}>📱</span>
-                      <span className="small text-white fw-bold">Votre caméra</span>
-                    </>
+                      <div className="small text-white fw-semibold mt-1" style={{ fontSize: '0.75rem' }}>Votre caméra (Simulée)</div>
+                    </div>
                   )}
                 </div>
               </div>
@@ -269,23 +356,23 @@ export default function Telemedicine({ lang = 'fr' }) {
               {/* Contrôles interactifs du flux vidéo */}
               <div className="d-flex gap-2 mt-3 justify-content-center flex-wrap">
                 <button 
-                  className={`btn px-3 py-2 fw-semibold ${isMuted ? 'btn-danger' : 'btn-secondary'}`} 
+                  className={`btn px-3.5 py-2 fw-semibold ${isMuted ? 'btn-danger' : 'btn-secondary'}`} 
                   style={{ borderRadius: '10px' }}
-                  onClick={() => setIsMuted(!isMuted)}
+                  onClick={toggleMute}
                 >
                   {isMuted ? '🎙️ Micro Coupé' : '🎙️ Couper Micro'}
                 </button>
 
                 <button 
-                  className={`btn px-3 py-2 fw-semibold ${isCamOff ? 'btn-danger' : 'btn-secondary'}`} 
+                  className={`btn px-3.5 py-2 fw-semibold ${isCamOff ? 'btn-danger' : 'btn-secondary'}`} 
                   style={{ borderRadius: '10px' }}
-                  onClick={() => setIsCamOff(!isCamOff)}
+                  onClick={toggleCamera}
                 >
                   {isCamOff ? '📹 Activer Caméra' : '📹 Désactiver Caméra'}
                 </button>
 
                 <button 
-                  className="btn btn-success px-3 py-2 fw-bold text-white" 
+                  className="btn btn-success px-3.5 py-2 fw-bold text-white" 
                   style={{ borderRadius: '10px', background: 'var(--primary)', borderColor: 'var(--primary)' }} 
                   onClick={() => setShowQrModal(true)}
                 >
@@ -300,7 +387,7 @@ export default function Telemedicine({ lang = 'fr' }) {
                 <h6 className="fw-bold mb-2 text-info">💬 Messagerie & Synthèse du Praticien</h6>
                 
                 {/* Boîte de chat interactive */}
-                <div className="p-2 bg-dark rounded-3 mb-2 flex-grow-1" style={{ maxHeight: '180px', overflowY: 'auto', fontSize: '0.85rem' }}>
+                <div className="p-2 bg-dark rounded-3 mb-2 flex-grow-1" style={{ maxHeight: '200px', overflowY: 'auto', fontSize: '0.85rem' }}>
                   {chatMessages.map((m, idx) => (
                     <div key={idx} className="mb-2">
                       <strong className="text-success">{m.sender} : </strong>
