@@ -64,7 +64,7 @@ export default function MedicalProfile({ lang = 'fr' }) {
       });
       const json = await res.json();
       if (json.success) {
-        setSavedMsg('Antécédents médicaux et groupe sanguin enregistrés avec succès dans votre Dossier Médical Partagé.');
+        setSavedMsg('Antécédents médicaux et groupe sanguin enregistrés avec succès dans votre dossier médical partagé.');
         fetchProfile();
       }
     } catch (err) {
@@ -74,37 +74,65 @@ export default function MedicalProfile({ lang = 'fr' }) {
 
   return (
     <div className="container py-4 fade-in-up">
-      {/* Header avec Bannière Stylisée */}
-      <div 
-        className="p-4 mb-4 rounded-4 text-white d-flex justify-content-between align-items-center flex-wrap gap-3"
+      {/* Banner signature de la plateforme avec fond vert et image thématique */}
+      <section 
+        className="banner-mini text-white mb-4 rounded-4 overflow-hidden position-relative"
         style={{
-          background: 'linear-gradient(135deg, #0d9488 0%, #0f766e 50%, #115e59 100%)',
-          boxShadow: '0 10px 25px -5px rgba(13, 148, 136, 0.3)'
+          background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.93), rgba(4, 120, 87, 0.88)), url("/csu_profile_hero_real.png") center/cover no-repeat',
+          padding: '2.5rem 2rem',
+          boxShadow: '0 10px 25px -5px rgba(5, 150, 105, 0.3)',
+          borderBottom: '1px solid var(--border-color)'
         }}
       >
-        <div>
-          <span className="badge bg-white text-teal fw-bold px-3 py-1 mb-2" style={{ fontSize: '0.75rem', borderRadius: '20px', color: '#0d9488' }}>
-            🩺 Dossier Médical Partagé (DMP) — Radios & Scanners sur QR Code
-          </span>
-          <h2 className="fw-bold mb-1 text-white">
-            {lang === 'wo' ? 'Tére fajj bu féex (Dossier Médical & Antécédents)' : 'Dossier Médical, Antécédents & Examens d\'Imagerie'}
-          </h2>
-          <p className="mb-0 text-white-50" style={{ fontSize: '0.9rem' }}>
-            {lang === 'wo'
-              ? 'Fi nga mën a gise sa groupe sanguin, allergies ak résultats radio/scanner ci sa QR code.'
-              : 'Consultez vos antécédents, votre groupe sanguin, vos résultats d\'examens (scanner/radio) et vos codes patients hospitaliers interopérables.'}
-          </p>
-        </div>
+        <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 position-relative" style={{ zIndex: 2 }}>
+          <div style={{ maxWidth: '650px' }}>
+            <span 
+              className="badge px-3 py-1 mb-2 fw-semibold"
+              style={{
+                background: 'rgba(255, 255, 255, 0.22)',
+                color: '#ffffff',
+                backdropFilter: 'blur(4px)',
+                borderRadius: '20px',
+                fontSize: '0.8rem',
+                border: '1px solid rgba(255, 255, 255, 0.3)'
+              }}
+            >
+              🩺 Dossier médical partagé (DMP) — Radios & scanners sur QR code
+            </span>
+            <h1 className="fw-bold mb-2 text-white" style={{ fontSize: '1.9rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
+              {lang === 'wo' ? 'Tére fajj bu féex (Dossier médical & antécédents)' : 'Dossier médical, antécédents & imagerie'}
+            </h1>
+            <p className="mb-0 text-white-50" style={{ fontSize: '0.95rem', lineHeight: '1.6', textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}>
+              {lang === 'wo'
+                ? 'Fi nga mën a gise sa groupe sanguin, allergies ak résultats radio/scanner ci sa QR code.'
+                : 'Consultez vos antécédents, votre groupe sanguin, vos résultats d\'examens (scanner/radio) et vos codes patients hospitaliers interopérables.'}
+            </p>
+          </div>
 
-        <button className="btn btn-light text-teal fw-bold px-4 py-2" style={{ borderRadius: '12px', color: '#0d9488' }} onClick={fetchProfile}>
-          🔄 Actualiser le Dossier
-        </button>
-      </div>
+          <button 
+            type="button"
+            className="btn fw-semibold"
+            style={{
+              background: 'rgba(255, 255, 255, 0.2)',
+              color: '#ffffff',
+              border: '1px solid rgba(255, 255, 255, 0.4)',
+              borderRadius: '12px',
+              padding: '0.65rem 1.3rem',
+              fontSize: '0.9rem',
+              transition: 'all 0.2s',
+              cursor: 'pointer'
+            }}
+            onClick={fetchProfile}
+          >
+            🔄 {lang === 'wo' ? 'Yessal dossier bi' : 'Actualiser le dossier'}
+          </button>
+        </div>
+      </section>
 
       {savedMsg && (
         <div className="alert alert-success d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm">
           <span className="fs-5 me-2">✅</span>
-          <div>{savedMsg}</div>
+          <div style={{ color: 'var(--text-main)' }}>{savedMsg}</div>
         </div>
       )}
 
@@ -112,16 +140,16 @@ export default function MedicalProfile({ lang = 'fr' }) {
         <div className="text-center py-5 text-muted">Chargement du dossier médical...</div>
       ) : (
         <div className="row g-4">
-          {/* Antécédents médicaux & Groupe Sanguin */}
+          {/* Antécédents médicaux & groupe sanguin */}
           <div className="col-md-6">
             <div className="card shadow-sm border-0 p-4" style={{ borderRadius: '16px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
               <h4 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-                <span>🩸</span> Antécédents Médicaux & Groupe Sanguin
+                <span>🩸</span> Antécédents médicaux & groupe sanguin
               </h4>
 
               <form onSubmit={handleSaveAntecedents}>
                 <div className="mb-3">
-                  <label className="form-label fw-semibold" style={{ color: 'var(--text-main)' }}>Groupe Sanguin & Rhésus</label>
+                  <label className="form-label fw-semibold" style={{ color: 'var(--text-main)', marginBottom: '0.4rem' }}>Groupe sanguin & rhésus</label>
                   <select 
                     className="form-select input fw-bold text-danger" 
                     value={bloodGroup} 
@@ -140,7 +168,7 @@ export default function MedicalProfile({ lang = 'fr' }) {
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label fw-semibold" style={{ color: 'var(--text-main)' }}>Allergies Majeures (Médicamenteuses & Alimentaires)</label>
+                  <label className="form-label fw-semibold" style={{ color: 'var(--text-main)', marginBottom: '0.4rem' }}>Allergies majeures (médicaments & aliments)</label>
                   <input 
                     type="text" 
                     className="form-control input" 
@@ -152,7 +180,7 @@ export default function MedicalProfile({ lang = 'fr' }) {
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label fw-semibold" style={{ color: 'var(--text-main)' }}>Maladies Chroniques (HTA, Diabète, Drépanocytose...)</label>
+                  <label className="form-label fw-semibold" style={{ color: 'var(--text-main)', marginBottom: '0.4rem' }}>Maladies chroniques (HTA, diabète, drépanocytose...)</label>
                   <input 
                     type="text" 
                     className="form-control input" 
@@ -164,7 +192,7 @@ export default function MedicalProfile({ lang = 'fr' }) {
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label fw-semibold" style={{ color: 'var(--text-main)' }}>Chirurgies ou Hospitalisations Antérieures</label>
+                  <label className="form-label fw-semibold" style={{ color: 'var(--text-main)', marginBottom: '0.4rem' }}>Chirurgies ou hospitalisations antérieures</label>
                   <input 
                     type="text" 
                     className="form-control input" 
@@ -177,7 +205,7 @@ export default function MedicalProfile({ lang = 'fr' }) {
 
                 <div className="row g-2 mb-4">
                   <div className="col-md-6">
-                    <label className="form-label fw-semibold" style={{ color: 'var(--text-main)' }}>Contact Urgence (Nom)</label>
+                    <label className="form-label fw-semibold" style={{ color: 'var(--text-main)', marginBottom: '0.4rem' }}>Contact urgence (nom)</label>
                     <input 
                       type="text" 
                       className="form-control input" 
@@ -188,7 +216,7 @@ export default function MedicalProfile({ lang = 'fr' }) {
                     />
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label fw-semibold" style={{ color: 'var(--text-main)' }}>Téléphone Urgence (ICE)</label>
+                    <label className="form-label fw-semibold" style={{ color: 'var(--text-main)', marginBottom: '0.4rem' }}>Téléphone urgence (ICE)</label>
                     <input 
                       type="text" 
                       className="form-control input" 
@@ -200,18 +228,18 @@ export default function MedicalProfile({ lang = 'fr' }) {
                   </div>
                 </div>
 
-                <button type="submit" className="btn btn-teal w-100 fw-bold py-2 text-white" style={{ background: '#0d9488', borderRadius: '10px' }}>
-                  💾 Enregistrer mes Antécédents Médicaux
+                <button type="submit" className="btn btn-success w-100 fw-bold py-2 text-white" style={{ background: 'var(--primary)', borderColor: 'var(--primary)', borderRadius: '10px' }}>
+                  💾 Enregistrer mes antécédents médicaux
                 </button>
               </form>
             </div>
           </div>
 
-          {/* Examens d'Imagerie (Scanners/Radios) & Codes Patients Hospitaliers */}
+          {/* Examens d'imagerie & codes patients hospitaliers */}
           <div className="col-md-6">
             <div className="card shadow-sm border-0 p-4 mb-4" style={{ borderRadius: '16px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
               <h4 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-                <span>🩻</span> Examens d'Imagerie (Scanners / Radios / IRM)
+                <span>🩻</span> Examens d'imagerie (scanners / radios / IRM)
               </h4>
 
               {profileData?.imaging?.length === 0 ? (
@@ -225,13 +253,13 @@ export default function MedicalProfile({ lang = 'fr' }) {
                         <span className="badge bg-info">{img.exam_type}</span>
                       </div>
                       <small className="text-muted">📅 Date d'examen : {new Date(img.exam_date).toLocaleDateString('fr-FR')}</small>
-                      <p className="small mb-2 mt-1"><strong>Conclusion Médecin :</strong> {img.doctor_notes}</p>
+                      <p className="small mb-2 mt-1"><strong>Conclusion médecin :</strong> {img.doctor_notes}</p>
                       <button 
-                        className="btn btn-sm btn-outline-teal fw-bold" 
-                        style={{ color: '#0d9488', borderColor: '#0d9488' }}
+                        className="btn btn-sm btn-outline-success fw-bold" 
+                        style={{ borderRadius: '8px' }}
                         onClick={() => setViewingExam(img)}
                       >
-                        👁️ Consulter le Rapport PDF / Clichés HD
+                        👁️ Consulter le rapport PDF / clichés HD
                       </button>
                     </div>
                   ))}
@@ -239,13 +267,13 @@ export default function MedicalProfile({ lang = 'fr' }) {
               )}
             </div>
 
-            {/* Codes Patients Interopérables (SIGOB / DHIS2 / Hôpitaux) */}
+            {/* Codes patients interopérables */}
             <div className="card shadow-sm border-0 p-4" style={{ borderRadius: '16px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
               <h4 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-                <span>🔗</span> Code Patient Hospitalier Interopérable
+                <span>🔗</span> Code patient hospitalier interopérable
               </h4>
-              <p className="small text-muted mb-3">
-                Identifiants hospitaliers reconnus automatiquement lors du scan de votre QR Code à l'accueil de l'hôpital.
+              <p className="small text-muted mb-3" style={{ fontSize: '0.88rem' }}>
+                Identifiants hospitaliers reconnus automatiquement lors du scan de votre QR code à l'accueil de l'hôpital.
               </p>
 
               {profileData?.externalCodes?.length === 0 ? (
@@ -257,9 +285,9 @@ export default function MedicalProfile({ lang = 'fr' }) {
                       <div>
                         <strong style={{ color: 'var(--text-main)' }}>{code.system_name}</strong>
                         <br />
-                        <code className="text-teal fw-bold" style={{ color: '#0d9488' }}>{code.external_patient_code}</code>
+                        <code className="text-success fw-bold">{code.external_patient_code}</code>
                       </div>
-                      <span className="badge bg-success">Actif & Synchronisé</span>
+                      <span className="badge bg-success">Actif & synchronisé</span>
                     </li>
                   ))}
                 </ul>
@@ -269,31 +297,31 @@ export default function MedicalProfile({ lang = 'fr' }) {
         </div>
       )}
 
-      {/* Modal Visionneuse d'Examen Imagerie (Scanner/Radio) */}
+      {/* Modal visionneuse d'examen imagerie */}
       {viewingExam && (
         <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
           <div className="modal-dialog modal-dialog-centered modal-lg">
             <div className="modal-content shadow-lg border-0" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-              <div className="modal-header border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+              <div className="modal-header border-bottom p-3" style={{ borderColor: 'var(--border-color)' }}>
                 <h5 className="modal-title fw-bold" style={{ color: 'var(--text-main)' }}>
-                  🩻 Visionneuse d'Imagerie Médicale — {viewingExam.title}
+                  🩻 Visionneuse d'imagerie médicale — {viewingExam.title}
                 </h5>
                 <button className="btn-close" onClick={() => setViewingExam(null)}></button>
               </div>
               <div className="modal-body p-4 text-center">
                 <div className="p-4 rounded-3 mb-3" style={{ background: '#0f172a', color: '#fff' }}>
                   <span style={{ fontSize: '4rem' }}>🦴</span>
-                  <h5 className="fw-bold mt-2">Cliché Scanner HD — Hôpital Fann (Dakar)</h5>
-                  <p className="small text-white-50">Transmis par le centre de radiologie • Norme DICOM / PDF Chiffré</p>
-                  <div className="badge bg-success p-2">Rapport validé par le Radiologue</div>
+                  <h5 className="fw-bold mt-2">Cliché scanner HD — Hôpital Fann (Dakar)</h5>
+                  <p className="small text-white-50">Transmis par le centre de radiologie • Norme DICOM / PDF chiffré</p>
+                  <div className="badge bg-success p-2">Rapport validé par le radiologue</div>
                 </div>
                 <div className="text-start p-3 rounded-3" style={{ background: 'var(--bg-body)', border: '1px solid var(--border-color)' }}>
-                  <h6><strong>Compte-Rendu :</strong></h6>
+                  <h6><strong>Compte-rendu :</strong></h6>
                   <p className="mb-0">{viewingExam.doctor_notes}</p>
                 </div>
               </div>
               <div className="modal-footer border-top p-3" style={{ borderColor: 'var(--border-color)' }}>
-                <button className="btn btn-secondary fw-bold" onClick={() => setViewingExam(null)}>Fermer</button>
+                <button className="btn btn-secondary fw-bold px-3 py-2" onClick={() => setViewingExam(null)} style={{ borderRadius: '8px' }}>Fermer</button>
               </div>
             </div>
           </div>
