@@ -388,7 +388,12 @@ export default function Telemedicine({ lang = 'fr' }) {
                 🟢 Flux WebRTC chiffré HD (Jitter 8ms • Audio 48kHz • Token: {activeSession.room_token})
               </small>
             </div>
-            <button className="btn btn-danger fw-bold px-4 py-2" style={{ borderRadius: '10px' }} onClick={() => setActiveSession(null)}>
+            <button 
+              type="button"
+              className="btn fw-bold px-4 py-2 text-white shadow-sm" 
+              style={{ borderRadius: '10px', background: '#dc2626', borderColor: '#b91c1c', color: '#ffffff' }} 
+              onClick={() => setActiveSession(null)}
+            >
               ❌ Quitter la consultation
             </button>
           </div>
@@ -471,8 +476,15 @@ export default function Telemedicine({ lang = 'fr' }) {
                 {/* Bouton & VU-Mètre Microphone */}
                 <div className="d-flex align-items-center gap-2">
                   <button 
-                    className={`btn px-3.5 py-2 fw-semibold ${isMuted ? 'btn-danger' : 'btn-outline-success text-white'}`} 
-                    style={{ borderRadius: '10px', minWidth: '150px' }}
+                    type="button"
+                    className="btn px-3.5 py-2 fw-semibold text-white shadow-sm" 
+                    style={{ 
+                      borderRadius: '10px', 
+                      minWidth: '150px', 
+                      background: isMuted ? '#dc2626' : '#059669', 
+                      borderColor: isMuted ? '#b91c1c' : '#047857',
+                      color: '#ffffff'
+                    }}
                     onClick={toggleMute}
                   >
                     {isMuted ? '🎙️ Micro Coupé' : '🎙️ Micro Actif'}
@@ -500,8 +512,14 @@ export default function Telemedicine({ lang = 'fr' }) {
 
                 {/* Bouton Caméra */}
                 <button 
-                  className={`btn px-3.5 py-2 fw-semibold ${isCamOff ? 'btn-danger' : 'btn-outline-info text-white'}`} 
-                  style={{ borderRadius: '10px' }}
+                  type="button"
+                  className="btn px-3.5 py-2 fw-semibold text-white shadow-sm" 
+                  style={{ 
+                    borderRadius: '10px', 
+                    background: isCamOff ? '#dc2626' : '#0284c7', 
+                    borderColor: isCamOff ? '#b91c1c' : '#0369a1',
+                    color: '#ffffff'
+                  }}
                   onClick={toggleCamera}
                 >
                   {isCamOff ? '📹 Activer Caméra' : '📹 Caméra Active'}
@@ -509,8 +527,9 @@ export default function Telemedicine({ lang = 'fr' }) {
 
                 {/* Bouton QR Code CMU */}
                 <button 
-                  className="btn btn-success px-4 py-2 fw-bold text-white shadow" 
-                  style={{ borderRadius: '10px', background: 'var(--primary)', borderColor: 'var(--primary)' }} 
+                  type="button"
+                  className="btn px-4 py-2 fw-bold text-white shadow-sm" 
+                  style={{ borderRadius: '10px', background: 'var(--primary)', borderColor: 'var(--primary)', color: '#ffffff' }} 
                   onClick={() => setShowQrModal(true)}
                 >
                   📲 Présenter QR Code Tri-Layer CMU

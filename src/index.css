@@ -872,4 +872,36 @@ p {
   border-color: var(--primary) !important;
 }
 
+.dark-theme .btn-danger,
+.btn-danger {
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
+  border-color: #b91c1c !important;
+}
+
+.dark-theme .btn-secondary {
+  background-color: #475569 !important;
+  color: #ffffff !important;
+  border-color: #334155 !important;
+}
+
+.dark-theme .btn-success {
+  background-color: #059669 !important;
+  color: #ffffff !important;
+  border-color: #047857 !important;
+}
+
+.dark-theme .btn-warning {
+  background-color: #d97706 !important;
+  color: #ffffff !important;
+  border-color: #b45309 !important;
+}
+
+.dark-theme .btn-info {
+  background-color: #0284c7 !important;
+  color: #ffffff !important;
+  border-color: #0369a1 !important;
+}
+
+
 
