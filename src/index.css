@@ -792,3 +792,64 @@ p {
 .leaflet-routing-alt, .leaflet-routing-alt tr:hover {
   background-color: #ffffff !important;
 }
+
+/* ============================================================================
+   DARK MODE ENHANCEMENTS & HIGH CONTRAST FORM CONTROLS
+   ============================================================================ */
+.dark-theme .form-control,
+.dark-theme .form-select,
+.dark-theme .form-input,
+.dark-theme .form-textarea,
+.dark-theme select,
+.dark-theme input,
+.dark-theme textarea {
+  color: #f8fafc !important;
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
+}
+
+.dark-theme .form-control::placeholder,
+.dark-theme .form-input::placeholder,
+.dark-theme input::placeholder,
+.dark-theme textarea::placeholder {
+  color: #94a3b8 !important;
+  opacity: 0.8;
+}
+
+.dark-theme .form-select option,
+.dark-theme select option {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+.dark-theme .card {
+  background-color: var(--card-bg) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-main) !important;
+}
+
+.dark-theme .list-group-item {
+  background-color: var(--bg-body) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-main) !important;
+}
+
+.dark-theme .table {
+  color: var(--text-main) !important;
+  border-color: var(--border-color) !important;
+}
+
+.dark-theme .table th,
+.dark-theme .table td,
+.dark-theme .table-light {
+  background-color: var(--bg-card) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border-color) !important;
+}
+
+.dark-theme .modal-content {
+  background-color: var(--card-bg) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border-color) !important;
+}
+

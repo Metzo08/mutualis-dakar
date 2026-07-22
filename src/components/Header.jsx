@@ -297,15 +297,6 @@ export default function Header({
           {lang === 'fr' ? 'Carnet Maternité' : 'Tére wéru jégen'}
         </button>
 
-        {/* Portail COUD UCAD */}
-        <button 
-          className={`nav-item ${currentView === 'institution-coud' ? 'active' : ''}`}
-          onClick={() => navigateTo('institution-coud')}
-        >
-          <span className="nav-icon">🏛️</span>
-          {lang === 'fr' ? 'Portail COUD UCAD' : 'Portail COUD UCAD'}
-        </button>
-
         {/* Parrainage solidaire (Public Dedicated Page) */}
         <button 
           className={`nav-item ${currentView === 'parrainage-solidaire' ? 'active' : ''}`}
