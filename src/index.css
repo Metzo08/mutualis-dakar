@@ -853,3 +853,23 @@ p {
   border-color: var(--border-color) !important;
 }
 
+/* Button contrast fixes for dark mode */
+.dark-theme .btn-light {
+  background-color: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+}
+
+.dark-theme .btn-outline-secondary {
+  background-color: var(--bg-body) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border-color) !important;
+}
+
+.dark-theme .btn-outline-primary {
+  background-color: var(--primary) !important;
+  color: #ffffff !important;
+  border-color: var(--primary) !important;
+}
+
+

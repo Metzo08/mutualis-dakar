@@ -204,8 +204,8 @@ export default function PurchaseOrders({ lang = 'fr' }) {
             <div className="col-md-2">
               <button 
                 type="submit" 
-                className="btn btn-outline-primary w-100 fw-bold"
-                style={{ height: '48px', borderRadius: '10px' }}
+                className="btn text-white w-100 fw-bold"
+                style={{ height: '48px', borderRadius: '10px', background: 'var(--primary)', borderColor: 'var(--primary)' }}
               >
                 ➕ Ajouter
               </button>
