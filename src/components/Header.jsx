@@ -252,6 +252,60 @@ export default function Header({
           {t.programmes}
         </button>
 
+        {/* Lettres de Garantie */}
+        <button 
+          className={`nav-item ${currentView === 'guarantees' ? 'active' : ''}`}
+          onClick={() => navigateTo('guarantees')}
+        >
+          <span className="nav-icon">📜</span>
+          {lang === 'fr' ? 'Lettres de Garantie' : 'Garansi hospitalisation'}
+        </button>
+
+        {/* Bons de Commande Pharmacie */}
+        <button 
+          className={`nav-item ${currentView === 'purchase-orders' ? 'active' : ''}`}
+          onClick={() => navigateTo('purchase-orders')}
+        >
+          <span className="nav-icon">💊</span>
+          {lang === 'fr' ? 'Bons de Commande' : 'Keuyit u garab'}
+        </button>
+
+        {/* Télémédecine WebRTC */}
+        <button 
+          className={`nav-item ${currentView === 'telemedicine' ? 'active' : ''}`}
+          onClick={() => navigateTo('telemedicine')}
+        >
+          <span className="nav-icon">🎥</span>
+          {lang === 'fr' ? 'Télémédecine' : 'Téléconsultation'}
+        </button>
+
+        {/* Dossier Médical & Antécédents */}
+        <button 
+          className={`nav-item ${currentView === 'medical-profile' ? 'active' : ''}`}
+          onClick={() => navigateTo('medical-profile')}
+        >
+          <span className="nav-icon">🩺</span>
+          {lang === 'fr' ? 'Dossier & Radios' : 'Tére fajj'}
+        </button>
+
+        {/* Carnet de Santé Maternelle */}
+        <button 
+          className={`nav-item ${currentView === 'maternity' ? 'active' : ''}`}
+          onClick={() => navigateTo('maternity')}
+        >
+          <span className="nav-icon">🤱</span>
+          {lang === 'fr' ? 'Carnet Maternité' : 'Tére wéru jégen'}
+        </button>
+
+        {/* Portail COUD UCAD */}
+        <button 
+          className={`nav-item ${currentView === 'institution-coud' ? 'active' : ''}`}
+          onClick={() => navigateTo('institution-coud')}
+        >
+          <span className="nav-icon">🏛️</span>
+          {lang === 'fr' ? 'Portail COUD UCAD' : 'Portail COUD UCAD'}
+        </button>
+
         {/* Parrainage solidaire (Public Dedicated Page) */}
         <button 
           className={`nav-item ${currentView === 'parrainage-solidaire' ? 'active' : ''}`}

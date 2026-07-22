@@ -14,6 +14,7 @@ const csuRoutes = require('./csuRoutes');
 const additionalRoutes = require('./additionalRoutes');
 const dynamicRoutes = require('./dynamicRoutes');
 const { router: advancedRoutes, awardPoints } = require('./advancedRoutes');
+const extendedRoutes = require('./extendedRoutes');
 const {
   citizenLoginSchema,
   agentLoginSchema,
@@ -1701,6 +1702,7 @@ app.use(dynamicRoutes);
 // ROUTES AVANCÉES (fidélité, paiements OM/Wave, sync hors-ligne)
 // ============================================================================
 app.use(advancedRoutes);
+app.use('/api', extendedRoutes);
 
 // ============================================================================
 // API PHARMACIES AGRÉÉES — Source : ARP (arp.sn)

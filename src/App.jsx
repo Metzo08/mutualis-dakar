@@ -32,6 +32,12 @@ import RegionalStats from './views/RegionalStats';
 import Loyalty from './views/Loyalty';
 import Payments from './views/Payments';
 import RsePortal from './views/RsePortal';
+import GuaranteeLetters from './views/GuaranteeLetters';
+import PurchaseOrders from './views/PurchaseOrders';
+import Telemedicine from './views/Telemedicine';
+import MedicalProfile from './views/MedicalProfile';
+import MaternalHealth from './views/MaternalHealth';
+import InstitutionPortal from './views/InstitutionPortal';
 import { syncOutbox, outboxCount, cacheSet, cacheGet } from './utils/offline';
 
 // Import Styles
@@ -78,7 +84,7 @@ class ErrorBoundary extends Component {
 
 export default function App() {
   // Liste des vues valides (pour valider le hash URL)
-  const validViews = ['home','login','beneficiaries','services','map','directory','depts','programmes','about','medicaments','audit-logs','galerie','infos-csu','blog-experts','parrainage-solidaire','partnership','complaints','profile','verify','dashboard','claims','notifications','cotisations','partner','regional-stats','loyalty','payments'];
+  const validViews = ['home','login','beneficiaries','services','map','directory','depts','programmes','about','medicaments','audit-logs','galerie','infos-csu','blog-experts','parrainage-solidaire','partnership','complaints','profile','verify','dashboard','claims','notifications','cotisations','partner','regional-stats','loyalty','payments','guarantees','purchase-orders','telemedicine','medical-profile','maternity','institution-coud'];
 
   // Initialise la vue depuis le hash URL (#/beneficiaries) pour le deep-linking
   const initialViewFromHash = () => {
@@ -206,7 +212,13 @@ export default function App() {
         partner: 'Portail Partenaire - MUTUALIS DAKAR',
         'regional-stats': 'Statistiques Régionales - MUTUALIS DAKAR',
         loyalty: 'Programme fidélité - MUTUALIS DAKAR',
-        payments: 'Paiements - MUTUALIS DAKAR'
+        payments: 'Paiements - MUTUALIS DAKAR',
+        guarantees: 'Lettres de Garantie - MUTUALIS DAKAR',
+        'purchase-orders': 'Bons de Commande Pharmacie - MUTUALIS DAKAR',
+        telemedicine: 'Télémédecine & Téléconsultation - MUTUALIS DAKAR',
+        'medical-profile': 'Dossier Médical & Antécédents - MUTUALIS DAKAR',
+        maternity: 'Carnet de Santé Maternelle - MUTUALIS DAKAR',
+        'institution-coud': 'Portail Institutionnel COUD UCAD - MUTUALIS DAKAR'
       },
       wo: {
         home: 'Kër - MUTUALIS DAKAR',
@@ -557,6 +569,18 @@ export default function App() {
               setViewTab={handleSetViewTab}
             />
           );
+        case 'guarantees':
+          return <GuaranteeLetters lang={lang} userRole={portalMode} />;
+        case 'purchase-orders':
+          return <PurchaseOrders lang={lang} />;
+        case 'telemedicine':
+          return <Telemedicine lang={lang} />;
+        case 'medical-profile':
+          return <MedicalProfile lang={lang} />;
+        case 'maternity':
+          return <MaternalHealth lang={lang} />;
+        case 'institution-coud':
+          return <InstitutionPortal lang={lang} />;
         default:
           return (
             <Home 

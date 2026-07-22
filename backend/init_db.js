@@ -1,9 +1,19 @@
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const { pool } = require('./db');
 const bcrypt = require('bcrypt');
 const fs = require('fs');
-const path = require('path');
 
 const createTablesQuery = `
+  DROP TABLE IF EXISTS guarantee_letters CASCADE;
+  DROP TABLE IF EXISTS purchase_orders CASCADE;
+  DROP TABLE IF EXISTS telemedicine_sessions CASCADE;
+  DROP TABLE IF EXISTS medical_antecedents CASCADE;
+  DROP TABLE IF EXISTS appointments CASCADE;
+  DROP TABLE IF EXISTS medical_imaging_results CASCADE;
+  DROP TABLE IF EXISTS maternal_health_records CASCADE;
+  DROP TABLE IF EXISTS external_patient_codes CASCADE;
+  DROP TABLE IF EXISTS institutional_tenants CASCADE;
   DROP TABLE IF EXISTS family_members CASCADE;
   DROP TABLE IF EXISTS beneficiaries CASCADE;
   DROP TABLE IF EXISTS donations CASCADE;
@@ -428,6 +438,129 @@ const createTablesQuery = `
     target_amount INTEGER NOT NULL,
     baseline_amount INTEGER DEFAULT 0,
     is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+
+  -- 1. Lettres de garantie (Prise en charge hospitalière / chirurgicale)
+  CREATE TABLE IF NOT EXISTS guarantee_letters (
+    id SERIAL PRIMARY KEY,
+    beneficiary_id INTEGER REFERENCES beneficiaries(id) ON DELETE CASCADE,
+    partner_structure_id INTEGER REFERENCES partner_structures(id),
+    medical_act VARCHAR(255) NOT NULL,
+    estimated_amount NUMERIC(12, 2),
+    guaranteed_percentage NUMERIC(5, 2) DEFAULT 80.00,
+    max_amount NUMERIC(12, 2),
+    document_url VARCHAR(512),
+    status VARCHAR(50) DEFAULT 'pending', -- pending, approved, rejected, used
+    validation_code VARCHAR(64) UNIQUE,
+    agent_note TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+
+  -- 2. Bons de commande (Pharmacie / Tiers-payant, validité 48h)
+  CREATE TABLE IF NOT EXISTS purchase_orders (
+    id SERIAL PRIMARY KEY,
+    beneficiary_id INTEGER REFERENCES beneficiaries(id) ON DELETE CASCADE,
+    prescription_date DATE,
+    items_json JSONB NOT NULL,
+    total_amount NUMERIC(12, 2),
+    status VARCHAR(50) DEFAULT 'active', -- active, expired, used
+    used_at TIMESTAMP,
+    partner_structure_id INTEGER REFERENCES partner_structures(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+
+  -- 3. Télémédecine (Sessions WebRTC & Ordonnances)
+  CREATE TABLE IF NOT EXISTS telemedicine_sessions (
+    id SERIAL PRIMARY KEY,
+    beneficiary_id INTEGER REFERENCES beneficiaries(id) ON DELETE CASCADE,
+    doctor_name VARCHAR(255),
+    specialty VARCHAR(150),
+    scheduled_at TIMESTAMP NOT NULL,
+    status VARCHAR(50) DEFAULT 'scheduled', -- scheduled, active, completed, cancelled
+    room_token VARCHAR(255) UNIQUE,
+    medical_summary TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+
+  -- 4. Antécédents Médicaux & Groupe Sanguin
+  CREATE TABLE IF NOT EXISTS medical_antecedents (
+    id SERIAL PRIMARY KEY,
+    beneficiary_id INTEGER REFERENCES beneficiaries(id) ON DELETE CASCADE,
+    blood_group VARCHAR(10),
+    allergies TEXT,
+    chronic_conditions TEXT,
+    past_surgeries TEXT,
+    emergency_contact_name VARCHAR(255),
+    emergency_contact_phone VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+
+  -- 5. Prise de Rendez-vous en Ligne
+  CREATE TABLE IF NOT EXISTS appointments (
+    id SERIAL PRIMARY KEY,
+    beneficiary_id INTEGER REFERENCES beneficiaries(id) ON DELETE CASCADE,
+    partner_structure_id INTEGER REFERENCES partner_structures(id),
+    doctor_name VARCHAR(255),
+    specialty VARCHAR(150) NOT NULL,
+    appointment_date TIMESTAMP NOT NULL,
+    status VARCHAR(50) DEFAULT 'confirmed',
+    notes TEXT,
+    qr_access_code VARCHAR(64) UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+
+  -- 6. Imagerie Médicale & Biologie (Scanner, Radio, IRM)
+  CREATE TABLE IF NOT EXISTS medical_imaging_results (
+    id SERIAL PRIMARY KEY,
+    beneficiary_id INTEGER REFERENCES beneficiaries(id) ON DELETE CASCADE,
+    partner_structure_id INTEGER REFERENCES partner_structures(id),
+    exam_type VARCHAR(100) NOT NULL, -- Radio, Scanner, IRM, Échographie, Biologie
+    title VARCHAR(255) NOT NULL,
+    report_pdf_url VARCHAR(512),
+    dicom_images_json JSONB,
+    doctor_notes TEXT,
+    exam_date DATE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+
+  -- 7. Carnet de Santé Maternelle & Suivi Grossesse
+  CREATE TABLE IF NOT EXISTS maternal_health_records (
+    id SERIAL PRIMARY KEY,
+    beneficiary_id INTEGER REFERENCES beneficiaries(id) ON DELETE CASCADE,
+    pregnancy_start_date DATE NOT NULL,
+    expected_delivery_date DATE NOT NULL,
+    cpn1_date DATE,
+    cpn2_date DATE,
+    cpn3_date DATE,
+    cpn4_date DATE,
+    risk_level VARCHAR(50) DEFAULT 'normal',
+    notes TEXT,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+
+  -- 8. Codes Patients Externes (NIP / IPP Hospitalier Interopérable)
+  CREATE TABLE IF NOT EXISTS external_patient_codes (
+    id SERIAL PRIMARY KEY,
+    beneficiary_id INTEGER REFERENCES beneficiaries(id) ON DELETE CASCADE,
+    partner_structure_id INTEGER REFERENCES partner_structures(id),
+    external_patient_code VARCHAR(100) NOT NULL,
+    system_name VARCHAR(100) DEFAULT 'SIGOB/DHIS2',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(partner_structure_id, external_patient_code)
+  );
+
+  -- 9. Institutions Grands Comptes / Multi-Tenants (COUD / UCAD)
+  CREATE TABLE IF NOT EXISTS institutional_tenants (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    code VARCHAR(50) UNIQUE NOT NULL,
+    contact_email VARCHAR(255),
+    contact_phone VARCHAR(50),
+    total_members INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
 `;
@@ -1465,6 +1598,61 @@ async function initializeDatabase() {
        ('ziguinchor', 'Ziguinchor', 110, 300, 65.4, 'var(--success)', 20, '380 000', 31)`
     );
     console.log('Données de couverture régionale insérées.');
+
+    // Seed Phase 2 & 3: Institution COUD, antécédents, garanties, imagerie, carnet maternité
+    await pool.query(`
+      INSERT INTO institutional_tenants (name, code, contact_email, contact_phone, total_members)
+      VALUES ('COUD - Centre des Œuvres Universitaires de Dakar', 'COUD_UCAD', 'sante@coud.ucad.sn', '+221 33 824 15 15', 85000)
+      ON CONFLICT (code) DO NOTHING;
+    `);
+
+    // Insérer des antécédents pour le premier bénéficiaire s'il existe
+    const firstBen = await pool.query('SELECT id FROM beneficiaries LIMIT 1');
+    if (firstBen.rows.length > 0) {
+      const benId = firstBen.rows[0].id;
+
+      await pool.query(`
+        INSERT INTO medical_antecedents (beneficiary_id, blood_group, allergies, chronic_conditions, past_surgeries, emergency_contact_name, emergency_contact_phone)
+        VALUES ($1, 'O+', 'Allergie à la Pénicilline', 'Tension artérielle légère', 'Appendicectomie (2021)', 'Moussa Sow', '+221 77 450 12 34')
+      `, [benId]);
+
+      await pool.query(`
+        INSERT INTO external_patient_codes (beneficiary_id, external_patient_code, system_name)
+        VALUES ($1, 'IPP-COUD-2026-88', 'COUD-SANTÉ-UCAD')
+        ON CONFLICT DO NOTHING;
+      `, [benId]);
+
+      await pool.query(`
+        INSERT INTO guarantee_letters (beneficiary_id, medical_act, estimated_amount, guaranteed_percentage, max_amount, status, validation_code, agent_note)
+        VALUES ($1, 'Intervention Chirurgicale ORL - Hôpital Fann', 250000, 80.00, 200000, 'approved', 'GAR-DK-2026-9941', 'Dossier complet. Prise en charge accordée à 80%.')
+      `, [benId]);
+
+      await pool.query(`
+        INSERT INTO purchase_orders (beneficiary_id, items_json, total_amount, status)
+        VALUES ($1, '[{"name": "Amoxicilline 500mg", "qty": 2, "price": 3500}, {"name": "Paracétamol 1g", "qty": 1, "price": 1200}]'::jsonb, 8200, 'active')
+      `, [benId]);
+
+      await pool.query(`
+        INSERT INTO telemedicine_sessions (beneficiary_id, doctor_name, specialty, scheduled_at, status, room_token, medical_summary)
+        VALUES ($1, 'Dr. Aminata Ndiaye', 'Médecine Générale / Pédiatrie', NOW() + INTERVAL '1 day', 'scheduled', 'TELE-ROOM-8821', 'Consultation de suivi prénatal et conseils nutritionnels.')
+      `, [benId]);
+
+      await pool.query(`
+        INSERT INTO appointments (beneficiary_id, doctor_name, specialty, appointment_date, status, notes, qr_access_code)
+        VALUES ($1, 'Pr. Ousmane Diop', 'Cardiologie', NOW() + INTERVAL '3 days', 'confirmed', 'Rendez-vous de bilan annuel à l''Hôpital Dantec.', 'RDV-CARDIO-4421')
+      `, [benId]);
+
+      await pool.query(`
+        INSERT INTO medical_imaging_results (beneficiary_id, exam_type, title, report_pdf_url, doctor_notes, exam_date)
+        VALUES ($1, 'Scanner', 'Scanner Thoracique et Pulmonaire - Hôpital Fann', '/docs/scanner_fann_sample.pdf', 'Parenchyme pulmonaire sans anomalie décelable. Conclusion rassurante.', CURRENT_DATE - INTERVAL '10 days')
+      `, [benId]);
+
+      await pool.query(`
+        INSERT INTO maternal_health_records (beneficiary_id, pregnancy_start_date, expected_delivery_date, cpn1_date, cpn2_date, risk_level, notes)
+        VALUES ($1, CURRENT_DATE - INTERVAL '120 days', CURRENT_DATE + INTERVAL '150 days', CURRENT_DATE - INTERVAL '90 days', CURRENT_DATE - INTERVAL '30 days', 'normal', 'Grossesse évolutive normale. Prise en charge accouchement à 100% au Centre de Santé Gaspart Camara.')
+      `, [benId]);
+    }
+    console.log('Données d\'extension Phase 2 & 3 insérées avec succès !');
 
     console.log('Initialisation et seeding terminés avec succès !');
     process.exit(0);

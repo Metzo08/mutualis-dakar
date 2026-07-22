@@ -105,18 +105,35 @@ export default function CmuCard({ citizen }) {
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', position: 'relative', zIndex: 1 }}>
             <div>
-              <div style={{ fontSize: '0.6rem', opacity: 0.8, textTransform: 'uppercase' }}>N° Carte CMU</div>
-              <div style={{ fontSize: '0.95rem', fontWeight: '700', fontFamily: 'monospace', letterSpacing: '1px' }}>
-                {citizen.cmuNumber || '—'}
+              <div style={{ fontSize: '0.55rem', opacity: 0.8, textTransform: 'uppercase' }}>N° Carte CMU / Code Patient IPP</div>
+              <div style={{ fontSize: '0.9rem', fontWeight: '700', fontFamily: 'monospace', letterSpacing: '1px' }}>
+                {citizen.cmuNumber || '—'} {citizen.patientCode ? `| IPP: ${citizen.patientCode}` : '| IPP: IPP-COUD-2026-88'}
               </div>
             </div>
-            <div style={{ fontSize: '0.6rem', opacity: 0.7, textAlign: 'right' }}>
-              👆 Toucher pour<br />le QR de vérification
+            <div style={{ fontSize: '0.6rem', opacity: 0.8, textAlign: 'right' }}>
+              👆 Toucher pour<br />le QR Code Tri-Layer
             </div>
+          </div>
+
+          {/* Encart publicitaire & Sponsoring RSE */}
+          <div style={{ 
+            position: 'relative', 
+            zIndex: 1, 
+            marginTop: '0.2rem', 
+            padding: '0.15rem 0.5rem', 
+            background: 'rgba(255,255,255,0.15)', 
+            borderRadius: '6px', 
+            fontSize: '0.55rem', 
+            display: 'flex', 
+            justify: 'space-between', 
+            alignItems: 'center' 
+          }}>
+            <span>✨ Sponsorisé par <strong>PATISEN</strong> & <strong>Wave</strong></span>
+            <span style={{ opacity: 0.8 }}>SÉN-CSU 🇸🇳</span>
           </div>
         </div>
 
-        {/* VERSO : QR code de vérification */}
+        {/* VERSO : QR code de vérification Tri-Layer */}
         <div
           style={{
             position: 'absolute',
@@ -130,22 +147,24 @@ export default function CmuCard({ citizen }) {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '0.5rem',
+            gap: '0.3rem',
             border: '2px solid var(--primary)'
           }}
         >
           {qrUrl ? (
-            <img src={qrUrl} alt="QR code CMU" style={{ width: '120px', height: '120px' }} />
+            <img src={qrUrl} alt="QR code CMU" style={{ width: '110px', height: '110px' }} />
           ) : (
-            <div style={{ width: '120px', height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f3f4f6', borderRadius: '8px', fontSize: '0.7rem', color: '#999' }}>
-              QR...
+            <div style={{ width: '110px', height: '110px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f3f4f6', borderRadius: '8px', fontSize: '0.7rem', color: '#999' }}>
+              Génération...
             </div>
           )}
-          <div style={{ fontSize: '0.7rem', fontWeight: '700', color: 'var(--primary)', textAlign: 'center' }}>
-            SCAN POUR VÉRIFIER
-          </div>
-          <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', textAlign: 'center' }}>
-            {citizen.cmuNumber}
+          <div style={{ textAlign: 'center', color: 'var(--text-color)' }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--primary)' }}>
+              🔒 QR Code Tri-Layer Sécurisé
+            </div>
+            <div style={{ fontSize: '0.6rem', color: '#64748b' }}>
+              Scanner pour Statut CMU, Urgence SOS & Imagerie
+            </div>
           </div>
         </div>
       </div>
