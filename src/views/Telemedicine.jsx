@@ -471,54 +471,59 @@ export default function Telemedicine({ lang = 'fr' }) {
                 </div>
               </div>
 
-              {/* Contrôles interactifs du flux vidéo + Vrai VU-Mètre Microphone */}
-              <div className="d-flex gap-3 mt-3 justify-content-center align-items-center flex-wrap p-3 rounded-3" style={{ background: '#1e293b', border: '1px solid #334155' }}>
-                {/* Bouton & VU-Mètre Microphone */}
-                <div className="d-flex align-items-center gap-2">
-                  <button 
-                    type="button"
-                    className="btn px-3.5 py-2 fw-semibold text-white shadow-sm" 
-                    style={{ 
-                      borderRadius: '10px', 
-                      minWidth: '150px', 
-                      background: isMuted ? '#dc2626' : '#059669', 
-                      borderColor: isMuted ? '#b91c1c' : '#047857',
-                      color: '#ffffff'
-                    }}
-                    onClick={toggleMute}
-                  >
-                    {isMuted ? '🎙️ Micro Coupé' : '🎙️ Micro Actif'}
-                  </button>
-
-                  {/* VU-Mètre Audio Dynamique */}
+              {/* Toolbar de contrôles WebRTC haut de gamme avec VU-Mètre néon intégré */}
+              <div 
+                className="d-flex justify-content-center align-items-center gap-3 mt-3 p-3 rounded-4 flex-wrap" 
+                style={{ 
+                  background: 'rgba(15, 23, 42, 0.95)', 
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+                  backdropFilter: 'blur(10px)'
+                }}
+              >
+                {/* Bouton Microphone + VU-Mètre Audio Néon */}
+                <button 
+                  type="button"
+                  className="btn px-3.5 py-2.5 fw-bold text-white shadow-sm d-flex align-items-center gap-2.5" 
+                  style={{ 
+                    borderRadius: '12px', 
+                    background: isMuted ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)' : 'linear-gradient(135deg, #059669 0%, #047857 100%)', 
+                    border: 'none',
+                    color: '#ffffff',
+                    fontSize: '0.9rem'
+                  }}
+                  onClick={toggleMute}
+                >
+                  <span>{isMuted ? '🎙️ Micro Coupé' : '🎙️ Micro Actif'}</span>
                   {!isMuted && (
-                    <div className="d-flex align-items-center gap-1 bg-dark px-2.5 py-1.5 rounded-3 border border-secondary" style={{ height: '38px' }}>
-                      <span className="small text-white-50 me-1" style={{ fontSize: '0.72rem' }}>Audio:</span>
+                    <div className="d-flex align-items-center gap-1 px-2 py-1 rounded-2" style={{ background: 'rgba(0, 0, 0, 0.4)', border: '1px solid rgba(255, 255, 255, 0.2)' }}>
                       {[15, 30, 45, 60, 75, 90].map((threshold, idx) => (
                         <div 
                           key={idx} 
                           style={{ 
                             width: '4px', 
                             height: `${10 + idx * 3}px`, 
-                            backgroundColor: audioLevel >= threshold ? '#10b981' : '#475569',
+                            backgroundColor: audioLevel >= threshold ? '#34d399' : '#64748b',
+                            boxShadow: audioLevel >= threshold ? '0 0 6px #34d399' : 'none',
                             borderRadius: '2px',
-                            transition: 'background-color 0.1s'
+                            transition: 'all 0.08s ease'
                           }} 
                         />
                       ))}
                     </div>
                   )}
-                </div>
+                </button>
 
                 {/* Bouton Caméra */}
                 <button 
                   type="button"
-                  className="btn px-3.5 py-2 fw-semibold text-white shadow-sm" 
+                  className="btn px-3.5 py-2.5 fw-bold text-white shadow-sm d-flex align-items-center gap-2" 
                   style={{ 
-                    borderRadius: '10px', 
-                    background: isCamOff ? '#dc2626' : '#0284c7', 
-                    borderColor: isCamOff ? '#b91c1c' : '#0369a1',
-                    color: '#ffffff'
+                    borderRadius: '12px', 
+                    background: isCamOff ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)' : 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)', 
+                    border: 'none',
+                    color: '#ffffff',
+                    fontSize: '0.9rem'
                   }}
                   onClick={toggleCamera}
                 >
@@ -528,11 +533,17 @@ export default function Telemedicine({ lang = 'fr' }) {
                 {/* Bouton QR Code CMU */}
                 <button 
                   type="button"
-                  className="btn px-4 py-2 fw-bold text-white shadow-sm" 
-                  style={{ borderRadius: '10px', background: 'var(--primary)', borderColor: 'var(--primary)', color: '#ffffff' }} 
+                  className="btn px-4 py-2.5 fw-bold text-white shadow-sm d-flex align-items-center gap-2" 
+                  style={{ 
+                    borderRadius: '12px', 
+                    background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)', 
+                    border: 'none',
+                    color: '#ffffff',
+                    fontSize: '0.9rem'
+                  }} 
                   onClick={() => setShowQrModal(true)}
                 >
-                  📲 Présenter QR Code Tri-Layer CMU
+                  📲 Présenter QR Code CMU
                 </button>
               </div>
             </div>
