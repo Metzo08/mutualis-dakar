@@ -70,8 +70,8 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
     }
 
     const totalAmt = voucher.total_amount || itemsList.reduce((acc, it) => acc + (it.price * it.qty), 0);
-    const cmuAmt = voucher.cmu_covered || (totalAmt * 0.8);
-    const patientAmt = voucher.patient_pay || (totalAmt * 0.2);
+    const cmuAmt = voucher.cmu_covered || (totalAmt * 0.5);
+    const patientAmt = voucher.patient_pay || (totalAmt * 0.5);
 
     const printWin = window.open('', '_blank', 'width=980,height=1150');
     printWin.document.write(`
@@ -112,13 +112,10 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               </div>
               <div class="text-end">
                 <img src="/unamusc_logo.png" alt="UNAMUSC Sénégal" style="width: 85px; height: auto; object-fit: contain;" />
-              </div>
-            </div>
-
-            <!-- Titre du Bon Pharmacie -->
+                   <!-- Titre du Bon Pharmacie -->
             <div class="text-center my-4 p-3 rounded-3" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
               <h4 class="fw-bold text-uppercase mb-1" style="color: #047857; letter-spacing: 1px;">BON DE COMMANDE DE MÉDICAMENTS (48H)</h4>
-              <small class="text-muted fw-semibold">Système de Tiers-Payant UNAMUSC (Prise en charge 80% — Pharmacies Agréées)</small><br />
+              <small class="text-muted fw-semibold">Système de Tiers-Payant UNAMUSC (Prise en charge 50% — Pharmacies Agréées)</small><br />
               <code class="mt-2 d-inline-block px-3 py-1 bg-white text-success border border-success rounded-3 fw-bold fs-6">Code Bon : #${voucher.order_code || `ORD-${voucher.id}`}</code>
             </div>
 
@@ -167,11 +164,11 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                   <strong class="fs-6 text-white">${Number(totalAmt).toLocaleString()} FCFA</strong>
                 </div>
                 <div class="col-4 border-start border-end border-secondary">
-                  <span class="small text-success d-block">Prise en Charge UNAMUSC (80%)</span>
+                  <span class="small text-success d-block">Prise en Charge UNAMUSC (50%)</span>
                   <strong class="fs-4 text-success">${Number(cmuAmt).toLocaleString()} FCFA</strong>
                 </div>
                 <div class="col-4">
-                  <span class="small text-warning d-block">Ticket Modérateur Patient (20%)</span>
+                  <span class="small text-warning d-block">Ticket Modérateur Patient (50%)</span>
                   <strong class="fs-6 text-warning">${Number(patientAmt).toLocaleString()} FCFA</strong>
                 </div>
               </div>
@@ -182,7 +179,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               <div class="col-8">
                 <strong class="small d-block text-success mb-1 fw-bold">Certification Officine & Tiers-Payant :</strong>
                 <p class="small text-muted mb-0" style="line-height: 1.5;">
-                  Ce bon certifié permet la délivrance immédiate des médicaments prescrits dans toute pharmacie agréée UNAMUSC. Le montant pris en charge (80%) est réglé directement par l'UNAMUSC au pharmacien sous présentation du bon signé.
+                  Ce bon certifié permet la délivrance immédiate des médicaments prescrits dans toute pharmacie agréée UNAMUSC. Le montant pris en charge (50%) est réglé directement par l'UNAMUSC au pharmacien sous présentation du bon signé.
                 </p>
               </div>
               <div class="col-4 text-center">
@@ -213,8 +210,8 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
     if (!editingVoucher) return;
 
     const finalRealPrice = parseFloat(editedPharmacyPrice) || editingVoucher.total_amount || 0;
-    const finalCmuCovered = finalRealPrice * 0.8;
-    const finalPatientPay = finalRealPrice * 0.2;
+    const finalCmuCovered = finalRealPrice * 0.5;
+    const finalPatientPay = finalRealPrice * 0.5;
 
     const updatedOrder = {
       ...editingVoucher,

@@ -285,7 +285,9 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
         ? 'Demande bi yónnee nañu ko ak jamm.' 
         : 'Votre demande de lettre de garantie hospitalière a été soumise avec succès. L\'UNAMUSC procède à l\'instruction sous 24h.');
     } else {
-      // Création d'un Bon de Commande de Médicaments (Pharmacie Tiers-Payant)
+      // Création d'un Bon de Commande de Médicaments (Pharmacie Tiers-Payant 50%)
+      const pharmCovered = estVal * 0.5;
+      const pharmRest = estVal * 0.5;
       const newOrder = {
         id: Date.now(),
         first_name: applicantFirstName || activeFirstName,
@@ -295,8 +297,8 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
           { name: medicalAct, qty: 1, price: estVal }
         ]),
         total_amount: estVal,
-        cmu_covered: gVal,
-        patient_pay: estVal - gVal,
+        cmu_covered: pharmCovered,
+        patient_pay: pharmRest,
         status: 'active',
         created_at: new Date().toISOString(),
         expires_at: new Date(Date.now() + 48 * 3600 * 1000).toISOString(),
@@ -306,7 +308,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
       const currentOrders = JSON.parse(localStorage.getItem('cmu_purchase_orders') || '[]');
       localStorage.setItem('cmu_purchase_orders', JSON.stringify([newOrder, ...currentOrders]));
 
-      setSuccessMsg(`Votre Bon de Commande Pharmacie (${newOrder.order_code}) a été généré avec succès ! Valable 48h sous Tiers-Payant UNAMUSC.`);
+      setSuccessMsg(`Votre Bon de Commande Pharmacie (${newOrder.order_code}) a été généré avec succès (Prise en charge UNAMUSC 50%) ! Valable 48h dans toute pharmacie agréée.`);
     }
 
     setMedicalAct('');
@@ -399,7 +401,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               border: '1px solid rgba(255, 255, 255, 0.3)'
             }}
           >
-            🇸🇳 UNAMUSC Sénégal — Prise en charge hospitalière & Bons de Commande (80% à 100%)
+            🇸🇳 UNAMUSC Sénégal — Lettres de Garantie Hospitalières (80%) & Bons de Commande Pharmacie (50%)
           </span>
           <h1 className="fw-bold mb-2 text-white text-center" style={{ fontSize: '2rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
             {lang === 'wo' ? 'Bons de commande ak Bataaxal u garansi' : 'Bons de commande & lettres de garantie'}
@@ -407,20 +409,19 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
           <p className="mb-3 text-white-50 text-center mx-auto" style={{ fontSize: '0.98rem', lineHeight: '1.6', textShadow: '0 1px 2px rgba(0,0,0,0.2)', maxWidth: '750px' }}>
             {lang === 'wo'
               ? 'Yónnee sa demande ngir joto prise en charge d\'hospitalisation wala chirurgie.'
-              : 'Demandez votre lettre de garantie hospitalière ou bon de commande en ligne sous le Tiers-Payant UNAMUSC.'}
+              : 'Demandez votre lettre de garantie hospitalière (80%) ou bon de commande pharmacie (50%) en ligne sous le Tiers-Payant UNAMUSC.'}
           </p>
 
-          <div className="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-2 w-100">
+          <div className="d-flex justify-content-center align-items-center flex-wrap gap-4 mt-3 w-100">
             <button 
               type="button"
-              className="btn fw-bold text-white shadow-sm"
+              className="btn fw-bold text-white shadow-sm px-4 py-2.5 mx-2"
               style={{
                 background: activeTab === 'list' ? '#059669' : 'rgba(255, 255, 255, 0.18)',
                 color: '#ffffff',
                 border: activeTab === 'list' ? '2px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.4)',
                 borderRadius: '12px',
-                padding: '0.65rem 1.4rem',
-                fontSize: '0.92rem',
+                fontSize: '0.94rem',
                 boxShadow: activeTab === 'list' ? '0 4px 14px rgba(5, 150, 105, 0.5)' : 'none',
                 transition: 'all 0.2s'
               }}
@@ -431,14 +432,13 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
             <button 
               type="button"
-              className="btn fw-bold text-white shadow-sm"
+              className="btn fw-bold text-white shadow-sm px-4 py-2.5 mx-2"
               style={{
                 background: activeTab === 'new' ? '#059669' : 'rgba(255, 255, 255, 0.18)',
                 color: '#ffffff',
                 border: activeTab === 'new' ? '2px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.4)',
                 borderRadius: '12px',
-                padding: '0.65rem 1.4rem',
-                fontSize: '0.92rem',
+                fontSize: '0.94rem',
                 boxShadow: activeTab === 'new' ? '0 4px 14px rgba(5, 150, 105, 0.5)' : 'none',
                 transition: 'all 0.2s'
               }}
