@@ -76,7 +76,20 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
     try {
       const stored = localStorage.getItem('cmu_maternal_data');
       if (stored) {
-        setMaternalData(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        if (parsed && parsed.cpn_records && Array.isArray(parsed.cpn_records) && parsed.vaccinations) {
+          setMaternalData({
+            ...defaultMaternalData,
+            ...parsed,
+            cpn_records: parsed.cpn_records.length > 0 ? parsed.cpn_records : defaultMaternalData.cpn_records,
+            vaccinations: { ...defaultMaternalData.vaccinations, ...(parsed.vaccinations || {}) },
+            prevention: { ...defaultMaternalData.prevention, ...(parsed.prevention || {}) },
+            ultrasounds: Array.isArray(parsed.ultrasounds) ? parsed.ultrasounds : defaultMaternalData.ultrasounds
+          });
+        } else {
+          setMaternalData(defaultMaternalData);
+          localStorage.setItem('cmu_maternal_data', JSON.stringify(defaultMaternalData));
+        }
       } else {
         setMaternalData(defaultMaternalData);
         localStorage.setItem('cmu_maternal_data', JSON.stringify(defaultMaternalData));
@@ -399,7 +412,7 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
               </div>
               
               <div className="d-flex flex-column gap-3 mb-4">
-                {maternalData.cpn_records.map(cpn => (
+                {(maternalData?.cpn_records || defaultMaternalData.cpn_records).map(cpn => (
                   <div key={cpn.id} className="p-3.5 rounded-4 border d-flex justify-content-between align-items-center flex-wrap gap-2 shadow-sm" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }}>
                     <div style={{ flex: 1 }}>
                       <div className="d-flex align-items-center gap-2 mb-1">
@@ -444,7 +457,7 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
                     <strong className="d-block small" style={{ color: 'var(--text-main)' }}>Vaccin Anti-Tétanique (VAT 1)</strong>
                     <small className="text-muted">1ère injection de protection</small>
                   </div>
-                  {maternalData.vaccinations.vat1.done ? (
+                  {maternalData?.vaccinations?.vat1?.done ? (
                     <span className="badge bg-success px-2.5 py-1">✅ Administré ({new Date(maternalData.vaccinations.vat1.date).toLocaleDateString('fr-FR')})</span>
                   ) : (
                     <span className="badge bg-warning text-dark px-2.5 py-1">⏳ À faire CPN 1</span>
@@ -456,7 +469,7 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
                     <strong className="d-block small" style={{ color: 'var(--text-main)' }}>Vaccin Anti-Tétanique (VAT 2)</strong>
                     <small className="text-muted">1 mois après VAT 1</small>
                   </div>
-                  {maternalData.vaccinations.vat2.done ? (
+                  {maternalData?.vaccinations?.vat2?.done ? (
                     <span className="badge bg-success px-2.5 py-1">✅ Administré ({new Date(maternalData.vaccinations.vat2.date).toLocaleDateString('fr-FR')})</span>
                   ) : (
                     <span className="badge bg-warning text-dark px-2.5 py-1">⏳ Prévu CPN 3</span>
@@ -468,7 +481,7 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
                     <strong className="d-block small" style={{ color: 'var(--text-main)' }}>Traitement Préventif Paludisme (TPI-SP)</strong>
                     <small className="text-muted">Sulfadoxine-Pyriméthamine 2ème Trimestre</small>
                   </div>
-                  {maternalData.prevention.tpi_sp1.done ? (
+                  {maternalData?.prevention?.tpi_sp1?.done ? (
                     <span className="badge bg-success px-2.5 py-1">✅ Reçu</span>
                   ) : (
                     <span className="badge bg-info text-dark px-2.5 py-1">⏳ Prévu CPN 3</span>
