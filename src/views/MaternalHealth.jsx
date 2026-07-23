@@ -195,6 +195,34 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
     setSavedMsg(`✅ Consultation CPN validée et certifiée par ${activePractitioner}.`);
   };
 
+  // Génération dynamique d'une Lettre de Garantie pour l'Accouchement (Interconnexion avec Bons de Commande & Lettres de Garantie)
+  const handleGenerateDeliveryGuaranteeLetter = () => {
+    const data = maternalData || defaultMaternalData;
+    const newLetter = {
+      id: 'LG-MAT-' + Date.now().toString().slice(-6),
+      patient_name: data.mother_name || 'Awa Ndiaye',
+      cmu_number: data.cmu_number || 'CMU-DKR-2026-8812',
+      ipp_number: 'IPP-GC-2026-8812',
+      hospital_name: data.assigned_maternity || 'Maternité du Centre de Santé Gaspard Camara',
+      act_name: 'Accouchement & Césarienne d\'Urgence — Gratuité 100% UNAMUSC',
+      total_amount: 150000,
+      cmu_covered: 150000,
+      patient_share: 0,
+      status: 'valid',
+      created_at: new Date().toISOString(),
+      prescribing_doctor: activePractitioner,
+      qr_code: 'LG-DELIVERY-' + Date.now()
+    };
+
+    try {
+      const existing = JSON.parse(localStorage.getItem('cmu_guarantee_letters') || '[]');
+      localStorage.setItem('cmu_guarantee_letters', JSON.stringify([newLetter, ...existing]));
+      setSavedMsg(`✅ Lettre de Garantie Accouchement 100% UNAMUSC (${newLetter.id}) créée et synchronisée en temps réel dans "Bons de Commande & Lettres de Garantie" !`);
+    } catch (err) {
+      console.warn('Erreur synchro lettre de garantie:', err);
+    }
+  };
+
   // Impression / Téléchargement du Carnet de Maternité & Santé Enfant 0 - 18 ans A4 PDF
   const handlePrintMaternalChildPassportPDF = () => {
     const data = maternalData || defaultMaternalData;
@@ -394,6 +422,15 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
                 </button>
               </>
             )}
+
+            <button 
+              type="button"
+              className="btn fw-bold text-white shadow-sm"
+              style={{ background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)', border: 'none', borderRadius: '12px', padding: '0.7rem 1.4rem', fontSize: '0.92rem' }}
+              onClick={handleGenerateDeliveryGuaranteeLetter}
+            >
+              📜 Générer Lettre de Garantie Accouchement (100% UNAMUSC)
+            </button>
 
             <button 
               type="button"
