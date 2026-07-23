@@ -681,14 +681,42 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                     <h5 className="fw-bold mt-2 text-white">{viewingExam.title}</h5>
                     <p className="small text-white-50 mb-0">{viewingExam.provider_name || 'Hôpital Fann Dakar'}</p>
                   </div>
+                </div>
 
-                  {/* Contrôles DICOM (Zoom, Contraste) */}
-                  <div className="d-flex justify-content-center gap-2 mt-3 flex-wrap" style={{ position: 'relative', zIndex: 5 }}>
-                    <button type="button" className="btn btn-sm btn-dark border" onClick={() => setDicomZoom(prev => Math.min(prev + 0.2, 1.8))}>🔍 Zoom +</button>
-                    <button type="button" className="btn btn-sm btn-dark border" onClick={() => setDicomZoom(1)}>🔄 Reset</button>
-                    <button type="button" className="btn btn-sm btn-dark border" onClick={() => setDicomInvert(prev => !prev)}>🌗 {dicomInvert ? 'Inverser' : 'Filtre Négatif'}</button>
-                    <button type="button" className="btn btn-sm btn-dark border" onClick={() => setActiveCliche(prev => (prev % (viewingExam.cliche_count || 3)) + 1)}>🖼️ Cliché suivant</button>
-                  </div>
+                {/* Contrôles DICOM (Zoom, Contraste) - Non Inversés */}
+                <div className="d-flex justify-content-center gap-2 mb-3 flex-wrap">
+                  <button 
+                    type="button" 
+                    className="btn btn-sm text-white fw-bold shadow-sm" 
+                    style={{ background: '#0f172a', border: '1.5px solid #059669', borderRadius: '10px', padding: '0.45rem 0.85rem' }} 
+                    onClick={() => setDicomZoom(prev => Math.min(prev + 0.2, 1.8))}
+                  >
+                    🔍 Zoom +
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn btn-sm text-white fw-bold shadow-sm" 
+                    style={{ background: '#0f172a', border: '1.5px solid #64748b', borderRadius: '10px', padding: '0.45rem 0.85rem' }} 
+                    onClick={() => setDicomZoom(1)}
+                  >
+                    🔄 Reset
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn btn-sm text-white fw-bold shadow-sm" 
+                    style={{ background: dicomInvert ? '#059669' : '#0f172a', border: '1.5px solid #059669', borderRadius: '10px', padding: '0.45rem 0.85rem' }} 
+                    onClick={() => setDicomInvert(prev => !prev)}
+                  >
+                    🌗 {dicomInvert ? 'Inversé (Négatif Actif)' : 'Filtre Négatif'}
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn btn-sm text-white fw-bold shadow-sm" 
+                    style={{ background: '#0f172a', border: '1.5px solid #0284c7', borderRadius: '10px', padding: '0.45rem 0.85rem' }} 
+                    onClick={() => setActiveCliche(prev => (prev % (viewingExam.cliche_count || 3)) + 1)}
+                  >
+                    🖼️ Cliché suivant
+                  </button>
                 </div>
 
                 {/* Compte-rendu officiel du praticien */}
