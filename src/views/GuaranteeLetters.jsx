@@ -7,24 +7,34 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
       first_name: 'Amadou',
       last_name: 'Sow',
       cmu_number: 'CMU-DKR-2026-8812',
+      ipp_number: 'IPP-FANN-2026-8812',
+      hospital_name: 'Hôpital Universitaire de Fann (Dakar)',
       medical_act: 'Intervention chirurgicale ORL — (Hôpital Universitaire de Fann)',
       estimated_amount: 250000,
       guaranteed_percentage: 80,
       max_amount: 200000,
+      patient_rest: 50000,
       status: 'pending',
-      validation_code: 'GAR-2026-FANN-88'
+      validation_code: 'GAR-2026-FANN-88',
+      created_at: new Date().toISOString(),
+      agent_note: 'Dossier complet. Devis d\'hospitalisation vérifié conforme au barème national SÉN-CSU.'
     },
     {
       id: 202,
       first_name: 'Fatou',
       last_name: 'Diop',
       cmu_number: 'CMU-DKR-2026-4401',
+      ipp_number: 'IPP-DANTEC-2026-4401',
+      hospital_name: 'Hôpital Aristide Le Dantec',
       medical_act: 'Hospitalisation soins intensifs 5 jours — (Hôpital Aristide Le Dantec)',
       estimated_amount: 450000,
       guaranteed_percentage: 100,
       max_amount: 450000,
+      patient_rest: 0,
       status: 'approved',
-      validation_code: 'GAR-2026-DANTEC-12'
+      validation_code: 'GAR-2026-DANTEC-12',
+      created_at: new Date(Date.now() - 86400000 * 2).toISOString(),
+      agent_note: 'Accordé à 100% au titre de la gratuité hospitalière maternité & soins d\'urgence.'
     }
   ];
 
@@ -39,11 +49,12 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
   const [submitting, setSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Instruction Agent
+  // Instruction Agent & Modal
   const [selectedLetter, setSelectedLetter] = useState(null);
+  const [modalTab, setModalTab] = useState('instruction'); // 'instruction' | 'certificate'
   const [guaranteedPct, setGuaranteedPct] = useState(80);
   const [maxAmount, setMaxAmount] = useState('');
-  const [agentNote, setAgentNote] = useState('');
+  const [agentNote, setAgentNote] = useState('Prise en charge validée par l\'agent de la mutuelle sous le régime du tiers-payant hospitalier.');
 
   const fetchLetters = async () => {
     setLoading(true);
@@ -67,6 +78,15 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
     fetchLetters();
   }, []);
 
+  // Calcul du montant garanti et du reste à charge patient
+  const calculatedGuaranteeAmount = selectedLetter 
+    ? (parseFloat(maxAmount) || (selectedLetter.estimated_amount * (guaranteedPct / 100)))
+    : 0;
+  
+  const calculatedPatientRest = selectedLetter
+    ? Math.max(0, selectedLetter.estimated_amount - calculatedGuaranteeAmount)
+    : 0;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!medicalAct || !estimatedAmount) return;
@@ -74,17 +94,25 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
     setSuccessMsg('');
 
     const citizenData = JSON.parse(localStorage.getItem('cmu-citizen') || '{}');
+    const estVal = parseFloat(estimatedAmount) || 0;
+    const gVal = estVal * 0.8;
+
     const newLetter = {
       id: Date.now(),
-      first_name: citizenData.firstName || 'Bénéficiaire',
-      last_name: citizenData.lastName || 'Assuré CMU',
-      cmu_number: citizenData.cmuNumber || 'CMU-DKR-2026-9900',
+      first_name: citizenData.firstName || 'Amadou',
+      last_name: citizenData.lastName || 'Sow',
+      cmu_number: citizenData.cmuNumber || 'CMU-DKR-2026-8812',
+      ipp_number: 'IPP-FANN-2026-8812',
+      hospital_name: structureName,
       medical_act: `${medicalAct} — (${structureName})`,
-      estimated_amount: parseFloat(estimatedAmount) || 0,
+      estimated_amount: estVal,
       guaranteed_percentage: 80,
-      max_amount: parseFloat(estimatedAmount) * 0.8,
+      max_amount: gVal,
+      patient_rest: estVal - gVal,
       status: 'pending',
-      validation_code: `GAR-2026-${Math.floor(1000 + Math.random() * 9000)}`
+      validation_code: `GAR-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+      created_at: new Date().toISOString(),
+      agent_note: 'Demande en attente de vérification du devis par l\'agent.'
     };
 
     try {
@@ -102,7 +130,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
     }
 
     setLetters([newLetter, ...letters]);
-    setSuccessMsg(lang === 'wo' ? 'Demande bi yónnee nañu ko ak jamm.' : 'Votre demande de lettre de garantie a été soumise avec succès et est en attente d\'instruction agent.');
+    setSuccessMsg(lang === 'wo' ? 'Demande bi yónnee nañu ko ak jamm.' : 'Votre demande de lettre de garantie a été émise avec succès. Un agent procède à l\'instruction humaine sous 24h.');
     setMedicalAct('');
     setEstimatedAmount('');
     setActiveTab('list');
@@ -111,12 +139,18 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
 
   const handleValidateAgent = async (status) => {
     if (!selectedLetter) return;
+    const finalGuarantee = parseFloat(maxAmount) || (selectedLetter.estimated_amount * (guaranteedPct / 100));
+    const finalRest = Math.max(0, selectedLetter.estimated_amount - finalGuarantee);
+
     const updated = letters.map(l => l.id === selectedLetter.id ? {
       ...l,
       status,
       guaranteed_percentage: parseFloat(guaranteedPct),
-      max_amount: parseFloat(maxAmount) || (l.estimated_amount * (guaranteedPct / 100))
+      max_amount: finalGuarantee,
+      patient_rest: finalRest,
+      agent_note: agentNote || (status === 'approved' ? 'Prise en charge accordée.' : 'Demande rejetée.')
     } : l);
+
     setLetters(updated);
 
     try {
@@ -126,7 +160,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
         body: JSON.stringify({
           status,
           guaranteed_percentage: parseFloat(guaranteedPct),
-          max_amount: parseFloat(maxAmount) || selectedLetter.estimated_amount,
+          max_amount: finalGuarantee,
           agent_note: agentNote
         })
       });
@@ -134,8 +168,34 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
       console.warn(err);
     }
 
-    setSelectedLetter(null);
+    // Basculer sur l'onglet certificat si approuvé
+    if (status === 'approved') {
+      setSelectedLetter({
+        ...selectedLetter,
+        status: 'approved',
+        guaranteed_percentage: parseFloat(guaranteedPct),
+        max_amount: finalGuarantee,
+        patient_rest: finalRest,
+        agent_note: agentNote
+      });
+      setModalTab('certificate');
+    } else {
+      setSelectedLetter(null);
+    }
   };
+
+  const openInstructionModal = (item) => {
+    setSelectedLetter(item);
+    setGuaranteedPct(item.guaranteed_percentage || 80);
+    setMaxAmount(item.max_amount || (item.estimated_amount * 0.8));
+    setAgentNote(item.agent_note || 'Devis et dossier médical vérifiés conformes.');
+    setModalTab('instruction');
+  };
+
+  // KPIs
+  const totalPending = letters.filter(l => l.status === 'pending').length;
+  const totalApproved = letters.filter(l => l.status === 'approved').length;
+  const totalGuaranteedSum = letters.filter(l => l.status === 'approved').reduce((acc, l) => acc + (l.max_amount || 0), 0);
 
   return (
     <div className="container py-4 fade-in-up">
@@ -188,7 +248,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
               }}
               onClick={() => setActiveTab('list')}
             >
-              📋 {lang === 'wo' ? 'Lim bi' : 'Mes demandes'}
+              📋 {lang === 'wo' ? 'Lim bi' : 'Mes demandes & instructions'} ({letters.length})
             </button>
 
             <button 
@@ -206,201 +266,187 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
               }}
               onClick={() => setActiveTab('new')}
             >
-              ➕ {lang === 'wo' ? 'Demande bu bees' : 'Nouvelle demande'}
+              ➕ {lang === 'wo' ? 'Demande bu bees' : 'Nouvelle demande de prise en charge'}
             </button>
           </div>
         </div>
       </section>
 
+      {/* RANGÉE KPIS EXÉCUTIF GARANTIES */}
+      <div className="row g-3 mb-4">
+        <div className="col-md-3 col-6">
+          <div className="card shadow-sm border-0 p-3 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+            <span className="small text-muted mb-1 d-block">Demandes reçues</span>
+            <h4 className="fw-bold mb-0 text-primary">{letters.length}</h4>
+          </div>
+        </div>
+        <div className="col-md-3 col-6">
+          <div className="card shadow-sm border-0 p-3 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+            <span className="small text-muted mb-1 d-block">En instruction agent</span>
+            <h4 className="fw-bold mb-0 text-warning">{totalPending}</h4>
+          </div>
+        </div>
+        <div className="col-md-3 col-6">
+          <div className="card shadow-sm border-0 p-3 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+            <span className="small text-muted mb-1 d-block">Lettres accordées</span>
+            <h4 className="fw-bold mb-0 text-success">{totalApproved}</h4>
+          </div>
+        </div>
+        <div className="col-md-3 col-6">
+          <div className="card shadow-sm border-0 p-3 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+            <span className="small text-muted mb-1 d-block">Total garanti (FCFA)</span>
+            <h4 className="fw-bold mb-0 text-success">{totalGuaranteedSum.toLocaleString()}</h4>
+          </div>
+        </div>
+      </div>
+
       {successMsg && (
-        <div className="alert alert-success d-flex align-items-center mb-4 rounded-3 shadow-sm border-0">
-          <span className="fs-5 me-2">✅</span>
+        <div className="alert alert-success d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm">
+          <span className="fs-4 me-2">✅</span>
           <div style={{ color: 'var(--text-main)' }}>{successMsg}</div>
         </div>
       )}
 
-      {/* Onglet : Nouvelle demande */}
+      {/* FORMULAIRE NOUVELLE DEMANDE (ASSURÉ / CITOYEN) */}
       {activeTab === 'new' && (
-        <div className="card shadow-sm border-0 p-4 mb-4" style={{ borderRadius: '16px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-          <div className="d-flex align-items-center gap-3 mb-4 border-bottom pb-3" style={{ borderColor: 'var(--border-color)' }}>
-            <span className="fs-3">📝</span>
-            <div>
-              <h4 className="fw-bold mb-1" style={{ color: 'var(--text-main)' }}>
-                {lang === 'wo' ? 'Bindal sa demande' : 'Formulaire de demande de prise en charge'}
-              </h4>
-              <p className="text-muted mb-0" style={{ fontSize: '0.88rem' }}>
-                Remplissez les détails du devis ou de l'acte médical prescrit par votre médecin.
-              </p>
-            </div>
-          </div>
+        <div className="card shadow-sm border-0 p-4 mb-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+          <h4 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--primary)' }}>
+            <span>➕</span> Nouvelle demande de prise en charge hospitalière
+          </h4>
+          <p className="small text-muted mb-4">
+            Remplissez ce formulaire pour solliciter une lettre de garantie sous régime tiers-payant avant votre admission à l'hôpital.
+          </p>
 
           <form onSubmit={handleSubmit}>
-            <div className="row g-4">
+            <div className="row g-3 mb-3">
               <div className="col-md-6">
-                <label className="form-label fw-semibold" style={{ color: 'var(--text-main)', marginBottom: '0.5rem' }}>
-                  🏥 Établissement sanitaire partenaire
-                </label>
+                <label className="form-label small fw-semibold">Établissement de santé conventionné récepteur *</label>
                 <select 
-                  className="form-select input"
-                  value={structureName}
+                  className="form-select input fw-bold" 
+                  value={structureName} 
                   onChange={(e) => setStructureName(e.target.value)}
-                  style={{ borderRadius: '10px', height: '48px' }}
+                  style={{ borderRadius: '10px' }}
                 >
                   <option value="Hôpital Universitaire de Fann (Dakar)">Hôpital Universitaire de Fann (Dakar)</option>
-                  <option value="Hôpital Aristide Le Dantec (Dakar)">Hôpital Aristide Le Dantec (Dakar)</option>
-                  <option value="Hôpital Général Idrissa Pouye (HOGIP)">Hôpital Général Idrissa Pouye (HOGIP Pikine)</option>
+                  <option value="Hôpital Aristide Le Dantec">Hôpital Aristide Le Dantec</option>
+                  <option value="Hôpital Général Idrissa Pouye (Pikine)">Hôpital Général Idrissa Pouye (Pikine)</option>
                   <option value="Centre Hospitalier Abass Ndao">Centre Hospitalier Abass Ndao</option>
-                  <option value="Clinique de la Madeleine (Dakar)">Clinique de la Madeleine (Dakar)</option>
-                  <option value="Centre de Santé Gaspard Camara">Centre de Santé Gaspard Camara</option>
+                  <option value="Hôpital d'Enfants Albert Royer">Hôpital d'Enfants Albert Royer</option>
                 </select>
               </div>
 
               <div className="col-md-6">
-                <label className="form-label fw-semibold" style={{ color: 'var(--text-main)', marginBottom: '0.5rem' }}>
-                  💰 Montant estimé du devis / acte (FCFA)
-                </label>
+                <label className="form-label small fw-semibold">Devis estimatif soumis par l'hôpital (FCFA) *</label>
                 <input 
-                  type="number"
-                  className="form-control input"
-                  placeholder="ex: 250000"
+                  type="number" 
+                  className="form-control input fw-bold"
+                  placeholder="Ex: 250000"
                   value={estimatedAmount}
                   onChange={(e) => setEstimatedAmount(e.target.value)}
-                  style={{ borderRadius: '10px', height: '48px' }}
-                  required
-                />
-              </div>
-
-              <div className="col-12">
-                <label className="form-label fw-semibold" style={{ color: 'var(--text-main)', marginBottom: '0.5rem' }}>
-                  🩺 Acte médical ou motif d'hospitalisation prescrit
-                </label>
-                <textarea 
-                  className="form-control input"
-                  rows="3"
-                  placeholder="ex: Intervention chirurgicale ORL, Hospitalisation en soins intensifs, Bilan scanner..."
-                  value={medicalAct}
-                  onChange={(e) => setMedicalAct(e.target.value)}
                   style={{ borderRadius: '10px' }}
                   required
                 />
               </div>
+            </div>
 
-              <div className="col-12">
-                <label className="form-label fw-semibold" style={{ color: 'var(--text-main)', marginBottom: '0.5rem' }}>
-                  📎 Pièce justificative / ordonnance (PDF, image)
-                </label>
-                <input 
-                  type="file" 
-                  className="form-control input" 
-                  style={{ borderRadius: '10px', height: '48px' }}
-                />
-                <small className="text-muted mt-2 d-block" style={{ fontSize: '0.82rem' }}>
-                  Téléversez une copie lisible du devis signé par l'établissement hospitalier récepteur.
-                </small>
+            <div className="mb-4">
+              <label className="form-label small fw-semibold">Description de l'acte médical / hospitalisation prescrite *</label>
+              <textarea 
+                className="form-control input" 
+                rows="3" 
+                placeholder="Ex: Intervention chirurgicale ORL, hospitalisation 5 jours en médecine interne..."
+                value={medicalAct}
+                onChange={(e) => setMedicalAct(e.target.value)}
+                style={{ borderRadius: '10px' }}
+                required
+              />
+            </div>
+
+            <div className="p-3 rounded-3 border mb-4" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
+              <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                  <strong className="d-block small text-success">Estimation automatique de prise en charge (Tiers-payant 80%) :</strong>
+                  <span className="small text-muted">Sous réserve de validation 100% humaine par l'agent.</span>
+                </div>
+                <h5 className="fw-bold text-success mb-0">
+                  {estimatedAmount ? (parseFloat(estimatedAmount) * 0.8).toLocaleString() : 0} FCFA
+                </h5>
               </div>
             </div>
 
-            <div className="mt-4 pt-3 border-top d-flex justify-content-between align-items-center flex-wrap gap-3" style={{ borderColor: 'var(--border-color)' }}>
-              <span className="text-muted small">
-                🛡️ Validation humaine obligatoire par un agent de la mutuelle sous 2h à 24h.
-              </span>
-              <button 
-                type="submit" 
-                className="btn btn-success px-4 py-2 fw-bold text-white"
-                style={{ borderRadius: '12px', background: 'var(--primary)', borderColor: 'var(--primary)' }}
-                disabled={submitting}
-              >
-                {submitting ? 'Transmission en cours...' : '📤 Soumettre la demande'}
+            <div className="d-flex justify-content-end gap-2">
+              <button type="button" className="btn btn-secondary" onClick={() => setActiveTab('list')}>Annuler</button>
+              <button type="submit" className="btn btn-success text-white fw-bold px-4" disabled={submitting} style={{ borderRadius: '10px' }}>
+                {submitting ? 'Transmission...' : '📤 Soumettre ma demande à la mutuelle'}
               </button>
             </div>
           </form>
         </div>
       )}
 
-      {/* Onglet : Liste des demandes */}
+      {/* LISTE DES DEMANDES DE GARANTIE */}
       {activeTab === 'list' && (
-        <div className="card shadow-sm border-0 p-4" style={{ borderRadius: '16px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-          <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
-            <h4 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>
-              📋 Historique des demandes de garantie
-            </h4>
-            <button 
-              className="btn btn-sm text-white px-3 py-1.5 fw-semibold" 
-              onClick={fetchLetters}
-              style={{ borderRadius: '8px', background: 'var(--primary)' }}
-            >
-              🔄 Actualiser
-            </button>
-          </div>
+        <div className="card shadow-sm border-0 p-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+          <h4 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
+            <span>📋</span> Demandes & Lettres de Garantie d'Hospitalisation
+          </h4>
 
           {loading ? (
-            <div className="text-center py-5 text-muted">
-              <div className="spinner-border text-success mb-2" role="status"></div>
-              <div>Chargement des demandes de garantie...</div>
-            </div>
+            <div className="text-center py-5 text-muted">Chargement des dossiers de garantie...</div>
           ) : letters.length === 0 ? (
-            <div className="text-center py-5">
-              <span style={{ fontSize: '3rem' }}>📄</span>
-              <h5 className="fw-bold mt-2" style={{ color: 'var(--text-main)' }}>Aucune demande enregistrée</h5>
-              <p className="text-muted" style={{ fontSize: '0.9rem' }}>Vous n'avez actuellement aucune demande de prise en charge hospitalière en cours.</p>
-              <button className="btn btn-primary btn-sm fw-bold px-3 py-2 text-white" onClick={() => setActiveTab('new')} style={{ borderRadius: '8px', background: 'var(--primary)' }}>
-                ➕ Faire une demande
-              </button>
-            </div>
+            <div className="text-center py-5 text-muted">Aucune demande de garantie enregistrée.</div>
           ) : (
             <div className="table-responsive">
-              <table className="table table-hover align-middle" style={{ color: 'var(--text-main)' }}>
+              <table className="table table-hover align-middle mb-0" style={{ color: 'var(--text-main)' }}>
                 <thead>
-                  <tr style={{ borderBottom: '2px solid var(--border-color)' }}>
-                    <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Assuré / Bénéficiaire</th>
-                    <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Acte médical</th>
-                    <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Montant estimé</th>
-                    <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Taux accordé</th>
-                    <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Statut instruction</th>
-                    <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Code garantie</th>
-                    <th style={{ color: 'var(--text-main)', padding: '0.85rem', textAlign: 'right' }}>Actions</th>
+                  <tr style={{ background: 'var(--bg-secondary)', borderBottom: '2px solid var(--border-color)' }}>
+                    <th style={{ padding: '0.85rem' }}>Assuré / Bénéficiaire</th>
+                    <th style={{ padding: '0.85rem' }}>Acte médical & Établissement</th>
+                    <th style={{ padding: '0.85rem' }}>Devis soumis</th>
+                    <th style={{ padding: '0.85rem' }}>Prise en charge accordée</th>
+                    <th style={{ padding: '0.85rem' }}>Statut & Validation</th>
+                    <th style={{ padding: '0.85rem' }}>Code Garantie</th>
+                    <th style={{ padding: '0.85rem', textAlign: 'right' }}>Actions Agent / Assuré</th>
                   </tr>
                 </thead>
                 <tbody>
                   {letters.map((item) => (
                     <tr key={item.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                      <td className="fw-bold" style={{ padding: '0.85rem' }}>
-                        <div style={{ color: 'var(--text-main)' }}>{item.first_name} {item.last_name}</div>
-                        <small className="text-muted" style={{ fontSize: '0.8rem' }}>N° CMU : {item.cmu_number}</small>
+                      <td style={{ padding: '0.85rem' }}>
+                        <strong className="d-block" style={{ color: 'var(--text-main)' }}>{item.first_name} {item.last_name}</strong>
+                        <small className="text-muted">N° CMU : {item.cmu_number}</small>
                       </td>
-                      <td style={{ color: 'var(--text-main)', padding: '0.85rem' }}>{item.medical_act}</td>
-                      <td className="fw-bold text-primary" style={{ padding: '0.85rem' }}>
-                        {item.estimated_amount ? `${Number(item.estimated_amount).toLocaleString()} FCFA` : '-'}
+                      <td style={{ padding: '0.85rem', maxWidth: '260px' }}>
+                        <span className="d-block fw-semibold small" style={{ color: 'var(--text-main)' }}>{item.medical_act}</span>
                       </td>
                       <td style={{ padding: '0.85rem' }}>
-                        <span className="badge bg-success px-2.5 py-1" style={{ fontSize: '0.8rem', borderRadius: '6px' }}>
-                          {item.guaranteed_percentage}% ({item.max_amount ? `${Number(item.max_amount).toLocaleString()} FCFA` : 'Plafond standard'})
-                        </span>
+                        <span className="fw-bold" style={{ color: 'var(--text-main)' }}>{Number(item.estimated_amount).toLocaleString()} FCFA</span>
+                      </td>
+                      <td style={{ padding: '0.85rem' }}>
+                        <span className="fw-bold text-success d-block">{Number(item.max_amount).toLocaleString()} FCFA</span>
+                        <small className="badge bg-success-subtle text-success border border-success">
+                          Taux : {item.guaranteed_percentage}%
+                        </small>
                       </td>
                       <td style={{ padding: '0.85rem' }}>
                         {item.status === 'approved' && (
-                          <span className="badge bg-success-subtle text-success border border-success px-2.5 py-1" style={{ borderRadius: '6px' }}>
-                            ✅ Validée par agent
+                          <span className="badge bg-success px-3 py-1.5" style={{ borderRadius: '12px' }}>
+                            ✅ Validée 100% humaine
                           </span>
                         )}
                         {item.status === 'pending' && (
-                          <span className="badge bg-warning-subtle text-warning border border-warning px-2.5 py-1" style={{ borderRadius: '6px' }}>
+                          <span className="badge bg-warning text-dark px-3 py-1.5" style={{ borderRadius: '12px' }}>
                             ⏳ En instruction agent
                           </span>
                         )}
                         {item.status === 'rejected' && (
-                          <span className="badge bg-danger-subtle text-danger border border-danger px-2.5 py-1" style={{ borderRadius: '6px' }}>
+                          <span className="badge bg-danger px-3 py-1.5" style={{ borderRadius: '12px' }}>
                             ❌ Rejetée
-                          </span>
-                        )}
-                        {item.status === 'used' && (
-                          <span className="badge bg-secondary px-2.5 py-1" style={{ borderRadius: '6px' }}>
-                            🔒 Validée à l'hôpital
                           </span>
                         )}
                       </td>
                       <td style={{ padding: '0.85rem' }}>
-                        <code className="px-2 py-1 bg-dark text-success border border-success rounded fw-bold">
+                        <code className="px-2.5 py-1 bg-dark text-success border border-success rounded-3 fw-bold">
                           {item.validation_code}
                         </code>
                       </td>
@@ -408,10 +454,10 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
                         <button 
                           type="button"
                           className="btn btn-sm text-white fw-bold px-3 py-1.5 shadow-sm"
-                          onClick={() => setSelectedLetter(item)}
+                          onClick={() => openInstructionModal(item)}
                           style={{ background: '#059669', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
                         >
-                          🔍 Consulter / instruire
+                          {item.status === 'approved' ? '📄 Certificat PDF / Garanties' : '⚙️ Instruire le dossier'}
                         </button>
                       </td>
                     </tr>
@@ -423,94 +469,314 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
         </div>
       )}
 
-      {/* Modal d'instruction 100% humaine par l'agent */}
+      {/* ============================================================================ */}
+      {/* DECK D'INSTRUCTION ET CERTIFICAT OFFICIEL DE GARANTIE HAUTE DÉFINITION (MODAL) */}
+      {/* ============================================================================ */}
       {selectedLetter && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
-          <div className="modal-dialog modal-dialog-centered modal-lg">
-            <div className="modal-content shadow-lg border-0" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-              <div className="modal-header border-bottom p-3" style={{ borderColor: 'var(--border-color)' }}>
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)' }}>
+          <div className="modal-dialog modal-dialog-centered modal-xl">
+            <div className="modal-content shadow-lg border-0" style={{ borderRadius: '24px', background: 'var(--card-bg)', color: 'var(--text-main)', overflow: 'hidden' }}>
+              
+              {/* Entête Modal Officielle */}
+              <div 
+                className="modal-header p-4 text-white position-relative"
+                style={{
+                  background: selectedLetter.status === 'approved' 
+                    ? 'linear-gradient(135deg, #059669 0%, #064e3b 100%)' 
+                    : 'linear-gradient(135deg, #d97706 0%, #78350f 100%)',
+                  borderBottom: '1px solid rgba(255,255,255,0.2)'
+                }}
+              >
                 <div>
-                  <h5 className="modal-title fw-bold" style={{ color: 'var(--primary)' }}>
-                    📄 Instruction de garantie #{selectedLetter.validation_code}
-                  </h5>
-                  <small className="text-muted">Validation humaine obligatoire par l'agent de la mutuelle.</small>
+                  <span className="badge px-3 py-1 mb-2 fw-bold text-white d-inline-block" style={{ background: 'rgba(255,255,255,0.25)', borderRadius: '20px' }}>
+                    🇸🇳 SÉN-CSU — DOSSIER DE PRISE EN CHARGE HOSPITALIÈRE #{selectedLetter.validation_code}
+                  </span>
+                  <h4 className="fw-bold mb-1 text-white">
+                    📄 Instruction & Attestation de Garantie — {selectedLetter.first_name} {selectedLetter.last_name}
+                  </h4>
+                  <small className="text-white-50">
+                    Validation 100% humaine par l'agent habilité de l'Union Régionale des Mutuelles.
+                  </small>
                 </div>
-                <button className="btn-close" onClick={() => setSelectedLetter(null)}></button>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setSelectedLetter(null)}></button>
+              </div>
+
+              {/* Navigation Onglets Interne au Modal */}
+              <div className="d-flex border-bottom bg-dark text-white" style={{ borderColor: 'var(--border-color)' }}>
+                <button 
+                  type="button" 
+                  className={`btn rounded-0 px-4 py-3 fw-bold ${modalTab === 'instruction' ? 'btn-success text-white' : 'btn-dark text-white-50'}`}
+                  onClick={() => setModalTab('instruction')}
+                >
+                  ⚙️ 1. Instruction & Décision Agent
+                </button>
+                <button 
+                  type="button" 
+                  className={`btn rounded-0 px-4 py-3 fw-bold ${modalTab === 'certificate' ? 'btn-success text-white' : 'btn-dark text-white-50'}`}
+                  onClick={() => setModalTab('certificate')}
+                >
+                  📄 2. Certificat Officiel & Prise en Charge PDF
+                </button>
               </div>
 
               <div className="modal-body p-4">
-                <div className="row g-3 mb-4 p-3 rounded-3" style={{ background: 'var(--bg-body)', border: '1px solid var(--border-color)' }}>
-                  <div className="col-md-6">
-                    <span className="text-muted small">Assuré bénéficiaire :</span>
-                    <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>{selectedLetter.first_name} {selectedLetter.last_name}</h6>
-                    <small className="text-muted">N° Carte CMU : {selectedLetter.cmu_number}</small>
-                  </div>
-                  <div className="col-md-6">
-                    <span className="text-muted small">Acte / hospitalisation prescrite :</span>
-                    <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>{selectedLetter.medical_act}</h6>
-                  </div>
-                  <div className="col-md-6">
-                    <span className="text-muted small">Devis estimé :</span>
-                    <h5 className="fw-bold text-primary mb-0">{Number(selectedLetter.estimated_amount).toLocaleString()} FCFA</h5>
-                  </div>
-                  <div className="col-md-6">
-                    <span className="text-muted small">Statut de la demande :</span>
-                    <div>
-                      <span className="badge bg-warning text-dark">{selectedLetter.status}</span>
-                    </div>
-                  </div>
-                </div>
+                {/* ONGLET 1 : INSTRUCTION & CALCUL DE PRISE EN CHARGE */}
+                {modalTab === 'instruction' && (
+                  <div className="fade-in-up">
+                    <div className="row g-4 mb-4">
+                      {/* Carte Bénéficiaire */}
+                      <div className="col-md-6">
+                        <div className="p-3.5 rounded-4 border" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
+                          <span className="small text-muted d-block mb-1">👤 Assuré Bénéficiaire :</span>
+                          <h5 className="fw-bold mb-1" style={{ color: 'var(--text-main)' }}>{selectedLetter.first_name} {selectedLetter.last_name}</h5>
+                          <div className="d-flex flex-wrap gap-2 align-items-center mt-2">
+                            <code className="px-2.5 py-1 bg-dark text-success border border-success rounded-3 fw-bold">
+                              N° {selectedLetter.cmu_number}
+                            </code>
+                            <span className="badge bg-secondary">
+                              {selectedLetter.ipp_number || 'IPP-FANN-8812'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
 
-                <div className="card p-3 border-0" style={{ background: 'rgba(5, 150, 105, 0.05)', borderLeft: '4px solid var(--primary)' }}>
-                  <h6 className="fw-bold mb-3" style={{ color: 'var(--primary)' }}>⚙️ Paramètres d'approbation de l'agent</h6>
-                  
-                  <div className="row g-3">
-                    <div className="col-md-6">
-                      <label className="form-label fw-semibold" style={{ color: 'var(--text-main)', marginBottom: '0.4rem' }}>Taux de prise en charge (%)</label>
-                      <input 
-                        type="number" 
-                        className="form-control input"
-                        value={guaranteedPct}
-                        onChange={(e) => setGuaranteedPct(e.target.value)}
-                        min="10"
-                        max="100"
-                        style={{ borderRadius: '8px' }}
-                      />
+                      {/* Carte Établissement & Acte */}
+                      <div className="col-md-6">
+                        <div className="p-3.5 rounded-4 border" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
+                          <span className="small text-muted d-block mb-1">🏥 Acte & Établissement récepteur :</span>
+                          <h6 className="fw-bold mb-1 text-success">{selectedLetter.medical_act}</h6>
+                          <small className="text-muted d-block mt-1">Devis d'hospitalisation soumis : <strong>{Number(selectedLetter.estimated_amount).toLocaleString()} FCFA</strong></small>
+                        </div>
+                      </div>
                     </div>
-                    <div className="col-md-6">
-                      <label className="form-label fw-semibold" style={{ color: 'var(--text-main)', marginBottom: '0.4rem' }}>Montant plafond garanti (FCFA)</label>
-                      <input 
-                        type="number" 
-                        className="form-control input"
-                        placeholder="ex: 200000"
-                        value={maxAmount}
-                        onChange={(e) => setMaxAmount(e.target.value)}
-                        style={{ borderRadius: '8px' }}
-                      />
-                    </div>
-                    <div className="col-12">
-                      <label className="form-label fw-semibold" style={{ color: 'var(--text-main)', marginBottom: '0.4rem' }}>Note / recommandation de l'agent</label>
-                      <textarea 
-                        className="form-control input"
-                        rows="2"
-                        value={agentNote}
-                        onChange={(e) => setAgentNote(e.target.value)}
-                        placeholder="Motif d'acceptation ou de réajustement du plafond..."
-                        style={{ borderRadius: '8px' }}
-                      />
+
+                    {/* CALCULATEUR EXÉCUTIF DE COUVERTURE & RESTES À CHARGE */}
+                    <div className="card p-4 rounded-4 border-0 mb-4 shadow-sm" style={{ background: 'rgba(5, 150, 105, 0.06)', borderLeft: '5px solid var(--primary)' }}>
+                      <h5 className="fw-bold mb-3 text-success d-flex align-items-center gap-2">
+                        <span>⚙️</span> Calculateur de Prise en Charge & Plafond Tiers-Payant
+                      </h5>
+
+                      <div className="row g-4 align-items-center mb-4">
+                        <div className="col-md-6">
+                          <label className="form-label fw-bold small">Taux de couverture accordé par la mutuelle (%)</label>
+                          <div className="d-flex align-items-center gap-2">
+                            <input 
+                              type="range" 
+                              className="form-range flex-grow-1"
+                              min="50"
+                              max="100"
+                              step="5"
+                              value={guaranteedPct}
+                              onChange={(e) => setGuaranteedPct(e.target.value)}
+                            />
+                            <span className="badge bg-success fs-6 px-3 py-2 fw-bold">{guaranteedPct}%</span>
+                          </div>
+                        </div>
+
+                        <div className="col-md-6">
+                          <label className="form-label fw-bold small">Plafond maximum garanti ajusté (FCFA)</label>
+                          <input 
+                            type="number" 
+                            className="form-control input fw-bold"
+                            value={maxAmount}
+                            onChange={(e) => setMaxAmount(e.target.value)}
+                            style={{ borderRadius: '10px' }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Bilan financier dynamique */}
+                      <div className="p-3.5 rounded-3 bg-dark text-white border border-success">
+                        <div className="row g-3 text-center">
+                          <div className="col-md-4">
+                            <span className="text-white-50 small d-block mb-1">Montant Devis Soumis</span>
+                            <h5 className="fw-bold mb-0 text-white">{Number(selectedLetter.estimated_amount).toLocaleString()} FCFA</h5>
+                          </div>
+                          <div className="col-md-4 border-start border-end border-secondary">
+                            <span className="text-success small d-block mb-1"> Prise en charge Mutuelle/CSU</span>
+                            <h4 className="fw-bold mb-0 text-success">{calculatedGuaranteeAmount.toLocaleString()} FCFA</h4>
+                          </div>
+                          <div className="col-md-4">
+                            <span className="text-warning small d-block mb-1">Reste à charge patient (Ticket)</span>
+                            <h5 className="fw-bold mb-0 text-warning">{calculatedPatientRest.toLocaleString()} FCFA</h5>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-4">
+                        <label className="form-label fw-bold small">Note d'instruction & Observations de l'agent habilité *</label>
+                        <textarea 
+                          className="form-control input" 
+                          rows="3"
+                          value={agentNote}
+                          onChange={(e) => setAgentNote(e.target.value)}
+                          placeholder="Saisissez ici le motif d'acceptation, d'ajustement du plafond ou de réserve..."
+                          style={{ borderRadius: '10px' }}
+                        />
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
+
+                {/* ONGLET 2 : CERTIFICAT OFFICIEL HAUTE DÉFINITION (STYLE VOUCHER IMPRIMABLE) */}
+                {modalTab === 'certificate' && (
+                  <div className="fade-in-up">
+                    <div 
+                      id="printable-certificate"
+                      className="p-5 rounded-4 border shadow-sm position-relative overflow-hidden mb-4"
+                      style={{ 
+                        background: '#ffffff', 
+                        color: '#0f172a',
+                        fontFamily: 'Inter, Arial, sans-serif',
+                        border: '2px solid #047857'
+                      }}
+                    >
+                      {/* Filigrane officiel */}
+                      <div style={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%) rotate(-25deg)',
+                        fontSize: '5rem',
+                        fontWeight: '900',
+                        color: 'rgba(5, 150, 105, 0.05)',
+                        pointerEvents: 'none',
+                        whiteSpace: 'nowrap'
+                      }}>
+                        SÉN-CSU REPUBLIQUE DU SENEGAL
+                      </div>
+
+                      {/* Entête Officiel Sénégal */}
+                      <div className="d-flex justify-content-between align-items-center mb-4 border-bottom pb-4" style={{ borderColor: '#e2e8f0' }}>
+                        <div className="d-flex align-items-center gap-3">
+                          <img src="/unamusc_logo.png" alt="UNAMUSC" style={{ width: '65px', height: '65px', objectFit: 'contain' }} />
+                          <div>
+                            <h6 className="fw-bold mb-0 text-uppercase" style={{ color: '#047857', letterSpacing: '0.5px' }}>RÉPUBLIQUE DU SÉNÉGAL</h6>
+                            <small className="text-muted fw-semibold">Un Peuple — Un But — Une Foi</small><br />
+                            <strong className="small" style={{ color: '#0f172a' }}>UNION RÉGIONALE DES MUTUELLES DE SANTÉ DE DAKAR</strong>
+                          </div>
+                        </div>
+
+                        <div className="text-end">
+                          <span className="badge bg-success px-3 py-2 fw-bold" style={{ fontSize: '0.85rem' }}>
+                            HOMOLOGUÉ & CERTIFIÉ
+                          </span>
+                          <div className="small text-muted mt-1">Code: <strong>{selectedLetter.validation_code}</strong></div>
+                        </div>
+                      </div>
+
+                      <div className="text-center my-4">
+                        <h4 className="fw-bold text-uppercase" style={{ color: '#047857', letterSpacing: '1px', textDecoration: 'underline' }}>
+                          ATTESTATION OFFICIELLE DE PRISE EN CHARGE HOSPITALIÈRE
+                        </h4>
+                        <p className="small text-muted mb-0">Émise dans le cadre du Régime National de Couverture Santé Universelle (SÉN-CSU)</p>
+                      </div>
+
+                      {/* Grille des caractéristiques */}
+                      <div className="row g-4 mb-4 p-4 rounded-3" style={{ background: '#f8fafc', border: '1px solid #cbd5e1' }}>
+                        <div className="col-md-6">
+                          <span className="text-muted small d-block">BÉNÉFICIAIRE ASSURÉ :</span>
+                          <h5 className="fw-bold mb-1" style={{ color: '#0f172a' }}>{selectedLetter.first_name} {selectedLetter.last_name}</h5>
+                          <div className="small text-muted">N° CMU : <strong>{selectedLetter.cmu_number}</strong> | IPP : <strong>{selectedLetter.ipp_number || 'IPP-FANN-8812'}</strong></div>
+                        </div>
+
+                        <div className="col-md-6">
+                          <span className="text-muted small d-block">STRUCTURE HOSPITALIÈRE D'ACCUEIL :</span>
+                          <h6 className="fw-bold mb-1 text-success" style={{ color: '#047857' }}>{selectedLetter.hospital_name || selectedLetter.medical_act}</h6>
+                          <div className="small text-muted">Statut : Conventionnée Tiers-Payant SÉN-CSU</div>
+                        </div>
+
+                        <div className="col-md-6">
+                          <span className="text-muted small d-block">ACTE MÉDICAL PRESCRIT :</span>
+                          <strong className="d-block" style={{ color: '#0f172a' }}>{selectedLetter.medical_act}</strong>
+                        </div>
+
+                        <div className="col-md-6">
+                          <span className="text-muted small d-block">MONTANT PRIS EN CHARGE PAR LA MUTUELLE :</span>
+                          <h4 className="fw-bold mb-0" style={{ color: '#047857' }}>
+                            {Number(selectedLetter.max_amount).toLocaleString()} FCFA ({selectedLetter.guaranteed_percentage}%)
+                          </h4>
+                          <span className="small text-muted">Ticket modérateur à la charge de l'assuré : {Number(selectedLetter.patient_rest || 0).toLocaleString()} FCFA</span>
+                        </div>
+                      </div>
+
+                      {/* Observations & Signatures */}
+                      <div className="row g-4 align-items-center">
+                        <div className="col-md-8">
+                          <div className="p-3 rounded-3" style={{ background: '#ecfdf5', border: '1px solid #a7f3d0' }}>
+                            <strong className="small d-block text-success mb-1">Clause d'engagement financier :</strong>
+                            <p className="small mb-0 text-dark" style={{ lineHeight: '1.5' }}>
+                              {selectedLetter.agent_note || 'L\'Union Régionale s\'engage à régler directement à l\'établissement hospitalier le montant garanti sous présentation de la facture finale conforme.'}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="col-md-4 text-center">
+                          <div className="p-2 bg-white rounded-3 shadow-sm d-inline-block border mb-2">
+                            <img 
+                              src={`https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=${encodeURIComponent(selectedLetter.validation_code)}`} 
+                              alt="QR Code Validation" 
+                              style={{ width: '75px', height: '75px' }} 
+                            />
+                          </div>
+                          <div className="small fw-bold text-success">Tampon Numérique UNAMUSC</div>
+                          <small className="text-muted d-block" style={{ fontSize: '0.7rem' }}>Signé électroniquement par l'agent</small>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="d-flex justify-content-center gap-3">
+                      <button 
+                        type="button" 
+                        className="btn btn-success fw-bold text-white px-4 py-2.5"
+                        onClick={() => alert(`Lettre de garantie officielle #${selectedLetter.validation_code} téléchargée en PDF !`)}
+                        style={{ borderRadius: '12px' }}
+                      >
+                        📥 Télécharger le Certificat PDF officiel
+                      </button>
+
+                      <button 
+                        type="button" 
+                        className="btn btn-outline-secondary fw-semibold px-4 py-2.5"
+                        onClick={() => window.print()}
+                        style={{ borderRadius: '12px' }}
+                      >
+                        🖨️ Imprimer la lettre de garantie
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
 
-              <div className="modal-footer border-top d-flex justify-content-between p-3" style={{ borderColor: 'var(--border-color)' }}>
-                <button className="btn btn-outline-danger fw-bold px-3 py-2" onClick={() => handleValidateAgent('rejected')} style={{ borderRadius: '10px' }}>
-                  ❌ Rejeter la demande
+              {/* Pied de Modale & Boutons de validation finale */}
+              <div className="modal-footer border-top p-3 d-flex justify-content-between" style={{ borderColor: 'var(--border-color)' }}>
+                <button type="button" className="btn btn-secondary fw-bold px-4" onClick={() => setSelectedLetter(null)} style={{ borderRadius: '10px' }}>
+                  Fermer
                 </button>
-                <button className="btn btn-success fw-bold px-4 py-2 text-white" onClick={() => handleValidateAgent('approved')} style={{ background: 'var(--primary)', borderColor: 'var(--primary)', borderRadius: '10px' }}>
-                  ✅ Émettre la lettre de garantie officielle
-                </button>
+
+                {modalTab === 'instruction' && (
+                  <div className="d-flex gap-2">
+                    <button 
+                      type="button" 
+                      className="btn btn-danger fw-bold px-3 py-2 text-white" 
+                      onClick={() => handleValidateAgent('rejected')}
+                      style={{ borderRadius: '10px' }}
+                    >
+                      ❌ Rejeter la demande
+                    </button>
+
+                    <button 
+                      type="button" 
+                      className="btn btn-success fw-bold px-4 py-2 text-white" 
+                      onClick={() => handleValidateAgent('approved')}
+                      style={{ background: '#059669', borderColor: '#059669', borderRadius: '10px' }}
+                    >
+                      ✅ Émettre & Certifier la Garantie à 100% / 80%
+                    </button>
+                  </div>
+                )}
               </div>
+
             </div>
           </div>
         </div>

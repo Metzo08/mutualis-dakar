@@ -3,65 +3,66 @@ import React, { useState, useEffect } from 'react';
 export default function PurchaseOrders({ lang = 'fr' }) {
   const defaultOrders = [
     {
-      id: 301,
+      id: 101,
       first_name: 'Amadou',
       last_name: 'Sow',
       cmu_number: 'CMU-DKR-2026-8812',
       items_json: JSON.stringify([
-        { name: 'Amoxicilline 500mg', qty: 2, price: 3500 },
-        { name: 'Paracétamol 1g', qty: 1, price: 1500 }
+        { name: 'Amoxicilline 500mg (Gélules)', qty: 2, price: 3500 },
+        { name: 'Paracétamol 1000mg', qty: 1, price: 1500 }
       ]),
       total_amount: 8500,
+      cmu_covered: 6800,
+      patient_pay: 1700,
       status: 'active',
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      expires_at: new Date(Date.now() + 48 * 3600 * 1000).toISOString(),
+      order_code: 'ORD-2026-PHARM-881'
     },
     {
-      id: 302,
+      id: 102,
       first_name: 'Fatou',
       last_name: 'Diop',
       cmu_number: 'CMU-DKR-2026-4401',
       items_json: JSON.stringify([
-        { name: 'Fer + Acide Folique', qty: 3, price: 2000 }
+        { name: 'Sirop Toux Enfant', qty: 1, price: 2800 },
+        { name: 'Sérum Physiologique (Boîte)', qty: 2, price: 1200 }
       ]),
-      total_amount: 6000,
+      total_amount: 5200,
+      cmu_covered: 4160,
+      patient_pay: 1040,
       status: 'used',
-      created_at: new Date(Date.now() - 86400000).toISOString()
+      created_at: new Date(Date.now() - 36 * 3600 * 1000).toISOString(),
+      expires_at: new Date(Date.now() + 12 * 3600 * 1000).toISOString(),
+      order_code: 'ORD-2026-PHARM-440'
     }
   ];
 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [redeemSuccess, setRedeemSuccess] = useState('');
-
-  // Formulaire d'ajout de médicament
+  const [items, setItems] = useState([]);
   const [medicineName, setMedicineName] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [estimatedPrice, setEstimatedPrice] = useState('');
-  const [items, setItems] = useState([]);
   const [creating, setCreating] = useState(false);
+  const [redeemSuccess, setRedeemSuccess] = useState('');
+  const [selectedVoucher, setSelectedVoucher] = useState(null);
 
   const fetchOrders = async () => {
     setLoading(true);
-    const localPrescriptions = JSON.parse(localStorage.getItem('cmu_purchase_orders') || '[]');
-
     try {
+      const storedLocal = JSON.parse(localStorage.getItem('cmu_purchase_orders') || '[]');
       const res = await fetch('/api/purchase-orders');
       const json = await res.json();
       if (json.success && json.data && json.data.length > 0) {
-        // Combiner ordonnances générées et données serveur
-        const combined = [...localPrescriptions, ...json.data];
-        const unique = combined.filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
-        setOrders(unique);
+        setOrders([...storedLocal, ...json.data]);
       } else {
-        const combined = [...localPrescriptions, ...defaultOrders];
-        const unique = combined.filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
-        setOrders(unique);
+        setOrders([...storedLocal, ...defaultOrders]);
       }
     } catch (err) {
       console.warn('Utilisation des bons de commande de démonstration:', err);
-      const combined = [...localPrescriptions, ...defaultOrders];
-      const unique = combined.filter((v, i, a) => a.findIndex(t => t.id === v.id) === i);
-      setOrders(unique);
+      const storedLocal = JSON.parse(localStorage.getItem('cmu_purchase_orders') || '[]');
+      setOrders([...storedLocal, ...defaultOrders]);
     } finally {
       setLoading(false);
     }
@@ -73,13 +74,15 @@ export default function PurchaseOrders({ lang = 'fr' }) {
 
   const handleAddItem = (e) => {
     e.preventDefault();
-    if (!medicineName) return;
-    const newItem = {
-      name: medicineName,
-      qty: parseInt(quantity) || 1,
-      price: parseFloat(estimatedPrice) || 0
-    };
-    setItems([...items, newItem]);
+    if (!medicineName || !estimatedPrice) return;
+    setItems([
+      ...items,
+      {
+        name: medicineName,
+        qty: parseInt(quantity) || 1,
+        price: parseFloat(estimatedPrice) || 0
+      }
+    ]);
     setMedicineName('');
     setQuantity(1);
     setEstimatedPrice('');
@@ -92,18 +95,26 @@ export default function PurchaseOrders({ lang = 'fr' }) {
   const handleCreateOrder = async () => {
     if (items.length === 0) return;
     setCreating(true);
+    setRedeemSuccess('');
 
     const citizenData = JSON.parse(localStorage.getItem('cmu-citizen') || '{}');
-    const totalAmount = items.reduce((acc, i) => acc + (i.price * i.qty), 0);
+    const totalSum = items.reduce((a, b) => a + (b.price * b.qty), 0);
+    const cmuCovered = totalSum * 0.8;
+    const patientPay = totalSum * 0.2;
 
-    const newOrd = {
+    const newOrder = {
       id: Date.now(),
-      first_name: citizenData.firstName || 'Bénéficiaire',
-      last_name: citizenData.lastName || 'Assuré CMU',
+      first_name: citizenData.firstName || 'Amadou',
+      last_name: citizenData.lastName || 'Sow',
+      cmu_number: citizenData.cmuNumber || 'CMU-DKR-2026-8812',
       items_json: JSON.stringify(items),
-      total_amount: totalAmount,
+      total_amount: totalSum,
+      cmu_covered: cmuCovered,
+      patient_pay: patientPay,
       status: 'active',
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      expires_at: new Date(Date.now() + 48 * 3600 * 1000).toISOString(),
+      order_code: `ORD-2026-PHARM-${Math.floor(100 + Math.random() * 900)}`
     };
 
     try {
@@ -112,42 +123,33 @@ export default function PurchaseOrders({ lang = 'fr' }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           beneficiary_id: citizenData.id || 1,
-          items,
-          total_amount: totalAmount
+          items: items,
+          total_amount: totalSum
         })
       });
     } catch (err) {
       console.warn(err);
     }
 
-    const updated = [newOrd, ...orders];
-    setOrders(updated);
-    localStorage.setItem('cmu_purchase_orders', JSON.stringify(updated));
+    const storedLocal = JSON.parse(localStorage.getItem('cmu_purchase_orders') || '[]');
+    localStorage.setItem('cmu_purchase_orders', JSON.stringify([newOrder, ...storedLocal]));
 
+    setOrders([newOrder, ...orders]);
     setItems([]);
+    setRedeemSuccess('Bon de commande émis avec succès ! Présentez ce bon ou son QR Code dans n\'importe quelle pharmacie agréée sous 48 heures pour bénéficier du tiers-payant (80%).');
     setCreating(false);
   };
 
-  const handleRedeem = async (orderId) => {
-    setRedeemSuccess('');
-    const updated = orders.map(o => o.id === orderId ? { ...o, status: 'used' } : o);
+  const handleRedeem = (id) => {
+    const updated = orders.map(o => o.id === id ? { ...o, status: 'used' } : o);
     setOrders(updated);
     localStorage.setItem('cmu_purchase_orders', JSON.stringify(updated));
-
-    try {
-      await fetch(`/api/purchase-orders/${orderId}/redeem`, {
-        method: 'POST'
-      });
-    } catch (err) {
-      console.warn(err);
-    }
-
-    setRedeemSuccess('Bon de commande validé avec succès en pharmacie ! Le régime tiers-payant (80% pris en charge par la mutuelle) a été appliqué.');
+    setRedeemSuccess('Bon de commande validé avec succès en pharmacie sous le régime du tiers-payant !');
   };
 
   return (
     <div className="container py-4 fade-in-up">
-      {/* Banner signature de la plateforme avec fond vert et image thématique (Titre & Boutons centrés) */}
+      {/* Banner signature centrée */}
       <section 
         className="banner-mini text-white mb-4 rounded-4 overflow-hidden position-relative text-center"
         style={{
@@ -208,7 +210,7 @@ export default function PurchaseOrders({ lang = 'fr' }) {
       )}
 
       {/* Formulaire de création de bon de commande */}
-      <div className="card shadow-sm border-0 p-4 mb-4" style={{ borderRadius: '16px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+      <div className="card shadow-sm border-0 p-4 mb-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
         <h4 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
           <span>🛒</span> Nouveau bon de commande / ordonnance médicale
         </h4>
@@ -216,7 +218,7 @@ export default function PurchaseOrders({ lang = 'fr' }) {
         <form onSubmit={handleAddItem}>
           <div className="row g-3 align-items-end mb-3">
             <div className="col-md-5">
-              <label className="form-label fw-semibold" style={{ color: 'var(--text-main)', marginBottom: '0.4rem' }}>Nom du médicament prescrit</label>
+              <label className="form-label fw-semibold" style={{ color: 'var(--text-main)', marginBottom: '0.4rem' }}>Nom du médicament prescrit *</label>
               <input 
                 type="text" 
                 className="form-control input"
@@ -264,18 +266,21 @@ export default function PurchaseOrders({ lang = 'fr' }) {
         </form>
 
         {items.length > 0 && (
-          <div className="border rounded-3 p-3 mb-3" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
-            <h6 className="fw-bold mb-2" style={{ color: 'var(--text-main)' }}>💊 Produits sur ce bon :</h6>
+          <div className="border rounded-3 p-3.5 mb-3" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
+            <h6 className="fw-bold mb-3" style={{ color: 'var(--text-main)' }}>💊 Médicaments sur ce bon de commande :</h6>
             <div className="list-group mb-3">
               {items.map((it, idx) => (
-                <div key={idx} className="list-group-item d-flex justify-content-between align-items-center p-2 rounded-2 mb-1" style={{ background: 'var(--card-bg)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }}>
+                <div key={idx} className="list-group-item d-flex justify-content-between align-items-center p-3 rounded-3 mb-2" style={{ background: 'var(--card-bg)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }}>
                   <div>
-                    <span className="fw-bold" style={{ color: 'var(--text-main)' }}>{it.name}</span>
-                    <span className="badge bg-secondary ms-2">Quantité: {it.qty}</span>
+                    <strong className="d-block" style={{ color: 'var(--text-main)' }}>{it.name}</strong>
+                    <span className="badge bg-secondary">Quantité: {it.qty}</span>
                   </div>
                   <div className="d-flex align-items-center gap-3">
-                    <span className="fw-bold text-primary">{(it.price * it.qty).toLocaleString()} FCFA</span>
-                    <button className="btn btn-sm btn-outline-danger py-0 px-2" onClick={() => handleRemoveItem(idx)}>
+                    <div>
+                      <span className="fw-bold text-primary d-block">{(it.price * it.qty).toLocaleString()} FCFA</span>
+                      <small className="text-success">Pris en charge CMU (80%): {((it.price * it.qty) * 0.8).toLocaleString()} FCFA</small>
+                    </div>
+                    <button className="btn btn-sm btn-outline-danger py-1 px-2" onClick={() => handleRemoveItem(idx)}>
                       🗑️
                     </button>
                   </div>
@@ -283,12 +288,27 @@ export default function PurchaseOrders({ lang = 'fr' }) {
               ))}
             </div>
 
-            <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 pt-2 border-top" style={{ borderColor: 'var(--border-color)' }}>
-              <span className="fw-bold fs-6" style={{ color: 'var(--text-main)' }}>
-                Total ordonnance : <span className="text-primary">{items.reduce((a, b) => a + (b.price * b.qty), 0).toLocaleString()} FCFA</span>
-              </span>
-              <button className="btn btn-success px-4 py-2 fw-bold text-white" onClick={handleCreateOrder} disabled={creating} style={{ borderRadius: '12px', background: 'var(--primary)', borderColor: 'var(--primary)' }}>
-                {creating ? 'Génération...' : '✅ Valider & émettre le bon (valide 48h)'}
+            <div className="p-3 bg-dark text-white rounded-3 mb-3 border border-success">
+              <div className="row g-2 text-center">
+                <div className="col-4">
+                  <span className="small text-white-50 d-block">Prix Public Total</span>
+                  <strong className="fs-6">{items.reduce((a, b) => a + (b.price * b.qty), 0).toLocaleString()} FCFA</strong>
+                </div>
+                <div className="col-4 border-start border-end border-secondary">
+                  <span className="small text-success d-block">Prise en charge CMU (80%)</span>
+                  <strong className="fs-5 text-success">{(items.reduce((a, b) => a + (b.price * b.qty), 0) * 0.8).toLocaleString()} FCFA</strong>
+                </div>
+                <div className="col-4">
+                  <span className="small text-warning d-block">Reste à payer pharmacie</span>
+                  <strong className="fs-6 text-warning">{(items.reduce((a, b) => a + (b.price * b.qty), 0) * 0.2).toLocaleString()} FCFA</strong>
+                </div>
+              </div>
+            </div>
+
+            <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 pt-2">
+              <span className="small text-muted">Valide pendant 48 heures dans toutes les pharmacies agréées du Sénégal.</span>
+              <button className="btn btn-success px-4 py-2.5 fw-bold text-white shadow-sm" onClick={handleCreateOrder} disabled={creating} style={{ borderRadius: '12px', background: '#059669', borderColor: '#059669' }}>
+                {creating ? 'Émission...' : '✅ Émettre le bon pharmacie 48h certifié'}
               </button>
             </div>
           </div>
@@ -296,8 +316,8 @@ export default function PurchaseOrders({ lang = 'fr' }) {
       </div>
 
       {/* Liste des bons de commande */}
-      <div className="card shadow-sm border-0 p-4" style={{ borderRadius: '16px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-        <h4 className="fw-bold mb-3" style={{ color: 'var(--text-main)' }}>📋 Vos bons de commande de médicaments</h4>
+      <div className="card shadow-sm border-0 p-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+        <h4 className="fw-bold mb-3" style={{ color: 'var(--text-main)' }}>📋 Vos bons de commande de médicaments en cours</h4>
 
         {loading ? (
           <div className="text-center py-5 text-muted">Chargement des bons de commande...</div>
@@ -311,13 +331,13 @@ export default function PurchaseOrders({ lang = 'fr' }) {
             <table className="table table-hover align-middle" style={{ color: 'var(--text-main)' }}>
               <thead>
                 <tr style={{ borderBottom: '2px solid var(--border-color)' }}>
-                  <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Date d'émission</th>
+                  <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Code & Date</th>
                   <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Assuré</th>
                   <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Médicaments prescrits</th>
-                  <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Montant total</th>
-                  <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Durée de validité</th>
+                  <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Prise en charge CMU</th>
+                  <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Chrono Validité</th>
                   <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Statut</th>
-                  <th style={{ color: 'var(--text-main)', padding: '0.85rem', textAlign: 'right' }}>Action pharmacie</th>
+                  <th style={{ color: 'var(--text-main)', padding: '0.85rem', textAlign: 'right' }}>Actions Pharmacie</th>
                 </tr>
               </thead>
               <tbody>
@@ -329,38 +349,59 @@ export default function PurchaseOrders({ lang = 'fr' }) {
 
                   return (
                     <tr key={ord.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                      <td style={{ padding: '0.85rem' }}>{new Date(ord.created_at).toLocaleDateString('fr-FR')}</td>
-                      <td className="fw-bold" style={{ color: 'var(--text-main)', padding: '0.85rem' }}>{ord.first_name} {ord.last_name}</td>
                       <td style={{ padding: '0.85rem' }}>
+                        <code className="px-2 py-1 bg-dark text-success border border-success rounded-3 fw-bold d-inline-block mb-1">
+                          {ord.order_code || `ORD-2026-${ord.id}`}
+                        </code>
+                        <small className="text-muted d-block">{new Date(ord.created_at).toLocaleDateString('fr-FR')}</small>
+                      </td>
+                      <td className="fw-bold" style={{ color: 'var(--text-main)', padding: '0.85rem' }}>
+                        {ord.first_name} {ord.last_name}
+                        <small className="text-muted d-block">{ord.cmu_number}</small>
+                      </td>
+                      <td style={{ padding: '0.85rem', maxWidth: '240px' }}>
                         {itemsList.map((i, idx) => (
                           <span key={idx} className="badge bg-dark-subtle text-body border me-1 my-1 p-2" style={{ borderRadius: '6px' }}>
                             💊 {i.name} (x{i.qty})
                           </span>
                         ))}
                       </td>
-                      <td className="fw-bold text-primary" style={{ padding: '0.85rem' }}>{Number(ord.total_amount).toLocaleString()} FCFA</td>
                       <td style={{ padding: '0.85rem' }}>
-                        <span className="badge bg-info-subtle text-info border border-info px-2.5 py-1" style={{ borderRadius: '6px' }}>
-                          ⏳ 48h par défaut
+                        <span className="fw-bold text-success d-block">{Number(ord.total_amount * 0.8).toLocaleString()} FCFA (80%)</span>
+                        <small className="text-muted">Total: {Number(ord.total_amount).toLocaleString()} FCFA</small>
+                      </td>
+                      <td style={{ padding: '0.85rem' }}>
+                        <span className="badge bg-warning text-dark px-2.5 py-1 fw-bold" style={{ borderRadius: '6px' }}>
+                          ⏳ Validité 48 heures
                         </span>
                       </td>
                       <td style={{ padding: '0.85rem' }}>
-                        {ord.status === 'active' && <span className="badge bg-success px-2.5 py-1" style={{ borderRadius: '6px' }}>✅ Actif (Prêt)</span>}
-                        {ord.status === 'used' && <span className="badge bg-secondary px-2.5 py-1" style={{ borderRadius: '6px' }}>🔒 Délivré en pharmacie</span>}
-                        {ord.status === 'expired' && <span className="badge bg-danger px-2.5 py-1" style={{ borderRadius: '6px' }}>⚠️ Expiré</span>}
+                        {ord.status === 'active' && <span className="badge bg-success px-3 py-1.5" style={{ borderRadius: '12px' }}>✅ Actif (Prêt)</span>}
+                        {ord.status === 'used' && <span className="badge bg-secondary px-3 py-1.5" style={{ borderRadius: '12px' }}>🔒 Délivré en pharmacie</span>}
+                        {ord.status === 'expired' && <span className="badge bg-danger px-3 py-1.5" style={{ borderRadius: '12px' }}>⚠️ Expiré</span>}
                       </td>
                       <td style={{ textAlign: 'right', padding: '0.85rem' }}>
-                        {ord.status === 'active' ? (
+                        <div className="d-flex justify-content-end gap-2">
                           <button 
-                            className="btn btn-sm btn-success fw-bold px-3 py-1 text-white"
-                            onClick={() => handleRedeem(ord.id)}
-                            style={{ borderRadius: '8px', background: 'var(--primary)', borderColor: 'var(--primary)' }}
+                            type="button"
+                            className="btn btn-sm btn-outline-success fw-bold"
+                            onClick={() => setSelectedVoucher(ord)}
+                            style={{ borderRadius: '8px' }}
                           >
-                            📲 Valider tiers-payant
+                            📄 Bon PDF
                           </button>
-                        ) : (
-                          <span className="text-muted small">Terminé</span>
-                        )}
+
+                          {ord.status === 'active' && (
+                            <button 
+                              type="button"
+                              className="btn btn-sm text-white fw-bold px-3 py-1.5"
+                              onClick={() => handleRedeem(ord.id)}
+                              style={{ background: '#059669', border: 'none', borderRadius: '8px' }}
+                            >
+                              📲 Valider pharmacie
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   );
@@ -370,6 +411,84 @@ export default function PurchaseOrders({ lang = 'fr' }) {
           </div>
         )}
       </div>
+
+      {/* MODALE AFFICHAGE DU VOUCHER DE COMMANDE PAR PHARMACIE */}
+      {selectedVoucher && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(5px)' }}>
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content shadow-lg border-0" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+              <div className="modal-header border-bottom p-3" style={{ borderColor: 'var(--border-color)' }}>
+                <h5 className="modal-title fw-bold" style={{ color: 'var(--text-main)' }}>
+                  💊 Bon Pharmacie Tiers-Payant — #{selectedVoucher.order_code || `ORD-${selectedVoucher.id}`}
+                </h5>
+                <button className="btn-close" onClick={() => setSelectedVoucher(null)}></button>
+              </div>
+
+              <div className="modal-body p-4 text-center">
+                <div className="p-4 rounded-4 border bg-white text-dark text-start mb-3" style={{ border: '2px solid #047857' }}>
+                  <div className="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                    <div>
+                      <h6 className="fw-bold text-success mb-0">BON DE COMMANDE DE MÉDICAMENTS (48H)</h6>
+                      <small className="text-muted">Régime Tiers-Payant SÉN-CSU</small>
+                    </div>
+                    <code className="bg-dark text-success p-2 rounded fw-bold">
+                      {selectedVoucher.order_code || `ORD-${selectedVoucher.id}`}
+                    </code>
+                  </div>
+
+                  <div className="row g-2 mb-3">
+                    <div className="col-6">
+                      <span className="small text-muted d-block">Bénéficiaire :</span>
+                      <strong>{selectedVoucher.first_name} {selectedVoucher.last_name}</strong>
+                    </div>
+                    <div className="col-6 text-end">
+                      <span className="small text-muted d-block">Code Carte CMU :</span>
+                      <strong>{selectedVoucher.cmu_number}</strong>
+                    </div>
+                  </div>
+
+                  <h6 className="fw-bold mb-2">Prescriptions :</h6>
+                  <ul className="list-group mb-3">
+                    {(() => {
+                      try {
+                        const items = typeof selectedVoucher.items_json === 'string' ? JSON.parse(selectedVoucher.items_json) : selectedVoucher.items_json;
+                        return items.map((it, idx) => (
+                          <li key={idx} className="list-group-item d-flex justify-content-between align-items-center">
+                            <span>💊 {it.name} (x{it.qty})</span>
+                            <strong>{(it.price * it.qty).toLocaleString()} FCFA</strong>
+                          </li>
+                        ));
+                      } catch (e) {
+                        return <li className="list-group-item">Prescription médicamenteuse</li>;
+                      }
+                    })()}
+                  </ul>
+
+                  <div className="d-flex justify-content-between align-items-center p-3 bg-light rounded-3">
+                    <div>
+                      <span className="small text-muted d-block">Montant pris en charge CMU (80%) :</span>
+                      <h5 className="fw-bold text-success mb-0">{(selectedVoucher.total_amount * 0.8).toLocaleString()} FCFA</h5>
+                    </div>
+                    <div className="text-end">
+                      <span className="small text-muted d-block">Ticket patient (20%) :</span>
+                      <h6 className="fw-bold text-warning mb-0">{(selectedVoucher.total_amount * 0.2).toLocaleString()} FCFA</h6>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="d-flex justify-content-center gap-2">
+                  <button type="button" className="btn btn-success fw-bold px-4" onClick={() => alert('Bon de commande PDF certifié imprimé / téléchargé !')}>
+                    📥 Télécharger le Bon PDF
+                  </button>
+                  <button type="button" className="btn btn-secondary fw-bold" onClick={() => setSelectedVoucher(null)}>
+                    Fermer
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
