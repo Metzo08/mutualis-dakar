@@ -55,9 +55,187 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
   const [medicineName, setMedicineName] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [estimatedPrice, setEstimatedPrice] = useState('');
-  const [creating, setCreating] = useState(false);
-  const [redeemSuccess, setRedeemSuccess] = useState('');
   const [selectedVoucher, setSelectedVoucher] = useState(null);
+  const [editingVoucher, setEditingVoucher] = useState(null);
+  const [editedPharmacyPrice, setEditedPharmacyPrice] = useState('');
+
+  // Générateur PDF / Fenêtre d'Impression A4 pour les Bons de Commande Pharmacie
+  const generateAndPrintPurchaseOrderPDF = (voucher) => {
+    if (!voucher) return;
+    let itemsList = [];
+    try {
+      itemsList = typeof voucher.items_json === 'string' ? JSON.parse(voucher.items_json) : (voucher.items_json || []);
+    } catch (e) {
+      itemsList = [];
+    }
+
+    const totalAmt = voucher.total_amount || itemsList.reduce((acc, it) => acc + (it.price * it.qty), 0);
+    const cmuAmt = voucher.cmu_covered || (totalAmt * 0.8);
+    const patientAmt = voucher.patient_pay || (totalAmt * 0.2);
+
+    const printWin = window.open('', '_blank', 'width=980,height=1150');
+    printWin.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Bon_De_Commande_Pharmacie_${voucher.order_code || voucher.id}.pdf</title>
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+          <style>
+            @page { size: A4 portrait; margin: 12mm; }
+            body { background: #ffffff !important; color: #0f172a !important; font-family: 'Inter', Arial, sans-serif; padding: 1.5rem; }
+            .cert-box { border: 2.5px solid #047857; border-radius: 16px; padding: 2rem; background: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+            .no-print { margin-bottom: 1.5rem; text-align: center; }
+            @media print {
+              .no-print { display: none !important; }
+              body { padding: 0 !important; }
+              .cert-box { border-width: 2px !important; box-shadow: none !important; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="no-print">
+            <button onclick="window.print()" class="btn btn-success fw-bold px-4 py-2 me-2" style="background: #059669; border-color: #059669;">🖨️ Imprimer / Télécharger le Bon PDF A4</button>
+            <button onclick="window.close()" class="btn btn-secondary fw-bold px-3 py-2">Fermer la fenêtre</button>
+          </div>
+
+          <div class="cert-box">
+            <!-- Entête Officiel Sénégal & UNAMUSC -->
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-4" style="border-color: #cbd5e1 !important;">
+              <div class="d-flex align-items-center gap-3">
+                <img src="/senegal_flag.png" alt="Drapeau du Sénégal" style="width: 54px; height: 36px; object-fit: cover; border-radius: 4px; border: 1.5px solid #d97706;" />
+                <div>
+                  <h6 class="fw-bold mb-0 text-uppercase" style="color: #047857; letter-spacing: 0.5px;">RÉPUBLIQUE DU SÉNÉGAL</h6>
+                  <small class="text-muted fw-semibold" style="font-size: 0.75rem;">Un Peuple — Un But — Une Foi</small><br />
+                  <strong class="small text-uppercase" style="color: #0f172a; font-size: 0.82rem;">UNION NATIONALE DES MUTUELLES DE SANTÉ COMMUNAUTAIRES (UNAMUSC)</strong><br />
+                  <span class="badge bg-success-subtle text-success border border-success fw-semibold" style="font-size: 0.72rem;">PROGRAMME NATIONAL DE LA COUVERTURE SANITAIRE DU SÉNÉGAL</span>
+                </div>
+              </div>
+              <div class="text-end">
+                <img src="/unamusc_logo.png" alt="UNAMUSC Sénégal" style="width: 85px; height: auto; object-fit: contain;" />
+              </div>
+            </div>
+
+            <!-- Titre du Bon Pharmacie -->
+            <div class="text-center my-4 p-3 rounded-3" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
+              <h4 class="fw-bold text-uppercase mb-1" style="color: #047857; letter-spacing: 1px;">BON DE COMMANDE DE MÉDICAMENTS (48H)</h4>
+              <small class="text-muted fw-semibold">Système de Tiers-Payant UNAMUSC (Prise en charge 80% — Pharmacies Agréées)</small><br />
+              <code class="mt-2 d-inline-block px-3 py-1 bg-white text-success border border-success rounded-3 fw-bold fs-6">Code Bon : #${voucher.order_code || `ORD-${voucher.id}`}</code>
+            </div>
+
+            <!-- Identification Assuré -->
+            <div class="row g-3 mb-4 p-3 rounded-3" style="background: #f8fafc; border: 1.5px solid #cbd5e1;">
+              <div class="col-6">
+                <span class="small fw-bold d-block text-muted text-uppercase">👤 BÉNÉFICIAIRE ASSURÉ :</span>
+                <h5 class="fw-bold mb-0" style="color: #0f172a;">${voucher.first_name} ${voucher.last_name}</h5>
+                <small class="text-muted">N° Carte CMU : <strong>${voucher.cmu_number}</strong></small>
+              </div>
+              <div class="col-6 text-end">
+                <span class="small fw-bold d-block text-muted text-uppercase">📅 DATE D'ÉMISSION & VALIDITÉ :</span>
+                <strong class="d-block" style="color: #0f172a;">${new Date(voucher.created_at || Date.now()).toLocaleDateString('fr-FR')}</strong>
+                <span class="badge bg-warning text-dark fw-bold">Valide 48 Heures</span>
+              </div>
+            </div>
+
+            <!-- Liste des Médicaments & Tarification Officielle Pharmacie -->
+            <h6 class="fw-bold text-uppercase mb-2" style="color: #047857;">💊 DÉTAIL DES MÉDICAMENTS PRESCRITS & TARIFICATION OFFICIELLE :</h6>
+            <table class="table table-bordered align-middle mb-4">
+              <thead style="background: #f1f5f9;">
+                <tr>
+                  <th>Désignation Médicament</th>
+                  <th class="text-center">Quantité</th>
+                  <th class="text-end">Prix Unitaire Officine</th>
+                  <th class="text-end">Total TTC (FCFA)</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsList.map(it => `
+                  <tr>
+                    <td class="fw-bold">${it.name}</td>
+                    <td class="text-center"><span class="badge bg-secondary">${it.qty}</span></td>
+                    <td class="text-end">${Number(it.price).toLocaleString()} FCFA</td>
+                    <td class="text-end fw-bold">${Number(it.price * it.qty).toLocaleString()} FCFA</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+
+            <!-- Décompte Financier Officiel -->
+            <div class="p-3 rounded-3 mb-4" style="background: #0f172a; color: #ffffff;">
+              <div class="row text-center align-items-center">
+                <div class="col-4">
+                  <span class="small text-white-50 d-block">Montant Réel Officine</span>
+                  <strong class="fs-6 text-white">${Number(totalAmt).toLocaleString()} FCFA</strong>
+                </div>
+                <div class="col-4 border-start border-end border-secondary">
+                  <span class="small text-success d-block">Prise en Charge UNAMUSC (80%)</span>
+                  <strong class="fs-4 text-success">${Number(cmuAmt).toLocaleString()} FCFA</strong>
+                </div>
+                <div class="col-4">
+                  <span class="small text-warning d-block">Ticket Modérateur Patient (20%)</span>
+                  <strong class="fs-6 text-warning">${Number(patientAmt).toLocaleString()} FCFA</strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Validation Pharmacien & QR Code -->
+            <div class="row g-4 align-items-center border-top pt-3" style="border-color: #cbd5e1 !important;">
+              <div class="col-8">
+                <strong class="small d-block text-success mb-1 fw-bold">Certification Officine & Tiers-Payant :</strong>
+                <p class="small text-muted mb-0" style="line-height: 1.5;">
+                  Ce bon certifié permet la délivrance immédiate des médicaments prescrits dans toute pharmacie agréée UNAMUSC. Le montant pris en charge (80%) est réglé directement par l'UNAMUSC au pharmacien sous présentation du bon signé.
+                </p>
+              </div>
+              <div class="col-4 text-center">
+                <div class="p-2 bg-white rounded-3 shadow-sm d-inline-block border mb-1">
+                  <img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=${encodeURIComponent(voucher.order_code || `ORD-${voucher.id}`)}" alt="QR Code" style="width: 75px; height: 75px;" />
+                </div>
+                <div class="small fw-bold text-success" style="font-size: 0.75rem;">Tampon Numérique Pharmacie</div>
+              </div>
+            </div>
+          </div>
+
+          <script>
+            setTimeout(() => { window.print(); }, 400);
+          </script>
+        </body>
+      </html>
+    `);
+    printWin.document.close();
+  };
+
+  const openPharmacistEditModal = (ord) => {
+    setEditingVoucher(ord);
+    setEditedPharmacyPrice(ord.total_amount || '');
+  };
+
+  const handlePharmacistValidate = async (e) => {
+    e.preventDefault();
+    if (!editingVoucher) return;
+
+    const finalRealPrice = parseFloat(editedPharmacyPrice) || editingVoucher.total_amount || 0;
+    const finalCmuCovered = finalRealPrice * 0.8;
+    const finalPatientPay = finalRealPrice * 0.2;
+
+    const updatedOrder = {
+      ...editingVoucher,
+      total_amount: finalRealPrice,
+      cmu_covered: finalCmuCovered,
+      patient_pay: finalPatientPay,
+      status: 'used'
+    };
+
+    const updatedOrders = orders.map(o => o.id === editingVoucher.id ? updatedOrder : o);
+    setOrders(updatedOrders);
+    localStorage.setItem('cmu_purchase_orders', JSON.stringify(updatedOrders));
+
+    setRedeemSuccess(`✅ Bon ${updatedOrder.order_code} certifié & délivré en pharmacie avec le montant réel arrêté de ${finalRealPrice.toLocaleString()} FCFA !`);
+    setEditingVoucher(null);
+
+    // Déclenchement automatique du téléchargement / impression du bon certifié avec le montant arrêté de l'officine
+    setTimeout(() => {
+      generateAndPrintPurchaseOrderPDF(updatedOrder);
+    }, 200);
+  };
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -164,6 +342,11 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
     setRedeemSuccess(`🎉 Bon de commande ${newOrder.order_code} émis avec succès sous Tiers-Payant UNAMUSC (Valable 48h) !`);
     setItems([]);
     setCreating(false);
+
+    // Déclenchement automatique de l'impression / téléchargement PDF du bon actif généré
+    setTimeout(() => {
+      generateAndPrintPurchaseOrderPDF(newOrder);
+    }, 300);
   };
 
   const handleRedeem = async (id) => {
@@ -451,20 +634,20 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                             <button 
                               type="button"
                               className="btn btn-sm btn-outline-success fw-bold"
-                              onClick={() => setSelectedVoucher(ord)}
+                              onClick={() => generateAndPrintPurchaseOrderPDF(ord)}
                               style={{ borderRadius: '8px' }}
                             >
-                              📄 Bon PDF
+                              📄 Imprimer Bon PDF
                             </button>
 
                             {isAgent && ord.status === 'active' && (
                               <button 
                                 type="button"
                                 className="btn btn-sm text-white fw-bold px-3 py-1.5"
-                                onClick={() => handleRedeem(ord.id)}
+                                onClick={() => openPharmacistEditModal(ord)}
                                 style={{ background: '#059669', border: 'none', borderRadius: '8px' }}
                               >
-                                📲 Valider pharmacie
+                                📲 Valider Prix & Délivrer
                               </button>
                             )}
                           </div>
@@ -476,6 +659,67 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               </table>
             </div>
           )}
+        </div>
+      )}
+
+      {/* MODALE DE REVISION DES PRIX RÉELS ET VALIDATION PHARMACIEN */}
+      {editingVoucher && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(6px)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content shadow-lg border-0" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+              <div className="modal-header border-bottom p-3" style={{ borderColor: 'var(--border-color)', background: '#059669', color: '#ffffff' }}>
+                <h5 className="modal-title fw-bold">
+                  📲 Validation Pharmacie & Tarification Officielle — #{editingVoucher.order_code}
+                </h5>
+                <button className="btn-close btn-close-white" onClick={() => setEditingVoucher(null)}></button>
+              </div>
+
+              <form onSubmit={handlePharmacistValidate} className="modal-body p-4">
+                <p className="small text-muted mb-3">
+                  Ajustez ou confirmez le <strong>Montant Réel Officine (FCFA)</strong> calculé au comptoir pour la délivrance des médicaments à l'assuré <strong>{editingVoucher.first_name} {editingVoucher.last_name}</strong>.
+                </p>
+
+                <div className="mb-3">
+                  <label className="form-label small fw-bold text-success">Montant Réel Total Arrêté par la Pharmacie (FCFA) *</label>
+                  <input 
+                    type="number" 
+                    className="form-control input fw-bold text-success" 
+                    value={editedPharmacyPrice}
+                    onChange={(e) => setEditedPharmacyPrice(e.target.value)}
+                    style={{ borderRadius: '10px', fontSize: '1.2rem', height: '50px' }}
+                    required
+                  />
+                  <small className="text-muted">L'estimatif initial soumis par le client était de {editingVoucher.total_amount?.toLocaleString()} FCFA.</small>
+                </div>
+
+                <div className="p-3 bg-dark text-white rounded-3 mb-4 border border-success">
+                  <div className="row text-center align-items-center">
+                    <div className="col-6 border-end border-secondary">
+                      <span className="small text-success d-block fw-bold">Tiers-Payant UNAMUSC (80%)</span>
+                      <strong className="fs-5 text-success">
+                        {((parseFloat(editedPharmacyPrice) || 0) * 0.8).toLocaleString()} FCFA
+                      </strong>
+                    </div>
+                    <div className="col-6">
+                      <span className="small text-warning d-block fw-bold">Ticket Modérateur Client (20%)</span>
+                      <strong className="fs-6 text-warning">
+                        {((parseFloat(editedPharmacyPrice) || 0) * 0.2).toLocaleString()} FCFA
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="d-flex justify-content-end gap-2">
+                  <button type="button" className="btn btn-secondary fw-bold" onClick={() => setEditingVoucher(null)}>
+                    Annuler
+                  </button>
+                  <button type="submit" className="btn btn-success fw-bold px-4 text-white" style={{ background: '#059669', borderColor: '#059669' }}>
+                    ✅ Valider Prix & Édition Automatique PDF
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
       )}
 
@@ -544,7 +788,12 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                 </div>
 
                 <div className="d-flex justify-content-center gap-2">
-                  <button type="button" className="btn btn-success fw-bold px-4" onClick={() => alert('Bon de commande PDF certifié imprimé / téléchargé !')}>
+                  <button 
+                    type="button" 
+                    className="btn btn-success fw-bold px-4" 
+                    onClick={() => generateAndPrintPurchaseOrderPDF(selectedVoucher)}
+                    style={{ background: '#059669', borderColor: '#059669' }}
+                  >
                     📥 Télécharger le Bon PDF
                   </button>
                   <button type="button" className="btn btn-secondary fw-bold" onClick={() => setSelectedVoucher(null)}>
