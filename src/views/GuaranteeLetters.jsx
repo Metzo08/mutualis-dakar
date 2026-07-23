@@ -78,38 +78,114 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
     fetchLetters();
   }, []);
 
-  // Impression ciblée
-  const handlePrintCertificate = () => {
-    window.print();
-  };
+  // Fonction dédiée de génération et d'impression / téléchargement PDF A4 de la Lettre de Garantie
+  const generateAndPrintPDFWindow = (letterToPrint = selectedLetter) => {
+    const letter = letterToPrint || selectedLetter || letters[0];
+    if (!letter) return;
 
-  // Téléchargement / Impression de la lettre officielle sous forme de fenêtre PDF dédiée
-  const handleDownloadPDF = () => {
-    if (!selectedLetter) return;
-    const element = document.getElementById('printable-certificate');
-    if (!element) return;
+    const guaranteeAmt = letter.guaranteed_amount || letter.max_amount || (letter.estimated_amount * ((letter.guaranteed_percentage || 80) / 100));
+    const patientRest = Math.max(0, letter.estimated_amount - guaranteeAmt);
 
-    const printWin = window.open('', '_blank', 'width=950,height=1100');
+    const printWin = window.open('', '_blank', 'width=980,height=1150');
     printWin.document.write(`
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Certificat_Garantie_${selectedLetter.validation_code}.pdf</title>
+          <title>Attestation_Prise_En_Charge_UNAMUSC_${letter.validation_code}.pdf</title>
           <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
           <style>
-            body { background: #ffffff; color: #0f172a; padding: 2rem; font-family: 'Inter', system-ui, sans-serif; }
-            .badge { border: 1px solid #047857; }
+            @page { size: A4 portrait; margin: 12mm; }
+            body { background: #ffffff !important; color: #0f172a !important; font-family: 'Inter', Arial, sans-serif; padding: 1.5rem; }
+            .cert-box { border: 2.5px solid #047857; border-radius: 16px; padding: 2rem; background: #ffffff; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+            .no-print { margin-bottom: 1.5rem; text-align: center; }
             @media print {
               .no-print { display: none !important; }
+              body { padding: 0 !important; }
+              .cert-box { border-width: 2px !important; box-shadow: none !important; }
             }
           </style>
         </head>
         <body>
-          <div class="no-print text-center mb-4">
-            <button onclick="window.print()" class="btn btn-success fw-bold px-4 py-2 me-2">📥 Imprimer / Enregistrer en PDF</button>
+          <div class="no-print">
+            <button onclick="window.print()" class="btn btn-success fw-bold px-4 py-2 me-2" style="background: #059669; border-color: #059669;">🖨️ Imprimer / Télécharger le PDF A4</button>
             <button onclick="window.close()" class="btn btn-secondary fw-bold px-3 py-2">Fermer la fenêtre</button>
           </div>
-          ${element.outerHTML}
+
+          <div class="cert-box">
+            <!-- Entête Officiel Sénégal & UNAMUSC -->
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-4" style="border-color: #cbd5e1 !important;">
+              <div class="d-flex align-items-center gap-3">
+                <img src="/senegal_flag.png" alt="Drapeau du Sénégal" style="width: 54px; height: 36px; object-fit: cover; border-radius: 4px; border: 1.5px solid #d97706;" />
+                <div>
+                  <h6 class="fw-bold mb-0 text-uppercase" style="color: #047857; letter-spacing: 0.5px;">RÉPUBLIQUE DU SÉNÉGAL</h6>
+                  <small class="text-muted fw-semibold" style="font-size: 0.75rem;">Un Peuple — Un But — Une Foi</small><br />
+                  <strong class="small text-uppercase" style="color: #0f172a; font-size: 0.82rem;">UNION NATIONALE DES MUTUELLES DE SANTÉ COMMUNAUTAIRES (UNAMUSC)</strong><br />
+                  <span class="badge bg-success-subtle text-success border border-success fw-semibold" style="font-size: 0.72rem;">PROGRAMME NATIONAL DE LA COUVERTURE SANITAIRE DU SÉNÉGAL</span>
+                </div>
+              </div>
+              <div class="text-end">
+                <img src="/unamusc_logo.png" alt="UNAMUSC Sénégal" style="width: 85px; height: auto; object-fit: contain;" />
+              </div>
+            </div>
+
+            <!-- Titre de l'Attestation -->
+            <div class="text-center my-4 p-3 rounded-3" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
+              <h4 class="fw-bold text-uppercase mb-1" style="color: #047857; letter-spacing: 1px;">ATTESTATION OFFICIELLE DE PRISE EN CHARGE HOSPITALIÈRE</h4>
+              <small class="text-muted fw-semibold">Émise sous le système de Tiers-Payant UNAMUSC — Programme National de la Couverture Sanitaire du Sénégal</small><br />
+              <code class="mt-2 d-inline-block px-3 py-1 bg-white text-success border border-success rounded-3 fw-bold fs-6">Code Homologation : #${letter.validation_code}</code>
+            </div>
+
+            <!-- Grille des caractéristiques & prise en charge -->
+            <div class="row g-4 mb-4 p-4 rounded-3" style="background: #f8fafc; border: 1.5px solid #cbd5e1;">
+              <div class="col-6">
+                <span class="small fw-bold d-block mb-1 text-muted text-uppercase">👤 BÉNÉFICIAIRE ASSURÉ :</span>
+                <h5 class="fw-bold mb-1" style="color: #0f172a;">${letter.first_name} ${letter.last_name}</h5>
+                <div class="small" style="color: #334155;">N° Carte CMU : <strong>${letter.cmu_number}</strong> | IPP : <strong>${letter.ipp_number || 'IPP-FANN-2026-8812'}</strong></div>
+                <small class="text-success fw-bold d-block mt-1">Organisme Émetteur : Tiers-Payant UNAMUSC Sénégal</small>
+              </div>
+
+              <div class="col-6">
+                <span class="small fw-bold d-block mb-1 text-muted text-uppercase">🏥 STRUCTURE HOSPITALIÈRE D'ACCUEIL :</span>
+                <h6 class="fw-bold mb-1" style="color: #047857; font-size: 1rem;">${letter.hospital_name || letter.medical_act}</h6>
+                <div class="small" style="color: #334155;">Conventionné Tiers-Payant UNAMUSC (Validation 100% Humaine)</div>
+              </div>
+
+              <div class="col-6 border-top pt-3" style="border-color: #e2e8f0 !important;">
+                <span class="small fw-bold d-block mb-1 text-muted text-uppercase">📋 ACTE MÉDICAL / HOSPITALISATION PRESCRITE :</span>
+                <strong class="d-block" style="color: #0f172a; font-size: 0.95rem;">${letter.medical_act}</strong>
+              </div>
+
+              <div class="col-6 border-top pt-3" style="border-color: #e2e8f0 !important;">
+                <span class="small fw-bold d-block mb-1 text-muted text-uppercase">💰 MONTANT ESTIMÉ & ACCORD DE PRISE EN CHARGE :</span>
+                <div class="small" style="color: #334155;">
+                  Devis Soumis : <strong>${Number(letter.estimated_amount).toLocaleString()} FCFA</strong><br />
+                  Prise en charge UNAMUSC (${letter.guaranteed_percentage || 80}%) : <strong style="color: #047857; font-size: 1.05rem;">${Number(guaranteeAmt).toLocaleString()} FCFA</strong><br />
+                  <span style="color: #b45309; font-weight: bold;">Reste à charge patient (Ticket Modérateur) : ${Number(patientRest).toLocaleString()} FCFA</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Engagement Financier UNAMUSC & Tampon Numérique QR Code -->
+            <div class="row g-4 align-items-center">
+              <div class="col-8">
+                <div class="p-3 rounded-3" style="background: #f0fdf4; border: 1px solid #86efac;">
+                  <strong class="small d-block text-success mb-1 fw-bold">Clause officielle d'engagement financier UNAMUSC :</strong>
+                  <p class="small mb-0 text-dark" style="line-height: 1.5; color: #0f172a;">
+                    ${letter.agent_note || 'L\'Union Nationale des Mutuelles de Santé Communautaires (UNAMUSC) s\'engage sous le Programme National de la Couverture Sanitaire du Sénégal à régler directement à l\'établissement hospitalier le montant garanti sous présentation de la facture finale conforme.'}
+                  </p>
+                </div>
+              </div>
+
+              <div class="col-4 text-center">
+                <div class="p-2 bg-white rounded-3 shadow-sm d-inline-block border mb-2">
+                  <img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=${encodeURIComponent(letter.validation_code)}" alt="QR Code Validation" style="width: 80px; height: 80px;" />
+                </div>
+                <div class="small fw-bold text-success">Tampon Numérique Officiel UNAMUSC</div>
+                <small class="text-muted d-block" style="font-size: 0.72rem;">Homologué par l'UNAMUSC — Signature Agent Habilité</small>
+              </div>
+            </div>
+          </div>
+
           <script>
             setTimeout(() => { window.print(); }, 400);
           </script>
@@ -117,6 +193,14 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
       </html>
     `);
     printWin.document.close();
+  };
+
+  const handlePrintCertificate = () => {
+    generateAndPrintPDFWindow(selectedLetter);
+  };
+
+  const handleDownloadPDF = () => {
+    generateAndPrintPDFWindow(selectedLetter);
   };
 
   // Calcul du montant garanti et du reste à charge patient
