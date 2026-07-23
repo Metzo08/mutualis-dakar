@@ -570,9 +570,27 @@ export default function App() {
             />
           );
         case 'guarantees':
-          return <GuaranteeLetters lang={lang} userRole={portalMode} />;
+          return (
+            <GuaranteeLetters 
+              lang={lang} 
+              userRole={portalMode} 
+              citizenUser={citizenUser} 
+              agentUser={agentUser} 
+              partnerUser={partnerUser} 
+              setView={setView} 
+            />
+          );
         case 'purchase-orders':
-          return <PurchaseOrders lang={lang} />;
+          return (
+            <PurchaseOrders 
+              lang={lang} 
+              userRole={portalMode} 
+              citizenUser={citizenUser} 
+              agentUser={agentUser} 
+              partnerUser={partnerUser} 
+              setView={setView} 
+            />
+          );
         case 'telemedicine':
           return <Telemedicine lang={lang} />;
         case 'medical-profile':

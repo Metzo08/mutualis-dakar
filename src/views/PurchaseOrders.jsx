@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export default function PurchaseOrders({ lang = 'fr' }) {
+export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, partnerUser = null, setView = null }) {
   const defaultOrders = [
     {
       id: 101,
@@ -37,6 +37,17 @@ export default function PurchaseOrders({ lang = 'fr' }) {
       order_code: 'ORD-2026-PHARM-440'
     }
   ];
+
+  // Identification du rôle et accès
+  const isAgent = (userRole === 'agent' || !!agentUser || !!partnerUser);
+  const isCitizen = (!isAgent && !!citizenUser);
+  const isPublic = (!isAgent && !isCitizen);
+
+  const [publicSearchCmu, setPublicSearchCmu] = useState('');
+
+  const activeCmuNumber = citizenUser?.cmu_number || citizenUser?.cmuNumber || localStorage.getItem('cmu-active-number') || 'CMU-DKR-2026-8812';
+  const activeFirstName = citizenUser?.first_name || citizenUser?.firstName || 'Amadou';
+  const activeLastName = citizenUser?.last_name || citizenUser?.lastName || 'Sow';
 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -91,22 +102,37 @@ export default function PurchaseOrders({ lang = 'fr' }) {
   const handleRemoveItem = (index) => {
     setItems(items.filter((_, i) => i !== index));
   };
+  
+  const visibleOrders = orders.filter((o) => {
+    if (isAgent) return true; // Les agents UNAMUSC et pharmaciens ont accès à tous les bons
+    if (isCitizen) {
+      // L'assuré connecté ne voit QUE SES PROPRES BONS DE COMMANDE
+      return (
+        o.cmu_number === activeCmuNumber ||
+        (o.first_name?.toLowerCase() === activeFirstName?.toLowerCase() && o.last_name?.toLowerCase() === activeLastName?.toLowerCase()) ||
+        o.cmu_number === 'CMU-DKR-2026-8812' // fallback démo pour Amadou Sow
+      );
+    }
+    if (publicSearchCmu.trim()) {
+      return o.cmu_number.toLowerCase().includes(publicSearchCmu.trim().toLowerCase());
+    }
+    return false;
+  });
 
   const handleCreateOrder = async () => {
     if (items.length === 0) return;
     setCreating(true);
     setRedeemSuccess('');
 
-    const citizenData = JSON.parse(localStorage.getItem('cmu-citizen') || '{}');
     const totalSum = items.reduce((a, b) => a + (b.price * b.qty), 0);
     const cmuCovered = totalSum * 0.8;
     const patientPay = totalSum * 0.2;
 
     const newOrder = {
       id: Date.now(),
-      first_name: citizenData.firstName || 'Amadou',
-      last_name: citizenData.lastName || 'Sow',
-      cmu_number: citizenData.cmuNumber || 'CMU-DKR-2026-8812',
+      first_name: activeFirstName,
+      last_name: activeLastName,
+      cmu_number: activeCmuNumber,
       items_json: JSON.stringify(items),
       total_amount: totalSum,
       cmu_covered: cmuCovered,
@@ -122,7 +148,7 @@ export default function PurchaseOrders({ lang = 'fr' }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          beneficiary_id: citizenData.id || 1,
+          beneficiary_id: 1,
           items: items,
           total_amount: totalSum
         })
@@ -131,29 +157,36 @@ export default function PurchaseOrders({ lang = 'fr' }) {
       console.warn(err);
     }
 
-    const storedLocal = JSON.parse(localStorage.getItem('cmu_purchase_orders') || '[]');
-    localStorage.setItem('cmu_purchase_orders', JSON.stringify([newOrder, ...storedLocal]));
+    const updated = [newOrder, ...orders];
+    setOrders(updated);
+    localStorage.setItem('cmu_purchase_orders', JSON.stringify(updated));
 
-    setOrders([newOrder, ...orders]);
+    setRedeemSuccess(`🎉 Bon de commande ${newOrder.order_code} émis avec succès sous Tiers-Payant UNAMUSC (Valable 48h) !`);
     setItems([]);
-    setRedeemSuccess('Bon de commande émis avec succès ! Présentez ce bon ou son QR Code dans n\'importe quelle pharmacie agréée sous 48 heures pour bénéficier du tiers-payant (80%).');
     setCreating(false);
   };
 
-  const handleRedeem = (id) => {
+  const handleRedeem = async (id) => {
     const updated = orders.map(o => o.id === id ? { ...o, status: 'used' } : o);
     setOrders(updated);
     localStorage.setItem('cmu_purchase_orders', JSON.stringify(updated));
-    setRedeemSuccess('Bon de commande validé avec succès en pharmacie sous le Tiers-Payant UNAMUSC !');
+
+    try {
+      await fetch(`/api/purchase-orders/${id}/redeem`, { method: 'POST' });
+    } catch (err) {
+      console.warn(err);
+    }
+
+    setRedeemSuccess('✅ Bon de commande validé avec succès par la pharmacie ! Médicaments délivrés.');
   };
 
   return (
     <div className="container py-4 fade-in-up">
-      {/* Banner signature centrée */}
+      {/* Banner signature de la vue */}
       <section 
         className="banner-mini text-white mb-4 rounded-4 overflow-hidden position-relative text-center"
         style={{
-          background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.93), rgba(4, 120, 87, 0.88)), url("/meds_hero_real.png") center/cover no-repeat',
+          background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.93), rgba(4, 120, 87, 0.88)), url("/csu_payments_hero.png") center/cover no-repeat',
           padding: '3rem 2rem',
           boxShadow: '0 10px 25px -5px rgba(5, 150, 105, 0.3)',
           borderBottom: '1px solid var(--border-color)'
@@ -171,34 +204,16 @@ export default function PurchaseOrders({ lang = 'fr' }) {
               border: '1px solid rgba(255, 255, 255, 0.3)'
             }}
           >
-            💊 Tiers-Payant UNAMUSC pharmacie agréée — Validité 48h
+            🇸🇳 UNAMUSC Sénégal — Bons de Commande Médicaments (Prise en charge 80%)
           </span>
           <h1 className="fw-bold mb-2 text-white text-center" style={{ fontSize: '2rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
-            {lang === 'wo' ? 'Keuyit u am garab (Bons de commande pharmacie)' : 'Bons de commande & Tiers-Payant UNAMUSC'}
+            {lang === 'wo' ? 'Bons de commande garab (Bons Pharmacie 48H)' : 'Bons de Commande Pharmacie (48H)'}
           </h1>
           <p className="mb-3 text-white-50 text-center mx-auto" style={{ fontSize: '0.98rem', lineHeight: '1.6', textShadow: '0 1px 2px rgba(0,0,0,0.2)', maxWidth: '750px' }}>
-            {lang === 'wo'
-              ? 'Bon de commande bu 48 heures d\'utilisation ci pharmacie partenaires yi.'
-              : 'Générez des bons de commande de médicaments valides 48h pour un retrait direct sous le Tiers-Payant UNAMUSC en pharmacie.'}
+            {lang === 'wo' 
+              ? 'Genereel sa bon bu garab ngir jénd garab ci pharmacie ak Tiers-Payant UNAMUSC.' 
+              : 'Générez et présentez vos bons de commande de médicaments délivrés directement en pharmacie agréée sous le Tiers-Payant UNAMUSC.'}
           </p>
-
-          <div className="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-2 w-100">
-            <button 
-              type="button"
-              className="btn fw-semibold text-white"
-              style={{
-                background: 'rgba(255, 255, 255, 0.2)',
-                border: '1px solid rgba(255, 255, 255, 0.4)',
-                borderRadius: '12px',
-                padding: '0.65rem 1.4rem',
-                fontSize: '0.92rem',
-                cursor: 'pointer'
-              }}
-              onClick={fetchOrders}
-            >
-              🔄 {lang === 'wo' ? 'Yessal lim bi' : 'Actualiser la liste'}
-            </button>
-          </div>
         </div>
       </section>
 
@@ -212,7 +227,7 @@ export default function PurchaseOrders({ lang = 'fr' }) {
       {/* Formulaire de création de bon de commande */}
       <div className="card shadow-sm border-0 p-4 mb-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
         <h4 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-          <span>🛒</span> Nouveau bon de commande / ordonnance médicale
+          <span>🛒</span> Nouveau bon de commande / ordonnance médicale UNAMUSC
         </h4>
 
         <form onSubmit={handleAddItem}>
@@ -315,102 +330,154 @@ export default function PurchaseOrders({ lang = 'fr' }) {
         )}
       </div>
 
-      {/* Liste des bons de commande */}
-      <div className="card shadow-sm border-0 p-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-        <h4 className="fw-bold mb-3" style={{ color: 'var(--text-main)' }}>📋 Vos bons de commande de médicaments en cours</h4>
+      {/* BANNIÈRE SÉCURITÉ S'IL S'AGIT D'UN VISITEUR NON CONNECTÉ SANS RECHERCHE */}
+      {isPublic && !publicSearchCmu && (
+        <div className="card shadow-sm border-0 p-4 mb-4 text-center rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', borderLeft: '6px solid #059669' }}>
+          <div className="fs-1 mb-2">🔒</div>
+          <h4 className="fw-bold text-success">Accès Sécurisé aux Bons de Commande Pharmacie</h4>
+          <p className="text-muted mx-auto" style={{ maxWidth: '650px', lineHeight: '1.6' }}>
+            Par mesure de protection des données de santé, la consultation des bons de commande est strictement réservée aux assurés identifiés ou aux pharmaciens agréés UNAMUSC.
+          </p>
 
-        {loading ? (
-          <div className="text-center py-5 text-muted">Chargement des bons de commande...</div>
-        ) : orders.length === 0 ? (
-          <div className="text-center py-5 text-muted">
-            <span style={{ fontSize: '3rem' }}>💊</span>
-            <p className="mt-2" style={{ fontSize: '0.9rem' }}>Aucun bon de commande disponible.</p>
+          <div className="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-2">
+            {setView && (
+              <button className="btn btn-success fw-bold px-4 py-2.5" onClick={() => setView('login')} style={{ borderRadius: '12px', background: '#059669' }}>
+                🔐 Se connecter à mon Espace Assuré / Pharmacie
+              </button>
+            )}
           </div>
-        ) : (
-          <div className="table-responsive">
-            <table className="table table-hover align-middle" style={{ color: 'var(--text-main)' }}>
-              <thead>
-                <tr style={{ borderBottom: '2px solid var(--border-color)' }}>
-                  <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Code & Date</th>
-                  <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Assuré</th>
-                  <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Médicaments prescrits</th>
-                  <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Prise en charge CMU</th>
-                  <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Chrono Validité</th>
-                  <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Statut</th>
-                  <th style={{ color: 'var(--text-main)', padding: '0.85rem', textAlign: 'right' }}>Actions Pharmacie</th>
-                </tr>
-              </thead>
-              <tbody>
-                {orders.map((ord) => {
-                  let itemsList = [];
-                  try {
-                    itemsList = typeof ord.items_json === 'string' ? JSON.parse(ord.items_json) : (ord.items_json || []);
-                  } catch (e) {}
 
-                  return (
-                    <tr key={ord.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                      <td style={{ padding: '0.85rem' }}>
-                        <code className="px-2 py-1 bg-dark text-success border border-success rounded-3 fw-bold d-inline-block mb-1">
-                          {ord.order_code || `ORD-2026-${ord.id}`}
-                        </code>
-                        <small className="text-muted d-block">{new Date(ord.created_at).toLocaleDateString('fr-FR')}</small>
-                      </td>
-                      <td className="fw-bold" style={{ color: 'var(--text-main)', padding: '0.85rem' }}>
-                        {ord.first_name} {ord.last_name}
-                        <small className="text-muted d-block">{ord.cmu_number}</small>
-                      </td>
-                      <td style={{ padding: '0.85rem', maxWidth: '240px' }}>
-                        {itemsList.map((i, idx) => (
-                          <span key={idx} className="badge bg-dark-subtle text-body border me-1 my-1 p-2" style={{ borderRadius: '6px' }}>
-                            💊 {i.name} (x{i.qty})
+          <div className="mt-4 pt-3 border-top mx-auto" style={{ maxWidth: '520px', borderColor: 'var(--border-color)' }}>
+            <label className="form-label small text-muted fw-bold mb-2">Rechercher directement votre bon avec votre N° de Carte CMU :</label>
+            <div className="input-group">
+              <input 
+                type="text" 
+                className="form-control fw-bold input" 
+                placeholder="Ex: CMU-DKR-2026-8812" 
+                value={publicSearchCmu} 
+                onChange={(e) => setPublicSearchCmu(e.target.value)} 
+                style={{ borderRadius: '12px 0 0 12px', height: '48px' }}
+              />
+              <button className="btn btn-success fw-bold px-4" style={{ borderRadius: '0 12px 12px 0', background: '#059669' }}>
+                🔍 Consulter
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Liste des bons de commande */}
+      {(isAgent || isCitizen || (isPublic && publicSearchCmu)) && (
+        <div className="card shadow-sm border-0 p-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+          <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <h4 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>
+              📋 {isAgent ? 'Tous les Bons de Commande Pharmacie' : 'Mes Bons de Commande Médicaments (48h)'}
+            </h4>
+
+            {isCitizen && (
+              <span className="badge bg-success-subtle text-success border border-success px-3 py-2 fw-bold" style={{ borderRadius: '12px' }}>
+                👤 Assuré connecté : {activeFirstName} {activeLastName} ({activeCmuNumber})
+              </span>
+            )}
+          </div>
+
+          {loading ? (
+            <div className="text-center py-5 text-muted">Chargement des bons de commande...</div>
+          ) : visibleOrders.length === 0 ? (
+            <div className="text-center py-5 text-muted">
+              <span style={{ fontSize: '3rem' }}>💊</span>
+              <p className="mt-2" style={{ fontSize: '0.9rem' }}>
+                {isCitizen 
+                  ? 'Aucun bon de commande disponible pour votre compte assuré.' 
+                  : 'Aucun bon de commande ne correspond à ce N° de Carte CMU.'}
+              </p>
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <table className="table table-hover align-middle" style={{ color: 'var(--text-main)' }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid var(--border-color)' }}>
+                    <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Code & Date</th>
+                    <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Assuré</th>
+                    <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Médicaments prescrits</th>
+                    <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Prise en charge CMU</th>
+                    <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Chrono Validité</th>
+                    <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Statut</th>
+                    <th style={{ color: 'var(--text-main)', padding: '0.85rem', textAlign: 'right' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visibleOrders.map((ord) => {
+                    let itemsList = [];
+                    try {
+                      itemsList = typeof ord.items_json === 'string' ? JSON.parse(ord.items_json) : (ord.items_json || []);
+                    } catch (e) {}
+
+                    return (
+                      <tr key={ord.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                        <td style={{ padding: '0.85rem' }}>
+                          <code className="px-2 py-1 bg-dark text-success border border-success rounded-3 fw-bold d-inline-block mb-1">
+                            {ord.order_code || `ORD-2026-${ord.id}`}
+                          </code>
+                          <small className="text-muted d-block">{new Date(ord.created_at).toLocaleDateString('fr-FR')}</small>
+                        </td>
+                        <td className="fw-bold" style={{ color: 'var(--text-main)', padding: '0.85rem' }}>
+                          {ord.first_name} {ord.last_name}
+                          <small className="text-muted d-block">{ord.cmu_number}</small>
+                        </td>
+                        <td style={{ padding: '0.85rem', maxWidth: '240px' }}>
+                          {itemsList.map((i, idx) => (
+                            <span key={idx} className="badge bg-dark-subtle text-body border me-1 my-1 p-2" style={{ borderRadius: '6px' }}>
+                              💊 {i.name} (x{i.qty})
+                            </span>
+                          ))}
+                        </td>
+                        <td style={{ padding: '0.85rem' }}>
+                          <span className="fw-bold text-success d-block">{Number(ord.total_amount * 0.8).toLocaleString()} FCFA (80%)</span>
+                          <small className="text-muted">Total: {Number(ord.total_amount).toLocaleString()} FCFA</small>
+                        </td>
+                        <td style={{ padding: '0.85rem' }}>
+                          <span className="badge bg-warning text-dark px-2.5 py-1 fw-bold" style={{ borderRadius: '6px' }}>
+                            ⏳ Validité 48 heures
                           </span>
-                        ))}
-                      </td>
-                      <td style={{ padding: '0.85rem' }}>
-                        <span className="fw-bold text-success d-block">{Number(ord.total_amount * 0.8).toLocaleString()} FCFA (80%)</span>
-                        <small className="text-muted">Total: {Number(ord.total_amount).toLocaleString()} FCFA</small>
-                      </td>
-                      <td style={{ padding: '0.85rem' }}>
-                        <span className="badge bg-warning text-dark px-2.5 py-1 fw-bold" style={{ borderRadius: '6px' }}>
-                          ⏳ Validité 48 heures
-                        </span>
-                      </td>
-                      <td style={{ padding: '0.85rem' }}>
-                        {ord.status === 'active' && <span className="badge bg-success px-3 py-1.5" style={{ borderRadius: '12px' }}>✅ Actif (Prêt)</span>}
-                        {ord.status === 'used' && <span className="badge bg-secondary px-3 py-1.5" style={{ borderRadius: '12px' }}>🔒 Délivré en pharmacie</span>}
-                        {ord.status === 'expired' && <span className="badge bg-danger px-3 py-1.5" style={{ borderRadius: '12px' }}>⚠️ Expiré</span>}
-                      </td>
-                      <td style={{ textAlign: 'right', padding: '0.85rem' }}>
-                        <div className="d-flex justify-content-end gap-2">
-                          <button 
-                            type="button"
-                            className="btn btn-sm btn-outline-success fw-bold"
-                            onClick={() => setSelectedVoucher(ord)}
-                            style={{ borderRadius: '8px' }}
-                          >
-                            📄 Bon PDF
-                          </button>
-
-                          {ord.status === 'active' && (
+                        </td>
+                        <td style={{ padding: '0.85rem' }}>
+                          {ord.status === 'active' && <span className="badge bg-success px-3 py-1.5" style={{ borderRadius: '12px' }}>✅ Actif (Prêt)</span>}
+                          {ord.status === 'used' && <span className="badge bg-secondary px-3 py-1.5" style={{ borderRadius: '12px' }}>🔒 Délivré en pharmacie</span>}
+                          {ord.status === 'expired' && <span className="badge bg-danger px-3 py-1.5" style={{ borderRadius: '12px' }}>⚠️ Expiré</span>}
+                        </td>
+                        <td style={{ textAlign: 'right', padding: '0.85rem' }}>
+                          <div className="d-flex justify-content-end gap-2">
                             <button 
                               type="button"
-                              className="btn btn-sm text-white fw-bold px-3 py-1.5"
-                              onClick={() => handleRedeem(ord.id)}
-                              style={{ background: '#059669', border: 'none', borderRadius: '8px' }}
+                              className="btn btn-sm btn-outline-success fw-bold"
+                              onClick={() => setSelectedVoucher(ord)}
+                              style={{ borderRadius: '8px' }}
                             >
-                              📲 Valider pharmacie
+                              📄 Bon PDF
                             </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+
+                            {isAgent && ord.status === 'active' && (
+                              <button 
+                                type="button"
+                                className="btn btn-sm text-white fw-bold px-3 py-1.5"
+                                onClick={() => handleRedeem(ord.id)}
+                                style={{ background: '#059669', border: 'none', borderRadius: '8px' }}
+                              >
+                                📲 Valider pharmacie
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* MODALE AFFICHAGE DU VOUCHER DE COMMANDE PAR PHARMACIE */}
       {selectedVoucher && (

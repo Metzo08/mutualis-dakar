@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) {
+export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, partnerUser = null, setView = null }) {
   const defaultLetters = [
     {
       id: 201,
@@ -38,11 +38,27 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
     }
   ];
 
+  // Identification du rôle et accès
+  const isAgent = (userRole === 'agent' || !!agentUser || !!partnerUser);
+  const isCitizen = (!isAgent && !!citizenUser);
+  const isPublic = (!isAgent && !isCitizen);
+
+  const [publicSearchCmu, setPublicSearchCmu] = useState('');
+  const [requestCategory, setRequestCategory] = useState('hospital'); // 'hospital' | 'pharmacy'
+
+  // Informations assuré actif
+  const activeCmuNumber = citizenUser?.cmu_number || citizenUser?.cmuNumber || localStorage.getItem('cmu-active-number') || 'CMU-DKR-2026-8812';
+  const activeFirstName = citizenUser?.first_name || citizenUser?.firstName || 'Amadou';
+  const activeLastName = citizenUser?.last_name || citizenUser?.lastName || 'Sow';
+
   const [letters, setLetters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('list'); // 'list' | 'new'
 
   // Formulaire de demande (Assuré)
+  const [applicantFirstName, setApplicantFirstName] = useState(activeFirstName);
+  const [applicantLastName, setApplicantLastName] = useState(activeLastName);
+  const [applicantCmu, setApplicantCmu] = useState(activeCmuNumber);
   const [medicalAct, setMedicalAct] = useState('');
   const [estimatedAmount, setEstimatedAmount] = useState('');
   const [structureName, setStructureName] = useState('Hôpital Universitaire de Fann (Dakar)');
@@ -203,14 +219,23 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
     generateAndPrintPDFWindow(selectedLetter);
   };
 
-  // Calcul du montant garanti et du reste à charge patient
-  const calculatedGuaranteeAmount = selectedLetter 
-    ? (parseFloat(maxAmount) || (selectedLetter.estimated_amount * (guaranteedPct / 100)))
-    : 0;
-  
-  const calculatedPatientRest = selectedLetter
-    ? Math.max(0, selectedLetter.estimated_amount - calculatedGuaranteeAmount)
-    : 0;
+  // Filtrage strict selon le rôle (RBAC) & Confidentialité des données de santé
+  const visibleLetters = letters.filter((item) => {
+    if (isAgent) return true; // L'agent UNAMUSC habilité a accès à l'ensemble des dossiers
+    if (isCitizen) {
+      // L'assuré connecté ne voit QUE SES PROPRES DEMANDES
+      return (
+        item.cmu_number === activeCmuNumber ||
+        (item.first_name?.toLowerCase() === activeFirstName?.toLowerCase() && item.last_name?.toLowerCase() === activeLastName?.toLowerCase()) ||
+        item.cmu_number === 'CMU-DKR-2026-8812' // fallback démo pour Amadou Sow
+      );
+    }
+    // Visiteur public non connecté : masquage strict des dossiers d'autrui
+    if (publicSearchCmu.trim()) {
+      return item.cmu_number.toLowerCase().includes(publicSearchCmu.trim().toLowerCase());
+    }
+    return false;
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -218,44 +243,72 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
     setSubmitting(true);
     setSuccessMsg('');
 
-    const citizenData = JSON.parse(localStorage.getItem('cmu-citizen') || '{}');
     const estVal = parseFloat(estimatedAmount) || 0;
     const gVal = estVal * 0.8;
 
-    const newLetter = {
-      id: Date.now(),
-      first_name: citizenData.firstName || 'Amadou',
-      last_name: citizenData.lastName || 'Sow',
-      cmu_number: citizenData.cmuNumber || 'CMU-DKR-2026-8812',
-      ipp_number: 'IPP-FANN-2026-8812',
-      hospital_name: structureName,
-      medical_act: `${medicalAct} — (${structureName})`,
-      estimated_amount: estVal,
-      guaranteed_percentage: 80,
-      max_amount: gVal,
-      patient_rest: estVal - gVal,
-      status: 'pending',
-      validation_code: `GAR-2026-${Math.floor(1000 + Math.random() * 9000)}`,
-      created_at: new Date().toISOString(),
-      agent_note: 'Demande en attente de vérification du devis par l\'agent UNAMUSC.'
-    };
+    if (requestCategory === 'hospital') {
+      // Création d'une Lettre de Garantie d'Hospitalisation
+      const newLetter = {
+        id: Date.now(),
+        first_name: applicantFirstName || activeFirstName,
+        last_name: applicantLastName || activeLastName,
+        cmu_number: applicantCmu || activeCmuNumber,
+        ipp_number: 'IPP-FANN-2026-8812',
+        hospital_name: structureName,
+        medical_act: `${medicalAct} — (${structureName})`,
+        estimated_amount: estVal,
+        guaranteed_percentage: 80,
+        max_amount: gVal,
+        patient_rest: estVal - gVal,
+        status: 'pending',
+        validation_code: `GAR-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+        created_at: new Date().toISOString(),
+        agent_note: 'Demande soumise par l\'assuré. En attente de vérification et d\'instruction par l\'agent UNAMUSC.'
+      };
 
-    try {
-      await fetch('/api/guarantees', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          beneficiary_id: citizenData.id || 1,
-          medical_act: newLetter.medical_act,
-          estimated_amount: newLetter.estimated_amount
-        })
-      });
-    } catch (err) {
-      console.warn(err);
+      try {
+        await fetch('/api/guarantees', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            beneficiary_id: 1,
+            medical_act: newLetter.medical_act,
+            estimated_amount: newLetter.estimated_amount
+          })
+        });
+      } catch (err) {
+        console.warn(err);
+      }
+
+      setLetters([newLetter, ...letters]);
+      setSuccessMsg(lang === 'wo' 
+        ? 'Demande bi yónnee nañu ko ak jamm.' 
+        : 'Votre demande de lettre de garantie hospitalière a été soumise avec succès. L\'UNAMUSC procède à l\'instruction sous 24h.');
+    } else {
+      // Création d'un Bon de Commande de Médicaments (Pharmacie Tiers-Payant)
+      const newOrder = {
+        id: Date.now(),
+        first_name: applicantFirstName || activeFirstName,
+        last_name: applicantLastName || activeLastName,
+        cmu_number: applicantCmu || activeCmuNumber,
+        items_json: JSON.stringify([
+          { name: medicalAct, qty: 1, price: estVal }
+        ]),
+        total_amount: estVal,
+        cmu_covered: gVal,
+        patient_pay: estVal - gVal,
+        status: 'active',
+        created_at: new Date().toISOString(),
+        expires_at: new Date(Date.now() + 48 * 3600 * 1000).toISOString(),
+        order_code: `ORD-2026-PHARM-${Math.floor(100 + Math.random() * 900)}`
+      };
+
+      const currentOrders = JSON.parse(localStorage.getItem('cmu_purchase_orders') || '[]');
+      localStorage.setItem('cmu_purchase_orders', JSON.stringify([newOrder, ...currentOrders]));
+
+      setSuccessMsg(`Votre Bon de Commande Pharmacie (${newOrder.order_code}) a été généré avec succès ! Valable 48h sous Tiers-Payant UNAMUSC.`);
     }
 
-    setLetters([newLetter, ...letters]);
-    setSuccessMsg(lang === 'wo' ? 'Demande bi yónnee nañu ko ak jamm.' : 'Votre demande de lettre de garantie a été émise avec succès. L\'UNAMUSC procède à l\'instruction sous 24h.');
     setMedicalAct('');
     setEstimatedAmount('');
     setActiveTab('list');
@@ -324,7 +377,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
 
   return (
     <div className="container py-4 fade-in-up">
-      {/* Banner signature de la plateforme avec fond vert et image thématique (Titre & Boutons centrés) */}
+      {/* Banner signature de la plateforme */}
       <section 
         className="banner-mini text-white mb-4 rounded-4 overflow-hidden position-relative text-center"
         style={{
@@ -346,15 +399,15 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
               border: '1px solid rgba(255, 255, 255, 0.3)'
             }}
           >
-            🇸🇳 UNAMUSC Sénégal — Prise en charge hospitalière (80% à 100%)
+            🇸🇳 UNAMUSC Sénégal — Prise en charge hospitalière & Bons de Commande (80% à 100%)
           </span>
           <h1 className="fw-bold mb-2 text-white text-center" style={{ fontSize: '2rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
-            {lang === 'wo' ? 'Bataaxal yoxu garansi (Lettres de garantie)' : 'Lettres de garantie & hospitalisation'}
+            {lang === 'wo' ? 'Bataaxal yoxu garansi (Lettres de garantie)' : 'Lettres de garantie & Bons de Commande'}
           </h1>
           <p className="mb-3 text-white-50 text-center mx-auto" style={{ fontSize: '0.98rem', lineHeight: '1.6', textShadow: '0 1px 2px rgba(0,0,0,0.2)', maxWidth: '750px' }}>
             {lang === 'wo'
               ? 'Yónnee sa demande ngir joto prise en charge d\'hospitalisation wala chirurgie.'
-              : 'Demandez votre prise en charge hospitalière en ligne avec homologation 100% humaine par l\'UNAMUSC.'}
+              : 'Demandez votre lettre de garantie hospitalière ou bon de commande en ligne sous le Tiers-Payant UNAMUSC.'}
           </p>
 
           <div className="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-2 w-100">
@@ -373,7 +426,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
               }}
               onClick={() => setActiveTab('list')}
             >
-              📋 {lang === 'wo' ? 'Lim bi' : 'Mes demandes & instructions'} ({letters.length})
+              📋 {isAgent ? `Instructions Agent (${letters.length})` : `Mes Dossiers & Attestations (${visibleLetters.length})`}
             </button>
 
             <button 
@@ -391,39 +444,41 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
               }}
               onClick={() => setActiveTab('new')}
             >
-              ➕ {lang === 'wo' ? 'Demande bu bees' : 'Nouvelle demande de prise en charge'}
+              ➕ {lang === 'wo' ? 'Demande bu bees' : 'Nouvelle demande (Garantie / Bon)'}
             </button>
           </div>
         </div>
       </section>
 
-      {/* RANGÉE KPIS EXÉCUTIF GARANTIES */}
-      <div className="row g-3 mb-4">
-        <div className="col-md-3 col-6">
-          <div className="card shadow-sm border-0 p-3 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-            <span className="small text-muted mb-1 d-block">Demandes reçues</span>
-            <h4 className="fw-bold mb-0 text-primary">{letters.length}</h4>
+      {/* RANGÉE KPIS EXÉCUTIF GARANTIES (Rôle Agent) */}
+      {isAgent && (
+        <div className="row g-3 mb-4">
+          <div className="col-md-3 col-6">
+            <div className="card shadow-sm border-0 p-3 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+              <span className="small text-muted mb-1 d-block">Demandes reçues</span>
+              <h4 className="fw-bold mb-0 text-primary">{letters.length}</h4>
+            </div>
+          </div>
+          <div className="col-md-3 col-6">
+            <div className="card shadow-sm border-0 p-3 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+              <span className="small text-muted mb-1 d-block">En instruction agent</span>
+              <h4 className="fw-bold mb-0 text-warning">{totalPending}</h4>
+            </div>
+          </div>
+          <div className="col-md-3 col-6">
+            <div className="card shadow-sm border-0 p-3 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+              <span className="small text-muted mb-1 d-block">Lettres accordées</span>
+              <h4 className="fw-bold mb-0 text-success">{totalApproved}</h4>
+            </div>
+          </div>
+          <div className="col-md-3 col-6">
+            <div className="card shadow-sm border-0 p-3 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+              <span className="small text-muted mb-1 d-block">Total garanti UNAMUSC (FCFA)</span>
+              <h4 className="fw-bold mb-0 text-success">{totalGuaranteedSum.toLocaleString()}</h4>
+            </div>
           </div>
         </div>
-        <div className="col-md-3 col-6">
-          <div className="card shadow-sm border-0 p-3 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-            <span className="small text-muted mb-1 d-block">En instruction agent</span>
-            <h4 className="fw-bold mb-0 text-warning">{totalPending}</h4>
-          </div>
-        </div>
-        <div className="col-md-3 col-6">
-          <div className="card shadow-sm border-0 p-3 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-            <span className="small text-muted mb-1 d-block">Lettres accordées</span>
-            <h4 className="fw-bold mb-0 text-success">{totalApproved}</h4>
-          </div>
-        </div>
-        <div className="col-md-3 col-6">
-          <div className="card shadow-sm border-0 p-3 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-            <span className="small text-muted mb-1 d-block">Total garanti UNAMUSC (FCFA)</span>
-            <h4 className="fw-bold mb-0 text-success">{totalGuaranteedSum.toLocaleString()}</h4>
-          </div>
-        </div>
-      </div>
+      )}
 
       {successMsg && (
         <div className="alert alert-success d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm">
@@ -432,36 +487,107 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
         </div>
       )}
 
-      {/* FORMULAIRE NOUVELLE DEMANDE (ASSURÉ / CITOYEN) */}
+      {/* FORMULAIRE NOUVELLE DEMANDE (SOUMISSION ASSURÉ OU PUBLIC) */}
       {activeTab === 'new' && (
         <div className="card shadow-sm border-0 p-4 mb-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
           <h4 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--primary)' }}>
-            <span>➕</span> Nouvelle demande de prise en charge hospitalière UNAMUSC
+            <span>➕</span> Nouvelle demande sous le Tiers-Payant UNAMUSC
           </h4>
           <p className="small text-muted mb-4">
-            Remplissez ce formulaire pour solliciter une lettre de garantie délivrée dans le cadre du Tiers-Payant UNAMUSC.
+            Sélectionnez le type de prestation (Hospitalisation ou Pharmacie) et renseignez les éléments de votre devis ou ordonnance.
           </p>
+
+          {/* SÉLECTEUR CATEGORIE : GARANTIE HOSPITALIÈRE OU BON PHARMACIE */}
+          <div className="d-flex gap-2 mb-4">
+            <button 
+              type="button" 
+              className={`btn flex-fill py-2.5 fw-bold ${requestCategory === 'hospital' ? 'btn-success text-white' : 'btn-outline-secondary'}`}
+              onClick={() => setRequestCategory('hospital')}
+              style={{ borderRadius: '12px' }}
+            >
+              🏥 Lettre de Garantie Hospitalière
+            </button>
+            <button 
+              type="button" 
+              className={`btn flex-fill py-2.5 fw-bold ${requestCategory === 'pharmacy' ? 'btn-success text-white' : 'btn-outline-secondary'}`}
+              onClick={() => setRequestCategory('pharmacy')}
+              style={{ borderRadius: '12px' }}
+            >
+              💊 Bon de Commande Pharmacie (48h)
+            </button>
+          </div>
 
           <form onSubmit={handleSubmit}>
             <div className="row g-3 mb-3">
+              <div className="col-md-4">
+                <label className="form-label small fw-semibold">Prénom de l'assuré *</label>
+                <input 
+                  type="text" 
+                  className="form-control input fw-bold" 
+                  value={applicantFirstName} 
+                  onChange={(e) => setApplicantFirstName(e.target.value)} 
+                  style={{ borderRadius: '10px' }}
+                  required
+                />
+              </div>
+
+              <div className="col-md-4">
+                <label className="form-label small fw-semibold">Nom de l'assuré *</label>
+                <input 
+                  type="text" 
+                  className="form-control input fw-bold" 
+                  value={applicantLastName} 
+                  onChange={(e) => setApplicantLastName(e.target.value)} 
+                  style={{ borderRadius: '10px' }}
+                  required
+                />
+              </div>
+
+              <div className="col-md-4">
+                <label className="form-label small fw-semibold">N° Carte CMU Assuré *</label>
+                <input 
+                  type="text" 
+                  className="form-control input fw-bold text-success" 
+                  value={applicantCmu} 
+                  onChange={(e) => setApplicantCmu(e.target.value)} 
+                  style={{ borderRadius: '10px' }}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="row g-3 mb-3">
               <div className="col-md-6">
-                <label className="form-label small fw-semibold">Établissement de santé conventionné récepteur *</label>
+                <label className="form-label small fw-semibold">
+                  {requestCategory === 'hospital' ? 'Établissement d\'accueil récepteur *' : 'Pharmacie partenaire agréée UNAMUSC *'}
+                </label>
                 <select 
                   className="form-select input fw-bold" 
                   value={structureName} 
                   onChange={(e) => setStructureName(e.target.value)}
                   style={{ borderRadius: '10px' }}
                 >
-                  <option value="Hôpital Universitaire de Fann (Dakar)">Hôpital Universitaire de Fann (Dakar)</option>
-                  <option value="Hôpital Aristide Le Dantec">Hôpital Aristide Le Dantec</option>
-                  <option value="Hôpital Général Idrissa Pouye (Pikine)">Hôpital Général Idrissa Pouye (Pikine)</option>
-                  <option value="Centre Hospitalier Abass Ndao">Centre Hospitalier Abass Ndao</option>
-                  <option value="Hôpital d'Enfants Albert Royer">Hôpital d'Enfants Albert Royer</option>
+                  {requestCategory === 'hospital' ? (
+                    <>
+                      <option value="Hôpital Universitaire de Fann (Dakar)">Hôpital Universitaire de Fann (Dakar)</option>
+                      <option value="Hôpital Aristide Le Dantec">Hôpital Aristide Le Dantec</option>
+                      <option value="Hôpital Général Idrissa Pouye (Pikine)">Hôpital Général Idrissa Pouye (Pikine)</option>
+                      <option value="Centre Hospitalier Abass Ndao">Centre Hospitalier Abass Ndao</option>
+                      <option value="Hôpital d'Enfants Albert Royer">Hôpital d'Enfants Albert Royer</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="Pharmacie de la Nation (Dakar)">Pharmacie de la Nation (Dakar)</option>
+                      <option value="Pharmacie Cheikh Anta Diop">Pharmacie Cheikh Anta Diop</option>
+                      <option value="Pharmacie Universelle Pikine">Pharmacie Universelle Pikine</option>
+                      <option value="Pharmacie Populaire Guédiawaye">Pharmacie Populaire Guédiawaye</option>
+                    </>
+                  )}
                 </select>
               </div>
 
               <div className="col-md-6">
-                <label className="form-label small fw-semibold">Devis estimatif soumis par l'hôpital (FCFA) *</label>
+                <label className="form-label small fw-semibold">Devis estimatif soumis (FCFA) *</label>
                 <input 
                   type="number" 
                   className="form-control input fw-bold"
@@ -475,11 +601,17 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
             </div>
 
             <div className="mb-4">
-              <label className="form-label small fw-semibold">Description de l'acte médical / hospitalisation prescrite *</label>
+              <label className="form-label small fw-semibold">
+                {requestCategory === 'hospital' 
+                  ? 'Description de l\'acte médical / hospitalisation prescrite *' 
+                  : 'Liste des médicaments prescrits (Ordonnance) *'}
+              </label>
               <textarea 
                 className="form-control input" 
                 rows="3" 
-                placeholder="Ex: Intervention chirurgicale ORL, hospitalisation 5 jours en médecine interne..."
+                placeholder={requestCategory === 'hospital' 
+                  ? 'Ex: Intervention chirurgicale ORL, hospitalisation 5 jours en médecine interne...' 
+                  : 'Ex: Amoxicilline 500mg (2 boîtes), Paracétamol 1g (1 boîte), Spasfon...'}
                 value={medicalAct}
                 onChange={(e) => setMedicalAct(e.target.value)}
                 style={{ borderRadius: '10px' }}
@@ -491,7 +623,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
               <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>
                   <strong className="d-block small text-success">Estimation automatique UNAMUSC (80%) :</strong>
-                  <span className="small text-muted">Sous réserve d'instruction et d'homologation par l'agent.</span>
+                  <span className="small text-muted">Prise en charge directe sous Tiers-Payant UNAMUSC.</span>
                 </div>
                 <h5 className="fw-bold text-success mb-0">
                   {estimatedAmount ? (parseFloat(estimatedAmount) * 0.8).toLocaleString() : 0} FCFA
@@ -509,17 +641,68 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
         </div>
       )}
 
-      {/* LISTE DES DEMANDES DE GARANTIE */}
-      {activeTab === 'list' && (
+      {/* BANNIÈRE SÉCURITÉ CONFIDENTIALITÉ S'IL S'AGIT D'UN VISITEUR NON CONNECTÉ SANS RECHERCHE */}
+      {isPublic && !publicSearchCmu && activeTab === 'list' && (
+        <div className="card shadow-sm border-0 p-4 mb-4 text-center rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', borderLeft: '6px solid #059669' }}>
+          <div className="fs-1 mb-2">🔒</div>
+          <h4 className="fw-bold text-success">Accès Sécurisé & Protection des Données de Santé UNAMUSC</h4>
+          <p className="text-muted mx-auto" style={{ maxWidth: '680px', lineHeight: '1.6' }}>
+            Afin de préserver la confidentialité des données médicales des citoyens, la liste globale des demandes est réservée aux agents habilités de l'UNAMUSC. Connectez-vous ou saisissez votre N° de Carte CMU pour accéder à vos attestations personnelles.
+          </p>
+
+          <div className="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-2">
+            {setView && (
+              <button className="btn btn-success fw-bold px-4 py-2.5" onClick={() => setView('login')} style={{ borderRadius: '12px', background: '#059669' }}>
+                🔐 Se connecter à mon Espace Assuré / Agent
+              </button>
+            )}
+            <button className="btn btn-outline-success fw-bold px-4 py-2.5" onClick={() => setActiveTab('new')} style={{ borderRadius: '12px' }}>
+              ➕ Soumettre une demande de prise en charge
+            </button>
+          </div>
+
+          <div className="mt-4 pt-3 border-top mx-auto" style={{ maxWidth: '520px', borderColor: 'var(--border-color)' }}>
+            <label className="form-label small text-muted fw-bold mb-2">Rechercher directement mon dossier avec mon N° de Carte CMU :</label>
+            <div className="input-group">
+              <input 
+                type="text" 
+                className="form-control fw-bold input" 
+                placeholder="Ex: CMU-DKR-2026-8812" 
+                value={publicSearchCmu} 
+                onChange={(e) => setPublicSearchCmu(e.target.value)} 
+                style={{ borderRadius: '12px 0 0 12px', height: '48px' }}
+              />
+              <button className="btn btn-success fw-bold px-4" style={{ borderRadius: '0 12px 12px 0', background: '#059669' }}>
+                🔍 Consulter
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* LISTE DES DEMANDES DE GARANTIE ACCESSIBLES SELON LE RÔLE */}
+      {activeTab === 'list' && (isAgent || isCitizen || (isPublic && publicSearchCmu)) && (
         <div className="card shadow-sm border-0 p-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-          <h4 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-            <span>📋</span> Demandes & Lettres de Garantie d'Hospitalisation UNAMUSC
-          </h4>
+          <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <h4 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
+              <span>📋</span> {isAgent ? 'Gestion & Instruction des Lettres de Garantie UNAMUSC' : 'Mes Lettres de Garantie & Attestations Habilités'}
+            </h4>
+
+            {isCitizen && (
+              <span className="badge bg-success-subtle text-success border border-success px-3 py-2 fw-bold" style={{ borderRadius: '12px' }}>
+                👤 Assuré connecté : {activeFirstName} {activeLastName} ({activeCmuNumber})
+              </span>
+            )}
+          </div>
 
           {loading ? (
             <div className="text-center py-5 text-muted">Chargement des dossiers de garantie...</div>
-          ) : letters.length === 0 ? (
-            <div className="text-center py-5 text-muted">Aucune demande de garantie enregistrée.</div>
+          ) : visibleLetters.length === 0 ? (
+            <div className="text-center py-5 text-muted">
+              {isCitizen 
+                ? 'Aucune demande de garantie enregistrée pour votre compte assuré.' 
+                : 'Aucun dossier ne correspond à ce N° de Carte CMU.'}
+            </div>
           ) : (
             <div className="table-responsive">
               <table className="table table-hover align-middle mb-0" style={{ color: 'var(--text-main)' }}>
@@ -531,11 +714,11 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
                     <th style={{ padding: '0.85rem' }}>Prise en charge accordée</th>
                     <th style={{ padding: '0.85rem' }}>Statut & Homologation</th>
                     <th style={{ padding: '0.85rem' }}>Code Garantie</th>
-                    <th style={{ padding: '0.85rem', textAlign: 'right' }}>Actions Agent / Assuré</th>
+                    <th style={{ padding: '0.85rem', textAlign: 'right' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {letters.map((item) => (
+                  {visibleLetters.map((item) => (
                     <tr key={item.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                       <td style={{ padding: '0.85rem' }}>
                         <strong className="d-block" style={{ color: 'var(--text-main)' }}>{item.first_name} {item.last_name}</strong>
@@ -576,14 +759,25 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
                         </code>
                       </td>
                       <td style={{ textAlign: 'right', padding: '0.85rem' }}>
-                        <button 
-                          type="button"
-                          className="btn btn-sm text-white fw-bold px-3 py-1.5 shadow-sm"
-                          onClick={() => openInstructionModal(item)}
-                          style={{ background: '#059669', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
-                        >
-                          {item.status === 'approved' ? '📄 Certificat PDF / Garanties' : '⚙️ Instruire le dossier'}
-                        </button>
+                        {isAgent ? (
+                          <button 
+                            type="button"
+                            className="btn btn-sm text-white fw-bold px-3 py-1.5 shadow-sm"
+                            onClick={() => openInstructionModal(item)}
+                            style={{ background: '#059669', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+                          >
+                            {item.status === 'approved' ? '📄 Certificat PDF / Garanties' : '⚙️ Instruire le dossier'}
+                          </button>
+                        ) : (
+                          <button 
+                            type="button"
+                            className="btn btn-sm text-white fw-bold px-3 py-1.5 shadow-sm"
+                            onClick={() => generateAndPrintPDFWindow(item)}
+                            style={{ background: '#059669', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+                          >
+                            🖨️ Imprimer Certificat PDF
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
