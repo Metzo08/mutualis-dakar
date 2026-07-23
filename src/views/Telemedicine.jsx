@@ -295,7 +295,7 @@ export default function Telemedicine({ lang = 'fr' }) {
       console.warn('Enregistrement serveur optionnel:', e);
     }
 
-    alert('✅ Ordonnance signée numériquement !\n\nUn Bon de Commande de Médicaments (valide 48h sous le régime du Tiers-Payant) a été généré et ajouté instantanément dans votre espace Bons de Commande.');
+    alert('✅ Ordonnance signée numériquement !\n\nUn Bon de Commande de Médicaments (valide 48h sous le Tiers-Payant UNAMUSC) a été généré et ajouté instantanément dans votre espace Bons de Commande.');
   };
 
   return (

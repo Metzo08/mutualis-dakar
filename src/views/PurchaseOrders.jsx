@@ -144,7 +144,7 @@ export default function PurchaseOrders({ lang = 'fr' }) {
     const updated = orders.map(o => o.id === id ? { ...o, status: 'used' } : o);
     setOrders(updated);
     localStorage.setItem('cmu_purchase_orders', JSON.stringify(updated));
-    setRedeemSuccess('Bon de commande validé avec succès en pharmacie sous le régime du tiers-payant !');
+    setRedeemSuccess('Bon de commande validé avec succès en pharmacie sous le Tiers-Payant UNAMUSC !');
   };
 
   return (
@@ -171,15 +171,15 @@ export default function PurchaseOrders({ lang = 'fr' }) {
               border: '1px solid rgba(255, 255, 255, 0.3)'
             }}
           >
-            💊 Tiers-payant pharmacie agréée — Validité 48 heures
+            💊 Tiers-Payant UNAMUSC pharmacie agréée — Validité 48h
           </span>
           <h1 className="fw-bold mb-2 text-white text-center" style={{ fontSize: '2rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
-            {lang === 'wo' ? 'Keuyit u am garab (Bons de commande pharmacie)' : 'Bons de commande & tiers-payant pharmacie'}
+            {lang === 'wo' ? 'Keuyit u am garab (Bons de commande pharmacie)' : 'Bons de commande & Tiers-Payant UNAMUSC'}
           </h1>
           <p className="mb-3 text-white-50 text-center mx-auto" style={{ fontSize: '0.98rem', lineHeight: '1.6', textShadow: '0 1px 2px rgba(0,0,0,0.2)', maxWidth: '750px' }}>
             {lang === 'wo'
               ? 'Bon de commande bu 48 heures d\'utilisation ci pharmacie partenaires yi.'
-              : 'Générez des bons de commande de médicaments valides 48h pour un retrait direct sous le régime du tiers-payant en pharmacie.'}
+              : 'Générez des bons de commande de médicaments valides 48h pour un retrait direct sous le Tiers-Payant UNAMUSC en pharmacie.'}
           </p>
 
           <div className="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-2 w-100">
@@ -429,7 +429,7 @@ export default function PurchaseOrders({ lang = 'fr' }) {
                   <div className="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
                     <div>
                       <h6 className="fw-bold text-success mb-0">BON DE COMMANDE DE MÉDICAMENTS (48H)</h6>
-                      <small className="text-muted">Régime Tiers-Payant SÉN-CSU</small>
+                      <small className="text-muted">Tiers-Payant UNAMUSC (SÉN-CSU)</small>
                     </div>
                     <code className="bg-dark text-success p-2 rounded fw-bold">
                       {selectedVoucher.order_code || `ORD-${selectedVoucher.id}`}

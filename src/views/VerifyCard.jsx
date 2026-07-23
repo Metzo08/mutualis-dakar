@@ -75,7 +75,7 @@ export default function VerifyCard({ lang = 'fr' }) {
       birthDate: '1990-08-25',
       phone: '+221 78 123 45 67',
       mutuelleName: 'Union Départementale des Mutuelles de Dakar',
-      packageType: 'Régime Tiers-Payant Hospitalier (80%)',
+      packageType: 'Tiers-Payant Hospitalier UNAMUSC (80%)',
       cmuNumber: 'CMU-DKR-2026-8812',
       ippNumber: 'IPP-DANTEC-2026-8812',
       photoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
@@ -229,7 +229,7 @@ export default function VerifyCard({ lang = 'fr' }) {
     const existing = JSON.parse(localStorage.getItem('cmu_purchase_orders') || '[]');
     localStorage.setItem('cmu_purchase_orders', JSON.stringify([newOrd, ...existing]));
 
-    setActionSuccess(`Bon de commande pharmacie (48h) généré avec succès pour ${medName} (x${medQty}) ! Il est immédiatement actif sous régime tiers-payant.`);
+    setActionSuccess(`Bon de commande pharmacie (48h) généré avec succès pour ${medName} (x${medQty}) ! Il est immédiatement actif sous le Tiers-Payant UNAMUSC.`);
     setActiveModal(null);
   };
 

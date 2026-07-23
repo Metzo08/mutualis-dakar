@@ -54,7 +54,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
   const [modalTab, setModalTab] = useState('instruction'); // 'instruction' | 'certificate'
   const [guaranteedPct, setGuaranteedPct] = useState(80);
   const [maxAmount, setMaxAmount] = useState('');
-  const [agentNote, setAgentNote] = useState('Prise en charge validée par l\'agent UNAMUSC sous le régime du tiers-payant SÉN-CSU.');
+  const [agentNote, setAgentNote] = useState('Prise en charge validée par l\'agent UNAMUSC sous le système de Tiers-Payant UNAMUSC (SÉN-CSU).');
 
   const fetchLetters = async () => {
     setLoading(true);
@@ -355,7 +355,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
             <span>➕</span> Nouvelle demande de prise en charge hospitalière UNAMUSC
           </h4>
           <p className="small text-muted mb-4">
-            Remplissez ce formulaire pour solliciter une lettre de garantie sous le régime tiers-payant SÉN-CSU délivrée par l'UNAMUSC.
+            Remplissez ce formulaire pour solliciter une lettre de garantie délivrée dans le cadre du Tiers-Payant UNAMUSC (Programme SÉN-CSU).
           </p>
 
           <form onSubmit={handleSubmit}>
@@ -725,7 +725,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
                         <h4 className="fw-bold text-uppercase mb-1" style={{ color: '#047857', letterSpacing: '1px' }}>
                           ATTESTATION OFFICIELLE DE PRISE EN CHARGE HOSPITALIÈRE
                         </h4>
-                        <small className="text-muted fw-semibold">Émise sous le régime du Tiers-Payant SÉN-CSU — Homologuée par l'UNAMUSC Sénégal</small><br />
+                        <small className="text-muted fw-semibold">Émise sous le système de Tiers-Payant UNAMUSC — Programme National SÉN-CSU</small><br />
                         <code className="mt-2 d-inline-block px-3 py-1 bg-white text-success border border-success rounded-3 fw-bold fs-6">
                           Code Homologation : #{selectedLetter.validation_code}
                         </code>
@@ -742,7 +742,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
                             N° Carte CMU : <strong style={{ color: '#0f172a' }}>{selectedLetter.cmu_number}</strong> | IPP : <strong style={{ color: '#0f172a' }}>{selectedLetter.ipp_number || 'IPP-FANN-2026-8812'}</strong>
                           </div>
                           <small className="text-success fw-bold d-block mt-1">
-                            Organisme Émetteur : Union Nationale UNAMUSC Sénégal (SÉN-CSU)
+                            Organisme Émetteur : Tiers-Payant UNAMUSC Sénégal (Programme SÉN-CSU)
                           </small>
                         </div>
 
@@ -754,7 +754,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
                             {selectedLetter.hospital_name || selectedLetter.medical_act}
                           </h6>
                           <div className="small" style={{ color: '#334155' }}>
-                            Conventionné Tiers-Payant SÉN-CSU / UNAMUSC (Validation 100% Humaine)
+                            Conventionné Tiers-Payant UNAMUSC / SÉN-CSU (Validation 100% Humaine)
                           </div>
                         </div>
 
