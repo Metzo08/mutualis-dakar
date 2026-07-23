@@ -619,17 +619,42 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               />
             </div>
 
-            <div className="p-3 rounded-3 border mb-4" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
-              <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <div>
-                  <strong className="d-block small text-success">Estimation automatique UNAMUSC (80%) :</strong>
-                  <span className="small text-muted">Prise en charge directe sous Tiers-Payant UNAMUSC.</span>
+            {(() => {
+              const isPharm = requestCategory === 'pharmacy';
+              const pct = isPharm ? 50 : 80;
+              const pctFactor = isPharm ? 0.5 : 0.8;
+              const estNum = parseFloat(estimatedAmount) || 0;
+              const coveredVal = estNum * pctFactor;
+              const restVal = estNum * (1 - pctFactor);
+
+              return (
+                <div className="p-3.5 rounded-3 border mb-4" style={{ background: 'var(--card-bg)', borderColor: '#059669', borderLeft: '5px solid #059669' }}>
+                  <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div>
+                      <strong className="d-block small text-success fw-bold">
+                        Estimation automatique UNAMUSC ({pct}%) :
+                      </strong>
+                      <span className="small text-muted d-block">
+                        {isPharm 
+                          ? 'Prise en charge directe 50% sur Bon de Commande Pharmacie (Tiers-Payant UNAMUSC).' 
+                          : 'Prise en charge directe 80% sur Lettre de Garantie Hospitalière (Tiers-Payant UNAMUSC).'}
+                      </span>
+                      {estNum > 0 && (
+                        <small className="text-warning fw-bold d-block mt-1">
+                          Ticket modérateur patient ({100 - pct}%) : {restVal.toLocaleString()} FCFA
+                        </small>
+                      )}
+                    </div>
+                    <div className="text-end">
+                      <span className="small text-muted d-block fw-semibold">Montant pris en charge UNAMUSC ({pct}%) :</span>
+                      <h4 className="fw-bold text-success mb-0">
+                        {coveredVal.toLocaleString()} FCFA
+                      </h4>
+                    </div>
+                  </div>
                 </div>
-                <h5 className="fw-bold text-success mb-0">
-                  {estimatedAmount ? (parseFloat(estimatedAmount) * 0.8).toLocaleString() : 0} FCFA
-                </h5>
-              </div>
-            </div>
+              );
+            })()}
 
             <div className="d-flex justify-content-end gap-2">
               <button type="button" className="btn btn-secondary" onClick={() => setActiveTab('list')}>Annuler</button>
