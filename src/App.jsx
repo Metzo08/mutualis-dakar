@@ -582,7 +582,16 @@ export default function App() {
             />
           );
         case 'telemedicine':
-          return <Telemedicine lang={lang} />;
+          return (
+            <Telemedicine 
+              lang={lang} 
+              userRole={portalMode} 
+              citizenUser={citizenUser} 
+              agentUser={agentUser} 
+              partnerUser={partnerUser} 
+              setView={setView} 
+            />
+          );
         case 'medical-profile':
           return <MedicalProfile lang={lang} />;
         case 'maternity':
