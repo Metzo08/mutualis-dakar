@@ -930,5 +930,13 @@ p {
   border-color: #0369a1 !important;
 }
 
+/* Guard against white background buttons having unreadable white text in dark mode */
+.dark-theme button[style*="background: #ffffff"],
+.dark-theme button[style*="background: rgb(255, 255, 255)"],
+.dark-theme button[style*="background-color: #ffffff"],
+.dark-theme button[style*="background-color: rgb(255, 255, 255)"] {
+  color: #0f172a !important;
+}
+
 
 

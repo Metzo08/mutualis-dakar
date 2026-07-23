@@ -235,15 +235,15 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
           <div className="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-2 w-100">
             <button 
               type="button"
-              className="btn fw-semibold"
+              className="btn fw-bold text-white shadow-sm"
               style={{
-                background: activeTab === 'list' ? '#ffffff' : 'rgba(255, 255, 255, 0.18)',
-                color: activeTab === 'list' ? '#047857' : '#ffffff',
-                border: activeTab === 'list' ? 'none' : '1px solid rgba(255, 255, 255, 0.4)',
+                background: activeTab === 'list' ? '#059669' : 'rgba(255, 255, 255, 0.18)',
+                color: '#ffffff',
+                border: activeTab === 'list' ? '2px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.4)',
                 borderRadius: '12px',
                 padding: '0.65rem 1.4rem',
                 fontSize: '0.92rem',
-                boxShadow: activeTab === 'list' ? '0 4px 12px rgba(0,0,0,0.15)' : 'none',
+                boxShadow: activeTab === 'list' ? '0 4px 14px rgba(5, 150, 105, 0.5)' : 'none',
                 transition: 'all 0.2s'
               }}
               onClick={() => setActiveTab('list')}
@@ -253,15 +253,15 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
 
             <button 
               type="button"
-              className="btn fw-semibold"
+              className="btn fw-bold text-white shadow-sm"
               style={{
-                background: activeTab === 'new' ? '#ffffff' : 'rgba(255, 255, 255, 0.18)',
-                color: activeTab === 'new' ? '#047857' : '#ffffff',
-                border: activeTab === 'new' ? 'none' : '1px solid rgba(255, 255, 255, 0.4)',
+                background: activeTab === 'new' ? '#059669' : 'rgba(255, 255, 255, 0.18)',
+                color: '#ffffff',
+                border: activeTab === 'new' ? '2px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.4)',
                 borderRadius: '12px',
                 padding: '0.65rem 1.4rem',
                 fontSize: '0.92rem',
-                boxShadow: activeTab === 'new' ? '0 4px 12px rgba(0,0,0,0.15)' : 'none',
+                boxShadow: activeTab === 'new' ? '0 4px 14px rgba(5, 150, 105, 0.5)' : 'none',
                 transition: 'all 0.2s'
               }}
               onClick={() => setActiveTab('new')}
@@ -502,17 +502,35 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
               </div>
 
               {/* Navigation Onglets Interne au Modal */}
-              <div className="d-flex border-bottom bg-dark text-white" style={{ borderColor: 'var(--border-color)' }}>
+              <div className="d-flex border-bottom p-3 gap-2 flex-wrap" style={{ background: '#0f172a', borderColor: 'var(--border-color)' }}>
                 <button 
                   type="button" 
-                  className={`btn rounded-0 px-4 py-3 fw-bold ${modalTab === 'instruction' ? 'btn-success text-white' : 'btn-dark text-white-50'}`}
+                  className="btn fw-bold px-4 py-2.5"
+                  style={{
+                    background: modalTab === 'instruction' ? '#059669' : 'rgba(255, 255, 255, 0.12)',
+                    color: '#ffffff',
+                    border: modalTab === 'instruction' ? '2px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.25)',
+                    borderRadius: '10px',
+                    fontSize: '0.9rem',
+                    cursor: 'pointer',
+                    boxShadow: modalTab === 'instruction' ? '0 4px 12px rgba(5, 150, 105, 0.4)' : 'none'
+                  }}
                   onClick={() => setModalTab('instruction')}
                 >
                   ⚙️ 1. Instruction & Décision Agent
                 </button>
                 <button 
                   type="button" 
-                  className={`btn rounded-0 px-4 py-3 fw-bold ${modalTab === 'certificate' ? 'btn-success text-white' : 'btn-dark text-white-50'}`}
+                  className="btn fw-bold px-4 py-2.5"
+                  style={{
+                    background: modalTab === 'certificate' ? '#059669' : 'rgba(255, 255, 255, 0.12)',
+                    color: '#ffffff',
+                    border: modalTab === 'certificate' ? '2px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.25)',
+                    borderRadius: '10px',
+                    fontSize: '0.9rem',
+                    cursor: 'pointer',
+                    boxShadow: modalTab === 'certificate' ? '0 4px 12px rgba(5, 150, 105, 0.4)' : 'none'
+                  }}
                   onClick={() => setModalTab('certificate')}
                 >
                   📄 2. Certificat Officiel & Prise en Charge PDF
@@ -750,7 +768,12 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
 
               {/* Pied de Modale & Boutons de validation finale */}
               <div className="modal-footer border-top p-3 d-flex justify-content-between" style={{ borderColor: 'var(--border-color)' }}>
-                <button type="button" className="btn btn-secondary fw-bold px-4" onClick={() => setSelectedLetter(null)} style={{ borderRadius: '10px' }}>
+                <button 
+                  type="button" 
+                  className="btn text-white fw-bold px-4" 
+                  onClick={() => setSelectedLetter(null)} 
+                  style={{ background: '#334155', border: '1px solid #475569', borderRadius: '10px', color: '#ffffff' }}
+                >
                   Fermer
                 </button>
 
