@@ -590,24 +590,9 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
           <h1 className="fw-bold mb-2 text-white text-center" style={{ fontSize: '2.2rem', textShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
             {lang === 'wo' ? 'Fajj ci kaw internet (Télémédecine WebRTC)' : 'Télémédecine & Salle d\'Attente Virtuelle'}
           </h1>
-          <p className="mb-4 text-white-50 text-center mx-auto" style={{ fontSize: '1.02rem', lineHeight: '1.6', textShadow: '0 1px 3px rgba(0,0,0,0.3)', maxWidth: '750px' }}>
+          <p className="mb-0 text-white-50 text-center mx-auto" style={{ fontSize: '1.02rem', lineHeight: '1.6', textShadow: '0 1px 3px rgba(0,0,0,0.3)', maxWidth: '750px' }}>
             Consultez les médecins agréés en visioconférence chiffrée 24h/7j. Recevez vos ordonnances de pharmacie (bon 50%) et prescriptions d'examens imprimables A4.
           </p>
-
-          <div className="d-flex justify-content-center gap-4 flex-wrap w-100 mt-1">
-            <div className="px-3 py-1.5 rounded-3 text-center" style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.2)' }}>
-              <small className="d-block text-white-50 small">Salle d'attente</small>
-              <strong className="text-white fs-6">Temps réel 24/7</strong>
-            </div>
-            <div className="px-3 py-1.5 rounded-3 text-center" style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.2)' }}>
-              <small className="d-block text-white-50 small">Praticiens agréés</small>
-              <strong className="text-white fs-6">Conseil de l'Ordre (CNOM)</strong>
-            </div>
-            <div className="px-3 py-1.5 rounded-3 text-center" style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.2)' }}>
-              <small className="d-block text-white-50 small">Tiers-Payant</small>
-              <strong className="text-white fs-6">Direct UNAMUSC (50%-80%)</strong>
-            </div>
-          </div>
         </div>
       </section>
 
