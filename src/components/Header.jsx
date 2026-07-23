@@ -176,9 +176,9 @@ export default function Header({
       {/* 🇸🇳 En haut de page : Drapeau du Sénégal & Titre National */}
       <div className="d-flex align-items-center justify-content-center gap-2 mb-3 px-3 py-2 rounded-3 mx-2" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)' }}>
         <img 
-          src="/senegal_flag.jpg" 
+          src="/senegal_flag.png" 
           alt="Drapeau du Sénégal" 
-          style={{ width: '36px', height: '24px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #d97706', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }} 
+          style={{ width: '38px', height: '25px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #d97706', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }} 
         />
         <div className="text-start">
           <span className="fw-bold d-block text-white" style={{ fontSize: '0.72rem', letterSpacing: '0.5px' }}>RÉPUBLIQUE DU SÉNÉGAL</span>
@@ -191,7 +191,7 @@ export default function Header({
         <img 
           src="/unamusc_logo.png" 
           alt="UNAMUSC Sénégal" 
-          style={{ width: '100%', maxWidth: '140px', height: 'auto', objectFit: 'contain', margin: '0 auto', display: 'block' }} 
+          style={{ width: '100%', maxWidth: '130px', height: 'auto', objectFit: 'contain', margin: '0 auto', display: 'block' }} 
         />
         <span className="fw-bold text-success d-block mt-2" style={{ fontSize: '0.85rem', letterSpacing: '0.5px' }}>UNAMUSC SÉNÉGAL</span>
         <small className="text-white-50 d-block" style={{ fontSize: '0.68rem' }}>Union Nationale des Mutuelles</small>

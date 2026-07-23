@@ -694,7 +694,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
                       <div className="d-flex justify-content-between align-items-center mb-4 border-bottom pb-4" style={{ borderColor: '#cbd5e1' }}>
                         <div className="d-flex align-items-center gap-3">
                           <img 
-                            src="/senegal_flag.jpg" 
+                            src="/senegal_flag.png" 
                             alt="Drapeau du Sénégal 🇸🇳" 
                             style={{ width: '58px', height: '38px', objectFit: 'cover', borderRadius: '4px', border: '1.5px solid #d97706', boxShadow: '0 2px 5px rgba(0,0,0,0.15)' }} 
                           />
