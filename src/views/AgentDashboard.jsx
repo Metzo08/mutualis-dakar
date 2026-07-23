@@ -539,6 +539,138 @@ export default function AgentDashboard({ lang, agentUser }) {
           </form>
         </div>
       )}
+
+      {/* GESTION & HABILITATION DES MÉDECINS DE TÉLÉMÉDECINE (EXCLUSIVITÉ SUPER ADMIN) */}
+      {isSuperAdmin && (
+        <SuperAdminDoctorManagement lang={lang} />
+      )}
+      </div>
+    </div>
+  );
+}
+
+function SuperAdminDoctorManagement({ lang }) {
+  const defaultDoctors = [
+    { id: 1, name: 'Dr. Aminata Ndiaye', specialty: 'Pédiatrie & Santé Familiale', cnom: 'CNOM-SN-2026-8819', phone: '77 602 67 83', active: true },
+    { id: 2, name: 'Dr. Cheikh Tidiane Seck', specialty: 'Cardiologie & Médecine Générale', cnom: 'CNOM-SN-2026-9921', phone: '78 123 45 67', active: true },
+    { id: 3, name: 'Dr. Mariama Ba', specialty: 'Gynécologie-Obstétrique', cnom: 'CNOM-SN-2026-3310', phone: '76 543 21 09', active: true }
+  ];
+
+  const [doctors, setDoctors] = useState(() => {
+    try {
+      const stored = localStorage.getItem('cmu_telemed_doctors');
+      return stored ? JSON.parse(stored) : defaultDoctors;
+    } catch (e) {
+      return defaultDoctors;
+    }
+  });
+
+  const [docName, setDocName] = useState('');
+  const [docSpecialty, setDocSpecialty] = useState('Pédiatrie');
+  const [docCnom, setDocCnom] = useState('');
+  const [docPhone, setDocPhone] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
+
+  useEffect(() => {
+    localStorage.setItem('cmu_telemed_doctors', JSON.stringify(doctors));
+  }, [doctors]);
+
+  const handleAddDoctor = (e) => {
+    e.preventDefault();
+    if (!docName.trim() || !docCnom.trim()) return;
+
+    const newDoc = {
+      id: Date.now(),
+      name: docName.startsWith('Dr.') ? docName : `Dr. ${docName}`,
+      specialty: docSpecialty,
+      cnom: docCnom,
+      phone: docPhone || '77 000 00 00',
+      active: true
+    };
+
+    setDoctors([newDoc, ...doctors]);
+    setDocName('');
+    setDocCnom('');
+    setDocPhone('');
+    setSuccessMsg(`✅ ${newDoc.name} a été habilité(e) avec succès par le Super Admin pour la Télémédecine !`);
+    setTimeout(() => setSuccessMsg(''), 4000);
+  };
+
+  const toggleDoctorStatus = (id) => {
+    setDoctors(doctors.map(d => d.id === id ? { ...d, active: !d.active } : d));
+  };
+
+  return (
+    <div className="card shadow-sm border-0 p-4 mt-4" style={{ borderRadius: '16px', background: 'var(--card-bg)', color: 'var(--text-main)', borderTop: '6px solid var(--primary)' }}>
+      <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+          <h4 className="fw-bold mb-0 text-primary">👨‍⚕️ Habilitation Exclusive des Médecins de Télémédecine (Super Admin)</h4>
+          <small className="text-muted">Seul le Super Admin a l'autorité de créer, accréditer ou révoquer les médecins agréés UNAMUSC.</small>
+        </div>
+        <span className="badge bg-primary px-3 py-2 fw-bold">{doctors.length} Praticien(s) Accrédité(s)</span>
+      </div>
+
+      {successMsg && <div className="alert alert-success py-2 px-3 mb-3 small rounded-3">{successMsg}</div>}
+
+      <div className="row g-4">
+        {/* Formulaire de création médecin Super Admin */}
+        <div className="col-md-5">
+          <form onSubmit={handleAddDoctor} className="p-3 border rounded-3 bg-light text-dark">
+            <h6 className="fw-bold mb-3 text-uppercase text-primary">➕ Accréditer un Nouveau Médecin :</h6>
+            
+            <div className="mb-2">
+              <label className="form-label small fw-bold mb-1">Nom & Prénom du Médecin *</label>
+              <input type="text" className="form-control form-control-sm" placeholder="ex: Dr. Mariama Diallo" value={docName} onChange={(e) => setDocName(e.target.value)} required />
+            </div>
+
+            <div className="mb-2">
+              <label className="form-label small fw-bold mb-1">Spécialité Médicale *</label>
+              <select className="form-select form-select-sm" value={docSpecialty} onChange={(e) => setDocSpecialty(e.target.value)}>
+                <option value="Pédiatrie & Santé Familiale">Pédiatrie & Santé Familiale</option>
+                <option value="Cardiologie & Médecine Générale">Cardiologie & Médecine Générale</option>
+                <option value="Gynécologie-Obstétrique">Gynécologie-Obstétrique</option>
+                <option value="Médecine d'Urgence & Garde 24/7">Médecine d'Urgence & Garde 24/7</option>
+                <option value="Dermatologie">Dermatologie</option>
+              </select>
+            </div>
+
+            <div className="mb-2">
+              <label className="form-label small fw-bold mb-1">N° Ordre des Médecins (CNOM) *</label>
+              <input type="text" className="form-control form-control-sm" placeholder="ex: CNOM-SN-2026-8819" value={docCnom} onChange={(e) => setDocCnom(e.target.value)} required />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label small fw-bold mb-1">Téléphone Praticien *</label>
+              <input type="text" className="form-control form-control-sm" placeholder="ex: 77 602 67 83 ou 71 123 45 67" value={docPhone} onChange={(e) => setDocPhone(e.target.value)} />
+            </div>
+
+            <button type="submit" className="btn btn-sm btn-primary w-100 fw-bold py-2">
+              🔒 Habiliter & Délivrer les Accès Télémédecine
+            </button>
+          </form>
+        </div>
+
+        {/* Liste des médecins accrédités */}
+        <div className="col-md-7">
+          <h6 className="fw-bold mb-2">📋 Médecins Agréés UNAMUSC en Activité :</h6>
+          <div className="d-flex flex-column gap-2" style={{ maxHeight: '310px', overflowY: 'auto' }}>
+            {doctors.map(d => (
+              <div key={d.id} className="p-3 border rounded-3 d-flex justify-content-between align-items-center bg-white text-dark shadow-sm">
+                <div>
+                  <h6 className="fw-bold mb-0 text-primary">{d.name}</h6>
+                  <small className="text-muted d-block">{d.specialty} • <code className="text-success fw-bold">{d.cnom}</code></small>
+                  <small className="text-muted">📞 {d.phone}</small>
+                </div>
+                <button 
+                  className={`btn btn-sm fw-bold ${d.active ? 'btn-success' : 'btn-secondary'}`}
+                  onClick={() => toggleDoctorStatus(d.id)}
+                >
+                  {d.active ? '🟢 Accrédité' : '🔴 Suspendu'}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
