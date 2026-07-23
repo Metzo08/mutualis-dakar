@@ -173,13 +173,32 @@ export default function Header({
 
   return (
     <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
-      {/* Sidebar Logo */}
-      <div className="sidebar-logo" style={{ cursor: 'pointer', marginBottom: '1.5rem', display: 'flex', justifyContent: 'center' }} onClick={() => setView('home')}>
-        <img src="/msdd_logo_corrected.png" alt="Union nationale des mutuelles de santé du Sénégal" style={{ width: '100%', maxWidth: '200px', objectFit: 'contain' }} />
+      {/* 🇸🇳 En haut de page : Drapeau du Sénégal & Titre National */}
+      <div className="d-flex align-items-center justify-content-center gap-2 mb-3 px-3 py-2 rounded-3 mx-2" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)' }}>
+        <img 
+          src="/senegal_flag.jpg" 
+          alt="Drapeau du Sénégal" 
+          style={{ width: '36px', height: '24px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #d97706', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }} 
+        />
+        <div className="text-start">
+          <span className="fw-bold d-block text-white" style={{ fontSize: '0.72rem', letterSpacing: '0.5px' }}>RÉPUBLIQUE DU SÉNÉGAL</span>
+          <small className="text-success fw-semibold" style={{ fontSize: '0.62rem' }}>Un Peuple — Un But — Une Foi</small>
+        </div>
       </div>
 
-      <div style={{ padding: '0 1.5rem', marginBottom: '1.5rem', display: 'flex', justifyContent: 'center' }}>
-        <img src="/sencsu_logo.png" alt="SEN CSU logo" style={{ height: '40px', objectFit: 'contain' }} />
+      {/* 🌳 Un peu plus bas : Logo Officiel UNAMUSC Sénégal & SÉN-CSU */}
+      <div className="sidebar-logo text-center" style={{ cursor: 'pointer', marginBottom: '1.2rem', padding: '0 1rem' }} onClick={() => setView('home')}>
+        <img 
+          src="/unamusc_logo.png" 
+          alt="UNAMUSC Sénégal" 
+          style={{ width: '100%', maxWidth: '140px', height: 'auto', objectFit: 'contain', margin: '0 auto', display: 'block' }} 
+        />
+        <span className="fw-bold text-success d-block mt-2" style={{ fontSize: '0.85rem', letterSpacing: '0.5px' }}>UNAMUSC SÉNÉGAL</span>
+        <small className="text-white-50 d-block" style={{ fontSize: '0.68rem' }}>Union Nationale des Mutuelles</small>
+      </div>
+
+      <div style={{ padding: '0 1.5rem', marginBottom: '1.25rem', display: 'flex', justifyContent: 'center' }}>
+        <img src="/sencsu_logo.png" alt="SEN CSU logo" style={{ height: '36px', objectFit: 'contain' }} />
       </div>
 
       {/* Sidebar Profile Card */}
