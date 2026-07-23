@@ -30,9 +30,9 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
     expected_delivery_date: new Date(Date.now() + 160 * 86400000).toISOString(),
     blood_group: 'O Rhésus Positif (O+)',
     assigned_maternity: 'Maternité du Centre de Santé Gaspard Camara (Dakar)',
-    risk_level: 'low', // 'low' | 'medium' | 'high'
-    weight_before_pregnancy: 62, // kg
-    current_weight: 68.5, // kg
+    risk_level: 'low',
+    weight_before_pregnancy: 62,
+    current_weight: 68.5,
     blood_pressure: '11/7 mmHg',
     cpn_records: [
       { id: 1, name: 'CPN 1 (1er Trimestre - Datation & Sérologies)', done: true, date: '2026-04-10', doctor: 'Sage-Femme Fatou Kiné Diop', notes: 'Grossesse intra-utérine évolutive 8 SA. Bilan biologique initial normal, groupe O+.' },
@@ -48,7 +48,7 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
     prevention: {
       tpi_sp1: { done: false, date: '2026-08-12' },
       tpi_sp2: { done: false, date: '2026-09-25' },
-      milda_net: { delivered: true, date: '2026-04-10' }, // Moustiquaire Imprégnée
+      milda_net: { delivered: true, date: '2026-04-10' },
       iron_folic: { delivered: true, dose: '1 comprimé par jour' }
     },
     ultrasounds: [
@@ -56,8 +56,8 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
     ]
   };
 
-  const [maternalData, setMaternalData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [maternalData, setMaternalData] = useState(defaultMaternalData);
+  const [loading, setLoading] = useState(false);
   const [savedMsg, setSavedMsg] = useState('');
 
   // Saisie CPN / Mise à jour par le praticien
@@ -72,33 +72,25 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
   });
 
   const fetchMaternalData = async () => {
-    setLoading(true);
     try {
       const stored = localStorage.getItem('cmu_maternal_data');
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed && parsed.cpn_records && Array.isArray(parsed.cpn_records) && parsed.vaccinations) {
+        if (parsed && typeof parsed === 'object') {
           setMaternalData({
             ...defaultMaternalData,
             ...parsed,
-            cpn_records: parsed.cpn_records.length > 0 ? parsed.cpn_records : defaultMaternalData.cpn_records,
+            cpn_records: Array.isArray(parsed.cpn_records) && parsed.cpn_records.length > 0 ? parsed.cpn_records : defaultMaternalData.cpn_records,
             vaccinations: { ...defaultMaternalData.vaccinations, ...(parsed.vaccinations || {}) },
             prevention: { ...defaultMaternalData.prevention, ...(parsed.prevention || {}) },
-            ultrasounds: Array.isArray(parsed.ultrasounds) ? parsed.ultrasounds : defaultMaternalData.ultrasounds
+            ultrasounds: Array.isArray(parsed.ultrasounds) && parsed.ultrasounds.length > 0 ? parsed.ultrasounds : defaultMaternalData.ultrasounds
           });
-        } else {
-          setMaternalData(defaultMaternalData);
-          localStorage.setItem('cmu_maternal_data', JSON.stringify(defaultMaternalData));
         }
       } else {
-        setMaternalData(defaultMaternalData);
         localStorage.setItem('cmu_maternal_data', JSON.stringify(defaultMaternalData));
       }
     } catch (err) {
-      console.warn(err);
-      setMaternalData(defaultMaternalData);
-    } finally {
-      setLoading(false);
+      console.warn('Erreur chargement carnet maternité:', err);
     }
   };
 
@@ -114,7 +106,8 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
       return;
     }
 
-    const updatedCpnRecords = maternalData.cpn_records.map(cpn => {
+    const currentRecords = maternalData?.cpn_records || defaultMaternalData.cpn_records;
+    const updatedCpnRecords = currentRecords.map(cpn => {
       if (cpn.id === parseInt(newCpnData.cpn_id)) {
         return {
           ...cpn,
@@ -129,33 +122,34 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
 
     const updatedData = {
       ...maternalData,
-      current_weight: newCpnData.weight || maternalData.current_weight,
-      blood_pressure: newCpnData.blood_pressure || maternalData.blood_pressure,
+      current_weight: newCpnData.weight || maternalData?.current_weight || 68.5,
+      blood_pressure: newCpnData.blood_pressure || maternalData?.blood_pressure || '12/7',
       cpn_records: updatedCpnRecords,
       vaccinations: {
-        ...maternalData.vaccinations,
-        vat2: newCpnData.vat_administered ? { done: true, date: new Date().toISOString().slice(0, 10) } : maternalData.vaccinations.vat2
+        ...(maternalData?.vaccinations || defaultMaternalData.vaccinations),
+        vat2: newCpnData.vat_administered ? { done: true, date: new Date().toISOString().slice(0, 10) } : (maternalData?.vaccinations?.vat2 || { done: false })
       },
       prevention: {
-        ...maternalData.prevention,
-        tpi_sp1: newCpnData.tpi_sp_administered ? { done: true, date: new Date().toISOString().slice(0, 10) } : maternalData.prevention.tpi_sp1
+        ...(maternalData?.prevention || defaultMaternalData.prevention),
+        tpi_sp1: newCpnData.tpi_sp_administered ? { done: true, date: new Date().toISOString().slice(0, 10) } : (maternalData?.prevention?.tpi_sp1 || { done: false })
       }
     };
 
     setMaternalData(updatedData);
     localStorage.setItem('cmu_maternal_data', JSON.stringify(updatedData));
     setShowAddCpnModal(false);
-    setSavedMsg(`✅ Consultation CPN valide et enregistrée avec succès dans le carnet par ${activePractitioner}.`);
+    setSavedMsg(`✅ Consultation CPN validée et enregistrée avec succès dans le carnet par ${activePractitioner}.`);
   };
 
   // Impression / Téléchargement du Carnet de Maternité A4 PDF (Future Maman)
   const handlePrintMaternalPassportPDF = () => {
+    const data = maternalData || defaultMaternalData;
     const printWin = window.open('', '_blank', 'width=980,height=1150');
     printWin.document.write(`
       <!DOCTYPE html>
       <html>
         <head>
-          <title>Carnet_Maternite_${maternalData.cmu_number}.pdf</title>
+          <title>Carnet_Maternite_${data.cmu_number || 'CMU-8812'}.pdf</title>
           <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
           <style>
             @page { size: A4 portrait; margin: 12mm; }
@@ -192,13 +186,13 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
             <div class="row g-3 mb-4 p-3 rounded-3" style="background: #f8fafc; border: 1.5px solid #cbd5e1;">
               <div class="col-6">
                 <span class="small fw-bold d-block text-muted">FUTURE MAMAN :</span>
-                <h5 class="fw-bold mb-0">${maternalData.mother_name}</h5>
-                <small class="text-muted">N° Carte CMU : <strong>${maternalData.cmu_number}</strong></small>
+                <h5 class="fw-bold mb-0">${data.mother_name || 'Awa Ndiaye'}</h5>
+                <small class="text-muted">N° Carte CMU : <strong>${data.cmu_number || 'CMU-DKR-2026-8812'}</strong></small>
               </div>
               <div class="col-6 text-end">
                 <span class="small fw-bold d-block text-muted">TERME PRÉVU D'ACCOUCHEMENT (DPA) :</span>
-                <h4 class="fw-bold text-success mb-0">${new Date(maternalData.expected_delivery_date).toLocaleDateString('fr-FR')}</h4>
-                <span class="badge bg-success">Groupe Sanguin : ${maternalData.blood_group}</span>
+                <h4 class="fw-bold text-success mb-0">${data.expected_delivery_date ? new Date(data.expected_delivery_date).toLocaleDateString('fr-FR') : '15/10/2026'}</h4>
+                <span class="badge bg-success">Groupe Sanguin : ${data.blood_group || 'O+'}</span>
               </div>
             </div>
 
@@ -213,7 +207,7 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
                 </tr>
               </thead>
               <tbody>
-                ${maternalData.cpn_records.map(cpn => `
+                {(data.cpn_records || defaultMaternalData.cpn_records).map(cpn => `
                   <tr>
                     <td><strong>${cpn.name}</strong></td>
                     <td align="center">${cpn.done ? '<span class="badge bg-success">✅ Validée</span>' : '<span class="badge bg-warning text-dark">⏳ En attente</span>'}</td>
@@ -229,15 +223,15 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
               <div class="col-6">
                 <div class="p-2 border rounded-3 bg-light">
                   <small class="d-block text-muted">Vaccin Anti-Tétanique (VAT) :</small>
-                  • VAT 1 : <strong>${maternalData.vaccinations.vat1.done ? `✅ Fait le ${new Date(maternalData.vaccinations.vat1.date).toLocaleDateString('fr-FR')}` : '⏳ Prévu'}</strong><br />
-                  • VAT 2 : <strong>${maternalData.vaccinations.vat2.done ? `✅ Fait le ${new Date(maternalData.vaccinations.vat2.date).toLocaleDateString('fr-FR')}` : '⏳ Prévu CPN 3'}</strong>
+                  • VAT 1 : <strong>${data?.vaccinations?.vat1?.done ? `✅ Fait le ${new Date(data.vaccinations.vat1.date).toLocaleDateString('fr-FR')}` : '⏳ Prévu'}</strong><br />
+                  • VAT 2 : <strong>${data?.vaccinations?.vat2?.done ? `✅ Fait le ${new Date(data.vaccinations.vat2.date).toLocaleDateString('fr-FR')}` : '⏳ Prévu CPN 3'}</strong>
                 </div>
               </div>
               <div class="col-6">
                 <div class="p-2 border rounded-3 bg-light">
                   <small class="d-block text-muted">Prévention Paludisme (TPI-SP) & Fer :</small>
-                  • TPI-SP 1 : <strong>${maternalData.prevention.tpi_sp1.done ? '✅ Administré' : '⏳ À administrer'}</strong><br />
-                  • Moustiquaire MILDA : <strong>${maternalData.prevention.milda_net.delivered ? '✅ Délivrée 100% Gratuit' : 'En attente'}</strong>
+                  • TPI-SP 1 : <strong>${data?.prevention?.tpi_sp1?.done ? '✅ Administré' : '⏳ À administrer'}</strong><br />
+                  • Moustiquaire MILDA : <strong>${data?.prevention?.milda_net?.delivered ? '✅ Délivrée 100% Gratuit' : 'En attente'}</strong>
                 </div>
               </div>
             </div>
@@ -248,7 +242,7 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
                 <p class="small text-muted mb-0">Ce document certifié garantit zéro avance de frais pour la future maman et son nouveau-né lors de l'accouchement dans toutes les maternités publiques du Sénégal.</p>
               </div>
               <div class="col-4 text-center">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=${encodeURIComponent(`MATERNITY-${maternalData.cmu_number}`)}" alt="QR Code" style="width: 75px; height: 75px;" />
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=${encodeURIComponent(`MATERNITY-${data.cmu_number || '8812'}`)}" alt="QR Code" style="width: 75px; height: 75px;" />
                 <div class="small fw-bold text-success mt-1">Visa Sage-Femme d'État</div>
               </div>
             </div>
@@ -259,6 +253,8 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
     `);
     printWin.document.close();
   };
+
+  const safeData = maternalData || defaultMaternalData;
 
   return (
     <div className="container py-4 fade-in-up">
@@ -362,168 +358,164 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
         </div>
       )}
 
-      {loading ? (
-        <div className="text-center py-5 text-muted">Chargement du carnet de maternité...</div>
-      ) : (
-        <div className="row g-4">
-          {/* Suivi des CPN (Consultations Prénatales 1 à 4+) */}
-          <div className="col-lg-7">
-            <div className="card shadow-sm border-0 p-4 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
-              <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 border-bottom pb-3" style={{ borderColor: 'var(--border-color)' }}>
-                <div>
-                  <h4 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>🤰 Suivi de Grossesse & CPN (1er à 3ème Trimestre)</h4>
-                  <small className="text-muted">Bénéficiaire : <strong>{maternalData.mother_name}</strong> ({maternalData.cmu_number})</small>
-                </div>
-                {isAgent ? (
-                  <span className="badge bg-success px-3 py-2 fw-semibold">✏️ Écriture Praticien</span>
-                ) : (
-                  <span className="badge bg-secondary text-white px-3 py-2 fw-semibold">🔒 Lecture Seule (Future Maman)</span>
-                )}
+      <div className="row g-4">
+        {/* Suivi des CPN (Consultations Prénatales 1 à 4+) */}
+        <div className="col-lg-7">
+          <div className="card shadow-sm border-0 p-4 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
+            <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 border-bottom pb-3" style={{ borderColor: 'var(--border-color)' }}>
+              <div>
+                <h4 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>🤰 Suivi de Grossesse & CPN (1er à 3ème Trimestre)</h4>
+                <small className="text-muted">Bénéficiaire : <strong>{safeData.mother_name || 'Awa Ndiaye'}</strong> ({safeData.cmu_number || 'CMU-DKR-2026-8812'})</small>
               </div>
+              {isAgent ? (
+                <span className="badge bg-success px-3 py-2 fw-semibold">✏️ Écriture Praticien</span>
+              ) : (
+                <span className="badge bg-secondary text-white px-3 py-2 fw-semibold">🔒 Lecture Seule (Future Maman)</span>
+              )}
+            </div>
 
-              {/* Dates clés de la grossesse */}
-              <div className="p-4 rounded-4 mb-4" style={{ background: 'var(--bg-body)', border: '1px solid var(--border-color)' }}>
-                <div className="row g-4 text-center">
-                  <div className="col-6 border-end">
-                    <span className="text-muted d-block mb-1 small fw-bold">GROUPE SANGUIN :</span>
-                    <strong className="text-danger fs-5 d-block">{maternalData.blood_group}</strong>
-                  </div>
-                  <div className="col-6">
-                    <span className="text-muted d-block mb-1 small fw-bold">TERME PRÉVU (DPA) :</span>
-                    <strong className="text-success fs-5 d-block">
-                      👶 {new Date(maternalData.expected_delivery_date).toLocaleDateString('fr-FR')}
-                    </strong>
-                  </div>
+            {/* Dates clés de la grossesse */}
+            <div className="p-4 rounded-4 mb-4" style={{ background: 'var(--bg-body)', border: '1px solid var(--border-color)' }}>
+              <div className="row g-4 text-center">
+                <div className="col-6 border-end">
+                  <span className="text-muted d-block mb-1 small fw-bold">GROUPE SANGUIN :</span>
+                  <strong className="text-danger fs-5 d-block">{safeData.blood_group || 'O+'}</strong>
+                </div>
+                <div className="col-6">
+                  <span className="text-muted d-block mb-1 small fw-bold">TERME PRÉVU (DPA) :</span>
+                  <strong className="text-success fs-5 d-block">
+                    👶 {safeData.expected_delivery_date ? new Date(safeData.expected_delivery_date).toLocaleDateString('fr-FR') : '15/10/2026'}
+                  </strong>
                 </div>
               </div>
+            </div>
 
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.1rem' }}>📋 Calendrier Officiel CPN 1 à CPN 4+</h5>
-                {isAgent && (
-                  <button 
-                    type="button" 
-                    className="btn btn-sm btn-success fw-bold text-white px-3"
-                    style={{ borderRadius: '10px', background: '#059669' }}
-                    onClick={() => setShowAddCpnModal(true)}
-                  >
-                    ➕ Enregistrer une CPN
-                  </button>
-                )}
-              </div>
-              
-              <div className="d-flex flex-column gap-3 mb-4">
-                {(maternalData?.cpn_records || defaultMaternalData.cpn_records).map(cpn => (
-                  <div key={cpn.id} className="p-3.5 rounded-4 border d-flex justify-content-between align-items-center flex-wrap gap-2 shadow-sm" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }}>
-                    <div style={{ flex: 1 }}>
-                      <div className="d-flex align-items-center gap-2 mb-1">
-                        <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>{cpn.name}</h6>
-                        {cpn.done ? (
-                          <span className="badge bg-success">✅ Validée</span>
-                        ) : (
-                          <span className="badge bg-warning text-dark">⏳ Prochaine Échéance</span>
-                        )}
-                      </div>
-                      <p className="text-muted mb-1 small" style={{ lineHeight: '1.5' }}>{cpn.notes}</p>
-                      <small className="text-muted">
-                        👩‍⚕️ Praticien référent : <strong>{cpn.doctor}</strong> • Date : {cpn.date ? new Date(cpn.date).toLocaleDateString('fr-FR') : 'À planifier'}
-                      </small>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.1rem' }}>📋 Calendrier Officiel CPN 1 à CPN 4+</h5>
+              {isAgent && (
+                <button 
+                  type="button" 
+                  className="btn btn-sm btn-success fw-bold text-white px-3"
+                  style={{ borderRadius: '10px', background: '#059669' }}
+                  onClick={() => setShowAddCpnModal(true)}
+                >
+                  ➕ Enregistrer une CPN
+                </button>
+              )}
+            </div>
+            
+            <div className="d-flex flex-column gap-3 mb-4">
+              {(safeData?.cpn_records || defaultMaternalData.cpn_records).map(cpn => (
+                <div key={cpn.id} className="p-3.5 rounded-4 border d-flex justify-content-between align-items-center flex-wrap gap-2 shadow-sm" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }}>
+                  <div style={{ flex: 1 }}>
+                    <div className="d-flex align-items-center gap-2 mb-1">
+                      <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>{cpn.name}</h6>
+                      {cpn.done ? (
+                        <span className="badge bg-success">✅ Validée</span>
+                      ) : (
+                        <span className="badge bg-warning text-dark">⏳ Prochaine Échéance</span>
+                      )}
                     </div>
+                    <p className="text-muted mb-1 small" style={{ lineHeight: '1.5' }}>{cpn.notes}</p>
+                    <small className="text-muted">
+                      👩‍⚕️ Praticien référent : <strong>{cpn.doctor}</strong> • Date : {cpn.date ? new Date(cpn.date).toLocaleDateString('fr-FR') : 'À planifier'}
+                    </small>
                   </div>
-                ))}
-              </div>
-
-              <div className="alert alert-success d-flex align-items-center rounded-4 border-0 p-3.5 shadow-sm">
-                <span className="fs-2 me-3">ℹ️</span>
-                <div style={{ color: 'var(--text-main)', fontSize: '0.92rem', lineHeight: '1.6' }}>
-                  <strong>Prise en charge à 100% de la Maternité sous Tiers-Payant UNAMUSC :</strong>
-                  <br />
-                  L'accouchement simple et la césarienne d'urgence sont pris en charge à <strong>100% sans aucune avance de frais</strong> dans toutes les maternités et centres de santé publics du Sénégal.
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Vaccins VAT, Prévention Paludisme & Examens Échographiques */}
-          <div className="col-lg-5">
-            {/* Vaccins VAT & Suppléments Maternels */}
-            <div className="card shadow-sm border-0 p-4 mb-4 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
-              <h4 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)', fontSize: '1.1rem' }}>
-                <span>💉</span> Vaccin Anti-Tétanique (VAT) & Prévention
-              </h4>
-              
-              <div className="d-flex flex-column gap-2.5 mb-3">
-                <div className="d-flex justify-content-between align-items-center p-3 border rounded-3" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }}>
-                  <div>
-                    <strong className="d-block small" style={{ color: 'var(--text-main)' }}>Vaccin Anti-Tétanique (VAT 1)</strong>
-                    <small className="text-muted">1ère injection de protection</small>
-                  </div>
-                  {maternalData?.vaccinations?.vat1?.done ? (
-                    <span className="badge bg-success px-2.5 py-1">✅ Administré ({new Date(maternalData.vaccinations.vat1.date).toLocaleDateString('fr-FR')})</span>
-                  ) : (
-                    <span className="badge bg-warning text-dark px-2.5 py-1">⏳ À faire CPN 1</span>
-                  )}
-                </div>
-
-                <div className="d-flex justify-content-between align-items-center p-3 border rounded-3" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }}>
-                  <div>
-                    <strong className="d-block small" style={{ color: 'var(--text-main)' }}>Vaccin Anti-Tétanique (VAT 2)</strong>
-                    <small className="text-muted">1 mois après VAT 1</small>
-                  </div>
-                  {maternalData?.vaccinations?.vat2?.done ? (
-                    <span className="badge bg-success px-2.5 py-1">✅ Administré ({new Date(maternalData.vaccinations.vat2.date).toLocaleDateString('fr-FR')})</span>
-                  ) : (
-                    <span className="badge bg-warning text-dark px-2.5 py-1">⏳ Prévu CPN 3</span>
-                  )}
-                </div>
-
-                <div className="d-flex justify-content-between align-items-center p-3 border rounded-3" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }}>
-                  <div>
-                    <strong className="d-block small" style={{ color: 'var(--text-main)' }}>Traitement Préventif Paludisme (TPI-SP)</strong>
-                    <small className="text-muted">Sulfadoxine-Pyriméthamine 2ème Trimestre</small>
-                  </div>
-                  {maternalData?.prevention?.tpi_sp1?.done ? (
-                    <span className="badge bg-success px-2.5 py-1">✅ Reçu</span>
-                  ) : (
-                    <span className="badge bg-info text-dark px-2.5 py-1">⏳ Prévu CPN 3</span>
-                  )}
-                </div>
-
-                <div className="d-flex justify-content-between align-items-center p-3 border rounded-3" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }}>
-                  <div>
-                    <strong className="d-block small" style={{ color: 'var(--text-main)' }}>Supplémentation Fer + Acide Folique</strong>
-                    <small className="text-muted">Prévention de l'anémie maternelle</small>
-                  </div>
-                  <span className="badge bg-success px-2.5 py-1">Délivré 100% Gratuit</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Suivi Échographique & Carnet Enfant */}
-            <div className="card shadow-sm border-0 p-4 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
-              <h4 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)', fontSize: '1.1rem' }}>
-                <span>👶</span> Échographies Obstétricales & Carnet Bébé
-              </h4>
-
-              {maternalData.ultrasounds.map(echo => (
-                <div key={echo.id} className="p-3 border rounded-3 mb-3" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
-                  <strong className="d-block text-success small mb-1">{echo.title}</strong>
-                  <p className="small mb-1" style={{ color: 'var(--text-main)', lineHeight: '1.5' }}>{echo.conclusion}</p>
-                  <small className="text-muted">Praticien : {echo.doctor} • Date : {new Date(echo.date).toLocaleDateString('fr-FR')}</small>
                 </div>
               ))}
+            </div>
 
-              <button 
-                type="button"
-                className="btn w-100 fw-bold py-2.5 text-white shadow-sm mt-1" 
-                style={{ background: 'linear-gradient(135deg, #059669 0%, #047857 100%)', border: 'none', borderRadius: '12px', fontSize: '0.92rem' }} 
-                onClick={() => alert('📋 Carnet de Santé Pédiatrique du Nouveau-Né (BCG, Polio VPO0) synchronisé avec le dossier de la mère.')}
-              >
-                📋 Consulter le Carnet Pédiatrique du Nouveau-Né
-              </button>
+            <div className="alert alert-success d-flex align-items-center rounded-4 border-0 p-3.5 shadow-sm">
+              <span className="fs-2 me-3">ℹ️</span>
+              <div style={{ color: 'var(--text-main)', fontSize: '0.92rem', lineHeight: '1.6' }}>
+                <strong>Prise en charge à 100% de la Maternité sous Tiers-Payant UNAMUSC :</strong>
+                <br />
+                L'accouchement simple et la césarienne d'urgence sont pris en charge à <strong>100% sans aucune avance de frais</strong> dans toutes les maternités et centres de santé publics du Sénégal.
+              </div>
             </div>
           </div>
         </div>
-      )}
+
+        {/* Vaccins VAT, Prévention Paludisme & Examens Échographiques */}
+        <div className="col-lg-5">
+          {/* Vaccins VAT & Suppléments Maternels */}
+          <div className="card shadow-sm border-0 p-4 mb-4 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
+            <h4 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)', fontSize: '1.1rem' }}>
+              <span>💉</span> Vaccin Anti-Tétanique (VAT) & Prévention
+            </h4>
+            
+            <div className="d-flex flex-column gap-2.5 mb-3">
+              <div className="d-flex justify-content-between align-items-center p-3 border rounded-3" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }}>
+                <div>
+                  <strong className="d-block small" style={{ color: 'var(--text-main)' }}>Vaccin Anti-Tétanique (VAT 1)</strong>
+                  <small className="text-muted">1ère injection de protection</small>
+                </div>
+                {safeData?.vaccinations?.vat1?.done ? (
+                  <span className="badge bg-success px-2.5 py-1">✅ Administré ({new Date(safeData.vaccinations.vat1.date).toLocaleDateString('fr-FR')})</span>
+                ) : (
+                  <span className="badge bg-warning text-dark px-2.5 py-1">⏳ À faire CPN 1</span>
+                )}
+              </div>
+
+              <div className="d-flex justify-content-between align-items-center p-3 border rounded-3" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }}>
+                <div>
+                  <strong className="d-block small" style={{ color: 'var(--text-main)' }}>Vaccin Anti-Tétanique (VAT 2)</strong>
+                  <small className="text-muted">1 mois après VAT 1</small>
+                </div>
+                {safeData?.vaccinations?.vat2?.done ? (
+                  <span className="badge bg-success px-2.5 py-1">✅ Administré ({new Date(safeData.vaccinations.vat2.date).toLocaleDateString('fr-FR')})</span>
+                ) : (
+                  <span className="badge bg-warning text-dark px-2.5 py-1">⏳ Prévu CPN 3</span>
+                )}
+              </div>
+
+              <div className="d-flex justify-content-between align-items-center p-3 border rounded-3" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }}>
+                <div>
+                  <strong className="d-block small" style={{ color: 'var(--text-main)' }}>Traitement Préventif Paludisme (TPI-SP)</strong>
+                  <small className="text-muted">Sulfadoxine-Pyriméthamine 2ème Trimestre</small>
+                </div>
+                {safeData?.prevention?.tpi_sp1?.done ? (
+                  <span className="badge bg-success px-2.5 py-1">✅ Reçu</span>
+                ) : (
+                  <span className="badge bg-info text-dark px-2.5 py-1">⏳ Prévu CPN 3</span>
+                )}
+              </div>
+
+              <div className="d-flex justify-content-between align-items-center p-3 border rounded-3" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }}>
+                <div>
+                  <strong className="d-block small" style={{ color: 'var(--text-main)' }}>Supplémentation Fer + Acide Folique</strong>
+                  <small className="text-muted">Prévention de l'anémie maternelle</small>
+                </div>
+                <span className="badge bg-success px-2.5 py-1">Délivré 100% Gratuit</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Suivi Échographique & Carnet Enfant */}
+          <div className="card shadow-sm border-0 p-4 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
+            <h4 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)', fontSize: '1.1rem' }}>
+              <span>👶</span> Échographies Obstétricales & Carnet Bébé
+            </h4>
+
+            {(safeData?.ultrasounds || defaultMaternalData.ultrasounds).map(echo => (
+              <div key={echo.id} className="p-3 border rounded-3 mb-3" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
+                <strong className="d-block text-success small mb-1">{echo.title}</strong>
+                <p className="small mb-1" style={{ color: 'var(--text-main)', lineHeight: '1.5' }}>{echo.conclusion}</p>
+                <small className="text-muted">Praticien : {echo.doctor} • Date : {echo.date ? new Date(echo.date).toLocaleDateString('fr-FR') : '12/04/2026'}</small>
+              </div>
+            ))}
+
+            <button 
+              type="button"
+              className="btn w-100 fw-bold py-2.5 text-white shadow-sm mt-1" 
+              style={{ background: 'linear-gradient(135deg, #059669 0%, #047857 100%)', border: 'none', borderRadius: '12px', fontSize: '0.92rem' }} 
+              onClick={() => alert('📋 Carnet de Santé Pédiatrique du Nouveau-Né (BCG, Polio VPO0) synchronisé avec le dossier de la mère.')}
+            >
+              📋 Consulter le Carnet Pédiatrique du Nouveau-Né
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* MODALE VALIDATION / SAISIE CPN (PRATICIEN / SAGE-FEMME D'ÉTAT) */}
       {showAddCpnModal && (
@@ -550,7 +542,7 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
                     onChange={(e) => setNewCpnData({ ...newCpnData, cpn_id: e.target.value })}
                     style={{ borderRadius: '10px' }}
                   >
-                    {maternalData.cpn_records.map(cpn => (
+                    {(safeData?.cpn_records || defaultMaternalData.cpn_records).map(cpn => (
                       <option key={cpn.id} value={cpn.id}>
                         {cpn.name} ({cpn.done ? 'Déjà validée' : 'En attente'})
                       </option>
