@@ -278,22 +278,13 @@ export default function Header({
           {t.programmes}
         </button>
 
-        {/* Lettres de Garantie */}
+        {/* Bons de commande & Lettres de garantie (Vue unique combinée) */}
         <button 
           className={`nav-item ${currentView === 'guarantees' ? 'active' : ''}`}
           onClick={() => navigateTo('guarantees')}
         >
           <span className="nav-icon">📜</span>
-          {lang === 'fr' ? 'Lettres de Garantie' : 'Garansi hospitalisation'}
-        </button>
-
-        {/* Bons de Commande Pharmacie */}
-        <button 
-          className={`nav-item ${currentView === 'purchase-orders' ? 'active' : ''}`}
-          onClick={() => navigateTo('purchase-orders')}
-        >
-          <span className="nav-icon">💊</span>
-          {lang === 'fr' ? 'Bons de Commande' : 'Keuyit u garab'}
+          {lang === 'fr' ? 'Bons de commande & lettres de garantie' : 'Bons de commande & garansi'}
         </button>
 
         {/* Télémédecine WebRTC */}

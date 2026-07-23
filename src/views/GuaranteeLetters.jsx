@@ -402,7 +402,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
             🇸🇳 UNAMUSC Sénégal — Prise en charge hospitalière & Bons de Commande (80% à 100%)
           </span>
           <h1 className="fw-bold mb-2 text-white text-center" style={{ fontSize: '2rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
-            {lang === 'wo' ? 'Bataaxal yoxu garansi (Lettres de garantie)' : 'Lettres de garantie & Bons de Commande'}
+            {lang === 'wo' ? 'Bons de commande ak Bataaxal u garansi' : 'Bons de commande & lettres de garantie'}
           </h1>
           <p className="mb-3 text-white-50 text-center mx-auto" style={{ fontSize: '0.98rem', lineHeight: '1.6', textShadow: '0 1px 2px rgba(0,0,0,0.2)', maxWidth: '750px' }}>
             {lang === 'wo'

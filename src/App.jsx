@@ -570,19 +570,9 @@ export default function App() {
             />
           );
         case 'guarantees':
-          return (
-            <GuaranteeLetters 
-              lang={lang} 
-              userRole={portalMode} 
-              citizenUser={citizenUser} 
-              agentUser={agentUser} 
-              partnerUser={partnerUser} 
-              setView={setView} 
-            />
-          );
         case 'purchase-orders':
           return (
-            <PurchaseOrders 
+            <GuaranteeLetters 
               lang={lang} 
               userRole={portalMode} 
               citizenUser={citizenUser} 
