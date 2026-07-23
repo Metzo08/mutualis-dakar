@@ -300,42 +300,40 @@ export default function Telemedicine({ lang = 'fr' }) {
 
   return (
     <div className="container py-4 fade-in-up">
-      {/* Banner signature de la plateforme avec fond vert et image thématique */}
+      {/* Banner signature de la plateforme avec fond vert et image thématique (Titre & Boutons centrés) */}
       <section 
-        className="banner-mini text-white mb-4 rounded-4 overflow-hidden position-relative"
+        className="banner-mini text-white mb-4 rounded-4 overflow-hidden position-relative text-center"
         style={{
           background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.93), rgba(4, 120, 87, 0.88)), url("/csu_digital_health_real.jpg") center/cover no-repeat',
-          padding: '2.5rem 2rem',
+          padding: '3rem 2rem',
           boxShadow: '0 10px 25px -5px rgba(5, 150, 105, 0.3)',
           borderBottom: '1px solid var(--border-color)'
         }}
       >
-        <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 position-relative" style={{ zIndex: 2 }}>
-          <div style={{ maxWidth: '650px' }}>
-            <span 
-              className="badge px-3 py-1 mb-2 fw-semibold"
-              style={{
-                background: 'rgba(255, 255, 255, 0.22)',
-                color: '#ffffff',
-                backdropFilter: 'blur(4px)',
-                borderRadius: '20px',
-                fontSize: '0.8rem',
-                border: '1px solid rgba(255, 255, 255, 0.3)'
-              }}
-            >
-              🎥 Visioconférence sécurisée WebRTC — Sans installation
-            </span>
-            <h1 className="fw-bold mb-2 text-white" style={{ fontSize: '1.9rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
-              {lang === 'wo' ? 'Fajj ci kaw internet (Télémédecine WebRTC)' : 'Télémédecine & téléconsultations médicales'}
-            </h1>
-            <p className="mb-0 text-white-50" style={{ fontSize: '0.95rem', lineHeight: '1.6', textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}>
-              {lang === 'wo'
-                ? 'Waxtaan ak doktóor ci visioconférence bou am sécurité, joto sa ordonnance.'
-                : 'Consultez des médecins et praticiens agréés en visioconférence chiffrée avec émission d\'ordonnance numérique automatique.'}
-            </p>
-          </div>
+        <div className="d-flex flex-column align-items-center justify-content-center position-relative text-center mx-auto" style={{ zIndex: 2, maxWidth: '850px' }}>
+          <span 
+            className="badge px-3 py-1 mb-2 fw-semibold d-inline-block text-center"
+            style={{
+              background: 'rgba(255, 255, 255, 0.22)',
+              color: '#ffffff',
+              backdropFilter: 'blur(4px)',
+              borderRadius: '20px',
+              fontSize: '0.82rem',
+              border: '1px solid rgba(255, 255, 255, 0.3)'
+            }}
+          >
+            🎥 Visioconférence sécurisée WebRTC — Sans installation
+          </span>
+          <h1 className="fw-bold mb-2 text-white text-center" style={{ fontSize: '2rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
+            {lang === 'wo' ? 'Fajj ci kaw internet (Télémédecine WebRTC)' : 'Télémédecine & téléconsultations médicales'}
+          </h1>
+          <p className="mb-3 text-white-50 text-center mx-auto" style={{ fontSize: '0.98rem', lineHeight: '1.6', textShadow: '0 1px 2px rgba(0,0,0,0.2)', maxWidth: '750px' }}>
+            {lang === 'wo'
+              ? 'Waxtaan ak doktóor ci visioconférence bou am sécurité, joto sa ordonnance.'
+              : 'Consultez des médecins et praticiens agréés en visioconférence chiffrée avec émission d\'ordonnance numérique automatique.'}
+          </p>
 
-          <div className="d-flex gap-2 flex-wrap">
+          <div className="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-2 w-100">
             <button 
               type="button"
               className="btn fw-bold text-white shadow-sm"
@@ -343,8 +341,8 @@ export default function Telemedicine({ lang = 'fr' }) {
                 background: 'var(--primary)',
                 border: 'none',
                 borderRadius: '12px',
-                padding: '0.65rem 1.3rem',
-                fontSize: '0.9rem',
+                padding: '0.65rem 1.4rem',
+                fontSize: '0.92rem',
                 cursor: 'pointer'
               }}
               onClick={handleStartInstantCall}
@@ -359,8 +357,8 @@ export default function Telemedicine({ lang = 'fr' }) {
                 background: 'rgba(255, 255, 255, 0.2)',
                 border: '1px solid rgba(255, 255, 255, 0.4)',
                 borderRadius: '12px',
-                padding: '0.65rem 1.3rem',
-                fontSize: '0.9rem',
+                padding: '0.65rem 1.4rem',
+                fontSize: '0.92rem',
                 cursor: 'pointer'
               }}
               onClick={fetchSessions}
