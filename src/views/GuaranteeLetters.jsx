@@ -406,9 +406,10 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
                       </td>
                       <td style={{ textAlign: 'right', padding: '0.85rem' }}>
                         <button 
-                          className="btn btn-sm btn-outline-success fw-bold px-3 py-1"
+                          type="button"
+                          className="btn btn-sm text-white fw-bold px-3 py-1.5 shadow-sm"
                           onClick={() => setSelectedLetter(item)}
-                          style={{ borderRadius: '8px' }}
+                          style={{ background: '#059669', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
                         >
                           🔍 Consulter / instruire
                         </button>

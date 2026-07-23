@@ -855,21 +855,48 @@ p {
 
 /* Button contrast fixes for dark mode */
 .dark-theme .btn-light {
-  background-color: rgba(255, 255, 255, 0.18) !important;
+  background-color: rgba(255, 255, 255, 0.22) !important;
   color: #ffffff !important;
   border: 1px solid rgba(255, 255, 255, 0.4) !important;
 }
 
 .dark-theme .btn-outline-secondary {
-  background-color: var(--bg-body) !important;
-  color: var(--text-main) !important;
-  border-color: var(--border-color) !important;
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
 }
 
-.dark-theme .btn-outline-primary {
-  background-color: var(--primary) !important;
+.dark-theme .btn-outline-primary,
+.btn-outline-primary {
+  background-color: rgba(5, 150, 105, 0.2) !important;
+  color: #10b981 !important;
+  border-color: #10b981 !important;
+}
+
+.dark-theme .btn-outline-success,
+.btn-outline-success {
+  background-color: rgba(5, 150, 105, 0.25) !important;
   color: #ffffff !important;
-  border-color: var(--primary) !important;
+  border: 1px solid #10b981 !important;
+}
+
+.dark-theme .btn-outline-success:hover,
+.btn-outline-success:hover {
+  background-color: #059669 !important;
+  color: #ffffff !important;
+}
+
+.dark-theme .btn-outline-info,
+.btn-outline-info {
+  background-color: rgba(2, 132, 199, 0.25) !important;
+  color: #ffffff !important;
+  border: 1px solid #38bdf8 !important;
+}
+
+.dark-theme .btn-outline-info:hover,
+.btn-outline-info:hover {
+  background-color: #0284c7 !important;
+  color: #ffffff !important;
 }
 
 .dark-theme .btn-danger,
