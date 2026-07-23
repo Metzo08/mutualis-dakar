@@ -1,13 +1,38 @@
 import React, { useState, useEffect } from 'react';
 
-// Vue publique de vérification d'une carte CMU.
-// Accessible via #/verify ou #/verify/:cmuNumber — utilisée par les structures de soins
-// pour vérifier instantanément la validité d'une carte d'assuré scannée sur mobile ou PC.
+// Vue publique et médicale de vérification d'une carte CMU.
+// Accessible via #/verify ou #/verify/:cmuNumber — utilisée par les structures de soins,
+// médecins, pharmaciens et agents pour vérifier instantanément une carte scannée
+// et exécuter les actions médicales directes (Garantie, Ordonnance, Télémédecine, Radios, Antécédents).
 export default function VerifyCard({ lang = 'fr' }) {
   const [cmuNumber, setCmuNumber] = useState('');
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // Modales d'actions rapides médicales depuis le QR Code
+  const [activeModal, setActiveModal] = useState(null); // 'guarantee' | 'order' | 'imaging' | 'antecedents' | 'telemedicine'
+  const [actionSuccess, setActionSuccess] = useState('');
+
+  // Formulaire Garantie Rapide
+  const [guaranteeAct, setGuaranteeAct] = useState('Hospitalisation / Intervention chirurgicale');
+  const [guaranteeAmount, setGuaranteeAmount] = useState('200000');
+  const [guaranteeHospital, setGuaranteeHospital] = useState('Hôpital Universitaire de Fann');
+
+  // Formulaire Bon Pharmacie Rapide
+  const [medName, setMedName] = useState('Amoxicilline 500mg');
+  const [medQty, setMedQty] = useState(2);
+  const [medPrice, setMedPrice] = useState(3500);
+
+  // Formulaire Radio / Analyse Rapide
+  const [examTitle, setExamTitle] = useState('Scanner Thoracique HD');
+  const [examType, setExamType] = useState('Scanner');
+  const [examNotes, setExamNotes] = useState('Bilan satisfaisant. Pas de lésion évolutive.');
+
+  // Formulaire Antécédents Rapide
+  const [bloodGroup, setBloodGroup] = useState('O Rhésus Positif (O+)');
+  const [allergies, setAllergies] = useState('Pénicilline, Aspirine');
+  const [chronicCond, setChronicCond] = useState('Hypertension artérielle (HTA)');
 
   // Extrait le numéro CMU du hash URL (#/verify/SN-DK-MED-8472 ou #/verify/CMU-DKR-2026-8812)
   useEffect(() => {
@@ -34,7 +59,8 @@ export default function VerifyCard({ lang = 'fr' }) {
       ippNumber: 'IPP-FANN-2026-8472',
       photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
       bloodGroup: 'O Rhésus Positif (O+)',
-      allergies: 'Pénicilline',
+      allergies: 'Pénicilline, Aspirine',
+      chronicConditions: 'Hypertension artérielle (HTA)',
       familyMembers: [
         { name: 'Fatou Sow', relation: 'Épouse', age: 32 },
         { name: 'Moussa Sow', relation: 'Enfant', age: 6 }
@@ -55,6 +81,7 @@ export default function VerifyCard({ lang = 'fr' }) {
       photoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
       bloodGroup: 'O Rhésus Positif (O+)',
       allergies: 'Aucune connue',
+      chronicConditions: 'Aucune',
       familyMembers: [
         { name: 'Awa Sall', relation: 'Épouse', age: 29 },
         { name: 'Ibrahima Sall', relation: 'Enfant', age: 4 }
@@ -75,6 +102,7 @@ export default function VerifyCard({ lang = 'fr' }) {
       photoUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150',
       bloodGroup: 'A Rhésus Positif (A+)',
       allergies: 'Aspirine',
+      chronicConditions: 'Aucune',
       familyMembers: [],
       checkedAt: new Date().toISOString()
     }
@@ -106,6 +134,7 @@ export default function VerifyCard({ lang = 'fr' }) {
             photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
             bloodGroup: parsed.blood || 'O Rhésus Positif (O+)',
             allergies: 'Pénicilline',
+            chronicConditions: 'Hypertension artérielle',
             familyMembers: [{ name: 'Ayants-droit rattachés', relation: 'Famille', age: 30 }],
             checkedAt: new Date().toISOString()
           });
@@ -159,6 +188,7 @@ export default function VerifyCard({ lang = 'fr' }) {
         photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
         bloodGroup: 'O Rhésus Positif (O+)',
         allergies: 'Pénicilline',
+        chronicConditions: 'Hypertension artérielle',
         familyMembers: [
           { name: 'Fatou Sow', relation: 'Épouse', age: 32 },
           { name: 'Moussa Sow', relation: 'Enfant', age: 6 }
@@ -177,10 +207,54 @@ export default function VerifyCard({ lang = 'fr' }) {
     verify();
   };
 
+  // Exécution d'actions médicales directes depuis le QR Code
+  const handleCreateGuarantee = (e) => {
+    e.preventDefault();
+    setActionSuccess(`Lettre de garantie de ${Number(guaranteeAmount).toLocaleString()} FCFA émise avec succès pour ${result.firstName} ${result.lastName} (${guaranteeHospital}). Code validation: GAR-2026-${Math.floor(1000 + Math.random() * 9000)}.`);
+    setActiveModal(null);
+  };
+
+  const handleCreateOrder = (e) => {
+    e.preventDefault();
+    const newOrd = {
+      id: Date.now(),
+      first_name: result.firstName,
+      last_name: result.lastName,
+      cmu_number: result.cmuNumber,
+      items_json: JSON.stringify([{ name: medName, qty: parseInt(medQty), price: parseFloat(medPrice) }]),
+      total_amount: medQty * medPrice,
+      status: 'active',
+      created_at: new Date().toISOString()
+    };
+    const existing = JSON.parse(localStorage.getItem('cmu_purchase_orders') || '[]');
+    localStorage.setItem('cmu_purchase_orders', JSON.stringify([newOrd, ...existing]));
+
+    setActionSuccess(`Bon de commande pharmacie (48h) généré avec succès pour ${medName} (x${medQty}) ! Il est immédiatement actif sous régime tiers-payant.`);
+    setActiveModal(null);
+  };
+
+  const handleAddImaging = (e) => {
+    e.preventDefault();
+    setActionSuccess(`Nouvel examen d'imagerie "${examTitle}" (${examType}) ajouté et lié au Dossier Médical Partagé de ${result.firstName} ${result.lastName}.`);
+    setActiveModal(null);
+  };
+
+  const handleUpdateAntecedents = (e) => {
+    e.preventDefault();
+    setResult({
+      ...result,
+      bloodGroup,
+      allergies,
+      chronicConditions: chronicCond
+    });
+    setActionSuccess(`Antécédents médicaux mis à jour : Groupe sanguin ${bloodGroup}, Allergies: ${allergies}.`);
+    setActiveModal(null);
+  };
+
   const t = {
     fr: {
       title: 'Vérification de carte CMU',
-      subtitle: 'Structure de soins — vérifiez la validité d\'une carte d\'assuré en direct',
+      subtitle: 'Structure de soins — vérifiez la validité et exécutez les actions médicales en direct',
       placeholder: 'Entrez ou scannez un N° CMU (ex: SN-DK-MED-8472)',
       btn: 'Vérifier la carte',
       valid: 'CARTE VALIDE ET ACTIVE',
@@ -230,7 +304,7 @@ export default function VerifyCard({ lang = 'fr' }) {
             fontSize: '0.82rem',
             border: '1px solid rgba(255, 255, 255, 0.3)'
           }}>
-            🔍 SÉN-CSU — Contrôle de validité instantané
+            🔍 SÉN-CSU — Contrôle de validité & Hub médical instantané
           </span>
           <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
             {t.title}
@@ -240,6 +314,13 @@ export default function VerifyCard({ lang = 'fr' }) {
           </p>
         </div>
       </section>
+
+      {actionSuccess && (
+        <div className="alert alert-success d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm">
+          <span className="fs-4 me-2">✅</span>
+          <div style={{ color: 'var(--text-main)' }}>{actionSuccess}</div>
+        </div>
+      )}
 
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
         {/* Formulaire de vérification */}
@@ -363,11 +444,80 @@ export default function VerifyCard({ lang = 'fr' }) {
               </div>
             </div>
 
+            {/* ⚡ HUB D'ACTIONS MÉDICALES INSTANTANÉES (DEMANDE GARANTIE, ORDONNANCE, TÉLÉMÉDECINE, RADIOS, ANTÉCÉDENTS) */}
+            <div className="card shadow-sm border-0 p-4 mb-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+              <h5 className="fw-bold mb-3 border-bottom pb-2 d-flex align-items-center gap-2" style={{ color: 'var(--primary)', borderColor: 'var(--border-color)' }}>
+                <span>⚡</span> Hub d'Actions Médicales Instantanées (Scan QR Code)
+              </h5>
+              <p className="small text-muted mb-3">
+                Déclenchez directement les services médicaux pour cet assuré scanné ({result.firstName} {result.lastName}) :
+              </p>
+
+              <div className="row g-2">
+                <div className="col-6 col-md-3">
+                  <button 
+                    type="button" 
+                    className="btn w-100 p-3 text-start border d-flex flex-column gap-1" 
+                    style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', borderRadius: '14px', color: 'var(--text-main)' }}
+                    onClick={() => setActiveModal('guarantee')}
+                  >
+                    <span className="fs-4">📜</span>
+                    <strong style={{ fontSize: '0.85rem' }}>Lettre de Garantie</strong>
+                    <small className="text-muted" style={{ fontSize: '0.72rem' }}>Prise en charge 80-100%</small>
+                  </button>
+                </div>
+
+                <div className="col-6 col-md-3">
+                  <button 
+                    type="button" 
+                    className="btn w-100 p-3 text-start border d-flex flex-column gap-1" 
+                    style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', borderRadius: '14px', color: 'var(--text-main)' }}
+                    onClick={() => setActiveModal('order')}
+                  >
+                    <span className="fs-4">💊</span>
+                    <strong style={{ fontSize: '0.85rem' }}>Bon Pharmacie 48h</strong>
+                    <small className="text-muted" style={{ fontSize: '0.72rem' }}>Ordonnance tiers-payant</small>
+                  </button>
+                </div>
+
+                <div className="col-6 col-md-3">
+                  <button 
+                    type="button" 
+                    className="btn w-100 p-3 text-start border d-flex flex-column gap-1" 
+                    style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', borderRadius: '14px', color: 'var(--text-main)' }}
+                    onClick={() => { window.location.hash = '#telemedicine'; }}
+                  >
+                    <span className="fs-4">🎥</span>
+                    <strong style={{ fontSize: '0.85rem' }}>Télémédecine WebRTC</strong>
+                    <small className="text-muted" style={{ fontSize: '0.72rem' }}>Téléconsultation direct</small>
+                  </button>
+                </div>
+
+                <div className="col-6 col-md-3">
+                  <button 
+                    type="button" 
+                    className="btn w-100 p-3 text-start border d-flex flex-column gap-1" 
+                    style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', borderRadius: '14px', color: 'var(--text-main)' }}
+                    onClick={() => setActiveModal('imaging')}
+                  >
+                    <span className="fs-4">🩻</span>
+                    <strong style={{ fontSize: '0.85rem' }}>Ajouter Radio / Analyse</strong>
+                    <small className="text-muted" style={{ fontSize: '0.72rem' }}>Examen DICOM & Labo</small>
+                  </button>
+                </div>
+              </div>
+            </div>
+
             {/* SECTIONS DÉTAILLÉES DE LA PRICING & DE LA PRISE EN CHARGE */}
             <div className="card shadow-sm border-0 p-4 mb-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-              <h5 className="fw-bold mb-3 border-bottom pb-2 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)', borderColor: 'var(--border-color)' }}>
-                <span>🛡️</span> Statut de prise en charge & Droits ouverts
-              </h5>
+              <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2" style={{ borderColor: 'var(--border-color)' }}>
+                <h5 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
+                  <span>🛡️</span> Droits ouverts & Antécédents médicaux
+                </h5>
+                <button className="btn btn-sm btn-outline-primary" onClick={() => setActiveModal('antecedents')}>
+                  ✏️ Modifier antécédents
+                </button>
+              </div>
 
               <div className="row g-3 mb-4">
                 <div className="col-md-6">
@@ -440,6 +590,146 @@ export default function VerifyCard({ lang = 'fr' }) {
           </div>
         )}
       </div>
+
+      {/* MODALE 1 : Demander une Lettre de Garantie Rapide */}
+      {activeModal === 'guarantee' && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content p-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+              <h5 className="fw-bold mb-3" style={{ color: 'var(--primary)' }}>📜 Demande de Lettre de Garantie</h5>
+              <p className="small text-muted mb-3">Pour le patient scanné : <strong>{result?.firstName} {result?.lastName}</strong> ({result?.cmuNumber})</p>
+              
+              <form onSubmit={handleCreateGuarantee}>
+                <div className="mb-3">
+                  <label className="form-label small fw-semibold">Établissement récepteur</label>
+                  <select className="form-select input" value={guaranteeHospital} onChange={(e) => setGuaranteeHospital(e.target.value)}>
+                    <option value="Hôpital Universitaire de Fann">Hôpital Universitaire de Fann</option>
+                    <option value="Hôpital Aristide Le Dantec">Hôpital Aristide Le Dantec</option>
+                    <option value="Hôpital Général Idrissa Pouye (Pikine)">Hôpital Général Idrissa Pouye (Pikine)</option>
+                  </select>
+                </div>
+                <div className="mb-3">
+                  <label className="form-label small fw-semibold">Acte médical prescrit</label>
+                  <input type="text" className="form-control input" value={guaranteeAct} onChange={(e) => setGuaranteeAct(e.target.value)} required />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label small fw-semibold">Devis estimé (FCFA)</label>
+                  <input type="number" className="form-control input" value={guaranteeAmount} onChange={(e) => setGuaranteeAmount(e.target.value)} required />
+                </div>
+                <div className="d-flex justify-content-end gap-2 mt-4">
+                  <button type="button" className="btn btn-secondary" onClick={() => setActiveModal(null)}>Annuler</button>
+                  <button type="submit" className="btn btn-success text-white fw-bold">Émettre la garantie</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODALE 2 : Générer un Bon Pharmacie 48h */}
+      {activeModal === 'order' && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content p-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+              <h5 className="fw-bold mb-3 text-success">💊 Générer Bon Pharmacie 48h</h5>
+              <p className="small text-muted mb-3">Prescription directe pour <strong>{result?.firstName} {result?.lastName}</strong></p>
+
+              <form onSubmit={handleCreateOrder}>
+                <div className="mb-3">
+                  <label className="form-label small fw-semibold">Nom du médicament</label>
+                  <input type="text" className="form-control input" value={medName} onChange={(e) => setMedName(e.target.value)} required />
+                </div>
+                <div className="row g-2 mb-3">
+                  <div className="col-6">
+                    <label className="form-label small fw-semibold">Quantité</label>
+                    <input type="number" className="form-control input" value={medQty} onChange={(e) => setMedQty(e.target.value)} min="1" required />
+                  </div>
+                  <div className="col-6">
+                    <label className="form-label small fw-semibold">Prix unitaire (FCFA)</label>
+                    <input type="number" className="form-control input" value={medPrice} onChange={(e) => setMedPrice(e.target.value)} required />
+                  </div>
+                </div>
+                <div className="d-flex justify-content-end gap-2 mt-4">
+                  <button type="button" className="btn btn-secondary" onClick={() => setActiveModal(null)}>Annuler</button>
+                  <button type="submit" className="btn btn-success text-white fw-bold">Générer Bon 48h</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODALE 3 : Ajouter Radio / Analyse DICOM */}
+      {activeModal === 'imaging' && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content p-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+              <h5 className="fw-bold mb-3 text-info">🩻 Ajouter Examen d'Imagerie / Analyse</h5>
+              <p className="small text-muted mb-3">Lier un résultat au DMP de <strong>{result?.firstName} {result?.lastName}</strong></p>
+
+              <form onSubmit={handleAddImaging}>
+                <div className="mb-3">
+                  <label className="form-label small fw-semibold">Titre de l'examen</label>
+                  <input type="text" className="form-control input" value={examTitle} onChange={(e) => setExamTitle(e.target.value)} required />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label small fw-semibold">Type d'examen</label>
+                  <select className="form-select input" value={examType} onChange={(e) => setExamType(e.target.value)}>
+                    <option value="Scanner">Scanner HD</option>
+                    <option value="Radio">Radiographie</option>
+                    <option value="Analyse">Analyse Biologique / Labo</option>
+                    <option value="IRM">IRM Cervicale / Abdominale</option>
+                  </select>
+                </div>
+                <div className="mb-3">
+                  <label className="form-label small fw-semibold">Compte-rendu du radiologue</label>
+                  <textarea className="form-control input" rows="2" value={examNotes} onChange={(e) => setExamNotes(e.target.value)} required />
+                </div>
+                <div className="d-flex justify-content-end gap-2 mt-4">
+                  <button type="button" className="btn btn-secondary" onClick={() => setActiveModal(null)}>Annuler</button>
+                  <button type="submit" className="btn btn-info text-white fw-bold">Enregistrer l'examen</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODALE 4 : Modifier Antécédents */}
+      {activeModal === 'antecedents' && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content p-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+              <h5 className="fw-bold mb-3 text-warning">🩸 Mise à jour Antécédents Médicaux</h5>
+
+              <form onSubmit={handleUpdateAntecedents}>
+                <div className="mb-3">
+                  <label className="form-label small fw-semibold">Groupe Sanguin & Rhésus</label>
+                  <select className="form-select input fw-bold" value={bloodGroup} onChange={(e) => setBloodGroup(e.target.value)}>
+                    <option value="O Rhésus Positif (O+)">O Rhésus Positif (O+)</option>
+                    <option value="O Rhésus Négatif (O-)">O Rhésus Négatif (O-)</option>
+                    <option value="A Rhésus Positif (A+)">A Rhésus Positif (A+)</option>
+                    <option value="B Rhésus Positif (B+)">B Rhésus Positif (B+)</option>
+                    <option value="AB Rhésus Positif (AB+)">AB Rhésus Positif (AB+)</option>
+                  </select>
+                </div>
+                <div className="mb-3">
+                  <label className="form-label small fw-semibold">Allergies majeures</label>
+                  <input type="text" className="form-control input" value={allergies} onChange={(e) => setAllergies(e.target.value)} required />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label small fw-semibold">Maladies chroniques</label>
+                  <input type="text" className="form-control input" value={chronicCond} onChange={(e) => setChronicCond(e.target.value)} required />
+                </div>
+                <div className="d-flex justify-content-end gap-2 mt-4">
+                  <button type="button" className="btn btn-secondary" onClick={() => setActiveModal(null)}>Annuler</button>
+                  <button type="submit" className="btn btn-warning text-dark fw-bold">Mettre à jour</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
