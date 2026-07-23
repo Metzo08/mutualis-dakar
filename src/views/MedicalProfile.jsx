@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, partnerUser = null }) {
   // Identification du rôle et accès
   const isAgent = (userRole === 'agent' || !!agentUser || !!partnerUser);
+  const isSuperAdmin = (userRole === 'admin' || userRole === 'superadmin' || agentUser?.role === 'superadmin' || agentUser?.email?.includes('admin'));
 
   // Praticiens habilités par le Super Admin (synchro localStorage)
   const defaultAccreditedDoctors = [
@@ -86,6 +87,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
   const [dicomZoom, setDicomZoom] = useState(1);
   const [dicomInvert, setDicomInvert] = useState(false);
   const [activeCliche, setActiveCliche] = useState(1);
+  const [editingNotes, setEditingNotes] = useState('');
 
   // Modale Ajout Examen par Prestataire / Médecin
   const [showAddExamModal, setShowAddExamModal] = useState(false);
@@ -98,20 +100,32 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
     exam_date: new Date().toISOString().slice(0, 10)
   });
 
+  // Modale Super Admin - Code Patient Hospitalier
+  const [showAddCodeModal, setShowAddCodeModal] = useState(false);
+  const [newHospitalCode, setNewHospitalCode] = useState({
+    system_name: '',
+    external_patient_code: ''
+  });
+
   const fetchProfile = async () => {
     setLoading(true);
     try {
       const storedLocalExams = JSON.parse(localStorage.getItem('cmu_medical_imaging') || '[]');
+      const storedLocalCodes = JSON.parse(localStorage.getItem('cmu_hospital_codes') || '[]');
+
       const mergedExams = [...storedLocalExams, ...defaultProfile.imaging];
+      const mergedCodes = [...storedLocalCodes, ...defaultProfile.externalCodes];
 
       const citizenData = JSON.parse(localStorage.getItem('cmu-citizen') || '{}');
       const benId = citizenData.id || 1;
       const res = await fetch(`/api/medical-profile/${benId}`);
       const json = await res.json();
+
       if (json.success && json.data && json.data.antecedents) {
         setProfileData({
           ...json.data,
-          imaging: [...storedLocalExams, ...(json.data.imaging || defaultProfile.imaging)]
+          imaging: [...storedLocalExams, ...(json.data.imaging || defaultProfile.imaging)],
+          externalCodes: [...storedLocalCodes, ...(json.data.externalCodes || defaultProfile.externalCodes)]
         });
         const a = json.data.antecedents;
         setBloodGroup(a.blood_group || 'O+');
@@ -123,15 +137,18 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
       } else {
         setProfileData({
           ...defaultProfile,
-          imaging: mergedExams
+          imaging: mergedExams,
+          externalCodes: mergedCodes
         });
       }
     } catch (err) {
       console.warn('Utilisation des antécédents de démonstration:', err);
       const storedLocalExams = JSON.parse(localStorage.getItem('cmu_medical_imaging') || '[]');
+      const storedLocalCodes = JSON.parse(localStorage.getItem('cmu_hospital_codes') || '[]');
       setProfileData({
         ...defaultProfile,
-        imaging: [...storedLocalExams, ...defaultProfile.imaging]
+        imaging: [...storedLocalExams, ...defaultProfile.imaging],
+        externalCodes: [...storedLocalCodes, ...defaultProfile.externalCodes]
       });
     } finally {
       setLoading(false);
@@ -142,7 +159,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
     fetchProfile();
   }, []);
 
-  // Sauvegarde des Antécédents (Exclusivité Médecin)
+  // Sauvegarde des Antécédents par le Médecin
   const handleSaveAntecedents = async (e) => {
     e.preventDefault();
     if (!isAgent) {
@@ -213,6 +230,44 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
       exam_date: new Date().toISOString().slice(0, 10)
     });
     setSavedMsg(`L'examen "${createdExam.title}" (${createdExam.exam_type}) a été certifié par ${doctorNameStr} et ajouté au dossier.`);
+  };
+
+  // Mise à jour du compte-rendu médical direct par le médecin dans la modale DICOM
+  const handleSaveExamNotesByDoctor = () => {
+    if (!viewingExam) return;
+    const updatedImaging = profileData.imaging.map(img => 
+      img.id === viewingExam.id ? { ...img, doctor_notes: editingNotes, provider_name: activeDoctorAccount } : img
+    );
+
+    setProfileData(prev => ({ ...prev, imaging: updatedImaging }));
+    localStorage.setItem('cmu_medical_imaging', JSON.stringify(updatedImaging));
+    setViewingExam(prev => ({ ...prev, doctor_notes: editingNotes, provider_name: activeDoctorAccount }));
+    setSavedMsg(`✅ Compte-rendu médical pour "${viewingExam.title}" mis à jour et certifié par ${activeDoctorAccount}.`);
+  };
+
+  // Ajout d'un Code Patient Hospitalier Interopérable (Exclusivité Super Admin)
+  const handleAddHospitalCodeSuperAdmin = (e) => {
+    e.preventDefault();
+    if (!newHospitalCode.system_name || !newHospitalCode.external_patient_code) return;
+
+    const createdCode = {
+      id: Date.now(),
+      system_name: newHospitalCode.system_name,
+      external_patient_code: newHospitalCode.external_patient_code
+    };
+
+    const existingCodes = JSON.parse(localStorage.getItem('cmu_hospital_codes') || '[]');
+    const updatedCodes = [createdCode, ...existingCodes];
+    localStorage.setItem('cmu_hospital_codes', JSON.stringify(updatedCodes));
+
+    setProfileData(prev => ({
+      ...prev,
+      externalCodes: [createdCode, ...prev.externalCodes]
+    }));
+
+    setShowAddCodeModal(false);
+    setNewHospitalCode({ system_name: '', external_patient_code: '' });
+    setSavedMsg(`🔗 Code Patient Hospitalier "${createdCode.external_patient_code}" lié avec succès par le Super Admin.`);
   };
 
   // Impression / Téléchargement du Carnet de Santé A4 PDF (Assuré)
@@ -327,6 +382,150 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                 <div class="small fw-bold text-success mt-1">Signature Numérique CNOM</div>
               </div>
             </div>
+          </div>
+          <script>setTimeout(() => { window.print(); }, 400);</script>
+        </body>
+      </html>
+    `);
+    printWin.document.close();
+  };
+
+  // Téléchargement du Rapport PDF d'Examen Certifié (Modale DICOM)
+  const handleDownloadExamReportPDF = (exam) => {
+    if (!exam) return;
+    const citizenData = JSON.parse(localStorage.getItem('cmu-citizen') || '{}');
+    const patientName = citizenData.firstName ? `${citizenData.firstName} ${citizenData.lastName}` : 'Awa Ndiaye';
+    const cmuNum = citizenData.cmuNumber || 'CMU-DKR-2026-8812';
+
+    const printWin = window.open('', '_blank', 'width=980,height=1150');
+    printWin.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Rapport_Medical_${exam.exam_type}_${cmuNum}.pdf</title>
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+          <style>
+            @page { size: A4 portrait; margin: 12mm; }
+            body { background: #ffffff !important; color: #0f172a !important; font-family: 'Inter', Arial, sans-serif; padding: 1.5rem; }
+            .cert-box { border: 2.5px solid #059669; border-radius: 16px; padding: 2rem; background: #ffffff; }
+            .no-print { margin-bottom: 1.5rem; text-align: center; }
+            @media print { .no-print { display: none !important; } body { padding: 0 !important; } }
+          </style>
+        </head>
+        <body>
+          <div class="no-print">
+            <button onclick="window.print()" class="btn btn-success fw-bold px-4 py-2 me-2" style="background: #059669;">🖨️ Imprimer le Rapport PDF A4</button>
+            <button onclick="window.close()" class="btn btn-secondary fw-bold px-3 py-2">Fermer</button>
+          </div>
+
+          <div class="cert-box">
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-4">
+              <div class="d-flex align-items-center gap-3">
+                <img src="/senegal_flag.png" alt="Drapeau" style="width: 54px; height: 36px; object-fit: cover; border-radius: 4px; border: 1.5px solid #d97706;" />
+                <div>
+                  <h6 class="fw-bold mb-0 text-uppercase" style="color: #059669;">RÉPUBLIQUE DU SÉNÉGAL</h6>
+                  <small class="text-muted">Un Peuple — Un But — Une Foi</small><br />
+                  <strong class="small text-uppercase" style="color: #0f172a;">UNAMUSC SÉNÉGAL — RAPPORT MÉDICAL D'EXAMEN & IMAGERIE</strong>
+                </div>
+              </div>
+              <img src="/unamusc_logo.png" alt="UNAMUSC" style="width: 85px; height: auto;" />
+            </div>
+
+            <div class="text-center my-4 p-3 rounded-3" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
+              <h4 class="fw-bold text-uppercase mb-1" style="color: #059669;">RAPPORT OFFICIEL D'EXAMEN : ${exam.title?.toUpperCase()}</h4>
+              <small class="text-muted">Type : <strong>${exam.exam_type}</strong> • Réalisé le : <strong>${new Date(exam.exam_date).toLocaleDateString('fr-FR')}</strong></small>
+            </div>
+
+            <div class="row g-3 mb-4 p-3 rounded-3" style="background: #f8fafc; border: 1.5px solid #cbd5e1;">
+              <div class="col-6">
+                <span class="small fw-bold d-block text-muted">ASSURÉ BÉNÉFICIAIRE :</span>
+                <h5 class="fw-bold mb-0">${patientName}</h5>
+                <small class="text-muted">N° Carte CMU : <strong>${cmuNum}</strong></small>
+              </div>
+              <div class="col-6 text-end">
+                <span class="small fw-bold d-block text-muted">PRATICIEN / STRUCTURE :</span>
+                <h5 class="fw-bold mb-0 text-success">${exam.provider_name}</h5>
+                <span class="badge bg-success">Certifié CNOM</span>
+              </div>
+            </div>
+
+            <h6 class="fw-bold text-uppercase mb-2" style="color: #059669;">📋 COMPTE-RENDU & CONCLUSION DIAGNOSTIQUE DU PRATICIEN :</h6>
+            <div class="p-4 border rounded-3 mb-4 bg-light fw-bold" style="font-size: 1.05rem; line-height: 1.8; color: #0f172a;">
+              ${exam.doctor_notes || 'Aucun compte-rendu médical disponible.'}
+            </div>
+
+            <div class="row align-items-center border-top pt-4">
+              <div class="col-8">
+                <strong class="small text-success d-block mb-1">Authentification Officielle UNAMUSC :</strong>
+                <p class="small text-muted mb-0">Ce document médical fait foi et est archivé de manière chiffrée dans le Dossier Médical Partagé du patient.</p>
+              </div>
+              <div class="col-4 text-center">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=${encodeURIComponent(`REPORT-${exam.id}-${cmuNum}`)}" alt="QR Code" style="width: 75px; height: 75px;" />
+                <div class="small fw-bold text-success mt-1">Signature Numérique Praticien</div>
+              </div>
+            </div>
+          </div>
+          <script>setTimeout(() => { window.print(); }, 400);</script>
+        </body>
+      </html>
+    `);
+    printWin.document.close();
+  };
+
+  // Impression du Cliché HD DICOM (Modale DICOM)
+  const handlePrintDicomClicheHD = (exam, clicheIndex = 1, isInverted = false) => {
+    if (!exam) return;
+    const citizenData = JSON.parse(localStorage.getItem('cmu-citizen') || '{}');
+    const patientName = citizenData.firstName ? `${citizenData.firstName} ${citizenData.lastName}` : 'Awa Ndiaye';
+    const cmuNum = citizenData.cmuNumber || 'CMU-DKR-2026-8812';
+
+    const printWin = window.open('', '_blank', 'width=980,height=1150');
+    printWin.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Cliche_DICOM_${exam.exam_type}_${cmuNum}.pdf</title>
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+          <style>
+            @page { size: A4 portrait; margin: 10mm; }
+            body { background: #ffffff !important; color: #0f172a !important; font-family: 'Inter', Arial, sans-serif; padding: 1rem; }
+            .cliche-box { background: #0f172a; color: #ffffff; border-radius: 16px; padding: 2.5rem; text-align: center; border: 3px solid #059669; filter: ${isInverted ? 'invert(1)' : 'none'}; }
+            .no-print { margin-bottom: 1.5rem; text-align: center; }
+            @media print { .no-print { display: none !important; } body { padding: 0 !important; } }
+          </style>
+        </head>
+        <body>
+          <div class="no-print">
+            <button onclick="window.print()" class="btn btn-success fw-bold px-4 py-2 me-2" style="background: #059669;">🖨️ Imprimer le Cliché HD A4</button>
+            <button onclick="window.close()" class="btn btn-secondary fw-bold px-3 py-2">Fermer</button>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-3">
+            <div class="d-flex align-items-center gap-3">
+              <img src="/senegal_flag.png" alt="Drapeau" style="width: 45px; height: 30px; object-fit: cover; border-radius: 4px;" />
+              <div>
+                <h6 class="fw-bold mb-0 text-uppercase" style="color: #059669;">UNAMUSC SÉNÉGAL — IMAGERIE RADIOLOGIQUE DICOM 3.0</h6>
+                <small class="text-muted">Assuré : <strong>${patientName}</strong> (${cmuNum})</small>
+              </div>
+            </div>
+            <span class="badge bg-success px-3 py-2">Cliché HD ${clicheIndex} / ${exam.cliche_count || 3}</span>
+          </div>
+
+          <div class="cliche-box my-3">
+            <span style="font-size: 6rem;">${exam.exam_type === 'Analyse' ? '🧪' : exam.exam_type === 'Radio' ? '🩻' : '🦴'}</span>
+            <h3 class="fw-bold mt-3 text-white">${exam.title}</h3>
+            <p className="text-info mb-0">${exam.provider_name}</p>
+            <small className="text-white-50">Matrice DICOM 1080p High Resolution • Identifiant Cliché : DICOM-${exam.id}-${clicheIndex}</small>
+          </div>
+
+          <div class="p-3 border rounded-3 bg-light mb-3">
+            <strong class="text-success d-block mb-1">Conclusion Diagnostique du Radiologue :</strong>
+            <p class="mb-0 small">${exam.doctor_notes}</p>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center border-top pt-3">
+            <small class="text-muted">Fait le ${new Date(exam.exam_date).toLocaleDateString('fr-FR')} • Signature Numérique Praticien</small>
+            <img src="https://api.qrserver.com/v1/create-qr-code/?size=70x70&data=${encodeURIComponent(`DICOM-${exam.id}-${cmuNum}`)}" alt="QR" style="width: 55px; height: 55px;" />
           </div>
           <script>setTimeout(() => { window.print(); }, 400);</script>
         </body>
@@ -577,7 +776,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                     style={{ background: '#059669', border: 'none', borderRadius: '10px' }}
                     onClick={() => setShowAddExamModal(true)}
                   >
-                    ➕ Saisir un Examen
+                    ➕ Saisir un Examen (Médecin)
                   </button>
                 )}
               </div>
@@ -606,9 +805,10 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                           setDicomZoom(1);
                           setDicomInvert(false);
                           setActiveCliche(1);
+                          setEditingNotes(img.doctor_notes || '');
                         }}
                       >
-                        👁️ Consulter le rapport PDF / clichés HD
+                        👁️ Consulter / Éditer la Visionneuse DICOM & Rapport PDF
                       </button>
                     </div>
                   ))}
@@ -616,17 +816,32 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
               )}
             </div>
 
-            {/* Codes patients interopérables */}
+            {/* Code Patient Hospitalier Interopérable (EXCLUSIVITÉ SUPER ADMIN) */}
             <div className="card shadow-sm border-0 p-4" style={{ borderRadius: '24px', background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
-              <h4 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-                <span>🔗</span> Code Patient Hospitalier Interopérable
-              </h4>
+              <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <h4 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
+                  <span>🔗</span> Code Patient Hospitalier Interopérable
+                </h4>
+                {isSuperAdmin ? (
+                  <button 
+                    type="button" 
+                    className="btn btn-sm btn-primary fw-bold px-3 py-1.5"
+                    style={{ borderRadius: '10px' }}
+                    onClick={() => setShowAddCodeModal(true)}
+                  >
+                    ➕ Lier Code Hospitalier (Super Admin)
+                  </button>
+                ) : (
+                  <span className="badge bg-secondary">🔒 Gestion Exclusive Super Admin</span>
+                )}
+              </div>
+
               <p className="small text-muted mb-3" style={{ fontSize: '0.88rem' }}>
-                Identifiants hospitaliers reconnus automatiquement lors du scan de votre QR code à l'accueil de l'hôpital.
+                Identifiants hospitaliers uniques (IPP / DHIS2) liés aux structures publiques et privées du Sénégal par la direction du Super Admin.
               </p>
 
               {profileData?.externalCodes?.length === 0 ? (
-                <div className="badge bg-secondary p-2">Aucun code externe associé pour le moment.</div>
+                <div className="badge bg-secondary p-2">Aucun code hospitalier associé pour le moment.</div>
               ) : (
                 <ul className="list-group">
                   {profileData?.externalCodes?.map((code) => (
@@ -634,9 +849,9 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                       <div>
                         <strong style={{ color: 'var(--text-main)' }}>{code.system_name}</strong>
                         <br />
-                        <code className="text-success fw-bold">{code.external_patient_code}</code>
+                        <code className="text-success fw-bold fs-6">{code.external_patient_code}</code>
                       </div>
-                      <span className="badge bg-success">Actif & synchronisé</span>
+                      <span className="badge bg-success px-2.5 py-1">Validé par Super Admin</span>
                     </li>
                   ))}
                 </ul>
@@ -646,7 +861,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
         </div>
       )}
 
-      {/* MODALE 1 : Visionneuse d'imagerie médicale & Rapport PDF */}
+      {/* MODALE 1 : Visionneuse d'imagerie médicale & Rapport PDF (Saisie Médecin & Impression PDF) */}
       {viewingExam && (
         <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(6px)' }}>
           <div className="modal-dialog modal-dialog-centered modal-lg">
@@ -719,28 +934,53 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                   </button>
                 </div>
 
-                {/* Compte-rendu officiel du praticien */}
+                {/* Compte-rendu officiel du praticien (Affichage Assuré / Édition Médecin) */}
                 <div className="text-start p-3.5 rounded-3 mb-3" style={{ background: 'var(--bg-body)', border: '1px solid var(--border-color)' }}>
-                  <h6 className="fw-bold text-success mb-2">📋 Compte-rendu médical certifié :</h6>
-                  <p className="mb-2" style={{ fontSize: '0.95rem', lineHeight: '1.6', color: 'var(--text-main)' }}>{viewingExam.doctor_notes}</p>
+                  <h6 className="fw-bold text-success mb-2">📋 Compte-rendu médical & Conclusion Diagnostique :</h6>
+                  
+                  {isAgent ? (
+                    <div className="mb-2">
+                      <textarea 
+                        className="form-control input p-2.5 mb-2 fw-bold" 
+                        rows="3"
+                        value={editingNotes}
+                        onChange={(e) => setEditingNotes(e.target.value)}
+                        placeholder="Rédigez ou mettez à jour le compte-rendu médical..."
+                        style={{ borderRadius: '10px' }}
+                      />
+                      <button 
+                        type="button"
+                        className="btn btn-sm btn-success fw-bold text-white px-3"
+                        style={{ borderRadius: '8px', background: '#059669' }}
+                        onClick={handleSaveExamNotesByDoctor}
+                      >
+                        💾 Certifier & Sauvegarder la Conclusion (Dr. {activeDoctorAccount})
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="mb-2" style={{ fontSize: '0.95rem', lineHeight: '1.6', color: 'var(--text-main)' }}>
+                      {viewingExam.doctor_notes}
+                    </p>
+                  )}
+
                   <div className="small text-muted border-top pt-2 mt-2">
-                    👨‍⚕️ Prescrit par : <strong>{viewingExam.provider_name}</strong> • Validé le {new Date(viewingExam.exam_date).toLocaleDateString('fr-FR')}
+                    👨‍⚕️ Prescrit / Validé par : <strong>{viewingExam.provider_name}</strong> • Date : {new Date(viewingExam.exam_date).toLocaleDateString('fr-FR')}
                   </div>
                 </div>
 
                 <div className="d-flex justify-content-center gap-2 flex-wrap">
                   <button 
                     type="button" 
-                    className="btn btn-success fw-bold text-white px-4 py-2"
-                    onClick={() => alert(`Rapport PDF certifié pour "${viewingExam.title}" téléchargé avec succès !`)}
+                    className="btn btn-success fw-bold text-white px-4 py-2 shadow-sm"
+                    onClick={() => handleDownloadExamReportPDF(viewingExam)}
                     style={{ borderRadius: '10px', background: '#059669' }}
                   >
                     📥 Télécharger le rapport PDF certifié
                   </button>
                   <button 
                     type="button" 
-                    className="btn btn-outline-secondary fw-semibold px-3 py-2"
-                    onClick={() => window.print()}
+                    className="btn btn-outline-secondary fw-bold px-4 py-2 shadow-sm"
+                    onClick={() => handlePrintDicomClicheHD(viewingExam, activeCliche, dicomInvert)}
                     style={{ borderRadius: '10px' }}
                   >
                     🖨️ Imprimer le cliché HD
@@ -871,6 +1111,63 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                   <button type="button" className="btn btn-secondary" onClick={() => setShowAddExamModal(false)}>Annuler</button>
                   <button type="submit" className="btn btn-success text-white fw-bold px-4" style={{ background: '#059669', borderColor: '#059669' }}>
                     💾 Enregistrer & Certifier au Dossier Médical
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODALE 3 : Ajouter un Code Patient Hospitalier (EXCLUSIVITÉ SUPER ADMIN) */}
+      {showAddCodeModal && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(6px)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content shadow-lg border-0" style={{ borderRadius: '24px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+              <div className="modal-header border-bottom p-3" style={{ borderColor: 'var(--border-color)', background: '#2563eb', color: '#ffffff' }}>
+                <h5 className="modal-title fw-bold">
+                  🔗 Lier un Code Patient Hospitalier (Super Admin UNAMUSC)
+                </h5>
+                <button className="btn-close btn-close-white" onClick={() => setShowAddCodeModal(false)}></button>
+              </div>
+
+              <form onSubmit={handleAddHospitalCodeSuperAdmin} className="modal-body p-4">
+                <p className="small text-muted mb-3">
+                  Seul le Super Admin a le pouvoir d'interconnecter un identifiant hospitalier externe (IPP Fann, DHIS2, Le Dantec, etc.) à la carte CMU.
+                </p>
+
+                <div className="mb-3">
+                  <label className="form-label small fw-bold">Nom du Système / Hôpital *</label>
+                  <input 
+                    type="text" 
+                    className="form-control input p-2.5 fw-bold" 
+                    placeholder="Ex: Hôpital Dalal Jamm (SIGOB)"
+                    value={newHospitalCode.system_name}
+                    onChange={(e) => setNewHospitalCode({ ...newHospitalCode, system_name: e.target.value })}
+                    required
+                    style={{ borderRadius: '10px' }}
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="form-label small fw-bold">Code / Identifiant IPP Externe *</label>
+                  <input 
+                    type="text" 
+                    className="form-control input p-2.5 fw-bold text-success" 
+                    placeholder="Ex: IPP-DALAL-2026-4410"
+                    value={newHospitalCode.external_patient_code}
+                    onChange={(e) => setNewHospitalCode({ ...newHospitalCode, external_patient_code: e.target.value })}
+                    required
+                    style={{ borderRadius: '10px' }}
+                  />
+                </div>
+
+                <div className="d-flex justify-content-end gap-2">
+                  <button type="button" className="btn btn-secondary fw-bold" onClick={() => setShowAddCodeModal(false)}>
+                    Annuler
+                  </button>
+                  <button type="submit" className="btn btn-primary fw-bold px-4 text-white">
+                    🔗 Lier le Code IPP
                   </button>
                 </div>
               </form>
