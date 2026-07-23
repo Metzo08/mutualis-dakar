@@ -1,6 +1,27 @@
 import React, { useState, useEffect } from 'react';
 
-export default function MedicalProfile({ lang = 'fr' }) {
+export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, partnerUser = null }) {
+  // Identification du rôle et accès
+  const isAgent = (userRole === 'agent' || !!agentUser || !!partnerUser);
+
+  // Praticiens habilités par le Super Admin (synchro localStorage)
+  const defaultAccreditedDoctors = [
+    { id: 1, name: 'Dr. Aminata Ndiaye', specialty: 'Pédiatrie & Santé Familiale', cnom: 'CNOM-SN-2026-8819' },
+    { id: 2, name: 'Dr. Cheikh Tidiane Seck', specialty: 'Cardiologie & Médecine Générale', cnom: 'CNOM-SN-2026-9921' },
+    { id: 3, name: 'Dr. Mariama Ba', specialty: 'Gynécologie-Obstétrique', cnom: 'CNOM-SN-2026-3310' }
+  ];
+
+  const [accreditedDoctors, setAccreditedDoctors] = useState(() => {
+    try {
+      const stored = localStorage.getItem('cmu_telemed_doctors');
+      return stored ? JSON.parse(stored) : defaultAccreditedDoctors;
+    } catch (e) {
+      return defaultAccreditedDoctors;
+    }
+  });
+
+  const [activeDoctorAccount, setActiveDoctorAccount] = useState(accreditedDoctors[0]?.name || 'Dr. Aminata Ndiaye');
+
   const defaultProfile = {
     antecedents: {
       blood_group: 'O+',
@@ -121,8 +142,14 @@ export default function MedicalProfile({ lang = 'fr' }) {
     fetchProfile();
   }, []);
 
+  // Sauvegarde des Antécédents (Exclusivité Médecin)
   const handleSaveAntecedents = async (e) => {
     e.preventDefault();
+    if (!isAgent) {
+      alert('🔒 Seul le Médecin Habilité peut mettre à jour le dossier médical.');
+      return;
+    }
+
     setSavedMsg('');
     try {
       const citizenData = JSON.parse(localStorage.getItem('cmu-citizen') || '{}');
@@ -136,13 +163,14 @@ export default function MedicalProfile({ lang = 'fr' }) {
           chronic_conditions: chronicConditions,
           past_surgeries: pastSurgeries,
           emergency_contact_name: emergencyName,
-          emergency_contact_phone: emergencyPhone
+          emergency_contact_phone: emergencyPhone,
+          updated_by: activeDoctorAccount
         })
       });
     } catch (err) {
       console.warn(err);
     }
-    setSavedMsg('Antécédents médicaux et groupe sanguin enregistrés avec succès dans votre dossier médical partagé.');
+    setSavedMsg(`✅ Antécédents médicaux certifiés et enregistrés par le ${activeDoctorAccount} dans le Dossier Médical Partagé.`);
   };
 
   // Ajout d'une radio, scanner ou analyse par un prestataire / médecin
@@ -153,15 +181,17 @@ export default function MedicalProfile({ lang = 'fr' }) {
       return;
     }
 
+    const doctorNameStr = activeDoctorAccount || newExam.provider_name || 'Dr. Aminata Ndiaye';
+
     const createdExam = {
       id: Date.now(),
       title: newExam.title,
       exam_type: newExam.exam_type,
-      provider_name: newExam.provider_name || 'Dr. Prestataire Agréé UNAMUSC',
+      provider_name: doctorNameStr,
       exam_date: new Date(newExam.exam_date).toISOString(),
       doctor_notes: newExam.doctor_notes,
       cliche_count: 3,
-      status: 'Validé & Transmis par Prestataire'
+      status: 'Validé & Certifié par le Praticien'
     };
 
     const existingLocal = JSON.parse(localStorage.getItem('cmu_medical_imaging') || '[]');
@@ -182,79 +212,223 @@ export default function MedicalProfile({ lang = 'fr' }) {
       doctor_notes: '',
       exam_date: new Date().toISOString().slice(0, 10)
     });
-    setSavedMsg(`L'examen "${createdExam.title}" (${createdExam.exam_type}) a été ajouté et rattaché avec succès au dossier médical.`);
+    setSavedMsg(`L'examen "${createdExam.title}" (${createdExam.exam_type}) a été certifié par ${doctorNameStr} et ajouté au dossier.`);
+  };
+
+  // Impression / Téléchargement du Carnet de Santé A4 PDF (Assuré)
+  const handlePrintMedicalRecordPDF = () => {
+    const citizenData = JSON.parse(localStorage.getItem('cmu-citizen') || '{}');
+    const name = citizenData.firstName ? `${citizenData.firstName} ${citizenData.lastName}` : 'Awa Ndiaye';
+    const cmuNum = citizenData.cmuNumber || 'CMU-DKR-2026-8812';
+
+    const printWin = window.open('', '_blank', 'width=980,height=1150');
+    printWin.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Dossier_Medical_Certifie_${cmuNum}.pdf</title>
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+          <style>
+            @page { size: A4 portrait; margin: 12mm; }
+            body { background: #ffffff !important; color: #0f172a !important; font-family: 'Inter', Arial, sans-serif; padding: 1.5rem; }
+            .cert-box { border: 2.5px solid #059669; border-radius: 16px; padding: 2rem; background: #ffffff; }
+            .no-print { margin-bottom: 1.5rem; text-align: center; }
+            @media print { .no-print { display: none !important; } body { padding: 0 !important; } }
+          </style>
+        </head>
+        <body>
+          <div class="no-print">
+            <button onclick="window.print()" class="btn btn-success fw-bold px-4 py-2 me-2" style="background: #059669;">🖨️ Imprimer le Carnet de Santé A4</button>
+            <button onclick="window.close()" class="btn btn-secondary fw-bold px-3 py-2">Fermer</button>
+          </div>
+
+          <div class="cert-box">
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-4">
+              <div class="d-flex align-items-center gap-3">
+                <img src="/senegal_flag.png" alt="Drapeau" style="width: 54px; height: 36px; object-fit: cover; border-radius: 4px; border: 1.5px solid #d97706;" />
+                <div>
+                  <h6 class="fw-bold mb-0 text-uppercase" style="color: #059669;">RÉPUBLIQUE DU SÉNÉGAL</h6>
+                  <small class="text-muted">Un Peuple — Un But — Une Foi</small><br />
+                  <strong class="small text-uppercase" style="color: #0f172a;">UNAMUSC SÉNÉGAL — DOSSIER MÉDICAL INFORMATISÉ (DMI)</strong>
+                </div>
+              </div>
+              <img src="/unamusc_logo.png" alt="UNAMUSC" style="width: 85px; height: auto;" />
+            </div>
+
+            <div class="text-center my-4 p-3 rounded-3" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
+              <h4 class="fw-bold text-uppercase mb-1" style="color: #059669;">CARNET DE SANTÉ NUMÉRIQUE & ANTÉCÉDENTS CERTIFIÉS</h4>
+              <small class="text-muted">Extrait officiel certifié au ${new Date().toLocaleDateString('fr-FR')}</small>
+            </div>
+
+            <div class="row g-3 mb-4 p-3 rounded-3" style="background: #f8fafc; border: 1.5px solid #cbd5e1;">
+              <div class="col-6">
+                <span class="small fw-bold d-block text-muted">ASSURÉ BÉNÉFICIAIRE :</span>
+                <h5 class="fw-bold mb-0">${name}</h5>
+                <small class="text-muted">N° Carte CMU : <strong>${cmuNum}</strong></small>
+              </div>
+              <div class="col-6 text-end">
+                <span class="small fw-bold d-block text-muted">GROUPE SANGUIN & RHÉSUS :</span>
+                <h4 class="fw-bold text-danger mb-0">${bloodGroup}</h4>
+                <span class="badge bg-success">Antécédents Certifiés CNOM</span>
+              </div>
+            </div>
+
+            <h6 class="fw-bold text-uppercase mb-2" style="color: #059669;">🩺 SYNTHÈSE DES ANTÉCÉDENTS MÉDICAUX :</h6>
+            <table class="table table-bordered mb-4">
+              <tbody>
+                <tr>
+                  <th style="width: 35%; background: #f8fafc;">Allergies Majeures :</th>
+                  <td><strong class="text-danger">${allergies || 'Aucune connue'}</strong></td>
+                </tr>
+                <tr>
+                  <th style="background: #f8fafc;">Pathologies Chroniques (ALD) :</th>
+                  <td><strong>${chronicConditions || 'Aucune'}</strong></td>
+                </tr>
+                <tr>
+                  <th style="background: #f8fafc;">Chirurgies & Interventions Passées :</th>
+                  <td>${pastSurgeries || 'Aucune'}</td>
+                </tr>
+                <tr>
+                  <th style="background: #f8fafc;">Contact d'Urgence :</th>
+                  <td>${emergencyName} (${emergencyPhone})</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h6 class="fw-bold text-uppercase mb-2" style="color: #059669;">🩻 HISTORIQUE D'IMAGERIE & ANALYSES CERTIFIÉES :</h6>
+            <table class="table table-striped table-bordered mb-4">
+              <thead style="background: #f1f5f9;">
+                <tr>
+                  <th>Examen & Intitulé</th>
+                  <th>Etablissement / Praticien</th>
+                  <th>Date</th>
+                  <th>Conclusion Médicale</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${profileData.imaging.map(img => `
+                  <tr>
+                    <td><strong>${img.title}</strong> (${img.exam_type})</td>
+                    <td>${img.provider_name}</td>
+                    <td>${new Date(img.exam_date).toLocaleDateString('fr-FR')}</td>
+                    <td><small>${img.doctor_notes}</small></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+
+            <div class="row align-items-center border-top pt-4">
+              <div class="col-8">
+                <strong class="small text-success d-block mb-1">Authentification Officielle UNAMUSC :</strong>
+                <p class="small text-muted mb-0">Ce document médical chiffré fait foi auprès des structures hospitalières et officines agréées au Sénégal.</p>
+              </div>
+              <div class="col-4 text-center">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=${encodeURIComponent(`DMP-2026-${cmuNum}`)}" alt="QR Code" style="width: 75px; height: 75px;" />
+                <div class="small fw-bold text-success mt-1">Signature Numérique CNOM</div>
+              </div>
+            </div>
+          </div>
+          <script>setTimeout(() => { window.print(); }, 400);</script>
+        </body>
+      </html>
+    `);
+    printWin.document.close();
   };
 
   return (
     <div className="container py-4 fade-in-up">
-      {/* Banner signature de la plateforme avec fond vert et image thématique (Titre & Boutons centrés) */}
+      {/* Banner signature de la plateforme avec fond vert et image thématique */}
       <section 
         className="banner-mini text-white mb-4 rounded-4 overflow-hidden position-relative text-center"
         style={{
-          background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.93), rgba(4, 120, 87, 0.88)), url("/csu_profile_hero_real.png") center/cover no-repeat',
+          background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.95), rgba(4, 120, 87, 0.92)), url("/csu_profile_hero_real.png") center/cover no-repeat',
           padding: '3rem 2rem',
-          boxShadow: '0 10px 25px -5px rgba(5, 150, 105, 0.3)',
+          boxShadow: '0 15px 30px -10px rgba(5, 150, 105, 0.4)',
           borderBottom: '1px solid var(--border-color)'
         }}
       >
         <div className="d-flex flex-column align-items-center justify-content-center position-relative text-center mx-auto" style={{ zIndex: 2, maxWidth: '850px' }}>
           <span 
-            className="badge px-3 py-1 mb-2 fw-semibold d-inline-block text-center"
+            className="badge px-3 py-1.5 mb-3 fw-bold d-inline-block text-center shadow-sm"
             style={{
               background: 'rgba(255, 255, 255, 0.22)',
               color: '#ffffff',
-              backdropFilter: 'blur(4px)',
+              backdropFilter: 'blur(6px)',
               borderRadius: '20px',
-              fontSize: '0.82rem',
-              border: '1px solid rgba(255, 255, 255, 0.3)'
+              fontSize: '0.85rem',
+              border: '1px solid rgba(255, 255, 255, 0.4)'
             }}
           >
-            🩺 Dossier médical partagé (DMP) — Radios, Scanners & Biologie sur QR Code
+            🩺 Dossier Médical Partagé (DMP) — Antécédents, Radios & Biologie Certifiés CNOM
           </span>
-          <h1 className="fw-bold mb-2 text-white text-center" style={{ fontSize: '2rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
-            {lang === 'wo' ? 'Tére fajj bu féex (Dossier médical & antécédents)' : 'Dossier médical, antécédents & imagerie'}
+          <h1 className="fw-bold mb-2 text-white text-center" style={{ fontSize: '2.2rem', textShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
+            {lang === 'wo' ? 'Tére fajj bu féex (Dossier médical & antécédents)' : 'Dossier Médical, Antécédents & Radiographies'}
           </h1>
-          <p className="mb-3 text-white-50 text-center mx-auto" style={{ fontSize: '0.98rem', lineHeight: '1.6', textShadow: '0 1px 2px rgba(0,0,0,0.2)', maxWidth: '750px' }}>
-            {lang === 'wo'
-              ? 'Fi nga mën a gise sa groupe sanguin, allergies ak résultats radio/scanner ci sa QR code.'
-              : 'Consultez vos antécédents, votre groupe sanguin, vos résultats d\'examens (scanner/radio/biologie) et gérez vos codes patients hospitaliers.'}
+          <p className="mb-4 text-white-50 text-center mx-auto" style={{ fontSize: '1.02rem', lineHeight: '1.6', textShadow: '0 1px 3px rgba(0,0,0,0.3)', maxWidth: '750px' }}>
+            {isAgent
+              ? 'Mode Praticien Habilité : Enrichissez le dossier médical du patient après consultation et téléversez les examens d\'imagerie.'
+              : 'Espace Assuré (Mode Lecture Seule) : Consultez vos antécédents, vos radiographies et téléchargez votre carnet de santé numérique certifié.'}
           </p>
 
           <div className="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-2 w-100">
+            {isAgent && (
+              <button 
+                type="button"
+                className="btn fw-bold text-white shadow-sm"
+                style={{
+                  background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                  border: 'none',
+                  borderRadius: '12px',
+                  padding: '0.7rem 1.4rem',
+                  fontSize: '0.92rem'
+                }}
+                onClick={() => setShowAddExamModal(true)}
+              >
+                ➕ Ajouter une analyse, radio ou rapport médical
+              </button>
+            )}
+
             <button 
               type="button"
               className="btn fw-bold text-white shadow-sm"
               style={{
-                background: 'var(--primary)',
-                border: 'none',
+                background: 'rgba(255, 255, 255, 0.22)',
+                border: '1.5px solid rgba(255, 255, 255, 0.4)',
                 borderRadius: '12px',
-                padding: '0.65rem 1.4rem',
-                fontSize: '0.92rem',
-                cursor: 'pointer'
+                padding: '0.7rem 1.4rem',
+                fontSize: '0.92rem'
               }}
-              onClick={() => setShowAddExamModal(true)}
+              onClick={handlePrintMedicalRecordPDF}
             >
-              ➕ Ajouter une analyse, radio ou examen
-            </button>
-
-            <button 
-              type="button"
-              className="btn fw-semibold text-white"
-              style={{
-                background: 'rgba(255, 255, 255, 0.2)',
-                border: '1px solid rgba(255, 255, 255, 0.4)',
-                borderRadius: '12px',
-                padding: '0.65rem 1.4rem',
-                fontSize: '0.92rem',
-                cursor: 'pointer'
-              }}
-              onClick={fetchProfile}
-            >
-              🔄 {lang === 'wo' ? 'Yessal dossier bi' : 'Actualiser le dossier'}
+              🖨️ Imprimer / Télécharger le Carnet de Santé PDF A4
             </button>
           </div>
         </div>
       </section>
+
+      {/* SÉLECTEUR DE COMPTE PRATICIEN SI MODE AGENT / MÉDECIN */}
+      {isAgent && (
+        <div className="card p-3 mb-4 rounded-4 shadow-sm border" style={{ background: 'var(--card-bg)', borderColor: 'var(--border-color)' }}>
+          <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div className="d-flex align-items-center gap-2">
+              <span className="badge bg-primary px-3 py-2 fw-bold">👨‍⚕️ COMPTE PRATICIEN HABILITÉ (SUPER ADMIN)</span>
+              <span className="small text-muted">Praticien actuellement connecté pour la saisie :</span>
+            </div>
+            <select 
+              className="form-select form-select-sm fw-bold border-primary"
+              value={activeDoctorAccount}
+              onChange={(e) => setActiveDoctorAccount(e.target.value)}
+              style={{ borderRadius: '10px', maxWidth: '280px' }}
+            >
+              {accreditedDoctors.map(doc => (
+                <option key={doc.id} value={doc.name}>
+                  👨‍⚕️ {doc.name} ({doc.specialty})
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
 
       {savedMsg && (
         <div className="alert alert-success d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm">
@@ -269,22 +443,33 @@ export default function MedicalProfile({ lang = 'fr' }) {
         <div className="row g-4">
           {/* Antécédents médicaux & Groupe sanguin */}
           <div className="col-md-6">
-            <div className="card shadow-sm border-0 p-4 mb-4" style={{ borderRadius: '16px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-              <h4 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-                <span>🩸</span> Groupe Sanguin & Antécédents
-              </h4>
+            <div className="card shadow-sm border-0 p-4 mb-4 h-100" style={{ borderRadius: '24px', background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h4 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
+                  <span>🩸</span> Groupe Sanguin & Antécédents
+                </h4>
+                {isAgent ? (
+                  <span className="badge bg-success">✏️ Écriture Praticien</span>
+                ) : (
+                  <span className="badge bg-secondary text-white">🔒 Lecture Seule (Assuré)</span>
+                )}
+              </div>
+              
               <p className="small text-muted mb-4" style={{ fontSize: '0.88rem' }}>
-                Ces données d'urgence sont chiffrées et accessibles lors du scan de votre QR code CMU.
+                {isAgent 
+                  ? 'En tant que médecin accrédité par le Super Admin, vous pouvez enrichir et enregistrer les antécédents médicaux certifiés du patient.' 
+                  : 'Ces données d\'urgence sont certifiées par votre médecin et enregistrées dans votre dossier médical partagé.'}
               </p>
 
               <form onSubmit={handleSaveAntecedents}>
                 <div className="mb-3">
                   <label className="form-label small fw-semibold" style={{ color: 'var(--text-main)' }}>Groupe sanguin & Rhésus</label>
                   <select 
-                    className="form-select input fw-bold" 
+                    className="form-select input fw-bold p-2.5" 
                     value={bloodGroup} 
                     onChange={(e) => setBloodGroup(e.target.value)}
-                    style={{ borderRadius: '10px' }}
+                    disabled={!isAgent}
+                    style={{ borderRadius: '12px', background: 'var(--bg-body)', color: 'var(--text-main)' }}
                   >
                     <option value="O+">O Rhésus Positif (O+)</option>
                     <option value="O-">O Rhésus Négatif (O-)</option>
@@ -301,11 +486,12 @@ export default function MedicalProfile({ lang = 'fr' }) {
                   <label className="form-label small fw-semibold" style={{ color: 'var(--text-main)' }}>Allergies majeures</label>
                   <input 
                     type="text" 
-                    className="form-control input" 
+                    className="form-control input p-2.5" 
                     placeholder="Ex: Pénicilline, Aspirine, Pollen..." 
                     value={allergies} 
                     onChange={(e) => setAllergies(e.target.value)}
-                    style={{ borderRadius: '10px' }}
+                    disabled={!isAgent}
+                    style={{ borderRadius: '12px', background: 'var(--bg-body)', color: 'var(--text-main)' }}
                   />
                 </div>
 
@@ -313,11 +499,12 @@ export default function MedicalProfile({ lang = 'fr' }) {
                   <label className="form-label small fw-semibold" style={{ color: 'var(--text-main)' }}>Affections de longue durée (ALD) / Pathologies chroniques</label>
                   <input 
                     type="text" 
-                    className="form-control input" 
+                    className="form-control input p-2.5" 
                     placeholder="Ex: Hypertension, Diabète, Asthme..." 
                     value={chronicConditions} 
                     onChange={(e) => setChronicConditions(e.target.value)}
-                    style={{ borderRadius: '10px' }}
+                    disabled={!isAgent}
+                    style={{ borderRadius: '12px', background: 'var(--bg-body)', color: 'var(--text-main)' }}
                   />
                 </div>
 
@@ -325,11 +512,12 @@ export default function MedicalProfile({ lang = 'fr' }) {
                   <label className="form-label small fw-semibold" style={{ color: 'var(--text-main)' }}>Chirurgies & Interventions passées</label>
                   <input 
                     type="text" 
-                    className="form-control input" 
+                    className="form-control input p-2.5" 
                     placeholder="Ex: Appendicectomie (2021)..." 
                     value={pastSurgeries} 
                     onChange={(e) => setPastSurgeries(e.target.value)}
-                    style={{ borderRadius: '10px' }}
+                    disabled={!isAgent}
+                    style={{ borderRadius: '12px', background: 'var(--bg-body)', color: 'var(--text-main)' }}
                   />
                 </div>
 
@@ -338,50 +526,60 @@ export default function MedicalProfile({ lang = 'fr' }) {
                     <label className="form-label small fw-semibold" style={{ color: 'var(--text-main)' }}>Contact d'urgence (Nom)</label>
                     <input 
                       type="text" 
-                      className="form-control input" 
+                      className="form-control input p-2.5" 
                       value={emergencyName} 
                       onChange={(e) => setEmergencyName(e.target.value)}
-                      style={{ borderRadius: '10px' }}
+                      disabled={!isAgent}
+                      style={{ borderRadius: '12px', background: 'var(--bg-body)', color: 'var(--text-main)' }}
                     />
                   </div>
                   <div className="col-6">
                     <label className="form-label small fw-semibold" style={{ color: 'var(--text-main)' }}>Téléphone d'urgence</label>
                     <input 
                       type="text" 
-                      className="form-control input" 
+                      className="form-control input p-2.5" 
                       value={emergencyPhone} 
                       onChange={(e) => setEmergencyPhone(e.target.value)}
-                      style={{ borderRadius: '10px' }}
+                      disabled={!isAgent}
+                      style={{ borderRadius: '12px', background: 'var(--bg-body)', color: 'var(--text-main)' }}
                     />
                   </div>
                 </div>
 
-                <button 
-                  type="submit" 
-                  className="btn text-white fw-bold px-4 py-2" 
-                  style={{ background: 'var(--primary)', borderColor: 'var(--primary)', borderRadius: '10px' }}
-                >
-                  💾 Enregistrer mes antécédents médicaux
-                </button>
+                {isAgent ? (
+                  <button 
+                    type="submit" 
+                    className="btn text-white fw-bold px-4 py-2.5 w-100 shadow-sm" 
+                    style={{ background: 'linear-gradient(135deg, #059669 0%, #047857 100%)', border: 'none', borderRadius: '12px' }}
+                  >
+                    💾 Enregistrer & Certifier les Antécédents (Praticien)
+                  </button>
+                ) : (
+                  <div className="alert alert-secondary py-2 text-center small mb-0 rounded-3">
+                    🔒 Mode Lecture Seule : Seul votre médecin traitant accrédité peut certifier et modifier ces antécédents.
+                  </div>
+                )}
               </form>
             </div>
           </div>
 
           {/* Examens d'imagerie & Analyses de laboratoire */}
           <div className="col-md-6">
-            <div className="card shadow-sm border-0 p-4 mb-4" style={{ borderRadius: '16px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+            <div className="card shadow-sm border-0 p-4 mb-4" style={{ borderRadius: '24px', background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
               <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                 <h4 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
                   <span>🩻</span> Examens d'imagerie & Analyses
                 </h4>
-                <button 
-                  type="button"
-                  className="btn btn-sm text-white fw-bold px-3 py-1.5"
-                  style={{ background: '#059669', border: 'none', borderRadius: '8px' }}
-                  onClick={() => setShowAddExamModal(true)}
-                >
-                  ➕ Ajouter un examen
-                </button>
+                {isAgent && (
+                  <button 
+                    type="button"
+                    className="btn btn-sm text-white fw-bold px-3 py-1.5"
+                    style={{ background: '#059669', border: 'none', borderRadius: '10px' }}
+                    onClick={() => setShowAddExamModal(true)}
+                  >
+                    ➕ Saisir un Examen
+                  </button>
+                )}
               </div>
 
               {profileData?.imaging?.length === 0 ? (
@@ -389,7 +587,7 @@ export default function MedicalProfile({ lang = 'fr' }) {
               ) : (
                 <div className="list-group">
                   {profileData?.imaging?.map((img) => (
-                    <div key={img.id} className="list-group-item p-3 mb-2 rounded-3 border" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }}>
+                    <div key={img.id} className="list-group-item p-3 mb-2 rounded-4 border" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }}>
                       <div className="d-flex justify-content-between align-items-center mb-1">
                         <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>{img.title}</h6>
                         <span className={`badge ${img.exam_type === 'Analyse' ? 'bg-success' : 'bg-info'}`}>{img.exam_type}</span>
@@ -402,7 +600,7 @@ export default function MedicalProfile({ lang = 'fr' }) {
                       <button 
                         type="button"
                         className="btn btn-sm text-white fw-bold px-3 py-1.5 shadow-sm" 
-                        style={{ borderRadius: '8px', background: '#059669', border: 'none' }}
+                        style={{ borderRadius: '10px', background: '#059669', border: 'none' }}
                         onClick={() => {
                           setViewingExam(img);
                           setDicomZoom(1);
@@ -419,9 +617,9 @@ export default function MedicalProfile({ lang = 'fr' }) {
             </div>
 
             {/* Codes patients interopérables */}
-            <div className="card shadow-sm border-0 p-4" style={{ borderRadius: '16px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+            <div className="card shadow-sm border-0 p-4" style={{ borderRadius: '24px', background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
               <h4 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-                <span>🔗</span> Code patient hospitalier interopérable
+                <span>🔗</span> Code Patient Hospitalier Interopérable
               </h4>
               <p className="small text-muted mb-3" style={{ fontSize: '0.88rem' }}>
                 Identifiants hospitaliers reconnus automatiquement lors du scan de votre QR code à l'accueil de l'hôpital.
@@ -450,9 +648,9 @@ export default function MedicalProfile({ lang = 'fr' }) {
 
       {/* MODALE 1 : Visionneuse d'imagerie médicale & Rapport PDF */}
       {viewingExam && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)' }}>
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(6px)' }}>
           <div className="modal-dialog modal-dialog-centered modal-lg">
-            <div className="modal-content shadow-lg border-0" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+            <div className="modal-content shadow-lg border-0" style={{ borderRadius: '24px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
               <div className="modal-header border-bottom p-3" style={{ borderColor: 'var(--border-color)' }}>
                 <h5 className="modal-title fw-bold" style={{ color: 'var(--text-main)' }}>
                   🩻 Visionneuse DICOM & Rapport PDF — {viewingExam.title}
@@ -463,7 +661,7 @@ export default function MedicalProfile({ lang = 'fr' }) {
               <div className="modal-body p-4 text-center">
                 {/* Visualiseur de cliché DICOM HD */}
                 <div 
-                  className="p-4 rounded-3 mb-3 position-relative overflow-hidden" 
+                  className="p-4 rounded-4 mb-3 position-relative overflow-hidden" 
                   style={{ 
                     background: '#0f172a', 
                     color: '#fff',
@@ -494,7 +692,7 @@ export default function MedicalProfile({ lang = 'fr' }) {
                 </div>
 
                 {/* Compte-rendu officiel du praticien */}
-                <div className="text-start p-3 rounded-3 mb-3" style={{ background: 'var(--bg-body)', border: '1px solid var(--border-color)' }}>
+                <div className="text-start p-3.5 rounded-3 mb-3" style={{ background: 'var(--bg-body)', border: '1px solid var(--border-color)' }}>
                   <h6 className="fw-bold text-success mb-2">📋 Compte-rendu médical certifié :</h6>
                   <p className="mb-2" style={{ fontSize: '0.95rem', lineHeight: '1.6', color: 'var(--text-main)' }}>{viewingExam.doctor_notes}</p>
                   <div className="small text-muted border-top pt-2 mt-2">
@@ -505,15 +703,15 @@ export default function MedicalProfile({ lang = 'fr' }) {
                 <div className="d-flex justify-content-center gap-2 flex-wrap">
                   <button 
                     type="button" 
-                    className="btn btn-success fw-bold text-white px-4"
+                    className="btn btn-success fw-bold text-white px-4 py-2"
                     onClick={() => alert(`Rapport PDF certifié pour "${viewingExam.title}" téléchargé avec succès !`)}
-                    style={{ borderRadius: '10px' }}
+                    style={{ borderRadius: '10px', background: '#059669' }}
                   >
                     📥 Télécharger le rapport PDF certifié
                   </button>
                   <button 
                     type="button" 
-                    className="btn btn-outline-secondary fw-semibold px-3"
+                    className="btn btn-outline-secondary fw-semibold px-3 py-2"
                     onClick={() => window.print()}
                     style={{ borderRadius: '10px' }}
                   >
@@ -530,29 +728,29 @@ export default function MedicalProfile({ lang = 'fr' }) {
         </div>
       )}
 
-      {/* MODALE 2 : Ajouter une Analyse, Radio ou Examen par un Prestataire / Médecin */}
+      {/* MODALE 2 : Ajouter une Analyse, Radio ou Examen par un Prestataire / Médecin Habilité */}
       {showAddExamModal && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)' }}>
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(6px)' }}>
           <div className="modal-dialog modal-dialog-centered modal-lg">
-            <div className="modal-content shadow-lg border-0" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-              <div className="modal-header border-bottom p-3" style={{ borderColor: 'var(--border-color)' }}>
-                <h5 className="modal-title fw-bold" style={{ color: 'var(--text-main)' }}>
-                  ➕ Ajouter une analyse, radio ou examen médical (Prestataire / Médecin)
+            <div className="modal-content shadow-lg border-0" style={{ borderRadius: '24px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+              <div className="modal-header border-bottom p-3" style={{ borderColor: 'var(--border-color)', background: '#059669', color: '#ffffff' }}>
+                <h5 className="modal-title fw-bold">
+                  ➕ Enrichissement Dossier Médical — Ajout d'un Examen / Radio (Praticien Habilité)
                 </h5>
-                <button className="btn-close" onClick={() => setShowAddExamModal(false)}></button>
+                <button className="btn-close btn-close-white" onClick={() => setShowAddExamModal(false)}></button>
               </div>
 
               <form onSubmit={handleAddExam}>
                 <div className="modal-body p-4">
-                  <p className="small text-muted mb-4">
-                    Remplissez ce formulaire pour transmettre et lier immédiatement un résultat d'examen (DICOM, PDF, analyse de sang) au Dossier Médical Partagé du patient.
-                  </p>
+                  <div className="p-3 bg-light text-dark rounded-3 mb-4 small border">
+                    Praticien Émetteur : <strong>{activeDoctorAccount}</strong> (Compte habilité Super Admin)
+                  </div>
 
                   <div className="row g-3 mb-3">
                     <div className="col-md-6">
-                      <label className="form-label small fw-semibold">Type d'examen</label>
+                      <label className="form-label small fw-semibold">Type d'examen *</label>
                       <select 
-                        className="form-select input fw-bold" 
+                        className="form-select input fw-bold p-2.5" 
                         value={newExam.exam_type} 
                         onChange={(e) => setNewExam({ ...newExam, exam_type: e.target.value })}
                         style={{ borderRadius: '10px' }}
@@ -567,10 +765,10 @@ export default function MedicalProfile({ lang = 'fr' }) {
                     </div>
 
                     <div className="col-md-6">
-                      <label className="form-label small fw-semibold">Numéro CMU du patient</label>
+                      <label className="form-label small fw-semibold">Numéro CMU du patient *</label>
                       <input 
                         type="text" 
-                        className="form-control input fw-bold" 
+                        className="form-control input fw-bold p-2.5" 
                         value={newExam.patient_cmu} 
                         onChange={(e) => setNewExam({ ...newExam, patient_cmu: e.target.value })}
                         style={{ borderRadius: '10px' }}
@@ -583,7 +781,7 @@ export default function MedicalProfile({ lang = 'fr' }) {
                     <label className="form-label small fw-semibold">Intitulé / Titre de l'examen *</label>
                     <input 
                       type="text" 
-                      className="form-control input" 
+                      className="form-control input p-2.5" 
                       placeholder="Ex: Scanner Thoracique HD, Bilan Sanguin Complet..." 
                       value={newExam.title} 
                       onChange={(e) => setNewExam({ ...newExam, title: e.target.value })}
@@ -594,11 +792,11 @@ export default function MedicalProfile({ lang = 'fr' }) {
 
                   <div className="row g-3 mb-3">
                     <div className="col-md-6">
-                      <label className="form-label small fw-semibold">Prestataire / Médecin / Structure prescriptrice</label>
+                      <label className="form-label small fw-semibold">Prestataire / Structure médicale</label>
                       <input 
                         type="text" 
-                        className="form-control input" 
-                        placeholder="Ex: Dr. Mamadou Ndiaye — Hôpital Fann" 
+                        className="form-control input p-2.5" 
+                        placeholder="Ex: Hôpital Fann / Clinique de la Madeleine" 
                         value={newExam.provider_name} 
                         onChange={(e) => setNewExam({ ...newExam, provider_name: e.target.value })}
                         style={{ borderRadius: '10px' }}
@@ -609,7 +807,7 @@ export default function MedicalProfile({ lang = 'fr' }) {
                       <label className="form-label small fw-semibold">Date de réalisation d'examen</label>
                       <input 
                         type="date" 
-                        className="form-control input" 
+                        className="form-control input p-2.5" 
                         value={newExam.exam_date} 
                         onChange={(e) => setNewExam({ ...newExam, exam_date: e.target.value })}
                         style={{ borderRadius: '10px' }}
@@ -621,7 +819,7 @@ export default function MedicalProfile({ lang = 'fr' }) {
                   <div className="mb-3">
                     <label className="form-label small fw-semibold">Conclusion & Compte-rendu médical du praticien *</label>
                     <textarea 
-                      className="form-control input" 
+                      className="form-control input p-2.5" 
                       rows="3" 
                       placeholder="Rédigez ici la conclusion diagnostique ou les résultats d'analyses..." 
                       value={newExam.doctor_notes} 
@@ -631,7 +829,7 @@ export default function MedicalProfile({ lang = 'fr' }) {
                     />
                   </div>
 
-                  <div className="p-3 rounded-3 border text-center" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', borderStyle: 'dashed' }}>
+                  <div className="p-3.5 rounded-3 border text-center" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', borderStyle: 'dashed' }}>
                     <span className="fs-3">📄</span>
                     <div className="fw-semibold small mt-1">Fichier de cliché HD / Rapport PDF chiffré</div>
                     <small className="text-muted d-block mb-2">Simulateur de téléversement DICOM & PDF</small>
@@ -643,7 +841,9 @@ export default function MedicalProfile({ lang = 'fr' }) {
 
                 <div className="modal-footer border-top p-3" style={{ borderColor: 'var(--border-color)' }}>
                   <button type="button" className="btn btn-secondary" onClick={() => setShowAddExamModal(false)}>Annuler</button>
-                  <button type="submit" className="btn btn-success text-white fw-bold px-4">💾 Enregistrer & Transmettre au DMP</button>
+                  <button type="submit" className="btn btn-success text-white fw-bold px-4" style={{ background: '#059669', borderColor: '#059669' }}>
+                    💾 Enregistrer & Certifier au Dossier Médical
+                  </button>
                 </div>
               </form>
             </div>
