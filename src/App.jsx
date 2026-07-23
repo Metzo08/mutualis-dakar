@@ -593,9 +593,9 @@ export default function App() {
             />
           );
         case 'medical-profile':
-          return <MedicalProfile lang={lang} userRole={userRole} citizenUser={citizenUser} agentUser={agentUser} partnerUser={partnerUser} />;
+          return <MedicalProfile lang={lang} userRole={portalMode} citizenUser={citizenUser} agentUser={agentUser} partnerUser={partnerUser} />;
         case 'maternity':
-          return <MaternalHealth lang={lang} userRole={userRole} citizenUser={citizenUser} agentUser={agentUser} partnerUser={partnerUser} />;
+          return <MaternalHealth lang={lang} userRole={portalMode} citizenUser={citizenUser} agentUser={agentUser} partnerUser={partnerUser} />;
         case 'institution-coud':
           return <InstitutionPortal lang={lang} />;
         default:
