@@ -190,11 +190,13 @@ export default function Header({
 
       {/* 🌳 2. Un peu plus bas : Logo Officiel UNAMUSC Sénégal */}
       <div className="sidebar-brand-block mb-3 text-center" style={{ cursor: 'pointer', padding: '0 0.5rem' }} onClick={() => setView('home')}>
-        <img 
-          src="/unamusc_logo.png" 
-          alt="UNAMUSC Sénégal" 
-          style={{ width: '100px', height: 'auto', maxHeight: '85px', objectFit: 'contain', margin: '0 auto', display: 'block' }} 
-        />
+        <div className="p-2 rounded-3 bg-white shadow-sm d-inline-block border" style={{ borderColor: '#047857', maxWidth: '145px' }}>
+          <img 
+            src="/unamusc_logo.png" 
+            alt="UNAMUSC Sénégal" 
+            style={{ width: '115px', height: 'auto', maxHeight: '110px', objectFit: 'contain', margin: '0 auto', display: 'block' }} 
+          />
+        </div>
         <span className="fw-bold text-success d-block mt-2" style={{ fontSize: '0.85rem', letterSpacing: '0.5px', lineHeight: '1.2' }}>
           UNAMUSC SÉNÉGAL
         </span>
