@@ -599,23 +599,25 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
         </div>
       </section>
 
-      {/* Switcher de Rôle / Mode d'Accès Télémédecine */}
-      <div className="d-flex justify-content-center gap-3 mb-4 p-2 rounded-4 flex-wrap" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-        <button 
-          className={`btn fw-bold px-4 py-2.5 ${telemedRoleMode === 'citizen' ? 'btn-success text-white' : 'btn-outline-secondary'}`}
-          style={{ borderRadius: '12px', background: telemedRoleMode === 'citizen' ? '#059669' : 'transparent' }}
-          onClick={() => setTelemedRoleMode('citizen')}
-        >
-          👤 Espace Assuré / Patient (Salle d'Attente & Téléchargement Ordonnances)
-        </button>
-        <button 
-          className={`btn fw-bold px-4 py-2.5 ${telemedRoleMode === 'doctor' ? 'btn-primary text-white' : 'btn-outline-secondary'}`}
-          style={{ borderRadius: '12px' }}
-          onClick={() => setTelemedRoleMode('doctor')}
-        >
-          👨‍⚕️ Espace Médecin de Garde (File d'Attente Virtuelle & Téléconsultations)
-        </button>
-      </div>
+      {/* Barre de Mode d'Accès Télémédecine (Affichée uniquement pour les Médecins/Agents ou avec Code Praticien) */}
+      {isAgent ? (
+        <div className="d-flex justify-content-center gap-3 mb-4 p-2 rounded-4 flex-wrap" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+          <button 
+            className={`btn fw-bold px-4 py-2.5 ${telemedRoleMode === 'doctor' ? 'btn-primary text-white' : 'btn-outline-secondary'}`}
+            style={{ borderRadius: '12px' }}
+            onClick={() => setTelemedRoleMode('doctor')}
+          >
+            👨‍⚕️ Espace Médecin de Garde (File d'Attente Virtuelle & Téléconsultations)
+          </button>
+          <button 
+            className={`btn fw-bold px-4 py-2.5 ${telemedRoleMode === 'citizen' ? 'btn-success text-white' : 'btn-outline-secondary'}`}
+            style={{ borderRadius: '12px', background: telemedRoleMode === 'citizen' ? '#059669' : 'transparent' }}
+            onClick={() => setTelemedRoleMode('citizen')}
+          >
+            👁️ Vue Aperçu Espace Assuré
+          </button>
+        </div>
+      ) : null}
 
       {paymentSuccess && (
         <div className="alert alert-success alert-dismissible fade show d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm" role="alert">
