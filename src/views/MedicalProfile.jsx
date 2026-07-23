@@ -302,62 +302,62 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
               <div class="d-flex align-items-center gap-3">
                 <img src="/senegal_flag.png" alt="Drapeau" style="width: 54px; height: 36px; object-fit: cover; border-radius: 4px; border: 1.5px solid #d97706;" />
                 <div>
-                  <h6 class="fw-bold mb-0 text-uppercase" style="color: #059669;">RÉPUBLIQUE DU SÉNÉGAL</h6>
+                  <h6 class="fw-bold mb-0" style="color: #059669;">République du Sénégal</h6>
                   <small class="text-muted">Un Peuple — Un But — Une Foi</small><br />
-                  <strong class="small text-uppercase" style="color: #0f172a;">UNAMUSC SÉNÉGAL — DOSSIER MÉDICAL INFORMATISÉ (DMI)</strong>
+                  <strong class="small" style="color: #0f172a;">UNAMUSC Sénégal — Dossier médical informatisé (DMI)</strong>
                 </div>
               </div>
               <img src="/unamusc_logo.png" alt="UNAMUSC" style="width: 85px; height: auto;" />
             </div>
 
             <div class="text-center my-4 p-3 rounded-3" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
-              <h4 class="fw-bold text-uppercase mb-1" style="color: #059669;">CARNET DE SANTÉ NUMÉRIQUE & ANTÉCÉDENTS CERTIFIÉS</h4>
+              <h4 class="fw-bold mb-1" style="color: #059669;">Carnet de santé numérique & antécédents certifiés</h4>
               <small class="text-muted">Extrait officiel certifié au ${new Date().toLocaleDateString('fr-FR')}</small>
             </div>
 
             <div class="row g-3 mb-4 p-3 rounded-3" style="background: #f8fafc; border: 1.5px solid #cbd5e1;">
               <div class="col-6">
-                <span class="small fw-bold d-block text-muted">ASSURÉ BÉNÉFICIAIRE :</span>
+                <span class="small fw-bold d-block text-muted">Assuré bénéficiaire :</span>
                 <h5 class="fw-bold mb-0">${name}</h5>
                 <small class="text-muted">N° Carte CMU : <strong>${cmuNum}</strong></small>
               </div>
               <div class="col-6 text-end">
-                <span class="small fw-bold d-block text-muted">GROUPE SANGUIN & RHÉSUS :</span>
+                <span class="small fw-bold d-block text-muted">Groupe sanguin & rhésus :</span>
                 <h4 class="fw-bold text-danger mb-0">${bloodGroup}</h4>
-                <span class="badge bg-success">Antécédents Certifiés CNOM</span>
+                <span class="badge bg-success">Antécédents certifiés CNOM</span>
               </div>
             </div>
 
-            <h6 class="fw-bold text-uppercase mb-2" style="color: #059669;">🩺 SYNTHÈSE DES ANTÉCÉDENTS MÉDICAUX :</h6>
+            <h6 class="fw-bold mb-2" style="color: #059669;">🩺 Synthèse des antécédents médicaux :</h6>
             <table class="table table-bordered mb-4">
               <tbody>
                 <tr>
-                  <th style="width: 35%; background: #f8fafc;">Allergies Majeures :</th>
+                  <th style="width: 35%; background: #f8fafc;">Allergies majeures :</th>
                   <td><strong class="text-danger">${allergies || 'Aucune connue'}</strong></td>
                 </tr>
                 <tr>
-                  <th style="background: #f8fafc;">Pathologies Chroniques (ALD) :</th>
+                  <th style="background: #f8fafc;">Pathologies chroniques (ALD) :</th>
                   <td><strong>${chronicConditions || 'Aucune'}</strong></td>
                 </tr>
                 <tr>
-                  <th style="background: #f8fafc;">Chirurgies & Interventions Passées :</th>
+                  <th style="background: #f8fafc;">Chirurgies & interventions passées :</th>
                   <td>${pastSurgeries || 'Aucune'}</td>
                 </tr>
                 <tr>
-                  <th style="background: #f8fafc;">Contact d'Urgence :</th>
+                  <th style="background: #f8fafc;">Contact d'urgence :</th>
                   <td>${emergencyName} (${emergencyPhone})</td>
                 </tr>
               </tbody>
             </table>
 
-            <h6 class="fw-bold text-uppercase mb-2" style="color: #059669;">🩻 HISTORIQUE D'IMAGERIE & ANALYSES CERTIFIÉES :</h6>
+            <h6 class="fw-bold mb-2" style="color: #059669;">🩻 Historique d'imagerie & analyses certifiées :</h6>
             <table class="table table-striped table-bordered mb-4">
               <thead style="background: #f1f5f9;">
                 <tr>
                   <th>Examen & Intitulé</th>
                   <th>Etablissement / Praticien</th>
                   <th>Date</th>
-                  <th>Conclusion Médicale</th>
+                  <th>Conclusion médicale</th>
                 </tr>
               </thead>
               <tbody>
@@ -374,12 +374,12 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
 
             <div class="row align-items-center border-top pt-4">
               <div class="col-8">
-                <strong class="small text-success d-block mb-1">Authentification Officielle UNAMUSC :</strong>
+                <strong class="small text-success d-block mb-1">Authentification officielle UNAMUSC :</strong>
                 <p class="small text-muted mb-0">Ce document médical chiffré fait foi auprès des structures hospitalières et officines agréées au Sénégal.</p>
               </div>
               <div class="col-4 text-center">
                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=${encodeURIComponent(`DMP-2026-${cmuNum}`)}" alt="QR Code" style="width: 75px; height: 75px;" />
-                <div class="small fw-bold text-success mt-1">Signature Numérique CNOM</div>
+                <div class="small fw-bold text-success mt-1">Signature numérique CNOM</div>
               </div>
             </div>
           </div>
@@ -423,27 +423,27 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
               <div class="d-flex align-items-center gap-3">
                 <img src="/senegal_flag.png" alt="Drapeau" style="width: 54px; height: 36px; object-fit: cover; border-radius: 4px; border: 1.5px solid #d97706;" />
                 <div>
-                  <h6 class="fw-bold mb-0 text-uppercase" style="color: #059669;">RÉPUBLIQUE DU SÉNÉGAL</h6>
+                  <h6 class="fw-bold mb-0" style="color: #059669;">République du Sénégal</h6>
                   <small class="text-muted">Un Peuple — Un But — Une Foi</small><br />
-                  <strong class="small text-uppercase" style="color: #0f172a;">UNAMUSC SÉNÉGAL — RAPPORT MÉDICAL D'EXAMEN & IMAGERIE</strong>
+                  <strong class="small" style="color: #0f172a;">UNAMUSC Sénégal — Rapport médical d'examen & imagerie</strong>
                 </div>
               </div>
               <img src="/unamusc_logo.png" alt="UNAMUSC" style="width: 85px; height: auto;" />
             </div>
 
             <div class="text-center my-4 p-3 rounded-3" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
-              <h4 class="fw-bold text-uppercase mb-1" style="color: #059669;">RAPPORT OFFICIEL D'EXAMEN : ${exam.title?.toUpperCase()}</h4>
+              <h4 class="fw-bold mb-1" style="color: #059669;">Rapport officiel d'examen : ${exam.title}</h4>
               <small class="text-muted">Type : <strong>${exam.exam_type}</strong> • Réalisé le : <strong>${new Date(exam.exam_date).toLocaleDateString('fr-FR')}</strong></small>
             </div>
 
             <div class="row g-3 mb-4 p-3 rounded-3" style="background: #f8fafc; border: 1.5px solid #cbd5e1;">
               <div class="col-6">
-                <span class="small fw-bold d-block text-muted">ASSURÉ BÉNÉFICIAIRE :</span>
+                <span class="small fw-bold d-block text-muted">Assuré bénéficiaire :</span>
                 <h5 class="fw-bold mb-0">${patientName}</h5>
                 <small class="text-muted">N° Carte CMU : <strong>${cmuNum}</strong></small>
               </div>
               <div class="col-6 text-end">
-                <span class="small fw-bold d-block text-muted">PRATICIEN / STRUCTURE :</span>
+                <span class="small fw-bold d-block text-muted">Praticien / structure :</span>
                 <h5 class="fw-bold mb-0 text-success">${exam.provider_name}</h5>
                 <span class="badge bg-success">Certifié CNOM</span>
               </div>

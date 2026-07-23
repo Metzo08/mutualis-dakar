@@ -275,33 +275,33 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
               <div class="d-flex align-items-center gap-3">
                 <img src="/senegal_flag.png" alt="Drapeau" style="width: 54px; height: 36px; object-fit: cover; border-radius: 4px; border: 1.5px solid #d97706;" />
                 <div>
-                  <h6 class="fw-bold mb-0 text-uppercase" style="color: #059669;">RÉPUBLIQUE DU SÉNÉGAL</h6>
-                  <small class="text-muted">MINISTÈRE DE LA SANTÉ ET DE L'ACTION SOCIALE</small><br />
-                  <strong class="small text-uppercase" style="color: #0f172a;">CARNET DE SANTÉ MATERNELLE & INFANTILE NUMÉRIQUE (0 À 18 ANS)</strong>
+                  <h6 class="fw-bold mb-0" style="color: #059669;">République du Sénégal</h6>
+                  <small class="text-muted">Ministère de la Santé et de l'Action sociale</small><br />
+                  <strong class="small" style="color: #0f172a;">Carnet de santé maternelle & infantile numérique (0 à 18 ans)</strong>
                 </div>
               </div>
               <img src="/unamusc_logo.png" alt="UNAMUSC" style="width: 85px; height: auto;" />
             </div>
 
             <div class="text-center my-3 p-2.5 rounded-3" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
-              <h5 class="fw-bold text-uppercase mb-0" style="color: #059669;">CARNET NUMÉRIQUE OFFICIEL PÉRINATAL & SUIVI DE L'ENFANT 0-18 ANS</h5>
-              <small class="text-muted">Gratuité Totale CMU Accouchement + Gratuité des Soins Pédiatriques 0-5 ans au Sénégal</small>
+              <h5 class="fw-bold mb-0" style="color: #059669;">Carnet numérique officiel périnatal & suivi de l'enfant 0-18 ans</h5>
+              <small class="text-muted">Gratuité totale CMU accouchement + gratuité des soins pédiatriques 0-5 ans au Sénégal</small>
             </div>
 
             <div class="row g-2 mb-3 p-3 rounded-3" style="background: #f8fafc; border: 1.5px solid #cbd5e1;">
               <div class="col-6">
-                <small class="text-muted d-block fw-bold">MÈRE ASSURÉE : <strong>${data.mother_name || 'Awa Ndiaye'}</strong></small>
-                <small class="text-muted d-block">ENFANT : <strong>${data.child_name || 'Moussa Ndiaye'}</strong> (${data.child_gender === 'M' ? 'Garçon' : 'Fille'})</small>
-                <small class="text-muted">Date de Naissance : <strong>${data.child_dob ? new Date(data.child_dob).toLocaleDateString('fr-FR') : '14/05/2026'}</strong></small>
+                <small class="text-muted d-block fw-bold">Mère assurée : <strong>${data.mother_name || 'Awa Ndiaye'}</strong></small>
+                <small class="text-muted d-block">Enfant : <strong>${data.child_name || 'Moussa Ndiaye'}</strong> (${data.child_gender === 'M' ? 'Garçon' : 'Fille'})</small>
+                <small class="text-muted">Date de naissance : <strong>${data.child_dob ? new Date(data.child_dob).toLocaleDateString('fr-FR') : '14/05/2026'}</strong></small>
               </div>
               <div class="col-6 text-end">
-                <small class="text-muted d-block">N° CARTE CMU : <strong class="text-success">${data.cmu_number || 'CMU-DKR-8812'}</strong></small>
-                <small class="text-muted d-block">Poids & Taille Naissance : <strong>${data.birth_weight || 3.4} kg • ${data.birth_height || 50} cm</strong></small>
+                <small class="text-muted d-block">N° Carte CMU : <strong class="text-success">${data.cmu_number || 'CMU-DKR-8812'}</strong></small>
+                <small class="text-muted d-block">Poids & taille naissance : <strong>${data.birth_weight || 3.4} kg • ${data.birth_height || 50} cm</strong></small>
                 <small class="text-muted">Score APGAR : <strong>${data.apgar_score || '10/10'}</strong></small>
               </div>
             </div>
 
-            <h6 class="fw-bold text-uppercase mb-2" style="color: #059669;">1. CONSULTATIONS PRÉNATALES (CPN 1 À CPN 4+) :</h6>
+            <h6 class="fw-bold mb-2" style="color: #059669;">1. Consultations prénatales (CPN 1 à CPN 4+) :</h6>
             <table class="table table-bordered mb-3 small">
               <thead style="background: #f1f5f9;">
                 <tr>
@@ -316,13 +316,13 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
               </tbody>
             </table>
 
-            <h6 class="fw-bold text-uppercase mb-2" style="color: #059669;">2. VACCINATIONS du PEV SÉNÉGAL (0 À 12 MOIS) :</h6>
+            <h6 class="fw-bold mb-2" style="color: #059669;">2. Vaccinations du PEV Sénégal (0 à 12 mois) :</h6>
             <table class="table table-bordered mb-3 small">
               <thead style="background: #f1f5f9;">
                 <tr>
                   <th>Vaccin PEV</th>
                   <th>Statut</th>
-                  <th>Date d'Administration</th>
+                  <th>Date d'administration</th>
                   <th>Centre / Praticien</th>
                 </tr>
               </thead>
@@ -331,7 +331,7 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
               </tbody>
             </table>
 
-            <h6 class="fw-bold text-uppercase mb-2" style="color: #059669;">3. SUIVI DE SANTÉ SCOLAIRE & ADOLESCENCE (6 À 18 ANS) :</h6>
+            <h6 class="fw-bold mb-2" style="color: #059669;">3. Suivi de santé scolaire & adolescence (6 à 18 ans) :</h6>
             <table class="table table-bordered mb-3 small">
               <thead style="background: #f1f5f9;">
                 <tr>
@@ -449,7 +449,7 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
         <div className="card p-3 mb-4 rounded-4 shadow-sm border" style={{ background: 'var(--card-bg)', borderColor: 'var(--border-color)' }}>
           <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div className="d-flex align-items-center gap-2">
-              <span className="badge bg-primary px-3 py-2 fw-bold">👩‍⚕️ COMPTE PRATICIEN / PÉDIATRE / SAGE-FEMME (SUPER ADMIN)</span>
+              <span className="badge bg-primary px-3 py-2 fw-bold">👩‍⚕️ Compte praticien / pédiatre / sage-femme (Super Admin)</span>
               <span className="small text-muted">Praticien actuellement connecté pour la validation :</span>
             </div>
             <select 
@@ -514,24 +514,24 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
             <div className="card shadow-sm border-0 p-4 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
               <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 border-bottom pb-3" style={{ borderColor: 'var(--border-color)' }}>
                 <div>
-                  <h4 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>🤰 Suivi de Grossesse & CPN (1er au 3ème Trimestre)</h4>
+                  <h4 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>🤰 Suivi de grossesse & CPN (1er au 3ème trimestre)</h4>
                   <small className="text-muted">Bénéficiaire : <strong>{safeData.mother_name || 'Awa Ndiaye'}</strong> ({safeData.cmu_number || 'CMU-DKR-8812'})</small>
                 </div>
                 {isAgent ? (
-                  <span className="badge bg-success px-3 py-2 fw-semibold">✏️ Écriture Praticien</span>
+                  <span className="badge bg-success px-3 py-2 fw-semibold">✏️ Écriture praticien</span>
                 ) : (
-                  <span className="badge bg-secondary text-white px-3 py-2 fw-semibold">🔒 Lecture Seule (Maman)</span>
+                  <span className="badge bg-secondary text-white px-3 py-2 fw-semibold">🔒 Lecture seule (Maman)</span>
                 )}
               </div>
 
               <div className="p-4 rounded-4 mb-4" style={{ background: 'var(--bg-body)', border: '1px solid var(--border-color)' }}>
                 <div className="row g-4 text-center">
                   <div className="col-6 border-end">
-                    <span className="text-muted d-block mb-1 small fw-bold">GROUPE SANGUIN :</span>
+                    <span className="text-muted d-block mb-1 small fw-bold">Groupe sanguin :</span>
                     <strong className="text-danger fs-5 d-block">{safeData.blood_group || 'O+'}</strong>
                   </div>
                   <div className="col-6">
-                    <span className="text-muted d-block mb-1 small fw-bold">TERME PRÉVU (DPA) :</span>
+                    <span className="text-muted d-block mb-1 small fw-bold">Terme prévu (DPA) :</span>
                     <strong className="text-success fs-5 d-block">
                       👶 {safeData.expected_delivery_date ? new Date(safeData.expected_delivery_date).toLocaleDateString('fr-FR') : '15/10/2026'}
                     </strong>

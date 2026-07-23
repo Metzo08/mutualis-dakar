@@ -400,22 +400,22 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
             <div class="row g-3 mb-4 p-3 rounded-3" style="background: #f8fafc; border: 1.5px solid #cbd5e1;">
               <div class="col-6">
-                <span class="small fw-bold d-block text-muted">BÉNÉFICIAIRE :</span>
+                <span class="small fw-bold d-block text-muted">Bénéficiaire :</span>
                 <h5 class="fw-bold mb-0">${patientName}</h5>
                 <small class="text-muted">N° Carte CMU : <strong>${cmuNum}</strong></small>
               </div>
               <div class="col-6 text-end">
-                <span class="small fw-bold d-block text-muted">DATE & VALIDITÉ :</span>
+                <span class="small fw-bold d-block text-muted">Date & validité :</span>
                 <strong class="d-block">${new Date().toLocaleDateString('fr-FR')}</strong>
-                <span class="badge bg-success">Valide 48h en Officine Agréée</span>
+                <span class="badge bg-success">Valide 48h en officine agréée</span>
               </div>
             </div>
 
-            <h6 class="fw-bold text-uppercase mb-2" style="color: #059669;">💊 MÉDICAMENTS PRESCRITS & POSOLOGIE :</h6>
+            <h6 class="fw-bold mb-2" style="color: #059669;">💊 Médicaments prescrits & posologie :</h6>
             <table class="table table-bordered mb-4">
               <thead style="background: #f1f5f9;">
                 <tr>
-                  <th>Désignation du Médicament</th>
+                  <th>Désignation du médicament</th>
                   <th class="text-center">Quantité</th>
                   <th class="text-end">Montant (FCFA)</th>
                 </tr>
@@ -434,15 +434,15 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
               </tbody>
               <tfoot>
                 <tr>
-                  <th colspan="2">Montant Total Ordonnance :</th>
+                  <th colspan="2">Montant total ordonnance :</th>
                   <th align="right">${total.toLocaleString('fr-FR')} FCFA</th>
                 </tr>
                 <tr style="background: #e6f4ea; color: #047857;">
-                  <th colspan="2">Prise en Charge Directe UNAMUSC (50%) :</th>
+                  <th colspan="2">Prise en charge directe UNAMUSC (50%) :</th>
                   <th align="right">-${covered.toLocaleString('fr-FR')} FCFA</th>
                 </tr>
                 <tr style="background: #fef3c7; color: #b45309;">
-                  <th colspan="2">Ticket Modérateur Restant Patient en Officine (50%) :</th>
+                  <th colspan="2">Ticket modérateur restant patient en officine (50%) :</th>
                   <th align="right">${patientPay.toLocaleString('fr-FR')} FCFA</th>
                 </tr>
               </tfoot>
@@ -450,12 +450,12 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
             <div class="row align-items-center border-top pt-4">
               <div class="col-8">
-                <strong class="small text-success d-block mb-1">Clause Tiers-Payant Officine Agréée :</strong>
+                <strong class="small text-success d-block mb-1">Clause tiers-payant officine agréée :</strong>
                 <p class="small text-muted mb-0">Ce document signé numériquement dispense l'assuré de l'avance des 50% couverts par l'UNAMUSC sur présentation de la carte CMU.</p>
               </div>
               <div class="col-4 text-center">
                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=${encodeURIComponent(orderCode)}" alt="QR Code" style="width: 75px; height: 75px;" />
-                <div class="small fw-bold text-success mt-1">Signature Numérique CNOM</div>
+                <div class="small fw-bold text-success mt-1">Signature numérique CNOM</div>
               </div>
             </div>
           </div>
@@ -498,9 +498,9 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
               <div class="d-flex align-items-center gap-3">
                 <img src="/senegal_flag.png" alt="Drapeau" style="width: 54px; height: 36px; object-fit: cover; border-radius: 4px; border: 1.5px solid #d97706;" />
                 <div>
-                  <h6 class="fw-bold mb-0 text-uppercase" style="color: #047857;">RÉPUBLIQUE DU SÉNÉGAL</h6>
+                  <h6 class="fw-bold mb-0" style="color: #059669;">République du Sénégal</h6>
                   <small class="text-muted">Un Peuple — Un But — Une Foi</small><br />
-                  <strong class="small text-uppercase" style="color: #0f172a;">UNAMUSC SÉNÉGAL — ORDONNANCE D'EXAMENS & ANALYSES</strong>
+                  <strong class="small" style="color: #0f172a;">UNAMUSC Sénégal — Ordonnance de biologie & imagerie</strong>
                 </div>
               </div>
               <img src="/unamusc_logo.png" alt="UNAMUSC" style="width: 85px; height: auto;" />
