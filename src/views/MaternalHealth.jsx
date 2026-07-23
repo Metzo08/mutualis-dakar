@@ -210,7 +210,7 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
                 {(data.cpn_records || defaultMaternalData.cpn_records).map(cpn => `
                   <tr>
                     <td><strong>${cpn.name}</strong></td>
-                    <td align="center">${cpn.done ? '<span class="badge bg-success">✅ Validée</span>' : '<span class="badge bg-warning text-dark">⏳ En attente</span>'}</td>
+                    <td style="text-align: center;">${cpn.done ? '<span class="badge bg-success">✅ Validée</span>' : '<span class="badge bg-warning text-dark">⏳ En attente</span>'}</td>
                     <td><small>${cpn.date ? new Date(cpn.date).toLocaleDateString('fr-FR') : 'À venir'}<br />${cpn.doctor}</small></td>
                     <td><small>${cpn.notes}</small></td>
                   </tr>
