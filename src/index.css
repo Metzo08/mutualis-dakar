@@ -938,5 +938,41 @@ p {
   color: #0f172a !important;
 }
 
+/* Dedicated Print Stylesheet for Official Certificates & Guarantee Letters */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  #printable-certificate,
+  #printable-certificate * {
+    visibility: visible !important;
+  }
+
+  #printable-certificate {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 2.5rem !important;
+    box-shadow: none !important;
+    border: 2px solid #047857 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 12pt !important;
+  }
+
+  .modal, .modal-backdrop, .sidebar, header, footer, .no-print {
+    display: none !important;
+  }
+}
+
 
 

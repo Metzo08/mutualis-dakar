@@ -17,7 +17,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
       status: 'pending',
       validation_code: 'GAR-2026-FANN-88',
       created_at: new Date().toISOString(),
-      agent_note: 'Dossier complet. Devis d\'hospitalisation vérifié conforme au barème national SÉN-CSU.'
+      agent_note: 'Dossier complet. Devis d\'hospitalisation vérifié conforme au barème national SÉN-CSU par l\'UNAMUSC.'
     },
     {
       id: 202,
@@ -34,7 +34,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
       status: 'approved',
       validation_code: 'GAR-2026-DANTEC-12',
       created_at: new Date(Date.now() - 86400000 * 2).toISOString(),
-      agent_note: 'Accordé à 100% au titre de la gratuité hospitalière maternité & soins d\'urgence.'
+      agent_note: 'Accordé à 100% au titre de la gratuité hospitalière maternité & soins d\'urgence (UNAMUSC / SÉN-CSU).'
     }
   ];
 
@@ -54,7 +54,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
   const [modalTab, setModalTab] = useState('instruction'); // 'instruction' | 'certificate'
   const [guaranteedPct, setGuaranteedPct] = useState(80);
   const [maxAmount, setMaxAmount] = useState('');
-  const [agentNote, setAgentNote] = useState('Prise en charge validée par l\'agent de la mutuelle sous le régime du tiers-payant hospitalier.');
+  const [agentNote, setAgentNote] = useState('Prise en charge validée par l\'agent UNAMUSC sous le régime du tiers-payant SÉN-CSU.');
 
   const fetchLetters = async () => {
     setLoading(true);
@@ -77,6 +77,47 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
   useEffect(() => {
     fetchLetters();
   }, []);
+
+  // Impression ciblée
+  const handlePrintCertificate = () => {
+    window.print();
+  };
+
+  // Téléchargement / Impression de la lettre officielle sous forme de fenêtre PDF dédiée
+  const handleDownloadPDF = () => {
+    if (!selectedLetter) return;
+    const element = document.getElementById('printable-certificate');
+    if (!element) return;
+
+    const printWin = window.open('', '_blank', 'width=950,height=1100');
+    printWin.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Certificat_Garantie_${selectedLetter.validation_code}.pdf</title>
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+          <style>
+            body { background: #ffffff; color: #0f172a; padding: 2rem; font-family: 'Inter', system-ui, sans-serif; }
+            .badge { border: 1px solid #047857; }
+            @media print {
+              .no-print { display: none !important; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="no-print text-center mb-4">
+            <button onclick="window.print()" class="btn btn-success fw-bold px-4 py-2 me-2">📥 Imprimer / Enregistrer en PDF</button>
+            <button onclick="window.close()" class="btn btn-secondary fw-bold px-3 py-2">Fermer la fenêtre</button>
+          </div>
+          ${element.outerHTML}
+          <script>
+            setTimeout(() => { window.print(); }, 400);
+          </script>
+        </body>
+      </html>
+    `);
+    printWin.document.close();
+  };
 
   // Calcul du montant garanti et du reste à charge patient
   const calculatedGuaranteeAmount = selectedLetter 
@@ -112,7 +153,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
       status: 'pending',
       validation_code: `GAR-2026-${Math.floor(1000 + Math.random() * 9000)}`,
       created_at: new Date().toISOString(),
-      agent_note: 'Demande en attente de vérification du devis par l\'agent.'
+      agent_note: 'Demande en attente de vérification du devis par l\'agent UNAMUSC.'
     };
 
     try {
@@ -130,7 +171,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
     }
 
     setLetters([newLetter, ...letters]);
-    setSuccessMsg(lang === 'wo' ? 'Demande bi yónnee nañu ko ak jamm.' : 'Votre demande de lettre de garantie a été émise avec succès. Un agent procède à l\'instruction humaine sous 24h.');
+    setSuccessMsg(lang === 'wo' ? 'Demande bi yónnee nañu ko ak jamm.' : 'Votre demande de lettre de garantie a été émise avec succès. L\'UNAMUSC procède à l\'instruction sous 24h.');
     setMedicalAct('');
     setEstimatedAmount('');
     setActiveTab('list');
@@ -148,7 +189,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
       guaranteed_percentage: parseFloat(guaranteedPct),
       max_amount: finalGuarantee,
       patient_rest: finalRest,
-      agent_note: agentNote || (status === 'approved' ? 'Prise en charge accordée.' : 'Demande rejetée.')
+      agent_note: agentNote || (status === 'approved' ? 'Prise en charge accordée par l\'UNAMUSC.' : 'Demande rejetée.')
     } : l);
 
     setLetters(updated);
@@ -188,7 +229,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
     setSelectedLetter(item);
     setGuaranteedPct(item.guaranteed_percentage || 80);
     setMaxAmount(item.max_amount || (item.estimated_amount * 0.8));
-    setAgentNote(item.agent_note || 'Devis et dossier médical vérifiés conformes.');
+    setAgentNote(item.agent_note || 'Devis et dossier médical vérifiés conformes par l\'UNAMUSC (SÉN-CSU).');
     setModalTab('instruction');
   };
 
@@ -221,7 +262,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
               border: '1px solid rgba(255, 255, 255, 0.3)'
             }}
           >
-            📜 SÉN-CSU — Prise en charge hospitalière (80% à 100%)
+            🇸🇳 UNAMUSC Sénégal — Prise en charge hospitalière (80% à 100%)
           </span>
           <h1 className="fw-bold mb-2 text-white text-center" style={{ fontSize: '2rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
             {lang === 'wo' ? 'Bataaxal yoxu garansi (Lettres de garantie)' : 'Lettres de garantie & hospitalisation'}
@@ -229,7 +270,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
           <p className="mb-3 text-white-50 text-center mx-auto" style={{ fontSize: '0.98rem', lineHeight: '1.6', textShadow: '0 1px 2px rgba(0,0,0,0.2)', maxWidth: '750px' }}>
             {lang === 'wo'
               ? 'Yónnee sa demande ngir joto prise en charge d\'hospitalisation wala chirurgie.'
-              : 'Demandez votre prise en charge hospitalière en ligne avec validation 100% humaine par nos agents.'}
+              : 'Demandez votre prise en charge hospitalière en ligne avec homologation 100% humaine par l\'UNAMUSC (SÉN-CSU).'}
           </p>
 
           <div className="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-2 w-100">
@@ -294,7 +335,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
         </div>
         <div className="col-md-3 col-6">
           <div className="card shadow-sm border-0 p-3 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-            <span className="small text-muted mb-1 d-block">Total garanti (FCFA)</span>
+            <span className="small text-muted mb-1 d-block">Total garanti UNAMUSC (FCFA)</span>
             <h4 className="fw-bold mb-0 text-success">{totalGuaranteedSum.toLocaleString()}</h4>
           </div>
         </div>
@@ -311,10 +352,10 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
       {activeTab === 'new' && (
         <div className="card shadow-sm border-0 p-4 mb-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
           <h4 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--primary)' }}>
-            <span>➕</span> Nouvelle demande de prise en charge hospitalière
+            <span>➕</span> Nouvelle demande de prise en charge hospitalière UNAMUSC
           </h4>
           <p className="small text-muted mb-4">
-            Remplissez ce formulaire pour solliciter une lettre de garantie sous régime tiers-payant avant votre admission à l'hôpital.
+            Remplissez ce formulaire pour solliciter une lettre de garantie sous le régime tiers-payant SÉN-CSU délivrée par l'UNAMUSC.
           </p>
 
           <form onSubmit={handleSubmit}>
@@ -365,8 +406,8 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
             <div className="p-3 rounded-3 border mb-4" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
               <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>
-                  <strong className="d-block small text-success">Estimation automatique de prise en charge (Tiers-payant 80%) :</strong>
-                  <span className="small text-muted">Sous réserve de validation 100% humaine par l'agent.</span>
+                  <strong className="d-block small text-success">Estimation automatique UNAMUSC / SÉN-CSU (80%) :</strong>
+                  <span className="small text-muted">Sous réserve d'instruction et d'homologation par l'agent.</span>
                 </div>
                 <h5 className="fw-bold text-success mb-0">
                   {estimatedAmount ? (parseFloat(estimatedAmount) * 0.8).toLocaleString() : 0} FCFA
@@ -377,7 +418,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
             <div className="d-flex justify-content-end gap-2">
               <button type="button" className="btn btn-secondary" onClick={() => setActiveTab('list')}>Annuler</button>
               <button type="submit" className="btn btn-success text-white fw-bold px-4" disabled={submitting} style={{ borderRadius: '10px' }}>
-                {submitting ? 'Transmission...' : '📤 Soumettre ma demande à la mutuelle'}
+                {submitting ? 'Transmission...' : '📤 Soumettre la demande à l\'UNAMUSC'}
               </button>
             </div>
           </form>
@@ -388,7 +429,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
       {activeTab === 'list' && (
         <div className="card shadow-sm border-0 p-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
           <h4 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-            <span>📋</span> Demandes & Lettres de Garantie d'Hospitalisation
+            <span>📋</span> Demandes & Lettres de Garantie d'Hospitalisation UNAMUSC
           </h4>
 
           {loading ? (
@@ -404,7 +445,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
                     <th style={{ padding: '0.85rem' }}>Acte médical & Établissement</th>
                     <th style={{ padding: '0.85rem' }}>Devis soumis</th>
                     <th style={{ padding: '0.85rem' }}>Prise en charge accordée</th>
-                    <th style={{ padding: '0.85rem' }}>Statut & Validation</th>
+                    <th style={{ padding: '0.85rem' }}>Statut & Homologation</th>
                     <th style={{ padding: '0.85rem' }}>Code Garantie</th>
                     <th style={{ padding: '0.85rem', textAlign: 'right' }}>Actions Agent / Assuré</th>
                   </tr>
@@ -431,7 +472,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
                       <td style={{ padding: '0.85rem' }}>
                         {item.status === 'approved' && (
                           <span className="badge bg-success px-3 py-1.5" style={{ borderRadius: '12px' }}>
-                            ✅ Validée 100% humaine
+                            ✅ Validée UNAMUSC
                           </span>
                         )}
                         {item.status === 'pending' && (
@@ -473,11 +514,11 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
       {/* DECK D'INSTRUCTION ET CERTIFICAT OFFICIEL DE GARANTIE HAUTE DÉFINITION (MODAL) */}
       {/* ============================================================================ */}
       {selectedLetter && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)' }}>
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)' }}>
           <div className="modal-dialog modal-dialog-centered modal-xl">
             <div className="modal-content shadow-lg border-0" style={{ borderRadius: '24px', background: 'var(--card-bg)', color: 'var(--text-main)', overflow: 'hidden' }}>
               
-              {/* Entête Modal Officielle */}
+              {/* Entête Modal Officielle UNAMUSC */}
               <div 
                 className="modal-header p-4 text-white position-relative"
                 style={{
@@ -489,13 +530,13 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
               >
                 <div>
                   <span className="badge px-3 py-1 mb-2 fw-bold text-white d-inline-block" style={{ background: 'rgba(255,255,255,0.25)', borderRadius: '20px' }}>
-                    🇸🇳 SÉN-CSU — DOSSIER DE PRISE EN CHARGE HOSPITALIÈRE #{selectedLetter.validation_code}
+                    🇸🇳 UNAMUSC (SÉN-CSU) — DOSSIER DE PRISE EN CHARGE #{selectedLetter.validation_code}
                   </span>
                   <h4 className="fw-bold mb-1 text-white">
                     📄 Instruction & Attestation de Garantie — {selectedLetter.first_name} {selectedLetter.last_name}
                   </h4>
                   <small className="text-white-50">
-                    Validation 100% humaine par l'agent habilité de l'Union Régionale des Mutuelles.
+                    Homologation 100% humaine par l'agent habilité de l'Union Nationale des Mutuelles de Santé Communautaires (UNAMUSC).
                   </small>
                 </div>
                 <button type="button" className="btn-close btn-close-white" onClick={() => setSelectedLetter(null)}></button>
@@ -517,7 +558,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
                   }}
                   onClick={() => setModalTab('instruction')}
                 >
-                  ⚙️ 1. Instruction & Décision Agent
+                  ⚙️ 1. Instruction & Décision Agent UNAMUSC
                 </button>
                 <button 
                   type="button" 
@@ -571,12 +612,12 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
                     {/* CALCULATEUR EXÉCUTIF DE COUVERTURE & RESTES À CHARGE */}
                     <div className="card p-4 rounded-4 border-0 mb-4 shadow-sm" style={{ background: 'rgba(5, 150, 105, 0.06)', borderLeft: '5px solid var(--primary)' }}>
                       <h5 className="fw-bold mb-3 text-success d-flex align-items-center gap-2">
-                        <span>⚙️</span> Calculateur de Prise en Charge & Plafond Tiers-Payant
+                        <span>⚙️</span> Calculateur UNAMUSC de Prise en Charge & Plafond Tiers-Payant
                       </h5>
 
                       <div className="row g-4 align-items-center mb-4">
                         <div className="col-md-6">
-                          <label className="form-label fw-bold small">Taux de couverture accordé par la mutuelle (%)</label>
+                          <label className="form-label fw-bold small">Taux de couverture accordé par l'UNAMUSC (%)</label>
                           <div className="d-flex align-items-center gap-2">
                             <input 
                               type="range" 
@@ -611,7 +652,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
                             <h5 className="fw-bold mb-0 text-white">{Number(selectedLetter.estimated_amount).toLocaleString()} FCFA</h5>
                           </div>
                           <div className="col-md-4 border-start border-end border-secondary">
-                            <span className="text-success small d-block mb-1"> Prise en charge Mutuelle/CSU</span>
+                            <span className="text-success small d-block mb-1"> Prise en charge UNAMUSC/CSU</span>
                             <h4 className="fw-bold mb-0 text-success">{calculatedGuaranteeAmount.toLocaleString()} FCFA</h4>
                           </div>
                           <div className="col-md-4">
@@ -622,7 +663,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
                       </div>
 
                       <div className="mt-4">
-                        <label className="form-label fw-bold small">Note d'instruction & Observations de l'agent habilité *</label>
+                        <label className="form-label fw-bold small">Note d'instruction & Observations de l'agent habilité UNAMUSC *</label>
                         <textarea 
                           className="form-control input" 
                           rows="3"
@@ -649,82 +690,104 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
                         border: '2px solid #047857'
                       }}
                     >
-                      {/* Filigrane officiel */}
-                      <div style={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%) rotate(-25deg)',
-                        fontSize: '5rem',
-                        fontWeight: '900',
-                        color: 'rgba(5, 150, 105, 0.05)',
-                        pointerEvents: 'none',
-                        whiteSpace: 'nowrap'
-                      }}>
-                        SÉN-CSU REPUBLIQUE DU SENEGAL
-                      </div>
-
-                      {/* Entête Officiel Sénégal */}
-                      <div className="d-flex justify-content-between align-items-center mb-4 border-bottom pb-4" style={{ borderColor: '#e2e8f0' }}>
+                      {/* Entête Officiel Sénégal avec Drapeau 🇸🇳 et Logo Officiel UNAMUSC */}
+                      <div className="d-flex justify-content-between align-items-center mb-4 border-bottom pb-4" style={{ borderColor: '#cbd5e1' }}>
                         <div className="d-flex align-items-center gap-3">
-                          <img src="/unamusc_logo.png" alt="UNAMUSC" style={{ width: '65px', height: '65px', objectFit: 'contain' }} />
+                          <img 
+                            src="/senegal_flag.jpg" 
+                            alt="Drapeau du Sénégal 🇸🇳" 
+                            style={{ width: '58px', height: '38px', objectFit: 'cover', borderRadius: '4px', border: '1.5px solid #d97706', boxShadow: '0 2px 5px rgba(0,0,0,0.15)' }} 
+                          />
                           <div>
-                            <h6 className="fw-bold mb-0 text-uppercase" style={{ color: '#047857', letterSpacing: '0.5px' }}>RÉPUBLIQUE DU SÉNÉGAL</h6>
-                            <small className="text-muted fw-semibold">Un Peuple — Un But — Une Foi</small><br />
-                            <strong className="small" style={{ color: '#0f172a' }}>UNION RÉGIONALE DES MUTUELLES DE SANTÉ DE DAKAR</strong>
+                            <h6 className="fw-bold mb-0 text-uppercase" style={{ color: '#047857', letterSpacing: '0.5px', fontSize: '0.92rem' }}>
+                              RÉPUBLIQUE DU SÉNÉGAL
+                            </h6>
+                            <small className="text-muted fw-semibold" style={{ fontSize: '0.75rem' }}>Un Peuple — Un But — Une Foi</small><br />
+                            <strong className="small text-uppercase" style={{ color: '#0f172a', fontSize: '0.82rem', letterSpacing: '0.2px' }}>
+                              UNION NATIONALE DES MUTUELLES DE SANTÉ COMMUNAUTAIRES (UNAMUSC)
+                            </strong><br />
+                            <span className="badge bg-success-subtle text-success border border-success fw-semibold" style={{ fontSize: '0.72rem' }}>
+                              PROGRAMME NATIONAL DE COUVERTURE SANTÉ UNIVERSELLE (SÉN-CSU)
+                            </span>
                           </div>
                         </div>
 
-                        <div className="text-end">
-                          <span className="badge bg-success px-3 py-2 fw-bold" style={{ fontSize: '0.85rem' }}>
-                            HOMOLOGUÉ & CERTIFIÉ
-                          </span>
-                          <div className="small text-muted mt-1">Code: <strong>{selectedLetter.validation_code}</strong></div>
+                        <div className="d-flex align-items-center gap-3 text-end">
+                          <img 
+                            src="/unamusc_logo.png" 
+                            alt="Logo Officiel UNAMUSC" 
+                            style={{ width: '75px', height: '75px', objectFit: 'contain' }} 
+                          />
                         </div>
                       </div>
 
-                      <div className="text-center my-4">
-                        <h4 className="fw-bold text-uppercase" style={{ color: '#047857', letterSpacing: '1px', textDecoration: 'underline' }}>
+                      <div className="text-center my-4 p-3 rounded-3" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+                        <h4 className="fw-bold text-uppercase mb-1" style={{ color: '#047857', letterSpacing: '1px' }}>
                           ATTESTATION OFFICIELLE DE PRISE EN CHARGE HOSPITALIÈRE
                         </h4>
-                        <p className="small text-muted mb-0">Émise dans le cadre du Régime National de Couverture Santé Universelle (SÉN-CSU)</p>
+                        <small className="text-muted fw-semibold">Émise sous le régime du Tiers-Payant SÉN-CSU — Homologuée par l'UNAMUSC Sénégal</small><br />
+                        <code className="mt-2 d-inline-block px-3 py-1 bg-white text-success border border-success rounded-3 fw-bold fs-6">
+                          Code Homologation : #{selectedLetter.validation_code}
+                        </code>
                       </div>
 
-                      {/* Grille des caractéristiques */}
-                      <div className="row g-4 mb-4 p-4 rounded-3" style={{ background: '#f8fafc', border: '1px solid #cbd5e1' }}>
+                      {/* Grille des caractéristiques — Haute Lisibilité et Contraste Explicite */}
+                      <div className="row g-4 mb-4 p-4 rounded-3" style={{ background: '#ffffff', border: '1.5px solid #cbd5e1', boxShadow: 'inset 0 0 0 1px #f1f5f9' }}>
                         <div className="col-md-6">
-                          <span className="text-muted small d-block">BÉNÉFICIAIRE ASSURÉ :</span>
+                          <span className="small fw-bold d-block mb-1" style={{ color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            👤 BÉNÉFICIAIRE ASSURÉ :
+                          </span>
                           <h5 className="fw-bold mb-1" style={{ color: '#0f172a' }}>{selectedLetter.first_name} {selectedLetter.last_name}</h5>
-                          <div className="small text-muted">N° CMU : <strong>{selectedLetter.cmu_number}</strong> | IPP : <strong>{selectedLetter.ipp_number || 'IPP-FANN-8812'}</strong></div>
+                          <div className="small" style={{ color: '#334155' }}>
+                            N° Carte CMU : <strong style={{ color: '#0f172a' }}>{selectedLetter.cmu_number}</strong> | IPP : <strong style={{ color: '#0f172a' }}>{selectedLetter.ipp_number || 'IPP-FANN-2026-8812'}</strong>
+                          </div>
+                          <small className="text-success fw-bold d-block mt-1">
+                            Organisme Émetteur : Union Nationale UNAMUSC Sénégal (SÉN-CSU)
+                          </small>
                         </div>
 
                         <div className="col-md-6">
-                          <span className="text-muted small d-block">STRUCTURE HOSPITALIÈRE D'ACCUEIL :</span>
-                          <h6 className="fw-bold mb-1 text-success" style={{ color: '#047857' }}>{selectedLetter.hospital_name || selectedLetter.medical_act}</h6>
-                          <div className="small text-muted">Statut : Conventionnée Tiers-Payant SÉN-CSU</div>
+                          <span className="small fw-bold d-block mb-1" style={{ color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            🏥 STRUCTURE HOSPITALIÈRE D'ACCUEIL :
+                          </span>
+                          <h6 className="fw-bold mb-1" style={{ color: '#047857', fontSize: '1rem' }}>
+                            {selectedLetter.hospital_name || selectedLetter.medical_act}
+                          </h6>
+                          <div className="small" style={{ color: '#334155' }}>
+                            Conventionné Tiers-Payant SÉN-CSU / UNAMUSC (Validation 100% Humaine)
+                          </div>
                         </div>
 
-                        <div className="col-md-6">
-                          <span className="text-muted small d-block">ACTE MÉDICAL PRESCRIT :</span>
-                          <strong className="d-block" style={{ color: '#0f172a' }}>{selectedLetter.medical_act}</strong>
+                        <div className="col-md-6 border-top pt-3" style={{ borderColor: '#e2e8f0' }}>
+                          <span className="small fw-bold d-block mb-1" style={{ color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            📋 ACTE MÉDICAL / HOSPITALISATION PRESCRITE :
+                          </span>
+                          <strong className="d-block" style={{ color: '#0f172a', fontSize: '0.95rem' }}>{selectedLetter.medical_act}</strong>
+                          <small className="text-muted d-block mt-1">
+                            Devis d'hospitalisation estimé : <strong style={{ color: '#0f172a' }}>{Number(selectedLetter.estimated_amount).toLocaleString()} FCFA</strong>
+                          </small>
                         </div>
 
-                        <div className="col-md-6">
-                          <span className="text-muted small d-block">MONTANT PRIS EN CHARGE PAR LA MUTUELLE :</span>
-                          <h4 className="fw-bold mb-0" style={{ color: '#047857' }}>
+                        <div className="col-md-6 border-top pt-3" style={{ borderColor: '#e2e8f0' }}>
+                          <span className="small fw-bold d-block mb-1" style={{ color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                            💰 MONTANT GARANTI ET PRIS EN CHARGE PAR L'UNAMUSC :
+                          </span>
+                          <h4 className="fw-bold mb-0" style={{ color: '#047857', fontSize: '1.4rem' }}>
                             {Number(selectedLetter.max_amount).toLocaleString()} FCFA ({selectedLetter.guaranteed_percentage}%)
                           </h4>
-                          <span className="small text-muted">Ticket modérateur à la charge de l'assuré : {Number(selectedLetter.patient_rest || 0).toLocaleString()} FCFA</span>
+                          <span className="small fw-bold d-block mt-1" style={{ color: '#b45309' }}>
+                            Ticket modérateur (reste à la charge du patient) : {Number(selectedLetter.patient_rest || 0).toLocaleString()} FCFA
+                          </span>
                         </div>
                       </div>
 
                       {/* Observations & Signatures */}
                       <div className="row g-4 align-items-center">
                         <div className="col-md-8">
-                          <div className="p-3 rounded-3" style={{ background: '#ecfdf5', border: '1px solid #a7f3d0' }}>
-                            <strong className="small d-block text-success mb-1">Clause d'engagement financier :</strong>
-                            <p className="small mb-0 text-dark" style={{ lineHeight: '1.5' }}>
-                              {selectedLetter.agent_note || 'L\'Union Régionale s\'engage à régler directement à l\'établissement hospitalier le montant garanti sous présentation de la facture finale conforme.'}
+                          <div className="p-3 rounded-3" style={{ background: '#f0fdf4', border: '1px solid #86efac' }}>
+                            <strong className="small d-block text-success mb-1 fw-bold">Clause officielle d'engagement financier UNAMUSC :</strong>
+                            <p className="small mb-0 text-dark" style={{ lineHeight: '1.5', color: '#0f172a' }}>
+                              {selectedLetter.agent_note || 'L\'Union Nationale des Mutuelles de Santé Communautaires (UNAMUSC) s\'engage sous le programme SÉN-CSU à régler directement à l\'établissement hospitalier le montant garanti sous présentation de la facture finale conforme.'}
                             </p>
                           </div>
                         </div>
@@ -734,11 +797,11 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
                             <img 
                               src={`https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=${encodeURIComponent(selectedLetter.validation_code)}`} 
                               alt="QR Code Validation" 
-                              style={{ width: '75px', height: '75px' }} 
+                              style={{ width: '80px', height: '80px' }} 
                             />
                           </div>
-                          <div className="small fw-bold text-success">Tampon Numérique UNAMUSC</div>
-                          <small className="text-muted d-block" style={{ fontSize: '0.7rem' }}>Signé électroniquement par l'agent</small>
+                          <div className="small fw-bold text-success">Tampon Numérique Officiel UNAMUSC</div>
+                          <small className="text-muted d-block" style={{ fontSize: '0.72rem' }}>Homologué SÉN-CSU — Signature Agent Habilité</small>
                         </div>
                       </div>
                     </div>
@@ -746,18 +809,18 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
                     <div className="d-flex justify-content-center gap-3">
                       <button 
                         type="button" 
-                        className="btn btn-success fw-bold text-white px-4 py-2.5"
-                        onClick={() => alert(`Lettre de garantie officielle #${selectedLetter.validation_code} téléchargée en PDF !`)}
-                        style={{ borderRadius: '12px' }}
+                        className="btn btn-success fw-bold text-white px-4 py-2.5 shadow-sm"
+                        onClick={handleDownloadPDF}
+                        style={{ borderRadius: '12px', background: '#059669', borderColor: '#059669' }}
                       >
                         📥 Télécharger le Certificat PDF officiel
                       </button>
 
                       <button 
                         type="button" 
-                        className="btn btn-outline-secondary fw-semibold px-4 py-2.5"
-                        onClick={() => window.print()}
-                        style={{ borderRadius: '12px' }}
+                        className="btn btn-dark fw-bold text-white px-4 py-2.5 shadow-sm"
+                        onClick={handlePrintCertificate}
+                        style={{ borderRadius: '12px', background: '#1e293b', borderColor: '#0f172a' }}
                       >
                         🖨️ Imprimer la lettre de garantie
                       </button>
