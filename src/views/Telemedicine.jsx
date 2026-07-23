@@ -854,11 +854,19 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                       Le médecin demande le règlement du ticket modérateur de <strong>2 500 FCFA</strong> (Tiers-Payant UNAMUSC) pour démarrer l'acte.
                     </p>
                     <button 
-                      className="btn btn-warning w-100 fw-bold text-dark shadow-sm"
-                      style={{ borderRadius: '10px' }}
+                      type="button"
+                      className="btn w-100 fw-bold shadow-sm d-flex align-items-center justify-content-center gap-2 text-white"
+                      style={{ 
+                        borderRadius: '12px', 
+                        background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)', 
+                        border: 'none',
+                        padding: '0.65rem 1rem'
+                      }}
                       onClick={() => setShowPaymentModal(true)}
                     >
-                      💳 Payer 2 500 FCFA via Orange Money 🍊 ou Wave 🌊
+                      <img src="/logo_orange_money.png" alt="OM" style={{ height: '22px', borderRadius: '4px', background: '#ffffff', padding: '1px' }} />
+                      <img src="/logo_wave.png" alt="Wave" style={{ height: '22px', borderRadius: '50%' }} />
+                      <span>Payer 2 500 FCFA via Orange Money ou Wave</span>
                     </button>
                   </div>
                 )}
@@ -948,20 +956,30 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                         <div className="d-flex gap-2 flex-wrap">
                           {pat.payment_status !== 'paid' && (
                             <button 
-                              className="btn btn-sm btn-outline-warning fw-bold"
-                              style={{ borderRadius: '8px' }}
+                              type="button"
+                              className="btn btn-sm fw-bold d-flex align-items-center gap-2 shadow-sm"
+                              style={{ 
+                                borderRadius: '10px', 
+                                background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', 
+                                border: '1.5px solid #f59e0b',
+                                color: '#fbbf24',
+                                padding: '0.45rem 0.85rem'
+                              }}
                               onClick={() => handleDoctorRequestPayment(pat.id)}
                             >
-                              📲 Demander Paiement (Orange / Wave)
+                              <img src="/logo_orange_money.png" alt="OM" style={{ height: '18px', borderRadius: '3px', background: '#ffffff', padding: '1px' }} />
+                              <img src="/logo_wave.png" alt="Wave" style={{ height: '18px', borderRadius: '50%' }} />
+                              <span>Demander Paiement (Orange / Wave)</span>
                             </button>
                           )}
 
                           <button 
-                            className="btn btn-sm btn-success fw-bold text-white px-3"
-                            style={{ borderRadius: '8px', background: '#059669', borderColor: '#059669' }}
+                            type="button"
+                            className="btn btn-sm btn-success fw-bold text-white px-3 d-flex align-items-center gap-1.5 shadow-sm"
+                            style={{ borderRadius: '10px', background: '#059669', borderColor: '#059669' }}
                             onClick={() => handleStartCall(pat)}
                           >
-                            🎥 Téléconsultation HD
+                            <span>🎥 Téléconsultation HD</span>
                           </button>
                         </div>
                       </div>
@@ -997,30 +1015,40 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                 <div className="d-flex gap-3 mb-4">
                   <button 
                     type="button" 
-                    className={`btn flex-fill py-3 fw-bold d-flex align-items-center justify-content-center gap-2 ${paymentProvider === 'orange' ? 'btn-warning text-dark border-2' : 'btn-outline-secondary'}`}
+                    className="btn flex-fill py-3 fw-bold d-flex align-items-center justify-content-center gap-2.5 shadow-sm"
                     onClick={() => setPaymentProvider('orange')}
-                    style={{ borderRadius: '12px', background: paymentProvider === 'orange' ? 'rgba(245, 158, 11, 0.15)' : 'transparent' }}
+                    style={{ 
+                      borderRadius: '14px', 
+                      background: paymentProvider === 'orange' ? '#ff7900' : 'var(--bg-body)', 
+                      color: paymentProvider === 'orange' ? '#ffffff' : 'var(--text-main)', 
+                      border: paymentProvider === 'orange' ? '2.5px solid #ff7900' : '1.5px solid var(--border-color)' 
+                    }}
                   >
                     <img 
                       src="/logo_orange_money.png" 
                       alt="Orange Money" 
-                      style={{ height: '30px', objectFit: 'contain', borderRadius: '4px' }} 
+                      style={{ height: '32px', objectFit: 'contain', borderRadius: '6px', background: '#ffffff', padding: '2px' }} 
                     />
-                    <span className="fw-bold">Orange Money</span>
+                    <span className="fw-bold fs-6">Orange Money</span>
                   </button>
 
                   <button 
                     type="button" 
-                    className={`btn flex-fill py-3 fw-bold d-flex align-items-center justify-content-center gap-2 ${paymentProvider === 'wave' ? 'btn-info text-white border-2' : 'btn-outline-secondary'}`}
+                    className="btn flex-fill py-3 fw-bold d-flex align-items-center justify-content-center gap-2.5 shadow-sm"
                     onClick={() => setPaymentProvider('wave')}
-                    style={{ borderRadius: '12px', background: paymentProvider === 'wave' ? 'rgba(14, 165, 233, 0.18)' : 'transparent' }}
+                    style={{ 
+                      borderRadius: '14px', 
+                      background: paymentProvider === 'wave' ? '#1dc4ff' : 'var(--bg-body)', 
+                      color: paymentProvider === 'wave' ? '#ffffff' : 'var(--text-main)', 
+                      border: paymentProvider === 'wave' ? '2.5px solid #1dc4ff' : '1.5px solid var(--border-color)' 
+                    }}
                   >
                     <img 
                       src="/logo_wave.png" 
                       alt="Wave Sénégal" 
-                      style={{ height: '30px', objectFit: 'contain', borderRadius: '50%' }} 
+                      style={{ height: '32px', objectFit: 'contain', borderRadius: '50%' }} 
                     />
-                    <span className="fw-bold" style={{ color: paymentProvider === 'wave' ? '#0ea5e9' : 'var(--text-main)' }}>Wave Sénégal</span>
+                    <span className="fw-bold fs-6">Wave Sénégal</span>
                   </button>
                 </div>
 
