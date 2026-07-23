@@ -999,18 +999,28 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                     type="button" 
                     className={`btn flex-fill py-3 fw-bold d-flex align-items-center justify-content-center gap-2 ${paymentProvider === 'orange' ? 'btn-warning text-dark border-2' : 'btn-outline-secondary'}`}
                     onClick={() => setPaymentProvider('orange')}
-                    style={{ borderRadius: '12px' }}
+                    style={{ borderRadius: '12px', background: paymentProvider === 'orange' ? 'rgba(245, 158, 11, 0.15)' : 'transparent' }}
                   >
-                    <span>🍊</span> Orange Money
+                    <img 
+                      src="/logo_orange_money.png" 
+                      alt="Orange Money" 
+                      style={{ height: '30px', objectFit: 'contain', borderRadius: '4px' }} 
+                    />
+                    <span className="fw-bold">Orange Money</span>
                   </button>
 
                   <button 
                     type="button" 
                     className={`btn flex-fill py-3 fw-bold d-flex align-items-center justify-content-center gap-2 ${paymentProvider === 'wave' ? 'btn-info text-white border-2' : 'btn-outline-secondary'}`}
                     onClick={() => setPaymentProvider('wave')}
-                    style={{ borderRadius: '12px' }}
+                    style={{ borderRadius: '12px', background: paymentProvider === 'wave' ? 'rgba(14, 165, 233, 0.18)' : 'transparent' }}
                   >
-                    <span>🌊</span> Wave Sénégal
+                    <img 
+                      src="/logo_wave.png" 
+                      alt="Wave Sénégal" 
+                      style={{ height: '30px', objectFit: 'contain', borderRadius: '50%' }} 
+                    />
+                    <span className="fw-bold" style={{ color: paymentProvider === 'wave' ? '#0ea5e9' : 'var(--text-main)' }}>Wave Sénégal</span>
                   </button>
                 </div>
 
@@ -1021,10 +1031,13 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                     className="form-control input fw-bold text-center fs-5"
                     value={phoneNum}
                     onChange={(e) => setPhoneNum(e.target.value)}
+                    placeholder="Ex: 77 602 67 83 ou 71 123 45 67"
                     required
                     style={{ borderRadius: '10px' }}
                   />
-                  <small className="text-muted d-block text-center mt-1">Saisissez votre numéro Orange (77/78) ou Wave (76/70).</small>
+                  <small className="text-muted d-block text-center mt-1">
+                    Numéros sénégalais acceptés : <strong>Orange (77, 78, 71)</strong>, Free (76), Expresso (70) ou Promobile (75).
+                  </small>
                 </div>
 
                 <div className="d-flex justify-content-end gap-2">

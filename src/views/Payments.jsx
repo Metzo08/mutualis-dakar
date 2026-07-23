@@ -234,7 +234,8 @@ export default function Payments({ lang, citizenUser }) {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
             <div>
               <label style={{ fontSize: '0.8rem', fontWeight: '600' }}>{t.phone}</label>
-              <input className="input" required value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="77 123 45 67" />
+              <input className="input" required value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="77 602 67 83 ou 71 123 45 67" />
+              <small className="text-muted d-block mt-1" style={{ fontSize: '0.75rem' }}>Indicatifs acceptés : Orange (77, 78, 71), Free (76), Expresso (70), Promobile (75).</small>
             </div>
             <div>
               <label style={{ fontSize: '0.8rem', fontWeight: '600' }}>{t.amount}</label>
