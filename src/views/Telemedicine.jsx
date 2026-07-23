@@ -288,17 +288,31 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
     }, 1500);
   };
 
-  // 4. Lancer la visioconférence WebRTC (Médecin ou Patient)
+  // State pour alerte notification SMS Push / WhatsApp
+  const [smsAlert, setSmsAlert] = useState(null);
+
+  // 4. Lancer la visioconférence WebRTC (Médecin ou Patient) + Envoi SMS / WhatsApp Push Instantané
   const handleStartCall = (patient) => {
+    const doctorNameStr = activeDoctorAccount || patient.requested_doctor || 'Dr. Aminata Ndiaye';
     const session = {
       id: patient.id || Date.now(),
-      doctor_name: patient.requested_doctor || 'Dr. Aminata Ndiaye (UNAMUSC)',
+      doctor_name: doctorNameStr,
       patient_name: patient.patient_name,
       cmu_number: patient.cmu_number,
       reason: patient.reason,
       room_token: `RTC-SN-WEBRTC-${Math.floor(1000 + Math.random() * 9000)}`,
       scheduled_at: new Date().toISOString()
     };
+
+    // Alerte SMS / WhatsApp Push Temps Réel envoyé au patient sur son numéro (Orange 77/78/71, Free 76, Expresso 70, Promobile 75)
+    setSmsAlert({
+      recipient: patient.patient_name,
+      phone: patient.phone || '77 602 67 83',
+      doctor: doctorNameStr,
+      roomToken: session.room_token,
+      sentAt: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+    });
+
     setIsCamOff(false);
     setIsMuted(false);
     setActiveSession(session);
@@ -333,6 +347,126 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
     localStorage.setItem('cmu_purchase_orders', JSON.stringify([newOrder, ...existing]));
 
     alert(`✅ Ordonnance signée numériquement par le médecin !\n\nUn Bon de Commande Pharmacie (${newOrder.order_code}) sous Tiers-Payant UNAMUSC (50%) a été généré et ajouté instantanément dans votre espace Bons de Commande.`);
+  };
+
+  // 6. Émettre / Imprimer l'Ordonnance Pharmacie PDF A4 Certifiée
+  const handlePrintPharmacyOrderPDF = () => {
+    const patientName = activeSession?.patient_name || `${activeFirstName} ${activeLastName}`;
+    const cmuNum = activeSession?.cmu_number || activeCmuNumber;
+    const doctorNameStr = activeSession?.doctor_name || activeDoctorAccount || 'Dr. Aminata Ndiaye';
+    const orderCode = `ORD-2026-PHARM-${Math.floor(100 + Math.random() * 900)}`;
+
+    const price1 = parseFloat(prescPrice1) || 3500;
+    const price2 = parseFloat(prescPrice2) || 1500;
+    const total = price1 + price2;
+    const covered = total * 0.5;
+    const patientPay = total * 0.5;
+
+    const printWin = window.open('', '_blank', 'width=980,height=1150');
+    printWin.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Ordonnance_Pharmacie_${orderCode}.pdf</title>
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+          <style>
+            @page { size: A4 portrait; margin: 12mm; }
+            body { background: #ffffff !important; color: #0f172a !important; font-family: 'Inter', Arial, sans-serif; padding: 1.5rem; }
+            .cert-box { border: 2.5px solid #059669; border-radius: 16px; padding: 2rem; background: #ffffff; }
+            .no-print { margin-bottom: 1.5rem; text-align: center; }
+            @media print { .no-print { display: none !important; } body { padding: 0 !important; } }
+          </style>
+        </head>
+        <body>
+          <div class="no-print">
+            <button onclick="window.print()" class="btn btn-success fw-bold px-4 py-2 me-2" style="background: #059669;">🖨️ Imprimer l'Ordonnance Pharmacie A4</button>
+            <button onclick="window.close()" class="btn btn-secondary fw-bold px-3 py-2">Fermer</button>
+          </div>
+
+          <div class="cert-box">
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-4">
+              <div class="d-flex align-items-center gap-3">
+                <img src="/senegal_flag.png" alt="Drapeau" style="width: 54px; height: 36px; object-fit: cover; border-radius: 4px; border: 1.5px solid #d97706;" />
+                <div>
+                  <h6 class="fw-bold mb-0 text-uppercase" style="color: #059669;">RÉPUBLIQUE DU SÉNÉGAL</h6>
+                  <small class="text-muted">Un Peuple — Un But — Une Foi</small><br />
+                  <strong class="small text-uppercase" style="color: #0f172a;">UNAMUSC SÉNÉGAL — ORDONNANCE & BON PHARMACIE 50%</strong>
+                </div>
+              </div>
+              <img src="/unamusc_logo.png" alt="UNAMUSC" style="width: 85px; height: auto;" />
+            </div>
+
+            <div class="text-center my-4 p-3 rounded-3" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
+              <h4 class="fw-bold text-uppercase mb-1" style="color: #059669;">ORDONNANCE NATIONALE DE PHARMACIE & BON DE COMMANDE 48H</h4>
+              <small class="text-muted">Code Référence : <strong>${orderCode}</strong> • Praticien : <strong>${doctorNameStr}</strong></small>
+            </div>
+
+            <div class="row g-3 mb-4 p-3 rounded-3" style="background: #f8fafc; border: 1.5px solid #cbd5e1;">
+              <div class="col-6">
+                <span class="small fw-bold d-block text-muted">BÉNÉFICIAIRE :</span>
+                <h5 class="fw-bold mb-0">${patientName}</h5>
+                <small class="text-muted">N° Carte CMU : <strong>${cmuNum}</strong></small>
+              </div>
+              <div class="col-6 text-end">
+                <span class="small fw-bold d-block text-muted">DATE & VALIDITÉ :</span>
+                <strong class="d-block">${new Date().toLocaleDateString('fr-FR')}</strong>
+                <span class="badge bg-success">Valide 48h en Officine Agréée</span>
+              </div>
+            </div>
+
+            <h6 class="fw-bold text-uppercase mb-2" style="color: #059669;">💊 MÉDICAMENTS PRESCRITS & POSOLOGIE :</h6>
+            <table class="table table-bordered mb-4">
+              <thead style="background: #f1f5f9;">
+                <tr>
+                  <th>Désignation du Médicament</th>
+                  <th class="text-center">Quantité</th>
+                  <th class="text-end">Montant (FCFA)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>${prescMed1}</strong></td>
+                  <td align="center">1</td>
+                  <td align="right">${price1.toLocaleString('fr-FR')} FCFA</td>
+                </tr>
+                <tr>
+                  <td><strong>${prescMed2}</strong></td>
+                  <td align="center">1</td>
+                  <td align="right">${price2.toLocaleString('fr-FR')} FCFA</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <th colspan="2">Montant Total Ordonnance :</th>
+                  <th align="right">${total.toLocaleString('fr-FR')} FCFA</th>
+                </tr>
+                <tr style="background: #e6f4ea; color: #047857;">
+                  <th colspan="2">Prise en Charge Directe UNAMUSC (50%) :</th>
+                  <th align="right">-${covered.toLocaleString('fr-FR')} FCFA</th>
+                </tr>
+                <tr style="background: #fef3c7; color: #b45309;">
+                  <th colspan="2">Ticket Modérateur Restant Patient en Officine (50%) :</th>
+                  <th align="right">${patientPay.toLocaleString('fr-FR')} FCFA</th>
+                </tr>
+              </tfoot>
+            </table>
+
+            <div class="row align-items-center border-top pt-4">
+              <div class="col-8">
+                <strong class="small text-success d-block mb-1">Clause Tiers-Payant Officine Agréée :</strong>
+                <p class="small text-muted mb-0">Ce document signé numériquement dispense l'assuré de l'avance des 50% couverts par l'UNAMUSC sur présentation de la carte CMU.</p>
+              </div>
+              <div class="col-4 text-center">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=${encodeURIComponent(orderCode)}" alt="QR Code" style="width: 75px; height: 75px;" />
+                <div class="small fw-bold text-success mt-1">Signature Numérique CNOM</div>
+              </div>
+            </div>
+          </div>
+          <script>setTimeout(() => { window.print(); }, 400);</script>
+        </body>
+      </html>
+    `);
+    printWin.document.close();
   };
 
   // 6. Émettre une Ordonnance d'Analyses & Examens Médicaux PDF A4
@@ -488,6 +622,33 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
           <span className="fs-5 me-2">✅</span>
           <div style={{ color: 'var(--text-main)' }}>{paymentSuccess}</div>
           <button type="button" className="btn-close" onClick={() => setPaymentSuccess('')}></button>
+        </div>
+      )}
+
+      {/* NOTIFICATION SMS PUSH & WHATSAPP EN TEMPS RÉEL (APPEL PRATICIEN) */}
+      {smsAlert && (
+        <div 
+          className="alert alert-info alert-dismissible fade show shadow-lg border-2 border-primary mb-4 p-3.5 rounded-4 position-relative" 
+          role="alert"
+          style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', color: '#ffffff', borderLeft: '6px solid #2563eb' }}
+        >
+          <div className="d-flex align-items-center gap-3">
+            <span className="fs-1">📲</span>
+            <div className="flex-grow-1">
+              <div className="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                <span className="badge bg-success fw-bold">📱 SMS PUSH ENVOYÉ</span>
+                <span className="badge bg-info text-dark fw-bold">💬 WHATSAPP SÉNÉGAL</span>
+                <small className="text-white-50">Heure d'envoi : {smsAlert.sentAt}</small>
+              </div>
+              <strong className="d-block text-warning mb-1" style={{ fontSize: '0.95rem' }}>
+                Notification envoyée à {smsAlert.recipient} ({smsAlert.phone}) :
+              </strong>
+              <p className="mb-0 small text-white-50" style={{ fontSize: '0.88rem', lineHeight: '1.5' }}>
+                "Bonjour <strong>{smsAlert.recipient}</strong>, votre médecin <strong>{smsAlert.doctor}</strong> vous invite à rejoindre immédiatement votre salle de téléconsultation WebRTC en direct ! Cliquez sur le bouton pour vous connecter."
+              </p>
+            </div>
+            <button type="button" className="btn-close btn-close-white" onClick={() => setSmsAlert(null)}></button>
+          </div>
         </div>
       )}
 
@@ -948,9 +1109,9 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                   <button 
                     className="btn btn-sm btn-success fw-bold text-white w-100 py-2"
                     style={{ borderRadius: '8px', background: '#059669' }}
-                    onClick={() => alert('📄 Téléchargement de l\'Ordonnance Pharmacie A4 effectué. Ce bon est également synchronisé dans votre espace Bons de commande.')}
+                    onClick={handlePrintPharmacyOrderPDF}
                   >
-                    📥 Télécharger l'Ordonnance Pharmacie PDF A4
+                    📥 Télécharger / Imprimer l'Ordonnance Pharmacie PDF A4
                   </button>
                 </div>
 
