@@ -247,7 +247,7 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
         firstName: 'Amadou',
         lastName: 'Sow',
         mutuelleName: 'Mutuelle de Santé de Dakar-Plateau',
-        packageType: 'Formule Familiale Intégrale SÉN-CSU',
+        packageType: 'Formule Familiale Intégrale UNAMUSC',
         cotisationEnd: '2026-12-31'
       });
     }, 400);
@@ -287,7 +287,7 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
               border: '1px solid rgba(255, 255, 255, 0.3)'
             }}
           >
-            🏥 SÉN-CSU — Administration des Unions Départementales & Espace Partenaires
+            🏥 UNAMUSC — Administration des Unions Départementales & Espace Partenaires
           </span>
           <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
             {t.title}
@@ -396,7 +396,7 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
 
                 <div className="row g-2 mb-3">
                   <div className="col-6">
-                    <label className="form-label small fw-semibold">N° Agrément SÉN-CSU *</label>
+                    <label className="form-label small fw-semibold">N° Agrément UNAMUSC *</label>
                     <input 
                       type="text" 
                       className="form-control input"

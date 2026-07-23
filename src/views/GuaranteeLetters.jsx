@@ -17,7 +17,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
       status: 'pending',
       validation_code: 'GAR-2026-FANN-88',
       created_at: new Date().toISOString(),
-      agent_note: 'Dossier complet. Devis d\'hospitalisation vérifié conforme au barème national SÉN-CSU par l\'UNAMUSC.'
+      agent_note: 'Dossier complet. Devis d\'hospitalisation vérifié conforme au barème national par l\'UNAMUSC.'
     },
     {
       id: 202,
@@ -34,7 +34,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
       status: 'approved',
       validation_code: 'GAR-2026-DANTEC-12',
       created_at: new Date(Date.now() - 86400000 * 2).toISOString(),
-      agent_note: 'Accordé à 100% au titre de la gratuité hospitalière maternité & soins d\'urgence (UNAMUSC / SÉN-CSU).'
+      agent_note: 'Accordé à 100% au titre de la gratuité hospitalière maternité & soins d\'urgence (UNAMUSC).'
     }
   ];
 
@@ -54,7 +54,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
   const [modalTab, setModalTab] = useState('instruction'); // 'instruction' | 'certificate'
   const [guaranteedPct, setGuaranteedPct] = useState(80);
   const [maxAmount, setMaxAmount] = useState('');
-  const [agentNote, setAgentNote] = useState('Prise en charge validée par l\'agent UNAMUSC sous le système de Tiers-Payant UNAMUSC (SÉN-CSU).');
+  const [agentNote, setAgentNote] = useState('Prise en charge validée par l\'agent UNAMUSC sous le système de Tiers-Payant UNAMUSC.');
 
   const fetchLetters = async () => {
     setLoading(true);
@@ -229,7 +229,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
     setSelectedLetter(item);
     setGuaranteedPct(item.guaranteed_percentage || 80);
     setMaxAmount(item.max_amount || (item.estimated_amount * 0.8));
-    setAgentNote(item.agent_note || 'Devis et dossier médical vérifiés conformes par l\'UNAMUSC (SÉN-CSU).');
+    setAgentNote(item.agent_note || 'Devis et dossier médical vérifiés conformes par l\'UNAMUSC.');
     setModalTab('instruction');
   };
 
@@ -270,7 +270,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
           <p className="mb-3 text-white-50 text-center mx-auto" style={{ fontSize: '0.98rem', lineHeight: '1.6', textShadow: '0 1px 2px rgba(0,0,0,0.2)', maxWidth: '750px' }}>
             {lang === 'wo'
               ? 'Yónnee sa demande ngir joto prise en charge d\'hospitalisation wala chirurgie.'
-              : 'Demandez votre prise en charge hospitalière en ligne avec homologation 100% humaine par l\'UNAMUSC (SÉN-CSU).'}
+              : 'Demandez votre prise en charge hospitalière en ligne avec homologation 100% humaine par l\'UNAMUSC.'}
           </p>
 
           <div className="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-2 w-100">
@@ -355,7 +355,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
             <span>➕</span> Nouvelle demande de prise en charge hospitalière UNAMUSC
           </h4>
           <p className="small text-muted mb-4">
-            Remplissez ce formulaire pour solliciter une lettre de garantie délivrée dans le cadre du Tiers-Payant UNAMUSC (Programme SÉN-CSU).
+            Remplissez ce formulaire pour solliciter une lettre de garantie délivrée dans le cadre du Tiers-Payant UNAMUSC.
           </p>
 
           <form onSubmit={handleSubmit}>
@@ -406,7 +406,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
             <div className="p-3 rounded-3 border mb-4" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
               <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>
-                  <strong className="d-block small text-success">Estimation automatique UNAMUSC / SÉN-CSU (80%) :</strong>
+                  <strong className="d-block small text-success">Estimation automatique UNAMUSC (80%) :</strong>
                   <span className="small text-muted">Sous réserve d'instruction et d'homologation par l'agent.</span>
                 </div>
                 <h5 className="fw-bold text-success mb-0">
@@ -530,7 +530,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
               >
                 <div>
                   <span className="badge px-3 py-1 mb-2 fw-bold text-white d-inline-block" style={{ background: 'rgba(255,255,255,0.25)', borderRadius: '20px' }}>
-                    🇸🇳 UNAMUSC (SÉN-CSU) — DOSSIER DE PRISE EN CHARGE #{selectedLetter.validation_code}
+                    🇸🇳 UNAMUSC — DOSSIER DE PRISE EN CHARGE #{selectedLetter.validation_code}
                   </span>
                   <h4 className="fw-bold mb-1 text-white">
                     📄 Instruction & Attestation de Garantie — {selectedLetter.first_name} {selectedLetter.last_name}
@@ -706,9 +706,9 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
                             <strong className="small text-uppercase" style={{ color: '#0f172a', fontSize: '0.82rem', letterSpacing: '0.2px' }}>
                               UNION NATIONALE DES MUTUELLES DE SANTÉ COMMUNAUTAIRES (UNAMUSC)
                             </strong><br />
-                            <span className="badge bg-success-subtle text-success border border-success fw-semibold" style={{ fontSize: '0.72rem' }}>
-                              PROGRAMME NATIONAL DE COUVERTURE SANTÉ UNIVERSELLE (SÉN-CSU)
-                            </span>
+                             <span className="badge bg-success-subtle text-success border border-success fw-semibold" style={{ fontSize: '0.72rem' }}>
+                               PROGRAMME NATIONAL DE LA COUVERTURE SANITAIRE DU SÉNÉGAL
+                             </span>
                           </div>
                         </div>
 
@@ -725,7 +725,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
                         <h4 className="fw-bold text-uppercase mb-1" style={{ color: '#047857', letterSpacing: '1px' }}>
                           ATTESTATION OFFICIELLE DE PRISE EN CHARGE HOSPITALIÈRE
                         </h4>
-                        <small className="text-muted fw-semibold">Émise sous le système de Tiers-Payant UNAMUSC — Programme National SÉN-CSU</small><br />
+                        <small className="text-muted fw-semibold">Émise sous le système de Tiers-Payant UNAMUSC — Programme National de la Couverture Sanitaire du Sénégal</small><br />
                         <code className="mt-2 d-inline-block px-3 py-1 bg-white text-success border border-success rounded-3 fw-bold fs-6">
                           Code Homologation : #{selectedLetter.validation_code}
                         </code>
@@ -742,7 +742,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
                             N° Carte CMU : <strong style={{ color: '#0f172a' }}>{selectedLetter.cmu_number}</strong> | IPP : <strong style={{ color: '#0f172a' }}>{selectedLetter.ipp_number || 'IPP-FANN-2026-8812'}</strong>
                           </div>
                           <small className="text-success fw-bold d-block mt-1">
-                            Organisme Émetteur : Tiers-Payant UNAMUSC Sénégal (Programme SÉN-CSU)
+                            Organisme Émetteur : Tiers-Payant UNAMUSC Sénégal
                           </small>
                         </div>
 
@@ -754,7 +754,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
                             {selectedLetter.hospital_name || selectedLetter.medical_act}
                           </h6>
                           <div className="small" style={{ color: '#334155' }}>
-                            Conventionné Tiers-Payant UNAMUSC / SÉN-CSU (Validation 100% Humaine)
+                            Conventionné Tiers-Payant UNAMUSC (Validation 100% Humaine)
                           </div>
                         </div>
 
@@ -763,31 +763,27 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
                             📋 ACTE MÉDICAL / HOSPITALISATION PRESCRITE :
                           </span>
                           <strong className="d-block" style={{ color: '#0f172a', fontSize: '0.95rem' }}>{selectedLetter.medical_act}</strong>
-                          <small className="text-muted d-block mt-1">
-                            Devis d'hospitalisation estimé : <strong style={{ color: '#0f172a' }}>{Number(selectedLetter.estimated_amount).toLocaleString()} FCFA</strong>
-                          </small>
                         </div>
 
                         <div className="col-md-6 border-top pt-3" style={{ borderColor: '#e2e8f0' }}>
                           <span className="small fw-bold d-block mb-1" style={{ color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                            💰 MONTANT GARANTI ET PRIS EN CHARGE PAR L'UNAMUSC :
+                            💰 MONTANT ESTIMÉ & ACCORD DE PRISE EN CHARGE :
                           </span>
-                          <h4 className="fw-bold mb-0" style={{ color: '#047857', fontSize: '1.4rem' }}>
-                            {Number(selectedLetter.max_amount).toLocaleString()} FCFA ({selectedLetter.guaranteed_percentage}%)
-                          </h4>
-                          <span className="small fw-bold d-block mt-1" style={{ color: '#b45309' }}>
-                            Ticket modérateur (reste à la charge du patient) : {Number(selectedLetter.patient_rest || 0).toLocaleString()} FCFA
-                          </span>
+                          <div className="small" style={{ color: '#334155' }}>
+                            Devis Soumis : <strong style={{ color: '#0f172a' }}>{Number(selectedLetter.estimated_amount).toLocaleString()} FCFA</strong><br />
+                            Prise en charge UNAMUSC ({selectedLetter.guaranteed_percentage || 80}%) : <strong style={{ color: '#047857', fontSize: '1.05rem' }}>{Number(selectedLetter.guaranteed_amount || (selectedLetter.estimated_amount * 0.8)).toLocaleString()} FCFA</strong><br />
+                            <span style={{ color: '#b45309', fontWeight: 'bold' }}>Reste à charge patient (Ticket Modérateur) : {Number(selectedLetter.estimated_amount - (selectedLetter.guaranteed_amount || (selectedLetter.estimated_amount * 0.8))).toLocaleString()} FCFA</span>
+                          </div>
                         </div>
                       </div>
 
-                      {/* Observations & Signatures */}
+                      {/* Engagement Financier Officiel UNAMUSC & Tampon Numérique */}
                       <div className="row g-4 align-items-center">
                         <div className="col-md-8">
                           <div className="p-3 rounded-3" style={{ background: '#f0fdf4', border: '1px solid #86efac' }}>
                             <strong className="small d-block text-success mb-1 fw-bold">Clause officielle d'engagement financier UNAMUSC :</strong>
                             <p className="small mb-0 text-dark" style={{ lineHeight: '1.5', color: '#0f172a' }}>
-                              {selectedLetter.agent_note || 'L\'Union Nationale des Mutuelles de Santé Communautaires (UNAMUSC) s\'engage sous le programme SÉN-CSU à régler directement à l\'établissement hospitalier le montant garanti sous présentation de la facture finale conforme.'}
+                              {selectedLetter.agent_note || 'L\'Union Nationale des Mutuelles de Santé Communautaires (UNAMUSC) s\'engage sous le Programme National de la Couverture Sanitaire du Sénégal à régler directement à l\'établissement hospitalier le montant garanti sous présentation de la facture finale conforme.'}
                             </p>
                           </div>
                         </div>
@@ -801,7 +797,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen' }) 
                             />
                           </div>
                           <div className="small fw-bold text-success">Tampon Numérique Officiel UNAMUSC</div>
-                          <small className="text-muted d-block" style={{ fontSize: '0.72rem' }}>Homologué SÉN-CSU — Signature Agent Habilité</small>
+                          <small className="text-muted d-block" style={{ fontSize: '0.72rem' }}>Homologué par l'UNAMUSC — Signature Agent Habilité</small>
                         </div>
                       </div>
                     </div>

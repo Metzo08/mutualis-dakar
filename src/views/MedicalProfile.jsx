@@ -157,7 +157,7 @@ export default function MedicalProfile({ lang = 'fr' }) {
       id: Date.now(),
       title: newExam.title,
       exam_type: newExam.exam_type,
-      provider_name: newExam.provider_name || 'Dr. Prestataire Agréé SÉN-CSU',
+      provider_name: newExam.provider_name || 'Dr. Prestataire Agréé UNAMUSC',
       exam_date: new Date(newExam.exam_date).toISOString(),
       doctor_notes: newExam.doctor_notes,
       cliche_count: 3,

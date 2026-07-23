@@ -129,7 +129,7 @@ export default function CmuCard({ citizen }) {
             alignItems: 'center' 
           }}>
             <span>✨ Sponsorisé par <strong>PATISEN</strong> & <strong>Wave</strong></span>
-            <span style={{ opacity: 0.8 }}>SÉN-CSU 🇸🇳</span>
+            <span style={{ opacity: 0.8 }}>RÉPUBLIQUE DU SÉNÉGAL 🇸🇳</span>
           </div>
         </div>
 

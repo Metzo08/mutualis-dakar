@@ -54,7 +54,7 @@ export default function VerifyCard({ lang = 'fr' }) {
       birthDate: '1988-04-12',
       phone: '+221 77 450 12 34',
       mutuelleName: 'Mutuelle de Santé de Dakar-Plateau',
-      packageType: 'Formule Familiale Intégrale SÉN-CSU (80% à 100%)',
+      packageType: 'Formule Familiale Intégrale UNAMUSC (80% à 100%)',
       cmuNumber: 'SN-DK-MED-8472',
       ippNumber: 'IPP-FANN-2026-8472',
       photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
@@ -127,7 +127,7 @@ export default function VerifyCard({ lang = 'fr' }) {
             firstName: parsed.patient ? parsed.patient.split(' ')[0] : 'Amadou',
             lastName: parsed.patient ? parsed.patient.split(' ').slice(1).join(' ') : 'Sow',
             phone: '+221 77 450 12 34',
-            mutuelleName: 'UDMS Dakar — SÉN-CSU',
+            mutuelleName: 'UDMS Dakar — UNAMUSC',
             packageType: 'Tiers-Payant & Télémédecine WebRTC (80%)',
             cmuNumber: parsed.cmu || 'CMU-DKR-2026-8812',
             ippNumber: parsed.ipp || 'IPP-FANN-2026-9921',
@@ -182,7 +182,7 @@ export default function VerifyCard({ lang = 'fr' }) {
         lastName: 'Sow',
         phone: '+221 77 450 12 34',
         mutuelleName: 'Mutuelle de Santé de Dakar-Plateau',
-        packageType: 'Formule Familiale Intégrale SÉN-CSU (80% à 100%)',
+        packageType: 'Formule Familiale Intégrale UNAMUSC (80% à 100%)',
         cmuNumber: target.toUpperCase(),
         ippNumber: `IPP-DKR-${target.slice(-4)}`,
         photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
@@ -304,7 +304,7 @@ export default function VerifyCard({ lang = 'fr' }) {
             fontSize: '0.82rem',
             border: '1px solid rgba(255, 255, 255, 0.3)'
           }}>
-            🔍 SÉN-CSU — Contrôle de validité & Hub médical instantané
+            🔍 UNAMUSC — Contrôle de validité & Hub médical instantané
           </span>
           <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
             {t.title}
@@ -355,7 +355,7 @@ export default function VerifyCard({ lang = 'fr' }) {
         {/* AFFICHAGE DU PASS CARTE CMU NUMÉRIQUE DESIGN HAUTE DÉFINITION SUR MOBILE & DESKTOP */}
         {result && (
           <div className="fade-in-up">
-            {/* CARTE PASS DIGITALE CMU EXCLUSIVE (Style Apple / Google Wallet SÉN-CSU) */}
+            {/* CARTE PASS DIGITALE CMU EXCLUSIVE (Style Apple / Google Wallet UNAMUSC) */}
             <div 
               className="p-4 rounded-4 text-white shadow-lg position-relative overflow-hidden mb-4"
               style={{
@@ -371,7 +371,7 @@ export default function VerifyCard({ lang = 'fr' }) {
               <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                 <div>
                   <span className="badge px-3 py-1 fw-bold text-white mb-1 d-inline-block" style={{ background: 'rgba(255, 255, 255, 0.25)', backdropFilter: 'blur(4px)', borderRadius: '20px', fontSize: '0.75rem' }}>
-                    🇸🇳 COUVERTURE MALADIE UNIVERSELLE — SÉN-CSU
+                    🇸🇳 COUVERTURE SANITAIRE UNIVERSELLE DU SÉNÉGAL
                   </span>
                   <h5 className="fw-bold mb-0 text-white" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.3)', letterSpacing: '0.5px' }}>
                     MUTUALIS DAKAR <span className="small opacity-75">SN</span>

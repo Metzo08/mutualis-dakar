@@ -429,7 +429,7 @@ export default function PurchaseOrders({ lang = 'fr' }) {
                   <div className="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
                     <div>
                       <h6 className="fw-bold text-success mb-0">BON DE COMMANDE DE MÉDICAMENTS (48H)</h6>
-                      <small className="text-muted">Tiers-Payant UNAMUSC (SÉN-CSU)</small>
+                      <small className="text-muted">Tiers-Payant UNAMUSC — Programme National de la Couverture Sanitaire</small>
                     </div>
                     <code className="bg-dark text-success p-2 rounded fw-bold">
                       {selectedVoucher.order_code || `ORD-${selectedVoucher.id}`}

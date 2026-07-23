@@ -9,7 +9,7 @@ const PARTNERS = [
   { name: 'PATISEN', logo: '/logo_partner_patisen.png', isImage: true },
   { name: 'WAVE SÉNÉGAL', logo: '/logo_wave.png', isImage: true },
   { name: 'ORANGE MONEY', logo: '/logo_orange_money.png', isImage: true },
-  { name: 'SEN-CSU', logo: '/sencsu_logo.png', isImage: true }
+  { name: 'COUVERTURE SANITAIRE SÉNÉGAL', logo: '/sencsu_logo.png', isImage: true }
 ];
 
 export default function Partnership({ lang, portalMode, agentUser }) {

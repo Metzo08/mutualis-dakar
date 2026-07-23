@@ -166,7 +166,7 @@ export default function InstitutionPortal({ lang = 'fr' }) {
                 </div>
 
                 <div className="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
-                  <span className="text-muted small">Interconnexion directe avec le SÉN-CSU Ministère de la Santé</span>
+                  <span className="text-muted small">Interconnexion directe avec le Programme National de la Couverture Sanitaire — Ministère de la Santé</span>
                   <button className="btn btn-sm btn-outline-secondary" onClick={() => alert('Exportation du rapport financier COUD au format PDF...')}>
                     📥 Rapport Financier PDF
                   </button>

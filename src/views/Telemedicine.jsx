@@ -676,7 +676,7 @@ export default function Telemedicine({ lang = 'fr' }) {
               <div className="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3" style={{ borderColor: 'var(--border-color)' }}>
                 <div>
                   <h5 className="fw-bold mb-0" style={{ color: 'var(--primary)' }}>
-                    🛡️ QR Code Tri-Layer Sécurisé SÉN-CSU
+                    🛡️ QR Code Tri-Layer Sécurisé UNAMUSC
                   </h5>
                   <small className="text-muted">Identification médicale universelle interopérable</small>
                 </div>

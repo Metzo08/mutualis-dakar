@@ -203,9 +203,9 @@ export default function Header({
         </small>
       </div>
 
-      {/* 💳 3. Logo SÉN-CSU */}
+      {/* 💳 3. Logo Programme National de la Couverture Sanitaire */}
       <div className="sidebar-brand-block mb-3">
-        <img src="/sencsu_logo.png" alt="SÉN-CSU Logo" style={{ height: '32px', objectFit: 'contain' }} />
+        <img src="/sencsu_logo.png" alt="Programme National de la Couverture Sanitaire du Sénégal" style={{ height: '32px', objectFit: 'contain' }} />
       </div>
 
       {/* Sidebar Profile Card */}
