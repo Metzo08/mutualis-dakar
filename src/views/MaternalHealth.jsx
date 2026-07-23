@@ -649,7 +649,7 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
 
               <div className="table-responsive">
                 <table className="table table-bordered table-sm text-center small">
-                  <thead style="background: var(--bg-body);">
+                  <thead style={{ background: 'var(--bg-body)' }}>
                     <tr>
                       <th>Âge</th>
                       <th>Poids (kg)</th>
@@ -750,7 +750,7 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
 
               <div className="table-responsive mb-4">
                 <table className="table table-bordered align-middle text-center">
-                  <thead style="background: var(--bg-body);">
+                  <thead style={{ background: 'var(--bg-body)' }}>
                     <tr>
                       <th>Étape / Classe</th>
                       <th>Nature du Bilan</th>
