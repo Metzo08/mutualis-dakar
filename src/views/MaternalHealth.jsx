@@ -144,7 +144,15 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
   // Impression / Téléchargement du Carnet de Maternité A4 PDF (Future Maman)
   const handlePrintMaternalPassportPDF = () => {
     const data = maternalData || defaultMaternalData;
+    const records = data?.cpn_records || defaultMaternalData.cpn_records;
+    const cpnRowsHtml = records.map(cpn => {
+      const statusBadge = cpn.done ? '<span class="badge bg-success">✅ Validée</span>' : '<span class="badge bg-warning text-dark">⏳ En attente</span>';
+      const cpnDateStr = cpn.date ? new Date(cpn.date).toLocaleDateString('fr-FR') : 'À venir';
+      return '<tr><td><strong>' + cpn.name + '</strong></td><td style="text-align: center;">' + statusBadge + '</td><td><small>' + cpnDateStr + '<br />' + cpn.doctor + '</small></td><td><small>' + cpn.notes + '</small></td></tr>';
+    }).join('');
+
     const printWin = window.open('', '_blank', 'width=980,height=1150');
+
     printWin.document.write(`
       <!DOCTYPE html>
       <html>
@@ -207,14 +215,7 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
                 </tr>
               </thead>
               <tbody>
-                {(data.cpn_records || defaultMaternalData.cpn_records).map(cpn => `
-                  <tr>
-                    <td><strong>${cpn.name}</strong></td>
-                    <td style="text-align: center;">${cpn.done ? '<span class="badge bg-success">✅ Validée</span>' : '<span class="badge bg-warning text-dark">⏳ En attente</span>'}</td>
-                    <td><small>${cpn.date ? new Date(cpn.date).toLocaleDateString('fr-FR') : 'À venir'}<br />${cpn.doctor}</small></td>
-                    <td><small>${cpn.notes}</small></td>
-                  </tr>
-                `).join('')}
+                ${cpnRowsHtml}
               </tbody>
             </table>
 
