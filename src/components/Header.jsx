@@ -302,7 +302,7 @@ export default function Header({
           onClick={() => navigateTo('medical-profile')}
         >
           <span className="nav-icon">🩺</span>
-          {lang === 'fr' ? 'Dossier & Radios' : 'Tére fajj'}
+          {lang === 'fr' ? 'Dossier & radios' : 'Tére fajj'}
         </button>
 
         {/* Carnet de Santé Maternelle */}
@@ -311,7 +311,7 @@ export default function Header({
           onClick={() => navigateTo('maternity')}
         >
           <span className="nav-icon">🤱</span>
-          {lang === 'fr' ? 'Carnet Maternité' : 'Tére wéru jégen'}
+          {lang === 'fr' ? 'Carnet maternité' : 'Tére wéru jégen'}
         </button>
 
         {/* Parrainage solidaire (Public Dedicated Page) */}

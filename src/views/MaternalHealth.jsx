@@ -390,15 +390,15 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
               border: '1px solid rgba(255, 255, 255, 0.4)'
             }}
           >
-            🤱 Carnet Numérique Officiel de Santé Maternelle & Infantile (de la Naissance à 18 ans) — UNAMUSC
+            🤱 Carnet numérique officiel de santé maternelle & infantile (de la naissance à 18 ans) — UNAMUSC
           </span>
           <h1 className="fw-bold mb-2 text-white text-center" style={{ fontSize: '2.2rem', textShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
-            {lang === 'wo' ? 'Tére wéru yaramu jégen ji ak doom ji (0-18 ans)' : 'Carnet de Santé Maternelle & Suivi de l\'Enfant (0 à 18 ans)'}
+            {lang === 'wo' ? 'Tére wéru yaramu jégen ji ak doom ji (0-18 ans)' : 'Carnet de santé maternelle & suivi de l\'enfant (0 à 18 ans)'}
           </h1>
           <p className="mb-4 text-white-50 text-center mx-auto" style={{ fontSize: '1.02rem', lineHeight: '1.6', textShadow: '0 1px 3px rgba(0,0,0,0.3)', maxWidth: '800px' }}>
             {isAgent
-              ? 'Mode Praticien Habilité (Sage-Femme d\'État / Pédiatre) : Enregistrez et validez les CPN, le PEV (0-12m), le suivi de croissance et la santé scolaire 6-18 ans.'
-              : 'Espace Maman / Parents (Mode Lecture Seule) : Consultez le carnet de santé numérique complet de votre enfant, ses vaccins PEV et téléchargez son livret certifié A4.'}
+              ? 'Mode praticien habilité (Sage-femme d\'État / pédiatre) : enregistrez et validez les CPN, le PEV (0-12 mois), le suivi de croissance et la santé scolaire (6 à 18 ans).'
+              : 'Espace maman / parents (mode lecture seule) : consultez le carnet de santé numérique complet de votre enfant, ses vaccins PEV et téléchargez son livret certifié A4.'}
           </p>
 
           <div className="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-2 w-100">
