@@ -1161,8 +1161,6 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
               </h4>
               <small className="text-muted">Tableau de bord exclusif du Médecin de Garde accrédité par le Super Admin</small>
             </div>
-              <small className="text-muted">Tableau de bord exclusif du Médecin de Garde accrédité par le Super Admin</small>
-            </div>
 
             <div className="d-flex align-items-center gap-2">
               <span className="small fw-bold text-muted">Compte Praticien :</span>
