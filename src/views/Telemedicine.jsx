@@ -1,68 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { jsPDF } from 'jspdf';
-
-// Helper de Génération & Téléchargement Direct de Fichiers PDF Réels (jsPDF)
-const triggerFileDownload = (filename, title, subtitle, details) => {
-  try {
-    const doc = new jsPDF();
-
-    // En-tête Vert Émeraude UNAMUSC
-    doc.setFillColor(16, 185, 129);
-    doc.rect(0, 0, 210, 25, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(13);
-    doc.setFont('helvetica', 'bold');
-    doc.text('UNAMUSC SENEGAL - COUVERTURE SANTE UNIVERSELLE', 14, 16);
-
-    // Titre du Document
-    doc.setTextColor(15, 23, 42);
-    doc.setFontSize(15);
-    doc.text(title.toUpperCase(), 14, 38);
-
-    if (subtitle) {
-      doc.setFontSize(10);
-      doc.setTextColor(100, 116, 139);
-      doc.text(`Reference : ${subtitle}`, 14, 46);
-    }
-
-    // Encadré Bénéficiaire
-    doc.setFillColor(241, 245, 249);
-    doc.rect(14, 52, 182, 26, 'F');
-    doc.setFontSize(10);
-    doc.setTextColor(15, 23, 42);
-    doc.setFont('helvetica', 'bold');
-    doc.text('BENEFICIAIRE : Awa Ndiaye', 20, 62);
-    doc.text('NUMERO CMU : CMU-DKR-2026-8812', 20, 71);
-
-    // Section Détails
-    let y = 92;
-    doc.setFontSize(11);
-    doc.setTextColor(15, 23, 42);
-    doc.text('DETAILS DU DOCUMENT :', 14, 85);
-
-    details.forEach(d => {
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(16, 185, 129);
-      doc.text(`- ${d.label} :`, 14, y);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(51, 65, 85);
-      const splitVal = doc.splitTextToSize(String(d.value), 120);
-      doc.text(splitVal, 70, y);
-      y += Math.max(10, splitVal.length * 6);
-    });
-
-    // Pied de Page Officiel
-    doc.setFontSize(8);
-    doc.setTextColor(148, 163, 184);
-    doc.text(`Document officiel certifie par UNAMUSC Senegal - Genere le ${new Date().toLocaleDateString('fr-FR')}`, 14, 280);
-
-    const safeFilename = filename.endsWith('.pdf') ? filename : `${filename}.pdf`;
-    doc.save(safeFilename);
-  } catch (err) {
-    console.error("Erreur génération PDF:", err);
-    alert("Téléchargement du document initié.");
-  }
-};
+import { generateOfficialPdf } from '../utils/pdfGenerator';
 
 // Design Premium Haut de Gamme — Télémédecine Visioconférence Bidirectionnelle & Vu-mètre Micro Réel
 export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null }) {
@@ -387,17 +324,23 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
   };
 
   const handleDownloadPrescription = () => {
-    triggerFileDownload(
-      'ordonnance_telemedecine_bon_pharmacie_50.pdf',
-      'Ordonnance Medicale Certifiee Telemedecine',
-      'ORD-TELEMED-2026-9912',
-      [
-        { label: 'Patient(e)', value: 'Awa Ndiaye (CMU-DKR-2026-8812)' },
-        { label: 'Praticien prescripteur', value: 'Dr. Ousmane Sow (Medecin Generaliste - CNOM: 4522-SN)' },
-        { label: 'Medicaments prescrits', value: 'Amoxicilline 500mg (2 boites), Paracetamol 1g (1 boite)' },
-        { label: 'Tiers-Payant Pharmacie', value: 'Bon de commande 50% UNAMUSC garanti' }
-      ]
-    );
+    generateOfficialPdf({
+      filename: 'ordonnance_telemedecine_bon_pharmacie_50.pdf',
+      docType: 'ORDONNANCE MÉDICALE DE TÉLÉMÉDECINE CERTIFIÉE',
+      title: 'Ordonnance Électronique & Bon Pharmacie 50%',
+      referenceNo: 'ORD-TELEMED-2026-9912',
+      beneficiaryName: `${activeFirstName} ${activeLastName}`,
+      cmuNumber: activeCmuNumber,
+      structureName: 'Pharmacies Agréées Tiers-Payant UNAMUSC',
+      details: [
+        { label: 'Patient(e) Bénéficiaire', value: `${activeFirstName} ${activeLastName} (${activeCmuNumber})` },
+        { label: 'Médecin Prescripteur', value: 'Dr. Ousmane Sow (Médecin Généraliste - CNOM: 4522-SN)' },
+        { label: 'Médicaments Prescrits', value: '1. Amoxicilline 500mg (2 boîtes) — 1 gélule 3x/jour pendant 7 jours\n2. Paracétamol 1g (1 boîte) — 1 comprimé en cas de fièvre' },
+        { label: 'Couverture Pharmacie UNAMUSC', value: '50% Remboursement / Prise en charge directe Tiers-Payant' },
+        { label: 'Validité de l\'Ordonnance', value: 'Valable 30 jours dans toutes les pharmacies agréées du Sénégal' }
+      ],
+      notes: 'Cette ordonnance médicale numérique numérotée comporte la signature et le visa CNOM du médecin prescripteur.'
+    });
   };
 
   const filteredDoctors = doctorsList.filter(d => {
@@ -413,7 +356,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
       <div style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.08)', background: '#0f172a', padding: '0.85rem 2rem' }}>
         <div style={{ maxWidth: '1320px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <h5 className="fw-bold mb-0 text-white" style={{ fontSize: '1.1rem' }}>Télémédecine UNAMUSC</h5>
+            <h5 className="fw-bold mb-0 text-white" style={{ fontSize: '1.1rem' }}>Télémédecine UNAMUSC 🇸🇳</h5>
             <span style={{ height: '14px', width: '1px', background: 'rgba(255, 255, 255, 0.2)' }} />
             <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '600', padding: '0.25rem 0.75rem' }}>
               ● SALLE D'ATTENTE VIRTUELLE LIVE
@@ -446,7 +389,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
           <div className="row align-items-center g-4">
             <div className="col-lg-8">
               <span style={{ background: '#059669', color: '#ffffff', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '700', display: 'inline-block', marginBottom: '0.5rem' }}>
-                ● SALLE D'ATTENTE VIRTUELLE LIVE
+                🇸🇳 SALLE D'ATTENTE VIRTUELLE UNAMUSC
               </span>
               <h1 className="fw-extrabold text-white mb-2" style={{ fontSize: '2.2rem', letterSpacing: '-0.02em' }}>Consultation Instantanée 24h/7</h1>
               <p className="text-white-50 mb-4" style={{ fontSize: '0.98rem', maxWidth: '650px', lineHeight: '1.5' }}>
@@ -963,14 +906,14 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
       {activeModal === 'prescription' && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{ maxWidth: '640px', width: '90%', background: '#1e293b', borderRadius: '24px', padding: '2rem', border: '1px solid rgba(255,255,255,0.1)' }}>
-            <h5 className="fw-bold text-success mb-3">💊 Ordonnance Médicale Certifiée (Bon Pharmacie 50%)</h5>
+            <h5 className="fw-bold text-success mb-3">💊 Ordonnance Médicale Certifiée (Bon Pharmacie 50% 🇸🇳)</h5>
             <div className="p-4 rounded-3 bg-dark mb-3 border border-success">
-              <strong className="text-success d-block mb-1">Dr. Ousmane Sow (Médecin Généraliste)</strong>
+              <strong className="text-success d-block mb-1">Dr. Ousmane Sow (Médecin Généraliste - CNOM: 4522-SN)</strong>
               <p className="small text-white-50 mb-0">• Amoxicilline 500mg (2 boîtes) • Paracétamol 1g (1 boîte)</p>
             </div>
             <div className="d-flex justify-content-end gap-2">
               <button type="button" style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setActiveModal(null)}>Fermer</button>
-              <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700', cursor: 'pointer' }} onClick={handleDownloadPrescription}>📥 Télécharger Ordonnance PDF</button>
+              <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700', cursor: 'pointer' }} onClick={handleDownloadPrescription}>📥 Télécharger Ordonnance PDF Officielle (🇸🇳)</button>
             </div>
           </div>
         </div>

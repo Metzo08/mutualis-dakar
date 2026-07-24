@@ -1,68 +1,5 @@
 import React, { useState } from 'react';
-import { jsPDF } from 'jspdf';
-
-// Helper de Génération & Téléchargement Direct de Fichiers PDF Réels (jsPDF)
-const triggerFileDownload = (filename, title, subtitle, details) => {
-  try {
-    const doc = new jsPDF();
-
-    // En-tête Vert Émeraude UNAMUSC
-    doc.setFillColor(16, 185, 129);
-    doc.rect(0, 0, 210, 25, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(13);
-    doc.setFont('helvetica', 'bold');
-    doc.text('UNAMUSC SENEGAL - COUVERTURE SANTE UNIVERSELLE', 14, 16);
-
-    // Titre du Document
-    doc.setTextColor(15, 23, 42);
-    doc.setFontSize(15);
-    doc.text(title.toUpperCase(), 14, 38);
-
-    if (subtitle) {
-      doc.setFontSize(10);
-      doc.setTextColor(100, 116, 139);
-      doc.text(`Reference : ${subtitle}`, 14, 46);
-    }
-
-    // Encadré Bénéficiaire
-    doc.setFillColor(241, 245, 249);
-    doc.rect(14, 52, 182, 26, 'F');
-    doc.setFontSize(10);
-    doc.setTextColor(15, 23, 42);
-    doc.setFont('helvetica', 'bold');
-    doc.text('BENEFICIAIRE : Awa Ndiaye', 20, 62);
-    doc.text('NUMERO CMU : CMU-DKR-2026-8812', 20, 71);
-
-    // Section Détails
-    let y = 92;
-    doc.setFontSize(11);
-    doc.setTextColor(15, 23, 42);
-    doc.text('DETAILS DU DOCUMENT :', 14, 85);
-
-    details.forEach(d => {
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(16, 185, 129);
-      doc.text(`- ${d.label} :`, 14, y);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(51, 65, 85);
-      const splitVal = doc.splitTextToSize(String(d.value), 120);
-      doc.text(splitVal, 70, y);
-      y += Math.max(10, splitVal.length * 6);
-    });
-
-    // Pied de Page Officiel
-    doc.setFontSize(8);
-    doc.setTextColor(148, 163, 184);
-    doc.text(`Document officiel certifie par UNAMUSC Senegal - Genere le ${new Date().toLocaleDateString('fr-FR')}`, 14, 280);
-
-    const safeFilename = filename.endsWith('.pdf') ? filename : `${filename}.pdf`;
-    doc.save(safeFilename);
-  } catch (err) {
-    console.error("Erreur génération PDF:", err);
-    alert("Téléchargement du document initié.");
-  }
-};
+import { generateOfficialPdf } from '../utils/pdfGenerator';
 
 // Design Premium Haut de Gamme — Carnet Maternité & Santé Enfant
 export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
@@ -149,32 +86,43 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
   };
 
   const handleDownloadCarnet = () => {
-    triggerFileDownload(
-      'carnet_sante_maternelle_awa_ndiaye.pdf',
-      'Carnet de Sante Maternelle et Suivi Enfant',
-      'CARNET-MAT-2026-8812',
-      [
-        { label: 'Assuree', value: 'Awa Ndiaye' },
-        { label: 'Numero Carte CMU', value: 'CMU-DKR-2026-8812' },
-        { label: 'Enfant', value: 'Moussa Ndiaye (Ne le 14/05/2026)' },
-        { label: 'Statut CPN', value: '75% complete (CPN 1 et CPN 2 confirmees)' },
-        { label: 'Garantie Accouchement', value: '100% Prise en charge par UNAMUSC' }
-      ]
-    );
+    generateOfficialPdf({
+      filename: 'carnet_sante_maternelle_awa_ndiaye.pdf',
+      docType: 'CARNET DE SANTÉ MATERNELLE ET PÉDIATRIQUE',
+      title: 'Carnet Maternité & Suivi Enfant 100% Gratuit',
+      referenceNo: 'CARNET-MAT-2026-8812',
+      beneficiaryName: 'Awa Ndiaye',
+      cmuNumber: 'CMU-DKR-2026-8812',
+      structureName: 'Hôpital Universitaire de Fann (Dakar)',
+      details: [
+        { label: 'Assurée', value: 'Awa Ndiaye' },
+        { label: 'Enfant rattaché', value: 'Moussa Ndiaye (Né le 14/05/2026)' },
+        { label: 'Statut Consultations CPN', value: '75% complété (CPN 1 et CPN 2 validées)' },
+        { label: 'Vaccinations PEV Enfant', value: 'BCG, VPO 0, VHB 0 et Penta 1 administrés' },
+        { label: 'Garantie Accouchement', value: 'Prise en charge intégrale à 100% par UNAMUSC' }
+      ],
+      notes: 'Ce carnet numérique officiel garantit l\'accès gratuit aux soins de maternité et au programme élargi de vaccination (PEV) dans tous les établissements agréés du Sénégal.'
+    });
   };
 
   const handleDownloadGuarantee = () => {
-    triggerFileDownload(
-      'lettre_garantie_accouchement_100_unamusc.pdf',
-      'Lettre de Garantie Hospitaliere Accouchement 100%',
-      'GAR-MAT-2026-9910',
-      [
-        { label: 'Assuree', value: 'Awa Ndiaye (CMU-DKR-2026-8812)' },
-        { label: 'Etablissement Recepteur', value: 'Centre Hospitalier Universitaire de Fann (Dakar)' },
-        { label: 'Taux de Couverture', value: '100% (Accouchement simple, Cesarienne et Neonatologie)' },
-        { label: 'Montant a payer par assure', value: '0 FCFA (Prise en charge integrale)' }
-      ]
-    );
+    generateOfficialPdf({
+      filename: 'lettre_garantie_accouchement_100_unamusc.pdf',
+      docType: 'LETTRE DE GARANTIE HOSPITALIÈRE INTEGRALE',
+      title: 'Prise en Charge Accouchement 100% UNAMUSC',
+      referenceNo: 'GAR-MAT-2026-9910',
+      beneficiaryName: 'Awa Ndiaye',
+      cmuNumber: 'CMU-DKR-2026-8812',
+      structureName: 'Centre Hospitalier Universitaire de Fann (Dakar)',
+      details: [
+        { label: 'Bénéficiaire', value: 'Awa Ndiaye (CMU-DKR-2026-8812)' },
+        { label: 'Établissement Récepteur', value: 'CHU de Fann (Dakar)' },
+        { label: 'Taux de Couverture UNAMUSC', value: '100% Prise en Charge Totale' },
+        { label: 'Actes Couverts', value: 'Accouchement simple, Césarienne d\'urgence & Soins néonataux' },
+        { label: 'Montant à payer par l\'assuré', value: '0 FCFA (Tiers-Payant Intégral)' }
+      ],
+      notes: 'La présente lettre de garantie dispense l\'assurée de toute avance de frais d\'hospitalisation ou de bloc opératoire.'
+    });
   };
 
   return (
@@ -184,7 +132,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
       <div style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.08)', background: '#0f172a', padding: '0.85rem 2rem' }}>
         <div style={{ maxWidth: '1320px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <h5 className="fw-bold mb-0 text-white" style={{ fontSize: '1.1rem' }}>UNAMUSC Sénégal</h5>
+            <h5 className="fw-bold mb-0 text-white" style={{ fontSize: '1.1rem' }}>UNAMUSC Sénégal 🇸🇳</h5>
             <span style={{ height: '14px', width: '1px', background: 'rgba(255, 255, 255, 0.2)' }} />
             <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '600', padding: '0.25rem 0.75rem' }}>
               Awa Ndiaye • Mère éligible CSU
@@ -215,7 +163,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
           <div className="row align-items-center g-4">
             <div className="col-lg-8">
               <span style={{ background: '#059669', color: '#ffffff', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '700', display: 'inline-block', marginBottom: '0.5rem' }}>
-                ● ESPACE PREMIUM SANTÉ MATERNELLE
+                🇸🇳 ESPACE PREMIUM SANTÉ MATERNELLE UNAMUSC
               </span>
               <h1 className="fw-extrabold text-white mb-2" style={{ fontSize: '2.1rem', letterSpacing: '-0.02em' }}>Carnet de santé maternelle & suivi de l'enfant</h1>
               <p className="text-white-50 mb-4" style={{ fontSize: '0.98rem', maxWidth: '650px', lineHeight: '1.5' }}>
@@ -236,7 +184,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
                   style={{ background: '#1e293b', color: '#f8fafc', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '0.75rem 1.25rem', fontWeight: '700', fontSize: '0.88rem', cursor: 'pointer' }} 
                   onClick={handleDownloadCarnet}
                 >
-                  📥 Télécharger Carnet A4 (PDF)
+                  📥 Télécharger Carnet Officiel PDF (🇸🇳)
                 </button>
               </div>
             </div>
@@ -389,7 +337,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
                 <div className="p-4 rounded-4 text-white" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', boxShadow: '0 10px 25px rgba(16, 185, 129, 0.3)' }}>
                   <div className="d-flex justify-content-between align-items-center mb-3">
                     <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.1rem' }}>Vos Avantages CMU</h6>
-                    <span style={{ fontSize: '1.5rem' }}>✳️</span>
+                    <span style={{ fontSize: '1.5rem' }}>🇸🇳</span>
                   </div>
 
                   <p className="small mb-3" style={{ opacity: 0.95, lineHeight: '1.5' }}>
@@ -535,7 +483,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
           <div className="modal-dialog modal-lg modal-dialog-centered">
             <div className="modal-content text-white p-4" style={{ borderRadius: '24px', background: '#1e293b' }}>
               <div className="d-flex justify-content-between align-items-center mb-3">
-                <h5 className="fw-bold text-success mb-0">📜 Lettre de Garantie Hospitalière (100% UNAMUSC)</h5>
+                <h5 className="fw-bold text-success mb-0">📜 Lettre de Garantie Hospitalière (100% UNAMUSC 🇸🇳)</h5>
                 <button className="btn-close btn-close-white" onClick={() => setShowGuaranteeModal(false)}></button>
               </div>
 
@@ -564,7 +512,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
 
               <div className="d-flex justify-content-end gap-2">
                 <button type="button" style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setShowGuaranteeModal(false)}>Fermer</button>
-                <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700', cursor: 'pointer' }} onClick={handleDownloadGuarantee}>📥 Télécharger la Lettre PDF</button>
+                <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700', cursor: 'pointer' }} onClick={handleDownloadGuarantee}>📥 Télécharger la Lettre PDF Certifiée (🇸🇳)</button>
               </div>
             </div>
           </div>

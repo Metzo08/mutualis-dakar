@@ -1,68 +1,5 @@
 import React, { useState } from 'react';
-import { jsPDF } from 'jspdf';
-
-// Helper de Génération & Téléchargement Direct de Fichiers PDF Réels (jsPDF)
-const triggerFileDownload = (filename, title, subtitle, details) => {
-  try {
-    const doc = new jsPDF();
-
-    // En-tête Vert Émeraude UNAMUSC
-    doc.setFillColor(16, 185, 129);
-    doc.rect(0, 0, 210, 25, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(13);
-    doc.setFont('helvetica', 'bold');
-    doc.text('UNAMUSC SENEGAL - COUVERTURE SANTE UNIVERSELLE', 14, 16);
-
-    // Titre du Document
-    doc.setTextColor(15, 23, 42);
-    doc.setFontSize(15);
-    doc.text(title.toUpperCase(), 14, 38);
-
-    if (subtitle) {
-      doc.setFontSize(10);
-      doc.setTextColor(100, 116, 139);
-      doc.text(`Reference : ${subtitle}`, 14, 46);
-    }
-
-    // Encadré Bénéficiaire
-    doc.setFillColor(241, 245, 249);
-    doc.rect(14, 52, 182, 26, 'F');
-    doc.setFontSize(10);
-    doc.setTextColor(15, 23, 42);
-    doc.setFont('helvetica', 'bold');
-    doc.text('BENEFICIAIRE : Awa Ndiaye', 20, 62);
-    doc.text('NUMERO CMU : CMU-DKR-2026-8812', 20, 71);
-
-    // Section Détails
-    let y = 92;
-    doc.setFontSize(11);
-    doc.setTextColor(15, 23, 42);
-    doc.text('DETAILS DU DOCUMENT :', 14, 85);
-
-    details.forEach(d => {
-      doc.setFont('helvetica', 'bold');
-      doc.setTextColor(16, 185, 129);
-      doc.text(`- ${d.label} :`, 14, y);
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(51, 65, 85);
-      const splitVal = doc.splitTextToSize(String(d.value), 120);
-      doc.text(splitVal, 70, y);
-      y += Math.max(10, splitVal.length * 6);
-    });
-
-    // Pied de Page Officiel
-    doc.setFontSize(8);
-    doc.setTextColor(148, 163, 184);
-    doc.text(`Document officiel certifie par UNAMUSC Senegal - Genere le ${new Date().toLocaleDateString('fr-FR')}`, 14, 280);
-
-    const safeFilename = filename.endsWith('.pdf') ? filename : `${filename}.pdf`;
-    doc.save(safeFilename);
-  } catch (err) {
-    console.error("Erreur génération PDF:", err);
-    alert("Téléchargement du document initié.");
-  }
-};
+import { generateOfficialPdf } from '../utils/pdfGenerator';
 
 // Design Premium Haut de Gamme — Bons & Garanties (Prises en charge Tiers-Payant)
 export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser }) {
@@ -149,19 +86,27 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
   };
 
   const handleDownloadClaimDoc = (claim) => {
-    const title = claim.care_type === 'hospitalisation' ? 'Lettre de Garantie Hospitaliere (80%)' : 'Bon de Commande Pharmacie (50%)';
-    triggerFileDownload(
-      `prise_en_charge_${claim.id}.pdf`,
-      title,
-      claim.id,
-      [
-        { label: 'Beneficiaire', value: claim.beneficiary_name },
-        { label: 'Etablissement / Pharmacie', value: claim.structure_name },
-        { label: 'Montant Devis', value: `${claim.amount.toLocaleString('fr-FR')} FCFA` },
+    const isHosp = claim.care_type === 'hospitalisation';
+    generateOfficialPdf({
+      filename: `prise_en_charge_${claim.id}.pdf`,
+      docType: isHosp ? 'LETTRE DE GARANTIE HOSPITALIÈRE (80%)' : 'BON DE COMMANDE PHARMACIE (50%)',
+      title: isHosp ? 'Lettre de Garantie Hospitalière Tiers-Payant' : 'Bon de Commande Pharmacie UNAMUSC',
+      referenceNo: claim.id,
+      beneficiaryName: claim.beneficiary_name,
+      cmuNumber: 'CMU-DKR-2026-8812',
+      structureName: claim.structure_name,
+      details: [
+        { label: 'Bénéficiaire d\'Ayant droit', value: claim.beneficiary_name },
+        { label: 'Établissement / Pharmacie Agréée', value: claim.structure_name },
+        { label: 'Montant Devis Soumis', value: `${claim.amount.toLocaleString('fr-FR')} FCFA` },
         { label: 'Prise en charge UNAMUSC', value: `${claim.reimbursed_amount.toLocaleString('fr-FR')} FCFA (${claim.coverage_rate}%)` },
-        { label: 'Date d\'emission', value: claim.submitted_at }
-      ]
-    );
+        { label: 'Ticket Modérateur Assuré', value: `${(claim.amount - claim.reimbursed_amount).toLocaleString('fr-FR')} FCFA` },
+        { label: 'Date d\'émission officielle', value: claim.submitted_at }
+      ],
+      notes: isHosp 
+        ? 'La présente lettre de garantie autorise l\'admission immédiate du bénéficiaire avec prise en charge directe de 80% des soins d\'hospitalisation.'
+        : 'Le présent bon de commande donne droit au remboursement ou à la délivrance directe avec 50% de réduction en pharmacie agréée.'
+    });
   };
 
   const filteredClaims = filterStatus ? claims.filter(c => c.status === filterStatus) : claims;
@@ -173,7 +118,7 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
       <div style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.08)', background: '#0f172a', padding: '0.85rem 2rem' }}>
         <div style={{ maxWidth: '1320px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <h5 className="fw-bold mb-0 text-white" style={{ fontSize: '1.1rem' }}>Bons & Garanties</h5>
+            <h5 className="fw-bold mb-0 text-white" style={{ fontSize: '1.1rem' }}>Bons & Garanties 🇸🇳</h5>
             <span style={{ height: '14px', width: '1px', background: 'rgba(255, 255, 255, 0.2)' }} />
             <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '600', padding: '0.25rem 0.75rem' }}>
               ● SESSION SÉCURISÉE UNAMUSC
@@ -202,7 +147,7 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
           <div className="col-lg-8">
             <div className="p-4 rounded-4" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(15, 23, 42, 0.95) 100%)', border: '1px solid rgba(16, 185, 129, 0.3)', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.4)' }}>
               <span style={{ background: '#059669', color: '#ffffff', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '700', display: 'inline-block', marginBottom: '0.5rem' }}>
-                TABLEAU DE BORD
+                🇸🇳 UNAMUSC SÉNÉGAL
               </span>
               <h2 className="fw-extrabold text-white mb-2" style={{ fontSize: '1.85rem', letterSpacing: '-0.02em' }}>Gestion des Prises en Charge</h2>
               <p className="text-white-50 mb-0" style={{ fontSize: '0.95rem', maxWidth: '640px', lineHeight: '1.5' }}>
@@ -593,7 +538,7 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
               </div>
               <div className="d-flex justify-content-end gap-2">
                 <button type="button" style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setShowDetailModal(null)}>Fermer</button>
-                <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700', cursor: 'pointer' }} onClick={() => handleDownloadClaimDoc(showDetailModal)}>📥 Télécharger le document PDF</button>
+                <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700', cursor: 'pointer' }} onClick={() => handleDownloadClaimDoc(showDetailModal)}>📥 Télécharger le document PDF (🇸🇳)</button>
               </div>
             </div>
           </div>
