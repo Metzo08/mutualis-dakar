@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-// Design Premium Haut de Gamme — Télémédecine & Visioconférence WebRTC Réelle + Simulateur HD Canvas
+// Design Premium Haut de Gamme — Télémédecine Visioconférence Bidirectionnelle & Vu-mètre Micro Réel
 export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null }) {
   const isAgent = (userRole === 'agent' || !!agentUser);
 
@@ -13,6 +13,9 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
   const [roleMode, setRoleMode] = useState(isAgent ? 'doctor' : 'citizen');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
+
+  // Swap Main Screen vs PIP Screen
+  const [swappedViews, setSwappedViews] = useState(false);
 
   // Liste des Praticiens Agréés
   const doctorsList = [
@@ -79,7 +82,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
     }
   ]);
 
-  // Modales
+  // Modales uniques
   const [activeModal, setActiveModal] = useState(null); // 'join_queue', 'payment', 'webrtc', 'qr', 'prescription'
 
   // Modale Inscription
@@ -98,8 +101,11 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
   const [cameraActive, setCameraActive] = useState(false);
   const [useSimulatedFeed, setUseSimulatedFeed] = useState(false);
 
+  // Vu-mètre Niveau Audio Microphone (0 - 100%)
+  const [micVolume, setMicVolume] = useState(0);
+
   const [chatMessages, setChatMessages] = useState([
-    { sender: 'Dr. Ousmane Sow', text: 'Bonjour Awa. Je consulte votre dossier médical. Je vous écoute.' }
+    { sender: 'Dr. Ousmane Sow', text: 'Bonjour Awa. Je vous entends très bien. Je consulte votre dossier médical.' }
   ]);
   const [inputMsg, setInputMsg] = useState('');
 
@@ -109,14 +115,14 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
   const streamRef = useRef(null);
   const animFrameRef = useRef(null);
 
-  // Tentative WebRTC Physique ou Basculement Simulateur Canvas HD
+  // Démarrage WebRTC physique
   const startCamera = async () => {
     setCameraActive(false);
     setUseSimulatedFeed(false);
 
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error("Navigateur non compatible WebRTC direct");
+        throw new Error("API WebRTC non disponible");
       }
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { width: { ideal: 1280 }, height: { ideal: 720 } }, 
@@ -127,18 +133,18 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
       setIsCamOff(false);
       setIsMuted(false);
 
-      // Boucle d'attachement au DOM <video>
-      const attachLoop = setInterval(() => {
+      // Liaison avec le composant vidéo <video>
+      const attachInterval = setInterval(() => {
         if (userVideoRef.current) {
           userVideoRef.current.srcObject = stream;
           userVideoRef.current.play().catch(e => console.warn(e));
-          clearInterval(attachLoop);
+          clearInterval(attachInterval);
         }
       }, 100);
-      setTimeout(() => clearInterval(attachLoop), 3000);
+      setTimeout(() => clearInterval(attachInterval), 3000);
 
     } catch (err) {
-      console.warn("Hardware camera unavailable, starting Canvas Feed Simulator:", err);
+      console.warn("Hardware camera blocked, fallback to HD Canvas Simulator:", err);
       setUseSimulatedFeed(true);
       setCameraActive(true);
     }
@@ -155,7 +161,6 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
     setCameraActive(false);
   };
 
-  // Animation Canvas quand la caméra physique est absente ou bloquée par HTTP
   useEffect(() => {
     if (activeModal === 'webrtc') {
       startCamera();
@@ -165,7 +170,46 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
     return () => stopCamera();
   }, [activeModal]);
 
-  // Canvas Rendu Vidéo Médical HD (60fps)
+  // Analyseur Web Audio API en Temps Réel (VU-mètre Microphone)
+  useEffect(() => {
+    if (activeModal === 'webrtc' && cameraActive && streamRef.current && !isMuted) {
+      let audioCtx = null;
+      let animId = null;
+
+      try {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const analyser = audioCtx.createAnalyser();
+        const microphone = audioCtx.createMediaStreamSource(streamRef.current);
+        microphone.connect(analyser);
+        analyser.fftSize = 128;
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
+        const updateVolume = () => {
+          analyser.getByteFrequencyData(dataArray);
+          let sum = 0;
+          for (let i = 0; i < bufferLength; i++) {
+            sum += dataArray[i];
+          }
+          const avg = sum / bufferLength;
+          setMicVolume(Math.min(100, Math.round((avg / 100) * 100)));
+          animId = requestAnimationFrame(updateVolume);
+        };
+        updateVolume();
+      } catch (e) {
+        console.warn("AudioContext error:", e);
+      }
+
+      return () => {
+        if (animId) cancelAnimationFrame(animId);
+        if (audioCtx) audioCtx.close().catch(() => {});
+      };
+    } else {
+      setMicVolume(0);
+    }
+  }, [activeModal, cameraActive, isMuted]);
+
+  // Canvas Rendu Vidéo Médical HD (60fps) quand la webcam physique est absente
   useEffect(() => {
     if (activeModal === 'webrtc' && useSimulatedFeed && canvasRef.current) {
       const canvas = canvasRef.current;
@@ -177,8 +221,8 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
         ctx.fillStyle = '#090d16';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Grid lines
-        ctx.strokeStyle = 'rgba(16, 185, 129, 0.1)';
+        // Grille de fond
+        ctx.strokeStyle = 'rgba(16, 185, 129, 0.12)';
         ctx.lineWidth = 1;
         for (let x = 0; x < canvas.width; x += 40) {
           ctx.beginPath();
@@ -193,25 +237,24 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
           ctx.stroke();
         }
 
-        // Live ECG Pulse Line
+        // Onde ECG
         ctx.strokeStyle = '#10b981';
         ctx.lineWidth = 3;
         ctx.beginPath();
         for (let x = 0; x < canvas.width; x += 5) {
-          const y = canvas.height / 2 + Math.sin((x * 0.02) + angle) * 35 + (Math.random() * 4);
+          const y = canvas.height / 2 + Math.sin((x * 0.02) + angle) * 35;
           if (x === 0) ctx.moveTo(x, y);
           else ctx.lineTo(x, y);
         }
         ctx.stroke();
 
-        // Status overlay
+        // Overlay Texte
         ctx.fillStyle = '#34d399';
-        ctx.font = 'bold 16px Inter, sans-serif';
-        ctx.fillText('● FLUX VISIOCONFÉRENCE HD (FLUX EN DIRECT)', 20, 40);
+        ctx.font = 'bold 15px Inter, sans-serif';
+        ctx.fillText('● FLUX VISIOCONFÉRENCE HD (EN DIRECT)', 20, 35);
         ctx.fillStyle = '#94a3b8';
         ctx.font = '13px Inter, sans-serif';
-        ctx.fillText(`Patient : ${activeFirstName} ${activeLastName} (CMU: ${activeCmuNumber})`, 20, 65);
-        ctx.fillText(`Résolution : 1080p WebRTC | Latence : 12ms`, 20, 85);
+        ctx.fillText(`Patient : ${activeFirstName} ${activeLastName} (CMU: ${activeCmuNumber})`, 20, 60);
 
         animFrameRef.current = requestAnimationFrame(render);
       };
@@ -653,71 +696,122 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
         </div>
       )}
 
-      {/* WEBRTC LIVE SESSION MODAL WITH REAL WEBCAM & HYBRID CANVAS SIMULATOR */}
+      {/* WEBRTC LIVE SESSION MODAL WITH RESPONSIVE DUAL VIEW & REAL MIC VU-METER */}
       {activeModal === 'webrtc' && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.95)', backdropFilter: 'blur(12px)', zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-          <div style={{ maxWidth: '1200px', width: '95%', background: '#0f172a', borderRadius: '24px', padding: '1.5rem', border: '1px solid rgba(255,255,255,0.1)', maxHeight: '92vh', overflowY: 'auto' }}>
+          <div style={{ maxWidth: '1000px', width: '95%', background: '#0f172a', borderRadius: '24px', padding: '1.25rem', border: '1px solid rgba(255,255,255,0.1)', maxHeight: '94vh', overflowY: 'auto' }}>
             
+            {/* Header Status Bar */}
             <div className="d-flex justify-content-between align-items-center mb-3 border-bottom border-secondary pb-2">
-              <h5 className="fw-bold text-success mb-0 d-flex align-items-center gap-2">
-                <span>🎥 Visioconférence HD en Direct — {activeDoctor.name}</span>
-                <span className="badge bg-danger text-white animate-pulse" style={{ fontSize: '0.75rem' }}>● EN DIRECT (1080p WebRTC)</span>
-              </h5>
+              <div className="d-flex align-items-center gap-2 flex-wrap">
+                <h6 className="fw-bold text-success mb-0" style={{ fontSize: '1rem' }}>
+                  🎥 Visioconférence Bidirectionnelle — {activeDoctor.name}
+                </h6>
+                <span className="badge bg-danger text-white" style={{ fontSize: '0.72rem' }}>● EN DIRECT (1080p WebRTC)</span>
+              </div>
               <button className="btn-close btn-close-white" onClick={() => setActiveModal(null)}></button>
             </div>
 
-            <div className="row g-4">
+            <div className="row g-3">
               
-              {/* Main Screen Stream Box */}
+              {/* Main Responsive Screen Box */}
               <div className="col-lg-8">
-                <div className="rounded-4 text-center d-flex flex-column align-items-center justify-content-center" style={{ minHeight: '400px', background: '#050911', position: 'relative', border: '2px solid #10b981', overflow: 'hidden' }}>
+                <div className="rounded-4 text-center d-flex flex-column align-items-center justify-content-center" style={{ width: '100%', height: '360px', background: '#050911', position: 'relative', border: '2px solid #10b981', overflow: 'hidden' }}>
                   
-                  {/* REAL WEBCAM VIDEO STREAM */}
-                  {!useSimulatedFeed && (
-                    <video 
-                      ref={userVideoRef} 
-                      autoPlay 
-                      playsInline 
-                      muted 
-                      style={{ width: '100%', height: '400px', objectFit: 'cover', borderRadius: '16px', display: isCamOff ? 'none' : 'block' }} 
-                    />
-                  )}
-
-                  {/* SIMULATED CANVAS STREAM FALLBACK */}
-                  {useSimulatedFeed && (
-                    <canvas 
-                      ref={canvasRef} 
-                      width={720} 
-                      height={400} 
-                      style={{ width: '100%', height: '400px', objectFit: 'cover', borderRadius: '16px', display: isCamOff ? 'none' : 'block' }} 
-                    />
+                  {/* MAIN VIEW: PATIENT WEBCAM OR DOCTOR STREAM */}
+                  {!swappedViews ? (
+                    /* Default: Patient Webcam Main View */
+                    !useSimulatedFeed ? (
+                      <video 
+                        ref={userVideoRef} 
+                        autoPlay 
+                        playsInline 
+                        muted 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: isCamOff ? 'none' : 'block' }} 
+                      />
+                    ) : (
+                      <canvas 
+                        ref={canvasRef} 
+                        width={640} 
+                        height={360} 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: isCamOff ? 'none' : 'block' }} 
+                      />
+                    )
+                  ) : (
+                    /* Swapped: Doctor Main View */
+                    <div className="d-flex flex-column align-items-center justify-content-center p-3" style={{ height: '100%' }}>
+                      <img src={activeDoctor.avatar} alt={activeDoctor.name} style={{ width: '110px', height: '110px', borderRadius: '50%', objectFit: 'cover', border: '4px solid #10b981', marginBottom: '0.75rem' }} />
+                      <h5 className="fw-bold text-white mb-1">{activeDoctor.name}</h5>
+                      <span style={{ background: '#10b981', color: '#ffffff', padding: '0.2rem 0.8rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '700' }}>{activeDoctor.specialty}</span>
+                    </div>
                   )}
 
                   {/* CAMERA OFF PLACEHOLDER */}
-                  {isCamOff && (
-                    <div className="d-flex flex-column align-items-center justify-content-center p-4" style={{ height: '400px' }}>
-                      <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', marginBottom: '1rem' }}>📷</div>
-                      <h5 className="fw-bold text-white mb-1">Caméra désactivée</h5>
-                      <p className="text-white-50 small mb-0">Cliquez sur "📹 Caméra Active" ci-dessous pour rallumer le flux vidéo.</p>
+                  {isCamOff && !swappedViews && (
+                    <div className="d-flex flex-column align-items-center justify-content-center p-4" style={{ height: '100%' }}>
+                      <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.8rem', marginBottom: '0.5rem' }}>📷</div>
+                      <h6 className="fw-bold text-white mb-1">Caméra désactivée</h6>
                     </div>
                   )}
 
-                  {/* PIP Doctor Overlay */}
-                  <div className="position-absolute bottom-0 end-0 m-3 p-2 rounded-3 bg-dark border border-success d-flex align-items-center gap-2" style={{ boxShadow: '0 8px 20px rgba(0,0,0,0.7)', zIndex: 10 }}>
-                    <img src={activeDoctor.avatar} alt={activeDoctor.name} style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover' }} />
-                    <div className="text-start">
-                      <small className="d-block text-white fw-bold" style={{ fontSize: '0.75rem' }}>{activeDoctor.name}</small>
-                      <small className="text-success" style={{ fontSize: '0.68rem' }}>● En ligne (CNOM: 4522)</small>
-                    </div>
+                  {/* PIP SECONDARY OVERLAY BOX (CLICK TO SWAP) */}
+                  <div 
+                    className="position-absolute bottom-0 end-0 m-3 p-2 rounded-3 bg-dark border border-success d-flex align-items-center gap-2" 
+                    style={{ boxShadow: '0 8px 20px rgba(0,0,0,0.7)', zIndex: 10, cursor: 'pointer' }}
+                    onClick={() => setSwappedViews(!swappedViews)}
+                    title="Cliquer pour inverser les vues"
+                  >
+                    {!swappedViews ? (
+                      <>
+                        <img src={activeDoctor.avatar} alt={activeDoctor.name} style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover' }} />
+                        <div className="text-start">
+                          <small className="d-block text-white fw-bold" style={{ fontSize: '0.72rem' }}>{activeDoctor.name}</small>
+                          <small className="text-success d-block" style={{ fontSize: '0.65rem' }}>⇄ Inverser la vue</small>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-start p-1">
+                        <small className="d-block text-white fw-bold" style={{ fontSize: '0.72rem' }}>{activeFirstName} {activeLastName}</small>
+                        <small className="text-success d-block" style={{ fontSize: '0.65rem' }}>⇄ Vue Assuré (Caméra)</small>
+                      </div>
+                    )}
                   </div>
 
                 </div>
 
-                {/* WebRTC Interactive Controls */}
-                <div className="d-flex justify-content-center gap-3 mt-3 p-3 rounded-4 bg-dark flex-wrap">
+                {/* REAL MICROPHONE AUDIO VU-METER BAR (VISUAL AUDIO TEST) */}
+                <div className="p-2.5 mt-3 rounded-4" style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)' }}>
+                  <div className="d-flex justify-content-between align-items-center mb-1">
+                    <div className="d-flex align-items-center gap-2">
+                      <span style={{ fontSize: '0.9rem' }}>🕪</span>
+                      <small className="fw-bold text-white" style={{ fontSize: '0.78rem' }}>
+                        Niveau du Micro (Audio Live) : <span className={isMuted ? "text-danger" : "text-success"}>{isMuted ? "COUPE" : `${micVolume}% (Opérationnel)`}</span>
+                      </small>
+                    </div>
+
+                    {/* Animated Volume Pulse Bars */}
+                    <div className="d-flex align-items-end gap-1" style={{ height: '16px' }}>
+                      {[20, 40, 60, 80, 100].map((step, idx) => (
+                        <div 
+                          key={idx} 
+                          style={{ 
+                            width: '4px', 
+                            height: `${Math.max(4, (micVolume >= step ? (idx + 1) * 3 + 4 : 4))}px`, 
+                            background: isMuted ? '#dc2626' : (micVolume >= step ? '#10b981' : '#334155'), 
+                            borderRadius: '2px',
+                            transition: 'height 0.1s ease'
+                          }} 
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Controls Bar */}
+                <div className="d-flex justify-content-center gap-2 mt-3 p-2.5 rounded-4 bg-dark flex-wrap">
                   <button 
                     type="button" 
-                    style={{ background: isMuted ? '#dc2626' : '#059669', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.65rem 1.25rem', fontWeight: '700', cursor: 'pointer' }} 
+                    style={{ background: isMuted ? '#dc2626' : '#059669', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer' }} 
                     onClick={toggleMute}
                   >
                     {isMuted ? '🎙️ Micro Coupé' : '🎙️ Micro Actif'}
@@ -725,7 +819,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
                   <button 
                     type="button" 
-                    style={{ background: isCamOff ? '#dc2626' : '#0284c7', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.65rem 1.25rem', fontWeight: '700', cursor: 'pointer' }} 
+                    style={{ background: isCamOff ? '#dc2626' : '#0284c7', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer' }} 
                     onClick={toggleCamera}
                   >
                     {isCamOff ? '📹 Activer Caméra' : '📹 Caméra Active'}
@@ -733,30 +827,27 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
                   <button 
                     type="button" 
-                    style={{ background: useSimulatedFeed ? '#10b981' : '#1e293b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '0.65rem 1rem', fontWeight: '700', cursor: 'pointer' }} 
-                    onClick={() => {
-                      if (useSimulatedFeed) startCamera();
-                      else setUseSimulatedFeed(true);
-                    }}
+                    style={{ background: '#1e293b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', padding: '0.5rem 0.85rem', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer' }} 
+                    onClick={() => setSwappedViews(!swappedViews)}
                   >
-                    🔄 {useSimulatedFeed ? 'Activer Webcam Physique' : 'Basculer Flux Simulé'}
+                    ⇄ Inverser Vues
                   </button>
 
                   <button 
                     type="button" 
-                    style={{ background: '#dc2626', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.65rem 1.25rem', fontWeight: '700', cursor: 'pointer' }} 
+                    style={{ background: '#dc2626', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer' }} 
                     onClick={() => setActiveModal(null)}
                   >
-                    Quitter la consultation
+                    Raccrocher
                   </button>
                 </div>
               </div>
 
               {/* Chat Panel */}
               <div className="col-lg-4">
-                <div className="p-3 rounded-4 bg-dark h-100 d-flex flex-column justify-content-between" style={{ minHeight: '400px' }}>
-                  <h6 className="fw-bold text-info mb-3">💬 Messagerie Directe</h6>
-                  <div className="p-2 rounded-3 mb-3 flex-grow-1" style={{ maxHeight: '300px', overflowY: 'auto', background: '#0f172a', fontSize: '0.85rem' }}>
+                <div className="p-3 rounded-4 bg-dark h-100 d-flex flex-column justify-content-between" style={{ minHeight: '360px' }}>
+                  <h6 className="fw-bold text-info mb-2" style={{ fontSize: '0.9rem' }}>💬 Messagerie Directe</h6>
+                  <div className="p-2 rounded-3 mb-2 flex-grow-1" style={{ maxHeight: '250px', overflowY: 'auto', background: '#0f172a', fontSize: '0.82rem' }}>
                     {chatMessages.map((m, idx) => (
                       <div key={idx} className="mb-2">
                         <strong className="text-success">{m.sender} : </strong>
@@ -766,7 +857,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                   </div>
                   <form onSubmit={handleSendMessage} className="d-flex gap-2">
                     <input type="text" className="form-control form-control-sm bg-dark text-white border-secondary" placeholder="Écrire un message..." value={inputMsg} onChange={(e) => setInputMsg(e.target.value)} />
-                    <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.3rem 0.8rem', fontWeight: '700' }}>Envoyer</button>
+                    <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.3rem 0.75rem', fontWeight: '700', fontSize: '0.8rem' }}>Envoyer</button>
                   </form>
                 </div>
               </div>
