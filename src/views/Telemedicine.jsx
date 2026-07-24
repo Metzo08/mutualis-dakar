@@ -1059,8 +1059,8 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                       }}
                       onClick={() => setShowPaymentModal(true)}
                     >
-                      <img src="/logo_orange_money.png" alt="OM" style={{ height: '22px', borderRadius: '4px', background: '#ffffff', padding: '1px' }} />
-                      <img src="/logo_wave.png" alt="Wave" style={{ height: '22px', borderRadius: '50%' }} />
+                      <img src="/logo_orange_money.png" alt="Orange Money" style={{ height: '22px', width: 'auto', objectFit: 'contain', borderRadius: '4px', background: '#ffffff', padding: '1px' }} />
+                      <img src="/logo_wave.png" alt="Wave" style={{ height: '22px', width: 'auto', objectFit: 'contain', borderRadius: '4px' }} />
                       <span>Payer 2 500 FCFA via Orange Money ou Wave</span>
                     </button>
                   </div>
@@ -1244,8 +1244,8 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                           }}
                           onClick={() => handleDoctorRequestPayment(pat.id)}
                         >
-                          <img src="/logo_orange_money.png" alt="OM" style={{ height: '18px', borderRadius: '3px', background: '#ffffff', padding: '1px' }} />
-                          <img src="/logo_wave.png" alt="Wave" style={{ height: '18px', borderRadius: '50%' }} />
+                          <img src="/logo_orange_money.png" alt="Orange Money" style={{ height: '20px', width: 'auto', objectFit: 'contain', borderRadius: '4px', background: '#ffffff', padding: '1px' }} />
+                          <img src="/logo_wave.png" alt="Wave" style={{ height: '20px', width: 'auto', objectFit: 'contain', borderRadius: '4px' }} />
                           <span>Demander règlement (Orange / Wave)</span>
                         </button>
                       )}
@@ -1302,7 +1302,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                     <img 
                       src="/logo_orange_money.png" 
                       alt="Orange Money" 
-                      style={{ height: '32px', objectFit: 'contain', borderRadius: '6px', background: '#ffffff', padding: '2px' }} 
+                      style={{ height: '36px', width: 'auto', objectFit: 'contain', borderRadius: '6px', background: '#ffffff', padding: '2px' }} 
                     />
                     <span className="fw-bold fs-6">Orange Money</span>
                   </button>
@@ -1321,7 +1321,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                     <img 
                       src="/logo_wave.png" 
                       alt="Wave Sénégal" 
-                      style={{ height: '32px', objectFit: 'contain', borderRadius: '50%' }} 
+                      style={{ height: '36px', width: 'auto', objectFit: 'contain', borderRadius: '6px' }} 
                     />
                     <span className="fw-bold fs-6">Wave Sénégal</span>
                   </button>
