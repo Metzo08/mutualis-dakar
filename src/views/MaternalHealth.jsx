@@ -9,9 +9,9 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
 
   // Praticiens / Sages-femmes d'État / Pédiatres habilités (Super Admin)
   const defaultMaternalPractitioners = [
-    { id: 1, name: 'Sage-Femme d\'État Fatou Kiné Diop', specialty: 'Maternité & Suivi Périscolaire', cnom: 'SFE-SN-2026-4412' },
-    { id: 2, name: 'Dr. Mariama Ba', specialty: 'Gynécologie-Obstétrique', cnom: 'CNOM-SN-2026-3310' },
-    { id: 3, name: 'Dr. Cheikh Tidiane Ndiaye', specialty: 'Pédiatrie & Médecine Infantile 0-18 ans', cnom: 'CNOM-SN-2026-8819' }
+    { id: 1, name: 'Sage-femme d\'État Fatou Kiné Diop', specialty: 'Maternité & suivi périscolaire', cnom: 'SFE-SN-2026-4412' },
+    { id: 2, name: 'Dr. Mariama Ba', specialty: 'Gynécologie-obstétrique', cnom: 'CNOM-SN-2026-3310' },
+    { id: 3, name: 'Dr. Cheikh Tidiane Ndiaye', specialty: 'Pédiatrie & médecine infantile 0-18 ans', cnom: 'CNOM-SN-2026-8819' }
   ];
 
   const [practitioners, setPractitioners] = useState(() => {
@@ -23,9 +23,9 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
     }
   });
 
-  const [activePractitioner, setActivePractitioner] = useState(practitioners[0]?.name || 'Sage-Femme d\'État Fatou Kiné Diop');
+  const [activePractitioner, setActivePractitioner] = useState(practitioners[0]?.name || 'Sage-femme d\'État Fatou Kiné Diop');
 
-  // Données du Carnet de Maternité & de Santé Numérique de l'Enfant (0 - 18 ans)
+  // Données du carnet de maternité & de santé numérique de l'enfant (0 - 18 ans)
   const defaultMaternalData = {
     mother_name: citizenUser ? `${citizenUser.first_name || citizenUser.firstName || 'Awa'} ${citizenUser.last_name || citizenUser.lastName || 'Ndiaye'}` : 'Awa Ndiaye',
     child_name: 'Moussa Ndiaye',
@@ -34,9 +34,9 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
     cmu_number: citizenUser?.cmu_number || citizenUser?.cmuNumber || 'CMU-DKR-2026-8812',
     pregnancy_start_date: new Date(Date.now() - 110 * 86400000).toISOString(),
     expected_delivery_date: new Date(Date.now() + 160 * 86400000).toISOString(),
-    blood_group: 'O Rhésus Positif (O+)',
-    child_blood_group: 'O Rhésus Positif (O+)',
-    assigned_maternity: 'Maternité du Centre de Santé Gaspard Camara (Dakar)',
+    blood_group: 'O Rhésus positif (O+)',
+    child_blood_group: 'O Rhésus positif (O+)',
+    assigned_maternity: 'Maternité du Centre de santé Gaspard Camara (Dakar)',
     birth_hospital: 'Hôpital Abass Ndao (Dakar)',
     birth_weight: 3.4, // kg
     birth_height: 50, // cm
@@ -47,10 +47,10 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
     
     // Suivi CPN Prénatal
     cpn_records: [
-      { id: 1, name: 'CPN 1 (1er Trimestre - Datation & Sérologies)', done: true, date: '2026-04-10', doctor: 'Sage-Femme Fatou Kiné Diop', notes: 'Grossesse intra-utérine évolutive 8 SA. Bilan biologique initial normal, groupe O+.' },
-      { id: 2, name: 'CPN 2 (2ème Trimestre - Morphologie & VAT 1)', done: true, date: '2026-06-05', doctor: 'Dr. Mariama Ba (Gynécologue)', notes: 'Hauteur utérine 21 cm. Bruit du cœur fœtal régulier (145 bpm). Injection VAT 1 réalisée.' },
-      { id: 3, name: 'CPN 3 (28-32 SA - Dépistage Anémie & TPI-SP 1)', done: false, date: '2026-08-12', doctor: 'Sage-Femme Fatou Kiné Diop', notes: 'Prévue : Contrôle hémoglobine, 1ère dose TPI-SP (Prévention Paludisme) & VAT 2.' },
-      { id: 4, name: 'CPN 4+ (36-38 SA - Préparation Accouchement 100% Gratuit)', done: false, date: '2026-09-25', doctor: 'Dr. Mariama Ba (Gynécologue)', notes: 'Prévue : Présentation céphalique, vérification bassin maternel & fiche de liaison.' }
+      { id: 1, name: 'CPN 1 (1er trimestre - datation & sérologies)', done: true, date: '2026-04-10', doctor: 'Sage-femme Fatou Kiné Diop', notes: 'Grossesse intra-utérine évolutive 8 SA. Bilan biologique initial normal, groupe O+.' },
+      { id: 2, name: 'CPN 2 (2ème trimestre - morphologie & VAT 1)', done: true, date: '2026-06-05', doctor: 'Dr. Mariama Ba (Gynécologue)', notes: 'Hauteur utérine 21 cm. Bruit du cœur fœtal régulier (145 bpm). Injection VAT 1 réalisée.' },
+      { id: 3, name: 'CPN 3 (28-32 SA - dépistage anémie & TPI-SP 1)', done: false, date: '2026-08-12', doctor: 'Sage-femme Fatou Kiné Diop', notes: 'Prévue : Contrôle hémoglobine, 1ère dose TPI-SP (Prévention Paludisme) & VAT 2.' },
+      { id: 4, name: 'CPN 4+ (36-38 SA - préparation accouchement 100% gratuit)', done: false, date: '2026-09-25', doctor: 'Dr. Mariama Ba (Gynécologue)', notes: 'Prévue : Présentation céphalique, vérification bassin maternel & fiche de liaison.' }
     ],
     
     // Vaccins Maternels VAT & Prévention
@@ -66,7 +66,7 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
       iron_folic: { delivered: true, dose: '1 comprimé par jour' }
     },
     ultrasounds: [
-      { id: 1, title: 'Échographie Obstétricale T1 (Datation)', date: '2026-04-12', doctor: 'Dr. Mariama Ba', conclusion: 'Fœtus unique, activité cardiaque présente (152 bpm). LCR conforme à la date de début de grossesse.' }
+      { id: 1, title: 'Échographie obstétricale T1 (datation)', date: '2026-04-12', doctor: 'Dr. Mariama Ba', conclusion: 'Fœtus unique, activité cardiaque présente (152 bpm). LCR conforme à la date de début de grossesse.' }
     ],
 
     // Programme Élargi de Vaccination (PEV Sénégal 0 - 12 Mois)
@@ -557,7 +557,7 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
               <div className="alert alert-success d-flex align-items-center rounded-4 border-0 p-3.5 shadow-sm">
                 <span className="fs-2 me-3">ℹ️</span>
                 <div style={{ color: 'var(--text-main)', fontSize: '0.92rem', lineHeight: '1.6' }}>
-                  <strong>Prise en charge à 100% de la Maternité sous Tiers-Payant UNAMUSC :</strong>
+                  <strong>Prise en charge à 100% de la maternité sous tiers-payant UNAMUSC :</strong>
                   <br />
                   L'accouchement simple et la césarienne d'urgence sont pris en charge à <strong>100% sans aucune avance de frais</strong> dans toutes les maternités et centres de santé publics du Sénégal.
                 </div>
@@ -568,13 +568,13 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
           <div className="col-lg-5">
             <div className="card shadow-sm border-0 p-4 mb-4 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
               <h4 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)', fontSize: '1.1rem' }}>
-                <span>💉</span> Vaccin Anti-Tétanique (VAT) & Prévention
+                <span>💉</span> Vaccin anti-tétanique (VAT) & prévention
               </h4>
               
               <div className="d-flex flex-column gap-2.5 mb-3">
                 <div className="d-flex justify-content-between align-items-center p-3 border rounded-3" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
                   <div>
-                    <strong className="d-block small" style={{ color: 'var(--text-main)' }}>Vaccin Anti-Tétanique (VAT 1)</strong>
+                    <strong className="d-block small" style={{ color: 'var(--text-main)' }}>Vaccin anti-tétanique (VAT 1)</strong>
                     <small className="text-muted">1ère injection</small>
                   </div>
                   {safeData?.vaccinations?.vat1?.done ? <span className="badge bg-success px-2.5 py-1">✅ Administré</span> : <span className="badge bg-warning text-dark px-2.5 py-1">⏳ Prévu</span>}
@@ -582,7 +582,7 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
 
                 <div className="d-flex justify-content-between align-items-center p-3 border rounded-3" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
                   <div>
-                    <strong className="d-block small" style={{ color: 'var(--text-main)' }}>Vaccin Anti-Tétanique (VAT 2)</strong>
+                    <strong className="d-block small" style={{ color: 'var(--text-main)' }}>Vaccin anti-tétanique (VAT 2)</strong>
                     <small className="text-muted">1 mois après VAT 1</small>
                   </div>
                   {safeData?.vaccinations?.vat2?.done ? <span className="badge bg-success px-2.5 py-1">✅ Administré</span> : <span className="badge bg-warning text-dark px-2.5 py-1">⏳ Prévu CPN 3</span>}
@@ -590,18 +590,18 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
 
                 <div className="d-flex justify-content-between align-items-center p-3 border rounded-3" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
                   <div>
-                    <strong className="d-block small" style={{ color: 'var(--text-main)' }}>Traitement Préventif Paludisme (TPI-SP)</strong>
-                    <small className="text-muted">Sulfadoxine-Pyriméthamine 2ème Trimestre</small>
+                    <strong className="d-block small" style={{ color: 'var(--text-main)' }}>Traitement préventif paludisme (TPI-SP)</strong>
+                    <small className="text-muted">Sulfadoxine-Pyriméthamine 2ème trimestre</small>
                   </div>
                   {safeData?.prevention?.tpi_sp1?.done ? <span className="badge bg-success px-2.5 py-1">✅ Reçu</span> : <span className="badge bg-info text-dark px-2.5 py-1">⏳ Prévu CPN 3</span>}
                 </div>
 
                 <div className="d-flex justify-content-between align-items-center p-3 border rounded-3" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
                   <div>
-                    <strong className="d-block small" style={{ color: 'var(--text-main)' }}>Moustiquaire MILDA + Fer/Folique</strong>
+                    <strong className="d-block small" style={{ color: 'var(--text-main)' }}>Moustiquaire MILDA + fer/folique</strong>
                     <small className="text-muted">Distribution gratuite nationale</small>
                   </div>
-                  <span className="badge bg-success px-2.5 py-1">Délivré 100% Gratuit</span>
+                  <span className="badge bg-success px-2.5 py-1">Délivré 100% gratuit</span>
                 </div>
               </div>
             </div>
@@ -616,7 +616,7 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
             <div className="card shadow-sm border-0 p-4 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
               <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 border-bottom pb-3" style={{ borderColor: 'var(--border-color)' }}>
                 <div>
-                  <h4 className="fw-bold mb-0 text-success">👶 Programme Élargi de Vaccination (PEV Sénégal 0-12m)</h4>
+                  <h4 className="fw-bold mb-0 text-success">👶 Programme élargi de vaccination (PEV Sénégal 0-12m)</h4>
                   <small className="text-muted">Enfant : <strong>{safeData.child_name}</strong> • Né le {new Date(safeData.child_dob).toLocaleDateString('fr-FR')}</small>
                 </div>
                 {isAgent && (
@@ -626,21 +626,21 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
                     style={{ borderRadius: '10px' }}
                     onClick={() => setShowAddVaccineModal(true)}
                   >
-                    💉 Administrer un Vaccin PEV
+                    💉 Administrer un vaccin PEV
                   </button>
                 )}
               </div>
 
               {/* Fiche de Naissance */}
               <div className="p-3.5 rounded-4 mb-4" style={{ background: 'var(--bg-body)', border: '1.5px solid var(--border-color)' }}>
-                <h6 className="fw-bold text-success mb-3">👶 Fiche Médicale de Naissance :</h6>
+                <h6 className="fw-bold text-success mb-3">👶 Fiche médicale de naissance :</h6>
                 <div className="row g-3 text-center small">
                   <div className="col-3 border-end">
-                    <span className="text-muted d-block">Poids Naissance</span>
+                    <span className="text-muted d-block">Poids naissance</span>
                     <strong className="fs-6 text-success">{safeData.birth_weight} kg</strong>
                   </div>
                   <div className="col-3 border-end">
-                    <span className="text-muted d-block">Taille Naissance</span>
+                    <span className="text-muted d-block">Taille naissance</span>
                     <strong className="fs-6 text-success">{safeData.birth_height} cm</strong>
                   </div>
                   <div className="col-3 border-end">
@@ -648,14 +648,14 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
                     <strong className="fs-6 text-success">{safeData.apgar_score}</strong>
                   </div>
                   <div className="col-3">
-                    <span className="text-muted d-block">Groupe Bébé</span>
+                    <span className="text-muted d-block">Groupe bébé</span>
                     <strong className="fs-6 text-danger">{safeData.child_blood_group}</strong>
                   </div>
                 </div>
               </div>
 
               {/* Calendrier PEV Sénégal */}
-              <h5 className="fw-bold mb-3" style={{ color: 'var(--text-main)', fontSize: '1.05rem' }}>💉 Calendrier Vaccinal Obligatoire (PEV) :</h5>
+              <h5 className="fw-bold mb-3" style={{ color: 'var(--text-main)', fontSize: '1.05rem' }}>💉 Calendrier vaccinal obligatoire (PEV) :</h5>
               <div className="list-group">
                 {(safeData?.pev_vaccines_0_12m || defaultMaternalData.pev_vaccines_0_12m).map((vac, idx) => (
                   <div key={idx} className="list-group-item p-3 mb-2 rounded-3 border d-flex justify-content-between align-items-center flex-wrap gap-2" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }}>
@@ -667,7 +667,7 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
                       {vac.done ? (
                         <span className="badge bg-success px-3 py-1.5 fw-bold">✅ Administré ({new Date(vac.date).toLocaleDateString('fr-FR')})</span>
                       ) : (
-                        <span className="badge bg-warning text-dark px-3 py-1.5 fw-bold">⏳ Prochain Vaccin</span>
+                        <span className="badge bg-warning text-dark px-3 py-1.5 fw-bold">⏳ Prochain vaccin</span>
                       )}
                     </div>
                   </div>
@@ -680,9 +680,9 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
             {/* Courbe de Poids & Malnutrition */}
             <div className="card shadow-sm border-0 p-4 mb-4 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
               <h4 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)', fontSize: '1.1rem' }}>
-                <span>📈</span> Suivi de Croissance Poids / Taille (0-12 Mois)
+                <span>📈</span> Suivi de croissance poids / taille (0-12 mois)
               </h4>
-              <p className="small text-muted mb-3">Pesée mensuelle et dépistage de la malnutrition aiguë (Périmètre Brachial PB / Ruban de Shakir).</p>
+              <p className="small text-muted mb-3">Pesée mensuelle et dépistage de la malnutrition aiguë (périmètre brachial PB / ruban de Shakir).</p>
 
               <div className="table-responsive">
                 <table className="table table-bordered table-sm text-center small">
@@ -843,13 +843,13 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content shadow-lg border-0" style={{ borderRadius: '24px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
               <div className="modal-header border-bottom p-3" style={{ borderColor: 'var(--border-color)', background: '#059669', color: '#ffffff' }}>
-                <h5 className="modal-title fw-bold">➕ Valider une Consultation CPN (Sage-Femme)</h5>
+                <h5 className="modal-title fw-bold">➕ Valider une consultation CPN (Sage-femme)</h5>
                 <button className="btn-close btn-close-white" onClick={() => setShowAddCpnModal(false)}></button>
               </div>
 
               <form onSubmit={handleUpdateCpnByPractitioner} className="modal-body p-4">
                 <div className="p-2.5 bg-light text-dark rounded-3 mb-3 small border">
-                  Sage-Femme / Praticien Valideur : <strong>{activePractitioner}</strong>
+                  Sage-femme / praticien valideur : <strong>{activePractitioner}</strong>
                 </div>
 
                 <div className="mb-3">
@@ -869,7 +869,7 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label small fw-bold">Observations & Bruits du Cœur Fœtal (BDCF) *</label>
+                  <label className="form-label small fw-bold">Observations & bruits du cœur fœtal (BDCF) *</label>
                   <textarea 
                     className="form-control input p-2.5"
                     rows="3"
@@ -899,17 +899,17 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content shadow-lg border-0" style={{ borderRadius: '24px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
               <div className="modal-header border-bottom p-3" style={{ borderColor: 'var(--border-color)', background: '#2563eb', color: '#ffffff' }}>
-                <h5 className="modal-title fw-bold">💉 Administrer un Vaccin du PEV (Pédiatre)</h5>
+                <h5 className="modal-title fw-bold">💉 Administrer un vaccin du PEV (Pédiatre)</h5>
                 <button className="btn-close btn-close-white" onClick={() => setShowAddVaccineModal(false)}></button>
               </div>
 
               <form onSubmit={handleValidatePevVaccine} className="modal-body p-4">
                 <div className="p-2.5 bg-light text-dark rounded-3 mb-3 small border">
-                  Pédiatre / Praticien : <strong>{activePractitioner}</strong>
+                  Pédiatre / praticien : <strong>{activePractitioner}</strong>
                 </div>
 
                 <div className="mb-4">
-                  <label className="form-label small fw-bold">Sélectionner le Vaccin PEV à certifier *</label>
+                  <label className="form-label small fw-bold">Sélectionner le vaccin PEV à certifier *</label>
                   <select 
                     className="form-select input fw-bold p-2.5"
                     value={selectedVaccineCode}
@@ -927,7 +927,7 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
                 <div className="d-flex justify-content-end gap-2">
                   <button type="button" className="btn btn-secondary" onClick={() => setShowAddVaccineModal(false)}>Annuler</button>
                   <button type="submit" className="btn btn-primary fw-bold px-4 text-white">
-                    💉 Valider l'Administration
+                    💉 Valider l'administration
                   </button>
                 </div>
               </form>
