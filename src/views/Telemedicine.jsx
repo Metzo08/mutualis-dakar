@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-// Design Premium Haut de Gamme — Télémédecine & Téléconsultation Live WebRTC
-export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, partnerUser = null, setView = null }) {
+// Design Premium Haut de Gamme — Télémédecine & Visioconférence WebRTC Réelle
+export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, partnerUser = null }) {
   const isAgent = (userRole === 'agent' || !!agentUser || !!partnerUser);
 
   // Assuré actif
@@ -11,13 +11,16 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
   // Mode de rôle (Assuré ou Médecin de Garde)
   const [roleMode, setRoleMode] = useState(isAgent ? 'doctor' : 'citizen');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState('all');
 
-  // Liste des Praticiens Agrés
+  // Liste des Praticiens Agréés
   const doctorsList = [
     {
       id: 1,
       name: 'Dr. Ousmane Sow',
       specialty: 'Médecine Générale',
+      category: 'generaliste',
       rating: '4.9 (124 avis)',
       cnom: 'CNOM: 4522-SN',
       langs: ['FR', 'WO', 'EN'],
@@ -28,6 +31,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
       id: 2,
       name: 'Dr. Fatou Diop',
       specialty: 'Gynécologie & Obstétrique',
+      category: 'pediatrie',
       rating: '5.0 (89 avis)',
       cnom: 'CNOM: 3108-SN',
       langs: ['FR', 'WO'],
@@ -38,6 +42,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
       id: 3,
       name: 'Dr. Cheikh Tidiane Seck',
       specialty: 'Cardiologie & Médecine Générale',
+      category: 'cardio',
       rating: '4.8 (96 avis)',
       cnom: 'CNOM: 9921-SN',
       langs: ['FR', 'WO'],
@@ -74,9 +79,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
     }
   ]);
 
-  const [activeCategory, setActiveCategory] = useState('all');
-
-  // Modale Inscription Salle d'attente
+  // Modales
   const [showJoinQueueModal, setShowJoinQueueModal] = useState(false);
   const [consultReason, setConsultReason] = useState('');
   const [urgencyLevel, setUrgencyLevel] = useState('routine');
@@ -84,23 +87,74 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
   // Modale Paiement Ticket Modérateur (2 500 FCFA)
   const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [paymentProvider, setPaymentProvider] = useState('orange'); // 'orange' or 'wave'
+  const [paymentProvider, setPaymentProvider] = useState('orange');
   const [phoneNum, setPhoneNum] = useState('77 602 67 83');
 
-  // Session Visioconférence Live WebRTC
+  // Session Visioconférence Live WebRTC Réelle
   const [inLiveSession, setInLiveSession] = useState(false);
   const [activeDoctor, setActiveDoctor] = useState(doctorsList[0]);
   const [isMuted, setIsMuted] = useState(false);
   const [isCamOff, setIsCamOff] = useState(false);
-  const [audioLevel, setAudioLevel] = useState(55);
+  const [cameraActive, setCameraActive] = useState(false);
   const [chatMessages, setChatMessages] = useState([
-    { sender: 'Dr. Ousmane Sow', text: 'Bonjour Awa. Je consulte vos antécédents médicaux. Parlez-moi de vos symptômes.' }
+    { sender: 'Dr. Ousmane Sow', text: 'Bonjour Awa. Je consulte votre dossier médical. Je vous écoute.' }
   ]);
   const [inputMsg, setInputMsg] = useState('');
+
+  // Refs WebRTC
+  const userVideoRef = useRef(null);
+  const streamRef = useRef(null);
 
   // Modales Certifications & QR Code
   const [showQrModal, setShowQrModal] = useState(false);
   const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
+
+  // Démarrer / Arrêter la véritable caméra du navigateur WebRTC
+  useEffect(() => {
+    if (inLiveSession && !isCamOff) {
+      navigator.mediaDevices?.getUserMedia({ video: true, audio: true })
+        .then((stream) => {
+          streamRef.current = stream;
+          setCameraActive(true);
+          if (userVideoRef.current) {
+            userVideoRef.current.srcObject = stream;
+          }
+        })
+        .catch((err) => {
+          console.warn("Caméra indisponible ou permission refusée:", err);
+          setCameraActive(false);
+        });
+    } else {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+      setCameraActive(false);
+    }
+
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+    };
+  }, [inLiveSession, isCamOff]);
+
+  const toggleMute = () => {
+    const next = !isMuted;
+    setIsMuted(next);
+    if (streamRef.current) {
+      streamRef.current.getAudioTracks().forEach(t => t.enabled = !next);
+    }
+  };
+
+  const toggleCamera = () => {
+    const next = !isCamOff;
+    setIsCamOff(next);
+    if (streamRef.current) {
+      streamRef.current.getVideoTracks().forEach(t => t.enabled = !next);
+    }
+  };
 
   // Soumettre inscription file d'attente
   const handleJoinQueue = (e) => {
@@ -121,14 +175,14 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
     setQueue([newPatient, ...queue]);
     setShowJoinQueueModal(false);
     setConsultReason('');
-    alert("✅ Vous êtes inscrit(e) dans la file d'attente du médecin ! Accès direct sécurisé UNAMUSC.");
+    alert("✅ Inscription validée ! Vous êtes placé(e) dans la file d'attente en direct.");
   };
 
   // Traiter paiement Orange Money / Wave
   const handleProcessPayment = (e) => {
     e.preventDefault();
     setShowPaymentModal(false);
-    alert(`✅ Règlement de 2 500 FCFA effectué avec succès via ${paymentProvider === 'orange' ? 'Orange Money' : 'Wave'} ! Ticket modérateur validé.`);
+    alert(`✅ Règlement de 2 500 FCFA effectué via ${paymentProvider === 'orange' ? 'Orange Money' : 'Wave'} ! Ticket modérateur validé.`);
   };
 
   const handleStartCall = (doc) => {
@@ -143,6 +197,13 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
     setInputMsg('');
   };
 
+  // Filtrer la liste des praticiens
+  const filteredDoctors = doctorsList.filter(d => {
+    const matchSearch = d.name.toLowerCase().includes(searchQuery.toLowerCase()) || d.specialty.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchCat = activeCategory === 'all' || d.category === activeCategory;
+    return matchSearch && matchCat;
+  });
+
   return (
     <div className="telemed-view fade-in-up" style={{ minHeight: '100vh', background: '#0b1120', color: '#f8fafc', paddingBottom: '3rem' }}>
       
@@ -150,7 +211,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
       <div style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.08)', background: '#0f172a', padding: '0.85rem 2rem' }}>
         <div style={{ maxWidth: '1320px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <h5 className="fw-bold mb-0 text-white" style={{ fontSize: '1.1rem' }}>Télémédecine</h5>
+            <h5 className="fw-bold mb-0 text-white" style={{ fontSize: '1.1rem' }}>Télémédecine UNAMUSC</h5>
             <span style={{ height: '14px', width: '1px', background: 'rgba(255, 255, 255, 0.2)' }} />
             <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '600', padding: '0.25rem 0.75rem' }}>
               ● SALLE D'ATTENTE VIRTUELLE LIVE
@@ -160,14 +221,14 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <button 
               type="button" 
-              style={{ background: roleMode === 'citizen' ? '#10b981' : '#1e293b', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.35rem 0.85rem', fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer' }}
+              style={{ background: roleMode === 'citizen' ? '#10b981' : '#1e293b', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.4rem 0.85rem', fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer' }}
               onClick={() => setRoleMode('citizen')}
             >
               Espace Assuré
             </button>
             <button 
               type="button" 
-              style={{ background: roleMode === 'doctor' ? '#10b981' : '#1e293b', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.35rem 0.85rem', fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer' }}
+              style={{ background: roleMode === 'doctor' ? '#10b981' : '#1e293b', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.4rem 0.85rem', fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer' }}
               onClick={() => setRoleMode('doctor')}
             >
               Espace Médecin de Garde
@@ -279,66 +340,49 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
           {/* Main Area: Doctors */}
           <div className="col-lg-8">
             <div className="mb-4">
-              <div className="d-flex justify-content-between align-items-center mb-3">
+              <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                 <h5 className="fw-bold text-white mb-0" style={{ fontSize: '1.15rem' }}>👨‍⚕️ Praticiens Disponibles</h5>
                 
-                {/* Category Buttons (Explicit Dark Styles - NO WHITE ON WHITE!) */}
-                <div style={{ display: 'flex', gap: '0.4rem', background: '#1e293b', padding: '0.25rem', borderRadius: '12px' }}>
-                  <button 
-                    type="button"
-                    style={{ 
-                      background: activeCategory === 'all' ? '#10b981' : 'transparent', 
-                      color: activeCategory === 'all' ? '#ffffff' : '#94a3b8', 
-                      border: 'none', 
-                      borderRadius: '10px', 
-                      padding: '0.35rem 0.85rem', 
-                      fontWeight: '700', 
-                      fontSize: '0.78rem',
-                      cursor: 'pointer'
-                    }} 
-                    onClick={() => setActiveCategory('all')}
-                  >
-                    Généraliste
-                  </button>
+                {/* Search & Category Filter Bar */}
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <input 
+                    type="text" 
+                    placeholder="Filtrer un médecin..." 
+                    style={{ background: '#1e293b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '0.35rem 0.75rem', fontSize: '0.8rem', width: '160px' }} 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
 
-                  <button 
-                    type="button"
-                    style={{ 
-                      background: activeCategory === 'pediatrie' ? '#10b981' : 'transparent', 
-                      color: activeCategory === 'pediatrie' ? '#ffffff' : '#94a3b8', 
-                      border: 'none', 
-                      borderRadius: '10px', 
-                      padding: '0.35rem 0.85rem', 
-                      fontWeight: '700', 
-                      fontSize: '0.78rem',
-                      cursor: 'pointer'
-                    }} 
-                    onClick={() => setActiveCategory('pediatrie')}
-                  >
-                    Pédiatrie
-                  </button>
+                  <div style={{ display: 'flex', gap: '0.3rem', background: '#1e293b', padding: '0.2rem', borderRadius: '10px' }}>
+                    <button 
+                      type="button"
+                      style={{ background: activeCategory === 'all' ? '#10b981' : 'transparent', color: activeCategory === 'all' ? '#ffffff' : '#94a3b8', border: 'none', borderRadius: '8px', padding: '0.3rem 0.75rem', fontWeight: '700', fontSize: '0.78rem', cursor: 'pointer' }} 
+                      onClick={() => setActiveCategory('all')}
+                    >
+                      Tous
+                    </button>
 
-                  <button 
-                    type="button"
-                    style={{ 
-                      background: activeCategory === 'cardio' ? '#10b981' : 'transparent', 
-                      color: activeCategory === 'cardio' ? '#ffffff' : '#94a3b8', 
-                      border: 'none', 
-                      borderRadius: '10px', 
-                      padding: '0.35rem 0.85rem', 
-                      fontWeight: '700', 
-                      fontSize: '0.78rem',
-                      cursor: 'pointer'
-                    }} 
-                    onClick={() => setActiveCategory('cardio')}
-                  >
-                    Cardiologue
-                  </button>
+                    <button 
+                      type="button"
+                      style={{ background: activeCategory === 'pediatrie' ? '#10b981' : 'transparent', color: activeCategory === 'pediatrie' ? '#ffffff' : '#94a3b8', border: 'none', borderRadius: '8px', padding: '0.3rem 0.75rem', fontWeight: '700', fontSize: '0.78rem', cursor: 'pointer' }} 
+                      onClick={() => setActiveCategory('pediatrie')}
+                    >
+                      Pédiatrie
+                    </button>
+
+                    <button 
+                      type="button"
+                      style={{ background: activeCategory === 'cardio' ? '#10b981' : 'transparent', color: activeCategory === 'cardio' ? '#ffffff' : '#94a3b8', border: 'none', borderRadius: '8px', padding: '0.3rem 0.75rem', fontWeight: '700', fontSize: '0.78rem', cursor: 'pointer' }} 
+                      onClick={() => setActiveCategory('cardio')}
+                    >
+                      Cardiologue
+                    </button>
+                  </div>
                 </div>
               </div>
 
               <div className="row g-3">
-                {doctorsList.map((doc) => (
+                {filteredDoctors.map((doc) => (
                   <div key={doc.id} className="col-md-6">
                     <div className="p-3.5 rounded-4 h-100 d-flex flex-column justify-content-between" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}>
                       <div>
@@ -528,33 +572,71 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
         </div>
       )}
 
-      {/* WEBRTC LIVE SESSION MODAL */}
+      {/* WEBRTC LIVE SESSION MODAL WITH REAL WEBCAM STREAM */}
       {inLiveSession && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.9)' }}>
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.92)' }}>
           <div className="modal-dialog modal-xl modal-dialog-centered">
             <div className="modal-content text-white p-4" style={{ borderRadius: '24px', background: '#0f172a' }}>
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <h5 className="fw-bold text-success mb-0">🎥 Consultation Visioconférence HD — {activeDoctor.name}</h5>
+              <div className="d-flex justify-content-between align-items-center mb-3 border-bottom border-secondary pb-2">
+                <h5 className="fw-bold text-success mb-0 d-flex align-items-center gap-2">
+                  <span>🎥 Consultation Visioconférence HD — {activeDoctor.name}</span>
+                  <span className="badge bg-danger animate-pulse" style={{ fontSize: '0.7rem' }}>● EN DIRECT</span>
+                </h5>
                 <button className="btn-close btn-close-white" onClick={() => setInLiveSession(false)}></button>
               </div>
 
               <div className="row g-4">
                 <div className="col-lg-8">
-                  <div className="rounded-4 p-4 text-center d-flex flex-column align-items-center justify-content-center" style={{ height: '420px', background: '#1e293b', position: 'relative', border: '2px solid #10b981' }}>
-                    <img src={activeDoctor.avatar} alt={activeDoctor.name} style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover', border: '4px solid #10b981' }} />
-                    <h4 className="fw-bold mt-3 mb-1">{activeDoctor.name}</h4>
+                  <div className="rounded-4 p-4 text-center d-flex flex-column align-items-center justify-content-center" style={{ height: '420px', background: '#1e293b', position: 'relative', border: '2px solid #10b981', overflow: 'hidden' }}>
+                    
+                    {/* Live Doctor View */}
+                    <img src={activeDoctor.avatar} alt={activeDoctor.name} style={{ width: '110px', height: '110px', borderRadius: '50%', objectFit: 'cover', border: '4px solid #10b981' }} />
+                    <h4 className="fw-bold mt-2 mb-1">{activeDoctor.name}</h4>
                     <span style={{ background: '#10b981', color: '#ffffff', padding: '0.2rem 0.8rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '700' }}>{activeDoctor.specialty}</span>
                     <small className="text-white-50 mt-2">Visioconférence chiffrée de bout en bout (WebRTC 1080p)</small>
+
+                    {/* PIP Real Webcam Video Stream Box */}
+                    <div className="position-absolute bottom-0 end-0 m-3 rounded-3 bg-dark border border-success overflow-hidden" style={{ width: '160px', height: '110px', boxShadow: '0 8px 20px rgba(0,0,0,0.6)' }}>
+                      {cameraActive && !isCamOff ? (
+                        <video 
+                          ref={userVideoRef} 
+                          autoPlay 
+                          playsInline 
+                          muted 
+                          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                        />
+                      ) : (
+                        <div className="d-flex flex-column align-items-center justify-content-center h-100 text-white-50 p-2">
+                          <span style={{ fontSize: '1.2rem' }}>👤</span>
+                          <small style={{ fontSize: '0.7rem' }}>{isCamOff ? 'Caméra coupée' : 'Activation...'}</small>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
+                  {/* WebRTC Interactive Controls */}
                   <div className="d-flex justify-content-center gap-3 mt-3 p-3 rounded-4 bg-dark">
-                    <button type="button" style={{ background: isMuted ? '#dc2626' : '#059669', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.65rem 1.25rem', fontWeight: '700' }} onClick={() => setIsMuted(!isMuted)}>
+                    <button 
+                      type="button" 
+                      style={{ background: isMuted ? '#dc2626' : '#059669', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.65rem 1.25rem', fontWeight: '700', cursor: 'pointer' }} 
+                      onClick={toggleMute}
+                    >
                       {isMuted ? '🎙️ Micro Coupé' : '🎙️ Micro Actif'}
                     </button>
-                    <button type="button" style={{ background: isCamOff ? '#dc2626' : '#0284c7', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.65rem 1.25rem', fontWeight: '700' }} onClick={() => setIsCamOff(!isCamOff)}>
+
+                    <button 
+                      type="button" 
+                      style={{ background: isCamOff ? '#dc2626' : '#0284c7', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.65rem 1.25rem', fontWeight: '700', cursor: 'pointer' }} 
+                      onClick={toggleCamera}
+                    >
                       {isCamOff ? '📹 Activer Caméra' : '📹 Caméra Active'}
                     </button>
-                    <button type="button" style={{ background: '#dc2626', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.65rem 1.25rem', fontWeight: '700' }} onClick={() => setInLiveSession(false)}>
+
+                    <button 
+                      type="button" 
+                      style={{ background: '#dc2626', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.65rem 1.25rem', fontWeight: '700', cursor: 'pointer' }} 
+                      onClick={() => setInLiveSession(false)}
+                    >
                       Quitter la consultation
                     </button>
                   </div>
@@ -572,7 +654,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                       ))}
                     </div>
                     <form onSubmit={handleSendMessage} className="d-flex gap-2">
-                      <input type="text" className="form-control form-control-sm bg-dark text-white border-secondary" placeholder="Écrire..." value={inputMsg} onChange={(e) => setInputMsg(e.target.value)} />
+                      <input type="text" className="form-control form-control-sm bg-dark text-white border-secondary" placeholder="Écrire un message..." value={inputMsg} onChange={(e) => setInputMsg(e.target.value)} />
                       <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.3rem 0.8rem', fontWeight: '700' }}>Envoyer</button>
                     </form>
                   </div>
