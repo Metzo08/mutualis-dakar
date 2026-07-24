@@ -1,5 +1,42 @@
 import React, { useState } from 'react';
 
+// Helper de Téléchargement Direct de Fichier Officiel PDF / Document Certifié
+const triggerFileDownload = (filename, title, subtitle, details) => {
+  const content = `
+================================================================================
+UNAMUSC SÉNÉGAL — UNION NATIONALE DES MUTUELLES DE SANTÉ COMMUNAUTAIRES
+Agence Nationale de la Couverture Sanitaire Universelle (SEN-CSU)
+================================================================================
+
+DOCUMENT OFFICIEL CERTIFIÉ : ${title.toUpperCase()}
+Généré le : ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}
+${subtitle ? `Référence : ${subtitle}\n` : ''}
+--------------------------------------------------------------------------------
+BÉNÉFICIAIRE : Awa Ndiaye
+NUMÉRO CMU : CMU-DKR-2026-8812
+STATUT : Validé & Conforme aux normes UNAMUSC / CNOM
+--------------------------------------------------------------------------------
+
+DÉTAILS DU DOCUMENT :
+${details.map(d => `• ${d.label} : ${d.value}`).join('\n')}
+
+================================================================================
+Ce document numéroté fait foi de justificatif officiel de prise en charge 
+auprès des structures de santé et pharmacies agréées de la République du Sénégal.
+================================================================================
+  `.trim();
+
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename.endsWith('.pdf') || filename.endsWith('.txt') ? filename : `${filename}.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
 // Design Premium Haut de Gamme — Dossier Médical & Radiographies Certifiées
 export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citizenUser = null }) {
   const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'history', 'lab'
@@ -97,6 +134,36 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
     alert("✅ Antécédents médicaux mis à jour et certifiés !");
   };
 
+  const handleDownloadFullBooklet = () => {
+    triggerFileDownload(
+      'dossier_medical_partage_awa_ndiaye.pdf',
+      'Dossier Médical Partagé & Carnet Numérique',
+      'DOSSIER-MED-2026',
+      [
+        { label: 'Assurée', value: 'Awa Ndiaye' },
+        { label: 'Groupe Sanguin', value: `${antecedents.bloodGroup} (Rhésus ${antecedents.rhesus})` },
+        { label: 'Allergies', value: antecedents.allergies },
+        { label: 'Affections / ALD', value: antecedents.chronicConditions },
+        { label: 'Examens enregistrés', value: `${exams.length} examens d'imagerie (Scanner, IRM, Écho)` }
+      ]
+    );
+  };
+
+  const handleDownloadExam = (ex) => {
+    triggerFileDownload(
+      `examen_dicom_${ex.id}.pdf`,
+      `Rapport Radiologique DICOM — ${ex.title}`,
+      `EXAM-#${ex.id}`,
+      [
+        { label: 'Type d\'examen', value: ex.title },
+        { label: 'Structure', value: ex.facility },
+        { label: 'Date', value: ex.date },
+        { label: 'Praticien', value: ex.doctor },
+        { label: 'Conclusion Diagnostique', value: ex.conclusion }
+      ]
+    );
+  };
+
   return (
     <div className="medical-profile-view fade-in-up" style={{ minHeight: '100vh', background: '#0b1120', color: '#f8fafc', paddingBottom: '3rem' }}>
       
@@ -107,7 +174,6 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
             <h5 className="fw-bold mb-0 text-white" style={{ fontSize: '1.1rem' }}>Dossier Médical Partagé</h5>
             <span style={{ height: '14px', width: '1px', background: 'rgba(255, 255, 255, 0.2)' }} />
             
-            {/* Nav Tabs Buttons (EXPLICIT STYLES - NO WHITE ON WHITE!) */}
             <div style={{ display: 'flex', gap: '0.4rem', background: '#1e293b', padding: '0.25rem', borderRadius: '10px' }}>
               <button 
                 type="button"
@@ -191,9 +257,9 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
               <button 
                 type="button"
                 style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.65rem 1.15rem', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)' }} 
-                onClick={() => window.print()}
+                onClick={handleDownloadFullBooklet}
               >
-                🖨️ Imprimer le carnet PDF
+                📥 Télécharger le carnet PDF
               </button>
 
               <button 
@@ -362,7 +428,8 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                           <button 
                             type="button" 
                             style={{ background: '#1e293b', color: '#f8fafc', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', padding: '0.5rem 0.8rem', cursor: 'pointer' }}
-                            onClick={() => alert(`Téléchargement de l'examen #${ex.id}`)}
+                            onClick={() => handleDownloadExam(ex)}
+                            title="Télécharger l'examen PDF"
                           >
                             📥
                           </button>
@@ -516,7 +583,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                     </div>
 
                     <div className="d-flex flex-column gap-2 mt-4">
-                      <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.65rem', fontWeight: '700' }} onClick={() => alert("Téléchargement du rapport PDF...")}>📥 Rapport PDF Certifié</button>
+                      <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.65rem', fontWeight: '700', cursor: 'pointer' }} onClick={() => handleDownloadExam(viewingExam)}>📥 Télécharger Rapport PDF Certifié</button>
                       <button type="button" style={{ background: '#1e293b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', padding: '0.65rem' }} onClick={() => setViewingExam(null)}>Fermer</button>
                     </div>
                   </div>

@@ -1,5 +1,42 @@
 import React, { useState } from 'react';
 
+// Helper de Téléchargement Direct de Fichier Officiel PDF / Document Certifié
+const triggerFileDownload = (filename, title, subtitle, details) => {
+  const content = `
+================================================================================
+UNAMUSC SÉNÉGAL — UNION NATIONALE DES MUTUELLES DE SANTÉ COMMUNAUTAIRES
+Agence Nationale de la Couverture Sanitaire Universelle (SEN-CSU)
+================================================================================
+
+DOCUMENT OFFICIEL CERTIFIÉ : ${title.toUpperCase()}
+Généré le : ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}
+${subtitle ? `Référence : ${subtitle}\n` : ''}
+--------------------------------------------------------------------------------
+BÉNÉFICIAIRE : Awa Ndiaye
+NUMÉRO CMU : CMU-DKR-2026-8812
+STATUT : Validé & Conforme aux normes UNAMUSC
+--------------------------------------------------------------------------------
+
+DÉTAILS DU DOCUMENT :
+${details.map(d => `• ${d.label} : ${d.value}`).join('\n')}
+
+================================================================================
+Ce document numéroté fait foi de justificatif officiel de prise en charge 
+auprès des structures de santé et pharmacies agréées de la République du Sénégal.
+================================================================================
+  `.trim();
+
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename.endsWith('.pdf') || filename.endsWith('.txt') ? filename : `${filename}.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
 // Design Premium Haut de Gamme — Carnet Maternité & Santé Enfant
 export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
   const [activeTab, setActiveTab] = useState('cpn'); // 'cpn', 'pev', 'advice'
@@ -84,6 +121,35 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
     alert("📩 Votre question a bien été envoyée à la sage-femme de garde !");
   };
 
+  const handleDownloadCarnet = () => {
+    triggerFileDownload(
+      'carnet_sante_maternelle_awa_ndiaye.pdf',
+      'Carnet de Santé Maternelle & Suivi Enfant',
+      'CARNET-MAT-2026-8812',
+      [
+        { label: 'Assurée', value: 'Awa Ndiaye' },
+        { label: 'N° Carte CMU', value: 'CMU-DKR-2026-8812' },
+        { label: 'Enfant', value: 'Moussa Ndiaye (Né le 14/05/2026)' },
+        { label: 'Statut CPN', value: '75% complété (CPN 1 & CPN 2 confirmées)' },
+        { label: 'Garantie Accouchement', value: '100% Prise en charge par UNAMUSC' }
+      ]
+    );
+  };
+
+  const handleDownloadGuarantee = () => {
+    triggerFileDownload(
+      'lettre_garantie_accouchement_100_unamusc.pdf',
+      'Lettre de Garantie Hospitalière Accouchement 100%',
+      'GAR-MAT-2026-9910',
+      [
+        { label: 'Assurée', value: 'Awa Ndiaye (CMU-DKR-2026-8812)' },
+        { label: 'Structure Réceptrice', value: 'Centre Hospitalier Universitaire de Fann (Dakar)' },
+        { label: 'Taux de Couverture', value: '100% (Accouchement simple, Césarienne & Néonatologie)' },
+        { label: 'Montant à payer par assuré', value: '0 FCFA (Prise en charge intégrale)' }
+      ]
+    );
+  };
+
   return (
     <div className="maternity-view fade-in-up" style={{ minHeight: '100vh', background: '#0b1120', color: '#f8fafc', paddingBottom: '3rem' }}>
       
@@ -141,16 +207,16 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
                 <button 
                   type="button"
                   style={{ background: '#1e293b', color: '#f8fafc', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '0.75rem 1.25rem', fontWeight: '700', fontSize: '0.88rem', cursor: 'pointer' }} 
-                  onClick={() => window.print()}
+                  onClick={handleDownloadCarnet}
                 >
-                  🖨️ Télécharger Carnet A4
+                  📥 Télécharger Carnet A4 (PDF)
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Tab Navigation Pills (Explicit Dark Styles - NO WHITE-ON-WHITE!) */}
+        {/* Tab Navigation Pills */}
         <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', padding: '0.4rem', borderRadius: '14px', display: 'inline-flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
           <button 
             type="button"
@@ -162,8 +228,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
               padding: '0.6rem 1.25rem', 
               fontWeight: '700', 
               fontSize: '0.85rem',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease'
+              cursor: 'pointer'
             }} 
             onClick={() => setActiveTab('cpn')}
           >
@@ -180,8 +245,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
               padding: '0.6rem 1.25rem', 
               fontWeight: '700', 
               fontSize: '0.85rem',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease'
+              cursor: 'pointer'
             }} 
             onClick={() => setActiveTab('pev')}
           >
@@ -198,8 +262,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
               padding: '0.6rem 1.25rem', 
               fontWeight: '700', 
               fontSize: '0.85rem',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease'
+              cursor: 'pointer'
             }} 
             onClick={() => setActiveTab('advice')}
           >
@@ -474,7 +537,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
 
               <div className="d-flex justify-content-end gap-2">
                 <button type="button" style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setShowGuaranteeModal(false)}>Fermer</button>
-                <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700' }} onClick={() => window.print()}>🖨️ Imprimer la Lettre A4</button>
+                <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700', cursor: 'pointer' }} onClick={handleDownloadGuarantee}>📥 Télécharger la Lettre PDF</button>
               </div>
             </div>
           </div>

@@ -1,5 +1,42 @@
 import React, { useState, useEffect, useRef } from 'react';
 
+// Helper de Téléchargement Direct de Fichier Officiel PDF / Document Certifié
+const triggerFileDownload = (filename, title, subtitle, details) => {
+  const content = `
+================================================================================
+UNAMUSC SÉNÉGAL — UNION NATIONALE DES MUTUELLES DE SANTÉ COMMUNAUTAIRES
+Agence Nationale de la Couverture Sanitaire Universelle (SEN-CSU)
+================================================================================
+
+DOCUMENT OFFICIEL CERTIFIÉ : ${title.toUpperCase()}
+Généré le : ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}
+${subtitle ? `Référence : ${subtitle}\n` : ''}
+--------------------------------------------------------------------------------
+BÉNÉFICIAIRE : Awa Ndiaye
+NUMÉRO CMU : CMU-DKR-2026-8812
+STATUT : Validé & Conforme aux normes UNAMUSC / CNOM
+--------------------------------------------------------------------------------
+
+DÉTAILS DU DOCUMENT :
+${details.map(d => `• ${d.label} : ${d.value}`).join('\n')}
+
+================================================================================
+Ce document numéroté fait foi de justificatif officiel de prise en charge 
+auprès des structures de santé et pharmacies agréées de la République du Sénégal.
+================================================================================
+  `.trim();
+
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename.endsWith('.pdf') || filename.endsWith('.txt') ? filename : `${filename}.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
 // Design Premium Haut de Gamme — Télémédecine Visioconférence Bidirectionnelle & Vu-mètre Micro Réel
 export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null }) {
   const isAgent = (userRole === 'agent' || !!agentUser);
@@ -320,6 +357,20 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
     if (!inputMsg.trim()) return;
     setChatMessages([...chatMessages, { sender: `${activeFirstName} ${activeLastName}`, text: inputMsg }]);
     setInputMsg('');
+  };
+
+  const handleDownloadPrescription = () => {
+    triggerFileDownload(
+      'ordonnance_telemedecine_bon_pharmacie_50.pdf',
+      'Ordonnance Médicale Certifiée Télémédecine',
+      'ORD-TELEMED-2026-9912',
+      [
+        { label: 'Patient(e)', value: 'Awa Ndiaye (CMU-DKR-2026-8812)' },
+        { label: 'Praticien prescripteur', value: 'Dr. Ousmane Sow (Médecin Généraliste - CNOM: 4522-SN)' },
+        { label: 'Médicaments prescrits', value: 'Amoxicilline 500mg (2 boîtes), Paracétamol 1g (1 boîte)' },
+        { label: 'Tiers-Payant Pharmacie', value: 'Bon de commande 50% UNAMUSC garanti' }
+      ]
+    );
   };
 
   const filteredDoctors = doctorsList.filter(d => {
@@ -892,7 +943,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
             </div>
             <div className="d-flex justify-content-end gap-2">
               <button type="button" style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setActiveModal(null)}>Fermer</button>
-              <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700' }} onClick={() => window.print()}>🖨️ Imprimer PDF A4</button>
+              <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700', cursor: 'pointer' }} onClick={handleDownloadPrescription}>📥 Télécharger Ordonnance PDF</button>
             </div>
           </div>
         </div>

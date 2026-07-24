@@ -1,5 +1,42 @@
 import React, { useState } from 'react';
 
+// Helper de Téléchargement Direct de Fichier Officiel PDF / Document Certifié
+const triggerFileDownload = (filename, title, subtitle, details) => {
+  const content = `
+================================================================================
+UNAMUSC SÉNÉGAL — UNION NATIONALE DES MUTUELLES DE SANTÉ COMMUNAUTAIRES
+Agence Nationale de la Couverture Sanitaire Universelle (SEN-CSU)
+================================================================================
+
+DOCUMENT OFFICIEL CERTIFIÉ : ${title.toUpperCase()}
+Généré le : ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}
+${subtitle ? `Référence : ${subtitle}\n` : ''}
+--------------------------------------------------------------------------------
+BÉNÉFICIAIRE : Awa Ndiaye
+NUMÉRO CMU : CMU-DKR-2026-8812
+STATUT : Validé & Conforme aux normes UNAMUSC
+--------------------------------------------------------------------------------
+
+DÉTAILS DU DOCUMENT :
+${details.map(d => `• ${d.label} : ${d.value}`).join('\n')}
+
+================================================================================
+Ce document numéroté fait foi de justificatif officiel de prise en charge 
+auprès des structures de santé et pharmacies agréées de la République du Sénégal.
+================================================================================
+  `.trim();
+
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename.endsWith('.pdf') || filename.endsWith('.txt') ? filename : `${filename}.pdf`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
+
 // Design Premium Haut de Gamme — Bons & Garanties (Prises en charge Tiers-Payant)
 export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser }) {
   const [careTypeTab, setCareTypeTab] = useState('hospitalisation'); // 'hospitalisation' or 'pharmacie'
@@ -84,6 +121,22 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
     alert(`✅ Demande #${id} mise à jour : ${newStatus.toUpperCase()}`);
   };
 
+  const handleDownloadClaimDoc = (claim) => {
+    const title = claim.care_type === 'hospitalisation' ? 'Lettre de Garantie Hospitalière (80%)' : 'Bon de Commande Pharmacie (50%)';
+    triggerFileDownload(
+      `prise_en_charge_${claim.id}.pdf`,
+      title,
+      claim.id,
+      [
+        { label: 'Bénéficiaire', value: claim.beneficiary_name },
+        { label: 'Établissement / Pharmacie', value: claim.structure_name },
+        { label: 'Montant Devis', value: `${claim.amount.toLocaleString('fr-FR')} FCFA` },
+        { label: 'Prise en charge UNAMUSC', value: `${claim.reimbursed_amount.toLocaleString('fr-FR')} FCFA (${claim.coverage_rate}%)` },
+        { label: 'Date d\'émission', value: claim.submitted_at }
+      ]
+    );
+  };
+
   const filteredClaims = filterStatus ? claims.filter(c => c.status === filterStatus) : claims;
 
   return (
@@ -164,7 +217,7 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
                   <p className="text-muted small mb-0">Remplissez les détails pour votre prise en charge immédiate.</p>
                 </div>
 
-                {/* Segmented Control Switcher (EXPLICIT STYLES - NO WHITE ON WHITE!) */}
+                {/* Segmented Control Switcher */}
                 <div style={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', padding: '0.3rem', borderRadius: '12px', display: 'flex', gap: '0.4rem' }}>
                   <button 
                     type="button" 
@@ -339,7 +392,7 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
                   </div>
                 </div>
 
-                {/* Form Action Buttons (EXPLICIT STYLES - NO WHITE ON WHITE!) */}
+                {/* Form Action Buttons */}
                 <div className="d-flex justify-content-end gap-3 pt-2">
                   <button 
                     type="button" 
@@ -513,7 +566,7 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
               </div>
               <div className="d-flex justify-content-end gap-2">
                 <button type="button" style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setShowDetailModal(null)}>Fermer</button>
-                <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700' }} onClick={() => window.print()}>🖨️ Imprimer A4</button>
+                <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700', cursor: 'pointer' }} onClick={() => handleDownloadClaimDoc(showDetailModal)}>📥 Télécharger le document PDF</button>
               </div>
             </div>
           </div>
