@@ -1,9 +1,24 @@
 import React, { useState } from 'react';
 
-// Design Premium Haut de Gamme (Dark Emerald DICOM Medical Profile Platform)
+// Design Premium Haut de Gamme — Dossier Médical & Radiographies Certifiées
 export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citizenUser = null }) {
   const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'history', 'lab'
   
+  // Modales
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showAddExamModal, setShowAddExamModal] = useState(false);
+  const [editingAntecedents, setEditingAntecedents] = useState(false);
+
+  // Antécédents Médicaux Éditables
+  const [antecedents, setAntecedents] = useState({
+    bloodGroup: 'A+',
+    rhesus: 'Positif',
+    allergies: 'Pénicilline (Sévère), Pollen de Graminées',
+    chronicConditions: 'Hypertension artérielle (HTA), Diabète Type 2',
+    surgeries: 'Appendicectomie (2021)',
+    emergencyContact: 'Moussa Sow (Frère) — +221 77 450 12 34'
+  });
+
   // Imagerie & Examens DICOM
   const [exams, setExams] = useState([
     {
@@ -11,7 +26,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
       title: 'Scanner Thoracique',
       exam_type: 'Scanner',
       badge: 'HD DICOM',
-      facility: 'Clinique Pasteur',
+      facility: 'Clinique Pasteur (Dakar)',
       doctor: 'Dr. Coumba Diop — Hôpital Fann',
       date: '12 Mars 2024',
       conclusion: 'Examen de contrôle post-traitement. Bilan satisfaisant sans anomalie évolutive. Recommandation : contrôle dans 6 mois.',
@@ -50,10 +65,10 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
   const [dicomInvert, setDicomInvert] = useState(false);
   const [activeCliche, setActiveCliche] = useState(1);
 
-  // Modale Ajout d'Examen
-  const [showAddExamModal, setShowAddExamModal] = useState(false);
+  // Formulaire d'ajout
   const [newExamTitle, setNewExamTitle] = useState('');
   const [newExamType, setNewExamType] = useState('Scanner');
+  const [newExamFacility, setNewExamFacility] = useState('Laboratoire Bio24');
 
   const handleAddExam = (e) => {
     e.preventDefault();
@@ -63,9 +78,9 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
       title: newExamTitle,
       exam_type: newExamType,
       badge: 'HD DICOM',
-      facility: 'Laboratoire Pasteur Dakar',
+      facility: newExamFacility,
       doctor: 'Dr. Aminata Ndiaye',
-      date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'Short', year: 'numeric' }),
+      date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }),
       conclusion: 'Examen enregistré et certifié.',
       cliches: 1,
       preview: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?w=400'
@@ -73,28 +88,86 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
     setExams([...exams, added]);
     setShowAddExamModal(false);
     setNewExamTitle('');
+    alert("✅ Examen DICOM / Rapport PDF ajouté avec succès !");
+  };
+
+  const handleSaveAntecedents = (e) => {
+    e.preventDefault();
+    setEditingAntecedents(false);
+    alert("✅ Antécédents médicaux mis à jour et certifiés !");
   };
 
   return (
     <div className="medical-profile-view fade-in-up" style={{ minHeight: '100vh', background: '#0b1120', color: '#f8fafc', paddingBottom: '3rem' }}>
       
       {/* Subnav Header Bar */}
-      <div style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.08)', background: 'rgba(15, 23, 42, 0.9)', backdropFilter: 'blur(12px)', padding: '0.75rem 2rem' }}>
+      <div style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.08)', background: '#0f172a', padding: '0.85rem 2rem' }}>
         <div style={{ maxWidth: '1320px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <h5 className="fw-bold mb-0 text-white" style={{ fontSize: '1.1rem' }}>Dossier Médical Partagé</h5>
             <span style={{ height: '14px', width: '1px', background: 'rgba(255, 255, 255, 0.2)' }} />
             
-            <div className="d-flex gap-2">
-              <button className={`btn btn-sm fw-bold ${activeTab === 'overview' ? 'text-success border-bottom border-success' : 'text-white-50'}`} style={{ borderRadius: 0, fontSize: '0.85rem' }} onClick={() => setActiveTab('overview')}>Vue d'ensemble</button>
-              <button className={`btn btn-sm fw-bold ${activeTab === 'history' ? 'text-success border-bottom border-success' : 'text-white-50'}`} style={{ borderRadius: 0, fontSize: '0.85rem' }} onClick={() => setActiveTab('history')}>Historique</button>
-              <button className={`btn btn-sm fw-bold ${activeTab === 'lab' ? 'text-success border-bottom border-success' : 'text-white-50'}`} style={{ borderRadius: 0, fontSize: '0.85rem' }} onClick={() => setActiveTab('lab')}>Laboratoire</button>
+            {/* Nav Tabs Buttons (EXPLICIT STYLES - NO WHITE ON WHITE!) */}
+            <div style={{ display: 'flex', gap: '0.4rem', background: '#1e293b', padding: '0.25rem', borderRadius: '10px' }}>
+              <button 
+                type="button"
+                style={{ 
+                  background: activeTab === 'overview' ? '#10b981' : 'transparent', 
+                  color: activeTab === 'overview' ? '#ffffff' : '#94a3b8', 
+                  border: 'none', 
+                  borderRadius: '8px', 
+                  padding: '0.35rem 0.85rem', 
+                  fontWeight: '700', 
+                  fontSize: '0.82rem',
+                  cursor: 'pointer'
+                }} 
+                onClick={() => setActiveTab('overview')}
+              >
+                Vue d'ensemble
+              </button>
+
+              <button 
+                type="button"
+                style={{ 
+                  background: activeTab === 'history' ? '#10b981' : 'transparent', 
+                  color: activeTab === 'history' ? '#ffffff' : '#94a3b8', 
+                  border: 'none', 
+                  borderRadius: '8px', 
+                  padding: '0.35rem 0.85rem', 
+                  fontWeight: '700', 
+                  fontSize: '0.82rem',
+                  cursor: 'pointer'
+                }} 
+                onClick={() => setActiveTab('history')}
+              >
+                Historique
+              </button>
+
+              <button 
+                type="button"
+                style={{ 
+                  background: activeTab === 'lab' ? '#10b981' : 'transparent', 
+                  color: activeTab === 'lab' ? '#ffffff' : '#94a3b8', 
+                  border: 'none', 
+                  borderRadius: '8px', 
+                  padding: '0.35rem 0.85rem', 
+                  fontWeight: '700', 
+                  fontSize: '0.82rem',
+                  cursor: 'pointer'
+                }} 
+                onClick={() => setActiveTab('lab')}
+              >
+                Laboratoire
+              </button>
             </div>
           </div>
 
-          <div className="input-group input-group-sm" style={{ width: '250px' }}>
-            <input type="text" className="form-control bg-dark text-white border-secondary small" placeholder="Rechercher un examen..." style={{ borderRadius: '10px 0 0 10px', fontSize: '0.8rem' }} />
-            <button className="btn btn-outline-secondary" type="button" style={{ borderRadius: '0 10px 10px 0' }}>🔍</button>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <input 
+              type="text" 
+              placeholder="Rechercher un examen..." 
+              style={{ background: '#1e293b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem', width: '200px' }} 
+            />
           </div>
         </div>
       </div>
@@ -102,10 +175,12 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
       <div style={{ maxWidth: '1320px', margin: '1.75rem auto 0 auto', padding: '0 1.5rem' }}>
         
         {/* Top Hero Card Banner */}
-        <div className="p-4 rounded-4 mb-4" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(15, 23, 42, 0.95) 100%)', border: '1px solid rgba(16, 185, 129, 0.25)', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.4)' }}>
+        <div className="p-4 rounded-4 mb-4" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(15, 23, 42, 0.95) 100%)', border: '1px solid rgba(16, 185, 129, 0.3)', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.4)' }}>
           <div className="d-flex justify-content-between align-items-start flex-wrap gap-3">
             <div>
-              <span className="badge bg-success text-white px-3 py-1.5 rounded-pill mb-2 fw-semibold" style={{ fontSize: '0.75rem' }}>✔ Certifié CNOM - Sénégal</span>
+              <span style={{ background: '#059669', color: '#ffffff', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '700', display: 'inline-block', marginBottom: '0.5rem' }}>
+                ✔ Certifié CNOM - Sénégal
+              </span>
               <h2 className="fw-extrabold text-white mb-2" style={{ fontSize: '1.9rem', letterSpacing: '-0.02em' }}>Dossier médical & radiographies certifiées</h2>
               <p className="text-white-50 mb-0" style={{ fontSize: '0.95rem', maxWidth: '680px', lineHeight: '1.5' }}>
                 Accédez en toute sécurité à vos antécédents, vos résultats de radiologie et téléchargez votre carnet de santé numérique certifié.
@@ -113,240 +188,362 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
             </div>
 
             <div className="d-flex gap-2">
-              <button className="btn btn-success px-3.5 py-2.5 fw-bold text-white shadow-sm d-flex align-items-center gap-2" style={{ background: '#10b981', borderRadius: '12px', border: 'none', fontSize: '0.85rem' }} onClick={() => alert("Impression du carnet de santé PDF A4...")}>
-                <span>🖨 Imprimer le carnet PDF</span>
+              <button 
+                type="button"
+                style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.65rem 1.15rem', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)' }} 
+                onClick={() => window.print()}
+              >
+                🖨️ Imprimer le carnet PDF
               </button>
-              <button className="btn btn-dark px-3.5 py-2.5 fw-bold text-white shadow-sm" style={{ background: '#1e293b', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', fontSize: '0.85rem' }} onClick={() => alert("Lien de partage sécurisé généré.")}>
+
+              <button 
+                type="button"
+                style={{ background: '#1e293b', color: '#f8fafc', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '0.65rem 1.15rem', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer' }} 
+                onClick={() => setShowShareModal(true)}
+              >
                 Partager avec mon médecin
               </button>
             </div>
           </div>
         </div>
 
-        {/* Main Content Grid (Left Sidebar Cards + Right DICOM Grid) */}
-        <div className="row g-4 mb-4">
-          
-          {/* Left Column Cards */}
-          <div className="col-lg-4">
-            <div className="d-flex flex-column gap-4">
-              
-              {/* Groupe Sanguin Card */}
+        {/* TAB 1: VUE D'ENSEMBLE */}
+        {activeTab === 'overview' && (
+          <div className="row g-4 mb-4">
+            
+            {/* Left Column Cards */}
+            <div className="col-lg-4">
+              <div className="d-flex flex-column gap-4">
+                
+                {/* Groupe Sanguin Card */}
+                <div className="p-4 rounded-4" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <div className="d-flex align-items-center gap-2 text-danger">
+                      <span style={{ fontSize: '1.2rem' }}>🩸</span>
+                      <h6 className="fw-bold text-white mb-0" style={{ fontSize: '1rem' }}>Groupe Sanguin</h6>
+                    </div>
+                    <span style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.72rem', fontWeight: '700' }}>Urgent</span>
+                  </div>
+
+                  <div className="d-flex align-items-baseline gap-2 my-2">
+                    <h1 className="fw-black text-success mb-0" style={{ fontSize: '3.2rem', letterSpacing: '-0.03em' }}>{antecedents.bloodGroup}</h1>
+                    <span className="fw-bold text-white-50" style={{ fontSize: '1.1rem' }}>Rhésus {antecedents.rhesus}</span>
+                  </div>
+
+                  <small className="text-muted d-block pt-2 border-top border-secondary border-opacity-25" style={{ fontSize: '0.75rem' }}>
+                    Certifié par : <strong className="text-white-50">Laboratoire Bio24, Dakar</strong>
+                  </small>
+                </div>
+
+                {/* Allergies & Alertes Card */}
+                <div className="p-4 rounded-4" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                  <div className="d-flex justify-content-between align-items-center mb-3">
+                    <div className="d-flex align-items-center gap-2 text-warning">
+                      <span style={{ fontSize: '1.2rem' }}>⚠️</span>
+                      <h6 className="fw-bold text-white mb-0" style={{ fontSize: '1rem' }}>Allergies & Alertes</h6>
+                    </div>
+                    <button 
+                      type="button" 
+                      style={{ background: 'transparent', color: '#34d399', border: 'none', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}
+                      onClick={() => setEditingAntecedents(!editingAntecedents)}
+                    >
+                      {editingAntecedents ? '✕ Fermer' : '✏️ Éditer'}
+                    </button>
+                  </div>
+
+                  {editingAntecedents ? (
+                    <form onSubmit={handleSaveAntecedents} className="d-flex flex-column gap-2">
+                      <label className="small text-white-50">Allergies :</label>
+                      <input 
+                        type="text" 
+                        className="form-control text-white border-0 small" 
+                        style={{ background: '#0f172a' }} 
+                        value={antecedents.allergies} 
+                        onChange={(e) => setAntecedents({ ...antecedents, allergies: e.target.value })} 
+                      />
+                      <label className="small text-white-50 mt-1">Affections / ALD :</label>
+                      <input 
+                        type="text" 
+                        className="form-control text-white border-0 small" 
+                        style={{ background: '#0f172a' }} 
+                        value={antecedents.chronicConditions} 
+                        onChange={(e) => setAntecedents({ ...antecedents, chronicConditions: e.target.value })} 
+                      />
+                      <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.4rem', fontWeight: '700', marginTop: '0.5rem' }}>Sauvegarder</button>
+                    </form>
+                  ) : (
+                    <div className="d-flex flex-column gap-2">
+                      {antecedents.allergies.split(',').map((alg, idx) => (
+                        <div key={idx} className="p-3 rounded-3 d-flex align-items-center gap-2.5" style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
+                          <span className="text-warning font-monospace" style={{ fontSize: '1.2rem' }}>●</span>
+                          <span className="fw-bold text-white small">{alg.trim()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Interopérabilité Card */}
+                <div className="p-4 rounded-4" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                  <div className="d-flex align-items-center gap-2 mb-3 text-success">
+                    <span style={{ fontSize: '1.2rem' }}>🌐</span>
+                    <h6 className="fw-bold text-white mb-0" style={{ fontSize: '1rem' }}>Interopérabilité DHIS2</h6>
+                  </div>
+
+                  <div className="d-flex flex-column gap-2.5">
+                    <div className="p-3 rounded-3 d-flex align-items-center justify-content-between" style={{ background: '#0f172a', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                      <div className="d-flex align-items-center gap-2.5">
+                        <div style={{ width: '32px', height: '32px', background: '#059669', color: '#ffffff', fontWeight: '700', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>F</div>
+                        <div>
+                          <strong className="d-block text-white small">Hôpital Fann</strong>
+                          <small className="text-muted" style={{ fontSize: '0.72rem' }}>ID: FANN-77291</small>
+                        </div>
+                      </div>
+                      <span style={{ background: '#10b981', color: '#ffffff', borderRadius: '50%', padding: '0.1rem 0.4rem', fontSize: '0.7rem' }}>✓</span>
+                    </div>
+
+                    <div className="p-3 rounded-3 d-flex align-items-center justify-content-between" style={{ background: '#0f172a', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                      <div className="d-flex align-items-center gap-2.5">
+                        <div style={{ width: '32px', height: '32px', background: '#dc2626', color: '#ffffff', fontWeight: '700', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>LD</div>
+                        <div>
+                          <strong className="d-block text-white small">Le Dantec</strong>
+                          <small className="text-muted" style={{ fontSize: '0.72rem' }}>ID: LD-091823</small>
+                        </div>
+                      </div>
+                      <span style={{ background: '#10b981', color: '#ffffff', borderRadius: '50%', padding: '0.1rem 0.4rem', fontSize: '0.7rem' }}>✓</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            {/* Right Column: Radiographies & Examens DICOM Grid */}
+            <div className="col-lg-8">
               <div className="p-4 rounded-4" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
-                <div className="d-flex justify-content-between align-items-center mb-2">
-                  <div className="d-flex align-items-center gap-2 text-danger">
-                    <span style={{ fontSize: '1.2rem' }}>🩸</span>
-                    <h6 className="fw-bold text-white mb-0" style={{ fontSize: '1rem' }}>Groupe Sanguin</h6>
-                  </div>
-                  <span className="badge bg-danger-subtle text-danger border border-danger-subtle" style={{ fontSize: '0.72rem' }}>Urgent</span>
-                </div>
-
-                <div className="d-flex align-items-baseline gap-2 my-2">
-                  <h1 className="fw-black text-success mb-0" style={{ fontSize: '3.2rem', letterSpacing: '-0.03em' }}>A+</h1>
-                  <span className="fw-bold text-white-50" style={{ fontSize: '1.1rem' }}>Rhésus Positif</span>
-                </div>
-
-                <small className="text-muted d-block pt-2 border-top border-secondary border-opacity-25" style={{ fontSize: '0.75rem' }}>
-                  Certifié par : <strong className="text-white-50">Laboratoire Bio24, Dakar</strong>
-                </small>
-              </div>
-
-              {/* Allergies & Alertes Card */}
-              <div className="p-4 rounded-4" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-                <div className="d-flex align-items-center gap-2 mb-3 text-warning">
-                  <span style={{ fontSize: '1.2rem' }}>⚠️</span>
-                  <h6 className="fw-bold text-white mb-0" style={{ fontSize: '1rem' }}>Allergies & Alertes</h6>
-                </div>
-
-                <div className="d-flex flex-column gap-2">
-                  <div className="p-3 rounded-3 d-flex align-items-center gap-2.5" style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
-                    <span className="text-warning font-monospace" style={{ fontSize: '1.2rem' }}>●</span>
-                    <span className="fw-bold text-white small">Pénicilline (Sévère)</span>
-                  </div>
-
-                  <div className="p-3 rounded-3 d-flex align-items-center gap-2.5" style={{ background: '#0f172a', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                    <span className="text-muted font-monospace" style={{ fontSize: '1.2rem' }}>●</span>
-                    <span className="fw-bold text-white-50 small">Pollen de Graminées</span>
+                
+                <div className="d-flex justify-content-between align-items-center mb-4">
+                  <div className="d-flex align-items-center gap-2">
+                    <span style={{ fontSize: '1.3rem' }}>🩻</span>
+                    <h5 className="fw-bold text-white mb-0" style={{ fontSize: '1.2rem' }}>Radiographies & Examens Certifiés</h5>
                   </div>
                 </div>
-              </div>
 
-              {/* Interopérabilité Card */}
-              <div className="p-4 rounded-4" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-                <div className="d-flex align-items-center gap-2 mb-3 text-success">
-                  <span style={{ fontSize: '1.2rem' }}>🌐</span>
-                  <h6 className="fw-bold text-white mb-0" style={{ fontSize: '1rem' }}>Interopérabilité</h6>
-                </div>
+                {/* Exam Cards Grid */}
+                <div className="row g-3">
+                  {exams.map(ex => (
+                    <div key={ex.id} className="col-md-6">
+                      <div className="rounded-4 overflow-hidden h-100 d-flex flex-column justify-content-between" style={{ background: '#0f172a', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                        
+                        {/* Image Thumbnail Banner */}
+                        <div style={{ height: '140px', position: 'relative', overflow: 'hidden' }}>
+                          <img src={ex.preview} alt={ex.title} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.85 }} />
+                          <span style={{ background: '#0f172a', color: '#34d399', border: '1px solid #10b981', padding: '0.2rem 0.5rem', borderRadius: '6px', fontSize: '0.7rem', fontWeight: '700', position: 'absolute', top: '8px', end: '8px' }}>
+                            {ex.badge}
+                          </span>
+                        </div>
 
-                <div className="d-flex flex-column gap-2.5">
-                  <div className="p-3 rounded-3 d-flex align-items-center justify-content-between" style={{ background: '#0f172a', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                    <div className="d-flex align-items-center gap-2.5">
-                      <div className="p-2 rounded-2 bg-dark text-primary fw-bold" style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>F</div>
-                      <div>
-                        <strong className="d-block text-white small">Hôpital Fann</strong>
-                        <small className="text-muted" style={{ fontSize: '0.72rem' }}>ID: FANN-77291</small>
+                        <div className="p-3.5 flex-grow-1">
+                          <h6 className="fw-bold text-white mb-1" style={{ fontSize: '1.02rem' }}>{ex.title}</h6>
+                          <small className="text-muted d-block mb-2" style={{ fontSize: '0.78rem' }}>
+                            {ex.date} • {ex.facility}
+                          </small>
+                        </div>
+
+                        <div className="p-3 border-top border-secondary border-opacity-25 d-flex gap-2">
+                          <button 
+                            type="button"
+                            style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem', fontWeight: '700', flex: 1, fontSize: '0.82rem', cursor: 'pointer' }}
+                            onClick={() => setViewingExam(ex)}
+                          >
+                            👁 Voir DICOM
+                          </button>
+                          
+                          <button 
+                            type="button" 
+                            style={{ background: '#1e293b', color: '#f8fafc', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', padding: '0.5rem 0.8rem', cursor: 'pointer' }}
+                            onClick={() => alert(`Téléchargement de l'examen #${ex.id}`)}
+                          >
+                            📥
+                          </button>
+                        </div>
+
                       </div>
                     </div>
-                    <span className="badge bg-success rounded-circle p-1">✓</span>
-                  </div>
+                  ))}
 
-                  <div className="p-3 rounded-3 d-flex align-items-center justify-content-between" style={{ background: '#0f172a', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                    <div className="d-flex align-items-center gap-2.5">
-                      <div className="p-2 rounded-2 bg-dark text-danger fw-bold" style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>LD</div>
+                  {/* Add New Exam Card */}
+                  <div className="col-md-6">
+                    <div 
+                      className="rounded-4 p-4 h-100 d-flex flex-column align-items-center justify-content-center gap-3 text-center"
+                      style={{ 
+                        background: 'rgba(15, 23, 42, 0.5)', 
+                        border: '2px dashed rgba(16, 185, 129, 0.4)', 
+                        cursor: 'pointer',
+                        minHeight: '230px'
+                      }}
+                      onClick={() => setShowAddExamModal(true)}
+                    >
+                      <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: '700' }}>
+                        ➕
+                      </div>
                       <div>
-                        <strong className="d-block text-white small">Le Dantec</strong>
-                        <small className="text-muted" style={{ fontSize: '0.72rem' }}>ID: LD-091823</small>
+                        <strong className="d-block text-white small">Ajouter un examen</strong>
+                        <small className="text-muted" style={{ fontSize: '0.75rem' }}>Fichier PDF ou DICOM</small>
                       </div>
                     </div>
-                    <span className="badge bg-success rounded-circle p-1">✓</span>
                   </div>
-                </div>
-              </div>
 
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        )}
+
+        {/* TAB 2: HISTORIQUE MÉDICAL */}
+        {activeTab === 'history' && (
+          <div className="p-4 rounded-4 mb-4" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+            <h5 className="fw-bold text-white mb-3">📜 Historique Médical Complet</h5>
+            <div className="table-responsive">
+              <table className="table table-dark table-hover align-middle mb-0">
+                <thead>
+                  <tr className="text-muted small">
+                    <th>DATE</th>
+                    <th>ACTE / CONSULTATION</th>
+                    <th>PRATICIEN / STRUCTURE</th>
+                    <th>CONCLUSION</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="text-white-50">12/05/2026</td>
+                    <td className="fw-bold text-white">Téléconsultation Généraliste</td>
+                    <td>Dr. Ousmane Sow</td>
+                    <td className="text-white-50">Grippe saisonnière. Ordonnance émise.</td>
+                  </tr>
+                  <tr>
+                    <td className="text-white-50">15/03/2026</td>
+                    <td className="fw-bold text-white">Consultation Prénatale CPN 2</td>
+                    <td>Dr. Mariama Ba</td>
+                    <td className="text-white-50">Tension 12/8. Évolution normale.</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
+        )}
 
-          {/* Right Column: Radiographies & Examens DICOM Grid */}
-          <div className="col-lg-8">
-            <div className="p-4 rounded-4" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
-              
-              <div className="d-flex justify-content-between align-items-center mb-4">
-                <div className="d-flex align-items-center gap-2">
-                  <span style={{ fontSize: '1.3rem' }}>🩻</span>
-                  <h5 className="fw-bold text-white mb-0" style={{ fontSize: '1.2rem' }}>Radiographies & Examens</h5>
-                </div>
-
-                <div className="d-flex gap-2">
-                  <button className="btn btn-sm btn-dark text-white-50 p-2" style={{ borderRadius: '8px' }}>🔲</button>
-                  <button className="btn btn-sm btn-dark text-white-50 p-2" style={{ borderRadius: '8px' }}>☰</button>
-                </div>
-              </div>
-
-              {/* Exam Cards Grid */}
-              <div className="row g-3">
-                {exams.map(ex => (
-                  <div key={ex.id} className="col-md-6">
-                    <div className="rounded-4 overflow-hidden h-100 d-flex flex-column justify-content-between" style={{ background: '#0f172a', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-                      
-                      {/* Image Thumbnail Banner */}
-                      <div style={{ height: '140px', position: 'relative', overflow: 'hidden' }}>
-                        <img src={ex.preview} alt={ex.title} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.85 }} />
-                        <span className="badge bg-dark text-success border border-success position-absolute top-0 end-0 m-2" style={{ fontSize: '0.7rem' }}>
-                          {ex.badge}
-                        </span>
-                      </div>
-
-                      <div className="p-3.5 flex-grow-1">
-                        <h6 className="fw-bold text-white mb-1" style={{ fontSize: '1.02rem' }}>{ex.title}</h6>
-                        <small className="text-muted d-block mb-2" style={{ fontSize: '0.78rem' }}>
-                          {ex.date} • {ex.facility}
-                        </small>
-                      </div>
-
-                      <div className="p-3 border-top border-secondary border-opacity-25 d-flex gap-2">
-                        <button 
-                          className="btn btn-success btn-sm flex-fill fw-bold text-white d-flex align-items-center justify-content-center gap-1.5"
-                          style={{ background: '#10b981', border: 'none', borderRadius: '10px' }}
-                          onClick={() => setViewingExam(ex)}
-                        >
-                          <span>👁 Voir DICOM</span>
-                        </button>
-                        <button className="btn btn-dark btn-sm text-white-50 px-3" style={{ borderRadius: '10px' }} onClick={() => alert(`Téléchargement de l'examen #${ex.id}`)}>
-                          📥
-                        </button>
-                      </div>
-
-                    </div>
-                  </div>
-                ))}
-
-                {/* Add New Exam Card (Dashed Border) */}
-                <div className="col-md-6">
-                  <div 
-                    className="rounded-4 p-4 h-100 d-flex flex-column align-items-center justify-content-center gap-3 text-center"
-                    style={{ 
-                      background: 'rgba(15, 23, 42, 0.5)', 
-                      border: '2px dashed rgba(16, 185, 129, 0.4)', 
-                      cursor: 'pointer',
-                      minHeight: '230px'
-                    }}
-                    onClick={() => setShowAddExamModal(true)}
-                  >
-                    <div className="p-3 rounded-circle text-success" style={{ background: 'rgba(16, 185, 129, 0.15)', fontSize: '1.8rem' }}>
-                      ➕
-                    </div>
-                    <div>
-                      <strong className="d-block text-white small">Ajouter un examen</strong>
-                      <small className="text-muted" style={{ fontSize: '0.75rem' }}>Fichier PDF ou DICOM</small>
-                    </div>
-                  </div>
-                </div>
-
-              </div>
-
+        {/* TAB 3: LABORATOIRE */}
+        {activeTab === 'lab' && (
+          <div className="p-4 rounded-4 mb-4" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+            <h5 className="fw-bold text-white mb-3">🧪 Résultats d'Analyses Biologiques</h5>
+            <div className="table-responsive">
+              <table className="table table-dark table-hover align-middle mb-0">
+                <thead>
+                  <tr className="text-muted small">
+                    <th>EXAMEN</th>
+                    <th>RÉSULTAT</th>
+                    <th>VALEURS DE RÉFÉRENCE</th>
+                    <th>STATUT</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="fw-bold text-white">Glycémie à jeun</td>
+                    <td className="text-success fw-bold">0.95 g/L</td>
+                    <td className="text-white-50">0.70 - 1.10 g/L</td>
+                    <td><span style={{ background: 'rgba(16,185,129,0.2)', color: '#34d399', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700' }}>Normal</span></td>
+                  </tr>
+                  <tr>
+                    <td className="fw-bold text-white">Hémoglobine (NFS)</td>
+                    <td className="text-success fw-bold">14.2 g/dL</td>
+                    <td className="text-white-50">12.0 - 16.0 g/dL</td>
+                    <td><span style={{ background: 'rgba(16,185,129,0.2)', color: '#34d399', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700' }}>Normal</span></td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
-
-        </div>
+        )}
 
       </div>
 
       {/* DICOM VIEWING MODAL */}
       {viewingExam && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.9)', backdropFilter: 'blur(10px)' }}>
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.9)' }}>
           <div className="modal-dialog modal-xl modal-dialog-centered">
-            <div className="modal-content shadow-lg border-0 text-white" style={{ borderRadius: '24px', background: '#0f172a' }}>
-              <div className="modal-header border-bottom border-secondary p-3 d-flex justify-content-between">
-                <h5 className="modal-title fw-bold text-success d-flex align-items-center gap-2">
-                  <span>🩻 Visionneuse DICOM 3.0 HD — {viewingExam.title}</span>
-                </h5>
+            <div className="modal-content text-white p-4" style={{ borderRadius: '24px', background: '#0f172a' }}>
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h5 className="fw-bold text-success mb-0">🩻 Visionneuse DICOM 3.0 HD — {viewingExam.title}</h5>
                 <button className="btn-close btn-close-white" onClick={() => setViewingExam(null)}></button>
               </div>
 
-              <div className="modal-body p-4">
-                <div className="row g-4">
-                  <div className="col-lg-8">
-                    <div className="rounded-4 p-3 text-center d-flex flex-column align-items-center justify-content-center" style={{ height: '440px', background: '#1e293b', position: 'relative', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden' }}>
-                      <img 
-                        src={viewingExam.preview} 
-                        alt={viewingExam.title} 
-                        style={{ 
-                          maxHeight: '100%', 
-                          maxWidth: '100%', 
-                          objectFit: 'contain',
-                          transform: `scale(${dicomZoom})`,
-                          filter: dicomInvert ? 'invert(100%)' : 'none',
-                          transition: 'all 0.2s ease'
-                        }} 
-                      />
-
-                      <div className="position-absolute bottom-0 start-0 m-3 p-2 rounded-3 bg-dark text-white-50 small">
-                        Cliché {activeCliche} / {viewingExam.cliches}
-                      </div>
-                    </div>
-
-                    <div className="d-flex justify-content-center gap-3 mt-3 p-2.5 rounded-4 bg-dark">
-                      <button className="btn btn-sm btn-dark text-white border border-secondary" onClick={() => setDicomZoom(dicomZoom + 0.2)}>🔍 Zoom +</button>
-                      <button className="btn btn-sm btn-dark text-white border border-secondary" onClick={() => setDicomZoom(1)}>🔄 Reset</button>
-                      <button className={`btn btn-sm ${dicomInvert ? 'btn-warning' : 'btn-dark text-white border border-secondary'}`} onClick={() => setDicomInvert(!dicomInvert)}>🌗 Négatif</button>
-                      <button className="btn btn-sm btn-success fw-bold" onClick={() => setActiveCliche((activeCliche % viewingExam.cliches) + 1)}>🖼 Cliché suivant</button>
+              <div className="row g-4">
+                <div className="col-lg-8">
+                  <div className="rounded-4 p-3 text-center d-flex flex-column align-items-center justify-content-center" style={{ height: '420px', background: '#1e293b', position: 'relative', overflow: 'hidden' }}>
+                    <img 
+                      src={viewingExam.preview} 
+                      alt={viewingExam.title} 
+                      style={{ 
+                        maxHeight: '100%', 
+                        maxWidth: '100%', 
+                        objectFit: 'contain',
+                        transform: `scale(${dicomZoom})`,
+                        filter: dicomInvert ? 'invert(100%)' : 'none'
+                      }} 
+                    />
+                    <div className="position-absolute bottom-0 start-0 m-3 p-2 rounded-3 bg-dark text-white-50 small">
+                      Cliché {activeCliche} / {viewingExam.cliches}
                     </div>
                   </div>
 
-                  <div className="col-lg-4">
-                    <div className="p-4 rounded-4 bg-dark h-100 d-flex flex-column justify-content-between">
-                      <div>
-                        <h6 className="fw-bold text-success mb-2">📋 Conclusion Diagnostique</h6>
-                        <p className="text-white-50 small mb-3" style={{ lineHeight: '1.6' }}>{viewingExam.conclusion}</p>
-                        <small className="text-muted d-block border-top border-secondary pt-2">Prescrit / Validé par : <strong className="text-white">{viewingExam.doctor}</strong></small>
-                      </div>
+                  <div className="d-flex justify-content-center gap-2 mt-3 p-2 rounded-4 bg-dark">
+                    <button type="button" style={{ background: '#1e293b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} onClick={() => setDicomZoom(dicomZoom + 0.2)}>🔍 Zoom +</button>
+                    <button type="button" style={{ background: '#1e293b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} onClick={() => setDicomZoom(1)}>🔄 Reset</button>
+                    <button type="button" style={{ background: dicomInvert ? '#f59e0b' : '#1e293b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} onClick={() => setDicomInvert(!dicomInvert)}>🌗 Négatif</button>
+                    <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem', fontWeight: '700' }} onClick={() => setActiveCliche((activeCliche % viewingExam.cliches) + 1)}>🖼 Cliché suivant</button>
+                  </div>
+                </div>
 
-                      <div className="d-flex flex-column gap-2 mt-4">
-                        <button className="btn btn-success fw-bold py-2" style={{ borderRadius: '10px' }} onClick={() => alert("Téléchargement du rapport PDF certifié...")}>📥 Rapport PDF Certifié</button>
-                        <button className="btn btn-dark text-white border border-secondary py-2" style={{ borderRadius: '10px' }} onClick={() => setViewingExam(null)}>Fermer</button>
-                      </div>
+                <div className="col-lg-4">
+                  <div className="p-4 rounded-4 bg-dark h-100 d-flex flex-column justify-content-between">
+                    <div>
+                      <h6 className="fw-bold text-success mb-2">📋 Conclusion Diagnostique</h6>
+                      <p className="text-white-50 small mb-3">{viewingExam.conclusion}</p>
+                      <small className="text-muted d-block border-top border-secondary pt-2">Prescrit par : <strong className="text-white">{viewingExam.doctor}</strong></small>
+                    </div>
+
+                    <div className="d-flex flex-column gap-2 mt-4">
+                      <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.65rem', fontWeight: '700' }} onClick={() => alert("Téléchargement du rapport PDF...")}>📥 Rapport PDF Certifié</button>
+                      <button type="button" style={{ background: '#1e293b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', padding: '0.65rem' }} onClick={() => setViewingExam(null)}>Fermer</button>
                     </div>
                   </div>
                 </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* SHARE MODAL */}
+      {showShareModal && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.85)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content text-white p-4" style={{ borderRadius: '24px', background: '#1e293b' }}>
+              <h5 className="fw-bold text-success mb-2">🔗 Partager le dossier médical avec un médecin</h5>
+              <p className="text-white-50 small mb-3">Générez un lien d'accès sécurisé temporaire (Valable 24h) pour votre praticien.</p>
+              
+              <div className="p-3 bg-dark rounded-3 mb-3 text-center border border-success">
+                <small className="text-muted d-block mb-1">Code d'accès temporaire OTP :</small>
+                <h3 className="fw-bold text-warning letter-spacing-2 mb-0">849-201</h3>
+              </div>
+
+              <div className="d-flex justify-content-end gap-2">
+                <button type="button" style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setShowShareModal(false)}>Fermer</button>
+                <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700' }} onClick={() => alert("Lien copié dans le presse-papier !")}>📋 Copier le lien</button>
               </div>
             </div>
           </div>
@@ -376,8 +573,8 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
               </div>
 
               <div className="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" className="btn btn-dark text-white-50" onClick={() => setShowAddExamModal(false)}>Annuler</button>
-                <button type="submit" className="btn btn-success fw-bold">Ajouter l'examen</button>
+                <button type="button" style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setShowAddExamModal(false)}>Annuler</button>
+                <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700' }}>Ajouter l'examen</button>
               </div>
             </form>
           </div>

@@ -1,19 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
-// Suivi des demandes de prise en charge (claims / remboursements / tiers-payant).
-// Design Premium Haut de Gamme (Dark Emerald Glassmorphism)
+// Design Premium Haut de Gamme — Bons & Garanties (Prises en charge Tiers-Payant)
 export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser }) {
+  const [careTypeTab, setCareTypeTab] = useState('hospitalisation'); // 'hospitalisation' or 'pharmacie'
+  const [filterStatus, setFilterStatus] = useState('');
+  const [showDetailModal, setShowDetailModal] = useState(null);
+
+  // Demandes
   const [claims, setClaims] = useState([
     {
       id: 'GAR-2026-8812',
       care_type: 'hospitalisation',
       beneficiary_name: citizenUser ? `${citizenUser.firstName} ${citizenUser.lastName}` : 'Awa Ndiaye',
-      structure_name: 'Hôpital universitaire de Fann',
+      structure_name: 'Hôpital Universitaire de Fann (Dakar)',
       amount: 45000,
       reimbursed_amount: 36000,
       status: 'approved',
-      submitted_at: '2026-10-12T09:45:00Z',
-      coverage_rate: 80
+      submitted_at: '12/10/2026',
+      coverage_rate: 80,
+      desc: 'Intervention chirurgicale herniaire & hospitalisation 48h'
     },
     {
       id: 'BON-2026-9041',
@@ -23,21 +28,20 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
       amount: 12500,
       reimbursed_amount: 6250,
       status: 'pending',
-      submitted_at: '2026-10-08T14:20:00Z',
-      coverage_rate: 50
+      submitted_at: '08/10/2026',
+      coverage_rate: 50,
+      desc: 'Ordonnance antibiotiques & anti-inflammatoires'
     }
   ]);
   
-  const [loading, setLoading] = useState(false);
-  const [careTypeTab, setCareTypeTab] = useState('hospitalisation'); // 'hospitalisation' or 'pharmacie'
-  const [filterStatus, setFilterStatus] = useState('');
   const [uploadedFile, setUploadedFile] = useState(null);
 
   // Formulaire
   const [form, setForm] = useState({
     beneficiaryName: citizenUser ? `${citizenUser.firstName} ${citizenUser.lastName}` : 'Awa Ndiaye',
     phone: citizenUser?.phone || '+221 77 602 67 83',
-    structureName: 'Hôpital universitaire de Fann',
+    cmuNumber: citizenUser?.cmuNumber || 'CMU-DKR-2026-8812',
+    structureName: 'Hôpital Universitaire de Fann (Dakar)',
     amount: '45000',
     treatmentDate: new Date().toISOString().slice(0, 10),
     careDescription: ''
@@ -54,80 +58,59 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
     setSubmitMsg('');
     
     setTimeout(() => {
+      const rate = careTypeTab === 'hospitalisation' ? 80 : 50;
+      const amt = parseFloat(form.amount) || 0;
       const newClaim = {
         id: careTypeTab === 'hospitalisation' ? `GAR-2026-${Math.floor(1000 + Math.random() * 9000)}` : `BON-2026-${Math.floor(1000 + Math.random() * 9000)}`,
         care_type: careTypeTab,
         beneficiary_name: form.beneficiaryName,
         structure_name: form.structureName,
-        amount: parseFloat(form.amount) || 0,
-        reimbursed_amount: (parseFloat(form.amount) || 0) * (careTypeTab === 'hospitalisation' ? 0.8 : 0.5),
+        amount: amt,
+        reimbursed_amount: amt * (rate / 100),
         status: 'pending',
-        submitted_at: new Date().toISOString(),
-        coverage_rate: careTypeTab === 'hospitalisation' ? 80 : 50
+        submitted_at: new Date().toLocaleDateString('fr-FR'),
+        coverage_rate: rate,
+        desc: form.careDescription || 'Prise en charge soumise'
       };
 
       setClaims([newClaim, ...claims]);
       setSubmitLoading(false);
-      setSubmitMsg(`✅ Demande #${newClaim.id} soumise avec succès au Tiers-Payant UNAMUSC.`);
-    }, 600);
+      setSubmitMsg(`✅ Demande #${newClaim.id} soumise avec succès au Tiers-Payant UNAMUSC (${rate}% couvert).`);
+    }, 400);
   };
 
-  const statusBadge = (status) => {
-    const map = { pending: 'En attente', approved: 'Validé', rejected: 'Refusé', paid: 'Remboursé' };
-    const bgColors = {
-      pending: 'rgba(245, 158, 11, 0.18)',
-      approved: 'rgba(16, 185, 129, 0.18)',
-      rejected: 'rgba(239, 68, 68, 0.18)',
-      paid: 'rgba(20, 184, 166, 0.18)'
-    };
-    const textColors = {
-      pending: '#f59e0b',
-      approved: '#10b981',
-      rejected: '#ef4444',
-      paid: '#14b8a6'
-    };
-    return (
-      <span style={{
-        background: bgColors[status] || 'rgba(148, 163, 184, 0.15)',
-        color: textColors[status] || '#94a3b8',
-        padding: '0.35rem 0.85rem',
-        borderRadius: '20px',
-        fontSize: '0.75rem',
-        fontWeight: '700',
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '0.35rem',
-        border: `1px solid ${textColors[status] || '#94a3b8'}33`
-      }}>
-        <span>●</span> {map[status] || status}
-      </span>
-    );
+  const handleAgentProcess = (id, newStatus) => {
+    setClaims(claims.map(c => c.id === id ? { ...c, status: newStatus } : c));
+    alert(`✅ Demande #${id} mise à jour : ${newStatus.toUpperCase()}`);
   };
+
+  const filteredClaims = filterStatus ? claims.filter(c => c.status === filterStatus) : claims;
 
   return (
     <div className="claims-view fade-in-up" style={{ minHeight: '100vh', background: '#0b1120', color: '#f8fafc', paddingBottom: '3rem' }}>
       
       {/* Subnav Header Bar */}
-      <div style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.08)', background: 'rgba(15, 23, 42, 0.9)', backdropFilter: 'blur(12px)', padding: '0.75rem 2rem' }}>
+      <div style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.08)', background: '#0f172a', padding: '0.85rem 2rem' }}>
         <div style={{ maxWidth: '1320px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <h5 className="fw-bold mb-0 text-white" style={{ fontSize: '1.1rem', letterSpacing: '-0.01em' }}>Bons & Garanties</h5>
+            <h5 className="fw-bold mb-0 text-white" style={{ fontSize: '1.1rem' }}>Bons & Garanties</h5>
             <span style={{ height: '14px', width: '1px', background: 'rgba(255, 255, 255, 0.2)' }} />
-            <span className="badge" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '20px', fontSize: '0.72rem', fontWeight: '600', padding: '0.25rem 0.65rem' }}>
-              ● SESSION SÉCURISÉE
+            <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '600', padding: '0.25rem 0.75rem' }}>
+              ● SESSION SÉCURISÉE UNAMUSC
             </span>
           </div>
-          
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div className="input-group input-group-sm" style={{ width: '240px' }}>
-              <input 
-                type="text" 
-                className="form-control bg-dark text-white border-secondary small" 
-                placeholder="Rechercher une demande..." 
-                style={{ borderRadius: '10px 0 0 10px', fontSize: '0.8rem', background: '#1e293b' }}
-              />
-              <button className="btn btn-outline-secondary" type="button" style={{ borderRadius: '0 10px 10px 0' }}>🔍</button>
-            </div>
+
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <select 
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              style={{ background: '#1e293b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem', cursor: 'pointer' }}
+            >
+              <option value="">🔍 Filtrer par statut (Tous)</option>
+              <option value="pending">⏳ En attente</option>
+              <option value="approved">✅ Validé</option>
+              <option value="rejected">❌ Refusé</option>
+            </select>
           </div>
         </div>
       </div>
@@ -137,8 +120,10 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
         {/* Top Hero Card & Stats Grid */}
         <div className="row g-4 mb-4">
           <div className="col-lg-8">
-            <div className="p-4 rounded-4" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(15, 23, 42, 0.95) 100%)', border: '1px solid rgba(16, 185, 129, 0.25)', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.4)' }}>
-              <span className="badge bg-success text-white px-3 py-1.5 rounded-pill mb-2 fw-semibold" style={{ fontSize: '0.75rem' }}>TABLEAU DE BORD</span>
+            <div className="p-4 rounded-4" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(15, 23, 42, 0.95) 100%)', border: '1px solid rgba(16, 185, 129, 0.3)', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.4)' }}>
+              <span style={{ background: '#059669', color: '#ffffff', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '700', display: 'inline-block', marginBottom: '0.5rem' }}>
+                TABLEAU DE BORD
+              </span>
               <h2 className="fw-extrabold text-white mb-2" style={{ fontSize: '1.85rem', letterSpacing: '-0.02em' }}>Gestion des Prises en Charge</h2>
               <p className="text-white-50 mb-0" style={{ fontSize: '0.95rem', maxWidth: '640px', lineHeight: '1.5' }}>
                 Effectuez vos demandes de bons de commande pharmacie (50%) et lettres de garantie hospitalisation (80%) en quelques clics sous le Tiers-Payant UNAMUSC.
@@ -153,7 +138,7 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
                   <span className="small text-muted d-block fw-semibold" style={{ fontSize: '0.78rem' }}>Demandes en cours</span>
                   <h3 className="fw-bold text-white mb-0" style={{ fontSize: '1.8rem' }}>02</h3>
                 </div>
-                <div className="p-2.5 rounded-3 text-success" style={{ background: 'rgba(16, 185, 129, 0.15)', fontSize: '1.4rem' }}>
+                <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem' }}>
                   📑
                 </div>
               </div>
@@ -179,28 +164,44 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
                   <p className="text-muted small mb-0">Remplissez les détails pour votre prise en charge immédiate.</p>
                 </div>
 
-                {/* Segmented Control Switcher */}
-                <div className="p-1 rounded-3 d-flex gap-1" style={{ background: '#0f172a', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                {/* Segmented Control Switcher (EXPLICIT STYLES - NO WHITE ON WHITE!) */}
+                <div style={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.1)', padding: '0.3rem', borderRadius: '12px', display: 'flex', gap: '0.4rem' }}>
                   <button 
                     type="button" 
-                    className={`btn btn-sm fw-bold px-3 py-2 rounded-3 transition-all ${careTypeTab === 'hospitalisation' ? 'btn-success text-white shadow-sm' : 'text-white-50'}`}
+                    style={{ 
+                      background: careTypeTab === 'hospitalisation' ? '#10b981' : 'transparent', 
+                      color: careTypeTab === 'hospitalisation' ? '#ffffff' : '#94a3b8', 
+                      border: 'none', 
+                      borderRadius: '8px', 
+                      padding: '0.5rem 1rem', 
+                      fontWeight: '700', 
+                      fontSize: '0.82rem',
+                      cursor: 'pointer'
+                    }}
                     onClick={() => {
                       setCareTypeTab('hospitalisation');
-                      setForm({ ...form, structureName: 'Hôpital universitaire de Fann', amount: '45000' });
+                      setForm({ ...form, structureName: 'Hôpital Universitaire de Fann (Dakar)', amount: '45000' });
                     }}
-                    style={{ fontSize: '0.82rem', background: careTypeTab === 'hospitalisation' ? '#10b981' : 'transparent', border: 'none' }}
                   >
                     🏥 Hôpital (80%)
                   </button>
-                  
+
                   <button 
                     type="button" 
-                    className={`btn btn-sm fw-bold px-3 py-2 rounded-3 transition-all ${careTypeTab === 'pharmacie' ? 'btn-success text-white shadow-sm' : 'text-white-50'}`}
+                    style={{ 
+                      background: careTypeTab === 'pharmacie' ? '#10b981' : 'transparent', 
+                      color: careTypeTab === 'pharmacie' ? '#ffffff' : '#94a3b8', 
+                      border: 'none', 
+                      borderRadius: '8px', 
+                      padding: '0.5rem 1rem', 
+                      fontWeight: '700', 
+                      fontSize: '0.82rem',
+                      cursor: 'pointer'
+                    }}
                     onClick={() => {
                       setCareTypeTab('pharmacie');
                       setForm({ ...form, structureName: 'Pharmacie Cheikh Anta Diop', amount: '12500' });
                     }}
-                    style={{ fontSize: '0.82rem', background: careTypeTab === 'pharmacie' ? '#10b981' : 'transparent', border: 'none' }}
                   >
                     💊 Pharmacie (50%)
                   </button>
@@ -208,19 +209,19 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
               </div>
 
               {submitMsg && (
-                <div className="alert alert-success py-2.5 px-3 rounded-3 small mb-4 fw-semibold d-flex align-items-center gap-2">
-                  <span>ℹ️</span> {submitMsg}
+                <div className="p-3 mb-4 rounded-3 small fw-bold" style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid #10b981', color: '#34d399' }}>
+                  {submitMsg}
                 </div>
               )}
 
               <form onSubmit={handleSubmit}>
                 <div className="row g-3 mb-3">
                   <div className="col-md-6">
-                    <label className="form-label small fw-bold text-white-50">Bénéficiaire (Assuré)</label>
+                    <label className="form-label small fw-bold text-white-50">Prénom & Nom de l'assuré *</label>
                     <input 
                       type="text" 
                       className="form-control text-white border-0 fw-semibold" 
-                      style={{ background: '#0f172a', borderRadius: '12px', padding: '0.75rem 1rem' }} 
+                      style={{ background: '#0f172a', borderRadius: '10px' }} 
                       value={form.beneficiaryName}
                       onChange={(e) => setForm({ ...form, beneficiaryName: e.target.value })}
                       required
@@ -229,24 +230,42 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
 
                   <div className="col-md-6">
                     <label className="form-label small fw-bold text-white-50">
-                      {careTypeTab === 'hospitalisation' ? "Établissement de Santé" : "Pharmacie Partenaire Agréée"}
+                      {careTypeTab === 'hospitalisation' ? "Établissement d'accueil récepteur *" : "Pharmacie partenaire agréée UNAMUSC *"}
                     </label>
-                    <input 
-                      type="text" 
-                      className="form-control text-white border-0 fw-semibold" 
-                      style={{ background: '#0f172a', borderRadius: '12px', padding: '0.75rem 1rem' }} 
-                      value={form.structureName}
-                      onChange={(e) => setForm({ ...form, structureName: e.target.value })}
-                      required
-                    />
+                    {careTypeTab === 'hospitalisation' ? (
+                      <select 
+                        className="form-select text-white border-0" 
+                        style={{ background: '#0f172a', borderRadius: '10px' }}
+                        value={form.structureName}
+                        onChange={(e) => setForm({ ...form, structureName: e.target.value })}
+                      >
+                        <option value="Hôpital Universitaire de Fann (Dakar)">Hôpital Universitaire de Fann (Dakar)</option>
+                        <option value="Hôpital Aristide Le Dantec">Hôpital Aristide Le Dantec</option>
+                        <option value="Hôpital Général Idrissa Pouye (Pikine)">Hôpital Général Idrissa Pouye (Pikine)</option>
+                        <option value="Centre Hospitalier Abass Ndao">Centre Hospitalier Abass Ndao</option>
+                        <option value="Hôpital d'Enfants Albert Royer">Hôpital d'Enfants Albert Royer</option>
+                      </select>
+                    ) : (
+                      <select 
+                        className="form-select text-white border-0" 
+                        style={{ background: '#0f172a', borderRadius: '10px' }}
+                        value={form.structureName}
+                        onChange={(e) => setForm({ ...form, structureName: e.target.value })}
+                      >
+                        <option value="Pharmacie Cheikh Anta Diop">Pharmacie Cheikh Anta Diop</option>
+                        <option value="Pharmacie de la Nation (Dakar)">Pharmacie de la Nation (Dakar)</option>
+                        <option value="Pharmacie Universelle Pikine">Pharmacie Universelle Pikine</option>
+                        <option value="Pharmacie Populaire Guédiawaye">Pharmacie Populaire Guédiawaye</option>
+                      </select>
+                    )}
                   </div>
 
                   <div className="col-md-6">
-                    <label className="form-label small fw-bold text-white-50">Montant Estimé (FCFA)</label>
+                    <label className="form-label small fw-bold text-white-50">Devis estimatif soumis (FCFA) *</label>
                     <input 
                       type="number" 
                       className="form-control text-white border-0 fw-bold" 
-                      style={{ background: '#0f172a', borderRadius: '12px', padding: '0.75rem 1rem', color: '#10b981' }} 
+                      style={{ background: '#0f172a', borderRadius: '10px', color: '#10b981' }} 
                       value={form.amount}
                       onChange={(e) => setForm({ ...form, amount: e.target.value })}
                       required
@@ -254,15 +273,41 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
                   </div>
 
                   <div className="col-md-6">
-                    <label className="form-label small fw-bold text-white-50">Date Prévue</label>
+                    <label className="form-label small fw-bold text-white-50">Date d'admission ou de soin *</label>
                     <input 
                       type="date" 
                       className="form-control text-white border-0 fw-semibold" 
-                      style={{ background: '#0f172a', borderRadius: '12px', padding: '0.75rem 1rem' }} 
+                      style={{ background: '#0f172a', borderRadius: '10px' }} 
                       value={form.treatmentDate}
                       onChange={(e) => setForm({ ...form, treatmentDate: e.target.value })}
                       required
                     />
+                  </div>
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label small fw-bold text-white-50">Description de l'acte / Ordonnance *</label>
+                  <textarea 
+                    className="form-control text-white border-0" 
+                    style={{ background: '#0f172a', borderRadius: '10px' }} 
+                    rows={2} 
+                    value={form.careDescription} 
+                    onChange={(e) => setForm({ ...form, careDescription: e.target.value })}
+                    placeholder="Détails de l'intervention ou liste des médicaments..."
+                  />
+                </div>
+
+                {/* Estimation automatique UNAMUSC */}
+                <div className="p-3 mb-4 rounded-3 d-flex justify-content-between align-items-center" style={{ background: '#0f172a', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                  <div>
+                    <small className="text-muted d-block">Estimation automatique UNAMUSC ({careTypeTab === 'hospitalisation' ? '80%' : '50%'}) :</small>
+                    <strong className="text-white small">Prise en charge directe sous le Tiers-Payant UNAMUSC.</strong>
+                  </div>
+                  <div className="text-end">
+                    <small className="text-muted d-block">Montant pris en charge :</small>
+                    <h4 className="fw-bold text-success mb-0">
+                      {((parseFloat(form.amount) || 0) * (careTypeTab === 'hospitalisation' ? 0.8 : 0.5)).toLocaleString('fr-FR')} FCFA
+                    </h4>
                   </div>
                 </div>
 
@@ -274,8 +319,7 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
                     style={{ 
                       border: '2px dashed rgba(16, 185, 129, 0.4)', 
                       background: 'rgba(15, 23, 42, 0.6)', 
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease'
+                      cursor: 'pointer'
                     }}
                     onClick={() => document.getElementById('claim-file-input').click()}
                   >
@@ -285,22 +329,21 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
                       className="d-none" 
                       onChange={(e) => setUploadedFile(e.target.files[0])} 
                     />
-                    <div className="p-3 rounded-circle" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', fontSize: '1.5rem' }}>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>
                       ☁️
                     </div>
                     <div>
-                      <span className="fw-bold text-success small d-block">Cliquez pour télécharger</span>
+                      <span className="fw-bold text-success small d-block">Cliquez pour télécharger l'ordonnance ou le devis</span>
                       <small className="text-muted">PDF, JPG, PNG (Max 5MB) — {uploadedFile ? uploadedFile.name : 'Aucun fichier sélectionné'}</small>
                     </div>
                   </div>
                 </div>
 
-                {/* Submit Actions */}
+                {/* Form Action Buttons (EXPLICIT STYLES - NO WHITE ON WHITE!) */}
                 <div className="d-flex justify-content-end gap-3 pt-2">
                   <button 
                     type="button" 
-                    className="btn px-4 py-2.5 fw-bold text-white-50"
-                    style={{ background: '#0f172a', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.1)' }}
+                    style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '12px', padding: '0.65rem 1.25rem', fontWeight: '700', cursor: 'pointer' }}
                     onClick={() => alert("Brouillon enregistré.")}
                   >
                     Enregistrer Brouillon
@@ -308,12 +351,10 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
 
                   <button 
                     type="submit" 
-                    className="btn btn-success px-4 py-2.5 fw-bold text-white shadow-sm d-flex align-items-center gap-2"
-                    style={{ background: '#10b981', borderRadius: '12px', border: 'none' }}
+                    style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.65rem 1.5rem', fontWeight: '700', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)' }}
                     disabled={submitLoading}
                   >
-                    <span>{submitLoading ? 'Envoi...' : 'Envoyer la Demande'}</span>
-                    <span>→</span>
+                    {submitLoading ? 'Envoi...' : '📤 Soumettre la demande à l\'UNAMUSC'}
                   </button>
                 </div>
               </form>
@@ -333,23 +374,19 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
 
                 <div className="d-flex flex-column gap-3 small text-white-50">
                   <div className="d-flex gap-2.5 align-items-start">
-                    <span className="badge bg-dark text-white rounded-circle p-1.5" style={{ width: '22px', height: '22px', display: 'inline-flex', alignItems: 'center', justifyCenter: 'center' }}>1</span>
-                    <span>Les lettres de garantie couvrent <strong>80% des frais d'hospitalisation</strong> dans les structures partenaires agréées.</span>
+                    <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#0f172a', color: '#ffffff', fontWeight: '700', fontSize: '0.72rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>1</span>
+                    <span>Les lettres de garantie couvrent <strong>80% des frais d'hospitalisation</strong> dans les structures partenaires.</span>
                   </div>
 
                   <div className="d-flex gap-2.5 align-items-start">
-                    <span className="badge bg-dark text-white rounded-circle p-1.5" style={{ width: '22px', height: '22px', display: 'inline-flex', alignItems: 'center', justifyCenter: 'center' }}>2</span>
+                    <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#0f172a', color: '#ffffff', fontWeight: '700', fontSize: '0.72rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>2</span>
                     <span>Le bon de pharmacie est valable <strong>48h</strong> après validation pour un remboursement direct de 50%.</span>
                   </div>
 
                   <div className="d-flex gap-2.5 align-items-start">
-                    <span className="badge bg-dark text-white rounded-circle p-1.5" style={{ width: '22px', height: '22px', display: 'inline-flex', alignItems: 'center', justifyCenter: 'center' }}>3</span>
-                    <span>En cas d'urgence vitale, contactez directement le numéro vert gratuit CMU au <strong>112</strong>.</span>
+                    <span style={{ width: '22px', height: '22px', borderRadius: '50%', background: '#0f172a', color: '#ffffff', fontWeight: '700', fontSize: '0.72rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>3</span>
+                    <span>En cas d'urgence, contactez le numéro vert gratuit CMU au <strong>112</strong>.</span>
                   </div>
-                </div>
-
-                <div className="mt-3 pt-3 border-top border-secondary border-opacity-25 text-center">
-                  <small className="text-success fw-semibold">Union Nationale des Mutuelles de Santé du Sénégal</small>
                 </div>
               </div>
 
@@ -360,8 +397,7 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
                 <div className="d-flex flex-column gap-2">
                   <button 
                     type="button" 
-                    className="btn w-100 py-2.5 px-3 text-start fw-bold text-white d-flex justify-content-between align-items-center"
-                    style={{ background: '#0f172a', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.08)', fontSize: '0.85rem' }}
+                    style={{ background: '#0f172a', color: '#ffffff', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '0.65rem 1rem', fontWeight: '700', width: '100%', textAlign: 'left', cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }}
                     onClick={() => alert("Mise en relation avec un agent UNAMUSC...")}
                   >
                     <span>🎧 Contacter un agent</span>
@@ -370,8 +406,7 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
 
                   <button 
                     type="button" 
-                    className="btn w-100 py-2.5 px-3 text-start fw-bold text-white d-flex justify-content-between align-items-center"
-                    style={{ background: '#0f172a', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.08)', fontSize: '0.85rem' }}
+                    style={{ background: '#0f172a', color: '#ffffff', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '0.65rem 1rem', fontWeight: '700', width: '100%', textAlign: 'left', cursor: 'pointer', display: 'flex', justifyContent: 'space-between' }}
                     onClick={() => window.location.hash = '#/directory'}
                   >
                     <span>🗺️ Structures agréées</span>
@@ -387,55 +422,73 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
 
         {/* Historique Récent Table Card */}
         <div className="p-4 rounded-4" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)' }}>
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <h5 className="fw-bold text-white mb-0" style={{ fontSize: '1.15rem' }}>Historique Récent</h5>
-            <button className="btn btn-link text-success p-0 text-decoration-none fw-bold small">Voir tout l'historique</button>
-          </div>
+          <h5 className="fw-bold text-white mb-3" style={{ fontSize: '1.15rem' }}>Historique Récent des Demandes</h5>
 
           <div className="table-responsive">
             <table className="table table-dark table-hover align-middle mb-0" style={{ background: 'transparent' }}>
               <thead>
                 <tr className="text-muted small border-bottom border-secondary border-opacity-25" style={{ fontSize: '0.78rem' }}>
-                  <th scope="col" className="fw-bold">TYPE / DATE</th>
+                  <th scope="col" className="fw-bold">TYPE / N° DEMANDE</th>
                   <th scope="col" className="fw-bold">BÉNÉFICIAIRE</th>
+                  <th scope="col" className="fw-bold">STRUCTURE</th>
                   <th scope="col" className="fw-bold">MONTANT</th>
                   <th scope="col" className="fw-bold">STATUT</th>
                   <th scope="col" className="fw-bold text-end">ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
-                {claims.map(c => (
+                {filteredClaims.map(c => (
                   <tr key={c.id} className="border-bottom border-secondary border-opacity-10">
                     <td className="py-3">
                       <div className="d-flex align-items-center gap-2.5">
-                        <div className="p-2 rounded-3" style={{ background: c.care_type === 'hospitalisation' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)', color: c.care_type === 'hospitalisation' ? '#10b981' : '#f59e0b' }}>
+                        <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: c.care_type === 'hospitalisation' ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.2)', color: c.care_type === 'hospitalisation' ? '#10b981' : '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           {c.care_type === 'hospitalisation' ? '🏥' : '💊'}
                         </div>
                         <div>
                           <strong className="d-block text-white" style={{ fontSize: '0.9rem' }}>
-                            {c.care_type === 'hospitalisation' ? 'Garantie Hosp.' : 'Bon Pharmacie'}
+                            #{c.id}
                           </strong>
-                          <small className="text-muted" style={{ fontSize: '0.75rem' }}>
-                            {new Date(c.submitted_at).toLocaleDateString('fr-FR')}
-                          </small>
+                          <small className="text-muted" style={{ fontSize: '0.75rem' }}>{c.submitted_at}</small>
                         </div>
                       </div>
                     </td>
-                    <td>
-                      <span className="fw-semibold text-white-50" style={{ fontSize: '0.88rem' }}>{c.beneficiary_name}</span>
-                    </td>
+                    <td><span className="fw-semibold text-white-50" style={{ fontSize: '0.88rem' }}>{c.beneficiary_name}</span></td>
+                    <td><span className="text-white-50 small">{c.structure_name}</span></td>
                     <td>
                       <strong className="text-white" style={{ fontSize: '0.9rem' }}>
                         {c.amount.toLocaleString('fr-FR')} FCFA
                       </strong>
+                      <small className="text-success d-block" style={{ fontSize: '0.72rem' }}>({c.reimbursed_amount.toLocaleString('fr-FR')} FCFA pris en charge)</small>
                     </td>
                     <td>
-                      {statusBadge(c.status)}
+                      <span style={{ 
+                        background: c.status === 'approved' ? 'rgba(16, 185, 129, 0.2)' : c.status === 'rejected' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)', 
+                        color: c.status === 'approved' ? '#34d399' : c.status === 'rejected' ? '#ef4444' : '#fbbf24', 
+                        padding: '0.25rem 0.75rem', 
+                        borderRadius: '12px', 
+                        fontSize: '0.75rem', 
+                        fontWeight: '700' 
+                      }}>
+                        {c.status === 'approved' ? '✅ Validé' : c.status === 'rejected' ? '❌ Refusé' : '⏳ En attente'}
+                      </span>
                     </td>
                     <td className="text-end">
-                      <button className="btn btn-sm btn-dark rounded-circle" style={{ width: '32px', height: '32px', padding: 0 }} onClick={() => alert(`Détails de la demande #${c.id}`)}>
-                        👁️
-                      </button>
+                      <div className="d-flex gap-1 justify-content-end">
+                        <button 
+                          type="button" 
+                          style={{ background: '#0f172a', color: '#ffffff', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '0.3rem 0.6rem', fontSize: '0.8rem', cursor: 'pointer' }} 
+                          onClick={() => setShowDetailModal(c)}
+                        >
+                          👁️ Voir
+                        </button>
+                        
+                        {isAgent && c.status === 'pending' && (
+                          <>
+                            <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.3rem 0.6rem', fontSize: '0.75rem', fontWeight: '700' }} onClick={() => handleAgentProcess(c.id, 'approved')}>Approuver</button>
+                            <button type="button" style={{ background: '#ef4444', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.3rem 0.6rem', fontSize: '0.75rem', fontWeight: '700' }} onClick={() => handleAgentProcess(c.id, 'rejected')}>Refuser</button>
+                          </>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -445,6 +498,28 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
         </div>
 
       </div>
+
+      {/* CLAIM DETAIL MODAL */}
+      {showDetailModal && (
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.85)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content text-white p-4" style={{ borderRadius: '24px', background: '#1e293b' }}>
+              <h5 className="fw-bold text-success mb-3">📄 Détails Prise en Charge #{showDetailModal.id}</h5>
+              <div className="p-3 bg-dark rounded-3 mb-3 border border-secondary">
+                <small className="text-muted d-block">Bénéficiaire : <strong className="text-white">{showDetailModal.beneficiary_name}</strong></small>
+                <small className="text-muted d-block">Structure : <strong className="text-white">{showDetailModal.structure_name}</strong></small>
+                <small className="text-muted d-block">Montant Devis : <strong className="text-white">{showDetailModal.amount.toLocaleString('fr-FR')} FCFA</strong></small>
+                <small className="text-muted d-block">Prise en charge UNAMUSC ({showDetailModal.coverage_rate}%) : <strong className="text-success">{showDetailModal.reimbursed_amount.toLocaleString('fr-FR')} FCFA</strong></small>
+              </div>
+              <div className="d-flex justify-content-end gap-2">
+                <button type="button" style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setShowDetailModal(null)}>Fermer</button>
+                <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700' }} onClick={() => window.print()}>🖨️ Imprimer A4</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
