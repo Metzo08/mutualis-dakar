@@ -507,36 +507,36 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
             </div>
 
             <div class="text-center my-4 p-3 rounded-3" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
-              <h4 class="fw-bold text-uppercase mb-1" style="color: #047857;">PRESCRIPTION D'ANALYSES ET EXAMENS BIOLOGIQUES</h4>
-              <small class="text-muted">Praticien : <strong>${doctorNameStr}</strong> • Consultation Télémédecine UNAMUSC</small>
+              <h4 class="fw-bold mb-1" style="color: #047857;">Prescription d'analyses et examens biologiques</h4>
+              <small class="text-muted">Praticien : <strong>${doctorNameStr}</strong> • Consultation télémédecine UNAMUSC</small>
             </div>
 
             <div class="row g-3 mb-4 p-3 rounded-3" style="background: #f8fafc; border: 1.5px solid #cbd5e1;">
               <div class="col-6">
-                <span class="small fw-bold d-block text-muted">BÉNÉFICIAIRE :</span>
+                <span class="small fw-bold d-block text-muted">Bénéficiaire :</span>
                 <h5 class="fw-bold mb-0">${patientName}</h5>
                 <small class="text-muted">N° Carte CMU : <strong>${cmuNum}</strong></small>
               </div>
               <div class="col-6 text-end">
-                <span class="small fw-bold d-block text-muted">DATE :</span>
+                <span class="small fw-bold d-block text-muted">Date :</span>
                 <strong class="d-block">${new Date().toLocaleDateString('fr-FR')}</strong>
-                <span class="badge bg-success">Tiers-Payant Laboratoire Agréé</span>
+                <span class="badge bg-success">Tiers-payant laboratoire agréé</span>
               </div>
             </div>
 
-            <h6 class="fw-bold text-uppercase mb-2" style="color: #047857;">🧪 EXAMENS BIOLOGIQUES & RADIOLOGIQUES REQUIS :</h6>
+            <h6 class="fw-bold mb-2" style="color: #047857;">🧪 Examens biologiques & radiologiques requis :</h6>
             <div class="p-3 border rounded-3 mb-4 bg-light fw-bold" style="fontSize: 1.1rem; line-height: 1.8;">
               ${labExams.split(',').map(e => `• ${e.trim()}`).join('<br />')}
             </div>
 
             <div class="row align-items-center border-top pt-4">
               <div class="col-8">
-                <strong class="small text-success d-block mb-1">Prise en Charge Directe UNAMUSC :</strong>
+                <strong class="small text-success d-block mb-1">Prise en charge directe UNAMUSC :</strong>
                 <p class="small text-muted mb-0">Ce document permet la réalisation des examens prescrits dans tout laboratoire conventionné au Sénégal.</p>
               </div>
               <div class="col-4 text-center">
                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=${encodeURIComponent(`LAB-2026-${cmuNum}`)}" alt="QR Code" style="width: 75px; height: 75px;" />
-                <div class="small fw-bold text-success mt-1">Signature Praticien</div>
+                <div class="small fw-bold text-success mt-1">Signature praticien</div>
               </div>
             </div>
           </div>
@@ -585,10 +585,10 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
               letterSpacing: '0.5px'
             }}
           >
-            🟢 Tiers-Payant UNAMUSC • Visioconférence HD WebRTC 1080p
+            🟢 Tiers-payant UNAMUSC • Visioconférence HD WebRTC 1080p
           </span>
           <h1 className="fw-bold mb-2 text-white text-center" style={{ fontSize: '2.2rem', textShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
-            {lang === 'wo' ? 'Fajj ci kaw internet (Télémédecine WebRTC)' : 'Télémédecine & Salle d\'Attente Virtuelle'}
+            {lang === 'wo' ? 'Fajj ci kaw internet (Télémédecine WebRTC)' : 'Télémédecine & salle d\'attente virtuelle'}
           </h1>
           <p className="mb-0 text-white-50 text-center mx-auto" style={{ fontSize: '1.02rem', lineHeight: '1.6', textShadow: '0 1px 3px rgba(0,0,0,0.3)', maxWidth: '750px' }}>
             Consultez les médecins agréés en visioconférence chiffrée 24h/7j. Recevez vos ordonnances de pharmacie (bon 50%) et prescriptions d'examens imprimables A4.
@@ -604,14 +604,14 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
             style={{ borderRadius: '12px' }}
             onClick={() => setTelemedRoleMode('doctor')}
           >
-            👨‍⚕️ Espace Médecin de Garde (File d'Attente Virtuelle & Téléconsultations)
+            👨‍⚕️ Espace médecin de garde (file d'attente virtuelle & téléconsultations)
           </button>
           <button 
             className={`btn fw-bold px-4 py-2.5 ${telemedRoleMode === 'citizen' ? 'btn-success text-white' : 'btn-outline-secondary'}`}
             style={{ borderRadius: '12px', background: telemedRoleMode === 'citizen' ? '#059669' : 'transparent' }}
             onClick={() => setTelemedRoleMode('citizen')}
           >
-            👁️ Vue Aperçu Espace Assuré
+            👁️ Vue aperçu espace assuré
           </button>
         </div>
       )}
@@ -911,7 +911,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                 <div className="d-flex align-items-center gap-2 mb-3">
                   <span className="fs-3">🚪</span>
                   <div>
-                    <h4 className="fw-bold mb-0" style={{ color: 'var(--primary)' }}>Entrer en Salle d'Attente Virtuelle</h4>
+                    <h4 className="fw-bold mb-0" style={{ color: 'var(--primary)' }}>Entrer en salle d'attente virtuelle</h4>
                     <small className="text-muted">Inscrivez-vous dans la file du praticien agréé de votre choix</small>
                   </div>
                 </div>
@@ -943,7 +943,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                   </div>
 
                   <div className="mb-3">
-                    <label className="form-label small fw-bold" style={{ color: 'var(--text-main)' }}>💳 N° Carte / Code Assuré CMU *</label>
+                    <label className="form-label small fw-bold" style={{ color: 'var(--text-main)' }}>💳 N° Carte / code assuré CMU *</label>
                     <input 
                       type="text" 
                       className="form-control input fw-bold text-success p-2.5" 
@@ -955,7 +955,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                   </div>
 
                   <div className="mb-3">
-                    <label className="form-label small fw-bold" style={{ color: 'var(--text-main)' }}>🩺 Médecin Agréé UNAMUSC (CNOM) *</label>
+                    <label className="form-label small fw-bold" style={{ color: 'var(--text-main)' }}>🩺 Médecin agréé UNAMUSC (CNOM) *</label>
                     <select 
                       className="form-select input fw-bold p-2.5"
                       value={selectedDoctor}
@@ -971,22 +971,22 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                   </div>
 
                   <div className="mb-3">
-                    <label className="form-label small fw-bold" style={{ color: 'var(--text-main)' }}>⚠️ Niveau d'Urgence perçu *</label>
+                    <label className="form-label small fw-bold" style={{ color: 'var(--text-main)' }}>⚠️ Niveau d'urgence perçu *</label>
                     <select 
                       className="form-select input fw-bold p-2.5"
                       value={urgencyLevel}
                       onChange={(e) => setUrgencyLevel(e.target.value)}
                       style={{ borderRadius: '12px', background: 'var(--bg-body)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}
                     >
-                      <option value="low">🟢 Consultation de Routine (Faible)</option>
-                      <option value="medium">🟡 Symptômes Modérés (Moyenne)</option>
-                      <option value="high">🟠 Douleurs / Fièvre Forte (Élevée)</option>
-                      <option value="critical">🔴 Urgence Vitale (Priorité Absolue)</option>
+                      <option value="low">🟢 Consultation de routine (faible)</option>
+                      <option value="medium">🟡 Symptômes modérés (moyenne)</option>
+                      <option value="high">🟠 Douleurs / fièvre forte (élevée)</option>
+                      <option value="critical">🔴 Urgence vitale (priorité absolue)</option>
                     </select>
                   </div>
 
                   <div className="mb-4">
-                    <label className="form-label small fw-bold" style={{ color: 'var(--text-main)' }}>💬 Motif de consultation & Symptômes *</label>
+                    <label className="form-label small fw-bold" style={{ color: 'var(--text-main)' }}>💬 Motif de consultation & symptômes *</label>
                     <textarea 
                       className="form-control input p-2.5" 
                       rows="3" 
@@ -1009,7 +1009,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                       boxShadow: '0 8px 20px rgba(5, 150, 105, 0.3)'
                     }}
                   >
-                    🚪 Entrer dans la Salle d'Attente Virtuelle
+                    🚪 Entrer dans la salle d'attente virtuelle
                   </button>
                 </form>
               </div>
@@ -1017,14 +1017,14 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
               /* ÉCRAN SALLE D'ATTENTE INDIVIDUELLE DE L'ASSURÉ */
               <div className="card shadow-sm border-0 p-4 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', borderRadius: '24px', borderTop: '6px solid #059669' }}>
                 <div className="d-flex justify-content-between align-items-center mb-3">
-                  <h4 className="fw-bold mb-0 text-success">⏳ Votre Salle d'Attente Privée</h4>
+                  <h4 className="fw-bold mb-0 text-success">⏳ Votre salle d'attente privée</h4>
                   <span className="badge bg-success text-white px-3.5 py-2 fw-bold" style={{ borderRadius: '20px', fontSize: '0.9rem' }}>
                     Position #{queue.findIndex(p => p.id === patientInQueue.id) + 1} dans la file
                   </span>
                 </div>
 
                 <div className="p-4 rounded-4 bg-dark text-white mb-4 text-center border border-success shadow-sm">
-                  <span className="small text-white-50 d-block mb-1">Praticien Référent Agréé :</span>
+                  <span className="small text-white-50 d-block mb-1">Praticien référent agréé :</span>
                   <strong className="fs-4 text-success d-block mb-2">{patientInQueue.requested_doctor}</strong>
                   <div className="spinner-grow spinner-grow-sm text-success me-2" role="status"></div>
                   <small className="text-white-50">Le praticien examine votre dossier et va vous appeler sous peu...</small>
@@ -1044,9 +1044,9 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
                 {patientInQueue.payment_status === 'requested' && (
                   <div className="p-3.5 rounded-4 bg-warning-subtle text-dark border border-warning mb-3">
-                    <strong className="d-block mb-1 text-dark fw-bold">📲 Demande de Règlement par le Médecin :</strong>
+                    <strong className="d-block mb-1 text-dark fw-bold">📲 Demande de règlement par le médecin :</strong>
                     <p className="small mb-2">
-                      Le praticien demande le règlement du ticket modérateur de <strong>2 500 FCFA</strong> (Tiers-Payant UNAMUSC) pour démarrer l'acte.
+                      Le praticien demande le règlement du ticket modérateur de <strong>2 500 FCFA</strong> (Tiers-payant UNAMUSC) pour démarrer l'acte.
                     </p>
                     <button 
                       type="button"
@@ -1072,7 +1072,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                     style={{ borderRadius: '12px', background: '#059669' }}
                     onClick={() => handleStartCall(patientInQueue)}
                   >
-                    🎥 Lancer l'Appel Vidéo HD
+                    🎥 Lancer l'appel vidéo HD
                   </button>
                   <button 
                     className="btn btn-outline-danger py-3 px-4 fw-bold"
@@ -1096,7 +1096,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                 <div className="d-flex align-items-center gap-2">
                   <span className="fs-3">📄</span>
                   <div>
-                    <h4 className="fw-bold mb-0 text-info">Vos Ordonnances & Prescriptions</h4>
+                    <h4 className="fw-bold mb-0 text-info">Vos ordonnances & prescriptions</h4>
                     <small className="text-muted">Documents certifiés émis lors de vos téléconsultations</small>
                   </div>
                 </div>
@@ -1108,8 +1108,8 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                 <div className="p-3.5 border rounded-4 bg-light text-dark shadow-sm">
                   <div className="d-flex justify-content-between align-items-start mb-2">
                     <div>
-                      <h6 className="fw-bold mb-1 text-success">💊 Ordonnance Pharmacie UNAMUSC (Bon 50%)</h6>
-                      <small className="text-muted">Praticien Émetteur : <strong>Dr. Aminata Ndiaye</strong></small>
+                      <h6 className="fw-bold mb-1 text-success">💊 Ordonnance pharmacie UNAMUSC (bon 50%)</h6>
+                      <small className="text-muted">Praticien émetteur : <strong>Dr. Aminata Ndiaye</strong></small>
                     </div>
                     <span className="badge bg-success px-2.5 py-1">Valide 48h</span>
                   </div>
@@ -1122,7 +1122,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                     style={{ borderRadius: '10px', background: '#059669' }}
                     onClick={handlePrintPharmacyOrderPDF}
                   >
-                    📥 Télécharger / Imprimer l'Ordonnance Pharmacie PDF A4
+                    📥 Télécharger / imprimer l'ordonnance pharmacie PDF A4
                   </button>
                 </div>
 
@@ -1130,8 +1130,8 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                 <div className="p-3.5 border rounded-4 bg-light text-dark shadow-sm">
                   <div className="d-flex justify-content-between align-items-start mb-2">
                     <div>
-                      <h6 className="fw-bold mb-1 text-info">🧪 Prescription d'Analyses & Radiographie</h6>
-                      <small className="text-muted">Praticien Émetteur : <strong>Dr. Cheikh Tidiane Seck</strong></small>
+                      <h6 className="fw-bold mb-1 text-info">🧪 Prescription d'analyses & radiographie</h6>
+                      <small className="text-muted">Praticien émetteur : <strong>Dr. Cheikh Tidiane Seck</strong></small>
                     </div>
                     <span className="badge bg-info text-dark px-2.5 py-1">Conventionné UNAMUSC</span>
                   </div>
@@ -1144,7 +1144,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                     style={{ borderRadius: '10px' }}
                     onClick={handlePrintLabPrescriptionPDF}
                   >
-                    🧪 Imprimer / Télécharger la Prescription d'Analyses A4
+                    🧪 Imprimer / télécharger la prescription d'analyses A4
                   </button>
                 </div>
               </div>
@@ -1157,8 +1157,10 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
           <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-3">
             <div>
               <h4 className="fw-bold mb-0 text-primary">
-                📋 File d'Attente Virtuelle Télémédecine en Direct (Espace Médecin)
+                📋 File d'attente virtuelle télémédecine en direct (espace médecin)
               </h4>
+              <small className="text-muted">Tableau de bord exclusif du Médecin de Garde accrédité par le Super Admin</small>
+            </div>
               <small className="text-muted">Tableau de bord exclusif du Médecin de Garde accrédité par le Super Admin</small>
             </div>
 

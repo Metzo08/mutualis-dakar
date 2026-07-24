@@ -710,7 +710,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
         <div className="card shadow-sm border-0 p-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
           <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
             <h4 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-              <span>📋</span> {isAgent ? 'Gestion & Instruction des Lettres de Garantie UNAMUSC' : 'Mes Lettres de Garantie & Attestations Habilités'}
+              <span>📋</span> {isAgent ? 'Gestion & instruction des lettres de garantie UNAMUSC' : 'Mes lettres de garantie & attestations habilitées'}
             </h4>
 
             {isCitizen && (

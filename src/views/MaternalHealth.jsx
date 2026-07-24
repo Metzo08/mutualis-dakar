@@ -410,7 +410,7 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
                   style={{ background: 'linear-gradient(135deg, #059669 0%, #047857 100%)', border: 'none', borderRadius: '12px', padding: '0.7rem 1.4rem', fontSize: '0.92rem' }}
                   onClick={() => setShowAddCpnModal(true)}
                 >
-                  ➕ Valider une CPN Prénatale (Sage-Femme)
+                  ➕ Valider une CPN prénatale (Sage-femme)
                 </button>
                 <button 
                   type="button"
@@ -418,7 +418,7 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
                   style={{ background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)', border: 'none', borderRadius: '12px', padding: '0.7rem 1.4rem', fontSize: '0.92rem' }}
                   onClick={() => setShowAddVaccineModal(true)}
                 >
-                  💉 Administrer Vaccin PEV (Pédiatre)
+                  💉 Administrer vaccin PEV (Pédiatre)
                 </button>
               </>
             )}
@@ -429,7 +429,7 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
               style={{ background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)', border: 'none', borderRadius: '12px', padding: '0.7rem 1.4rem', fontSize: '0.92rem' }}
               onClick={handleGenerateDeliveryGuaranteeLetter}
             >
-              📜 Générer Lettre de Garantie Accouchement (100% UNAMUSC)
+              📜 Générer lettre de garantie accouchement (100% UNAMUSC)
             </button>
 
             <button 
@@ -438,7 +438,7 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
               style={{ background: 'rgba(255, 255, 255, 0.22)', border: '1.5px solid rgba(255, 255, 255, 0.4)', borderRadius: '12px', padding: '0.7rem 1.4rem', fontSize: '0.92rem' }}
               onClick={handlePrintMaternalChildPassportPDF}
             >
-              🖨️ Télécharger le Carnet Maternité & Santé Enfant (0-18 ans) A4
+              🖨️ Télécharger le carnet maternité & santé enfant (0-18 ans) A4
             </button>
           </div>
         </div>
@@ -482,28 +482,28 @@ export default function MaternalHealth({ lang = 'fr', userRole = 'citizen', citi
           onClick={() => setActiveTab('maternity')}
           style={{ borderRadius: '12px' }}
         >
-          🤰 1. Prénatal & Accouchement (CPN 1-4+)
+          🤰 1. Prénatal & accouchement (CPN 1-4+)
         </button>
         <button 
           className={`btn fw-bold px-3.5 py-2.5 shadow-sm ${activeTab === 'infant' ? 'btn-success text-white' : 'btn-outline-secondary'}`}
           onClick={() => setActiveTab('infant')}
           style={{ borderRadius: '12px' }}
         >
-          👶 2. Nourrisson & PEV (0 - 12 Mois)
+          👶 2. Nourrisson & PEV (0 - 12 mois)
         </button>
         <button 
           className={`btn fw-bold px-3.5 py-2.5 shadow-sm ${activeTab === 'toddler' ? 'btn-success text-white' : 'btn-outline-secondary'}`}
           onClick={() => setActiveTab('toddler')}
           style={{ borderRadius: '12px' }}
         >
-          👦 3. Petite Enfance (1 an - 5 ans)
+          👦 3. Petite enfance (1 an - 5 ans)
         </button>
         <button 
           className={`btn fw-bold px-3.5 py-2.5 shadow-sm ${activeTab === 'adolescent' ? 'btn-success text-white' : 'btn-outline-secondary'}`}
           onClick={() => setActiveTab('adolescent')}
           style={{ borderRadius: '12px' }}
         >
-          🎒 4. Santé Scolaire & Adolescence (6 - 18 ans)
+          🎒 4. Santé scolaire & adolescence (6 - 18 ans)
         </button>
       </div>
 

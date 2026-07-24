@@ -558,10 +558,10 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
               border: '1px solid rgba(255, 255, 255, 0.4)'
             }}
           >
-            🩺 Dossier Médical Partagé (DMP) — Antécédents, Radios & Biologie Certifiés CNOM
+            🩺 Dossier médical partagé (DMP) — Antécédents, radios & biologie certifiés CNOM
           </span>
           <h1 className="fw-bold mb-2 text-white text-center" style={{ fontSize: '2.2rem', textShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
-            {lang === 'wo' ? 'Tére fajj bu féex (Dossier médical & antécédents)' : 'Dossier Médical, Antécédents & Radiographies'}
+            {lang === 'wo' ? 'Tére fajj bu féex (Dossier médical & antécédents)' : 'Dossier médical, antécédents & radiographies'}
           </h1>
           <p className="mb-4 text-white-50 text-center mx-auto" style={{ fontSize: '1.02rem', lineHeight: '1.6', textShadow: '0 1px 3px rgba(0,0,0,0.3)', maxWidth: '750px' }}>
             {isAgent
@@ -599,7 +599,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
               }}
               onClick={handlePrintMedicalRecordPDF}
             >
-              🖨️ Imprimer / Télécharger le Carnet de Santé PDF A4
+              🖨️ Imprimer / télécharger le carnet de santé PDF A4
             </button>
           </div>
         </div>
@@ -610,7 +610,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
         <div className="card p-3 mb-4 rounded-4 shadow-sm border" style={{ background: 'var(--card-bg)', borderColor: 'var(--border-color)' }}>
           <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div className="d-flex align-items-center gap-2">
-              <span className="badge bg-primary px-3 py-2 fw-bold">👨‍⚕️ COMPTE PRATICIEN HABILITÉ (SUPER ADMIN)</span>
+              <span className="badge bg-primary px-3 py-2 fw-bold">👨‍⚕️ Compte praticien habilité (Super Admin)</span>
               <span className="small text-muted">Praticien actuellement connecté pour la saisie :</span>
             </div>
             <select 
@@ -645,12 +645,12 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
             <div className="card shadow-sm border-0 p-4 mb-4 h-100" style={{ borderRadius: '24px', background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <h4 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-                  <span>🩸</span> Groupe Sanguin & Antécédents
+                  <span>🩸</span> Groupe sanguin & antécédents
                 </h4>
                 {isAgent ? (
-                  <span className="badge bg-success">✏️ Écriture Praticien</span>
+                  <span className="badge bg-success">✏️ Écriture praticien</span>
                 ) : (
-                  <span className="badge bg-secondary text-white">🔒 Lecture Seule (Assuré)</span>
+                  <span className="badge bg-secondary text-white">🔒 Lecture seule (Assuré)</span>
                 )}
               </div>
               
@@ -662,7 +662,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
 
               <form onSubmit={handleSaveAntecedents}>
                 <div className="mb-3">
-                  <label className="form-label small fw-semibold" style={{ color: 'var(--text-main)' }}>Groupe sanguin & Rhésus</label>
+                  <label className="form-label small fw-semibold" style={{ color: 'var(--text-main)' }}>Groupe sanguin & rhésus</label>
                   <select 
                     className="form-select input fw-bold p-2.5" 
                     value={bloodGroup} 
@@ -695,7 +695,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label small fw-semibold" style={{ color: 'var(--text-main)' }}>Affections de longue durée (ALD) / Pathologies chroniques</label>
+                  <label className="form-label small fw-semibold" style={{ color: 'var(--text-main)' }}>Affections de longue durée (ALD) / pathologies chroniques</label>
                   <input 
                     type="text" 
                     className="form-control input p-2.5" 
@@ -708,7 +708,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                 </div>
 
                 <div className="mb-3">
-                  <label className="form-label small fw-semibold" style={{ color: 'var(--text-main)' }}>Chirurgies & Interventions passées</label>
+                  <label className="form-label small fw-semibold" style={{ color: 'var(--text-main)' }}>Chirurgies & interventions passées</label>
                   <input 
                     type="text" 
                     className="form-control input p-2.5" 
@@ -751,11 +751,11 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                     className="btn text-white fw-bold px-4 py-2.5 w-100 shadow-sm" 
                     style={{ background: 'linear-gradient(135deg, #059669 0%, #047857 100%)', border: 'none', borderRadius: '12px' }}
                   >
-                    💾 Enregistrer & Certifier les Antécédents (Praticien)
+                    💾 Enregistrer & certifier les antécédents (Praticien)
                   </button>
                 ) : (
                   <div className="alert alert-secondary py-2 text-center small mb-0 rounded-3">
-                    🔒 Mode Lecture Seule : Seul votre médecin traitant accrédité peut certifier et modifier ces antécédents.
+                    🔒 Mode lecture seule : Seul votre médecin traitant accrédité peut certifier et modifier ces antécédents.
                   </div>
                 )}
               </form>
@@ -767,7 +767,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
             <div className="card shadow-sm border-0 p-4 mb-4" style={{ borderRadius: '24px', background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
               <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                 <h4 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-                  <span>🩻</span> Examens d'imagerie & Analyses
+                  <span>🩻</span> Examens d'imagerie & analyses
                 </h4>
                 {isAgent && (
                   <button 
@@ -776,7 +776,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                     style={{ background: '#059669', border: 'none', borderRadius: '10px' }}
                     onClick={() => setShowAddExamModal(true)}
                   >
-                    ➕ Saisir un Examen (Médecin)
+                    ➕ Saisir un examen (Médecin)
                   </button>
                 )}
               </div>
@@ -808,7 +808,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                           setEditingNotes(img.doctor_notes || '');
                         }}
                       >
-                        👁️ Consulter / Éditer la Visionneuse DICOM & Rapport PDF
+                        👁️ Consulter / éditer la visionneuse DICOM & rapport PDF
                       </button>
                     </div>
                   ))}
@@ -820,7 +820,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
             <div className="card shadow-sm border-0 p-4" style={{ borderRadius: '24px', background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
               <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                 <h4 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-                  <span>🔗</span> Code Patient Hospitalier Interopérable
+                  <span>🔗</span> Code patient hospitalier interopérable
                 </h4>
                 {isSuperAdmin ? (
                   <button 
@@ -829,10 +829,10 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                     style={{ borderRadius: '10px' }}
                     onClick={() => setShowAddCodeModal(true)}
                   >
-                    ➕ Lier Code Hospitalier (Super Admin)
+                    ➕ Lier code hospitalier (Super Admin)
                   </button>
                 ) : (
-                  <span className="badge bg-secondary">🔒 Gestion Exclusive Super Admin</span>
+                  <span className="badge bg-secondary">🔒 Gestion exclusive Super Admin</span>
                 )}
               </div>
 
