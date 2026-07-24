@@ -925,7 +925,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                       style={{ border: selectedPackage === 'csu_eleves' ? '2px solid var(--primary)' : '1px solid var(--border-color)', cursor: 'pointer', padding: '1.5rem' }}
                     >
                       <div style={{ fontSize: '2rem' }}>🎓</div>
-                      <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem' }}>{lang === 'fr' ? 'CSU Élèves ou Daara' : 'CSU Élèves ak Daara'}</h3>
+                      <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem' }}>{lang === 'fr' ? 'CSU élèves ou Daara' : 'CSU élèves ak Daara'}</h3>
                       <div className="stat-number" style={{ fontSize: '1.5rem', margin: '0.5rem 0', color: 'var(--info)' }}>1 000 FCFA / élève</div>
                       <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Tarif collectif scolaire subventionné par l\'État pour les écoles et Daaras.' : 'Fay subventionné par État bi ngir daara yi ak écoles yi.'}</p>
                     </div>
@@ -937,7 +937,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                       style={{ border: selectedPackage === 'adhesion_masse' ? '2px solid var(--primary)' : '1px solid var(--border-color)', cursor: 'pointer', padding: '1.5rem' }}
                     >
                       <div style={{ fontSize: '2rem' }}>📊</div>
-                      <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem' }}>{lang === 'fr' ? 'Adhésion groupe / masse' : 'Mbindum Mboloo'}</h3>
+                      <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem' }}>{lang === 'fr' ? 'Adhésion groupe / masse' : 'Mbindum mboloo'}</h3>
                       <div className="stat-number" style={{ fontSize: '1.5rem', margin: '0.5rem 0', color: 'var(--primary)' }}>4 500 FCFA / pers.</div>
                       <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Importez un fichier CSV ou saisissez une liste pour inscrire tout un groupe (carte + cotisation).' : 'Importé listou mboloo (carte + cotisation) ci CSV.'}</p>
                     </div>
@@ -956,7 +956,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                   <p style={{ marginBottom: '2rem' }}>{t.step2Desc}</p>
                   
                   <div className="form-group">
-                    <label className="form-label">{lang === 'fr' ? 'Mutuelles Disponibles' : 'Mutuelle yi nekk'}</label>
+                    <label className="form-label">{lang === 'fr' ? 'Mutuelles disponibles' : 'Mutuelle yi nekk'}</label>
                     <select 
                       className="form-control" 
                       value={selectedMutuelle} 
@@ -980,8 +980,8 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
               {regStep === 3 && (
                 <div className="fade-in-up">
                   <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>
-                    {selectedPackage === 'parrainage' ? (lang === 'fr' ? 'Coordonnées du Parrain' : 'Mbindu Parrain bi') :
-                     (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara') ? (lang === 'fr' ? 'Informations Établissement' : 'Mbindu École/Daara') :
+                    {selectedPackage === 'parrainage' ? (lang === 'fr' ? 'Coordonnées du parrain' : 'Mbindu parrain bi') :
+                     (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara') ? (lang === 'fr' ? 'Informations établissement' : 'Mbindu École/Daara') :
                      t.step3Title}
                   </h2>
                   <p style={{ marginBottom: '2rem' }}>
@@ -1060,7 +1060,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                   <div className="form-row">
                     <div className="form-group">
                       <label className="form-label">
-                        {selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || selectedPackage === 'adhesion_masse' ? (lang === 'fr' ? 'Prénom du Responsable' : 'Tourou Responsable') : (lang === 'fr' ? 'Prénom' : 'Tour')}
+                        {selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || selectedPackage === 'adhesion_masse' ? (lang === 'fr' ? 'Prénom du responsable' : 'Tourou responsable') : (lang === 'fr' ? 'Prénom' : 'Tour')}
                       </label>
                       <input 
                         type="text" 
@@ -1071,7 +1071,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                     </div>
                     <div className="form-group">
                       <label className="form-label">
-                        {selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || selectedPackage === 'adhesion_masse' ? (lang === 'fr' ? 'Nom du Responsable' : 'Santou Responsable') : (lang === 'fr' ? 'Nom' : 'Sant')}
+                        {selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || selectedPackage === 'adhesion_masse' ? (lang === 'fr' ? 'Nom du responsable' : 'Santou responsable') : (lang === 'fr' ? 'Nom' : 'Sant')}
                       </label>
                       <input 
                         type="text" 
@@ -1084,7 +1084,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
 
                   <div className="form-row">
                     <div className="form-group">
-                      <label className="form-label">{lang === 'fr' ? 'Date de Naissance' : 'Juddu'}</label>
+                      <label className="form-label">{lang === 'fr' ? 'Date de naissance' : 'Juddu'}</label>
                       <input 
                         type="date" 
                         className="form-control" 
@@ -1186,7 +1186,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
 
                             <div className="form-row" style={{ marginBottom: '1rem' }}>
                               <div className="form-group">
-                                <label className="form-label" style={{ fontSize: '0.85rem' }}>{lang === 'fr' ? 'Prénom & Nom du Chef de ménage' : 'Tour ak Santou Chef'}</label>
+                                <label className="form-label" style={{ fontSize: '0.85rem' }}>{lang === 'fr' ? 'Prénom & nom du chef de ménage' : 'Tour ak santou chef'}</label>
                                 <input 
                                   type="text" 
                                   className="form-control form-control-sm"
@@ -1201,7 +1201,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                                 />
                               </div>
                               <div className="form-group">
-                                <label className="form-label" style={{ fontSize: '0.85rem' }}>{lang === 'fr' ? 'Téléphone du Chef' : 'Portablou Chef bi'}</label>
+                                <label className="form-label" style={{ fontSize: '0.85rem' }}>{lang === 'fr' ? 'Téléphone du chef' : 'Portablou chef bi'}</label>
                                 <input 
                                   type="tel" 
                                   className="form-control form-control-sm"
@@ -1229,7 +1229,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                                   id={`hh-${hhIdx}-name`}
                                   className="form-control form-control-sm" 
                                   style={{ flex: '2', minWidth: '150px' }} 
-                                  placeholder={lang === 'fr' ? 'Prénom & Nom' : 'Tour ak Sant'} 
+                                  placeholder={lang === 'fr' ? 'Prénom & nom' : 'Tour ak sant'} 
                                 />
                                 <select 
                                   id={`hh-${hhIdx}-relation`}
@@ -1396,12 +1396,12 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                           style={{ flex: '2' }} 
                           placeholder={
                             selectedPackage === 'parrainage' ? (
-                              parrainageType === 'eleves' ? (lang === 'fr' ? 'Prénom & Nom de l\'élève' : 'Tour ak Santou élève') :
-                              (lang === 'fr' ? 'Prénom & Nom du filleul' : 'Tour ak Santou Filleul')
+                              parrainageType === 'eleves' ? (lang === 'fr' ? 'Prénom & nom de l\'élève' : 'Tour ak santou élève') :
+                              (lang === 'fr' ? 'Prénom & nom du filleul' : 'Tour ak santou filleul')
                             ) :
-                            (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara') ? (lang === 'fr' ? 'Prénom & Nom de l\'élève' : 'Tour ak Santou élève') :
-                            selectedPackage === 'adhesion_masse' ? (lang === 'fr' ? 'Prénom & Nom du membre' : 'Tour ak Santou bokk') :
-                            (lang === 'fr' ? 'Prénom & Nom' : 'Tour ak Sant')
+                            (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara') ? (lang === 'fr' ? 'Prénom & nom de l\'élève' : 'Tour ak santou élève') :
+                            selectedPackage === 'adhesion_masse' ? (lang === 'fr' ? 'Prénom & nom du membre' : 'Tour ak santou bokk') :
+                            (lang === 'fr' ? 'Prénom & nom' : 'Tour ak sant')
                           }
                           value={newFamilyMember.name}
                           onChange={(e) => setNewFamilyMember({...newFamilyMember, name: e.target.value})}
@@ -1415,8 +1415,8 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                               style={{ flex: '1' }}
                               placeholder={
                                 selectedPackage === 'adhesion_masse' 
-                                  ? (lang === 'fr' ? 'Rôle / Relation' : 'Rôle')
-                                  : (lang === 'fr' ? 'Classe / Niveau' : 'Classe')
+                                  ? (lang === 'fr' ? 'Rôle / relation' : 'Rôle')
+                                  : (lang === 'fr' ? 'Classe / niveau' : 'Classe')
                               }
                               value={newFamilyMember.relation}
                               onChange={(e) => setNewFamilyMember({...newFamilyMember, relation: e.target.value})}
@@ -1481,7 +1481,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                   <p style={{ marginBottom: '2rem' }}>{t.step5Desc}</p>
                   
                   <div className="form-group">
-                    <label className="form-label">{lang === 'fr' ? 'Pièce d\'identité (CNI)' : 'Carte Identité (CNI)'}</label>
+                    <label className="form-label">{lang === 'fr' ? 'Pièce d\'identité (CNI)' : 'Carte d\'identité (CNI)'}</label>
                     <input 
                       type="file" 
                       className="form-control" 
@@ -1522,9 +1522,9 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                         {selectedPackage === 'individuel' ? t.packageIndiv : 
                          selectedPackage === 'familial' ? t.packageFam : 
                          selectedPackage === 'parrainage' ? (
-                           parrainageType === 'menages' ? 'Parrainage de Ménages 🤝' :
-                           parrainageType === 'eleves' ? 'Parrainage Élèves / Daara 🤝' :
-                           'Parrainage Individuel 🤝'
+                           parrainageType === 'menages' ? 'Parrainage de ménages 🤝' :
+                           parrainageType === 'eleves' ? 'Parrainage d\'élèves / Daara 🤝' :
+                           'Parrainage individuel 🤝'
                          ) : 
                           selectedPackage === 'csu_eleves' ? 'CSU Élèves 🎓' : selectedPackage === 'adhesion_masse' ? 'Adhésion groupe / masse 📊' : 'CSU Daaras 🎓'}
                       </div>
@@ -1537,9 +1537,9 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                     )}
                     <div>
                       <span style={{ color: 'var(--neutral-gray)', textTransform: 'uppercase', fontSize: '0.75rem' }}>
-                        {selectedPackage === 'parrainage' ? 'Parrain / Sponsor' : 
-                          (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || selectedPackage === 'adhesion_masse') ? 'Responsable Groupe / Établissement' : 
-                         'Adhérent Principal'}
+                        {selectedPackage === 'parrainage' ? 'Parrain / sponsor' : 
+                          (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || selectedPackage === 'adhesion_masse') ? 'Responsable groupe / établissement' : 
+                         'Adhérent principal'}
                       </span>
                       <div style={{ fontWeight: '700' }}>{formData.firstName} {formData.lastName}</div>
                     </div>
@@ -1596,7 +1596,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
 
                     {/* Cost Breakdown */}
                     <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem', marginTop: '0.5rem' }}>
-                      <span style={{ color: 'var(--neutral-gray)', textTransform: 'uppercase', fontSize: '0.75rem' }}>Coût Total de l'adhésion</span>
+                      <span style={{ color: 'var(--neutral-gray)', textTransform: 'uppercase', fontSize: '0.75rem' }}>Coût total de l'adhésion</span>
                       <div style={{ fontSize: '1.4rem', fontWeight: '900', color: 'var(--secondary)' }}>
                         {calculateTotalCost().toLocaleString('fr-FR')} FCFA
                       </div>
@@ -1806,13 +1806,13 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                       setSponsoredHouseholds([]);
                       setFamilyMembers([]);
                       setSchoolName('');
-                    }}>{lang === 'fr' ? 'Nouvelle Inscription' : 'Mbindu bu bees'}</button>
+                    }}>{lang === 'fr' ? 'Nouvelle inscription' : 'Mbindu bu bees'}</button>
                     <button 
                       className={`btn ${syncStatus === 'success' ? 'btn-outline' : 'btn-primary'}`} 
                       onClick={handleSync}
                       disabled={syncStatus === 'loading'}
                     >
-                      {syncStatus === 'idle' && (lang === 'fr' ? 'Synchroniser Carte' : 'Sync Carte')}
+                      {syncStatus === 'idle' && (lang === 'fr' ? 'Synchroniser carte' : 'Sync carte')}
                       {syncStatus === 'loading' && (lang === 'fr' ? 'Synchronisation...' : 'Sync bu bari...')}
                       {syncStatus === 'success' && (lang === 'fr' ? '✓ Synchronisée !' : '✓ Sync !')}
                     </button>

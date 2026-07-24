@@ -15,9 +15,9 @@ export default function VerifyCard({ lang = 'fr' }) {
   const [actionSuccess, setActionSuccess] = useState('');
 
   // Formulaire Garantie Rapide
-  const [guaranteeAct, setGuaranteeAct] = useState('Hospitalisation / Intervention chirurgicale');
+  const [guaranteeAct, setGuaranteeAct] = useState('Hospitalisation / intervention chirurgicale');
   const [guaranteeAmount, setGuaranteeAmount] = useState('200000');
-  const [guaranteeHospital, setGuaranteeHospital] = useState('Hôpital Universitaire de Fann');
+  const [guaranteeHospital, setGuaranteeHospital] = useState('Hôpital universitaire de Fann');
 
   // Formulaire Bon Pharmacie Rapide
   const [medName, setMedName] = useState('Amoxicilline 500mg');
@@ -25,12 +25,12 @@ export default function VerifyCard({ lang = 'fr' }) {
   const [medPrice, setMedPrice] = useState(3500);
 
   // Formulaire Radio / Analyse Rapide
-  const [examTitle, setExamTitle] = useState('Scanner Thoracique HD');
+  const [examTitle, setExamTitle] = useState('Scanner thoracique HD');
   const [examType, setExamType] = useState('Scanner');
   const [examNotes, setExamNotes] = useState('Bilan satisfaisant. Pas de lésion évolutive.');
 
   // Formulaire Antécédents Rapide
-  const [bloodGroup, setBloodGroup] = useState('O Rhésus Positif (O+)');
+  const [bloodGroup, setBloodGroup] = useState('O Rhésus positif (O+)');
   const [allergies, setAllergies] = useState('Pénicilline, Aspirine');
   const [chronicCond, setChronicCond] = useState('Hypertension artérielle (HTA)');
 
@@ -53,12 +53,12 @@ export default function VerifyCard({ lang = 'fr' }) {
       lastName: 'Sow',
       birthDate: '1988-04-12',
       phone: '+221 77 450 12 34',
-      mutuelleName: 'Mutuelle de Santé de Dakar-Plateau',
-      packageType: 'Formule Familiale Intégrale UNAMUSC (80% à 100%)',
+      mutuelleName: 'Mutuelle de santé de Dakar-Plateau',
+      packageType: 'Formule familiale intégrale UNAMUSC (80% à 100%)',
       cmuNumber: 'SN-DK-MED-8472',
       ippNumber: 'IPP-FANN-2026-8472',
       photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-      bloodGroup: 'O Rhésus Positif (O+)',
+      bloodGroup: 'O Rhésus positif (O+)',
       allergies: 'Pénicilline, Aspirine',
       chronicConditions: 'Hypertension artérielle (HTA)',
       familyMembers: [
@@ -74,12 +74,12 @@ export default function VerifyCard({ lang = 'fr' }) {
       lastName: 'Sall',
       birthDate: '1990-08-25',
       phone: '+221 78 123 45 67',
-      mutuelleName: 'Union Départementale des Mutuelles de Dakar',
+      mutuelleName: 'Union départementale des mutuelles de Dakar',
       packageType: 'Tiers-Payant Hospitalier UNAMUSC (80%)',
       cmuNumber: 'CMU-DKR-2026-8812',
       ippNumber: 'IPP-DANTEC-2026-8812',
       photoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-      bloodGroup: 'O Rhésus Positif (O+)',
+      bloodGroup: 'O Rhésus positif (O+)',
       allergies: 'Aucune connue',
       chronicConditions: 'Aucune',
       familyMembers: [
@@ -95,12 +95,12 @@ export default function VerifyCard({ lang = 'fr' }) {
       lastName: 'Diallo',
       birthDate: '1995-11-03',
       phone: '+221 76 987 65 43',
-      mutuelleName: 'Mutuelle Nationale des Étudiants (COUD)',
-      packageType: 'Formule Étudiante & Télémédecine WebRTC',
+      mutuelleName: 'Mutuelle nationale des étudiants (COUD)',
+      packageType: 'Formule étudiante & téléconsultation WebRTC',
       cmuNumber: 'CMU-PATIENT-SEN-884920',
       ippNumber: 'IPP-COUD-2026-8849',
       photoUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150',
-      bloodGroup: 'A Rhésus Positif (A+)',
+      bloodGroup: 'A Rhésus positif (A+)',
       allergies: 'Aspirine',
       chronicConditions: 'Aucune',
       familyMembers: [],
@@ -596,7 +596,7 @@ export default function VerifyCard({ lang = 'fr' }) {
         <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content p-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-              <h5 className="fw-bold mb-3" style={{ color: 'var(--primary)' }}>📜 Demande de Lettre de Garantie</h5>
+              <h5 className="fw-bold mb-3" style={{ color: 'var(--primary)' }}>📜 Demande de lettre de garantie</h5>
               <p className="small text-muted mb-3">Pour le patient scanné : <strong>{result?.firstName} {result?.lastName}</strong> ({result?.cmuNumber})</p>
               
               <form onSubmit={handleCreateGuarantee}>
@@ -631,7 +631,7 @@ export default function VerifyCard({ lang = 'fr' }) {
         <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content p-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-              <h5 className="fw-bold mb-3 text-success">💊 Générer Bon Pharmacie 48h</h5>
+              <h5 className="fw-bold mb-3 text-success">💊 Générer bon pharmacie 48h</h5>
               <p className="small text-muted mb-3">Prescription directe pour <strong>{result?.firstName} {result?.lastName}</strong></p>
 
               <form onSubmit={handleCreateOrder}>
@@ -651,7 +651,7 @@ export default function VerifyCard({ lang = 'fr' }) {
                 </div>
                 <div className="d-flex justify-content-end gap-2 mt-4">
                   <button type="button" className="btn btn-secondary" onClick={() => setActiveModal(null)}>Annuler</button>
-                  <button type="submit" className="btn btn-success text-white fw-bold">Générer Bon 48h</button>
+                  <button type="submit" className="btn btn-success text-white fw-bold">Générer bon 48h</button>
                 </div>
               </form>
             </div>
@@ -664,7 +664,7 @@ export default function VerifyCard({ lang = 'fr' }) {
         <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content p-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-              <h5 className="fw-bold mb-3 text-info">🩻 Ajouter Examen d'Imagerie / Analyse</h5>
+              <h5 className="fw-bold mb-3 text-info">🩻 Ajouter examen d'imagerie / analyse</h5>
               <p className="small text-muted mb-3">Lier un résultat au DMP de <strong>{result?.firstName} {result?.lastName}</strong></p>
 
               <form onSubmit={handleAddImaging}>
@@ -677,8 +677,8 @@ export default function VerifyCard({ lang = 'fr' }) {
                   <select className="form-select input" value={examType} onChange={(e) => setExamType(e.target.value)}>
                     <option value="Scanner">Scanner HD</option>
                     <option value="Radio">Radiographie</option>
-                    <option value="Analyse">Analyse Biologique / Labo</option>
-                    <option value="IRM">IRM Cervicale / Abdominale</option>
+                    <option value="Analyse">Analyse biologique / labo</option>
+                    <option value="IRM">IRM cervicale / abdominale</option>
                   </select>
                 </div>
                 <div className="mb-3">
@@ -700,17 +700,17 @@ export default function VerifyCard({ lang = 'fr' }) {
         <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}>
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content p-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-              <h5 className="fw-bold mb-3 text-warning">🩸 Mise à jour Antécédents Médicaux</h5>
+              <h5 className="fw-bold mb-3 text-warning">🩸 Mise à jour des antécédents médicaux</h5>
 
               <form onSubmit={handleUpdateAntecedents}>
                 <div className="mb-3">
-                  <label className="form-label small fw-semibold">Groupe Sanguin & Rhésus</label>
+                  <label className="form-label small fw-semibold">Groupe sanguin & rhésus</label>
                   <select className="form-select input fw-bold" value={bloodGroup} onChange={(e) => setBloodGroup(e.target.value)}>
-                    <option value="O Rhésus Positif (O+)">O Rhésus Positif (O+)</option>
-                    <option value="O Rhésus Négatif (O-)">O Rhésus Négatif (O-)</option>
-                    <option value="A Rhésus Positif (A+)">A Rhésus Positif (A+)</option>
-                    <option value="B Rhésus Positif (B+)">B Rhésus Positif (B+)</option>
-                    <option value="AB Rhésus Positif (AB+)">AB Rhésus Positif (AB+)</option>
+                    <option value="O Rhésus Positif (O+)">O Rhésus positif (O+)</option>
+                    <option value="O Rhésus Négatif (O-)">O Rhésus négatif (O-)</option>
+                    <option value="A Rhésus Positif (A+)">A Rhésus positif (A+)</option>
+                    <option value="B Rhésus Positif (B+)">B Rhésus positif (B+)</option>
+                    <option value="AB Rhésus Positif (AB+)">AB Rhésus positif (AB+)</option>
                   </select>
                 </div>
                 <div className="mb-3">

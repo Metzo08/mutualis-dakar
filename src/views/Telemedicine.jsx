@@ -12,8 +12,8 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
   // Praticiens habilités par le Super Admin (synchro localStorage)
   const defaultAccreditedDoctors = [
-    { id: 1, name: 'Dr. Aminata Ndiaye', specialty: 'Pédiatrie & Santé Familiale', cnom: 'CNOM-SN-2026-8819' },
-    { id: 2, name: 'Dr. Cheikh Tidiane Seck', specialty: 'Cardiologie & Médecine Générale', cnom: 'CNOM-SN-2026-9921' },
+    { id: 1, name: 'Dr. Aminata Ndiaye', specialty: 'Pédiatrie & santé familiale', cnom: 'CNOM-SN-2026-8819' },
+    { id: 2, name: 'Dr. Cheikh Tidiane Seck', specialty: 'Cardiologie & médecine générale', cnom: 'CNOM-SN-2026-9921' },
     { id: 3, name: 'Dr. Mariama Ba', specialty: 'Gynécologie-Obstétrique', cnom: 'CNOM-SN-2026-3310' }
   ];
 
@@ -376,7 +376,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
         </head>
         <body>
           <div class="no-print">
-            <button onclick="window.print()" class="btn btn-success fw-bold px-4 py-2 me-2" style="background: #059669;">🖨️ Imprimer l'Ordonnance Pharmacie A4</button>
+            <button onclick="window.print()" class="btn btn-success fw-bold px-4 py-2 me-2" style="background: #059669;">🖨️ Imprimer l'ordonnance pharmacie A4</button>
             <button onclick="window.close()" class="btn btn-secondary fw-bold px-3 py-2">Fermer</button>
           </div>
 
@@ -489,7 +489,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
         </head>
         <body>
           <div class="no-print">
-            <button onclick="window.print()" class="btn btn-success fw-bold px-4 py-2 me-2" style="background: #059669;">🖨️ Imprimer la Prescription A4</button>
+            <button onclick="window.print()" class="btn btn-success fw-bold px-4 py-2 me-2" style="background: #059669;">🖨️ Imprimer la prescription A4</button>
             <button onclick="window.close()" class="btn btn-secondary fw-bold px-3 py-2">Fermer</button>
           </div>
 
@@ -698,7 +698,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                 <div className="text-center p-3">
                   <span style={{ fontSize: '4.5rem' }}>👨‍⚕️</span>
                   <h4 className="mt-2 text-white fw-bold">{activeSession.doctor_name}</h4>
-                  <p className="text-info mb-2 small">Médecin Généraliste & Pédiatre UNAMUSC</p>
+                  <p className="text-info mb-2 small">Médecin généraliste & pédiatre UNAMUSC</p>
                   <span className="badge bg-success px-3 py-1.5 fw-semibold" style={{ borderRadius: '20px' }}>
                     En direct • Visioconférence chiffrée (WebRTC 1080p)
                   </span>
@@ -761,7 +761,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                   }}
                   onClick={toggleMute}
                 >
-                  <span>{isMuted ? '🎙️ Micro Coupé' : '🎙️ Micro Actif'}</span>
+                  <span>{isMuted ? '🎙️ Micro coupé' : '🎙️ Micro actif'}</span>
                   {!isMuted && (
                     <div className="d-flex align-items-center gap-1 px-2 py-1 rounded-2" style={{ background: 'rgba(0, 0, 0, 0.4)' }}>
                       {[15, 30, 45, 60, 75, 90].map((threshold, idx) => (
@@ -784,7 +784,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                   style={{ borderRadius: '12px', background: isCamOff ? '#ef4444' : '#0284c7' }}
                   onClick={toggleCamera}
                 >
-                  {isCamOff ? '📹 Activer Caméra' : '📹 Caméra Active'}
+                  {isCamOff ? '📹 Activer caméra' : '📹 Caméra active'}
                 </button>
 
                 <button 
@@ -801,7 +801,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
             {/* Panneau de Prescription Médicale & Chat (Médecin & Assuré) */}
             <div className="col-lg-5">
               <div className="card h-100 p-3 border-0 text-white d-flex flex-column" style={{ background: '#1e293b', borderRadius: '20px' }}>
-                <h6 className="fw-bold mb-2 text-info">💬 Messagerie Directe & Échanges</h6>
+                <h6 className="fw-bold mb-2 text-info">💬 Messagerie directe & échanges</h6>
                 
                 <div className="p-2 bg-dark rounded-3 mb-2 flex-grow-1" style={{ maxHeight: '160px', overflowY: 'auto', fontSize: '0.85rem' }}>
                   {chatMessages.map((m, idx) => (
@@ -826,7 +826,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                 <hr className="border-secondary my-2" />
 
                 {/* Émission Ordonnance Médicaments Pharmacie */}
-                <h6 className="fw-bold mb-2 text-warning">💊 1. Ordonnance Médicamenteuse (Bon Pharmacie 50%)</h6>
+                <h6 className="fw-bold mb-2 text-warning">💊 1. Ordonnance médicamenteuse (bon pharmacie 50%)</h6>
                 <div className="p-2.5 bg-dark rounded-3 small mb-2 border border-secondary" style={{ fontSize: '0.85rem' }}>
                   <div className="row g-2 mb-2">
                     <div className="col-8">
@@ -875,12 +875,12 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                     onClick={handleSignPrescription}
                     disabled={prescriptionSigned}
                   >
-                    {prescriptionSigned ? '✅ Ordonnance Signée & Injectée en Pharmacie' : '✅ Signer Ordonnance & Générer Bon 50%'}
+                    {prescriptionSigned ? '✅ Ordonnance signée & injectée en pharmacie' : '✅ Signer ordonnance & générer bon 50%'}
                   </button>
                 </div>
 
                 {/* Émission Ordonnance Analyses & Examens */}
-                <h6 className="fw-bold mb-2 text-info mt-2">🧪 2. Prescription d'Analyses Biologiques & Examens</h6>
+                <h6 className="fw-bold mb-2 text-info mt-2">🧪 2. Prescription d'analyses biologiques & examens</h6>
                 <div className="p-2.5 bg-dark rounded-3 small mb-2 border border-secondary" style={{ fontSize: '0.85rem' }}>
                   <input 
                     type="text" 
@@ -1159,11 +1159,11 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
               <h4 className="fw-bold mb-0 text-primary">
                 📋 File d'attente virtuelle télémédecine en direct (espace médecin)
               </h4>
-              <small className="text-muted">Tableau de bord exclusif du Médecin de Garde accrédité par le Super Admin</small>
+              <small className="text-muted">Tableau de bord exclusif du médecin de garde accrédité par le Super Admin</small>
             </div>
 
             <div className="d-flex align-items-center gap-2">
-              <span className="small fw-bold text-muted">Compte Praticien :</span>
+              <span className="small fw-bold text-muted">Compte praticien :</span>
               <select 
                 className="form-select form-select-sm fw-bold border-primary"
                 value={activeDoctorAccount}
@@ -1246,7 +1246,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                         >
                           <img src="/logo_orange_money.png" alt="OM" style={{ height: '18px', borderRadius: '3px', background: '#ffffff', padding: '1px' }} />
                           <img src="/logo_wave.png" alt="Wave" style={{ height: '18px', borderRadius: '50%' }} />
-                          <span>Demander Règlement (Orange / Wave)</span>
+                          <span>Demander règlement (Orange / Wave)</span>
                         </button>
                       )}
 
@@ -1256,7 +1256,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                         style={{ borderRadius: '10px', background: '#059669', borderColor: '#059669', padding: '0.5rem 0.9rem' }}
                         onClick={() => handleStartCall(pat)}
                       >
-                        <span>🎥 Démarrer la Téléconsultation HD</span>
+                        <span>🎥 Démarrer la téléconsultation HD</span>
                       </button>
                     </div>
                   </div>
@@ -1281,7 +1281,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
               <form onSubmit={handleProcessPayment} className="modal-body p-4">
                 <div className="text-center mb-4">
-                  <span className="small text-muted d-block">Montant du Ticket Modérateur à régler :</span>
+                  <span className="small text-muted d-block">Montant du ticket modérateur à régler :</span>
                   <h2 className="fw-bold text-success mb-0">2 500 FCFA</h2>
                   <small className="text-muted">Prise en charge UNAMUSC restante (50% à 80%) garantie.</small>
                 </div>
@@ -1328,7 +1328,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                 </div>
 
                 <div className="mb-4">
-                  <label className="form-label small fw-bold">Numéro de téléphone Mobile Money Sénégal *</label>
+                  <label className="form-label small fw-bold">Numéro de téléphone mobile money Sénégal *</label>
                   <input 
                     type="text" 
                     className="form-control input fw-bold text-center fs-5"
