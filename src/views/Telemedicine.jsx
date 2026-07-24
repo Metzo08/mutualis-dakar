@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 // Design Premium Haut de Gamme — Télémédecine & Visioconférence WebRTC Réelle
-export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, partnerUser = null }) {
-  const isAgent = (userRole === 'agent' || !!agentUser || !!partnerUser);
+export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null }) {
+  const isAgent = (userRole === 'agent' || !!agentUser);
 
   // Assuré actif
   const activeCmuNumber = citizenUser?.cmu_number || citizenUser?.cmuNumber || 'CMU-DKR-2026-8812';
@@ -79,23 +79,25 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
     }
   ]);
 
-  // Modales
-  const [showJoinQueueModal, setShowJoinQueueModal] = useState(false);
+  // Modales uniques
+  const [activeModal, setActiveModal] = useState(null); // 'join_queue', 'payment', 'webrtc', 'qr', 'prescription'
+
+  // Modale Inscription Salle d'attente
   const [consultReason, setConsultReason] = useState('');
   const [urgencyLevel, setUrgencyLevel] = useState('routine');
   const [selectedDoctor, setSelectedDoctor] = useState(doctorsList[0]);
 
   // Modale Paiement Ticket Modérateur (2 500 FCFA)
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentProvider, setPaymentProvider] = useState('orange');
   const [phoneNum, setPhoneNum] = useState('77 602 67 83');
 
   // Session Visioconférence Live WebRTC Réelle
-  const [inLiveSession, setInLiveSession] = useState(false);
   const [activeDoctor, setActiveDoctor] = useState(doctorsList[0]);
   const [isMuted, setIsMuted] = useState(false);
   const [isCamOff, setIsCamOff] = useState(false);
   const [cameraActive, setCameraActive] = useState(false);
+  const [cameraError, setCameraError] = useState('');
+
   const [chatMessages, setChatMessages] = useState([
     { sender: 'Dr. Ousmane Sow', text: 'Bonjour Awa. Je consulte votre dossier médical. Je vous écoute.' }
   ]);
@@ -105,40 +107,48 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
   const userVideoRef = useRef(null);
   const streamRef = useRef(null);
 
-  // Modales Certifications & QR Code
-  const [showQrModal, setShowQrModal] = useState(false);
-  const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
-
-  // Démarrer / Arrêter la véritable caméra du navigateur WebRTC
-  useEffect(() => {
-    if (inLiveSession && !isCamOff) {
-      navigator.mediaDevices?.getUserMedia({ video: true, audio: true })
-        .then((stream) => {
-          streamRef.current = stream;
-          setCameraActive(true);
-          if (userVideoRef.current) {
-            userVideoRef.current.srcObject = stream;
-          }
-        })
-        .catch((err) => {
-          console.warn("Caméra indisponible ou permission refusée:", err);
-          setCameraActive(false);
-        });
-    } else {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-        streamRef.current = null;
+  // Activer la véritable webcam du navigateur WebRTC
+  const startWebcam = async () => {
+    setCameraError('');
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("API WebRTC non supportée par votre navigateur.");
       }
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { width: { ideal: 1280 }, height: { ideal: 720 } }, 
+        audio: true 
+      });
+      streamRef.current = stream;
+      setCameraActive(true);
+      setIsCamOff(false);
+      setIsMuted(false);
+      if (userVideoRef.current) {
+        userVideoRef.current.srcObject = stream;
+        userVideoRef.current.play().catch(() => {});
+      }
+    } catch (err) {
+      console.warn("Camera access error:", err);
+      setCameraError("Impossible d'accéder à la caméra/micro. Veuillez autoriser l'accès dans votre navigateur.");
       setCameraActive(false);
     }
+  };
 
-    return () => {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-        streamRef.current = null;
-      }
-    };
-  }, [inLiveSession, isCamOff]);
+  const stopWebcam = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setCameraActive(false);
+  };
+
+  useEffect(() => {
+    if (activeModal === 'webrtc') {
+      startWebcam();
+    } else {
+      stopWebcam();
+    }
+    return () => stopWebcam();
+  }, [activeModal]);
 
   const toggleMute = () => {
     const next = !isMuted;
@@ -173,7 +183,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
       amount: 2500
     };
     setQueue([newPatient, ...queue]);
-    setShowJoinQueueModal(false);
+    setActiveModal(null);
     setConsultReason('');
     alert("✅ Inscription validée ! Vous êtes placé(e) dans la file d'attente en direct.");
   };
@@ -181,13 +191,13 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
   // Traiter paiement Orange Money / Wave
   const handleProcessPayment = (e) => {
     e.preventDefault();
-    setShowPaymentModal(false);
+    setActiveModal(null);
     alert(`✅ Règlement de 2 500 FCFA effectué via ${paymentProvider === 'orange' ? 'Orange Money' : 'Wave'} ! Ticket modérateur validé.`);
   };
 
   const handleStartCall = (doc) => {
     setActiveDoctor(doc);
-    setInLiveSession(true);
+    setActiveModal('webrtc');
   };
 
   const handleSendMessage = (e) => {
@@ -255,7 +265,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                 <button 
                   type="button"
                   style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.75rem 1.25rem', fontWeight: '700', fontSize: '0.88rem', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.4)', cursor: 'pointer' }}
-                  onClick={() => setShowJoinQueueModal(true)}
+                  onClick={() => setActiveModal('join_queue')}
                 >
                   ⚡ Entrer en salle d'attente
                 </button>
@@ -263,7 +273,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                 <button 
                   type="button"
                   style={{ background: '#1e293b', color: '#f8fafc', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '0.75rem 1.25rem', fontWeight: '700', fontSize: '0.88rem', cursor: 'pointer' }}
-                  onClick={() => setShowPaymentModal(true)}
+                  onClick={() => setActiveModal('payment')}
                 >
                   💳 Régler Ticket Modérateur (2 500 FCFA)
                 </button>
@@ -384,12 +394,12 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
               <div className="row g-3">
                 {filteredDoctors.map((doc) => (
                   <div key={doc.id} className="col-md-6">
-                    <div className="p-3.5 rounded-4 h-100 d-flex flex-column justify-content-between" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}>
+                    <div className="p-3.5 rounded-4 d-flex flex-column justify-content-between" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}>
                       <div>
                         <div className="d-flex gap-3 align-items-center mb-3">
-                          <img src={doc.avatar} alt={doc.name} style={{ width: '64px', height: '64px', borderRadius: '14px', objectFit: 'cover' }} />
+                          <img src={doc.avatar} alt={doc.name} style={{ width: '56px', height: '56px', borderRadius: '14px', objectFit: 'cover' }} />
                           <div>
-                            <h6 className="fw-bold text-white mb-0" style={{ fontSize: '1.02rem' }}>{doc.name}</h6>
+                            <h6 className="fw-bold text-white mb-0" style={{ fontSize: '1rem' }}>{doc.name}</h6>
                             <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', padding: '0.15rem 0.5rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: '600' }}>{doc.specialty}</span>
                             <div className="small text-warning fw-bold mt-1" style={{ fontSize: '0.78rem' }}>★ {doc.rating}</div>
                           </div>
@@ -434,7 +444,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                 <button 
                   type="button"
                   style={{ background: '#0f172a', color: '#34d399', border: '1px solid #10b981', borderRadius: '10px', padding: '0.6rem 1rem', fontWeight: '700', width: '100%', fontSize: '0.85rem', cursor: 'pointer' }}
-                  onClick={() => setShowPrescriptionModal(true)}
+                  onClick={() => setActiveModal('prescription')}
                 >
                   VOIR TOUT LE CARNET DE SANTÉ
                 </button>
@@ -448,7 +458,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                 <button 
                   type="button"
                   style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.6rem 1rem', fontWeight: '700', width: '100%', fontSize: '0.85rem', cursor: 'pointer' }}
-                  onClick={() => setShowQrModal(true)}
+                  onClick={() => setActiveModal('qr')}
                 >
                   Afficher QR Code Assuré
                 </button>
@@ -461,13 +471,13 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
       </div>
 
-      {/* JOIN QUEUE MODAL */}
-      {showJoinQueueModal && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.85)' }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <form onSubmit={handleJoinQueue} className="modal-content text-white p-4" style={{ borderRadius: '24px', background: '#1e293b' }}>
-              <h5 className="fw-bold text-success mb-3">🚪 Inscription en Salle d'Attente Virtuelle</h5>
-              
+      {/* JOIN QUEUE MODAL (EXPLICIT STACKING & FIXED BACKDROP) */}
+      {activeModal === 'join_queue' && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ maxWidth: '520px', width: '90%', background: '#1e293b', borderRadius: '24px', padding: '2rem', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <h5 className="fw-bold text-success mb-3">🚪 Inscription en Salle d'Attente Virtuelle</h5>
+            
+            <form onSubmit={handleJoinQueue}>
               <div className="mb-3">
                 <label className="form-label small fw-bold text-white-50">Symptômes & Motif de consultation *</label>
                 <textarea 
@@ -497,7 +507,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
               </div>
 
               <div className="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setShowJoinQueueModal(false)}>Annuler</button>
+                <button type="button" style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setActiveModal(null)}>Annuler</button>
                 <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700' }}>Entrer dans la file</button>
               </div>
             </form>
@@ -506,13 +516,13 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
       )}
 
       {/* PAYMENT MODAL (ORANGE MONEY / WAVE) */}
-      {showPaymentModal && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.85)' }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <form onSubmit={handleProcessPayment} className="modal-content text-white p-4" style={{ borderRadius: '24px', background: '#1e293b' }}>
-              <h5 className="fw-bold text-success mb-2">💳 Paiement Mobile Téléconsultation (2 500 FCFA)</h5>
-              <p className="text-white-50 small mb-3">Ticket modérateur restant. Prise en charge UNAMUSC à 80% garantie.</p>
+      {activeModal === 'payment' && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ maxWidth: '480px', width: '90%', background: '#1e293b', borderRadius: '24px', padding: '2rem', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <h5 className="fw-bold text-success mb-2">💳 Paiement Mobile Téléconsultation (2 500 FCFA)</h5>
+            <p className="text-white-50 small mb-3">Ticket modérateur restant. Prise en charge UNAMUSC à 80% garantie.</p>
 
+            <form onSubmit={handleProcessPayment}>
               <div className="d-flex gap-3 mb-4">
                 <button 
                   type="button" 
@@ -564,7 +574,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
               </div>
 
               <div className="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setShowPaymentModal(false)}>Annuler</button>
+                <button type="button" style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setActiveModal(null)}>Annuler</button>
                 <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700' }}>Payer 2 500 FCFA</button>
               </div>
             </form>
@@ -572,130 +582,145 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
         </div>
       )}
 
-      {/* WEBRTC LIVE SESSION MODAL WITH REAL WEBCAM STREAM */}
-      {inLiveSession && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.92)' }}>
-          <div className="modal-dialog modal-xl modal-dialog-centered">
-            <div className="modal-content text-white p-4" style={{ borderRadius: '24px', background: '#0f172a' }}>
-              <div className="d-flex justify-content-between align-items-center mb-3 border-bottom border-secondary pb-2">
-                <h5 className="fw-bold text-success mb-0 d-flex align-items-center gap-2">
-                  <span>🎥 Consultation Visioconférence HD — {activeDoctor.name}</span>
-                  <span className="badge bg-danger animate-pulse" style={{ fontSize: '0.7rem' }}>● EN DIRECT</span>
-                </h5>
-                <button className="btn-close btn-close-white" onClick={() => setInLiveSession(false)}></button>
-              </div>
-
-              <div className="row g-4">
-                <div className="col-lg-8">
-                  <div className="rounded-4 p-4 text-center d-flex flex-column align-items-center justify-content-center" style={{ height: '420px', background: '#1e293b', position: 'relative', border: '2px solid #10b981', overflow: 'hidden' }}>
-                    
-                    {/* Live Doctor View */}
-                    <img src={activeDoctor.avatar} alt={activeDoctor.name} style={{ width: '110px', height: '110px', borderRadius: '50%', objectFit: 'cover', border: '4px solid #10b981' }} />
-                    <h4 className="fw-bold mt-2 mb-1">{activeDoctor.name}</h4>
-                    <span style={{ background: '#10b981', color: '#ffffff', padding: '0.2rem 0.8rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '700' }}>{activeDoctor.specialty}</span>
-                    <small className="text-white-50 mt-2">Visioconférence chiffrée de bout en bout (WebRTC 1080p)</small>
-
-                    {/* PIP Real Webcam Video Stream Box */}
-                    <div className="position-absolute bottom-0 end-0 m-3 rounded-3 bg-dark border border-success overflow-hidden" style={{ width: '160px', height: '110px', boxShadow: '0 8px 20px rgba(0,0,0,0.6)' }}>
-                      {cameraActive && !isCamOff ? (
-                        <video 
-                          ref={userVideoRef} 
-                          autoPlay 
-                          playsInline 
-                          muted 
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                        />
-                      ) : (
-                        <div className="d-flex flex-column align-items-center justify-content-center h-100 text-white-50 p-2">
-                          <span style={{ fontSize: '1.2rem' }}>👤</span>
-                          <small style={{ fontSize: '0.7rem' }}>{isCamOff ? 'Caméra coupée' : 'Activation...'}</small>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* WebRTC Interactive Controls */}
-                  <div className="d-flex justify-content-center gap-3 mt-3 p-3 rounded-4 bg-dark">
-                    <button 
-                      type="button" 
-                      style={{ background: isMuted ? '#dc2626' : '#059669', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.65rem 1.25rem', fontWeight: '700', cursor: 'pointer' }} 
-                      onClick={toggleMute}
-                    >
-                      {isMuted ? '🎙️ Micro Coupé' : '🎙️ Micro Actif'}
-                    </button>
-
-                    <button 
-                      type="button" 
-                      style={{ background: isCamOff ? '#dc2626' : '#0284c7', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.65rem 1.25rem', fontWeight: '700', cursor: 'pointer' }} 
-                      onClick={toggleCamera}
-                    >
-                      {isCamOff ? '📹 Activer Caméra' : '📹 Caméra Active'}
-                    </button>
-
-                    <button 
-                      type="button" 
-                      style={{ background: '#dc2626', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.65rem 1.25rem', fontWeight: '700', cursor: 'pointer' }} 
-                      onClick={() => setInLiveSession(false)}
-                    >
-                      Quitter la consultation
-                    </button>
-                  </div>
-                </div>
-
-                <div className="col-lg-4">
-                  <div className="p-3 rounded-4 bg-dark h-100 d-flex flex-column justify-content-between">
-                    <h6 className="fw-bold text-info mb-3">💬 Messagerie Directe</h6>
-                    <div className="p-2 rounded-3 mb-3 flex-grow-1" style={{ maxHeight: '280px', overflowY: 'auto', background: '#0f172a', fontSize: '0.85rem' }}>
-                      {chatMessages.map((m, idx) => (
-                        <div key={idx} className="mb-2">
-                          <strong className="text-success">{m.sender} : </strong>
-                          <span className="text-white-50">{m.text}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <form onSubmit={handleSendMessage} className="d-flex gap-2">
-                      <input type="text" className="form-control form-control-sm bg-dark text-white border-secondary" placeholder="Écrire un message..." value={inputMsg} onChange={(e) => setInputMsg(e.target.value)} />
-                      <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.3rem 0.8rem', fontWeight: '700' }}>Envoyer</button>
-                    </form>
-                  </div>
-                </div>
-              </div>
-
+      {/* WEBRTC LIVE SESSION MODAL WITH REAL WEBCAM & AUDIO STREAM */}
+      {activeModal === 'webrtc' && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.94)', backdropFilter: 'blur(12px)', zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+          <div style={{ maxWidth: '1200px', width: '95%', background: '#0f172a', borderRadius: '24px', padding: '1.5rem', border: '1px solid rgba(255,255,255,0.1)', maxHeight: '90vh', overflowY: 'auto' }}>
+            
+            <div className="d-flex justify-content-between align-items-center mb-3 border-bottom border-secondary pb-2">
+              <h5 className="fw-bold text-success mb-0 d-flex align-items-center gap-2">
+                <span>🎥 Visioconférence HD WebRTC en Direct — {activeDoctor.name}</span>
+                <span className="badge bg-danger text-white animate-pulse" style={{ fontSize: '0.75rem' }}>● EN DIRECT</span>
+              </h5>
+              <button className="btn-close btn-close-white" onClick={() => setActiveModal(null)}></button>
             </div>
+
+            {cameraError && (
+              <div className="p-3 mb-3 rounded-3 small fw-semibold" style={{ background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', color: '#fca5a5' }}>
+                ⚠️ {cameraError}
+              </div>
+            )}
+
+            <div className="row g-4">
+              
+              {/* Main Screen Stream */}
+              <div className="col-lg-8">
+                <div className="rounded-4 p-3 text-center d-flex flex-column align-items-center justify-content-center" style={{ height: '420px', background: '#1e293b', position: 'relative', border: '2px solid #10b981', overflow: 'hidden' }}>
+                  
+                  {/* REAL WEBCAM VIDEO DISPLAY */}
+                  {cameraActive && !isCamOff ? (
+                    <video 
+                      ref={userVideoRef} 
+                      autoPlay 
+                      playsInline 
+                      muted 
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }} 
+                    />
+                  ) : (
+                    <div className="d-flex flex-column align-items-center justify-content-center text-center p-3">
+                      <img src={activeDoctor.avatar} alt={activeDoctor.name} style={{ width: '110px', height: '110px', borderRadius: '50%', objectFit: 'cover', border: '4px solid #10b981', marginBottom: '1rem' }} />
+                      <h4 className="fw-bold text-white mb-1">{activeDoctor.name}</h4>
+                      <span style={{ background: '#10b981', color: '#ffffff', padding: '0.2rem 0.8rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '700' }}>{activeDoctor.specialty}</span>
+                      
+                      <button 
+                        type="button" 
+                        style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.75rem 1.5rem', fontWeight: '700', marginTop: '1.25rem', cursor: 'pointer', boxShadow: '0 4px 15px rgba(16,185,129,0.4)' }}
+                        onClick={startWebcam}
+                      >
+                        🎥 Cliquer pour Activer la Caméra et le Micro
+                      </button>
+                    </div>
+                  )}
+
+                  {/* PIP Small Doctor Card */}
+                  <div className="position-absolute bottom-0 end-0 m-3 p-2 rounded-3 bg-dark border border-success d-flex align-items-center gap-2" style={{ boxShadow: '0 8px 20px rgba(0,0,0,0.6)' }}>
+                    <img src={activeDoctor.avatar} alt={activeDoctor.name} style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
+                    <div className="text-start">
+                      <small className="d-block text-white fw-bold" style={{ fontSize: '0.75rem' }}>{activeDoctor.name}</small>
+                      <small className="text-success" style={{ fontSize: '0.68rem' }}>● En ligne</small>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* WebRTC Interactive Controls */}
+                <div className="d-flex justify-content-center gap-3 mt-3 p-3 rounded-4 bg-dark flex-wrap">
+                  <button 
+                    type="button" 
+                    style={{ background: isMuted ? '#dc2626' : '#059669', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.65rem 1.25rem', fontWeight: '700', cursor: 'pointer' }} 
+                    onClick={toggleMute}
+                  >
+                    {isMuted ? '🎙️ Micro Coupé' : '🎙️ Micro Actif'}
+                  </button>
+
+                  <button 
+                    type="button" 
+                    style={{ background: isCamOff ? '#dc2626' : '#0284c7', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.65rem 1.25rem', fontWeight: '700', cursor: 'pointer' }} 
+                    onClick={toggleCamera}
+                  >
+                    {isCamOff ? '📹 Activer Caméra' : '📹 Caméra Active'}
+                  </button>
+
+                  <button 
+                    type="button" 
+                    style={{ background: '#dc2626', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.65rem 1.25rem', fontWeight: '700', cursor: 'pointer' }} 
+                    onClick={() => setActiveModal(null)}
+                  >
+                    Quitter la consultation
+                  </button>
+                </div>
+              </div>
+
+              {/* Chat Panel */}
+              <div className="col-lg-4">
+                <div className="p-3 rounded-4 bg-dark h-100 d-flex flex-column justify-content-between">
+                  <h6 className="fw-bold text-info mb-3">💬 Messagerie Directe</h6>
+                  <div className="p-2 rounded-3 mb-3 flex-grow-1" style={{ maxHeight: '280px', overflowY: 'auto', background: '#0f172a', fontSize: '0.85rem' }}>
+                    {chatMessages.map((m, idx) => (
+                      <div key={idx} className="mb-2">
+                        <strong className="text-success">{m.sender} : </strong>
+                        <span className="text-white-50">{m.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <form onSubmit={handleSendMessage} className="d-flex gap-2">
+                    <input type="text" className="form-control form-control-sm bg-dark text-white border-secondary" placeholder="Écrire un message..." value={inputMsg} onChange={(e) => setInputMsg(e.target.value)} />
+                    <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.3rem 0.8rem', fontWeight: '700' }}>Envoyer</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       )}
 
       {/* QR CODE MODAL */}
-      {showQrModal && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.85)' }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content text-white text-center p-4" style={{ borderRadius: '24px', background: '#1e293b' }}>
-              <h5 className="fw-bold text-success mb-2">📲 QR Code CMU Assuré</h5>
-              <div className="p-3 bg-white rounded-3 d-inline-block mx-auto my-3" style={{ width: '180px', height: '180px' }}>
-                <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${activeCmuNumber}`} alt="QR Code CMU" style={{ width: '100%', height: '100%' }} />
-              </div>
-              <strong className="d-block text-warning mb-3">{activeCmuNumber}</strong>
-              <button type="button" style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.5rem 1.5rem', fontWeight: '700' }} onClick={() => setShowQrModal(false)}>Fermer</button>
+      {activeModal === 'qr' && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ maxWidth: '420px', width: '90%', background: '#1e293b', borderRadius: '24px', padding: '2rem', textCenter: 'center', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <h5 className="fw-bold text-success mb-2 text-center">📲 QR Code CMU Assuré</h5>
+            <div className="p-3 bg-white rounded-3 d-inline-block mx-auto my-3" style={{ width: '180px', height: '180px' }}>
+              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${activeCmuNumber}`} alt="QR Code CMU" style={{ width: '100%', height: '100%' }} />
             </div>
+            <strong className="d-block text-warning text-center mb-3">{activeCmuNumber}</strong>
+            <button type="button" style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.5rem 1.5rem', fontWeight: '700', width: '100%' }} onClick={() => setActiveModal(null)}>Fermer</button>
           </div>
         </div>
       )}
 
       {/* PRESCRIPTION MODAL */}
-      {showPrescriptionModal && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.85)' }}>
-          <div className="modal-dialog modal-lg modal-dialog-centered">
-            <div className="modal-content text-white p-4" style={{ borderRadius: '24px', background: '#1e293b' }}>
-              <h5 className="fw-bold text-success mb-3">💊 Ordonnance Médicale Certifiée (Bon Pharmacie 50%)</h5>
-              <div className="p-4 rounded-3 bg-dark mb-3 border border-success">
-                <strong className="text-success d-block mb-1">Dr. Ousmane Sow (Médecin Généraliste)</strong>
-                <p className="small text-white-50 mb-0">• Amoxicilline 500mg (2 boîtes) • Paracétamol 1g (1 boîte)</p>
-              </div>
-              <div className="d-flex justify-content-end gap-2">
-                <button type="button" style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setShowPrescriptionModal(false)}>Fermer</button>
-                <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700' }} onClick={() => window.print()}>🖨️ Imprimer PDF A4</button>
-              </div>
+      {activeModal === 'prescription' && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ maxWidth: '640px', width: '90%', background: '#1e293b', borderRadius: '24px', padding: '2rem', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <h5 className="fw-bold text-success mb-3">💊 Ordonnance Médicale Certifiée (Bon Pharmacie 50%)</h5>
+            <div className="p-4 rounded-3 bg-dark mb-3 border border-success">
+              <strong className="text-success d-block mb-1">Dr. Ousmane Sow (Médecin Généraliste)</strong>
+              <p className="small text-white-50 mb-0">• Amoxicilline 500mg (2 boîtes) • Paracétamol 1g (1 boîte)</p>
+            </div>
+            <div className="d-flex justify-content-end gap-2">
+              <button type="button" style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setActiveModal(null)}>Fermer</button>
+              <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700' }} onClick={() => window.print()}>🖨️ Imprimer PDF A4</button>
             </div>
           </div>
         </div>
