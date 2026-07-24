@@ -127,14 +127,14 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                 <small class="text-muted">N° Carte CMU : <strong>${voucher.cmu_number}</strong></small>
               </div>
               <div class="col-6 text-end">
-                <span class="small fw-bold d-block text-muted text-uppercase">📅 DATE D'ÉMISSION & VALIDITÉ :</span>
+                <span class="small fw-bold d-block text-muted">📅 Date d'émission & validité :</span>
                 <strong class="d-block" style="color: #0f172a;">${new Date(voucher.created_at || Date.now()).toLocaleDateString('fr-FR')}</strong>
                 <span class="badge bg-warning text-dark fw-bold">Valide 48 Heures</span>
               </div>
             </div>
 
             <!-- Liste des Médicaments & Tarification Officielle Pharmacie -->
-            <h6 class="fw-bold text-uppercase mb-2" style="color: #047857;">💊 DÉTAIL DES MÉDICAMENTS PRESCRITS & TARIFICATION OFFICIELLE :</h6>
+            <h6 class="fw-bold mb-2" style="color: #047857;">💊 Détail des médicaments prescrits & tarification officielle :</h6>
             <table class="table table-bordered align-middle mb-4">
               <thead style="background: #f1f5f9;">
                 <tr>
@@ -186,7 +186,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                 <div class="p-2 bg-white rounded-3 shadow-sm d-inline-block border mb-1">
                   <img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=${encodeURIComponent(voucher.order_code || `ORD-${voucher.id}`)}" alt="QR Code" style="width: 75px; height: 75px;" />
                 </div>
-                <div class="small fw-bold text-success" style="font-size: 0.75rem;">Tampon Numérique Pharmacie</div>
+                <div class="small fw-bold text-success" style="font-size: 0.75rem;">Tampon numérique pharmacie</div>
               </div>
             </div>
           </div>

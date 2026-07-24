@@ -57,7 +57,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
     doc.setTextColor(30, 41, 59);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(13);
-    doc.text("REÇU NUMÉRIQUE DE PARRAINAGE SOLIDAIRE", 25, 45);
+    doc.text("Reçu numérique de parrainage solidaire", 25, 45);
     
     doc.setTextColor(100, 116, 139);
     doc.setFont("helvetica", "normal");
@@ -77,7 +77,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
     };
     
     // Parrain Details Section
-    drawSectionHeader("INFORMATIONS DU PARRAIN / SPONSOR");
+    drawSectionHeader("Informations du parrain / sponsor");
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(100, 116, 139);
@@ -103,7 +103,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
     y += 12;
     
     // Parrainage Details Section
-    drawSectionHeader("DÉTAILS DU PARRAINAGE SOLIDAIRE");
+    drawSectionHeader("Détails du parrainage solidaire");
     doc.setFont("helvetica", "normal");
     doc.setTextColor(100, 116, 139);
     doc.text("Mutuelle d'attachement :", 25, y);
@@ -141,7 +141,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
     y += 12;
     
     // Filleuls Section
-    drawSectionHeader("LISTE DES BENEFICIAIRES (FILLEULS) ASSOCIES");
+    drawSectionHeader("Liste des bénéficiaires (filleuls) associés");
     
     // Table headers
     doc.setFillColor(248, 250, 252);
