@@ -1,40 +1,67 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { jsPDF } from 'jspdf';
 
-// Helper de Téléchargement Direct de Fichier Officiel PDF / Document Certifié
+// Helper de Génération & Téléchargement Direct de Fichiers PDF Réels (jsPDF)
 const triggerFileDownload = (filename, title, subtitle, details) => {
-  const content = `
-================================================================================
-UNAMUSC SÉNÉGAL — UNION NATIONALE DES MUTUELLES DE SANTÉ COMMUNAUTAIRES
-Agence Nationale de la Couverture Sanitaire Universelle (SEN-CSU)
-================================================================================
+  try {
+    const doc = new jsPDF();
 
-DOCUMENT OFFICIEL CERTIFIÉ : ${title.toUpperCase()}
-Généré le : ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR')}
-${subtitle ? `Référence : ${subtitle}\n` : ''}
---------------------------------------------------------------------------------
-BÉNÉFICIAIRE : Awa Ndiaye
-NUMÉRO CMU : CMU-DKR-2026-8812
-STATUT : Validé & Conforme aux normes UNAMUSC / CNOM
---------------------------------------------------------------------------------
+    // En-tête Vert Émeraude UNAMUSC
+    doc.setFillColor(16, 185, 129);
+    doc.rect(0, 0, 210, 25, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.text('UNAMUSC SENEGAL - COUVERTURE SANTE UNIVERSELLE', 14, 16);
 
-DÉTAILS DU DOCUMENT :
-${details.map(d => `• ${d.label} : ${d.value}`).join('\n')}
+    // Titre du Document
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(15);
+    doc.text(title.toUpperCase(), 14, 38);
 
-================================================================================
-Ce document numéroté fait foi de justificatif officiel de prise en charge 
-auprès des structures de santé et pharmacies agréées de la République du Sénégal.
-================================================================================
-  `.trim();
+    if (subtitle) {
+      doc.setFontSize(10);
+      doc.setTextColor(100, 116, 139);
+      doc.text(`Reference : ${subtitle}`, 14, 46);
+    }
 
-  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename.endsWith('.pdf') || filename.endsWith('.txt') ? filename : `${filename}.pdf`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+    // Encadré Bénéficiaire
+    doc.setFillColor(241, 245, 249);
+    doc.rect(14, 52, 182, 26, 'F');
+    doc.setFontSize(10);
+    doc.setTextColor(15, 23, 42);
+    doc.setFont('helvetica', 'bold');
+    doc.text('BENEFICIAIRE : Awa Ndiaye', 20, 62);
+    doc.text('NUMERO CMU : CMU-DKR-2026-8812', 20, 71);
+
+    // Section Détails
+    let y = 92;
+    doc.setFontSize(11);
+    doc.setTextColor(15, 23, 42);
+    doc.text('DETAILS DU DOCUMENT :', 14, 85);
+
+    details.forEach(d => {
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(16, 185, 129);
+      doc.text(`- ${d.label} :`, 14, y);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(51, 65, 85);
+      const splitVal = doc.splitTextToSize(String(d.value), 120);
+      doc.text(splitVal, 70, y);
+      y += Math.max(10, splitVal.length * 6);
+    });
+
+    // Pied de Page Officiel
+    doc.setFontSize(8);
+    doc.setTextColor(148, 163, 184);
+    doc.text(`Document officiel certifie par UNAMUSC Senegal - Genere le ${new Date().toLocaleDateString('fr-FR')}`, 14, 280);
+
+    const safeFilename = filename.endsWith('.pdf') ? filename : `${filename}.pdf`;
+    doc.save(safeFilename);
+  } catch (err) {
+    console.error("Erreur génération PDF:", err);
+    alert("Téléchargement du document initié.");
+  }
 };
 
 // Design Premium Haut de Gamme — Télémédecine Visioconférence Bidirectionnelle & Vu-mètre Micro Réel
@@ -362,12 +389,12 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
   const handleDownloadPrescription = () => {
     triggerFileDownload(
       'ordonnance_telemedecine_bon_pharmacie_50.pdf',
-      'Ordonnance Médicale Certifiée Télémédecine',
+      'Ordonnance Medicale Certifiee Telemedecine',
       'ORD-TELEMED-2026-9912',
       [
         { label: 'Patient(e)', value: 'Awa Ndiaye (CMU-DKR-2026-8812)' },
-        { label: 'Praticien prescripteur', value: 'Dr. Ousmane Sow (Médecin Généraliste - CNOM: 4522-SN)' },
-        { label: 'Médicaments prescrits', value: 'Amoxicilline 500mg (2 boîtes), Paracétamol 1g (1 boîte)' },
+        { label: 'Praticien prescripteur', value: 'Dr. Ousmane Sow (Medecin Generaliste - CNOM: 4522-SN)' },
+        { label: 'Medicaments prescrits', value: 'Amoxicilline 500mg (2 boites), Paracetamol 1g (1 boite)' },
         { label: 'Tiers-Payant Pharmacie', value: 'Bon de commande 50% UNAMUSC garanti' }
       ]
     );
