@@ -61,7 +61,14 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
   const [queue, setQueue] = useState(() => {
     try {
       const stored = localStorage.getItem('cmu_telemed_queue');
-      return stored ? JSON.parse(stored) : defaultQueue;
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return parsed.map(item => ({
+          ...item,
+          payment_method: item.payment_method ? item.payment_method.replace(/🌊|🍊/g, '').trim() : item.payment_method
+        }));
+      }
+      return defaultQueue;
     } catch (e) {
       return defaultQueue;
     }
@@ -1035,7 +1042,17 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                   <div className="small text-muted mb-1">Motif : <em>"{patientInQueue.reason}"</em></div>
                   <div className="small text-muted">Statut règlement : {
                     patientInQueue.payment_status === 'paid' 
-                      ? <span className="badge bg-success">✅ Payé via {patientInQueue.payment_method}</span> 
+                      ? (
+                        <span className="badge bg-success d-inline-flex align-items-center gap-1.5 px-2.5 py-1.5 ms-1" style={{ borderRadius: '8px' }}>
+                          ✅ Payé via 
+                          <img 
+                            src={patientInQueue.payment_method?.toLowerCase().includes('orange') ? '/logo_orange_money.png' : '/logo_wave.png'} 
+                            alt={patientInQueue.payment_method?.toLowerCase().includes('orange') ? 'Orange Money' : 'Wave'} 
+                            style={{ height: '16px', width: 'auto', objectFit: 'contain', borderRadius: '3px', background: patientInQueue.payment_method?.toLowerCase().includes('orange') ? '#ffffff' : 'transparent', padding: patientInQueue.payment_method?.toLowerCase().includes('orange') ? '1px' : '0' }} 
+                          />
+                          {patientInQueue.payment_method?.toLowerCase().includes('orange') ? 'Orange Money' : 'Wave'}
+                        </span>
+                      ) 
                       : patientInQueue.payment_status === 'requested' 
                       ? <span className="badge bg-warning text-dark">📲 Règlement demandé par le médecin (2 500 FCFA)</span> 
                       : <span className="badge bg-secondary">⏳ En attente de consigne du médecin</span>
@@ -1222,7 +1239,18 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                       <small className="text-muted">
                         📅 Arrivé(e) à {new Date(pat.joined_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} • Statut paiement : {
                           pat.payment_status === 'paid' 
-                            ? <span className="text-success fw-bold">✅ Reglé ({pat.payment_method})</span> 
+                            ? (
+                              <span className="text-success fw-bold d-inline-flex align-items-center gap-1.5 ms-1">
+                                ✅ Reglé (
+                                <img 
+                                  src={pat.payment_method?.toLowerCase().includes('orange') ? '/logo_orange_money.png' : '/logo_wave.png'} 
+                                  alt={pat.payment_method?.toLowerCase().includes('orange') ? 'Orange Money' : 'Wave'} 
+                                  style={{ height: '16px', width: 'auto', objectFit: 'contain', borderRadius: '3px', background: pat.payment_method?.toLowerCase().includes('orange') ? '#ffffff' : 'transparent', padding: pat.payment_method?.toLowerCase().includes('orange') ? '1px' : '0' }} 
+                                />
+                                {pat.payment_method?.toLowerCase().includes('orange') ? 'Orange Money' : 'Wave'}
+                                )
+                              </span>
+                            )
                             : pat.payment_status === 'requested' 
                             ? <span className="text-warning fw-bold">⏳ Demande envoyée au patient</span> 
                             : <span className="text-muted">Non encore demandé</span>
