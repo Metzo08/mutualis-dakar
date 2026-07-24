@@ -1892,7 +1892,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                           setRenewOtpSent(true);
                         }}
                       >
-                        Wave 🌊
+                        Wave
                       </button>
                       <button 
                         className="btn btn-outline btn-sm" 
@@ -1901,7 +1901,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                           setRenewOtpSent(true);
                         }}
                       >
-                        Orange Money 🍊
+                        Orange Money
                       </button>
                     </div>
                   </>

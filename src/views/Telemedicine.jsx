@@ -53,7 +53,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
       joined_at: new Date(Date.now() - 12 * 60000).toISOString(),
       requested_doctor: 'Dr. Cheikh Tidiane Seck',
       payment_status: 'paid',
-      payment_method: 'Wave 🌊',
+      payment_method: 'Wave',
       amount: 2500
     }
   ];
@@ -267,7 +267,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
     setPaymentSuccess('');
 
     setTimeout(() => {
-      const providerName = paymentProvider === 'orange' ? 'Orange Money 🍊' : 'Wave 🌊';
+      const providerName = paymentProvider === 'orange' ? 'Orange Money' : 'Wave';
       const updatedQueue = queue.map(p => {
         if (patientInQueue && p.id === patientInQueue.id) {
           return { ...p, payment_status: 'paid', payment_method: providerName };
