@@ -403,8 +403,8 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
     
     // Beneficiaries / members list if familial, csu_eleves, csu_daara, adhesion_masse
     if (familyMembers && familyMembers.length > 0) {
-      const listTitle = (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara') ? 'LISTE DES ÉLÈVES / TALIBÉS INSCRITS' : 
-                        selectedPackage === 'adhesion_masse' ? 'LISTE DES MEMBRES DU GROUPE' : 'LISTE DES AYANTS DROIT (FAMILLE)';
+      const listTitle = (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara') ? 'Liste des élèves / talibés inscrits' : 
+                        selectedPackage === 'adhesion_masse' ? 'Liste des membres du groupe' : 'Liste des ayants droit (famille)';
       drawSectionHeader(listTitle);
       
       doc.setFont("helvetica", "normal");
