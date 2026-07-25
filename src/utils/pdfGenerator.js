@@ -55,7 +55,7 @@ export function generateOfficialPdf({
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(5, 150, 105);
-  doc.text('UNAMUSC SÉNÉGAL (SEN-CSU)', pageWidth / 2, 27, { align: 'center' });
+  doc.text('UNAMUSC SÉNÉGAL', pageWidth / 2, 27, { align: 'center' });
 
   // ---------------------------------------------------------------------------
   // 2. LIGNE DE SÉPARATION TRICOLORE DU SÉNÉGAL (VERT - JAUNE - ROUGE)
@@ -73,13 +73,17 @@ export function generateOfficialPdf({
   doc.setFillColor(15, 23, 42); // Deep Navy
   doc.roundedRect(14, 40, 182, 32, 4, 4, 'F');
 
-  // Badge Statut Émeraude
-  doc.setFillColor(5, 150, 105);
-  doc.roundedRect(20, 45, 64, 6, 2, 2, 'F');
+  // Badge Statut Émeraude dynamique (entoure tout le texte sans caractères corrompus)
+  const cleanBadgeText = docType.toUpperCase().replace(/[^\x00-\xFF]/g, '');
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(7);
+  doc.setFontSize(7.5);
+  const textWidth = doc.getTextWidth(cleanBadgeText);
+  const badgeWidth = Math.max(50, textWidth + 8);
+
+  doc.setFillColor(5, 150, 105);
+  doc.roundedRect(20, 44.5, badgeWidth, 6.5, 2, 2, 'F');
   doc.setTextColor(255, 255, 255);
-  doc.text(`● ${docType.toUpperCase()}`, 24, 49);
+  doc.text(cleanBadgeText, 24, 49);
 
   // Grand Titre du Document
   doc.setFont('helvetica', 'bold');
@@ -188,7 +192,7 @@ export function generateOfficialPdf({
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8.5);
   doc.setTextColor(5, 150, 105);
-  doc.text('✔ VALIDATION OFFICIELLE DU TIERS-PAYANT UNAMUSC SÉNÉGAL', 20, currentY + 6);
+  doc.text('VALIDATION OFFICIELLE DU TIERS-PAYANT UNAMUSC SÉNÉGAL', 20, currentY + 6);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7.8);
@@ -208,7 +212,7 @@ export function generateOfficialPdf({
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
   doc.setTextColor(5, 150, 105);
-  doc.text('AUTHENTIFICATION NUMÉRIQUE SEN-CSU', 18, currentY + 7);
+  doc.text('AUTHENTIFICATION NUMÉRIQUE UNAMUSC', 18, currentY + 7);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
@@ -219,32 +223,35 @@ export function generateOfficialPdf({
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7.5);
   doc.setTextColor(15, 23, 42);
-  doc.text('STATUT : VALIDE & CERTIFIÉ 🇸🇳', 18, 24 + currentY);
+  doc.text('STATUT : VALIDE & CERTIFIÉ (UNAMUSC)', 18, 24 + currentY);
 
   // Bloc Signature Droite
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8.5);
   doc.setTextColor(15, 23, 42);
   doc.text('Pour le Bureau National UNAMUSC Sénégal', 125, currentY + 7);
-  doc.text('& l\'Agence Nationale SEN-CSU', 125, currentY + 12);
 
   doc.setFont('helvetica', 'italic');
   doc.setFontSize(7.5);
   doc.setTextColor(100, 116, 139);
-  doc.text('Signé électroniquement par la Direction', 125, currentY + 20);
+  doc.text('Signé électroniquement par la Direction', 125, currentY + 16);
 
   // ---------------------------------------------------------------------------
-  // 8. PIED DE PAGE PERMANENT
+  // 8. PIED DE PAGE PERMANENT NET & CLAIR (SANS CHEVAUCHEMENT)
   // ---------------------------------------------------------------------------
   doc.setDrawColor(226, 232, 240);
   doc.setLineWidth(0.5);
-  doc.line(14, 280, 196, 280);
+  doc.line(14, 276, 196, 276);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
+  doc.setTextColor(100, 116, 139);
+  doc.text('UNAMUSC Sénégal — Union Nationale des Mutuelles de Santé Communautaires (Dakar)', 14, 281);
+  doc.text('Page 1/1', pageWidth - 14, 281, { align: 'right' });
+
+  doc.setFontSize(6.8);
   doc.setTextColor(148, 163, 184);
-  doc.text('UNAMUSC Sénégal — Union Nationale des Mutuelles de Santé Communautaires • Siège : Dakar, Sénégal', 14, 285);
-  doc.text(`Page 1/1 • Document Officiel n° ${referenceNo} • Imprimé le ${new Date().toLocaleDateString('fr-FR')}`, pageWidth - 14, 285, { align: 'right' });
+  doc.text(`Document Officiel n° ${referenceNo}  •  Imprimé le ${new Date().toLocaleDateString('fr-FR')}`, 14, 286);
 
   // Téléchargement du fichier PDF
   const safeFilename = filename.endsWith('.pdf') ? filename : `${filename}.pdf`;
