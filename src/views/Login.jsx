@@ -254,7 +254,7 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
     <div className="login-view fade-in-up">
       {/* Banner */}
       <section className="banner-mini" style={{
-        background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.35) 0%, rgba(16, 185, 129, 0.18) 100%), url("/csu_login_hero_real.jpg") center/cover no-repeat',
+        background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.35) 0%, rgba(16, 185, 129, 0.18) 100%), url("/csu_login_portal_unique.jpg") center/cover no-repeat',
         border: '1px solid rgba(255, 255, 255, 0.45)',
         borderRadius: '24px',
         padding: '3.75rem 2.5rem',

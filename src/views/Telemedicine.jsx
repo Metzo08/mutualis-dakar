@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
 
 // Design Premium Haut de Gamme — Télémédecine Visioconférence Bidirectionnelle & Vu-mètre Micro Réel
-export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null }) {
+export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, setView = null }) {
   const isAgent = (userRole === 'agent' || !!agentUser);
 
   // Assuré actif
@@ -575,20 +575,36 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
               {/* Card Ordonnances Digitales */}
               <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
                 <div className="d-flex align-items-center gap-2 mb-2 text-success">
-                  <span style={{ fontSize: '1.3rem' }}>🏥</span>
+                  <span style={{ fontSize: '1.3rem' }}>💊</span>
                   <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>Ordonnances Digitales</h6>
                 </div>
                 <p className="small mb-3" style={{ color: 'var(--text-sub)' }}>
-                  Retrouvez vos prescriptions certifiées. Scannez le QR Code directement en pharmacie agréée.
+                  Retrouvez vos prescriptions certifiées. Scannez le QR Code directement en pharmacie agréée (50% Tiers-Payant).
                 </p>
 
-                <button 
-                  type="button"
-                  style={{ background: 'var(--bg-card-subtle)', color: '#10b981', border: '1px solid #10b981', borderRadius: '10px', padding: '0.6rem 1rem', fontWeight: '700', width: '100%', fontSize: '0.85rem', cursor: 'pointer' }}
-                  onClick={() => setActiveModal('prescription')}
-                >
-                  VOIR TOUT LE CARNET DE SANTÉ
-                </button>
+                <div className="d-flex flex-column gap-2">
+                  <button 
+                    type="button"
+                    style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.65rem 1rem', fontWeight: '700', width: '100%', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}
+                    onClick={() => setActiveModal('prescription')}
+                  >
+                    💊 Consulter mon Ordonnance Digital (PDF & QR)
+                  </button>
+
+                  <button 
+                    type="button"
+                    style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.6rem 1rem', fontWeight: '700', width: '100%', fontSize: '0.85rem', cursor: 'pointer' }}
+                    onClick={() => {
+                      if (typeof setView === 'function') {
+                        setView('medical-profile');
+                      } else {
+                        window.location.hash = '#/medical-profile';
+                      }
+                    }}
+                  >
+                    📂 VOIR TOUT LE CARNET DE SANTÉ
+                  </button>
+                </div>
               </div>
 
               {/* Card QR Code CMU */}
@@ -911,15 +927,62 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
       {/* PRESCRIPTION MODAL */}
       {activeModal === 'prescription' && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ maxWidth: '640px', width: '90%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)' }}>
-            <h5 className="fw-bold text-success mb-3">💊 Ordonnance Médicale Certifiée (Bon Pharmacie 50% 🇸🇳)</h5>
-            <div className="p-4 rounded-3 mb-3 border border-success" style={{ background: 'var(--bg-card-subtle)' }}>
-              <strong className="text-success d-block mb-1">Dr. Ousmane Sow (Médecin Généraliste - CNOM: 4522-SN)</strong>
-              <p className="small mb-0" style={{ color: 'var(--text-sub)' }}>• Amoxicilline 500mg (2 boîtes) • Paracétamol 1g (1 boîte)</p>
+          <div style={{ maxWidth: '640px', width: '92%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-lg)' }}>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <div className="d-flex align-items-center gap-2">
+                <span style={{ fontSize: '1.4rem' }}>💊</span>
+                <h5 className="fw-bold text-success mb-0" style={{ fontSize: '1.15rem' }}>Ordonnance Médicale Certifiée UNAMUSC 🇸🇳</h5>
+              </div>
+              <button type="button" className="btn-close" onClick={() => setActiveModal(null)}></button>
             </div>
+
+            <div className="p-4 rounded-4 mb-3 border border-success" style={{ background: 'var(--bg-card-subtle)' }}>
+              <div className="d-flex justify-content-between align-items-start mb-3 border-bottom pb-2" style={{ borderColor: 'var(--border-color)' }}>
+                <div>
+                  <strong className="text-success d-block" style={{ fontSize: '0.98rem' }}>Dr. Ousmane Sow</strong>
+                  <small style={{ color: 'var(--text-sub)', fontSize: '0.78rem' }}>Médecin Généraliste — CNOM: 4522-SN</small>
+                </div>
+                <span className="badge bg-success-subtle text-success border border-success px-2.5 py-1.5 fw-bold" style={{ borderRadius: '10px', fontSize: '0.72rem' }}>
+                  ● BON PHARMACIE 50% VALIDE
+                </span>
+              </div>
+
+              <div className="mb-3 p-3 rounded-3" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                <small className="d-block text-muted fw-bold mb-1" style={{ fontSize: '0.72rem' }}>PATIENT(E) BÉNÉFICIAIRE :</small>
+                <strong style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>{activeFirstName} {activeLastName}</strong>
+                <small className="d-block text-success fw-bold" style={{ fontSize: '0.78rem' }}>N° CMU : {activeCmuNumber}</small>
+              </div>
+
+              <div className="mb-3">
+                <small className="d-block text-muted fw-bold mb-2" style={{ fontSize: '0.75rem' }}>MÉDICAMENTS PRESCRITS & POSOLOGIE :</small>
+                <div className="d-flex flex-column gap-2">
+                  <div className="p-2.5 rounded-3" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                    <strong style={{ color: 'var(--text-main)', fontSize: '0.88rem' }}>1. Amoxicilline 500mg (2 boîtes)</strong>
+                    <small className="d-block" style={{ color: 'var(--text-sub)', fontSize: '0.78rem' }}>Posologie : 1 gélule 3 fois par jour pendant 7 jours</small>
+                  </div>
+                  <div className="p-2.5 rounded-3" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                    <strong style={{ color: 'var(--text-main)', fontSize: '0.88rem' }}>2. Paracétamol 1g (1 boîte)</strong>
+                    <small className="d-block" style={{ color: 'var(--text-sub)', fontSize: '0.78rem' }}>Posologie : 1 comprimé en cas de fièvre (max 3/jour)</small>
+                  </div>
+                </div>
+              </div>
+
+              <div className="d-flex align-items-center gap-3 pt-3 border-top" style={{ borderColor: 'var(--border-color)' }}>
+                <div className="p-1.5 bg-white rounded-3 border" style={{ borderColor: '#10b981', flexShrink: 0 }}>
+                  <img src={`https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=${encodeURIComponent('ORD-TELEMED-2026-9912')}`} alt="QR Code Ordonnance" style={{ width: '70px', height: '70px' }} />
+                </div>
+                <div>
+                  <strong className="d-block text-success small fw-bold">QR Code Tiers-Payant Pharmacie (50%)</strong>
+                  <small style={{ color: 'var(--text-sub)', fontSize: '0.74rem', lineHeight: '1.4' }}>
+                    Présentez ce QR Code dans n'importe quelle pharmacie partenaire agréée du Sénégal pour bénéficier de la prise en charge 50% UNAMUSC.
+                  </small>
+                </div>
+              </div>
+            </div>
+
             <div className="d-flex justify-content-end gap-2">
-              <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setActiveModal(null)}>Fermer</button>
-              <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700', cursor: 'pointer' }} onClick={handleDownloadPrescription}>📥 Télécharger Ordonnance PDF Officielle (🇸🇳)</button>
+              <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.6rem 1.25rem', fontWeight: '700', cursor: 'pointer' }} onClick={() => setActiveModal(null)}>Fermer</button>
+              <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.6rem 1.4rem', fontWeight: '700', cursor: 'pointer', boxShadow: '0 4px 14px rgba(16,185,129,0.3)' }} onClick={handleDownloadPrescription}>📥 Télécharger Ordonnance PDF Officielle (🇸🇳)</button>
             </div>
           </div>
         </div>
