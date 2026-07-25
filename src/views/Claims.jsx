@@ -145,11 +145,11 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
         {/* Top Hero Card & Stats Grid */}
         <div className="row g-4 mb-4">
           <div className="col-lg-8">
-            <div className="p-4 rounded-4" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(15, 23, 42, 0.95) 100%)', border: '1px solid rgba(16, 185, 129, 0.3)', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.4)' }}>
+            <div className="p-4 rounded-4 text-white" style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.92) 0%, rgba(15, 23, 42, 0.88) 100%), url("/csu_claims_hero.png") center/cover no-repeat', border: '1px solid rgba(16, 185, 129, 0.35)', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.4)' }}>
               <span style={{ background: '#059669', color: '#ffffff', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '700', display: 'inline-block', marginBottom: '0.5rem' }}>
                 🇸🇳 UNAMUSC SÉNÉGAL
               </span>
-              <h2 className="fw-extrabold text-white mb-2" style={{ fontSize: '1.85rem', letterSpacing: '-0.02em' }}>Gestion des Prises en Charge</h2>
+              <h2 className="fw-extrabold text-white mb-2" style={{ fontSize: '1.85rem', letterSpacing: '-0.02em' }}>Gestion des prises en charge</h2>
               <p className="text-white-50 mb-0" style={{ fontSize: '0.95rem', maxWidth: '640px', lineHeight: '1.5' }}>
                 Effectuez vos demandes de bons de commande pharmacie (50%) et lettres de garantie hospitalisation (80%) en quelques clics sous le Tiers-Payant UNAMUSC.
               </p>

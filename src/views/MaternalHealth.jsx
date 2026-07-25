@@ -153,9 +153,9 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
         
         {/* Top Hero Banner Card */}
         <div 
-          className="p-4 rounded-4 mb-4" 
+          className="p-4 rounded-4 mb-4 text-white" 
           style={{ 
-            background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(16, 185, 129, 0.3) 100%), url("https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=1200") center/cover no-repeat', 
+            background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.92) 0%, rgba(15, 23, 42, 0.88) 100%), url("/csu_kids.png") center/cover no-repeat', 
             border: '1px solid rgba(16, 185, 129, 0.35)', 
             boxShadow: '0 10px 30px rgba(0,0,0,0.4)' 
           }}

@@ -217,7 +217,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
       <div style={{ maxWidth: '1320px', margin: '1.75rem auto 0 auto', padding: '0 1.5rem' }}>
         
         {/* Top Hero Card Banner */}
-        <div className="p-4 rounded-4 mb-4" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(15, 23, 42, 0.95) 100%)', border: '1px solid rgba(16, 185, 129, 0.3)', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.4)' }}>
+        <div className="p-4 rounded-4 mb-4 text-white" style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.92) 0%, rgba(15, 23, 42, 0.88) 100%), url("/csu_digital_health_real.jpg") center/cover no-repeat', border: '1px solid rgba(16, 185, 129, 0.35)', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.4)' }}>
           <div className="d-flex justify-content-between align-items-start flex-wrap gap-3">
             <div>
               <span style={{ background: '#059669', color: '#ffffff', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '700', display: 'inline-block', marginBottom: '0.5rem' }}>
@@ -379,7 +379,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                         
                         {/* Image Thumbnail Banner */}
                         <div style={{ height: '140px', position: 'relative', overflow: 'hidden' }}>
-                          <img src={ex.preview} alt={ex.title} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.85 }} />
+                          <img src={ex.preview} alt={ex.title} onError={(e) => { e.target.src = '/csu_digital_health_real.jpg'; }} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.85 }} />
                           <span style={{ background: '#0f172a', color: '#34d399', border: '1px solid #10b981', padding: '0.2rem 0.5rem', borderRadius: '6px', fontSize: '0.7rem', fontWeight: '700', position: 'absolute', top: '8px', end: '8px' }}>
                             {ex.badge}
                           </span>

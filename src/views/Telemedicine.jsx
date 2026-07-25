@@ -385,13 +385,13 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
       <div style={{ maxWidth: '1320px', margin: '1.75rem auto 0 auto', padding: '0 1.5rem' }}>
         
         {/* Top Hero Card Banner */}
-        <div className="p-4 rounded-4 mb-4" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(15, 23, 42, 0.95) 100%)', border: '1px solid rgba(16, 185, 129, 0.3)', boxShadow: '0 10px 30px rgba(0,0,0,0.4)' }}>
+        <div className="p-4 rounded-4 mb-4 text-white" style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.92) 0%, rgba(15, 23, 42, 0.88) 100%), url("/csu_digital_health_real.jpg") center/cover no-repeat', border: '1px solid rgba(16, 185, 129, 0.35)', boxShadow: '0 10px 30px rgba(0,0,0,0.4)' }}>
           <div className="row align-items-center g-4">
             <div className="col-lg-8">
               <span style={{ background: '#059669', color: '#ffffff', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '700', display: 'inline-block', marginBottom: '0.5rem' }}>
                 🇸🇳 SALLE D'ATTENTE VIRTUELLE UNAMUSC
               </span>
-              <h1 className="fw-extrabold text-white mb-2" style={{ fontSize: '2.2rem', letterSpacing: '-0.02em' }}>Consultation Instantanée 24h/7</h1>
+              <h1 className="fw-extrabold text-white mb-2" style={{ fontSize: '2.2rem', letterSpacing: '-0.02em' }}>Consultation instantanée 24h/7</h1>
               <p className="text-white-50 mb-4" style={{ fontSize: '0.98rem', maxWidth: '650px', lineHeight: '1.5' }}>
                 Accédez à un réseau de médecins agréés en moins de 10 minutes. Vidéoconférence HD WebRTC sécurisée et cryptée.
               </p>
@@ -410,7 +410,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                   style={{ background: '#1e293b', color: '#f8fafc', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '0.75rem 1.25rem', fontWeight: '700', fontSize: '0.88rem', cursor: 'pointer' }}
                   onClick={() => setActiveModal('payment')}
                 >
-                  💳 Régler Ticket Modérateur (2 500 FCFA)
+                  💳 Régler ticket modérateur (2 500 FCFA)
                 </button>
               </div>
             </div>
@@ -421,7 +421,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                   <div className="d-flex align-items-center gap-2">
                     <div className="d-flex" style={{ marginLeft: '10px' }}>
                       {doctorsList.map((d, i) => (
-                        <img key={i} src={d.avatar} alt={d.name} style={{ width: '36px', height: '36px', borderRadius: '50%', border: '2px solid #10b981', marginLeft: '-10px', objectFit: 'cover' }} />
+                        <img key={i} src={d.avatar} onError={(e) => { e.target.src = '/mariama_avatar.png'; }} alt={d.name} style={{ width: '36px', height: '36px', borderRadius: '50%', border: '2px solid #10b981', marginLeft: '-10px', objectFit: 'cover' }} />
                       ))}
                       <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#0f172a', border: '2px solid #10b981', color: '#ffffff', fontWeight: '700', fontSize: '0.75rem', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: '-10px' }}>+12</div>
                     </div>
