@@ -143,9 +143,9 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
       <div style={{ maxWidth: '1320px', margin: '1.75rem auto 0 auto', padding: '0 1.5rem' }}>
         
         {/* Top Hero Card & Stats Grid */}
-        <div className="row g-4 mb-4">
+        <div className="row g-4 mb-5">
           <div className="col-lg-8">
-            <div className="p-5 rounded-4 text-white" style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.94) 0%, rgba(15, 23, 42, 0.9) 100%), url("/csu_claims_hero.png") center/cover no-repeat', padding: '3.5rem 2.5rem', minHeight: '230px', borderRadius: '24px', border: '1px solid rgba(16, 185, 129, 0.35)', boxShadow: '0 12px 35px rgba(0, 0, 0, 0.45)' }}>
+            <div className="p-5 rounded-4 text-white" style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.96) 0%, rgba(16, 185, 129, 0.92) 100%), url("/csu_claims_hero.png") center/cover no-repeat', padding: '3.75rem 2.5rem', minHeight: '240px', borderRadius: '24px', border: '1px solid rgba(52, 211, 153, 0.4)', boxShadow: '0 14px 40px rgba(5, 150, 105, 0.35)' }}>
               <span style={{ background: '#059669', color: '#ffffff', padding: '0.35rem 0.9rem', borderRadius: '20px', fontSize: '0.82rem', fontWeight: '700', display: 'inline-block', marginBottom: '0.75rem', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.3)' }}>
                 🇸🇳 UNAMUSC SÉNÉGAL
               </span>

@@ -96,14 +96,14 @@ export default function AuditLogs({ lang }) {
     <div className="audit-logs-view fade-in-up">
       {/* Banner */}
       <section className="banner-mini" style={{
-        background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.94) 0%, rgba(15, 23, 42, 0.9) 100%), url("/bg_audit_stock.jpg") center/cover no-repeat',
-        border: '1px solid rgba(16, 185, 129, 0.35)',
+        background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.96) 0%, rgba(16, 185, 129, 0.92) 100%), url("/bg_audit_stock.jpg") center/cover no-repeat',
+        border: '1px solid rgba(52, 211, 153, 0.4)',
         borderRadius: '24px',
         padding: '3.75rem 2.5rem',
-        minHeight: '230px',
-        marginBottom: '2rem',
+        minHeight: '240px',
+        marginBottom: '2.5rem',
         color: '#fff',
-        boxShadow: '0 12px 35px rgba(0,0,0,0.45)'
+        boxShadow: '0 14px 40px rgba(5, 150, 105, 0.35)'
       }}>
         <div style={{ textAlign: 'left', position: 'relative', zIndex: 2 }}>
           <span className="badge" style={{ marginBottom: '0.75rem', backgroundColor: 'rgba(255, 255, 255, 0.22)', color: '#fff', border: '1px solid rgba(255, 255, 255, 0.3)', backdropFilter: 'blur(4px)', padding: '0.35rem 0.9rem', fontSize: '0.82rem', fontWeight: '700', borderRadius: '20px' }}>

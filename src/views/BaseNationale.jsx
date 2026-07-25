@@ -925,18 +925,19 @@ export default function BaseNationale({ lang, setView }) {
     <div className="directory-view fade-in-up">
       {/* Banner */}
       <section className="banner-mini" style={{
-        background: 'linear-gradient(to right, rgba(5, 150, 105, 0.7), rgba(5, 150, 105, 0.4)), url("/bg_annuaire_stock.jpg") center/cover no-repeat',
-        borderBottom: '1px solid var(--border-color)',
-        borderRadius: '16px',
-        padding: '2.5rem 2rem',
-        marginBottom: '2rem',
+        background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.96) 0%, rgba(16, 185, 129, 0.92) 100%), url("/bg_annuaire_stock.jpg") center/cover no-repeat',
+        border: '1px solid rgba(52, 211, 153, 0.4)',
+        borderRadius: '24px',
+        padding: '3.75rem 2.5rem',
+        minHeight: '240px',
+        marginBottom: '2.5rem',
         color: '#fff',
-        boxShadow: 'var(--shadow-md)',
+        boxShadow: '0 14px 40px rgba(5, 150, 105, 0.35)',
         textAlign: 'center'
       }}>
         <div className="container" style={{ position: 'relative', zIndex: 2 }}>
-          <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>{t.title}</h1>
-          <p style={{ color: '#f8fafc', fontSize: '1rem', fontWeight: '500', maxWidth: '600px', margin: '0 auto', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>{t.subtitle}</p>
+          <h1 style={{ color: '#fff', fontSize: '2.35rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 3px 6px rgba(0,0,0,0.4)', letterSpacing: '-0.02em' }}>{t.title}</h1>
+          <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '1.05rem', fontWeight: '500', maxWidth: '750px', margin: '0 auto', textShadow: '0 1px 3px rgba(0,0,0,0.3)', lineHeight: '1.6' }}>{t.subtitle}</p>
         </div>
       </section>
 
