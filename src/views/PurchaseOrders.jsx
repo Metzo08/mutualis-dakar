@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, partnerUser = null, setView = null }) {
   const defaultOrders = [
@@ -662,148 +663,146 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
         </div>
       )}
 
-      {/* MODALE DE REVISION DES PRIX RÉELS ET VALIDATION PHARMACIEN */}
-      {editingVoucher && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(6px)' }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content shadow-lg border-0" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-              <div className="modal-header border-bottom p-3" style={{ borderColor: 'var(--border-color)', background: '#059669', color: '#ffffff' }}>
-                <h5 className="modal-title fw-bold">
-                  📲 Validation Pharmacie & Tarification Officielle — #{editingVoucher.order_code}
-                </h5>
-                <button className="btn-close btn-close-white" onClick={() => setEditingVoucher(null)}></button>
+      {/* MODALE DE REVISION DES PRIX RÉELS ET VALIDATION PHARMACIEN (React Portal — Centered on Screen) */}
+      {editingVoucher && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
+          <div className="modal-content shadow-lg border-0" style={{ maxWidth: '640px', width: '100%', maxHeight: '90vh', overflowY: 'auto', borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)', margin: 'auto' }}>
+            <div className="modal-header border-bottom p-3" style={{ borderColor: 'var(--border-color)', background: '#059669', color: '#ffffff' }}>
+              <h5 className="modal-title fw-bold">
+                📲 Validation Pharmacie & Tarification Officielle — #{editingVoucher.order_code}
+              </h5>
+              <button type="button" className="btn-close btn-close-white" onClick={() => setEditingVoucher(null)}></button>
+            </div>
+
+            <form onSubmit={handlePharmacistValidate} className="modal-body p-4">
+              <p className="small text-muted mb-3">
+                Ajustez ou confirmez le <strong>Montant Réel Officine (FCFA)</strong> calculé au comptoir pour la délivrance des médicaments à l'assuré <strong>{editingVoucher.first_name} {editingVoucher.last_name}</strong>.
+              </p>
+
+              <div className="mb-3">
+                <label className="form-label small fw-bold text-success">Montant Réel Total Arrêté par la Pharmacie (FCFA) *</label>
+                <input 
+                  type="number" 
+                  className="form-control input fw-bold text-success" 
+                  value={editedPharmacyPrice}
+                  onChange={(e) => setEditedPharmacyPrice(e.target.value)}
+                  style={{ borderRadius: '10px', fontSize: '1.2rem', height: '50px' }}
+                  required
+                />
+                <small className="text-muted">L'estimatif initial soumis par le client était de {editingVoucher.total_amount?.toLocaleString()} FCFA.</small>
               </div>
 
-              <form onSubmit={handlePharmacistValidate} className="modal-body p-4">
-                <p className="small text-muted mb-3">
-                  Ajustez ou confirmez le <strong>Montant Réel Officine (FCFA)</strong> calculé au comptoir pour la délivrance des médicaments à l'assuré <strong>{editingVoucher.first_name} {editingVoucher.last_name}</strong>.
-                </p>
-
-                <div className="mb-3">
-                  <label className="form-label small fw-bold text-success">Montant Réel Total Arrêté par la Pharmacie (FCFA) *</label>
-                  <input 
-                    type="number" 
-                    className="form-control input fw-bold text-success" 
-                    value={editedPharmacyPrice}
-                    onChange={(e) => setEditedPharmacyPrice(e.target.value)}
-                    style={{ borderRadius: '10px', fontSize: '1.2rem', height: '50px' }}
-                    required
-                  />
-                  <small className="text-muted">L'estimatif initial soumis par le client était de {editingVoucher.total_amount?.toLocaleString()} FCFA.</small>
-                </div>
-
-                <div className="p-3 bg-dark text-white rounded-3 mb-4 border border-success">
-                  <div className="row text-center align-items-center">
-                    <div className="col-6 border-end border-secondary">
-                      <span className="small text-success d-block fw-bold">Tiers-Payant UNAMUSC (80%)</span>
-                      <strong className="fs-5 text-success">
-                        {((parseFloat(editedPharmacyPrice) || 0) * 0.8).toLocaleString()} FCFA
-                      </strong>
-                    </div>
-                    <div className="col-6">
-                      <span className="small text-warning d-block fw-bold">Ticket Modérateur Client (20%)</span>
-                      <strong className="fs-6 text-warning">
-                        {((parseFloat(editedPharmacyPrice) || 0) * 0.2).toLocaleString()} FCFA
-                      </strong>
-                    </div>
+              <div className="p-3 bg-dark text-white rounded-3 mb-4 border border-success">
+                <div className="row text-center align-items-center">
+                  <div className="col-6 border-end border-secondary">
+                    <span className="small text-success d-block fw-bold">Tiers-Payant UNAMUSC (80%)</span>
+                    <strong className="fs-5 text-success">
+                      {((parseFloat(editedPharmacyPrice) || 0) * 0.8).toLocaleString()} FCFA
+                    </strong>
+                  </div>
+                  <div className="col-6">
+                    <span className="small text-warning d-block fw-bold">Ticket Modérateur Client (20%)</span>
+                    <strong className="fs-6 text-warning">
+                      {((parseFloat(editedPharmacyPrice) || 0) * 0.2).toLocaleString()} FCFA
+                    </strong>
                   </div>
                 </div>
+              </div>
 
-                <div className="d-flex justify-content-end gap-2">
-                  <button type="button" className="btn btn-secondary fw-bold" onClick={() => setEditingVoucher(null)}>
-                    Annuler
-                  </button>
-                  <button type="submit" className="btn btn-success fw-bold px-4 text-white" style={{ background: '#059669', borderColor: '#059669' }}>
-                    ✅ Valider Prix & Édition Automatique PDF
-                  </button>
-                </div>
-              </form>
-            </div>
+              <div className="d-flex justify-content-end gap-2">
+                <button type="button" className="btn btn-secondary fw-bold" onClick={() => setEditingVoucher(null)}>
+                  Annuler
+                </button>
+                <button type="submit" className="btn btn-success fw-bold px-4 text-white" style={{ background: '#059669', borderColor: '#059669' }}>
+                  ✅ Valider Prix & Édition Automatique PDF
+                </button>
+              </div>
+            </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* MODALE AFFICHAGE DU VOUCHER DE COMMANDE PAR PHARMACIE */}
-      {selectedVoucher && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(5px)' }}>
-          <div className="modal-dialog modal-dialog-centered modal-lg">
-            <div className="modal-content shadow-lg border-0" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-              <div className="modal-header border-bottom p-3" style={{ borderColor: 'var(--border-color)' }}>
-                <h5 className="modal-title fw-bold" style={{ color: 'var(--text-main)' }}>
-                  💊 Bon Pharmacie Tiers-Payant — #{selectedVoucher.order_code || `ORD-${selectedVoucher.id}`}
-                </h5>
-                <button className="btn-close" onClick={() => setSelectedVoucher(null)}></button>
+      {/* MODALE AFFICHAGE DU VOUCHER DE COMMANDE PAR PHARMACIE (React Portal — Centered on Screen) */}
+      {selectedVoucher && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
+          <div className="modal-content shadow-lg border-0" style={{ maxWidth: '800px', width: '100%', maxHeight: '90vh', overflowY: 'auto', borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)', margin: 'auto' }}>
+            <div className="modal-header border-bottom p-3" style={{ borderColor: 'var(--border-color)' }}>
+              <h5 className="modal-title fw-bold" style={{ color: 'var(--text-main)' }}>
+                💊 Bon Pharmacie Tiers-Payant — #{selectedVoucher.order_code || `ORD-${selectedVoucher.id}`}
+              </h5>
+              <button type="button" className="btn-close" onClick={() => setSelectedVoucher(null)}></button>
+            </div>
+
+            <div className="modal-body p-4 text-center">
+              <div className="p-4 rounded-4 border bg-white text-dark text-start mb-3" style={{ border: '2px solid #047857' }}>
+                <div className="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                  <div>
+                    <h6 className="fw-bold text-success mb-0">BON DE COMMANDE DE MÉDICAMENTS (48H)</h6>
+                    <small className="text-muted">Tiers-Payant UNAMUSC — Programme National de la Couverture Sanitaire</small>
+                  </div>
+                  <code className="bg-dark text-success p-2 rounded fw-bold">
+                    {selectedVoucher.order_code || `ORD-${selectedVoucher.id}`}
+                  </code>
+                </div>
+
+                <div className="row g-2 mb-3">
+                  <div className="col-6">
+                    <span className="small text-muted d-block">Bénéficiaire :</span>
+                    <strong>{selectedVoucher.first_name} {selectedVoucher.last_name}</strong>
+                  </div>
+                  <div className="col-6 text-end">
+                    <span className="small text-muted d-block">Code Carte CMU :</span>
+                    <strong>{selectedVoucher.cmu_number}</strong>
+                  </div>
+                </div>
+
+                <h6 className="fw-bold mb-2">Prescriptions :</h6>
+                <ul className="list-group mb-3">
+                  {(() => {
+                    try {
+                      const items = typeof selectedVoucher.items_json === 'string' ? JSON.parse(selectedVoucher.items_json) : selectedVoucher.items_json;
+                      return items.map((it, idx) => (
+                        <li key={idx} className="list-group-item d-flex justify-content-between align-items-center">
+                          <span>💊 {it.name} (x{it.qty})</span>
+                          <strong>{(it.price * it.qty).toLocaleString()} FCFA</strong>
+                        </li>
+                      ));
+                    } catch (e) {
+                      return <li className="list-group-item">Prescription médicamenteuse</li>;
+                    }
+                  })()}
+                </ul>
+
+                <div className="d-flex justify-content-between align-items-center p-3 bg-light rounded-3">
+                  <div>
+                    <span className="small text-muted d-block">Montant pris en charge CMU (80%) :</span>
+                    <h5 className="fw-bold text-success mb-0">{(selectedVoucher.total_amount * 0.8).toLocaleString()} FCFA</h5>
+                  </div>
+                  <div className="text-end">
+                    <span className="small text-muted d-block">Ticket patient (20%) :</span>
+                    <h6 className="fw-bold text-warning mb-0">{(selectedVoucher.total_amount * 0.2).toLocaleString()} FCFA</h6>
+                  </div>
+                </div>
               </div>
 
-              <div className="modal-body p-4 text-center">
-                <div className="p-4 rounded-4 border bg-white text-dark text-start mb-3" style={{ border: '2px solid #047857' }}>
-                  <div className="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
-                    <div>
-                      <h6 className="fw-bold text-success mb-0">BON DE COMMANDE DE MÉDICAMENTS (48H)</h6>
-                      <small className="text-muted">Tiers-Payant UNAMUSC — Programme National de la Couverture Sanitaire</small>
-                    </div>
-                    <code className="bg-dark text-success p-2 rounded fw-bold">
-                      {selectedVoucher.order_code || `ORD-${selectedVoucher.id}`}
-                    </code>
-                  </div>
-
-                  <div className="row g-2 mb-3">
-                    <div className="col-6">
-                      <span className="small text-muted d-block">Bénéficiaire :</span>
-                      <strong>{selectedVoucher.first_name} {selectedVoucher.last_name}</strong>
-                    </div>
-                    <div className="col-6 text-end">
-                      <span className="small text-muted d-block">Code Carte CMU :</span>
-                      <strong>{selectedVoucher.cmu_number}</strong>
-                    </div>
-                  </div>
-
-                  <h6 className="fw-bold mb-2">Prescriptions :</h6>
-                  <ul className="list-group mb-3">
-                    {(() => {
-                      try {
-                        const items = typeof selectedVoucher.items_json === 'string' ? JSON.parse(selectedVoucher.items_json) : selectedVoucher.items_json;
-                        return items.map((it, idx) => (
-                          <li key={idx} className="list-group-item d-flex justify-content-between align-items-center">
-                            <span>💊 {it.name} (x{it.qty})</span>
-                            <strong>{(it.price * it.qty).toLocaleString()} FCFA</strong>
-                          </li>
-                        ));
-                      } catch (e) {
-                        return <li className="list-group-item">Prescription médicamenteuse</li>;
-                      }
-                    })()}
-                  </ul>
-
-                  <div className="d-flex justify-content-between align-items-center p-3 bg-light rounded-3">
-                    <div>
-                      <span className="small text-muted d-block">Montant pris en charge CMU (80%) :</span>
-                      <h5 className="fw-bold text-success mb-0">{(selectedVoucher.total_amount * 0.8).toLocaleString()} FCFA</h5>
-                    </div>
-                    <div className="text-end">
-                      <span className="small text-muted d-block">Ticket patient (20%) :</span>
-                      <h6 className="fw-bold text-warning mb-0">{(selectedVoucher.total_amount * 0.2).toLocaleString()} FCFA</h6>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="d-flex justify-content-center gap-2">
-                  <button 
-                    type="button" 
-                    className="btn btn-success fw-bold px-4" 
-                    onClick={() => generateAndPrintPurchaseOrderPDF(selectedVoucher)}
-                    style={{ background: '#059669', borderColor: '#059669' }}
-                  >
-                    📥 Télécharger le Bon PDF
-                  </button>
-                  <button type="button" className="btn btn-secondary fw-bold" onClick={() => setSelectedVoucher(null)}>
-                    Fermer
-                  </button>
-                </div>
+              <div className="d-flex justify-content-center gap-2">
+                <button 
+                  type="button" 
+                  className="btn btn-success fw-bold px-4" 
+                  onClick={() => generateAndPrintPurchaseOrderPDF(selectedVoucher)}
+                  style={{ background: '#059669', borderColor: '#059669' }}
+                >
+                  📥 Télécharger le Bon PDF
+                </button>
+                <button type="button" className="btn btn-secondary fw-bold" onClick={() => setSelectedVoucher(null)}>
+                  Fermer
+                </button>
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

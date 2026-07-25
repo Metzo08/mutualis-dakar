@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
 
 export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, partnerUser = null, setView = null }) {
@@ -511,183 +512,190 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
         </div>
       )}
 
-      {/* FORMULAIRE NOUVELLE DEMANDE (SOUMISSION ASSURÉ OU PUBLIC) */}
-      {activeTab === 'new' && (
-        <div className="card shadow-sm border-0 p-4 mb-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-          <h4 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--primary)' }}>
-            <span>➕</span> Nouvelle demande sous le Tiers-Payant UNAMUSC
-          </h4>
-          <p className="small text-muted mb-4">
-            Sélectionnez le type de prestation (Hospitalisation ou Pharmacie) et renseignez les éléments de votre devis ou ordonnance.
-          </p>
-
-          {/* SÉLECTEUR CATEGORIE : GARANTIE HOSPITALIÈRE OU BON PHARMACIE */}
-          <div className="d-flex gap-2 mb-4">
-            <button 
-              type="button" 
-              className={`btn flex-fill py-2.5 fw-bold ${requestCategory === 'hospital' ? 'btn-success text-white' : 'btn-outline-secondary'}`}
-              onClick={() => setRequestCategory('hospital')}
-              style={{ borderRadius: '12px' }}
-            >
-              🏥 Lettre de Garantie Hospitalière
-            </button>
-            <button 
-              type="button" 
-              className={`btn flex-fill py-2.5 fw-bold ${requestCategory === 'pharmacy' ? 'btn-success text-white' : 'btn-outline-secondary'}`}
-              onClick={() => setRequestCategory('pharmacy')}
-              style={{ borderRadius: '12px' }}
-            >
-              💊 Bon de Commande Pharmacie (48h)
-            </button>
-          </div>
-
-          <form onSubmit={handleSubmit}>
-            <div className="row g-3 mb-3">
-              <div className="col-md-4">
-                <label className="form-label small fw-semibold">Prénom de l'assuré *</label>
-                <input 
-                  type="text" 
-                  className="form-control input fw-bold" 
-                  value={applicantFirstName} 
-                  onChange={(e) => setApplicantFirstName(e.target.value)} 
-                  style={{ borderRadius: '10px' }}
-                  required
-                />
-              </div>
-
-              <div className="col-md-4">
-                <label className="form-label small fw-semibold">Nom de l'assuré *</label>
-                <input 
-                  type="text" 
-                  className="form-control input fw-bold" 
-                  value={applicantLastName} 
-                  onChange={(e) => setApplicantLastName(e.target.value)} 
-                  style={{ borderRadius: '10px' }}
-                  required
-                />
-              </div>
-
-              <div className="col-md-4">
-                <label className="form-label small fw-semibold">N° Carte CMU Assuré *</label>
-                <input 
-                  type="text" 
-                  className="form-control input fw-bold text-success" 
-                  value={applicantCmu} 
-                  onChange={(e) => setApplicantCmu(e.target.value)} 
-                  style={{ borderRadius: '10px' }}
-                  required
-                />
-              </div>
+      {/* FORMULAIRE NOUVELLE DEMANDE (React Portal — Centered on Screen) */}
+      {activeTab === 'new' && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
+          <div className="card shadow-lg border-0 p-4" style={{ maxWidth: '820px', width: '100%', maxHeight: '90vh', overflowY: 'auto', borderRadius: '24px', background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)', margin: 'auto' }}>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h4 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: 'var(--primary)' }}>
+                <span>➕</span> Nouvelle demande sous le Tiers-Payant UNAMUSC
+              </h4>
+              <button type="button" className="btn-close" onClick={() => setActiveTab('list')}></button>
             </div>
 
-            <div className="row g-3 mb-3">
-              <div className="col-md-6">
-                <label className="form-label small fw-semibold">
-                  {requestCategory === 'hospital' ? 'Établissement d\'accueil récepteur *' : 'Pharmacie partenaire agréée UNAMUSC *'}
-                </label>
-                <select 
-                  className="form-select input fw-bold" 
-                  value={structureName} 
-                  onChange={(e) => setStructureName(e.target.value)}
-                  style={{ borderRadius: '10px' }}
-                >
-                  {requestCategory === 'hospital' ? (
-                    <>
-                      <option value="Hôpital Universitaire de Fann (Dakar)">Hôpital Universitaire de Fann (Dakar)</option>
-                      <option value="Hôpital Aristide Le Dantec">Hôpital Aristide Le Dantec</option>
-                      <option value="Hôpital Général Idrissa Pouye (Pikine)">Hôpital Général Idrissa Pouye (Pikine)</option>
-                      <option value="Centre Hospitalier Abass Ndao">Centre Hospitalier Abass Ndao</option>
-                      <option value="Hôpital d'Enfants Albert Royer">Hôpital d'Enfants Albert Royer</option>
-                    </>
-                  ) : (
-                    <>
-                      <option value="Pharmacie de la Nation (Dakar)">Pharmacie de la Nation (Dakar)</option>
-                      <option value="Pharmacie Cheikh Anta Diop">Pharmacie Cheikh Anta Diop</option>
-                      <option value="Pharmacie Universelle Pikine">Pharmacie Universelle Pikine</option>
-                      <option value="Pharmacie Populaire Guédiawaye">Pharmacie Populaire Guédiawaye</option>
-                    </>
-                  )}
-                </select>
-              </div>
+            <p className="small text-muted mb-4">
+              Sélectionnez le type de prestation (Hospitalisation ou Pharmacie) et renseignez les éléments de votre devis ou ordonnance.
+            </p>
 
-              <div className="col-md-6">
-                <label className="form-label small fw-semibold">Devis estimatif soumis (FCFA) *</label>
-                <input 
-                  type="number" 
-                  className="form-control input fw-bold"
-                  placeholder="Ex: 250000"
-                  value={estimatedAmount}
-                  onChange={(e) => setEstimatedAmount(e.target.value)}
-                  style={{ borderRadius: '10px' }}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <label className="form-label small fw-semibold">
-                {requestCategory === 'hospital' 
-                  ? 'Description de l\'acte médical / hospitalisation prescrite *' 
-                  : 'Liste des médicaments prescrits (Ordonnance) *'}
-              </label>
-              <textarea 
-                className="form-control input" 
-                rows="3" 
-                placeholder={requestCategory === 'hospital' 
-                  ? 'Ex: Intervention chirurgicale ORL, hospitalisation 5 jours en médecine interne...' 
-                  : 'Ex: Amoxicilline 500mg (2 boîtes), Paracétamol 1g (1 boîte), Spasfon...'}
-                value={medicalAct}
-                onChange={(e) => setMedicalAct(e.target.value)}
-                style={{ borderRadius: '10px' }}
-                required
-              />
-            </div>
-
-            {(() => {
-              const isPharm = requestCategory === 'pharmacy';
-              const pct = isPharm ? 50 : 80;
-              const pctFactor = isPharm ? 0.5 : 0.8;
-              const estNum = parseFloat(estimatedAmount) || 0;
-              const coveredVal = estNum * pctFactor;
-              const restVal = estNum * (1 - pctFactor);
-
-              return (
-                <div className="p-3.5 rounded-3 border mb-4" style={{ background: 'var(--card-bg)', borderColor: '#059669', borderLeft: '5px solid #059669' }}>
-                  <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                    <div>
-                      <strong className="d-block small text-success fw-bold">
-                        Estimation automatique UNAMUSC ({pct}%) :
-                      </strong>
-                      <span className="small text-muted d-block">
-                        {isPharm 
-                          ? 'Prise en charge directe 50% sur Bon de Commande Pharmacie (Tiers-Payant UNAMUSC).' 
-                          : 'Prise en charge directe 80% sur Lettre de Garantie Hospitalière (Tiers-Payant UNAMUSC).'}
-                      </span>
-                      {estNum > 0 && (
-                        <small className="text-warning fw-bold d-block mt-1">
-                          Ticket modérateur patient ({100 - pct}%) : {restVal.toLocaleString()} FCFA
-                        </small>
-                      )}
-                    </div>
-                    <div className="text-end">
-                      <span className="small text-muted d-block fw-semibold">Montant pris en charge UNAMUSC ({pct}%) :</span>
-                      <h4 className="fw-bold text-success mb-0">
-                        {coveredVal.toLocaleString()} FCFA
-                      </h4>
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
-
-            <div className="d-flex justify-content-end gap-2">
-              <button type="button" className="btn btn-secondary" onClick={() => setActiveTab('list')}>Annuler</button>
-              <button type="submit" className="btn btn-success text-white fw-bold px-4" disabled={submitting} style={{ borderRadius: '10px' }}>
-                {submitting ? 'Transmission...' : '📤 Soumettre la demande à l\'UNAMUSC'}
+            {/* SÉLECTEUR CATEGORIE : GARANTIE HOSPITALIÈRE OU BON PHARMACIE */}
+            <div className="d-flex gap-2 mb-4">
+              <button 
+                type="button" 
+                className={`btn flex-fill py-2.5 fw-bold ${requestCategory === 'hospital' ? 'btn-success text-white' : 'btn-outline-secondary'}`}
+                onClick={() => setRequestCategory('hospital')}
+                style={{ borderRadius: '12px' }}
+              >
+                🏥 Lettre de Garantie Hospitalière
+              </button>
+              <button 
+                type="button" 
+                className={`btn flex-fill py-2.5 fw-bold ${requestCategory === 'pharmacy' ? 'btn-success text-white' : 'btn-outline-secondary'}`}
+                onClick={() => setRequestCategory('pharmacy')}
+                style={{ borderRadius: '12px' }}
+              >
+                💊 Bon de Commande Pharmacie (48h)
               </button>
             </div>
-          </form>
-        </div>
+
+            <form onSubmit={handleSubmit}>
+              <div className="row g-3 mb-3">
+                <div className="col-md-4">
+                  <label className="form-label small fw-semibold">Prénom de l'assuré *</label>
+                  <input 
+                    type="text" 
+                    className="form-control input fw-bold" 
+                    value={applicantFirstName} 
+                    onChange={(e) => setApplicantFirstName(e.target.value)} 
+                    style={{ borderRadius: '10px' }}
+                    required
+                  />
+                </div>
+
+                <div className="col-md-4">
+                  <label className="form-label small fw-semibold">Nom de l'assuré *</label>
+                  <input 
+                    type="text" 
+                    className="form-control input fw-bold" 
+                    value={applicantLastName} 
+                    onChange={(e) => setApplicantLastName(e.target.value)} 
+                    style={{ borderRadius: '10px' }}
+                    required
+                  />
+                </div>
+
+                <div className="col-md-4">
+                  <label className="form-label small fw-semibold">N° Carte CMU Assuré *</label>
+                  <input 
+                    type="text" 
+                    className="form-control input fw-bold text-success" 
+                    value={applicantCmu} 
+                    onChange={(e) => setApplicantCmu(e.target.value)} 
+                    style={{ borderRadius: '10px' }}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="row g-3 mb-3">
+                <div className="col-md-6">
+                  <label className="form-label small fw-semibold">
+                    {requestCategory === 'hospital' ? 'Établissement d\'accueil récepteur *' : 'Pharmacie partenaire agréée UNAMUSC *'}
+                  </label>
+                  <select 
+                    className="form-select input fw-bold" 
+                    value={structureName} 
+                    onChange={(e) => setStructureName(e.target.value)}
+                    style={{ borderRadius: '10px' }}
+                  >
+                    {requestCategory === 'hospital' ? (
+                      <>
+                        <option value="Hôpital Universitaire de Fann (Dakar)">Hôpital Universitaire de Fann (Dakar)</option>
+                        <option value="Hôpital Aristide Le Dantec">Hôpital Aristide Le Dantec</option>
+                        <option value="Hôpital Général Idrissa Pouye (Pikine)">Hôpital Général Idrissa Pouye (Pikine)</option>
+                        <option value="Centre Hospitalier Abass Ndao">Centre Hospitalier Abass Ndao</option>
+                        <option value="Hôpital d'Enfants Albert Royer">Hôpital d'Enfants Albert Royer</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value="Pharmacie de la Nation (Dakar)">Pharmacie de la Nation (Dakar)</option>
+                        <option value="Pharmacie Cheikh Anta Diop">Pharmacie Cheikh Anta Diop</option>
+                        <option value="Pharmacie Universelle Pikine">Pharmacie Universelle Pikine</option>
+                        <option value="Pharmacie Populaire Guédiawaye">Pharmacie Populaire Guédiawaye</option>
+                      </>
+                    )}
+                  </select>
+                </div>
+
+                <div className="col-md-6">
+                  <label className="form-label small fw-semibold">Devis estimatif soumis (FCFA) *</label>
+                  <input 
+                    type="number" 
+                    className="form-control input fw-bold"
+                    placeholder="Ex: 250000"
+                    value={estimatedAmount}
+                    onChange={(e) => setEstimatedAmount(e.target.value)}
+                    style={{ borderRadius: '10px' }}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <label className="form-label small fw-semibold">
+                  {requestCategory === 'hospital' 
+                    ? 'Description de l\'acte médical / hospitalisation prescrite *' 
+                    : 'Liste des médicaments prescrits (Ordonnance) *'}
+                </label>
+                <textarea 
+                  className="form-control input" 
+                  rows="3" 
+                  placeholder={requestCategory === 'hospital' 
+                    ? 'Ex: Intervention chirurgicale ORL, hospitalisation 5 jours en médecine interne...' 
+                    : 'Ex: Amoxicilline 500mg (2 boîtes), Paracétamol 1g (1 boîte), Spasfon...'}
+                  value={medicalAct}
+                  onChange={(e) => setMedicalAct(e.target.value)}
+                  style={{ borderRadius: '10px' }}
+                  required
+                />
+              </div>
+
+              {(() => {
+                const isPharm = requestCategory === 'pharmacy';
+                const pct = isPharm ? 50 : 80;
+                const pctFactor = isPharm ? 0.5 : 0.8;
+                const estNum = parseFloat(estimatedAmount) || 0;
+                const coveredVal = estNum * pctFactor;
+                const restVal = estNum * (1 - pctFactor);
+
+                return (
+                  <div className="p-3.5 rounded-3 border mb-4" style={{ background: 'var(--card-bg)', borderColor: '#059669', borderLeft: '5px solid #059669' }}>
+                    <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                      <div>
+                        <strong className="d-block small text-success fw-bold">
+                          Estimation automatique UNAMUSC ({pct}%) :
+                        </strong>
+                        <span className="small text-muted d-block">
+                          {isPharm 
+                            ? 'Prise en charge directe 50% sur Bon de Commande Pharmacie (Tiers-Payant UNAMUSC).' 
+                            : 'Prise en charge directe 80% sur Lettre de Garantie Hospitalière (Tiers-Payant UNAMUSC).'}
+                        </span>
+                        {estNum > 0 && (
+                          <small className="text-warning fw-bold d-block mt-1">
+                            Ticket modérateur patient ({100 - pct}%) : {restVal.toLocaleString()} FCFA
+                          </small>
+                        )}
+                      </div>
+                      <div className="text-end">
+                        <span className="small text-muted d-block fw-semibold">Montant pris en charge UNAMUSC ({pct}%) :</span>
+                        <h4 className="fw-bold text-success mb-0">
+                          {coveredVal.toLocaleString()} FCFA
+                        </h4>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              <div className="d-flex justify-content-end gap-2">
+                <button type="button" className="btn btn-secondary" onClick={() => setActiveTab('list')}>Annuler</button>
+                <button type="submit" className="btn btn-success text-white fw-bold px-4" disabled={submitting} style={{ borderRadius: '10px' }}>
+                  {submitting ? 'Transmission...' : '📤 Soumettre la demande à l\'UNAMUSC'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
       )}
 
       {/* BANNIÈRE SÉCURITÉ CONFIDENTIALITÉ S'IL S'AGIT D'UN VISITEUR NON CONNECTÉ SANS RECHERCHE */}
@@ -824,380 +832,364 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                             onClick={() => generateAndPrintPDFWindow(item)}
                             style={{ background: '#059669', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
                           >
-                            🖨️ Imprimer Certificat PDF
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            {/* DECK D'INSTRUCTION ET CERTIFICAT OFFICIEL (React Portal — Centered on Screen) */}
+      {selectedLetter && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
+          <div className="modal-content shadow-lg border-0" style={{ maxWidth: '1140px', width: '100%', maxHeight: '90vh', overflowY: 'auto', borderRadius: '24px', background: 'var(--bg-card)', color: 'var(--text-main)', margin: 'auto', overflow: 'hidden' }}>
+            
+            {/* Entête Modal Officielle UNAMUSC */}
+            <div 
+              className="modal-header p-4 text-white position-relative"
+              style={{
+                background: selectedLetter.status === 'approved' 
+                  ? 'linear-gradient(135deg, #059669 0%, #064e3b 100%)' 
+                  : 'linear-gradient(135deg, #d97706 0%, #78350f 100%)',
+                borderBottom: '1px solid rgba(255,255,255,0.2)'
+              }}
+            >
+              <div>
+                <span className="badge px-3 py-1 mb-2 fw-bold text-white d-inline-block" style={{ background: 'rgba(255,255,255,0.25)', borderRadius: '20px' }}>
+                  🇸🇳 UNAMUSC — DOSSIER DE PRISE EN CHARGE #{selectedLetter.validation_code}
+                </span>
+                <h4 className="fw-bold mb-1 text-white">
+                  📄 Instruction & Attestation de Garantie — {selectedLetter.first_name} {selectedLetter.last_name}
+                </h4>
+                <small className="text-white-50">
+                  Homologation 100% humaine par l'agent habilité de l'Union Nationale des Mutuelles de Santé Communautaires (UNAMUSC).
+                </small>
+              </div>
+              <button type="button" className="btn-close btn-close-white" onClick={() => setSelectedLetter(null)}></button>
             </div>
-          )}
-        </div>
-      )}
 
-      {/* ============================================================================ */}
-      {/* DECK D'INSTRUCTION ET CERTIFICAT OFFICIEL DE GARANTIE HAUTE DÉFINITION (MODAL) */}
-      {/* ============================================================================ */}
-      {selectedLetter && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }}>
-          <div className="modal-dialog modal-dialog-centered modal-xl">
-            <div className="modal-content shadow-lg border-0" style={{ borderRadius: '24px', background: 'var(--bg-card)', color: 'var(--text-main)', overflow: 'hidden' }}>
-              
-              {/* Entête Modal Officielle UNAMUSC */}
-              <div 
-                className="modal-header p-4 text-white position-relative"
+            {/* Navigation Onglets Interne au Modal */}
+            <div className="d-flex border-bottom p-3 gap-2 flex-wrap" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)' }}>
+              <button 
+                type="button" 
+                className="btn fw-bold px-4 py-2.5"
                 style={{
-                  background: selectedLetter.status === 'approved' 
-                    ? 'linear-gradient(135deg, #059669 0%, #064e3b 100%)' 
-                    : 'linear-gradient(135deg, #d97706 0%, #78350f 100%)',
-                  borderBottom: '1px solid rgba(255,255,255,0.2)'
+                  background: modalTab === 'instruction' ? '#059669' : 'var(--bg-card)',
+                  color: modalTab === 'instruction' ? '#ffffff' : 'var(--text-sub)',
+                  border: modalTab === 'instruction' ? '2px solid #ffffff' : '1px solid var(--border-color)',
+                  borderRadius: '10px',
+                  fontSize: '0.9rem',
+                  cursor: 'pointer',
+                  boxShadow: modalTab === 'instruction' ? '0 4px 12px rgba(5, 150, 105, 0.4)' : 'none'
                 }}
+                onClick={() => setModalTab('instruction')}
               >
-                <div>
-                  <span className="badge px-3 py-1 mb-2 fw-bold text-white d-inline-block" style={{ background: 'rgba(255,255,255,0.25)', borderRadius: '20px' }}>
-                    🇸🇳 UNAMUSC — DOSSIER DE PRISE EN CHARGE #{selectedLetter.validation_code}
-                  </span>
-                  <h4 className="fw-bold mb-1 text-white">
-                    📄 Instruction & Attestation de Garantie — {selectedLetter.first_name} {selectedLetter.last_name}
-                  </h4>
-                  <small className="text-white-50">
-                    Homologation 100% humaine par l'agent habilité de l'Union Nationale des Mutuelles de Santé Communautaires (UNAMUSC).
-                  </small>
-                </div>
-                <button type="button" className="btn-close btn-close-white" onClick={() => setSelectedLetter(null)}></button>
-              </div>
+                ⚙️ 1. Instruction & Décision Agent UNAMUSC
+              </button>
+              <button 
+                type="button" 
+                className="btn fw-bold px-4 py-2.5"
+                style={{
+                  background: modalTab === 'certificate' ? '#059669' : 'var(--bg-card)',
+                  color: modalTab === 'certificate' ? '#ffffff' : 'var(--text-sub)',
+                  border: modalTab === 'certificate' ? '2px solid #ffffff' : '1px solid var(--border-color)',
+                  borderRadius: '10px',
+                  fontSize: '0.9rem',
+                  cursor: 'pointer',
+                  boxShadow: modalTab === 'certificate' ? '0 4px 12px rgba(5, 150, 105, 0.4)' : 'none'
+                }}
+                onClick={() => setModalTab('certificate')}
+              >
+                📄 2. Certificat Officiel & Prise en Charge PDF
+              </button>
+            </div>
 
-              {/* Navigation Onglets Interne au Modal */}
-              <div className="d-flex border-bottom p-3 gap-2 flex-wrap" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)' }}>
-                <button 
-                  type="button" 
-                  className="btn fw-bold px-4 py-2.5"
-                  style={{
-                    background: modalTab === 'instruction' ? '#059669' : 'var(--bg-card)',
-                    color: modalTab === 'instruction' ? '#ffffff' : 'var(--text-sub)',
-                    border: modalTab === 'instruction' ? '2px solid #ffffff' : '1px solid var(--border-color)',
-                    borderRadius: '10px',
-                    fontSize: '0.9rem',
-                    cursor: 'pointer',
-                    boxShadow: modalTab === 'instruction' ? '0 4px 12px rgba(5, 150, 105, 0.4)' : 'none'
-                  }}
-                  onClick={() => setModalTab('instruction')}
-                >
-                  ⚙️ 1. Instruction & Décision Agent UNAMUSC
-                </button>
-                <button 
-                  type="button" 
-                  className="btn fw-bold px-4 py-2.5"
-                  style={{
-                    background: modalTab === 'certificate' ? '#059669' : 'var(--bg-card)',
-                    color: modalTab === 'certificate' ? '#ffffff' : 'var(--text-sub)',
-                    border: modalTab === 'certificate' ? '2px solid #ffffff' : '1px solid var(--border-color)',
-                    borderRadius: '10px',
-                    fontSize: '0.9rem',
-                    cursor: 'pointer',
-                    boxShadow: modalTab === 'certificate' ? '0 4px 12px rgba(5, 150, 105, 0.4)' : 'none'
-                  }}
-                  onClick={() => setModalTab('certificate')}
-                >
-                  📄 2. Certificat Officiel & Prise en Charge PDF
-                </button>
-              </div>
-
-              <div className="modal-body p-4">
-                {/* ONGLET 1 : INSTRUCTION & CALCUL DE PRISE EN CHARGE */}
-                {modalTab === 'instruction' && (
-                  <div className="fade-in-up">
-                    <div className="row g-4 mb-4">
-                      {/* Carte Bénéficiaire */}
-                      <div className="col-md-6">
-                        <div className="p-3.5 rounded-4 border" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)' }}>
-                          <span className="small text-muted d-block mb-1">👤 Assuré Bénéficiaire :</span>
-                          <h5 className="fw-bold mb-1" style={{ color: 'var(--text-main)' }}>{selectedLetter.first_name} {selectedLetter.last_name}</h5>
-                          <div className="d-flex flex-wrap gap-2 align-items-center mt-2">
-                            <code className="px-2.5 py-1 bg-dark text-success border border-success rounded-3 fw-bold">
-                              N° {selectedLetter.cmu_number}
-                            </code>
-                            <span className="badge bg-secondary">
-                              {selectedLetter.ipp_number || 'IPP-FANN-8812'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Carte Établissement & Acte */}
-                      <div className="col-md-6">
-                        <div className="p-3.5 rounded-4 border" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)' }}>
-                          <span className="small text-muted d-block mb-1">🏥 Acte & Établissement récepteur :</span>
-                          <h6 className="fw-bold mb-1 text-success">{selectedLetter.medical_act}</h6>
-                          <small className="text-muted d-block mt-1">Devis d'hospitalisation soumis : <strong>{Number(selectedLetter.estimated_amount).toLocaleString()} FCFA</strong></small>
+            <div className="modal-body p-4">
+              {/* ONGLET 1 : INSTRUCTION & CALCUL DE PRISE EN CHARGE */}
+              {modalTab === 'instruction' && (
+                <div className="fade-in-up">
+                  <div className="row g-4 mb-4">
+                    {/* Carte Bénéficiaire */}
+                    <div className="col-md-6">
+                      <div className="p-3.5 rounded-4 border" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)' }}>
+                        <span className="small text-muted d-block mb-1">👤 Assuré Bénéficiaire :</span>
+                        <h5 className="fw-bold mb-1" style={{ color: 'var(--text-main)' }}>{selectedLetter.first_name} {selectedLetter.last_name}</h5>
+                        <div className="d-flex flex-wrap gap-2 align-items-center mt-2">
+                          <code className="px-2.5 py-1 bg-dark text-success border border-success rounded-3 fw-bold">
+                            N° {selectedLetter.cmu_number}
+                          </code>
+                          <span className="badge bg-secondary">
+                            {selectedLetter.ipp_number || 'IPP-FANN-8812'}
+                          </span>
                         </div>
                       </div>
                     </div>
 
-                    {/* CALCULATEUR EXÉCUTIF DE COUVERTURE & RESTES À CHARGE */}
-                    <div className="card p-4 rounded-4 border-0 mb-4 shadow-sm" style={{ background: 'rgba(5, 150, 105, 0.06)', borderLeft: '5px solid var(--primary)' }}>
-                      <h5 className="fw-bold mb-3 text-success d-flex align-items-center gap-2">
-                        <span>⚙️</span> Calculateur UNAMUSC de Prise en Charge & Plafond Tiers-Payant
-                      </h5>
+                    {/* Carte Établissement & Acte */}
+                    <div className="col-md-6">
+                      <div className="p-3.5 rounded-4 border" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)' }}>
+                        <span className="small text-muted d-block mb-1">🏥 Acte & Établissement récepteur :</span>
+                        <h6 className="fw-bold mb-1 text-success">{selectedLetter.medical_act}</h6>
+                        <small className="text-muted d-block mt-1">Devis d'hospitalisation soumis : <strong>{Number(selectedLetter.estimated_amount).toLocaleString()} FCFA</strong></small>
+                      </div>
+                    </div>
+                  </div>
 
-                      <div className="row g-4 align-items-center mb-4">
-                        <div className="col-md-6">
-                          <label className="form-label fw-bold small">Taux de couverture accordé par l'UNAMUSC (%)</label>
-                          <div className="d-flex align-items-center gap-2">
-                            <input 
-                              type="range" 
-                              className="form-range flex-grow-1"
-                              min="50"
-                              max="100"
-                              step="5"
-                              value={guaranteedPct}
-                              onChange={(e) => setGuaranteedPct(e.target.value)}
-                            />
-                            <span className="badge bg-success fs-6 px-3 py-2 fw-bold">{guaranteedPct}%</span>
-                          </div>
-                        </div>
+                  {/* CALCULATEUR EXÉCUTIF DE COUVERTURE & RESTES À CHARGE */}
+                  <div className="card p-4 rounded-4 border-0 mb-4 shadow-sm" style={{ background: 'rgba(5, 150, 105, 0.06)', borderLeft: '5px solid var(--primary)' }}>
+                    <h5 className="fw-bold mb-3 text-success d-flex align-items-center gap-2">
+                      <span>⚙️</span> Calculateur UNAMUSC de Prise en Charge & Plafond Tiers-Payant
+                    </h5>
 
-                        <div className="col-md-6">
-                          <label className="form-label fw-bold small">Plafond maximum garanti ajusté (FCFA)</label>
+                    <div className="row g-4 align-items-center mb-4">
+                      <div className="col-md-6">
+                        <label className="form-label fw-bold small">Taux de couverture accordé par l'UNAMUSC (%)</label>
+                        <div className="d-flex align-items-center gap-2">
                           <input 
-                            type="number" 
-                            className="form-control input fw-bold"
-                            value={maxAmount}
-                            onChange={(e) => setMaxAmount(e.target.value)}
-                            style={{ borderRadius: '10px' }}
+                            type="range" 
+                            className="form-range flex-grow-1"
+                            min="50"
+                            max="100"
+                            step="5"
+                            value={guaranteedPct}
+                            onChange={(e) => setGuaranteedPct(e.target.value)}
                           />
+                          <span className="badge bg-success fs-6 px-3 py-2 fw-bold">{guaranteedPct}%</span>
                         </div>
                       </div>
 
-                      {/* Bilan financier dynamique */}
-                      {(() => {
-                        const estVal = parseFloat(selectedLetter.estimated_amount) || 0;
-                        const pctVal = parseFloat(guaranteedPct) || 80;
-                        const calcGuarantee = maxAmount !== '' ? (parseFloat(maxAmount) || 0) : (estVal * (pctVal / 100));
-                        const calcRest = Math.max(0, estVal - calcGuarantee);
-
-                        return (
-                          <div className="p-3.5 rounded-3 border border-success" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)' }}>
-                            <div className="row g-3 text-center">
-                              <div className="col-md-4">
-                                <span className="small d-block mb-1" style={{ color: 'var(--text-sub)' }}>Montant Devis Soumis</span>
-                                <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>{Number(estVal).toLocaleString()} FCFA</h5>
-                              </div>
-                              <div className="col-md-4 border-start border-end" style={{ borderColor: 'var(--border-color)' }}>
-                                <span className="text-success small d-block mb-1">Prise en charge UNAMUSC/CSU</span>
-                                <h4 className="fw-bold mb-0 text-success">{Number(calcGuarantee).toLocaleString()} FCFA</h4>
-                              </div>
-                              <div className="col-md-4">
-                                <span className="text-warning small d-block mb-1">Reste à charge patient (Ticket)</span>
-                                <h5 className="fw-bold mb-0 text-warning">{Number(calcRest).toLocaleString()} FCFA</h5>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })()}
-
-                      <div className="mt-4">
-                        <label className="form-label fw-bold small">Note d'instruction & Observations de l'agent habilité UNAMUSC *</label>
-                        <textarea 
-                          className="form-control input" 
-                          rows="3"
-                          value={agentNote}
-                          onChange={(e) => setAgentNote(e.target.value)}
-                          placeholder="Saisissez ici le motif d'acceptation, d'ajustement du plafond ou de réserve..."
+                      <div className="col-md-6">
+                        <label className="form-label fw-bold small">Plafond maximum garanti ajusté (FCFA)</label>
+                        <input 
+                          type="number" 
+                          className="form-control input fw-bold"
+                          value={maxAmount}
+                          onChange={(e) => setMaxAmount(e.target.value)}
                           style={{ borderRadius: '10px' }}
                         />
                       </div>
                     </div>
+
+                    {/* Bilan financier dynamique */}
+                    {(() => {
+                      const estVal = parseFloat(selectedLetter.estimated_amount) || 0;
+                      const pctVal = parseFloat(guaranteedPct) || 80;
+                      const calcGuarantee = maxAmount !== '' ? (parseFloat(maxAmount) || 0) : (estVal * (pctVal / 100));
+                      const calcRest = Math.max(0, estVal - calcGuarantee);
+
+                      return (
+                        <div className="p-3.5 rounded-3 border border-success" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)' }}>
+                          <div className="row g-3 text-center">
+                            <div className="col-md-4">
+                              <span className="small d-block mb-1" style={{ color: 'var(--text-sub)' }}>Montant Devis Soumis</span>
+                              <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>{Number(estVal).toLocaleString()} FCFA</h5>
+                            </div>
+                            <div className="col-md-4 border-start border-end" style={{ borderColor: 'var(--border-color)' }}>
+                              <span className="text-success small d-block mb-1">Prise en charge UNAMUSC/CSU</span>
+                              <h4 className="fw-bold mb-0 text-success">{Number(calcGuarantee).toLocaleString()} FCFA</h4>
+                            </div>
+                            <div className="col-md-4">
+                              <span className="text-warning small d-block mb-1">Reste à charge patient (Ticket)</span>
+                              <h5 className="fw-bold mb-0 text-warning">{Number(calcRest).toLocaleString()} FCFA</h5>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    <div className="mt-4">
+                      <label className="form-label fw-bold small">Note d'instruction & Observations de l'agent habilité UNAMUSC *</label>
+                      <textarea 
+                        className="form-control input" 
+                        rows="3"
+                        value={agentNote}
+                        onChange={(e) => setAgentNote(e.target.value)}
+                        placeholder="Saisissez ici le motif d'acceptation, d'ajustement du plafond ou de réserve..."
+                        style={{ borderRadius: '10px' }}
+                      />
+                    </div>
                   </div>
-                )}
+                </div>
+              )}
 
-                {/* ONGLET 2 : CERTIFICAT OFFICIEL HAUTE DÉFINITION (STYLE VOUCHER IMPRIMABLE) */}
-                {modalTab === 'certificate' && (
-                  <div className="fade-in-up">
-                    <div 
-                      id="printable-certificate"
-                      className="p-5 rounded-4 border shadow-sm position-relative overflow-hidden mb-4"
-                      style={{ 
-                        background: '#ffffff', 
-                        color: '#0f172a',
-                        fontFamily: 'Inter, Arial, sans-serif',
-                        border: '2px solid #047857'
-                      }}
-                    >
-                      {/* Entête Officiel Sénégal avec Drapeau 🇸🇳 et Logo Officiel UNAMUSC */}
-                      <div className="d-flex justify-content-between align-items-center mb-4 border-bottom pb-4" style={{ borderColor: '#cbd5e1' }}>
-                        <div className="d-flex align-items-center gap-3">
-                          <img 
-                            src="/senegal_flag.png" 
-                            alt="Drapeau du Sénégal 🇸🇳" 
-                            style={{ width: '58px', height: '38px', objectFit: 'cover', borderRadius: '4px', border: '1.5px solid #d97706', boxShadow: '0 2px 5px rgba(0,0,0,0.15)' }} 
-                          />
-                          <div>
-                            <h6 className="fw-bold mb-0 text-uppercase" style={{ color: '#047857', letterSpacing: '0.5px', fontSize: '0.92rem' }}>
-                              RÉPUBLIQUE DU SÉNÉGAL
-                            </h6>
-                            <small className="text-muted fw-semibold" style={{ fontSize: '0.75rem' }}>Un Peuple — Un But — Une Foi</small><br />
-                            <strong className="small text-uppercase" style={{ color: '#0f172a', fontSize: '0.82rem', letterSpacing: '0.2px' }}>
-                              UNION NATIONALE DES MUTUELLES DE SANTÉ COMMUNAUTAIRES (UNAMUSC)
-                            </strong><br />
-                             <span className="badge bg-success-subtle text-success border border-success fw-semibold" style={{ fontSize: '0.72rem' }}>
-                                PROGRAMME NATIONAL DE LA COUVERTURE SANITAIRE DU SÉNÉGAL
-                             </span>
-                          </div>
-                        </div>
-
-                        <div className="d-flex align-items-center gap-3 text-end">
-                          <img 
-                            src="/unamusc_logo.png" 
-                            alt="Logo Officiel UNAMUSC" 
-                            style={{ width: '75px', height: '75px', objectFit: 'contain' }} 
-                          />
-                        </div>
-                      </div>
-
-                      <div className="text-center my-4 p-3 rounded-3" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
-                        <h4 className="fw-bold text-uppercase mb-1" style={{ color: '#047857', letterSpacing: '1px' }}>
-                          ATTESTATION OFFICIELLE DE PRISE EN CHARGE HOSPITALIÈRE
-                        </h4>
-                        <small className="text-muted fw-semibold">Émise sous le système de Tiers-Payant UNAMUSC — Programme National de la Couverture Sanitaire du Sénégal</small><br />
-                        <code className="mt-2 d-inline-block px-3 py-1 bg-white text-success border border-success rounded-3 fw-bold fs-6">
-                          Code Homologation : #{selectedLetter.validation_code}
-                        </code>
-                      </div>
-
-                      {/* Grille des caractéristiques — Haute Lisibilité et Contraste Explicite */}
-                      <div className="row g-4 mb-4 p-4 rounded-3" style={{ background: '#ffffff', border: '1.5px solid #cbd5e1', boxShadow: 'inset 0 0 0 1px #f1f5f9' }}>
-                        <div className="col-md-6">
-                          <span className="small fw-bold d-block mb-1" style={{ color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                            👤 BÉNÉFICIAIRE ASSURÉ :
-                          </span>
-                          <h5 className="fw-bold mb-1" style={{ color: '#0f172a' }}>{selectedLetter.first_name} {selectedLetter.last_name}</h5>
-                          <div className="small" style={{ color: '#334155' }}>
-                            N° Carte CMU : <strong style={{ color: '#0f172a' }}>{selectedLetter.cmu_number}</strong> | IPP : <strong style={{ color: '#0f172a' }}>{selectedLetter.ipp_number || 'IPP-FANN-2026-8812'}</strong>
-                          </div>
-                          <small className="text-success fw-bold d-block mt-1">
-                            Organisme Émetteur : Tiers-Payant UNAMUSC Sénégal
-                          </small>
-                        </div>
-
-                        <div className="col-md-6">
-                          <span className="small fw-bold d-block mb-1" style={{ color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                            🏥 STRUCTURE HOSPITALIÈRE D'ACCUEIL :
-                          </span>
-                          <h6 className="fw-bold mb-1" style={{ color: '#047857', fontSize: '1rem' }}>
-                            {selectedLetter.hospital_name || selectedLetter.medical_act}
+              {/* ONGLET 2 : CERTIFICAT OFFICIEL HAUTE DÉFINITION (STYLE VOUCHER IMPRIMABLE) */}
+              {modalTab === 'certificate' && (
+                <div className="fade-in-up">
+                  <div 
+                    id="printable-certificate"
+                    className="p-5 rounded-4 border shadow-sm position-relative overflow-hidden mb-4"
+                    style={{ 
+                      background: '#ffffff', 
+                      color: '#0f172a',
+                      fontFamily: 'Inter, Arial, sans-serif',
+                      border: '2px solid #047857'
+                    }}
+                  >
+                    {/* Entête Officiel Sénégal avec Drapeau 🇸🇳 et Logo Officiel UNAMUSC */}
+                    <div className="d-flex justify-content-between align-items-center mb-4 border-bottom pb-4" style={{ borderColor: '#cbd5e1' }}>
+                      <div className="d-flex align-items-center gap-3">
+                        <img 
+                          src="/senegal_flag.png" 
+                          alt="Drapeau du Sénégal 🇸🇳" 
+                          style={{ width: '58px', height: '38px', objectFit: 'cover', borderRadius: '4px', border: '1.5px solid #d97706', boxShadow: '0 2px 5px rgba(0,0,0,0.15)' }} 
+                        />
+                        <div>
+                          <h6 className="fw-bold mb-0 text-uppercase" style={{ color: '#047857', letterSpacing: '0.5px', fontSize: '0.92rem' }}>
+                            RÉPUBLIQUE DU SÉNÉGAL
                           </h6>
-                          <div className="small" style={{ color: '#334155' }}>
-                            Conventionné Tiers-Payant UNAMUSC (Validation 100% Humaine)
-                          </div>
-                        </div>
-
-                        <div className="col-md-6 border-top pt-3" style={{ borderColor: '#e2e8f0' }}>
-                          <span className="small fw-bold d-block mb-1" style={{ color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                            📋 ACTE MÉDICAL / HOSPITALISATION PRESCRITE :
-                          </span>
-                          <strong className="d-block" style={{ color: '#0f172a', fontSize: '0.95rem' }}>{selectedLetter.medical_act}</strong>
-                        </div>
-
-                        <div className="col-md-6 border-top pt-3" style={{ borderColor: '#e2e8f0' }}>
-                          <span className="small fw-bold d-block mb-1" style={{ color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                            💰 MONTANT ESTIMÉ & ACCORD DE PRISE EN CHARGE :
-                          </span>
-                          <div className="small" style={{ color: '#334155' }}>
-                            Devis Soumis : <strong style={{ color: '#0f172a' }}>{Number(selectedLetter.estimated_amount).toLocaleString()} FCFA</strong><br />
-                            Prise en charge UNAMUSC ({selectedLetter.guaranteed_percentage || 80}%) : <strong style={{ color: '#047857', fontSize: '1.05rem' }}>{Number(selectedLetter.guaranteed_amount || (selectedLetter.estimated_amount * 0.8)).toLocaleString()} FCFA</strong><br />
-                            <span style={{ color: '#b45309', fontWeight: 'bold' }}>Reste à charge patient (Ticket Modérateur) : {Number(selectedLetter.estimated_amount - (selectedLetter.guaranteed_amount || (selectedLetter.estimated_amount * 0.8))).toLocaleString()} FCFA</span>
-                          </div>
+                          <small className="text-muted fw-semibold" style={{ fontSize: '0.75rem' }}>Un Peuple — Un But — Une Foi</small><br />
+                          <strong className="small text-uppercase" style={{ color: '#0f172a', fontSize: '0.82rem', letterSpacing: '0.2px' }}>
+                            UNION NATIONALE DES MUTUELLES DE SANTÉ COMMUNAUTAIRES (UNAMUSC)
+                          </strong><br />
+                           <span className="badge bg-success-subtle text-success border border-success fw-semibold" style={{ fontSize: '0.72rem' }}>
+                              PROGRAMME NATIONAL DE LA COUVERTURE SANITAIRE DU SÉNÉGAL
+                           </span>
                         </div>
                       </div>
 
-                      {/* Engagement Financier Officiel UNAMUSC & Tampon Numérique */}
-                      <div className="row g-4 align-items-center">
-                        <div className="col-md-8">
-                          <div className="p-3 rounded-3" style={{ background: '#f0fdf4', border: '1px solid #86efac' }}>
-                            <strong className="small d-block text-success mb-1 fw-bold">Clause officielle d'engagement financier UNAMUSC :</strong>
-                            <p className="small mb-0 text-dark" style={{ lineHeight: '1.5', color: '#0f172a' }}>
-                              {selectedLetter.agent_note || 'L\'Union Nationale des Mutuelles de Santé Communautaires (UNAMUSC) s\'engage sous le Programme National de la Couverture Sanitaire du Sénégal à régler directement à l\'établissement hospitalier le montant garanti sous présentation de la facture finale conforme.'}
-                            </p>
-                          </div>
-                        </div>
+                      <div className="d-flex align-items-center gap-3 text-end">
+                        <img 
+                          src="/unamusc_logo.png" 
+                          alt="Logo Officiel UNAMUSC" 
+                          style={{ width: '75px', height: '75px', objectFit: 'contain' }} 
+                        />
+                      </div>
+                    </div>
 
-                        <div className="col-md-4 text-center">
-                          <div className="p-2 bg-white rounded-3 shadow-sm d-inline-block border mb-2">
-                            <img 
-                              src={`https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=${encodeURIComponent(selectedLetter.validation_code)}`} 
-                              alt="QR Code Validation" 
-                              style={{ width: '80px', height: '80px' }} 
-                            />
-                          </div>
-                          <div className="small fw-bold text-success">Tampon Numérique Officiel UNAMUSC</div>
-                          <small className="text-muted d-block" style={{ fontSize: '0.72rem' }}>Homologué par l'UNAMUSC — Signature Agent Habilité</small>
+                    <div className="text-center my-4 p-3 rounded-3" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+                      <h4 className="fw-bold text-uppercase mb-1" style={{ color: '#047857', letterSpacing: '1px' }}>
+                        ATTESTATION OFFICIELLE DE PRISE EN CHARGE HOSPITALIÈRE
+                      </h4>
+                      <small className="text-muted fw-semibold">Émise sous le système de Tiers-Payant UNAMUSC — Programme National de la Couverture Sanitaire du Sénégal</small><br />
+                      <code className="mt-2 d-inline-block px-3 py-1 bg-white text-success border border-success rounded-3 fw-bold fs-6">
+                        Code Homologation : #{selectedLetter.validation_code}
+                      </code>
+                    </div>
+
+                    {/* Grille des caractéristiques — Haute Lisibilité et Contraste Explicite */}
+                    <div className="row g-4 mb-4 p-4 rounded-3" style={{ background: '#ffffff', border: '1.5px solid #cbd5e1', boxShadow: 'inset 0 0 0 1px #f1f5f9' }}>
+                      <div className="col-md-6">
+                        <span className="small fw-bold d-block mb-1" style={{ color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                          👤 BÉNÉFICIAIRE ASSURÉ :
+                        </span>
+                        <h5 className="fw-bold mb-1" style={{ color: '#0f172a' }}>{selectedLetter.first_name} {selectedLetter.last_name}</h5>
+                        <div className="small" style={{ color: '#334155' }}>
+                          N° Carte CMU : <strong style={{ color: '#0f172a' }}>{selectedLetter.cmu_number}</strong> | IPP : <strong style={{ color: '#0f172a' }}>{selectedLetter.ipp_number || 'IPP-FANN-2026-8812'}</strong>
+                        </div>
+                        <small className="text-success fw-bold d-block mt-1">
+                          Organisme Émetteur : Tiers-Payant UNAMUSC Sénégal
+                        </small>
+                      </div>
+
+                      <div className="col-md-6">
+                        <span className="small fw-bold d-block mb-1" style={{ color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                          🏥 STRUCTURE HOSPITALIÈRE D'ACCUEIL :
+                        </span>
+                        <h6 className="fw-bold mb-1" style={{ color: '#047857', fontSize: '1rem' }}>
+                          {selectedLetter.hospital_name || selectedLetter.medical_act}
+                        </h6>
+                        <div className="small" style={{ color: '#334155' }}>
+                          Conventionné Tiers-Payant UNAMUSC (Validation 100% Humaine)
+                        </div>
+                      </div>
+
+                      <div className="col-md-6 border-top pt-3" style={{ borderColor: '#e2e8f0' }}>
+                        <span className="small fw-bold d-block mb-1" style={{ color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                          📋 ACTE MÉDICAL / HOSPITALISATION PRESCRITE :
+                        </span>
+                        <strong className="d-block" style={{ color: '#0f172a', fontSize: '0.95rem' }}>{selectedLetter.medical_act}</strong>
+                      </div>
+
+                      <div className="col-md-6 border-top pt-3" style={{ borderColor: '#e2e8f0' }}>
+                        <span className="small fw-bold d-block mb-1" style={{ color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                          💰 MONTANT ESTIMÉ & ACCORD DE PRISE EN CHARGE :
+                        </span>
+                        <div className="small" style={{ color: '#334155' }}>
+                          Devis Soumis : <strong style={{ color: '#0f172a' }}>{Number(selectedLetter.estimated_amount).toLocaleString()} FCFA</strong><br />
+                          Prise en charge UNAMUSC ({selectedLetter.guaranteed_percentage || 80}%) : <strong style={{ color: '#047857', fontSize: '1.05rem' }}>{Number(selectedLetter.guaranteed_amount || (selectedLetter.estimated_amount * 0.8)).toLocaleString()} FCFA</strong><br />
+                          <span style={{ color: '#b45309', fontWeight: 'bold' }}>Reste à charge patient (Ticket Modérateur) : {Number(selectedLetter.estimated_amount - (selectedLetter.guaranteed_amount || (selectedLetter.estimated_amount * 0.8))).toLocaleString()} FCFA</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="d-flex justify-content-center gap-3">
-                      <button 
-                        type="button" 
-                        className="btn btn-success fw-bold text-white px-4 py-2.5 shadow-sm"
-                        onClick={handleDownloadPDF}
-                        style={{ borderRadius: '12px', background: '#059669', borderColor: '#059669' }}
-                      >
-                        📥 Télécharger le Certificat PDF officiel
-                      </button>
+                    {/* Engagement Financier Officiel UNAMUSC & Tampon Numérique */}
+                    <div className="row g-4 align-items-center">
+                      <div className="col-md-8">
+                        <div className="p-3 rounded-3" style={{ background: '#f0fdf4', border: '1px solid #86efac' }}>
+                          <strong className="small d-block text-success mb-1 fw-bold">Clause officielle d'engagement financier UNAMUSC :</strong>
+                          <p className="small mb-0 text-dark" style={{ lineHeight: '1.5', color: '#0f172a' }}>
+                            {selectedLetter.agent_note || 'L\'Union Nationale des Mutuelles de Santé Communautaires (UNAMUSC) s\'engage sous le Programme National de la Couverture Sanitaire du Sénégal à régler directement à l\'établissement hospitalier le montant garanti sous présentation de la facture finale conforme.'}
+                          </p>
+                        </div>
+                      </div>
 
-                      <button 
-                        type="button" 
-                        className="btn fw-bold px-4 py-2.5 shadow-sm"
-                        onClick={handlePrintCertificate}
-                        style={{ borderRadius: '12px', background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', color: 'var(--text-main)' }}
-                      >
-                        🖨️ Imprimer la lettre de garantie
-                      </button>
+                      <div className="col-md-4 text-center">
+                        <div className="p-2 bg-white rounded-3 shadow-sm d-inline-block border mb-2">
+                          <img 
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=${encodeURIComponent(selectedLetter.validation_code)}`} 
+                            alt="QR Code Validation" 
+                            style={{ width: '80px', height: '80px' }} 
+                          />
+                        </div>
+                        <div className="small fw-bold text-success">Tampon Numérique Officiel UNAMUSC</div>
+                        <small className="text-muted d-block" style={{ fontSize: '0.72rem' }}>Homologué par l'UNAMUSC — Signature Agent Habilité</small>
+                      </div>
                     </div>
                   </div>
-                )}
-              </div>
 
-              {/* Pied de Modale & Boutons de validation finale */}
-              <div className="modal-footer border-top p-3 d-flex justify-content-between" style={{ borderColor: 'var(--border-color)' }}>
-                <button 
-                  type="button" 
-                  className="btn text-white fw-bold px-4" 
-                  onClick={() => setSelectedLetter(null)} 
-                  style={{ background: '#334155', border: '1px solid #475569', borderRadius: '10px', color: '#ffffff' }}
-                >
-                  Fermer
-                </button>
-
-                {modalTab === 'instruction' && (
-                  <div className="d-flex gap-2">
+                  <div className="d-flex justify-content-center gap-3">
                     <button 
                       type="button" 
-                      className="btn btn-danger fw-bold px-3 py-2 text-white" 
-                      onClick={() => handleValidateAgent('rejected')}
-                      style={{ borderRadius: '10px' }}
+                      className="btn btn-success fw-bold text-white px-4 py-2.5 shadow-sm"
+                      onClick={handleDownloadPDF}
+                      style={{ borderRadius: '12px', background: '#059669', borderColor: '#059669' }}
                     >
-                      ❌ Rejeter la demande
+                      📥 Télécharger le Certificat PDF officiel
                     </button>
 
                     <button 
                       type="button" 
-                      className="btn btn-success fw-bold px-4 py-2 text-white" 
-                      onClick={() => handleValidateAgent('approved')}
-                      style={{ background: '#059669', borderColor: '#059669', borderRadius: '10px' }}
+                      className="btn fw-bold px-4 py-2.5 shadow-sm"
+                      onClick={handlePrintCertificate}
+                      style={{ borderRadius: '12px', background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', color: 'var(--text-main)' }}
                     >
-                      ✅ Émettre & Certifier la Garantie à 100% / 80%
+                      🖨️ Imprimer la lettre de garantie
                     </button>
                   </div>
-                )}
-              </div>
-
+                </div>
+              )}
             </div>
+
+            {/* Pied de Modale & Boutons de validation finale */}
+            <div className="modal-footer border-top p-3 d-flex justify-content-between" style={{ borderColor: 'var(--border-color)' }}>
+              <button 
+                type="button" 
+                className="btn text-white fw-bold px-4" 
+                onClick={() => setSelectedLetter(null)} 
+                style={{ background: '#334155', border: '1px solid #475569', borderRadius: '10px', color: '#ffffff' }}
+              >
+                Fermer
+              </button>
+
+              {modalTab === 'instruction' && (
+                <div className="d-flex gap-2">
+                  <button 
+                    type="button" 
+                    className="btn btn-danger fw-bold px-3 py-2 text-white" 
+                    onClick={() => handleValidateAgent('rejected')}
+                    style={{ borderRadius: '10px' }}
+                  >
+                    ❌ Rejeter la demande
+                  </button>
+
+                  <button 
+                    type="button" 
+                    className="btn btn-success fw-bold px-4 py-2 text-white" 
+                    onClick={() => handleValidateAgent('approved')}
+                    style={{ background: '#059669', borderColor: '#059669', borderRadius: '10px' }}
+                  >
+                    ✅ Émettre & Certifier la Garantie à 100% / 80%
+                  </button>
+                </div>
+              )}
+            </div>
+
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
