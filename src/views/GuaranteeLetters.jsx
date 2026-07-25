@@ -832,7 +832,20 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                             onClick={() => generateAndPrintPDFWindow(item)}
                             style={{ background: '#059669', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
                           >
-            {/* DECK D'INSTRUCTION ET CERTIFICAT OFFICIEL (React Portal — Centered on Screen) */}
+                            🖨️ Imprimer Certificat PDF
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* DECK D'INSTRUCTION ET CERTIFICAT OFFICIEL (React Portal — Centered on Screen) */}
       {selectedLetter && createPortal(
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
           <div className="modal-content shadow-lg border-0" style={{ maxWidth: '1140px', width: '100%', maxHeight: '90vh', overflowY: 'auto', borderRadius: '24px', background: 'var(--bg-card)', color: 'var(--text-main)', margin: 'auto', overflow: 'hidden' }}>
