@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
 
 // Design Premium Haut de Gamme — Dossier Médical & Radiographies Certifiées
-export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citizenUser = null }) {
+export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, partnerUser = null }) {
+  const isDoctorOrAgent = (userRole === 'agent' || userRole === 'partner' || userRole === 'doctor' || !!agentUser || !!partnerUser);
   const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'history', 'lab'
   
   // Modales
@@ -320,13 +321,19 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                       <span style={{ fontSize: '1.2rem' }}>⚠️</span>
                       <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>Allergies & Alertes</h6>
                     </div>
-                    <button 
-                      type="button" 
-                      style={{ background: 'transparent', color: '#10b981', border: 'none', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}
-                      onClick={() => setEditingAntecedents(!editingAntecedents)}
-                    >
-                      {editingAntecedents ? '✕ Fermer' : '✏️ Éditer'}
-                    </button>
+                    {isDoctorOrAgent ? (
+                      <button 
+                        type="button" 
+                        style={{ background: 'transparent', color: '#10b981', border: 'none', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}
+                        onClick={() => setEditingAntecedents(!editingAntecedents)}
+                      >
+                        {editingAntecedents ? '✕ Fermer' : '✏️ Éditer (Médecin)'}
+                      </button>
+                    ) : (
+                      <span style={{ color: 'var(--text-sub)', fontSize: '0.72rem', fontStyle: 'italic' }}>
+                        🔒 Mis à jour par le Médecin
+                      </span>
+                    )}
                   </div>
 
                   {editingAntecedents ? (
