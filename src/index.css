@@ -1028,3 +1028,32 @@ p {
   margin-bottom: 3.5rem !important;
 }
 
+/* ============================================================================
+   GLOBAL MODAL CENTERING SYSTEM — FORCE ALL POPUPS TO CENTER IN VIEWPORT
+   ============================================================================ */
+.modal,
+.modal.show,
+.modal-backdrop {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 1rem !important;
+}
+
+.modal-dialog,
+.modal-dialog-centered {
+  margin: auto !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  max-height: 92vh !important;
+  width: 100% !important;
+}
+
+.modal-content {
+  margin: auto !important;
+  max-height: 88vh !important;
+  overflow-y: auto !important;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.75) !important;
+}
+
