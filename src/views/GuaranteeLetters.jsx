@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { generateOfficialPdf } from '../utils/pdfGenerator';
 
 export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, partnerUser = null, setView = null }) {
   const defaultLetters = [
@@ -215,8 +216,29 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
     generateAndPrintPDFWindow(selectedLetter);
   };
 
-  const handleDownloadPDF = () => {
-    generateAndPrintPDFWindow(selectedLetter);
+  const handleDownloadPDF = (letterToPrint = selectedLetter) => {
+    const letter = letterToPrint || selectedLetter || letters[0];
+    if (!letter) return;
+    const guaranteeAmt = letter.guaranteed_amount || letter.max_amount || (letter.estimated_amount * ((letter.guaranteed_percentage || 80) / 100));
+
+    generateOfficialPdf({
+      filename: `lettre_garantie_${letter.validation_code}.pdf`,
+      docType: 'LETTRE DE GARANTIE HOSPITALIÈRE HABILITÉE (80%)',
+      title: 'Attestation de Prise en Charge Hospitalière',
+      referenceNo: letter.validation_code,
+      beneficiaryName: `${letter.first_name} ${letter.last_name}`,
+      cmuNumber: letter.cmu_number,
+      structureName: letter.hospital_name || 'Hôpital Universitaire de Fann (Dakar)',
+      details: [
+        { label: 'Assuré Bénéficiaire', value: `${letter.first_name} ${letter.last_name} (${letter.cmu_number})` },
+        { label: 'Acte Médical / Intervention', value: letter.medical_act },
+        { label: 'Établissement Récepteur', value: letter.hospital_name || 'Hôpital Universitaire de Fann' },
+        { label: 'Montant Devis Soumis', value: `${Number(letter.estimated_amount).toLocaleString()} FCFA` },
+        { label: 'Prise en Charge UNAMUSC', value: `${Number(guaranteeAmt).toLocaleString()} FCFA (${letter.guaranteed_percentage || 80}%)` },
+        { label: 'Ticket Modérateur Patient', value: `${Number(Math.max(0, letter.estimated_amount - guaranteeAmt)).toLocaleString()} FCFA` }
+      ],
+      notes: letter.agent_note || 'L\'UNAMUSC s\'engage sous le Programme National de la Couverture Sanitaire du Sénégal à régler directement à l\'établissement hospitalier le montant garanti sous présentation de la facture conforme.'
+    });
   };
 
   // Filtrage strict selon le rôle (RBAC) & Confidentialité des données de santé
@@ -948,22 +970,31 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                       </div>
 
                       {/* Bilan financier dynamique */}
-                      <div className="p-3.5 rounded-3 bg-dark text-white border border-success">
-                        <div className="row g-3 text-center">
-                          <div className="col-md-4">
-                            <span className="text-white-50 small d-block mb-1">Montant Devis Soumis</span>
-                            <h5 className="fw-bold mb-0 text-white">{Number(selectedLetter.estimated_amount).toLocaleString()} FCFA</h5>
+                      {(() => {
+                        const estVal = parseFloat(selectedLetter.estimated_amount) || 0;
+                        const pctVal = parseFloat(guaranteedPct) || 80;
+                        const calcGuarantee = maxAmount !== '' ? (parseFloat(maxAmount) || 0) : (estVal * (pctVal / 100));
+                        const calcRest = Math.max(0, estVal - calcGuarantee);
+
+                        return (
+                          <div className="p-3.5 rounded-3 bg-dark text-white border border-success">
+                            <div className="row g-3 text-center">
+                              <div className="col-md-4">
+                                <span className="text-white-50 small d-block mb-1">Montant Devis Soumis</span>
+                                <h5 className="fw-bold mb-0 text-white">{Number(estVal).toLocaleString()} FCFA</h5>
+                              </div>
+                              <div className="col-md-4 border-start border-end border-secondary">
+                                <span className="text-success small d-block mb-1">Prise en charge UNAMUSC/CSU</span>
+                                <h4 className="fw-bold mb-0 text-success">{Number(calcGuarantee).toLocaleString()} FCFA</h4>
+                              </div>
+                              <div className="col-md-4">
+                                <span className="text-warning small d-block mb-1">Reste à charge patient (Ticket)</span>
+                                <h5 className="fw-bold mb-0 text-warning">{Number(calcRest).toLocaleString()} FCFA</h5>
+                              </div>
+                            </div>
                           </div>
-                          <div className="col-md-4 border-start border-end border-secondary">
-                            <span className="text-success small d-block mb-1"> Prise en charge UNAMUSC/CSU</span>
-                            <h4 className="fw-bold mb-0 text-success">{calculatedGuaranteeAmount.toLocaleString()} FCFA</h4>
-                          </div>
-                          <div className="col-md-4">
-                            <span className="text-warning small d-block mb-1">Reste à charge patient (Ticket)</span>
-                            <h5 className="fw-bold mb-0 text-warning">{calculatedPatientRest.toLocaleString()} FCFA</h5>
-                          </div>
-                        </div>
-                      </div>
+                        );
+                      })()}
 
                       <div className="mt-4">
                         <label className="form-label fw-bold small">Note d'instruction & Observations de l'agent habilité UNAMUSC *</label>
