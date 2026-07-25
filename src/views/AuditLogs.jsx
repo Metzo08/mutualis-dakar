@@ -96,20 +96,21 @@ export default function AuditLogs({ lang }) {
     <div className="audit-logs-view fade-in-up">
       {/* Banner */}
       <section className="banner-mini" style={{
-        background: 'linear-gradient(to right, rgba(5, 150, 105, 0.7), rgba(5, 150, 105, 0.4)), url("/bg_audit_stock.jpg") center/cover no-repeat',
-        borderBottom: '1px solid var(--border-color)',
-        borderRadius: '16px',
-        padding: '2.5rem 2rem',
+        background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.94) 0%, rgba(15, 23, 42, 0.9) 100%), url("/bg_audit_stock.jpg") center/cover no-repeat',
+        border: '1px solid rgba(16, 185, 129, 0.35)',
+        borderRadius: '24px',
+        padding: '3.75rem 2.5rem',
+        minHeight: '230px',
         marginBottom: '2rem',
         color: '#fff',
-        boxShadow: 'var(--shadow-md)'
+        boxShadow: '0 12px 35px rgba(0,0,0,0.45)'
       }}>
         <div style={{ textAlign: 'left', position: 'relative', zIndex: 2 }}>
-          <span className="badge" style={{ marginBottom: '0.75rem', backgroundColor: 'rgba(255, 255, 255, 0.2)', color: '#fff', border: 'none' }}>
-            🔒 Administratif & sécurité
+          <span className="badge" style={{ marginBottom: '0.75rem', backgroundColor: 'rgba(255, 255, 255, 0.22)', color: '#fff', border: '1px solid rgba(255, 255, 255, 0.3)', backdropFilter: 'blur(4px)', padding: '0.35rem 0.9rem', fontSize: '0.82rem', fontWeight: '700', borderRadius: '20px' }}>
+            🔒 ADMINISTRATIF & SÉCURITÉ
           </span>
-          <h1 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '0.5rem', fontWeight: '800', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>{t.title}</h1>
-          <p style={{ color: '#f8fafc', fontSize: '1rem', maxWidth: '800px', lineHeight: '1.5', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>{t.subtitle}</p>
+          <h1 style={{ fontSize: '2.35rem', color: '#fff', marginBottom: '0.5rem', fontWeight: '800', textShadow: '0 3px 6px rgba(0,0,0,0.4)', letterSpacing: '-0.02em' }}>{t.title}</h1>
+          <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '1.05rem', maxWidth: '800px', lineHeight: '1.6', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>{t.subtitle}</p>
         </div>
       </section>
 

@@ -217,14 +217,14 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
       <div style={{ maxWidth: '1320px', margin: '1.75rem auto 0 auto', padding: '0 1.5rem' }}>
         
         {/* Top Hero Card Banner */}
-        <div className="p-4 rounded-4 mb-4 text-white" style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.92) 0%, rgba(15, 23, 42, 0.88) 100%), url("/csu_digital_health_real.jpg") center/cover no-repeat', border: '1px solid rgba(16, 185, 129, 0.35)', boxShadow: '0 10px 30px rgba(0, 0, 0, 0.4)' }}>
-          <div className="d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div className="p-5 rounded-4 mb-4 text-white" style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.94) 0%, rgba(15, 23, 42, 0.9) 100%), url("/csu_digital_health_real.jpg") center/cover no-repeat', padding: '3.5rem 2.5rem', minHeight: '230px', borderRadius: '24px', border: '1px solid rgba(16, 185, 129, 0.35)', boxShadow: '0 12px 35px rgba(0, 0, 0, 0.45)' }}>
+          <div className="d-flex justify-content-between align-items-center flex-wrap gap-4">
             <div>
-              <span style={{ background: '#059669', color: '#ffffff', padding: '0.25rem 0.75rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '700', display: 'inline-block', marginBottom: '0.5rem' }}>
+              <span style={{ background: '#059669', color: '#ffffff', padding: '0.35rem 0.9rem', borderRadius: '20px', fontSize: '0.82rem', fontWeight: '700', display: 'inline-block', marginBottom: '0.75rem', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.3)' }}>
                 🇸🇳 CERTIFIÉ CNOM & UNAMUSC SÉNÉGAL
               </span>
-              <h2 className="fw-extrabold text-white mb-2" style={{ fontSize: '1.9rem', letterSpacing: '-0.02em' }}>Dossier médical & radiographies certifiées</h2>
-              <p className="text-white-50 mb-0" style={{ fontSize: '0.95rem', maxWidth: '680px', lineHeight: '1.5' }}>
+              <h1 className="fw-extrabold text-white mb-2" style={{ fontSize: '2.35rem', letterSpacing: '-0.02em', textShadow: '0 3px 6px rgba(0,0,0,0.4)' }}>Dossier médical & radiographies certifiées</h1>
+              <p className="text-white-50 mb-0" style={{ fontSize: '1.05rem', maxWidth: '720px', lineHeight: '1.6', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
                 Accédez en toute sécurité à vos antécédents, vos résultats de radiologie et téléchargez votre carnet de santé numérique certifié.
               </p>
             </div>

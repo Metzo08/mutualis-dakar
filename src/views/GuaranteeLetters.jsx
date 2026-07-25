@@ -405,30 +405,32 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
       <section 
         className="banner-mini text-white mb-4 rounded-4 overflow-hidden position-relative text-center"
         style={{
-          background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.93), rgba(4, 120, 87, 0.88)), url("/csu_claims_hero.png") center/cover no-repeat',
-          padding: '3rem 2rem',
-          boxShadow: '0 10px 25px -5px rgba(5, 150, 105, 0.3)',
-          borderBottom: '1px solid var(--border-color)'
+          background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.94) 0%, rgba(15, 23, 42, 0.9) 100%), url("/csu_claims_hero.png") center/cover no-repeat',
+          padding: '3.75rem 2.5rem',
+          minHeight: '230px',
+          borderRadius: '24px',
+          boxShadow: '0 12px 35px rgba(5, 150, 105, 0.35)',
+          border: '1px solid rgba(16, 185, 129, 0.35)'
         }}
       >
-        <div className="d-flex flex-column align-items-center justify-content-center position-relative text-center mx-auto" style={{ zIndex: 2, maxWidth: '850px' }}>
+        <div className="d-flex flex-column align-items-center justify-content-center position-relative text-center mx-auto" style={{ zIndex: 2, maxWidth: '900px' }}>
           <span 
-            className="badge px-3 py-1 mb-2 fw-semibold d-inline-block text-center"
+            className="badge px-3.5 py-1.5 mb-3 fw-bold d-inline-block text-center"
             style={{
               background: 'rgba(255, 255, 255, 0.22)',
               color: '#ffffff',
-              backdropFilter: 'blur(4px)',
+              backdropFilter: 'blur(6px)',
               borderRadius: '20px',
-              fontSize: '0.82rem',
-              border: '1px solid rgba(255, 255, 255, 0.3)'
+              fontSize: '0.85rem',
+              border: '1px solid rgba(255, 255, 255, 0.35)'
             }}
           >
-            🇸🇳 UNAMUSC Sénégal — Lettres de Garantie Hospitalières (80%) & Bons de Commande Pharmacie (50%)
+            🇸🇳 UNAMUSC SÉNÉGAL — LETTRES DE GARANTIE (80%) & BONS PHARMACIE (50%)
           </span>
-          <h1 className="fw-bold mb-2 text-white text-center" style={{ fontSize: '2rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
-            {lang === 'wo' ? 'Bons de commande ak Bataaxal u garansi' : 'Bons de commande & lettres de garantie'}
+          <h1 className="fw-extrabold mb-2 text-white text-center" style={{ fontSize: '2.35rem', letterSpacing: '-0.02em', textShadow: '0 3px 6px rgba(0,0,0,0.4)' }}>
+            {lang === 'wo' ? 'Bons de commande ak bataaxal u garansi' : 'Bons de commande & lettres de garantie'}
           </h1>
-          <p className="mb-3 text-white-50 text-center mx-auto" style={{ fontSize: '0.98rem', lineHeight: '1.6', textShadow: '0 1px 2px rgba(0,0,0,0.2)', maxWidth: '750px' }}>
+          <p className="mb-4 text-white-50 text-center mx-auto" style={{ fontSize: '1.05rem', lineHeight: '1.6', textShadow: '0 1px 3px rgba(0,0,0,0.3)', maxWidth: '780px' }}>
             {lang === 'wo'
               ? 'Yónnee sa demande ngir joto prise en charge d\'hospitalisation wala chirurgie.'
               : 'Demandez votre lettre de garantie hospitalière (80%) ou bon de commande pharmacie (50%) en ligne sous le Tiers-Payant UNAMUSC.'}
