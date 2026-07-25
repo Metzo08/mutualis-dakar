@@ -39,7 +39,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
       rating: '5.0 (89 avis)',
       cnom: 'CNOM: 3108-SN',
       langs: ['FR', 'WO'],
-      avatar: 'https://images.unsplash.com/photo-1594824813566-88855ce75907?w=180',
+      avatar: '/dr_fatou_diop.png',
       available: true
     },
     {
@@ -532,7 +532,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                     <div className="p-3.5 rounded-4 d-flex flex-column justify-content-between" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}>
                       <div>
                         <div className="d-flex gap-3 align-items-center mb-3">
-                          <img src={doc.avatar} alt={doc.name} style={{ width: '56px', height: '56px', borderRadius: '14px', objectFit: 'cover' }} />
+                          <img src={doc.avatar} onError={(e) => { e.target.src = '/dr_fatou_diop.png'; }} alt={doc.name} style={{ width: '56px', height: '56px', borderRadius: '14px', objectFit: 'cover' }} />
                           <div>
                             <h6 className="fw-bold text-white mb-0" style={{ fontSize: '1rem' }}>{doc.name}</h6>
                             <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', padding: '0.15rem 0.5rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: '600' }}>{doc.specialty}</span>
