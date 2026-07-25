@@ -710,14 +710,14 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
       <div className="parrainage-solidaire-view fade-in-up" style={{ padding: '2rem 1.5rem' }}>
         {/* Banner */}
         <section className="banner-mini" style={{
-          background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.96) 0%, rgba(16, 185, 129, 0.92) 100%), url("/csu_stats_hero.png") center/cover no-repeat',
-          border: '1px solid rgba(52, 211, 153, 0.4)',
+          background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.65) 0%, rgba(16, 185, 129, 0.45) 100%), url("/csu_stats_hero.png") center/cover no-repeat',
+          border: '1px solid rgba(255, 255, 255, 0.4)',
           borderRadius: '24px',
           padding: '3.75rem 2.5rem',
           minHeight: '240px',
           marginBottom: '2.5rem',
           color: '#fff',
-          boxShadow: '0 14px 40px rgba(5, 150, 105, 0.35)',
+          boxShadow: '0 14px 40px rgba(5, 150, 105, 0.25)',
           textAlign: 'center'
         }}>
           <div className="container" style={{ position: 'relative', zIndex: 2 }}>
@@ -998,7 +998,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
   return (
     <div className="parrainage-solidaire-view">
       {/* Top Banner */}
-      <div className="hero-banner" style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.96) 0%, rgba(16, 185, 129, 0.92) 100%), url("/csu_parrainage_hero_real.png") center/cover no-repeat', border: '1px solid rgba(52, 211, 153, 0.4)', borderRadius: '24px', padding: '3.75rem 2.5rem', minHeight: '240px', marginBottom: '2.5rem', boxShadow: '0 14px 40px rgba(5, 150, 105, 0.35)' }}>
+      <div className="hero-banner" style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.65) 0%, rgba(16, 185, 129, 0.45) 100%), url("/csu_parrainage_hero_real.png") center/cover no-repeat', border: '1px solid rgba(255, 255, 255, 0.4)', borderRadius: '24px', padding: '3.75rem 2.5rem', minHeight: '240px', marginBottom: '2.5rem', boxShadow: '0 14px 40px rgba(5, 150, 105, 0.25)' }}>
         <div className="hero-content">
           <span className="badge" style={{ padding: '0.4rem 0.9rem', backgroundColor: 'rgba(255, 255, 255, 0.22)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '700' }}>🤝 CMU SOLIDARITÉ</span>
           <h1 style={{ fontSize: '2.35rem', fontWeight: '900', margin: '0.5rem 0', color: '#ffffff', letterSpacing: '-0.02em', textShadow: '0 3px 6px rgba(0,0,0,0.4)' }}>

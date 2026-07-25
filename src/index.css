@@ -988,14 +988,14 @@ p {
    GLOBAL UNIFIED BANNER & SECTION SPACING DESIGN SYSTEM
    ============================================================================ */
 .banner-mini, .hero-banner {
-  background-image: linear-gradient(135deg, rgba(5, 150, 105, 0.96) 0%, rgba(16, 185, 129, 0.92) 100%) !important;
-  border: 1px solid rgba(52, 211, 153, 0.4) !important;
+  background-image: linear-gradient(135deg, rgba(5, 150, 105, 0.65) 0%, rgba(16, 185, 129, 0.45) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
   border-radius: 24px !important;
   padding: 3.75rem 2.5rem !important;
   min-height: 240px !important;
   margin-bottom: 2.5rem !important;
   color: #ffffff !important;
-  box-shadow: 0 14px 40px rgba(5, 150, 105, 0.35) !important;
+  box-shadow: 0 14px 40px rgba(5, 150, 105, 0.25) !important;
 }
 
 .banner-mini h1, .banner-mini h2, .hero-banner h1, .hero-banner h2 {

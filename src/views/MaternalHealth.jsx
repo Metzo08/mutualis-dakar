@@ -155,12 +155,12 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
         <div 
           className="p-5 rounded-4 mb-5 text-white" 
           style={{ 
-            background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.96) 0%, rgba(16, 185, 129, 0.92) 100%), url("/csu_kids.png") center/cover no-repeat', 
+            background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.65) 0%, rgba(16, 185, 129, 0.45) 100%), url("/csu_kids.png") center/cover no-repeat', 
             padding: '3.75rem 2.5rem',
             minHeight: '240px',
             borderRadius: '24px',
-            border: '1px solid rgba(52, 211, 153, 0.4)', 
-            boxShadow: '0 14px 40px rgba(5, 150, 105, 0.35)' 
+            border: '1px solid rgba(255, 255, 255, 0.4)', 
+            boxShadow: '0 14px 40px rgba(5, 150, 105, 0.25)' 
           }}
         >
           <div className="row align-items-center g-4">

@@ -217,22 +217,22 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
       <div style={{ maxWidth: '1320px', margin: '1.75rem auto 0 auto', padding: '0 1.5rem' }}>
         
         {/* Top Hero Card Banner */}
-        <div className="p-5 rounded-4 mb-5 text-white" style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.96) 0%, rgba(16, 185, 129, 0.92) 100%), url("/csu_digital_health_real.jpg") center/cover no-repeat', padding: '3.75rem 2.5rem', minHeight: '240px', borderRadius: '24px', border: '1px solid rgba(52, 211, 153, 0.4)', boxShadow: '0 14px 40px rgba(5, 150, 105, 0.35)' }}>
+        <div className="p-5 rounded-4 mb-5 text-white" style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.65) 0%, rgba(16, 185, 129, 0.45) 100%), url("/csu_digital_health_real.jpg") center/cover no-repeat', padding: '3.75rem 2.5rem', minHeight: '240px', borderRadius: '24px', border: '1px solid rgba(255, 255, 255, 0.4)', boxShadow: '0 14px 40px rgba(5, 150, 105, 0.25)' }}>
           <div className="d-flex justify-content-between align-items-center flex-wrap gap-4">
             <div>
-              <span style={{ background: '#059669', color: '#ffffff', padding: '0.35rem 0.9rem', borderRadius: '20px', fontSize: '0.82rem', fontWeight: '700', display: 'inline-block', marginBottom: '0.75rem', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.3)' }}>
+              <span style={{ background: 'rgba(255, 255, 255, 0.25)', color: '#ffffff', padding: '0.35rem 0.9rem', borderRadius: '20px', fontSize: '0.82rem', fontWeight: '700', display: 'inline-block', marginBottom: '0.75rem', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.4)' }}>
                 🇸🇳 CERTIFIÉ CNOM & UNAMUSC SÉNÉGAL
               </span>
-              <h1 className="fw-extrabold text-white mb-2" style={{ fontSize: '2.35rem', letterSpacing: '-0.02em', textShadow: '0 3px 6px rgba(0,0,0,0.4)' }}>Dossier médical & radiographies certifiées</h1>
-              <p className="text-white-50 mb-0" style={{ fontSize: '1.05rem', maxWidth: '720px', lineHeight: '1.6', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
+              <h1 className="fw-extrabold text-white mb-2" style={{ fontSize: '2.35rem', letterSpacing: '-0.02em', textShadow: '0 3px 8px rgba(0,0,0,0.4)' }}>Dossier médical & radiographies certifiées</h1>
+              <p className="text-white mb-0" style={{ fontSize: '1.05rem', maxWidth: '720px', lineHeight: '1.6', textShadow: '0 2px 4px rgba(0,0,0,0.3)', opacity: 0.95 }}>
                 Accédez en toute sécurité à vos antécédents, vos résultats de radiologie et téléchargez votre carnet de santé numérique certifié.
               </p>
             </div>
 
-            <div className="d-flex gap-2">
+            <div className="d-flex gap-2 flex-wrap">
               <button 
                 type="button"
-                style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.65rem 1.15rem', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)' }} 
+                style={{ background: '#ffffff', color: '#047857', border: 'none', borderRadius: '12px', padding: '0.7rem 1.25rem', fontWeight: '800', fontSize: '0.88rem', cursor: 'pointer', boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)' }} 
                 onClick={handleDownloadFullBooklet}
               >
                 📥 Télécharger le carnet PDF (🇸🇳)
@@ -240,10 +240,18 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
 
               <button 
                 type="button"
-                style={{ background: '#1e293b', color: '#f8fafc', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '0.65rem 1.15rem', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer' }} 
+                style={{ background: 'rgba(255,255,255,0.25)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.5)', borderRadius: '12px', padding: '0.7rem 1.25rem', fontWeight: '700', fontSize: '0.88rem', cursor: 'pointer', backdropFilter: 'blur(6px)' }} 
                 onClick={() => setShowShareModal(true)}
               >
-                Partager avec mon médecin
+                🔗 Partager avec mon médecin
+              </button>
+
+              <button 
+                type="button"
+                style={{ background: 'rgba(16, 185, 129, 0.9)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '12px', padding: '0.7rem 1.25rem', fontWeight: '800', fontSize: '0.88rem', cursor: 'pointer' }} 
+                onClick={() => setShowAddExamModal(true)}
+              >
+                ➕ Ajouter un examen
               </button>
             </div>
           </div>

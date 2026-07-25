@@ -782,15 +782,15 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
     <div className="services-view fade-in-up">
       {/* Banner */}
       <section className="banner-mini" style={{
-        background: `linear-gradient(135deg, rgba(5, 150, 105, 0.96) 0%, rgba(16, 185, 129, 0.92) 100%), url(${activeTab === 'donate' ? '"/services_donate_real.png"' : '"/services_join_real.png"'}) center/cover no-repeat`,
+        background: `linear-gradient(135deg, rgba(5, 150, 105, 0.65) 0%, rgba(16, 185, 129, 0.45) 100%), url(${activeTab === 'donate' ? '"/services_donate_real.png"' : '"/services_join_real.png"'}) center/cover no-repeat`,
         transition: 'background 0.3s ease',
-        border: '1px solid rgba(52, 211, 153, 0.4)',
+        border: '1px solid rgba(255, 255, 255, 0.4)',
         borderRadius: '24px',
         padding: '3.75rem 2.5rem',
         minHeight: '240px',
         marginBottom: '2.5rem',
         color: '#fff',
-        boxShadow: '0 14px 40px rgba(5, 150, 105, 0.35)',
+        boxShadow: '0 14px 40px rgba(5, 150, 105, 0.25)',
         textAlign: 'center'
       }}>
         <div className="container" style={{ position: 'relative', zIndex: 2 }}>

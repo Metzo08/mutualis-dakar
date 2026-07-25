@@ -405,12 +405,12 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
       <section 
         className="banner-mini text-white mb-5 rounded-4 overflow-hidden position-relative text-center"
         style={{
-          background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.96) 0%, rgba(16, 185, 129, 0.92) 100%), url("/csu_claims_hero.png") center/cover no-repeat',
+          background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.65) 0%, rgba(16, 185, 129, 0.45) 100%), url("/csu_claims_hero.png") center/cover no-repeat',
           padding: '3.75rem 2.5rem',
           minHeight: '240px',
           borderRadius: '24px',
-          boxShadow: '0 14px 40px rgba(5, 150, 105, 0.35)',
-          border: '1px solid rgba(52, 211, 153, 0.4)'
+          boxShadow: '0 14px 40px rgba(5, 150, 105, 0.25)',
+          border: '1px solid rgba(255, 255, 255, 0.4)'
         }}
       >
         <div className="d-flex flex-column align-items-center justify-content-center position-relative text-center mx-auto" style={{ zIndex: 2, maxWidth: '900px' }}>

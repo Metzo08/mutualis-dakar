@@ -385,14 +385,14 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
       <div style={{ maxWidth: '1320px', margin: '1.75rem auto 0 auto', padding: '0 1.5rem' }}>
         
         {/* Top Hero Card Banner */}
-        <div className="p-5 rounded-4 mb-5 text-white" style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.96) 0%, rgba(16, 185, 129, 0.92) 100%), url("/csu_digital_health_real.jpg") center/cover no-repeat', padding: '3.75rem 2.5rem', minHeight: '240px', borderRadius: '24px', border: '1px solid rgba(52, 211, 153, 0.4)', boxShadow: '0 14px 40px rgba(5, 150, 105, 0.35)' }}>
+        <div className="p-5 rounded-4 mb-5 text-white" style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.65) 0%, rgba(16, 185, 129, 0.45) 100%), url("/csu_digital_health_real.jpg") center/cover no-repeat', padding: '3.75rem 2.5rem', minHeight: '240px', borderRadius: '24px', border: '1px solid rgba(255, 255, 255, 0.4)', boxShadow: '0 14px 40px rgba(5, 150, 105, 0.25)' }}>
           <div className="row align-items-center g-4">
             <div className="col-lg-8">
-              <span style={{ background: 'rgba(255, 255, 255, 0.22)', color: '#ffffff', padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '700', display: 'inline-block', marginBottom: '0.85rem', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.35)' }}>
+              <span style={{ background: 'rgba(255, 255, 255, 0.25)', color: '#ffffff', padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '700', display: 'inline-block', marginBottom: '0.85rem', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.4)' }}>
                 🇸🇳 SALLE D'ATTENTE VIRTUELLE UNAMUSC
               </span>
-              <h1 className="fw-extrabold text-white mb-2" style={{ fontSize: '2.4rem', letterSpacing: '-0.02em', textShadow: '0 3px 6px rgba(0,0,0,0.3)' }}>Consultation instantanée 24h/7</h1>
-              <p className="text-white-50 mb-4" style={{ fontSize: '1.08rem', maxWidth: '740px', lineHeight: '1.6', textShadow: '0 1px 3px rgba(0,0,0,0.2)' }}>
+              <h1 className="fw-extrabold text-white mb-2" style={{ fontSize: '2.4rem', letterSpacing: '-0.02em', textShadow: '0 3px 8px rgba(0,0,0,0.4)' }}>Consultation instantanée 24h/7</h1>
+              <p className="text-white mb-4" style={{ fontSize: '1.08rem', maxWidth: '740px', lineHeight: '1.6', textShadow: '0 2px 4px rgba(0,0,0,0.3)', opacity: 0.95 }}>
                 Accédez à un réseau de médecins agréés en moins de 10 minutes. Vidéoconférence HD WebRTC sécurisée et cryptée.
               </p>
               
@@ -407,7 +407,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
                 <button 
                   type="button"
-                  style={{ background: 'rgba(255,255,255,0.18)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '12px', padding: '0.8rem 1.5rem', fontWeight: '700', fontSize: '0.92rem', cursor: 'pointer' }}
+                  style={{ background: 'rgba(255,255,255,0.25)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.5)', borderRadius: '12px', padding: '0.8rem 1.5rem', fontWeight: '700', fontSize: '0.92rem', cursor: 'pointer', backdropFilter: 'blur(6px)' }}
                   onClick={() => setActiveModal('payment')}
                 >
                   💳 Régler ticket modérateur (2 500 FCFA)
@@ -416,19 +416,25 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
             </div>
 
             <div className="col-lg-4">
-              <div className="p-4 rounded-4" style={{ background: 'rgba(15, 23, 42, 0.45)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.25)' }}>
-                <div className="d-flex align-items-center justify-content-between mb-3">
-                  <div className="d-flex align-items-center gap-2">
-                    <div className="d-flex" style={{ marginLeft: '10px' }}>
-                      {doctorsList.map((d, i) => (
-                        <img key={i} src={d.avatar} onError={(e) => { e.target.src = '/mariama_avatar.png'; }} alt={d.name} style={{ width: '38px', height: '38px', borderRadius: '50%', border: '2px solid #ffffff', marginLeft: '-10px', objectFit: 'cover' }} />
-                      ))}
-                      <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#047857', border: '2px solid #ffffff', color: '#ffffff', fontWeight: '800', fontSize: '0.78rem', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: '-10px' }}>+12</div>
-                    </div>
+              <div className="p-4 rounded-4" style={{ background: 'rgba(255, 255, 255, 0.22)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.45)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)' }}>
+                <div className="d-flex align-items-center justify-content-between mb-2">
+                  <span className="fw-bold text-white" style={{ fontSize: '0.88rem', letterSpacing: '0.5px' }}>🟢 15 MÉDECINS EN LIGNE</span>
+                  <span className="badge" style={{ background: '#10b981', color: '#ffffff', fontSize: '0.72rem', fontWeight: '800' }}>Disponible 24/7</span>
+                </div>
+
+                <div className="d-flex align-items-center gap-2 my-2">
+                  <div className="d-flex" style={{ marginLeft: '10px' }}>
+                    {doctorsList.map((d, i) => (
+                      <img key={i} src={d.avatar} onError={(e) => { e.target.src = '/mariama_avatar.png'; }} alt={d.name} title={d.name} style={{ width: '38px', height: '38px', borderRadius: '50%', border: '2px solid #ffffff', marginLeft: '-10px', objectFit: 'cover', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }} />
+                    ))}
+                    <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#047857', border: '2px solid #ffffff', color: '#ffffff', fontWeight: '800', fontSize: '0.78rem', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: '-10px', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>+12</div>
                   </div>
                 </div>
-                <h6 className="fw-bold text-white mb-1" style={{ fontSize: '0.95rem' }}>Médecins en ligne</h6>
-                <small className="text-white-50 d-block">Temps d'attente estimé: <span className="text-warning fw-bold">4 min</span></small>
+
+                <div className="mt-2 pt-2 border-top border-white border-opacity-25">
+                  <small className="text-white d-block fw-semibold" style={{ fontSize: '0.82rem', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>Dr. Ousmane Sow • Dr. Fatou Diop • Dr. Cheikh Tidiane Seck</small>
+                  <small className="text-white-50 d-block mt-1" style={{ fontSize: '0.78rem' }}>Temps d'attente estimé : <span className="fw-bold text-warning" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.4)' }}>⚡ 4 min</span></small>
+                </div>
               </div>
             </div>
           </div>
