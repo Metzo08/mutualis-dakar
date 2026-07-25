@@ -9,6 +9,16 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
   const [showShareModal, setShowShareModal] = useState(false);
   const [showAddExamModal, setShowAddExamModal] = useState(false);
   const [editingAntecedents, setEditingAntecedents] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  const handleCopyShareLink = () => {
+    const shareUrl = `https://mutualis.sn/dossier-partage/849-201`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(shareUrl);
+    }
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 3000);
+  };
 
   // Antécédents Médicaux Éditables
   const [antecedents, setAntecedents] = useState({
@@ -581,22 +591,73 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
 
       {/* SHARE MODAL */}
       {showShareModal && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content p-4" style={{ borderRadius: '24px', background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
-              <h5 className="fw-bold text-success mb-2">🔗 Partager le dossier médical avec un médecin</h5>
-              <p className="small mb-3" style={{ color: 'var(--text-sub)' }}>Générez un lien d'accès sécurisé temporaire (Valable 24h) pour votre praticien.</p>
-              
-              <div className="p-3 rounded-3 mb-3 text-center border border-success" style={{ background: 'var(--bg-card-subtle)' }}>
-                <small className="d-block mb-1" style={{ color: 'var(--text-sub)' }}>Code d'accès temporaire OTP :</small>
-                <h3 className="fw-bold text-warning letter-spacing-2 mb-0">849-201</h3>
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(8px)', zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ maxWidth: '540px', width: '92%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-lg)' }}>
+            
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <div className="d-flex align-items-center gap-2">
+                <span style={{ fontSize: '1.3rem' }}>🔗</span>
+                <h5 className="fw-bold text-success mb-0" style={{ fontSize: '1.15rem' }}>Partager mon Dossier Médical (UNAMUSC)</h5>
               </div>
+              <button type="button" className="btn-close" onClick={() => setShowShareModal(false)}></button>
+            </div>
 
-              <div className="d-flex justify-content-end gap-2">
-                <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setShowShareModal(false)}>Fermer</button>
-                <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700' }} onClick={() => alert("Lien copié dans le presse-papier !")}>📋 Copier le lien</button>
+            <p className="small mb-3" style={{ color: 'var(--text-sub)' }}>
+              Générez un jeton d'accès sécurisé temporaire (Valable 24h) pour autoriser votre médecin ou établissement partenaire à consulter vos antécédents et radiographies.
+            </p>
+
+            <div className="p-3.5 rounded-4 mb-3 text-center border border-success" style={{ background: 'var(--bg-card-subtle)' }}>
+              <small className="d-block mb-1 text-muted fw-bold" style={{ fontSize: '0.75rem' }}>CODE D'ACCÈS TEMPORAIRE SÉCURISÉ (OTP 24H) :</small>
+              <h2 className="fw-bold text-warning letter-spacing-2 my-1" style={{ fontSize: '2rem' }}>849-201</h2>
+              <small className="d-block text-success fw-bold" style={{ fontSize: '0.75rem' }}>● ACCÈS SÉCURISÉ CHIFFRÉ DHIS2 & UNAMUSC</small>
+            </div>
+
+            {/* QR CODE FOR DOCTOR SCAN */}
+            <div className="d-flex align-items-center gap-3 p-3 rounded-4 mb-3" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+              <div className="p-1.5 bg-white rounded-3 border border-success flex-shrink-0">
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://mutualis.sn/dossier-partage/849-201" alt="QR Code Partage" style={{ width: '80px', height: '80px' }} />
+              </div>
+              <div>
+                <strong className="d-block text-success small fw-bold">Scan QR Code en Consultation</strong>
+                <small style={{ color: 'var(--text-sub)', fontSize: '0.76rem', lineHeight: '1.4' }}>
+                  Votre médecin peut directement scanner ce QR Code avec son smartphone pour ouvrir votre dossier médical certifié.
+                </small>
               </div>
             </div>
+
+            {copiedLink && (
+              <div className="alert alert-success py-2 px-3 small fw-bold mb-3 rounded-3 text-center">
+                ✅ Lien d'accès au dossier médical copié dans le presse-papier !
+              </div>
+            )}
+
+            <div className="d-flex flex-column gap-2">
+              <button 
+                type="button" 
+                style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.7rem 1.25rem', fontWeight: '800', fontSize: '0.88rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }} 
+                onClick={handleCopyShareLink}
+              >
+                📋 Copier le lien sécurisé (https://mutualis.sn/dossier/849-201)
+              </button>
+
+              <a 
+                href={`https://api.whatsapp.com/send?text=${encodeURIComponent('Bonjour Docteur, voici l\'accès sécurisé à mon dossier médical certifié UNAMUSC Sénégal (Code OTP: 849-201) : https://mutualis.sn/dossier-partage/849-201')}`} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                style={{ background: '#25D366', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.65rem 1.25rem', fontWeight: '800', fontSize: '0.88rem', textDecoration: 'none', textAlign: 'center', display: 'block' }}
+              >
+                💬 Partager directement via WhatsApp au Médecin
+              </a>
+
+              <button 
+                type="button" 
+                style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.6rem 1rem', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer' }} 
+                onClick={() => setShowShareModal(false)}
+              >
+                Fermer
+              </button>
+            </div>
+
           </div>
         </div>
       )}
