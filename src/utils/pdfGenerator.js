@@ -241,17 +241,18 @@ export function generateOfficialPdf({
   // ---------------------------------------------------------------------------
   doc.setDrawColor(226, 232, 240);
   doc.setLineWidth(0.5);
-  doc.line(14, 276, 196, 276);
+  doc.line(14, 275, 196, 275);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(71, 85, 105);
+  doc.text('UNAMUSC Sénégal — Union Nationale des Mutuelles de Santé Communautaires', 14, 281);
+  doc.text('Page 1/1', pageWidth - 14, 281, { align: 'right' });
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);
   doc.setTextColor(100, 116, 139);
-  doc.text('UNAMUSC Sénégal — Union Nationale des Mutuelles de Santé Communautaires (Dakar)', 14, 281);
-  doc.text('Page 1/1', pageWidth - 14, 281, { align: 'right' });
-
-  doc.setFontSize(6.8);
-  doc.setTextColor(148, 163, 184);
-  doc.text(`Document Officiel n° ${referenceNo}  •  Imprimé le ${new Date().toLocaleDateString('fr-FR')}`, 14, 286);
+  doc.text(`Siège : Dakar, Sénégal  •  Document Officiel n° ${referenceNo}  •  Imprimé le ${new Date().toLocaleDateString('fr-FR')}`, 14, 286);
 
   // Téléchargement du fichier PDF
   const safeFilename = filename.endsWith('.pdf') ? filename : `${filename}.pdf`;
