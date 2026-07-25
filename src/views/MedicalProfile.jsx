@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
 
 // Design Premium Haut de Gamme — Dossier Médical & Radiographies Certifiées
@@ -556,66 +557,67 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
 
       </div>
 
-      {/* DICOM VIEWING MODAL (Centered on Screen) */}
-      {viewingExam && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
-          <div style={{ maxWidth: '1100px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 20px 60px rgba(0,0,0,0.6)', margin: 'auto' }}>
+      {/* DICOM VIEWING MODAL (React Portal — Centered on Screen) */}
+      {viewingExam && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
+          <div style={{ maxWidth: '1100px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h5 className="fw-bold text-success mb-0">🩻 Visionneuse DICOM 3.0 HD — {viewingExam.title}</h5>
               <button type="button" className="btn-close" onClick={() => setViewingExam(null)}></button>
             </div>
 
-              <div className="row g-4">
-                <div className="col-lg-8">
-                  <div className="rounded-4 p-3 text-center d-flex flex-column align-items-center justify-content-center" style={{ height: '420px', background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', position: 'relative', overflow: 'hidden' }}>
-                    <img 
-                      src={viewingExam.preview} 
-                      alt={viewingExam.title} 
-                      style={{ 
-                        maxHeight: '100%', 
-                        maxWidth: '100%', 
-                        objectFit: 'contain',
-                        transform: `scale(${dicomZoom})`,
-                        filter: dicomInvert ? 'invert(100%)' : 'none'
-                      }} 
-                    />
-                    <div className="position-absolute bottom-0 start-0 m-3 p-2 rounded-3 small" style={{ background: 'var(--bg-card)', color: 'var(--text-sub)', border: '1px solid var(--border-color)' }}>
-                      Cliché {activeCliche} / {viewingExam.cliches}
-                    </div>
-                  </div>
-
-                  <div className="d-flex justify-content-center gap-2 mt-3 p-2 rounded-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
-                    <button type="button" style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} onClick={() => setDicomZoom(dicomZoom + 0.2)}>🔍 Zoom +</button>
-                    <button type="button" style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} onClick={() => setDicomZoom(1)}>🔄 Reset</button>
-                    <button type="button" style={{ background: dicomInvert ? '#f59e0b' : 'var(--bg-card)', color: dicomInvert ? '#ffffff' : 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} onClick={() => setDicomInvert(!dicomInvert)}>🌗 Négatif</button>
-                    <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem', fontWeight: '700' }} onClick={() => setActiveCliche(prev => (prev >= viewingExam.cliches ? 1 : prev + 1))}>🖼 Cliché suivant</button>
+            <div className="row g-4">
+              <div className="col-lg-8">
+                <div className="rounded-4 p-3 text-center d-flex flex-column align-items-center justify-content-center" style={{ height: '420px', background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', position: 'relative', overflow: 'hidden' }}>
+                  <img 
+                    src={viewingExam.preview} 
+                    alt={viewingExam.title} 
+                    style={{ 
+                      maxHeight: '100%', 
+                      maxWidth: '100%', 
+                      objectFit: 'contain',
+                      transform: `scale(${dicomZoom})`,
+                      filter: dicomInvert ? 'invert(100%)' : 'none'
+                    }} 
+                  />
+                  <div className="position-absolute bottom-0 start-0 m-3 p-2 rounded-3 small" style={{ background: 'var(--bg-card)', color: 'var(--text-sub)', border: '1px solid var(--border-color)' }}>
+                    Cliché {activeCliche} / {viewingExam.cliches}
                   </div>
                 </div>
 
-                <div className="col-lg-4">
-                  <div className="p-4 rounded-4 h-100 d-flex flex-column justify-content-between" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
-                    <div>
-                      <h6 className="fw-bold text-success mb-2">📋 Conclusion Diagnostique</h6>
-                      <p className="small mb-3" style={{ color: 'var(--text-sub)' }}>{viewingExam.conclusion}</p>
-                      <small className="d-block border-top pt-2" style={{ color: 'var(--text-sub)', borderColor: 'var(--border-color)' }}>Prescrit par : <strong style={{ color: 'var(--text-main)' }}>{viewingExam.doctor}</strong></small>
-                    </div>
-
-                    <div className="d-flex flex-column gap-2 mt-4">
-                      <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.65rem', fontWeight: '700', cursor: 'pointer' }} onClick={() => handleDownloadExam(viewingExam)}>📥 Télécharger Rapport PDF Certifié (🇸🇳)</button>
-                      <button type="button" style={{ background: 'var(--bg-card)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.65rem' }} onClick={() => setViewingExam(null)}>Fermer</button>
-                    </div>
-                  </div>
+                <div className="d-flex justify-content-center gap-2 mt-3 p-2 rounded-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+                  <button type="button" style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} onClick={() => setDicomZoom(dicomZoom + 0.2)}>🔍 Zoom +</button>
+                  <button type="button" style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} onClick={() => setDicomZoom(1)}>🔄 Reset</button>
+                  <button type="button" style={{ background: dicomInvert ? '#f59e0b' : 'var(--bg-card)', color: dicomInvert ? '#ffffff' : 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} onClick={() => setDicomInvert(!dicomInvert)}>🌗 Négatif</button>
+                  <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem', fontWeight: '700' }} onClick={() => setActiveCliche(prev => (prev >= viewingExam.cliches ? 1 : prev + 1))}>🖼 Cliché suivant</button>
                 </div>
               </div>
 
+              <div className="col-lg-4">
+                <div className="p-4 rounded-4 h-100 d-flex flex-column justify-content-between" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+                  <div>
+                    <h6 className="fw-bold text-success mb-2">📋 Conclusion Diagnostique</h6>
+                    <p className="small mb-3" style={{ color: 'var(--text-sub)' }}>{viewingExam.conclusion}</p>
+                    <small className="d-block border-top pt-2" style={{ color: 'var(--text-sub)', borderColor: 'var(--border-color)' }}>Prescrit par : <strong style={{ color: 'var(--text-main)' }}>{viewingExam.doctor}</strong></small>
+                  </div>
+
+                  <div className="d-flex flex-column gap-2 mt-4">
+                    <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.65rem', fontWeight: '700', cursor: 'pointer' }} onClick={() => handleDownloadExam(viewingExam)}>📥 Télécharger Rapport PDF Certifié (🇸🇳)</button>
+                    <button type="button" style={{ background: 'var(--bg-card)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.65rem' }} onClick={() => setViewingExam(null)}>Fermer</button>
+                  </div>
+                </div>
+              </div>
             </div>
+
           </div>
+        </div>,
+        document.body
       )}
 
-      {/* SHARE MODAL */}
-      {showShareModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
-          <div style={{ maxWidth: '540px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 20px 60px rgba(0,0,0,0.6)', margin: 'auto' }}>
+      {/* SHARE MODAL (React Portal — Centered on Screen) */}
+      {showShareModal && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
+          <div style={{ maxWidth: '540px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
             
             <div className="d-flex justify-content-between align-items-center mb-3">
               <div className="d-flex align-items-center gap-2">
@@ -681,13 +683,14 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
             </div>
 
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* ADD EXAM MODAL (Centered on Screen) */}
-      {showAddExamModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
-          <form onSubmit={handleAddExam} style={{ maxWidth: '520px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 20px 60px rgba(0,0,0,0.6)', margin: 'auto' }}>
+      {/* ADD EXAM MODAL (React Portal — Centered on Screen) */}
+      {showAddExamModal && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
+          <form onSubmit={handleAddExam} style={{ maxWidth: '520px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h5 className="fw-bold text-success mb-0">➕ Ajouter un Examen DICOM / PDF</h5>
               <button type="button" className="btn-close" onClick={() => setShowAddExamModal(false)}></button>
@@ -718,7 +721,8 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
               <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.6rem 1.4rem', fontWeight: '800', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}>Ajouter l'examen</button>
             </div>
           </form>
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>

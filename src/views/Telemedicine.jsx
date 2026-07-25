@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
 
 // Design Premium Haut de Gamme — Télémédecine Visioconférence Bidirectionnelle & Vu-mètre Micro Réel
@@ -910,10 +911,10 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
         </div>
       )}
 
-      {/* QR CODE MODAL */}
-      {activeModal === 'qr' && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ maxWidth: '420px', width: '90%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', textAlign: 'center', border: '1px solid var(--border-color)' }}>
+      {/* QR CODE MODAL (React Portal — Centered on Screen) */}
+      {activeModal === 'qr' && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
+          <div style={{ maxWidth: '420px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', textAlign: 'center', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
             <h5 className="fw-bold text-success mb-2 text-center">📲 QR Code CMU Assuré</h5>
             <div className="p-3 bg-white rounded-3 d-inline-block mx-auto my-3" style={{ width: '180px', height: '180px' }}>
               <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${activeCmuNumber}`} alt="QR Code CMU" style={{ width: '100%', height: '100%' }} />
@@ -921,13 +922,14 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
             <strong className="d-block text-warning text-center mb-3">{activeCmuNumber}</strong>
             <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.5rem 1.5rem', fontWeight: '700', width: '100%' }} onClick={() => setActiveModal(null)}>Fermer</button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* PRESCRIPTION MODAL */}
-      {activeModal === 'prescription' && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ maxWidth: '640px', width: '92%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-lg)' }}>
+      {/* PRESCRIPTION MODAL (React Portal — Centered on Screen) */}
+      {activeModal === 'prescription' && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
+          <div style={{ maxWidth: '640px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
             <div className="d-flex justify-content-between align-items-center mb-3">
               <div className="d-flex align-items-center gap-2">
                 <span style={{ fontSize: '1.4rem' }}>💊</span>
@@ -985,7 +987,8 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
               <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.6rem 1.4rem', fontWeight: '700', cursor: 'pointer', boxShadow: '0 4px 14px rgba(16,185,129,0.3)' }} onClick={handleDownloadPrescription}>📥 Télécharger Ordonnance PDF Officielle (🇸🇳)</button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
     </div>
