@@ -20,6 +20,24 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
     setTimeout(() => setCopiedLink(false), 3000);
   };
 
+  const handleShareWhatsApp = (e) => {
+    if (e) e.preventDefault();
+    const shareText = `Bonjour Docteur, voici l'accès sécurisé à mon dossier médical certifié UNAMUSC Sénégal (Code OTP 24h : 849-201) : https://mutualis.sn/dossier-partage/849-201`;
+    const waUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+    
+    if (navigator.share) {
+      navigator.share({
+        title: 'Dossier Médical UNAMUSC',
+        text: shareText,
+        url: 'https://mutualis.sn/dossier-partage/849-201'
+      }).catch(() => {
+        window.open(waUrl, '_blank', 'noopener,noreferrer');
+      });
+    } else {
+      window.open(waUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   // Antécédents Médicaux Éditables
   const [antecedents, setAntecedents] = useState({
     bloodGroup: 'A+',
@@ -531,15 +549,14 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
 
       </div>
 
-      {/* DICOM VIEWING MODAL */}
+      {/* DICOM VIEWING MODAL (Centered on Screen) */}
       {viewingExam && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
-          <div className="modal-dialog modal-xl modal-dialog-centered">
-            <div className="modal-content p-4" style={{ borderRadius: '24px', background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <h5 className="fw-bold text-success mb-0">🩻 Visionneuse DICOM 3.0 HD — {viewingExam.title}</h5>
-                <button className="btn-close" onClick={() => setViewingExam(null)}></button>
-              </div>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
+          <div style={{ maxWidth: '1100px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 20px 60px rgba(0,0,0,0.6)', margin: 'auto' }}>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h5 className="fw-bold text-success mb-0">🩻 Visionneuse DICOM 3.0 HD — {viewingExam.title}</h5>
+              <button type="button" className="btn-close" onClick={() => setViewingExam(null)}></button>
+            </div>
 
               <div className="row g-4">
                 <div className="col-lg-8">
@@ -591,8 +608,8 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
 
       {/* SHARE MODAL */}
       {showShareModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(8px)', zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ maxWidth: '540px', width: '92%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-lg)' }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
+          <div style={{ maxWidth: '540px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 20px 60px rgba(0,0,0,0.6)', margin: 'auto' }}>
             
             <div className="d-flex justify-content-between align-items-center mb-3">
               <div className="d-flex align-items-center gap-2">
@@ -634,24 +651,23 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
             <div className="d-flex flex-column gap-2">
               <button 
                 type="button" 
-                style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.7rem 1.25rem', fontWeight: '800', fontSize: '0.88rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }} 
+                style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.75rem 1.25rem', fontWeight: '800', fontSize: '0.88rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }} 
                 onClick={handleCopyShareLink}
               >
                 📋 Copier le lien sécurisé (https://mutualis.sn/dossier/849-201)
               </button>
 
-              <a 
-                href={`https://api.whatsapp.com/send?text=${encodeURIComponent('Bonjour Docteur, voici l\'accès sécurisé à mon dossier médical certifié UNAMUSC Sénégal (Code OTP: 849-201) : https://mutualis.sn/dossier-partage/849-201')}`} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                style={{ background: '#25D366', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.65rem 1.25rem', fontWeight: '800', fontSize: '0.88rem', textDecoration: 'none', textAlign: 'center', display: 'block' }}
+              <button 
+                type="button" 
+                style={{ background: '#25D366', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.75rem 1.25rem', fontWeight: '800', fontSize: '0.88rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(37,211,102,0.3)', width: '100%' }}
+                onClick={handleShareWhatsApp}
               >
                 💬 Partager directement via WhatsApp au Médecin
-              </a>
+              </button>
 
               <button 
                 type="button" 
-                style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.6rem 1rem', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer' }} 
+                style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 1rem', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer' }} 
                 onClick={() => setShowShareModal(false)}
               >
                 Fermer
@@ -662,34 +678,40 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
         </div>
       )}
 
-      {/* ADD EXAM MODAL */}
+      {/* ADD EXAM MODAL (Centered on Screen) */}
       {showAddExamModal && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
-          <div className="modal-dialog modal-dialog-centered">
-            <form onSubmit={handleAddExam} className="modal-content p-4" style={{ borderRadius: '24px', background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
-              <h5 className="fw-bold text-success mb-3">➕ Ajouter un Examen DICOM / PDF</h5>
-              
-              <div className="mb-3">
-                <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Titre de l'examen *</label>
-                <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }} value={newExamTitle} onChange={(e) => setNewExamTitle(e.target.value)} placeholder="Ex: Scanner Abdominal HD" required />
-              </div>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
+          <form onSubmit={handleAddExam} style={{ maxWidth: '520px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 20px 60px rgba(0,0,0,0.6)', margin: 'auto' }}>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h5 className="fw-bold text-success mb-0">➕ Ajouter un Examen DICOM / PDF</h5>
+              <button type="button" className="btn-close" onClick={() => setShowAddExamModal(false)}></button>
+            </div>
+            
+            <div className="mb-3">
+              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Titre de l'examen *</label>
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }} value={newExamTitle} onChange={(e) => setNewExamTitle(e.target.value)} placeholder="Ex: Scanner Abdominal HD" required />
+            </div>
 
-              <div className="mb-3">
-                <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Type d'imagerie *</label>
-                <select className="form-select" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }} value={newExamType} onChange={(e) => setNewExamType(e.target.value)}>
-                  <option value="Scanner">Scanner</option>
-                  <option value="IRM">IRM</option>
-                  <option value="Radio">Radio</option>
-                  <option value="Analyse">Analyse</option>
-                </select>
-              </div>
+            <div className="mb-3">
+              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Type d'imagerie *</label>
+              <select className="form-select" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }} value={newExamType} onChange={(e) => setNewExamType(e.target.value)}>
+                <option value="Scanner">Scanner</option>
+                <option value="IRM">IRM</option>
+                <option value="Radio">Radio</option>
+                <option value="Analyse">Analyse</option>
+              </select>
+            </div>
 
-              <div className="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setShowAddExamModal(false)}>Annuler</button>
-                <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700' }}>Ajouter l'examen</button>
-              </div>
-            </form>
-          </div>
+            <div className="mb-3">
+              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Établissement / Structure de santé *</label>
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }} value={newExamFacility} onChange={(e) => setNewExamFacility(e.target.value)} placeholder="Ex: Hôpital Principal de Dakar" required />
+            </div>
+
+            <div className="d-flex justify-content-end gap-2 mt-4">
+              <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.6rem 1.25rem', fontWeight: '700' }} onClick={() => setShowAddExamModal(false)}>Annuler</button>
+              <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.6rem 1.4rem', fontWeight: '800', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}>Ajouter l'examen</button>
+            </div>
+          </form>
         </div>
       )}
 
