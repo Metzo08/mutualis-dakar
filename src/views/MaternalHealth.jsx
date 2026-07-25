@@ -126,15 +126,15 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
   };
 
   return (
-    <div className="maternity-view fade-in-up" style={{ minHeight: '100vh', background: '#0b1120', color: '#f8fafc', paddingBottom: '3rem' }}>
+    <div className="maternity-view fade-in-up" style={{ minHeight: '100vh', paddingBottom: '3rem' }}>
       
       {/* Subnav Header Bar */}
-      <div style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.08)', background: '#0f172a', padding: '0.85rem 2rem' }}>
+      <div style={{ borderBottom: '1px solid var(--border-color)', background: 'var(--bg-card-subtle)', padding: '0.85rem 2rem' }}>
         <div style={{ maxWidth: '1320px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <h5 className="fw-bold mb-0 text-white" style={{ fontSize: '1.1rem' }}>UNAMUSC Sénégal 🇸🇳</h5>
-            <span style={{ height: '14px', width: '1px', background: 'rgba(255, 255, 255, 0.2)' }} />
-            <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '600', padding: '0.25rem 0.75rem' }}>
+            <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.1rem' }}>UNAMUSC Sénégal 🇸🇳</h5>
+            <span style={{ height: '14px', width: '1px', background: 'var(--border-color)' }} />
+            <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '600', padding: '0.25rem 0.75rem' }}>
               Awa Ndiaye • Mère éligible CSU
             </span>
           </div>
@@ -143,7 +143,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
             <input 
               type="text" 
               placeholder="Rechercher..." 
-              style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem', width: '200px' }} 
+              style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem', width: '200px' }} 
             />
           </div>
         </div>
