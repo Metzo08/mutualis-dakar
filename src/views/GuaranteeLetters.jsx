@@ -841,9 +841,9 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
       {/* DECK D'INSTRUCTION ET CERTIFICAT OFFICIEL DE GARANTIE HAUTE DÉFINITION (MODAL) */}
       {/* ============================================================================ */}
       {selectedLetter && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)' }}>
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)' }}>
           <div className="modal-dialog modal-dialog-centered modal-xl">
-            <div className="modal-content shadow-lg border-0" style={{ borderRadius: '24px', background: 'var(--card-bg)', color: 'var(--text-main)', overflow: 'hidden' }}>
+            <div className="modal-content shadow-lg border-0" style={{ borderRadius: '24px', background: 'var(--bg-card)', color: 'var(--text-main)', overflow: 'hidden' }}>
               
               {/* Entête Modal Officielle UNAMUSC */}
               <div 
@@ -870,14 +870,14 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               </div>
 
               {/* Navigation Onglets Interne au Modal */}
-              <div className="d-flex border-bottom p-3 gap-2 flex-wrap" style={{ background: '#0f172a', borderColor: 'var(--border-color)' }}>
+              <div className="d-flex border-bottom p-3 gap-2 flex-wrap" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)' }}>
                 <button 
                   type="button" 
                   className="btn fw-bold px-4 py-2.5"
                   style={{
-                    background: modalTab === 'instruction' ? '#059669' : 'rgba(255, 255, 255, 0.12)',
-                    color: '#ffffff',
-                    border: modalTab === 'instruction' ? '2px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.25)',
+                    background: modalTab === 'instruction' ? '#059669' : 'var(--bg-card)',
+                    color: modalTab === 'instruction' ? '#ffffff' : 'var(--text-sub)',
+                    border: modalTab === 'instruction' ? '2px solid #ffffff' : '1px solid var(--border-color)',
                     borderRadius: '10px',
                     fontSize: '0.9rem',
                     cursor: 'pointer',
@@ -891,9 +891,9 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   type="button" 
                   className="btn fw-bold px-4 py-2.5"
                   style={{
-                    background: modalTab === 'certificate' ? '#059669' : 'rgba(255, 255, 255, 0.12)',
-                    color: '#ffffff',
-                    border: modalTab === 'certificate' ? '2px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.25)',
+                    background: modalTab === 'certificate' ? '#059669' : 'var(--bg-card)',
+                    color: modalTab === 'certificate' ? '#ffffff' : 'var(--text-sub)',
+                    border: modalTab === 'certificate' ? '2px solid #ffffff' : '1px solid var(--border-color)',
                     borderRadius: '10px',
                     fontSize: '0.9rem',
                     cursor: 'pointer',
@@ -912,7 +912,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     <div className="row g-4 mb-4">
                       {/* Carte Bénéficiaire */}
                       <div className="col-md-6">
-                        <div className="p-3.5 rounded-4 border" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
+                        <div className="p-3.5 rounded-4 border" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)' }}>
                           <span className="small text-muted d-block mb-1">👤 Assuré Bénéficiaire :</span>
                           <h5 className="fw-bold mb-1" style={{ color: 'var(--text-main)' }}>{selectedLetter.first_name} {selectedLetter.last_name}</h5>
                           <div className="d-flex flex-wrap gap-2 align-items-center mt-2">
@@ -928,7 +928,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
                       {/* Carte Établissement & Acte */}
                       <div className="col-md-6">
-                        <div className="p-3.5 rounded-4 border" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
+                        <div className="p-3.5 rounded-4 border" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)' }}>
                           <span className="small text-muted d-block mb-1">🏥 Acte & Établissement récepteur :</span>
                           <h6 className="fw-bold mb-1 text-success">{selectedLetter.medical_act}</h6>
                           <small className="text-muted d-block mt-1">Devis d'hospitalisation soumis : <strong>{Number(selectedLetter.estimated_amount).toLocaleString()} FCFA</strong></small>
@@ -979,13 +979,13 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                         const calcRest = Math.max(0, estVal - calcGuarantee);
 
                         return (
-                          <div className="p-3.5 rounded-3 bg-dark text-white border border-success">
+                          <div className="p-3.5 rounded-3 border border-success" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)' }}>
                             <div className="row g-3 text-center">
                               <div className="col-md-4">
-                                <span className="text-white-50 small d-block mb-1">Montant Devis Soumis</span>
-                                <h5 className="fw-bold mb-0 text-white">{Number(estVal).toLocaleString()} FCFA</h5>
+                                <span className="small d-block mb-1" style={{ color: 'var(--text-sub)' }}>Montant Devis Soumis</span>
+                                <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>{Number(estVal).toLocaleString()} FCFA</h5>
                               </div>
-                              <div className="col-md-4 border-start border-end border-secondary">
+                              <div className="col-md-4 border-start border-end" style={{ borderColor: 'var(--border-color)' }}>
                                 <span className="text-success small d-block mb-1">Prise en charge UNAMUSC/CSU</span>
                                 <h4 className="fw-bold mb-0 text-success">{Number(calcGuarantee).toLocaleString()} FCFA</h4>
                               </div>
@@ -1043,7 +1043,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                               UNION NATIONALE DES MUTUELLES DE SANTÉ COMMUNAUTAIRES (UNAMUSC)
                             </strong><br />
                              <span className="badge bg-success-subtle text-success border border-success fw-semibold" style={{ fontSize: '0.72rem' }}>
-                               PROGRAMME NATIONAL DE LA COUVERTURE SANITAIRE DU SÉNÉGAL
+                                PROGRAMME NATIONAL DE LA COUVERTURE SANITAIRE DU SÉNÉGAL
                              </span>
                           </div>
                         </div>
@@ -1150,9 +1150,9 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
                       <button 
                         type="button" 
-                        className="btn btn-dark fw-bold text-white px-4 py-2.5 shadow-sm"
+                        className="btn fw-bold px-4 py-2.5 shadow-sm"
                         onClick={handlePrintCertificate}
-                        style={{ borderRadius: '12px', background: '#1e293b', borderColor: '#0f172a' }}
+                        style={{ borderRadius: '12px', background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', color: 'var(--text-main)' }}
                       >
                         🖨️ Imprimer la lettre de garantie
                       </button>

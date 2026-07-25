@@ -350,15 +350,15 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
   });
 
   return (
-    <div className="telemed-view fade-in-up" style={{ minHeight: '100vh', background: '#0b1120', color: '#f8fafc', paddingBottom: '3rem' }}>
+    <div className="telemed-view fade-in-up" style={{ minHeight: '100vh', paddingBottom: '3rem' }}>
       
       {/* Subnav Header Bar */}
-      <div style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.08)', background: '#0f172a', padding: '0.85rem 2rem' }}>
+      <div style={{ borderBottom: '1px solid var(--border-color)', background: 'var(--bg-card-subtle)', padding: '0.85rem 2rem' }}>
         <div style={{ maxWidth: '1320px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <h5 className="fw-bold mb-0 text-white" style={{ fontSize: '1.1rem' }}>Télémédecine UNAMUSC 🇸🇳</h5>
-            <span style={{ height: '14px', width: '1px', background: 'rgba(255, 255, 255, 0.2)' }} />
-            <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '600', padding: '0.25rem 0.75rem' }}>
+            <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.1rem' }}>Télémédecine UNAMUSC 🇸🇳</h5>
+            <span style={{ height: '14px', width: '1px', background: 'var(--border-color)' }} />
+            <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '600', padding: '0.25rem 0.75rem' }}>
               ● SALLE D'ATTENTE VIRTUELLE LIVE
             </span>
           </div>
@@ -366,14 +366,14 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <button 
               type="button" 
-              style={{ background: roleMode === 'citizen' ? '#10b981' : '#1e293b', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.4rem 0.85rem', fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer' }}
+              style={{ background: roleMode === 'citizen' ? '#10b981' : 'var(--bg-card)', color: roleMode === 'citizen' ? '#ffffff' : 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.85rem', fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer' }}
               onClick={() => setRoleMode('citizen')}
             >
               Espace Assuré
             </button>
             <button 
               type="button" 
-              style={{ background: roleMode === 'doctor' ? '#10b981' : '#1e293b', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.4rem 0.85rem', fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer' }}
+              style={{ background: roleMode === 'doctor' ? '#10b981' : 'var(--bg-card)', color: roleMode === 'doctor' ? '#ffffff' : 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.85rem', fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer' }}
               onClick={() => setRoleMode('doctor')}
             >
               Espace Médecin de Garde
@@ -442,12 +442,12 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
         {/* SECTION MÉDECINS DE GARDE / FILE D'ATTENTE */}
         {roleMode === 'doctor' && (
-          <div className="p-4 rounded-4 mb-5" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
-            <h5 className="fw-bold text-white mb-3">📋 File d'attente Télémédecine (Mode Médecin de Garde)</h5>
+          <div className="p-4 rounded-4 mb-5" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
+            <h5 className="fw-bold mb-3" style={{ color: 'var(--text-main)' }}>📋 File d'attente Télémédecine (Mode Médecin de Garde)</h5>
             <div className="table-responsive">
-              <table className="table table-dark table-hover align-middle mb-0">
+              <table className="table align-middle mb-0" style={{ background: 'transparent' }}>
                 <thead>
-                  <tr className="text-muted small">
+                  <tr className="small border-bottom" style={{ color: 'var(--text-sub)', borderColor: 'var(--border-color)' }}>
                     <th>ASSURÉ</th>
                     <th>N° CMU</th>
                     <th>MOTIF & SYMPTÔMES</th>
@@ -458,13 +458,13 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                 </thead>
                 <tbody>
                   {queue.map(p => (
-                    <tr key={p.id}>
-                      <td className="fw-bold text-white">{p.patient_name}</td>
+                    <tr key={p.id} className="border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+                      <td className="fw-bold" style={{ color: 'var(--text-main)' }}>{p.patient_name}</td>
                       <td className="text-success small fw-mono">{p.cmu_number}</td>
-                      <td className="text-white-50 small">{p.reason}</td>
-                      <td className="text-white-50 small">{p.joined_at}</td>
+                      <td className="small" style={{ color: 'var(--text-sub)' }}>{p.reason}</td>
+                      <td className="small" style={{ color: 'var(--text-sub)' }}>{p.joined_at}</td>
                       <td>
-                        <span style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.72rem', fontWeight: '700' }}>
+                        <span style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.72rem', fontWeight: '700' }}>
                           ✅ Reglé ({p.payment_method || 'Wave'})
                         </span>
                       </td>
@@ -492,22 +492,22 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
           <div className="col-lg-8">
             <div className="mb-4">
               <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                <h5 className="fw-bold text-white mb-0" style={{ fontSize: '1.15rem' }}>👨‍⚕️ Praticiens Disponibles</h5>
+                <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>👨‍⚕️ Praticiens Disponibles</h5>
                 
                 {/* Search & Category Filter Bar */}
                 <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                   <input 
                     type="text" 
                     placeholder="Filtrer un médecin..." 
-                    style={{ background: '#1e293b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '0.35rem 0.75rem', fontSize: '0.8rem', width: '160px' }} 
+                    style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.35rem 0.75rem', fontSize: '0.8rem', width: '160px' }} 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
 
-                  <div style={{ display: 'flex', gap: '0.3rem', background: '#1e293b', padding: '0.2rem', borderRadius: '10px' }}>
+                  <div style={{ display: 'flex', gap: '0.3rem', background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', padding: '0.2rem', borderRadius: '10px' }}>
                     <button 
                       type="button"
-                      style={{ background: activeCategory === 'all' ? '#10b981' : 'transparent', color: activeCategory === 'all' ? '#ffffff' : '#94a3b8', border: 'none', borderRadius: '8px', padding: '0.3rem 0.75rem', fontWeight: '700', fontSize: '0.78rem', cursor: 'pointer' }} 
+                      style={{ background: activeCategory === 'all' ? '#10b981' : 'transparent', color: activeCategory === 'all' ? '#ffffff' : 'var(--text-sub)', border: 'none', borderRadius: '8px', padding: '0.3rem 0.75rem', fontWeight: '700', fontSize: '0.78rem', cursor: 'pointer' }} 
                       onClick={() => setActiveCategory('all')}
                     >
                       Tous
@@ -515,7 +515,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
                     <button 
                       type="button"
-                      style={{ background: activeCategory === 'pediatrie' ? '#10b981' : 'transparent', color: activeCategory === 'pediatrie' ? '#ffffff' : '#94a3b8', border: 'none', borderRadius: '8px', padding: '0.3rem 0.75rem', fontWeight: '700', fontSize: '0.78rem', cursor: 'pointer' }} 
+                      style={{ background: activeCategory === 'pediatrie' ? '#10b981' : 'transparent', color: activeCategory === 'pediatrie' ? '#ffffff' : 'var(--text-sub)', border: 'none', borderRadius: '8px', padding: '0.3rem 0.75rem', fontWeight: '700', fontSize: '0.78rem', cursor: 'pointer' }} 
                       onClick={() => setActiveCategory('pediatrie')}
                     >
                       Pédiatrie
@@ -523,7 +523,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
                     <button 
                       type="button"
-                      style={{ background: activeCategory === 'cardio' ? '#10b981' : 'transparent', color: activeCategory === 'cardio' ? '#ffffff' : '#94a3b8', border: 'none', borderRadius: '8px', padding: '0.3rem 0.75rem', fontWeight: '700', fontSize: '0.78rem', cursor: 'pointer' }} 
+                      style={{ background: activeCategory === 'cardio' ? '#10b981' : 'transparent', color: activeCategory === 'cardio' ? '#ffffff' : 'var(--text-sub)', border: 'none', borderRadius: '8px', padding: '0.3rem 0.75rem', fontWeight: '700', fontSize: '0.78rem', cursor: 'pointer' }} 
                       onClick={() => setActiveCategory('cardio')}
                     >
                       Cardiologue
@@ -535,21 +535,21 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
               <div className="row g-3">
                 {filteredDoctors.map((doc) => (
                   <div key={doc.id} className="col-md-6">
-                    <div className="p-3.5 rounded-4 d-flex flex-column justify-content-between" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}>
+                    <div className="p-3.5 rounded-4 d-flex flex-column justify-content-between" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
                       <div>
                         <div className="d-flex gap-3 align-items-center mb-3">
                           <img src={doc.avatar} onError={(e) => { e.target.src = '/dr_fatou_diop.png'; }} alt={doc.name} style={{ width: '56px', height: '56px', borderRadius: '14px', objectFit: 'cover' }} />
                           <div>
-                            <h6 className="fw-bold text-white mb-0" style={{ fontSize: '1rem' }}>{doc.name}</h6>
-                            <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', padding: '0.15rem 0.5rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: '600' }}>{doc.specialty}</span>
+                            <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>{doc.name}</h6>
+                            <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', padding: '0.15rem 0.5rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: '600' }}>{doc.specialty}</span>
                             <div className="small text-warning fw-bold mt-1" style={{ fontSize: '0.78rem' }}>★ {doc.rating}</div>
                           </div>
                         </div>
 
                         <div className="d-flex gap-2 mb-3 flex-wrap">
-                          <span style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', padding: '0.2rem 0.5rem', borderRadius: '6px', fontSize: '0.7rem' }}>🆔 {doc.cnom}</span>
+                          <span style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', padding: '0.2rem 0.5rem', borderRadius: '6px', fontSize: '0.7rem' }}>🆔 {doc.cnom}</span>
                           {doc.langs.map((l, idx) => (
-                            <span key={idx} style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', padding: '0.2rem 0.5rem', borderRadius: '6px', fontSize: '0.7rem' }}>🌐 {l}</span>
+                            <span key={idx} style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', padding: '0.2rem 0.5rem', borderRadius: '6px', fontSize: '0.7rem' }}>🌐 {l}</span>
                           ))}
                         </div>
                       </div>
@@ -573,18 +573,18 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
             <div className="d-flex flex-column gap-4">
               
               {/* Card Ordonnances Digitales */}
-              <div className="p-4 rounded-4" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+              <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
                 <div className="d-flex align-items-center gap-2 mb-2 text-success">
                   <span style={{ fontSize: '1.3rem' }}>🏥</span>
-                  <h6 className="fw-bold text-white mb-0" style={{ fontSize: '1rem' }}>Ordonnances Digitales</h6>
+                  <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>Ordonnances Digitales</h6>
                 </div>
-                <p className="text-muted small mb-3">
+                <p className="small mb-3" style={{ color: 'var(--text-sub)' }}>
                   Retrouvez vos prescriptions certifiées. Scannez le QR Code directement en pharmacie agréée.
                 </p>
 
                 <button 
                   type="button"
-                  style={{ background: '#0f172a', color: '#34d399', border: '1px solid #10b981', borderRadius: '10px', padding: '0.6rem 1rem', fontWeight: '700', width: '100%', fontSize: '0.85rem', cursor: 'pointer' }}
+                  style={{ background: 'var(--bg-card-subtle)', color: '#10b981', border: '1px solid #10b981', borderRadius: '10px', padding: '0.6rem 1rem', fontWeight: '700', width: '100%', fontSize: '0.85rem', cursor: 'pointer' }}
                   onClick={() => setActiveModal('prescription')}
                 >
                   VOIR TOUT LE CARNET DE SANTÉ
@@ -592,9 +592,9 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
               </div>
 
               {/* Card QR Code CMU */}
-              <div className="p-4 rounded-4" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-                <h6 className="fw-bold text-white mb-2">📲 Présentation QR Code CMU</h6>
-                <p className="text-white-50 small mb-3">Présentez votre pass sanitaire numérique au médecin lors de l'appel.</p>
+              <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                <h6 className="fw-bold mb-2" style={{ color: 'var(--text-main)' }}>📲 Présentation QR Code CMU</h6>
+                <p className="small mb-3" style={{ color: 'var(--text-sub)' }}>Présentez votre pass sanitaire numérique au médecin lors de l'appel.</p>
                 
                 <button 
                   type="button"
@@ -614,16 +614,16 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
       {/* JOIN QUEUE MODAL */}
       {activeModal === 'join_queue' && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ maxWidth: '520px', width: '90%', background: '#1e293b', borderRadius: '24px', padding: '2rem', border: '1px solid rgba(255,255,255,0.1)' }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ maxWidth: '520px', width: '90%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)' }}>
             <h5 className="fw-bold text-success mb-3">🚪 Inscription en Salle d'Attente Virtuelle</h5>
             
             <form onSubmit={handleJoinQueue}>
               <div className="mb-3">
-                <label className="form-label small fw-bold text-white-50">Symptômes & Motif de consultation *</label>
+                <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Symptômes & Motif de consultation *</label>
                 <textarea 
-                  className="form-control text-white border-0" 
-                  style={{ background: '#0f172a', borderRadius: '12px' }} 
+                  className="form-control" 
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }} 
                   rows={3} 
                   value={consultReason} 
                   onChange={(e) => setConsultReason(e.target.value)}
@@ -633,10 +633,10 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
               </div>
 
               <div className="mb-3">
-                <label className="form-label small fw-bold text-white-50">Niveau d'urgence *</label>
+                <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Niveau d'urgence *</label>
                 <select 
-                  className="form-select text-white border-0" 
-                  style={{ background: '#0f172a', borderRadius: '10px' }}
+                  className="form-select" 
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }}
                   value={urgencyLevel}
                   onChange={(e) => setUrgencyLevel(e.target.value)}
                 >
@@ -648,7 +648,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
               </div>
 
               <div className="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setActiveModal(null)}>Annuler</button>
+                <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setActiveModal(null)}>Annuler</button>
                 <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700' }}>Entrer dans la file</button>
               </div>
             </form>
@@ -658,10 +658,10 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
       {/* PAYMENT MODAL (ORANGE MONEY / WAVE) */}
       {activeModal === 'payment' && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ maxWidth: '480px', width: '90%', background: '#1e293b', borderRadius: '24px', padding: '2rem', border: '1px solid rgba(255,255,255,0.1)' }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ maxWidth: '480px', width: '90%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)' }}>
             <h5 className="fw-bold text-success mb-2">💳 Paiement Mobile Téléconsultation (2 500 FCFA)</h5>
-            <p className="text-white-50 small mb-3">Ticket modérateur restant. Prise en charge UNAMUSC à 80% garantie.</p>
+            <p className="small mb-3" style={{ color: 'var(--text-sub)' }}>Ticket modérateur restant. Prise en charge UNAMUSC à 80% garantie.</p>
 
             <form onSubmit={handleProcessPayment}>
               <div className="d-flex gap-3 mb-4">
@@ -671,9 +671,9 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                     flex: 1, 
                     padding: '0.85rem', 
                     borderRadius: '12px', 
-                    background: paymentProvider === 'orange' ? '#ff7900' : '#0f172a', 
-                    color: '#ffffff', 
-                    border: paymentProvider === 'orange' ? '2px solid #ff7900' : '1px solid rgba(255,255,255,0.1)',
+                    background: paymentProvider === 'orange' ? '#ff7900' : 'var(--bg-card-subtle)', 
+                    color: paymentProvider === 'orange' ? '#ffffff' : 'var(--text-main)', 
+                    border: paymentProvider === 'orange' ? '2px solid #ff7900' : '1px solid var(--border-color)',
                     fontWeight: '700',
                     cursor: 'pointer'
                   }}
@@ -689,9 +689,9 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                     flex: 1, 
                     padding: '0.85rem', 
                     borderRadius: '12px', 
-                    background: paymentProvider === 'wave' ? '#1dc4ff' : '#0f172a', 
-                    color: '#ffffff', 
-                    border: paymentProvider === 'wave' ? '2px solid #1dc4ff' : '1px solid rgba(255,255,255,0.1)',
+                    background: paymentProvider === 'wave' ? '#1dc4ff' : 'var(--bg-card-subtle)', 
+                    color: paymentProvider === 'wave' ? '#ffffff' : 'var(--text-main)', 
+                    border: paymentProvider === 'wave' ? '2px solid #1dc4ff' : '1px solid var(--border-color)',
                     fontWeight: '700',
                     cursor: 'pointer'
                   }}
@@ -703,11 +703,11 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
               </div>
 
               <div className="mb-3">
-                <label className="form-label small fw-bold text-white-50">Numéro Mobile Money *</label>
+                <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Numéro Mobile Money *</label>
                 <input 
                   type="text" 
-                  className="form-control text-white border-0 fw-bold" 
-                  style={{ background: '#0f172a', borderRadius: '10px' }} 
+                  className="form-control fw-bold" 
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} 
                   value={phoneNum} 
                   onChange={(e) => setPhoneNum(e.target.value)} 
                   required 
@@ -715,7 +715,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
               </div>
 
               <div className="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setActiveModal(null)}>Annuler</button>
+                <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setActiveModal(null)}>Annuler</button>
                 <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700' }}>Payer 2 500 FCFA</button>
               </div>
             </form>
@@ -725,18 +725,18 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
       {/* WEBRTC LIVE SESSION MODAL WITH RESPONSIVE DUAL VIEW & REAL MIC VU-METER */}
       {activeModal === 'webrtc' && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.95)', backdropFilter: 'blur(12px)', zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-          <div style={{ maxWidth: '1000px', width: '95%', background: '#0f172a', borderRadius: '24px', padding: '1.25rem', border: '1px solid rgba(255,255,255,0.1)', maxHeight: '94vh', overflowY: 'auto' }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+          <div style={{ maxWidth: '1000px', width: '95%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '1.25rem', border: '1px solid var(--border-color)', maxHeight: '94vh', overflowY: 'auto' }}>
             
             {/* Header Status Bar */}
-            <div className="d-flex justify-content-between align-items-center mb-3 border-bottom border-secondary pb-2">
+            <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2" style={{ borderColor: 'var(--border-color)' }}>
               <div className="d-flex align-items-center gap-2 flex-wrap">
                 <h6 className="fw-bold text-success mb-0" style={{ fontSize: '1rem' }}>
                   🎥 Visioconférence Bidirectionnelle — {activeDoctor.name}
                 </h6>
                 <span className="badge bg-danger text-white" style={{ fontSize: '0.72rem' }}>● EN DIRECT (1080p WebRTC)</span>
               </div>
-              <button className="btn-close btn-close-white" onClick={() => setActiveModal(null)}></button>
+              <button className="btn-close" onClick={() => setActiveModal(null)}></button>
             </div>
 
             <div className="row g-3">
@@ -776,15 +776,15 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                   {/* CAMERA OFF PLACEHOLDER */}
                   {isCamOff && !swappedViews && (
                     <div className="d-flex flex-column align-items-center justify-content-center p-4" style={{ height: '100%' }}>
-                      <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.8rem', marginBottom: '0.5rem' }}>📷</div>
-                      <h6 className="fw-bold text-white mb-1">Caméra désactivée</h6>
+                      <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'var(--bg-card-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.8rem', marginBottom: '0.5rem' }}>📷</div>
+                      <h6 className="fw-bold mb-1" style={{ color: 'var(--text-main)' }}>Caméra désactivée</h6>
                     </div>
                   )}
 
                   {/* PIP SECONDARY OVERLAY BOX (CLICK TO SWAP) */}
                   <div 
-                    className="position-absolute bottom-0 end-0 m-3 p-2 rounded-3 bg-dark border border-success d-flex align-items-center gap-2" 
-                    style={{ boxShadow: '0 8px 20px rgba(0,0,0,0.7)', zIndex: 10, cursor: 'pointer' }}
+                    className="position-absolute bottom-0 end-0 m-3 p-2 rounded-3 border border-success d-flex align-items-center gap-2" 
+                    style={{ background: 'var(--bg-card)', boxShadow: '0 8px 20px rgba(0,0,0,0.7)', zIndex: 10, cursor: 'pointer' }}
                     onClick={() => setSwappedViews(!swappedViews)}
                     title="Cliquer pour inverser les vues"
                   >
@@ -792,13 +792,13 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                       <>
                         <img src={activeDoctor.avatar} alt={activeDoctor.name} style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover' }} />
                         <div className="text-start">
-                          <small className="d-block text-white fw-bold" style={{ fontSize: '0.72rem' }}>{activeDoctor.name}</small>
+                          <small className="d-block fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.72rem' }}>{activeDoctor.name}</small>
                           <small className="text-success d-block" style={{ fontSize: '0.65rem' }}>⇄ Inverser la vue</small>
                         </div>
                       </>
                     ) : (
                       <div className="text-start p-1">
-                        <small className="d-block text-white fw-bold" style={{ fontSize: '0.72rem' }}>{activeFirstName} {activeLastName}</small>
+                        <small className="d-block fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.72rem' }}>{activeFirstName} {activeLastName}</small>
                         <small className="text-success d-block" style={{ fontSize: '0.65rem' }}>⇄ Vue Assuré (Caméra)</small>
                       </div>
                     )}
@@ -807,11 +807,11 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                 </div>
 
                 {/* REAL MICROPHONE AUDIO VU-METER BAR (VISUAL AUDIO TEST) */}
-                <div className="p-2.5 mt-3 rounded-4" style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)' }}>
+                <div className="p-2.5 mt-3 rounded-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
                   <div className="d-flex justify-content-between align-items-center mb-1">
                     <div className="d-flex align-items-center gap-2">
                       <span style={{ fontSize: '0.9rem' }}>🕪</span>
-                      <small className="fw-bold text-white" style={{ fontSize: '0.78rem' }}>
+                      <small className="fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.78rem' }}>
                         Niveau du Micro (Audio Live) : <span className={isMuted ? "text-danger" : "text-success"}>{isMuted ? "COUPE" : `${micVolume}% (Opérationnel)`}</span>
                       </small>
                     </div>
@@ -824,7 +824,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                           style={{ 
                             width: '4px', 
                             height: `${Math.max(4, (micVolume >= step ? (idx + 1) * 3 + 4 : 4))}px`, 
-                            background: isMuted ? '#dc2626' : (micVolume >= step ? '#10b981' : '#334155'), 
+                            background: isMuted ? '#dc2626' : (micVolume >= step ? '#10b981' : 'var(--border-color)'), 
                             borderRadius: '2px',
                             transition: 'height 0.1s ease'
                           }} 
@@ -835,7 +835,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                 </div>
 
                 {/* Controls Bar */}
-                <div className="d-flex justify-content-center gap-2 mt-3 p-2.5 rounded-4 bg-dark flex-wrap">
+                <div className="d-flex justify-content-center gap-2 mt-3 p-2.5 rounded-4 flex-wrap" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
                   <button 
                     type="button" 
                     style={{ background: isMuted ? '#dc2626' : '#059669', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer' }} 
@@ -854,7 +854,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
                   <button 
                     type="button" 
-                    style={{ background: '#1e293b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', padding: '0.5rem 0.85rem', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer' }} 
+                    style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.5rem 0.85rem', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer' }} 
                     onClick={() => setSwappedViews(!swappedViews)}
                   >
                     ⇄ Inverser Vues
@@ -872,18 +872,18 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
               {/* Chat Panel */}
               <div className="col-lg-4">
-                <div className="p-3 rounded-4 bg-dark h-100 d-flex flex-column justify-content-between" style={{ minHeight: '360px' }}>
+                <div className="p-3 rounded-4 h-100 d-flex flex-column justify-content-between" style={{ minHeight: '360px', background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
                   <h6 className="fw-bold text-info mb-2" style={{ fontSize: '0.9rem' }}>💬 Messagerie Directe</h6>
-                  <div className="p-2 rounded-3 mb-2 flex-grow-1" style={{ maxHeight: '250px', overflowY: 'auto', background: '#0f172a', fontSize: '0.82rem' }}>
+                  <div className="p-2 rounded-3 mb-2 flex-grow-1" style={{ maxHeight: '250px', overflowY: 'auto', background: 'var(--bg-card)', border: '1px solid var(--border-color)', fontSize: '0.82rem' }}>
                     {chatMessages.map((m, idx) => (
                       <div key={idx} className="mb-2">
                         <strong className="text-success">{m.sender} : </strong>
-                        <span className="text-white-50">{m.text}</span>
+                        <span style={{ color: 'var(--text-sub)' }}>{m.text}</span>
                       </div>
                     ))}
                   </div>
                   <form onSubmit={handleSendMessage} className="d-flex gap-2">
-                    <input type="text" className="form-control form-control-sm bg-dark text-white border-secondary" placeholder="Écrire un message..." value={inputMsg} onChange={(e) => setInputMsg(e.target.value)} />
+                    <input type="text" className="form-control form-control-sm" style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }} placeholder="Écrire un message..." value={inputMsg} onChange={(e) => setInputMsg(e.target.value)} />
                     <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.3rem 0.75rem', fontWeight: '700', fontSize: '0.8rem' }}>Envoyer</button>
                   </form>
                 </div>
@@ -896,29 +896,29 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
       {/* QR CODE MODAL */}
       {activeModal === 'qr' && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ maxWidth: '420px', width: '90%', background: '#1e293b', borderRadius: '24px', padding: '2rem', textCenter: 'center', border: '1px solid rgba(255,255,255,0.1)' }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ maxWidth: '420px', width: '90%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', textAlign: 'center', border: '1px solid var(--border-color)' }}>
             <h5 className="fw-bold text-success mb-2 text-center">📲 QR Code CMU Assuré</h5>
             <div className="p-3 bg-white rounded-3 d-inline-block mx-auto my-3" style={{ width: '180px', height: '180px' }}>
               <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${activeCmuNumber}`} alt="QR Code CMU" style={{ width: '100%', height: '100%' }} />
             </div>
             <strong className="d-block text-warning text-center mb-3">{activeCmuNumber}</strong>
-            <button type="button" style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.5rem 1.5rem', fontWeight: '700', width: '100%' }} onClick={() => setActiveModal(null)}>Fermer</button>
+            <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.5rem 1.5rem', fontWeight: '700', width: '100%' }} onClick={() => setActiveModal(null)}>Fermer</button>
           </div>
         </div>
       )}
 
       {/* PRESCRIPTION MODAL */}
       {activeModal === 'prescription' && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)', zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ maxWidth: '640px', width: '90%', background: '#1e293b', borderRadius: '24px', padding: '2rem', border: '1px solid rgba(255,255,255,0.1)' }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ maxWidth: '640px', width: '90%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)' }}>
             <h5 className="fw-bold text-success mb-3">💊 Ordonnance Médicale Certifiée (Bon Pharmacie 50% 🇸🇳)</h5>
-            <div className="p-4 rounded-3 bg-dark mb-3 border border-success">
+            <div className="p-4 rounded-3 mb-3 border border-success" style={{ background: 'var(--bg-card-subtle)' }}>
               <strong className="text-success d-block mb-1">Dr. Ousmane Sow (Médecin Généraliste - CNOM: 4522-SN)</strong>
-              <p className="small text-white-50 mb-0">• Amoxicilline 500mg (2 boîtes) • Paracétamol 1g (1 boîte)</p>
+              <p className="small mb-0" style={{ color: 'var(--text-sub)' }}>• Amoxicilline 500mg (2 boîtes) • Paracétamol 1g (1 boîte)</p>
             </div>
             <div className="d-flex justify-content-end gap-2">
-              <button type="button" style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setActiveModal(null)}>Fermer</button>
+              <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setActiveModal(null)}>Fermer</button>
               <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700', cursor: 'pointer' }} onClick={handleDownloadPrescription}>📥 Télécharger Ordonnance PDF Officielle (🇸🇳)</button>
             </div>
           </div>

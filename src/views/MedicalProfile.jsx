@@ -141,21 +141,21 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
   };
 
   return (
-    <div className="medical-profile-view fade-in-up" style={{ minHeight: '100vh', background: '#0b1120', color: '#f8fafc', paddingBottom: '3rem' }}>
+    <div className="medical-profile-view fade-in-up" style={{ minHeight: '100vh', paddingBottom: '3rem' }}>
       
       {/* Subnav Header Bar */}
-      <div style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.08)', background: '#0f172a', padding: '0.85rem 2rem' }}>
+      <div style={{ borderBottom: '1px solid var(--border-color)', background: 'var(--bg-card-subtle)', padding: '0.85rem 2rem' }}>
         <div style={{ maxWidth: '1320px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <h5 className="fw-bold mb-0 text-white" style={{ fontSize: '1.1rem' }}>Dossier Médical Partagé 🇸🇳</h5>
-            <span style={{ height: '14px', width: '1px', background: 'rgba(255, 255, 255, 0.2)' }} />
+            <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.1rem' }}>Dossier Médical Partagé 🇸🇳</h5>
+            <span style={{ height: '14px', width: '1px', background: 'var(--border-color)' }} />
             
-            <div style={{ display: 'flex', gap: '0.4rem', background: '#1e293b', padding: '0.25rem', borderRadius: '10px' }}>
+            <div style={{ display: 'flex', gap: '0.4rem', background: 'var(--bg-card)', padding: '0.25rem', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
               <button 
                 type="button"
                 style={{ 
                   background: activeTab === 'overview' ? '#10b981' : 'transparent', 
-                  color: activeTab === 'overview' ? '#ffffff' : '#94a3b8', 
+                  color: activeTab === 'overview' ? '#ffffff' : 'var(--text-sub)', 
                   border: 'none', 
                   borderRadius: '8px', 
                   padding: '0.35rem 0.85rem', 
@@ -172,7 +172,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                 type="button"
                 style={{ 
                   background: activeTab === 'history' ? '#10b981' : 'transparent', 
-                  color: activeTab === 'history' ? '#ffffff' : '#94a3b8', 
+                  color: activeTab === 'history' ? '#ffffff' : 'var(--text-sub)', 
                   border: 'none', 
                   borderRadius: '8px', 
                   padding: '0.35rem 0.85rem', 
@@ -189,7 +189,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                 type="button"
                 style={{ 
                   background: activeTab === 'lab' ? '#10b981' : 'transparent', 
-                  color: activeTab === 'lab' ? '#ffffff' : '#94a3b8', 
+                  color: activeTab === 'lab' ? '#ffffff' : 'var(--text-sub)', 
                   border: 'none', 
                   borderRadius: '8px', 
                   padding: '0.35rem 0.85rem', 
@@ -208,7 +208,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
             <input 
               type="text" 
               placeholder="Rechercher un examen..." 
-              style={{ background: '#1e293b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem', width: '200px' }} 
+              style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem', width: '200px' }} 
             />
           </div>
         </div>
@@ -266,35 +266,35 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
               <div className="d-flex flex-column gap-4">
                 
                 {/* Groupe Sanguin Card */}
-                <div className="p-4 rounded-4" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
+                <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
                   <div className="d-flex justify-content-between align-items-center mb-2">
                     <div className="d-flex align-items-center gap-2 text-danger">
                       <span style={{ fontSize: '1.2rem' }}>🩸</span>
-                      <h6 className="fw-bold text-white mb-0" style={{ fontSize: '1rem' }}>Groupe Sanguin</h6>
+                      <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>Groupe Sanguin</h6>
                     </div>
                     <span style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.72rem', fontWeight: '700' }}>Urgent</span>
                   </div>
 
                   <div className="d-flex align-items-baseline gap-2 my-2">
                     <h1 className="fw-black text-success mb-0" style={{ fontSize: '3.2rem', letterSpacing: '-0.03em' }}>{antecedents.bloodGroup}</h1>
-                    <span className="fw-bold text-white-50" style={{ fontSize: '1.1rem' }}>Rhésus {antecedents.rhesus}</span>
+                    <span className="fw-bold" style={{ color: 'var(--text-sub)', fontSize: '1.1rem' }}>Rhésus {antecedents.rhesus}</span>
                   </div>
 
-                  <small className="text-muted d-block pt-2 border-top border-secondary border-opacity-25" style={{ fontSize: '0.75rem' }}>
-                    Certifié par : <strong className="text-white-50">Laboratoire Bio24, Dakar</strong>
+                  <small className="d-block pt-2 border-top" style={{ color: 'var(--text-sub)', borderColor: 'var(--border-color)', fontSize: '0.75rem' }}>
+                    Certifié par : <strong style={{ color: 'var(--text-main)' }}>Laboratoire Bio24, Dakar</strong>
                   </small>
                 </div>
 
                 {/* Allergies & Alertes Card */}
-                <div className="p-4 rounded-4" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
                   <div className="d-flex justify-content-between align-items-center mb-3">
                     <div className="d-flex align-items-center gap-2 text-warning">
                       <span style={{ fontSize: '1.2rem' }}>⚠️</span>
-                      <h6 className="fw-bold text-white mb-0" style={{ fontSize: '1rem' }}>Allergies & Alertes</h6>
+                      <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>Allergies & Alertes</h6>
                     </div>
                     <button 
                       type="button" 
-                      style={{ background: 'transparent', color: '#34d399', border: 'none', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}
+                      style={{ background: 'transparent', color: '#10b981', border: 'none', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}
                       onClick={() => setEditingAntecedents(!editingAntecedents)}
                     >
                       {editingAntecedents ? '✕ Fermer' : '✏️ Éditer'}
@@ -303,19 +303,19 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
 
                   {editingAntecedents ? (
                     <form onSubmit={handleSaveAntecedents} className="d-flex flex-column gap-2">
-                      <label className="small text-white-50">Allergies :</label>
+                      <label className="small" style={{ color: 'var(--text-sub)' }}>Allergies :</label>
                       <input 
                         type="text" 
-                        className="form-control text-white border-0 small" 
-                        style={{ background: '#0f172a' }} 
+                        className="form-control small" 
+                        style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }} 
                         value={antecedents.allergies} 
                         onChange={(e) => setAntecedents({ ...antecedents, allergies: e.target.value })} 
                       />
-                      <label className="small text-white-50 mt-1">Affections / ALD :</label>
+                      <label className="small mt-1" style={{ color: 'var(--text-sub)' }}>Affections / ALD :</label>
                       <input 
                         type="text" 
-                        className="form-control text-white border-0 small" 
-                        style={{ background: '#0f172a' }} 
+                        className="form-control small" 
+                        style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }} 
                         value={antecedents.chronicConditions} 
                         onChange={(e) => setAntecedents({ ...antecedents, chronicConditions: e.target.value })} 
                       />
@@ -326,7 +326,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                       {antecedents.allergies.split(',').map((alg, idx) => (
                         <div key={idx} className="p-3 rounded-3 d-flex align-items-center gap-2.5" style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
                           <span className="text-warning font-monospace" style={{ fontSize: '1.2rem' }}>●</span>
-                          <span className="fw-bold text-white small">{alg.trim()}</span>
+                          <span className="fw-bold small" style={{ color: 'var(--text-main)' }}>{alg.trim()}</span>
                         </div>
                       ))}
                     </div>
@@ -334,30 +334,30 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                 </div>
 
                 {/* Interopérabilité Card */}
-                <div className="p-4 rounded-4" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
                   <div className="d-flex align-items-center gap-2 mb-3 text-success">
                     <span style={{ fontSize: '1.2rem' }}>🌐</span>
-                    <h6 className="fw-bold text-white mb-0" style={{ fontSize: '1rem' }}>Interopérabilité DHIS2</h6>
+                    <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>Interopérabilité DHIS2</h6>
                   </div>
 
                   <div className="d-flex flex-column gap-2.5">
-                    <div className="p-3 rounded-3 d-flex align-items-center justify-content-between" style={{ background: '#0f172a', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                    <div className="p-3 rounded-3 d-flex align-items-center justify-content-between" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
                       <div className="d-flex align-items-center gap-2.5">
                         <div style={{ width: '32px', height: '32px', background: '#059669', color: '#ffffff', fontWeight: '700', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>F</div>
                         <div>
-                          <strong className="d-block text-white small">Hôpital Fann</strong>
-                          <small className="text-muted" style={{ fontSize: '0.72rem' }}>ID: FANN-77291</small>
+                          <strong className="d-block small" style={{ color: 'var(--text-main)' }}>Hôpital Fann</strong>
+                          <small style={{ color: 'var(--text-sub)', fontSize: '0.72rem' }}>ID: FANN-77291</small>
                         </div>
                       </div>
                       <span style={{ background: '#10b981', color: '#ffffff', borderRadius: '50%', padding: '0.1rem 0.4rem', fontSize: '0.7rem' }}>✓</span>
                     </div>
 
-                    <div className="p-3 rounded-3 d-flex align-items-center justify-content-between" style={{ background: '#0f172a', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                    <div className="p-3 rounded-3 d-flex align-items-center justify-content-between" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
                       <div className="d-flex align-items-center gap-2.5">
                         <div style={{ width: '32px', height: '32px', background: '#dc2626', color: '#ffffff', fontWeight: '700', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>LD</div>
                         <div>
-                          <strong className="d-block text-white small">Le Dantec</strong>
-                          <small className="text-muted" style={{ fontSize: '0.72rem' }}>ID: LD-091823</small>
+                          <strong className="d-block small" style={{ color: 'var(--text-main)' }}>Le Dantec</strong>
+                          <small style={{ color: 'var(--text-sub)', fontSize: '0.72rem' }}>ID: LD-091823</small>
                         </div>
                       </div>
                       <span style={{ background: '#10b981', color: '#ffffff', borderRadius: '50%', padding: '0.1rem 0.4rem', fontSize: '0.7rem' }}>✓</span>
@@ -370,12 +370,12 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
 
             {/* Right Column: Radiographies & Examens DICOM Grid */}
             <div className="col-lg-8">
-              <div className="p-4 rounded-4" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
+              <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
                 
                 <div className="d-flex justify-content-between align-items-center mb-4">
                   <div className="d-flex align-items-center gap-2">
                     <span style={{ fontSize: '1.3rem' }}>🩻</span>
-                    <h5 className="fw-bold text-white mb-0" style={{ fontSize: '1.2rem' }}>Radiographies & Examens Certifiés</h5>
+                    <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.2rem' }}>Radiographies & Examens Certifiés</h5>
                   </div>
                 </div>
 
@@ -383,24 +383,24 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                 <div className="row g-3">
                   {exams.map(ex => (
                     <div key={ex.id} className="col-md-6">
-                      <div className="rounded-4 overflow-hidden h-100 d-flex flex-column justify-content-between" style={{ background: '#0f172a', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                      <div className="rounded-4 overflow-hidden h-100 d-flex flex-column justify-content-between" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
                         
                         {/* Image Thumbnail Banner */}
                         <div style={{ height: '140px', position: 'relative', overflow: 'hidden' }}>
                           <img src={ex.preview} alt={ex.title} onError={(e) => { e.target.src = '/csu_digital_health_real.jpg'; }} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.85 }} />
-                          <span style={{ background: '#0f172a', color: '#34d399', border: '1px solid #10b981', padding: '0.2rem 0.5rem', borderRadius: '6px', fontSize: '0.7rem', fontWeight: '700', position: 'absolute', top: '8px', end: '8px' }}>
+                          <span style={{ background: 'var(--bg-card)', color: '#10b981', border: '1px solid #10b981', padding: '0.2rem 0.5rem', borderRadius: '6px', fontSize: '0.7rem', fontWeight: '700', position: 'absolute', top: '8px', end: '8px' }}>
                             {ex.badge}
                           </span>
                         </div>
 
                         <div className="p-3.5 flex-grow-1">
-                          <h6 className="fw-bold text-white mb-1" style={{ fontSize: '1.02rem' }}>{ex.title}</h6>
-                          <small className="text-muted d-block mb-2" style={{ fontSize: '0.78rem' }}>
+                          <h6 className="fw-bold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.02rem' }}>{ex.title}</h6>
+                          <small className="d-block mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.78rem' }}>
                             {ex.date} • {ex.facility}
                           </small>
                         </div>
 
-                        <div className="p-3 border-top border-secondary border-opacity-25 d-flex gap-2">
+                        <div className="p-3 border-top d-flex gap-2" style={{ borderColor: 'var(--border-color)' }}>
                           <button 
                             type="button"
                             style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem', fontWeight: '700', flex: 1, fontSize: '0.82rem', cursor: 'pointer' }}
@@ -411,7 +411,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                           
                           <button 
                             type="button" 
-                            style={{ background: '#1e293b', color: '#f8fafc', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', padding: '0.5rem 0.8rem', cursor: 'pointer' }}
+                            style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.5rem 0.8rem', cursor: 'pointer' }}
                             onClick={() => handleDownloadExam(ex)}
                             title="Télécharger l'examen PDF Certifié (🇸🇳)"
                           >
@@ -428,8 +428,8 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                     <div 
                       className="rounded-4 p-4 h-100 d-flex flex-column align-items-center justify-content-center gap-3 text-center"
                       style={{ 
-                        background: 'rgba(15, 23, 42, 0.5)', 
-                        border: '2px dashed rgba(16, 185, 129, 0.4)', 
+                        background: 'var(--bg-card-subtle)', 
+                        border: '2px dashed var(--primary)', 
                         cursor: 'pointer',
                         minHeight: '230px'
                       }}
@@ -439,8 +439,8 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                         ➕
                       </div>
                       <div>
-                        <strong className="d-block text-white small">Ajouter un examen</strong>
-                        <small className="text-muted" style={{ fontSize: '0.75rem' }}>Fichier PDF ou DICOM</small>
+                        <strong className="d-block small" style={{ color: 'var(--text-main)' }}>Ajouter un examen</strong>
+                        <small style={{ color: 'var(--text-sub)', fontSize: '0.75rem' }}>Fichier PDF ou DICOM</small>
                       </div>
                     </div>
                   </div>
@@ -455,12 +455,12 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
 
         {/* TAB 2: HISTORIQUE MÉDICAL */}
         {activeTab === 'history' && (
-          <div className="p-4 rounded-4 mb-4" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-            <h5 className="fw-bold text-white mb-3">📜 Historique Médical Complet</h5>
+          <div className="p-4 rounded-4 mb-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <h5 className="fw-bold mb-3" style={{ color: 'var(--text-main)' }}>📜 Historique Médical Complet</h5>
             <div className="table-responsive">
-              <table className="table table-dark table-hover align-middle mb-0">
+              <table className="table align-middle mb-0" style={{ background: 'transparent' }}>
                 <thead>
-                  <tr className="text-muted small">
+                  <tr className="small border-bottom" style={{ color: 'var(--text-sub)', borderColor: 'var(--border-color)' }}>
                     <th>DATE</th>
                     <th>ACTE / CONSULTATION</th>
                     <th>PRATICIEN / STRUCTURE</th>
@@ -468,17 +468,17 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td className="text-white-50">12/05/2026</td>
-                    <td className="fw-bold text-white">Téléconsultation Généraliste</td>
-                    <td>Dr. Ousmane Sow</td>
-                    <td className="text-white-50">Grippe saisonnière. Ordonnance émise.</td>
+                  <tr className="border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+                    <td style={{ color: 'var(--text-sub)' }}>12/05/2026</td>
+                    <td className="fw-bold" style={{ color: 'var(--text-main)' }}>Téléconsultation Généraliste</td>
+                    <td style={{ color: 'var(--text-sub)' }}>Dr. Ousmane Sow</td>
+                    <td style={{ color: 'var(--text-sub)' }}>Grippe saisonnière. Ordonnance émise.</td>
                   </tr>
-                  <tr>
-                    <td className="text-white-50">15/03/2026</td>
-                    <td className="fw-bold text-white">Consultation Prénatale CPN 2</td>
-                    <td>Dr. Mariama Ba</td>
-                    <td className="text-white-50">Tension 12/8. Évolution normale.</td>
+                  <tr className="border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+                    <td style={{ color: 'var(--text-sub)' }}>15/03/2026</td>
+                    <td className="fw-bold" style={{ color: 'var(--text-main)' }}>Consultation Prénatale CPN 2</td>
+                    <td style={{ color: 'var(--text-sub)' }}>Dr. Mariama Ba</td>
+                    <td style={{ color: 'var(--text-sub)' }}>Tension 12/8. Évolution normale.</td>
                   </tr>
                 </tbody>
               </table>
@@ -488,12 +488,12 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
 
         {/* TAB 3: LABORATOIRE */}
         {activeTab === 'lab' && (
-          <div className="p-4 rounded-4 mb-4" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-            <h5 className="fw-bold text-white mb-3">🧪 Résultats d'Analyses Biologiques</h5>
+          <div className="p-4 rounded-4 mb-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <h5 className="fw-bold mb-3" style={{ color: 'var(--text-main)' }}>🧪 Résultats d'Analyses Biologiques</h5>
             <div className="table-responsive">
-              <table className="table table-dark table-hover align-middle mb-0">
+              <table className="table align-middle mb-0" style={{ background: 'transparent' }}>
                 <thead>
-                  <tr className="text-muted small">
+                  <tr className="small border-bottom" style={{ color: 'var(--text-sub)', borderColor: 'var(--border-color)' }}>
                     <th>EXAMEN</th>
                     <th>RÉSULTAT</th>
                     <th>VALEURS DE RÉFÉRENCE</th>
@@ -501,17 +501,17 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td className="fw-bold text-white">Glycémie à jeun</td>
+                  <tr className="border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+                    <td className="fw-bold" style={{ color: 'var(--text-main)' }}>Glycémie à jeun</td>
                     <td className="text-success fw-bold">0.95 g/L</td>
-                    <td className="text-white-50">0.70 - 1.10 g/L</td>
-                    <td><span style={{ background: 'rgba(16,185,129,0.2)', color: '#34d399', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700' }}>Normal</span></td>
+                    <td style={{ color: 'var(--text-sub)' }}>0.70 - 1.10 g/L</td>
+                    <td><span style={{ background: 'rgba(16,185,129,0.2)', color: '#10b981', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700' }}>Normal</span></td>
                   </tr>
-                  <tr>
-                    <td className="fw-bold text-white">Hémoglobine (NFS)</td>
+                  <tr className="border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+                    <td className="fw-bold" style={{ color: 'var(--text-main)' }}>Hémoglobine (NFS)</td>
                     <td className="text-success fw-bold">14.2 g/dL</td>
-                    <td className="text-white-50">12.0 - 16.0 g/dL</td>
-                    <td><span style={{ background: 'rgba(16,185,129,0.2)', color: '#34d399', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700' }}>Normal</span></td>
+                    <td style={{ color: 'var(--text-sub)' }}>12.0 - 16.0 g/dL</td>
+                    <td><span style={{ background: 'rgba(16,185,129,0.2)', color: '#10b981', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700' }}>Normal</span></td>
                   </tr>
                 </tbody>
               </table>
@@ -523,17 +523,17 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
 
       {/* DICOM VIEWING MODAL */}
       {viewingExam && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.9)' }}>
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
           <div className="modal-dialog modal-xl modal-dialog-centered">
-            <div className="modal-content text-white p-4" style={{ borderRadius: '24px', background: '#0f172a' }}>
+            <div className="modal-content p-4" style={{ borderRadius: '24px', background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <h5 className="fw-bold text-success mb-0">🩻 Visionneuse DICOM 3.0 HD — {viewingExam.title}</h5>
-                <button className="btn-close btn-close-white" onClick={() => setViewingExam(null)}></button>
+                <button className="btn-close" onClick={() => setViewingExam(null)}></button>
               </div>
 
               <div className="row g-4">
                 <div className="col-lg-8">
-                  <div className="rounded-4 p-3 text-center d-flex flex-column align-items-center justify-content-center" style={{ height: '420px', background: '#1e293b', position: 'relative', overflow: 'hidden' }}>
+                  <div className="rounded-4 p-3 text-center d-flex flex-column align-items-center justify-content-center" style={{ height: '420px', background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', position: 'relative', overflow: 'hidden' }}>
                     <img 
                       src={viewingExam.preview} 
                       alt={viewingExam.title} 
@@ -545,30 +545,30 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                         filter: dicomInvert ? 'invert(100%)' : 'none'
                       }} 
                     />
-                    <div className="position-absolute bottom-0 start-0 m-3 p-2 rounded-3 bg-dark text-white-50 small">
+                    <div className="position-absolute bottom-0 start-0 m-3 p-2 rounded-3 small" style={{ background: 'var(--bg-card)', color: 'var(--text-sub)', border: '1px solid var(--border-color)' }}>
                       Cliché {activeCliche} / {viewingExam.cliches}
                     </div>
                   </div>
 
-                  <div className="d-flex justify-content-center gap-2 mt-3 p-2 rounded-4 bg-dark">
-                    <button type="button" style={{ background: '#1e293b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} onClick={() => setDicomZoom(dicomZoom + 0.2)}>🔍 Zoom +</button>
-                    <button type="button" style={{ background: '#1e293b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} onClick={() => setDicomZoom(1)}>🔄 Reset</button>
-                    <button type="button" style={{ background: dicomInvert ? '#f59e0b' : '#1e293b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} onClick={() => setDicomInvert(!dicomInvert)}>🌗 Négatif</button>
+                  <div className="d-flex justify-content-center gap-2 mt-3 p-2 rounded-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+                    <button type="button" style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} onClick={() => setDicomZoom(dicomZoom + 0.2)}>🔍 Zoom +</button>
+                    <button type="button" style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} onClick={() => setDicomZoom(1)}>🔄 Reset</button>
+                    <button type="button" style={{ background: dicomInvert ? '#f59e0b' : 'var(--bg-card)', color: dicomInvert ? '#ffffff' : 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} onClick={() => setDicomInvert(!dicomInvert)}>🌗 Négatif</button>
                     <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem', fontWeight: '700' }} onClick={() => setActiveCliche((activeCliche % viewingExam.cliches) + 1)}>🖼 Cliché suivant</button>
                   </div>
                 </div>
 
                 <div className="col-lg-4">
-                  <div className="p-4 rounded-4 bg-dark h-100 d-flex flex-column justify-content-between">
+                  <div className="p-4 rounded-4 h-100 d-flex flex-column justify-content-between" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
                     <div>
                       <h6 className="fw-bold text-success mb-2">📋 Conclusion Diagnostique</h6>
-                      <p className="text-white-50 small mb-3">{viewingExam.conclusion}</p>
-                      <small className="text-muted d-block border-top border-secondary pt-2">Prescrit par : <strong className="text-white">{viewingExam.doctor}</strong></small>
+                      <p className="small mb-3" style={{ color: 'var(--text-sub)' }}>{viewingExam.conclusion}</p>
+                      <small className="d-block border-top pt-2" style={{ color: 'var(--text-sub)', borderColor: 'var(--border-color)' }}>Prescrit par : <strong style={{ color: 'var(--text-main)' }}>{viewingExam.doctor}</strong></small>
                     </div>
 
                     <div className="d-flex flex-column gap-2 mt-4">
                       <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.65rem', fontWeight: '700', cursor: 'pointer' }} onClick={() => handleDownloadExam(viewingExam)}>📥 Télécharger Rapport PDF Certifié (🇸🇳)</button>
-                      <button type="button" style={{ background: '#1e293b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '10px', padding: '0.65rem' }} onClick={() => setViewingExam(null)}>Fermer</button>
+                      <button type="button" style={{ background: 'var(--bg-card)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.65rem' }} onClick={() => setViewingExam(null)}>Fermer</button>
                     </div>
                   </div>
                 </div>
@@ -581,19 +581,19 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
 
       {/* SHARE MODAL */}
       {showShareModal && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.85)' }}>
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
           <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content text-white p-4" style={{ borderRadius: '24px', background: '#1e293b' }}>
+            <div className="modal-content p-4" style={{ borderRadius: '24px', background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
               <h5 className="fw-bold text-success mb-2">🔗 Partager le dossier médical avec un médecin</h5>
-              <p className="text-white-50 small mb-3">Générez un lien d'accès sécurisé temporaire (Valable 24h) pour votre praticien.</p>
+              <p className="small mb-3" style={{ color: 'var(--text-sub)' }}>Générez un lien d'accès sécurisé temporaire (Valable 24h) pour votre praticien.</p>
               
-              <div className="p-3 bg-dark rounded-3 mb-3 text-center border border-success">
-                <small className="text-muted d-block mb-1">Code d'accès temporaire OTP :</small>
+              <div className="p-3 rounded-3 mb-3 text-center border border-success" style={{ background: 'var(--bg-card-subtle)' }}>
+                <small className="d-block mb-1" style={{ color: 'var(--text-sub)' }}>Code d'accès temporaire OTP :</small>
                 <h3 className="fw-bold text-warning letter-spacing-2 mb-0">849-201</h3>
               </div>
 
               <div className="d-flex justify-content-end gap-2">
-                <button type="button" style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setShowShareModal(false)}>Fermer</button>
+                <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setShowShareModal(false)}>Fermer</button>
                 <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700' }} onClick={() => alert("Lien copié dans le presse-papier !")}>📋 Copier le lien</button>
               </div>
             </div>
@@ -603,19 +603,19 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
 
       {/* ADD EXAM MODAL */}
       {showAddExamModal && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.85)' }}>
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
           <div className="modal-dialog modal-dialog-centered">
-            <form onSubmit={handleAddExam} className="modal-content text-white p-4" style={{ borderRadius: '24px', background: '#1e293b' }}>
+            <form onSubmit={handleAddExam} className="modal-content p-4" style={{ borderRadius: '24px', background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
               <h5 className="fw-bold text-success mb-3">➕ Ajouter un Examen DICOM / PDF</h5>
               
               <div className="mb-3">
-                <label className="form-label small fw-bold text-white-50">Titre de l'examen *</label>
-                <input type="text" className="form-control text-white border-0" style={{ background: '#0f172a' }} value={newExamTitle} onChange={(e) => setNewExamTitle(e.target.value)} placeholder="Ex: Scanner Abdominal HD" required />
+                <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Titre de l'examen *</label>
+                <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }} value={newExamTitle} onChange={(e) => setNewExamTitle(e.target.value)} placeholder="Ex: Scanner Abdominal HD" required />
               </div>
 
               <div className="mb-3">
-                <label className="form-label small fw-bold text-white-50">Type d'imagerie *</label>
-                <select className="form-select text-white border-0" style={{ background: '#0f172a' }} value={newExamType} onChange={(e) => setNewExamType(e.target.value)}>
+                <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Type d'imagerie *</label>
+                <select className="form-select" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }} value={newExamType} onChange={(e) => setNewExamType(e.target.value)}>
                   <option value="Scanner">Scanner</option>
                   <option value="IRM">IRM</option>
                   <option value="Radio">Radio</option>
@@ -624,7 +624,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
               </div>
 
               <div className="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setShowAddExamModal(false)}>Annuler</button>
+                <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setShowAddExamModal(false)}>Annuler</button>
                 <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700' }}>Ajouter l'examen</button>
               </div>
             </form>

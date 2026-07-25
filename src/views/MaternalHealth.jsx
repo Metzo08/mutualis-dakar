@@ -143,7 +143,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
             <input 
               type="text" 
               placeholder="Rechercher..." 
-              style={{ background: '#1e293b', color: '#ffffff', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem', width: '200px' }} 
+              style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem', width: '200px' }} 
             />
           </div>
         </div>
@@ -184,7 +184,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
                 
                 <button 
                   type="button"
-                  style={{ background: '#1e293b', color: '#f8fafc', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '12px', padding: '0.75rem 1.25rem', fontWeight: '700', fontSize: '0.88rem', cursor: 'pointer' }} 
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.75rem 1.25rem', fontWeight: '700', fontSize: '0.88rem', cursor: 'pointer' }} 
                   onClick={handleDownloadCarnet}
                 >
                   📥 Télécharger Carnet Officiel PDF (🇸🇳)
@@ -195,12 +195,12 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
         </div>
 
         {/* Tab Navigation Pills */}
-        <div style={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', padding: '0.4rem', borderRadius: '14px', display: 'inline-flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
+        <div style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', padding: '0.4rem', borderRadius: '14px', display: 'inline-flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
           <button 
             type="button"
             style={{ 
-              background: activeTab === 'cpn' ? '#10b981' : '#0f172a', 
-              color: activeTab === 'cpn' ? '#ffffff' : '#94a3b8', 
+              background: activeTab === 'cpn' ? '#10b981' : 'var(--bg-card)', 
+              color: activeTab === 'cpn' ? '#ffffff' : 'var(--text-sub)', 
               border: 'none', 
               borderRadius: '10px', 
               padding: '0.6rem 1.25rem', 
@@ -216,8 +216,8 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
           <button 
             type="button"
             style={{ 
-              background: activeTab === 'pev' ? '#10b981' : '#0f172a', 
-              color: activeTab === 'pev' ? '#ffffff' : '#94a3b8', 
+              background: activeTab === 'pev' ? '#10b981' : 'var(--bg-card)', 
+              color: activeTab === 'pev' ? '#ffffff' : 'var(--text-sub)', 
               border: 'none', 
               borderRadius: '10px', 
               padding: '0.6rem 1.25rem', 
@@ -233,8 +233,8 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
           <button 
             type="button"
             style={{ 
-              background: activeTab === 'advice' ? '#10b981' : '#0f172a', 
-              color: activeTab === 'advice' ? '#ffffff' : '#94a3b8', 
+              background: activeTab === 'advice' ? '#10b981' : 'var(--bg-card)', 
+              color: activeTab === 'advice' ? '#ffffff' : 'var(--text-sub)', 
               border: 'none', 
               borderRadius: '10px', 
               padding: '0.6rem 1.25rem', 
@@ -254,14 +254,14 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
             
             {/* Main Left Column: CPN Timeline */}
             <div className="col-lg-8">
-              <div className="p-4 rounded-4" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
+              <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
                 
                 <div className="d-flex justify-content-between align-items-center mb-4">
                   <div>
-                    <h5 className="fw-bold text-white mb-1" style={{ fontSize: '1.2rem' }}>Calendrier des Consultations Prénatales</h5>
-                    <small className="text-muted">Progression actuelle : <span className="text-success fw-bold">75% complété</span></small>
+                    <h5 className="fw-bold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.2rem' }}>Calendrier des Consultations Prénatales</h5>
+                    <small style={{ color: 'var(--text-sub)' }}>Progression actuelle : <span className="text-success fw-bold">75% complété</span></small>
                   </div>
-                  <span style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', border: '1px solid #10b981', borderRadius: '20px', padding: '0.35rem 0.85rem', fontSize: '0.78rem', fontWeight: '700' }}>
+                  <span style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', border: '1px solid #10b981', borderRadius: '20px', padding: '0.35rem 0.85rem', fontSize: '0.78rem', fontWeight: '700' }}>
                     ✔ À jour
                   </span>
                 </div>
@@ -269,22 +269,22 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
                 {/* Timeline Items */}
                 <div className="d-flex flex-column gap-3">
                   {cpnVisits.map((item) => (
-                    <div key={item.id} className="p-3.5 rounded-4 d-flex align-items-start gap-3" style={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.08)' }}>
-                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: item.completed ? '#10b981' : '#334155', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', flexShrink: 0 }}>
+                    <div key={item.id} className="p-3.5 rounded-4 d-flex align-items-start gap-3" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: item.completed ? '#10b981' : 'var(--bg-card)', color: item.completed ? '#ffffff' : 'var(--text-sub)', border: item.completed ? 'none' : '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', flexShrink: 0 }}>
                         {item.completed ? '✓' : '⌛'}
                       </div>
 
                       <div className="flex-grow-1">
                         <div className="d-flex justify-content-between align-items-center mb-1">
-                          <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#34d399', padding: '0.2rem 0.6rem', borderRadius: '6px', fontSize: '0.72rem', fontWeight: '700' }}>
+                          <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', padding: '0.2rem 0.6rem', borderRadius: '6px', fontSize: '0.72rem', fontWeight: '700' }}>
                             {item.status}
                           </span>
-                          <span style={{ background: '#1e293b', color: '#94a3b8', padding: '0.2rem 0.6rem', borderRadius: '6px', fontSize: '0.72rem', fontWeight: '600' }}>
+                          <span style={{ background: 'var(--bg-card)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', padding: '0.2rem 0.6rem', borderRadius: '6px', fontSize: '0.72rem', fontWeight: '600' }}>
                             📅 {item.date}
                           </span>
                         </div>
-                        <h6 className="fw-bold text-white mb-1" style={{ fontSize: '0.98rem' }}>{item.title}</h6>
-                        <p className="text-white-50 small mb-1" style={{ lineHeight: '1.5' }}>{item.desc}</p>
+                        <h6 className="fw-bold mb-1" style={{ color: 'var(--text-main)', fontSize: '0.98rem' }}>{item.title}</h6>
+                        <p className="small mb-1" style={{ color: 'var(--text-sub)', lineHeight: '1.5' }}>{item.desc}</p>
                         <small className="text-success fw-semibold" style={{ fontSize: '0.75rem' }}>👩‍⚕️ {item.doctor}</small>
                       </div>
 
@@ -312,24 +312,24 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
               <div className="d-flex flex-column gap-4">
                 
                 {/* Card Constantes Vitales */}
-                <div className="p-4 rounded-4" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
                   <div className="d-flex align-items-center gap-2 mb-3 text-success">
                     <span style={{ fontSize: '1.2rem' }}>📈</span>
-                    <h6 className="fw-bold text-white mb-0" style={{ fontSize: '1rem' }}>Constantes Vitales</h6>
+                    <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>Constantes Vitales</h6>
                   </div>
 
                   <div className="row text-center g-2">
                     <div className="col-6">
-                      <div className="p-3 rounded-3" style={{ background: '#0f172a' }}>
-                        <small className="text-muted d-block" style={{ fontSize: '0.72rem' }}>Poids</small>
-                        <h4 className="fw-bold text-white mb-0">64.5 kg</h4>
+                      <div className="p-3 rounded-3" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+                        <small className="d-block" style={{ color: 'var(--text-sub)', fontSize: '0.72rem' }}>Poids</small>
+                        <h4 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>64.5 kg</h4>
                         <small className="text-success" style={{ fontSize: '0.68rem' }}>+2.1kg / mois</small>
                       </div>
                     </div>
                     <div className="col-6">
-                      <div className="p-3 rounded-3" style={{ background: '#0f172a' }}>
-                        <small className="text-muted d-block" style={{ fontSize: '0.72rem' }}>Tension Art.</small>
-                        <h4 className="fw-bold text-white mb-0">12/8</h4>
+                      <div className="p-3 rounded-3" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+                        <small className="d-block" style={{ color: 'var(--text-sub)', fontSize: '0.72rem' }}>Tension Art.</small>
+                        <h4 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>12/8</h4>
                         <small className="text-success" style={{ fontSize: '0.68rem' }}>Normal</small>
                       </div>
                     </div>
@@ -369,18 +369,18 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
                 </div>
 
                 {/* Card Sage-femme de garde */}
-                <div className="p-3.5 rounded-4 d-flex align-items-center justify-content-between" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
+                <div className="p-3.5 rounded-4 d-flex align-items-center justify-content-between" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
                   <div className="d-flex align-items-center gap-3">
-                    <img src="https://images.unsplash.com/photo-1594824813566-88855ce75907?w=120" alt="Dr. Fatou Diome" style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }} />
+                    <img src="/dr_fatou_diop.png" onError={(e) => { e.target.src = '/mariama_avatar.png'; }} alt="Dr. Fatou Diome" style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }} />
                     <div>
-                      <small className="text-muted d-block" style={{ fontSize: '0.72rem' }}>Sage-femme de garde</small>
-                      <strong className="text-white small d-block">Dr. Fatou Diome</strong>
+                      <small className="d-block" style={{ color: 'var(--text-sub)', fontSize: '0.72rem' }}>Sage-femme de garde</small>
+                      <strong className="small d-block" style={{ color: 'var(--text-main)' }}>Dr. Fatou Diome</strong>
                     </div>
                   </div>
 
                   <button 
                     type="button"
-                    style={{ background: '#0f172a', color: '#34d399', border: '1px solid #10b981', borderRadius: '10px', padding: '0.45rem 0.85rem', fontWeight: '700', fontSize: '0.78rem', cursor: 'pointer' }}
+                    style={{ background: 'var(--bg-card-subtle)', color: '#10b981', border: '1px solid #10b981', borderRadius: '10px', padding: '0.45rem 0.85rem', fontWeight: '700', fontSize: '0.78rem', cursor: 'pointer' }}
                     onClick={() => setShowAskMidwifeModal(true)}
                   >
                     Poser une question
@@ -397,11 +397,11 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
         {activeTab === 'pev' && (
           <div className="row g-4 mb-4">
             <div className="col-12">
-              <div className="p-4 rounded-4" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
+              <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
                 <div className="d-flex align-items-center justify-content-between mb-3">
                   <div className="d-flex align-items-center gap-2">
                     <span style={{ fontSize: '1.3rem' }}>💉</span>
-                    <h5 className="fw-bold text-white mb-0" style={{ fontSize: '1.2rem' }}>Programme Élargi de Vaccination (PEV Sénégal 0-12 mois)</h5>
+                    <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.2rem' }}>Programme Élargi de Vaccination (PEV Sénégal 0-12 mois)</h5>
                   </div>
                   <span style={{ background: '#10b981', color: '#ffffff', padding: '0.35rem 0.85rem', borderRadius: '20px', fontSize: '0.78rem', fontWeight: '700' }}>
                     Enfant : Moussa Ndiaye (Né le 14/05/2026)
@@ -409,9 +409,9 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
                 </div>
 
                 <div className="table-responsive">
-                  <table className="table table-dark table-hover align-middle mb-0" style={{ background: 'transparent' }}>
+                  <table className="table align-middle mb-0" style={{ background: 'transparent' }}>
                     <thead>
-                      <tr className="text-muted small border-bottom border-secondary border-opacity-25" style={{ fontSize: '0.78rem' }}>
+                      <tr className="small border-bottom" style={{ fontSize: '0.78rem', color: 'var(--text-sub)', borderColor: 'var(--border-color)' }}>
                         <th scope="col">ÉCHÉANCE / ÂGE</th>
                         <th scope="col">VACCINS OBLIGATOIRES</th>
                         <th scope="col">MALADIES PROTEGÉES</th>
@@ -420,26 +420,26 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr className="border-bottom border-secondary border-opacity-10">
-                        <td className="fw-bold text-white py-3">Naissance</td>
+                      <tr className="border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+                        <td className="fw-bold py-3" style={{ color: 'var(--text-main)' }}>Naissance</td>
                         <td className="text-success fw-bold">BCG + VPO 0 + VHB 0</td>
-                        <td className="text-white-50 small">Tuberculose, Polio, Hépatite B</td>
-                        <td className="text-white-50 small">Centre Gaspard Camara</td>
-                        <td className="text-end"><span style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', padding: '0.3rem 0.75rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700' }}>✅ Administré</span></td>
+                        <td className="small" style={{ color: 'var(--text-sub)' }}>Tuberculose, Polio, Hépatite B</td>
+                        <td className="small" style={{ color: 'var(--text-sub)' }}>Centre Gaspard Camara</td>
+                        <td className="text-end"><span style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', padding: '0.3rem 0.75rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700' }}>✅ Administré</span></td>
                       </tr>
-                      <tr className="border-bottom border-secondary border-opacity-10">
-                        <td className="fw-bold text-white py-3">6 Semaines</td>
+                      <tr className="border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+                        <td className="fw-bold py-3" style={{ color: 'var(--text-main)' }}>6 Semaines</td>
                         <td className="text-success fw-bold">Penta 1 + VPO 1 + Rota 1 + Pneumo 1</td>
-                        <td className="text-white-50 small">Diphtérie, Tétanos, Coqueluche...</td>
-                        <td className="text-white-50 small">Dispensaire Point E</td>
-                        <td className="text-end"><span style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', padding: '0.3rem 0.75rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700' }}>✅ Administré</span></td>
+                        <td className="small" style={{ color: 'var(--text-sub)' }}>Diphtérie, Tétanos, Coqueluche...</td>
+                        <td className="small" style={{ color: 'var(--text-sub)' }}>Dispensaire Point E</td>
+                        <td className="text-end"><span style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', padding: '0.3rem 0.75rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700' }}>✅ Administré</span></td>
                       </tr>
-                      <tr className="border-bottom border-secondary border-opacity-10">
-                        <td className="fw-bold text-white py-3">10 Semaines</td>
+                      <tr className="border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+                        <td className="fw-bold py-3" style={{ color: 'var(--text-main)' }}>10 Semaines</td>
                         <td className="text-warning fw-bold">Penta 2 + VPO 2 + Rota 2 + Pneumo 2</td>
-                        <td className="text-white-50 small">Rappel des Immunisations</td>
-                        <td className="text-white-50 small">Centre de Santé Pikine</td>
-                        <td className="text-end"><span style={{ background: 'rgba(245, 158, 11, 0.2)', color: '#fbbf24', padding: '0.3rem 0.75rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700' }}>⏳ À venir (Juillet)</span></td>
+                        <td className="small" style={{ color: 'var(--text-sub)' }}>Rappel des Immunisations</td>
+                        <td className="small" style={{ color: 'var(--text-sub)' }}>Centre de Santé Pikine</td>
+                        <td className="text-end"><span style={{ background: 'rgba(245, 158, 11, 0.2)', color: '#d97706', padding: '0.3rem 0.75rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700' }}>⏳ À venir (Juillet)</span></td>
                       </tr>
                     </tbody>
                   </table>
@@ -453,15 +453,15 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
         {activeTab === 'advice' && (
           <div className="row g-4 mb-4">
             <div className="col-lg-8">
-              <div className="p-4 rounded-4" style={{ background: '#1e293b', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
-                <h5 className="fw-bold text-white mb-3">💬 Questions posées à la Sage-femme</h5>
+              <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                <h5 className="fw-bold mb-3" style={{ color: 'var(--text-main)' }}>💬 Questions posées à la Sage-femme</h5>
                 
                 <div className="d-flex flex-column gap-3 mb-4">
                   {midwifeAnswers.map((item, idx) => (
-                    <div key={idx} className="p-3.5 rounded-3" style={{ background: '#0f172a', border: '1px solid rgba(255,255,255,0.08)' }}>
+                    <div key={idx} className="p-3.5 rounded-3" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
                       <strong className="d-block text-warning mb-1" style={{ fontSize: '0.9rem' }}>Q: {item.q}</strong>
-                      <p className="text-white-50 small mb-2" style={{ lineHeight: '1.5' }}>{item.a}</p>
-                      <small className="text-muted d-block" style={{ fontSize: '0.72rem' }}>{item.doctor} • {item.date}</small>
+                      <p className="small mb-2" style={{ color: 'var(--text-sub)', lineHeight: '1.5' }}>{item.a}</p>
+                      <small style={{ color: 'var(--text-sub)', fontSize: '0.72rem' }}>{item.doctor} • {item.date}</small>
                     </div>
                   ))}
                 </div>
@@ -482,39 +482,39 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
 
       {/* GUARANTEE LETTER MODAL */}
       {showGuaranteeModal && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.85)' }}>
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
           <div className="modal-dialog modal-lg modal-dialog-centered">
-            <div className="modal-content text-white p-4" style={{ borderRadius: '24px', background: '#1e293b' }}>
+            <div className="modal-content p-4" style={{ borderRadius: '24px', background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <h5 className="fw-bold text-success mb-0">📜 Lettre de Garantie Hospitalière (100% UNAMUSC 🇸🇳)</h5>
-                <button className="btn-close btn-close-white" onClick={() => setShowGuaranteeModal(false)}></button>
+                <button className="btn-close" onClick={() => setShowGuaranteeModal(false)}></button>
               </div>
 
-              <div className="p-4 rounded-3 bg-dark mb-3 border border-success">
-                <div className="d-flex justify-content-between mb-3 border-bottom border-secondary pb-2">
+              <div className="p-4 rounded-3 mb-3 border border-success" style={{ background: 'var(--bg-card-subtle)' }}>
+                <div className="d-flex justify-content-between mb-3 border-bottom pb-2" style={{ borderColor: 'var(--border-color)' }}>
                   <div>
-                    <strong className="text-white d-block">Union Nationale des Mutuelles de Santé (UNAMUSC)</strong>
+                    <strong className="d-block" style={{ color: 'var(--text-main)' }}>Union Nationale des Mutuelles de Santé (UNAMUSC)</strong>
                     <small className="text-success fw-bold">Prise en charge 100% Maternité & Accouchement</small>
                   </div>
                   <div className="text-end">
-                    <small className="text-muted d-block">Date d'émission: {new Date().toLocaleDateString('fr-FR')}</small>
+                    <small className="d-block" style={{ color: 'var(--text-sub)' }}>Date d'émission: {new Date().toLocaleDateString('fr-FR')}</small>
                     <small className="text-warning fw-bold">N° GAR-MAT-2026-9910</small>
                   </div>
                 </div>
 
-                <p className="small text-white-50 mb-2">
+                <p className="small mb-2" style={{ color: 'var(--text-sub)' }}>
                   <strong>Assurée :</strong> Awa Ndiaye (CMU-DKR-2026-8812)
                 </p>
-                <p className="small text-white-50 mb-2">
+                <p className="small mb-2" style={{ color: 'var(--text-sub)' }}>
                   <strong>Établissement récepteur :</strong> Centre Hospitalier Universitaire de Fann (Dakar)
                 </p>
-                <p className="small text-white-50 mb-0">
+                <p className="small mb-0" style={{ color: 'var(--text-sub)' }}>
                   <strong>Garantie accordée :</strong> Couverture intégrale (100%) des frais d'accouchement simple, césarienne d'urgence et soins néonataux sans aucune avance de frais.
                 </p>
               </div>
 
               <div className="d-flex justify-content-end gap-2">
-                <button type="button" style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setShowGuaranteeModal(false)}>Fermer</button>
+                <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setShowGuaranteeModal(false)}>Fermer</button>
                 <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700', cursor: 'pointer' }} onClick={handleDownloadGuarantee}>📥 Télécharger la Lettre PDF Certifiée (🇸🇳)</button>
               </div>
             </div>
@@ -524,16 +524,16 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
 
       {/* ASK MIDWIFE MODAL */}
       {showAskMidwifeModal && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.85)' }}>
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
           <div className="modal-dialog modal-dialog-centered">
-            <form onSubmit={handleSendQuestion} className="modal-content text-white p-4" style={{ borderRadius: '24px', background: '#1e293b' }}>
+            <form onSubmit={handleSendQuestion} className="modal-content p-4" style={{ borderRadius: '24px', background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
               <h5 className="fw-bold text-success mb-3">💬 Poser une question à la Sage-femme de garde</h5>
               
               <div className="mb-3">
-                <label className="form-label small fw-bold text-white-50">Votre question ou symptôme *</label>
+                <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Votre question ou symptôme *</label>
                 <textarea 
-                  className="form-control text-white border-0" 
-                  style={{ background: '#0f172a', borderRadius: '12px' }} 
+                  className="form-control" 
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }} 
                   rows={4} 
                   value={midwifeQuestion} 
                   onChange={(e) => setMidwifeQuestion(e.target.value)}
@@ -543,7 +543,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
               </div>
 
               <div className="d-flex justify-content-end gap-2">
-                <button type="button" style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setShowAskMidwifeModal(false)}>Annuler</button>
+                <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setShowAskMidwifeModal(false)}>Annuler</button>
                 <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700' }}>Envoyer la question</button>
               </div>
             </form>
@@ -553,15 +553,15 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
 
       {/* BOOKING CPN MODAL */}
       {showBookingModal && selectedCpnForBooking && (
-        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.85)' }}>
+        <div className="modal show d-block" style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }}>
           <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content text-white p-4" style={{ borderRadius: '24px', background: '#1e293b' }}>
+            <div className="modal-content p-4" style={{ borderRadius: '24px', background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
               <h5 className="fw-bold text-success mb-2">📅 Réserver {selectedCpnForBooking.title}</h5>
-              <p className="text-white-50 small mb-3">Sélectionnez la structure de santé agréée pour la consultation prénatale.</p>
+              <p className="small mb-3" style={{ color: 'var(--text-sub)' }}>Sélectionnez la structure de santé agréée pour la consultation prénatale.</p>
               
               <div className="mb-3">
-                <label className="form-label small fw-bold text-white-50">Structure de santé *</label>
-                <select className="form-select text-white border-0" style={{ background: '#0f172a', borderRadius: '10px' }}>
+                <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Structure de santé *</label>
+                <select className="form-select" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }}>
                   <option value="1">Centre de Santé Gaspard Camara (Dakar)</option>
                   <option value="2">Centre de Santé de Pikine</option>
                   <option value="3">Hôpital Universitaire Fann</option>
@@ -569,7 +569,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null }) {
               </div>
 
               <div className="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" style={{ background: '#0f172a', color: '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setShowBookingModal(false)}>Annuler</button>
+                <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setShowBookingModal(false)}>Annuler</button>
                 <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700' }} onClick={() => handleConfirmBooking(selectedCpnForBooking.id)}>Confirmer la réservation (0 FCFA)</button>
               </div>
             </div>
