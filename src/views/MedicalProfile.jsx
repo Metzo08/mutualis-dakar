@@ -603,7 +603,6 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
 
             </div>
           </div>
-        </div>
       )}
 
       {/* SHARE MODAL */}
