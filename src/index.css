@@ -988,14 +988,14 @@ p {
    GLOBAL UNIFIED BANNER & SECTION SPACING DESIGN SYSTEM
    ============================================================================ */
 .banner-mini, .hero-banner {
-  background-image: linear-gradient(135deg, rgba(5, 150, 105, 0.65) 0%, rgba(16, 185, 129, 0.45) 100%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  background-image: linear-gradient(135deg, rgba(5, 150, 105, 0.38) 0%, rgba(16, 185, 129, 0.18) 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.45) !important;
   border-radius: 24px !important;
   padding: 3.75rem 2.5rem !important;
   min-height: 240px !important;
-  margin-bottom: 2.5rem !important;
+  margin-bottom: 3.5rem !important;
   color: #ffffff !important;
-  box-shadow: 0 14px 40px rgba(5, 150, 105, 0.25) !important;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.25) !important;
 }
 
 .banner-mini h1, .banner-mini h2, .hero-banner h1, .hero-banner h2 {
@@ -1003,21 +1003,26 @@ p {
   font-size: 2.35rem !important;
   font-weight: 800 !important;
   letter-spacing: -0.02em !important;
-  text-shadow: 0 3px 6px rgba(0, 0, 0, 0.3) !important;
+  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.85) !important;
   margin-bottom: 0.5rem !important;
 }
 
 .banner-mini p, .hero-banner p {
-  color: rgba(255, 255, 255, 0.92) !important;
+  color: #ffffff !important;
   font-size: 1.05rem !important;
   line-height: 1.6 !important;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8) !important;
+  opacity: 0.98 !important;
 }
 
-/* Enforce generous spacing between view sections and cards to prevent overcrowding */
+/* Enforce generous, spacious margins between view sections, rows, and cards */
 .view-container section,
 .view-container .card,
 .view-container .table-responsive,
-.view-container .row.mb-4 {
-  margin-bottom: 2.25rem !important;
+.view-container .row,
+.view-container .grid,
+.view-container .mb-4,
+.view-container .mb-5 {
+  margin-bottom: 3.5rem !important;
 }
+

@@ -126,14 +126,14 @@ export default function Cotisations({ lang, portalMode, citizenUser, agentUser }
     <div className="cotisations-view fade-in-up">
       {/* Banner */}
       <section className="banner-mini" style={{
-        background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.65) 0%, rgba(16, 185, 129, 0.45) 100%), url("/csu_cotisations_hero.png") center/cover no-repeat',
-        border: '1px solid rgba(255, 255, 255, 0.4)',
+        background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.38) 0%, rgba(16, 185, 129, 0.18) 100%), url("/csu_cotisations_hero.png") center/cover no-repeat',
+        border: '1px solid rgba(255, 255, 255, 0.45)',
         borderRadius: '24px',
         padding: '3.75rem 2.5rem',
         minHeight: '240px',
-        marginBottom: '2.5rem',
+        marginBottom: '3.5rem',
         color: '#fff',
-        boxShadow: '0 14px 40px rgba(5, 150, 105, 0.25)',
+        boxShadow: '0 14px 40px rgba(0, 0, 0, 0.25)',
         textAlign: 'center'
       }}>
         <div className="container" style={{ position: 'relative', zIndex: 2 }}>

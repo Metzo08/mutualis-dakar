@@ -287,13 +287,13 @@ export default function AgentDashboard({ lang, agentUser }) {
     <div className="dashboard-view fade-in-up">
       {/* Banner */}
       <section className="banner-mini" style={{
-        background: 'linear-gradient(to right, rgba(5, 150, 105, 0.9), rgba(5, 150, 105, 0.7)), url("/csu_dashboard_hero.png") center/cover no-repeat',
-        borderBottom: '1px solid var(--border-color)',
-        borderRadius: '16px',
-        padding: '2.5rem 2rem',
-        marginBottom: '2rem',
+        background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.38) 0%, rgba(16, 185, 129, 0.18) 100%), url("/dashboard_hero_bg_real.png") center/cover no-repeat',
+        border: '1px solid rgba(255, 255, 255, 0.45)',
+        borderRadius: '24px',
+        padding: '3.75rem 2.5rem',
+        marginBottom: '3.5rem',
         color: '#fff',
-        boxShadow: 'var(--shadow-md)',
+        boxShadow: '0 14px 40px rgba(0, 0, 0, 0.25)',
         textAlign: 'center'
       }}>
         <div className="container" style={{ position: 'relative', zIndex: 2 }}>
