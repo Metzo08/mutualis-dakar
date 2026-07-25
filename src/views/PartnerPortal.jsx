@@ -267,12 +267,15 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
     <div className="partner-portal fade-in-up container py-4">
       {/* Banner signature centrée */}
       <section 
-        className="banner-mini text-white mb-4 rounded-4 overflow-hidden position-relative text-center"
+        className="banner-mini text-white mb-5 rounded-4 overflow-hidden position-relative text-center"
         style={{
-          background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.93), rgba(4, 120, 87, 0.88)), url("/csu_partner_hero.png") center/cover no-repeat',
-          padding: '3rem 2rem',
-          boxShadow: '0 10px 25px -5px rgba(5, 150, 105, 0.3)',
-          borderBottom: '1px solid var(--border-color)'
+          background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.35) 0%, rgba(16, 185, 129, 0.18) 100%), url("/csu_partner_hero.png") center/cover no-repeat',
+          padding: '3.75rem 2.5rem',
+          minHeight: '240px',
+          borderRadius: '24px',
+          boxShadow: '0 14px 40px rgba(0, 0, 0, 0.25)',
+          border: '1px solid rgba(255, 255, 255, 0.45)',
+          marginBottom: '3.5rem'
         }}
       >
         <div className="d-flex flex-column align-items-center justify-content-center text-center mx-auto" style={{ zIndex: 2, maxWidth: '850px' }}>

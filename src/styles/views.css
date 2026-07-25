@@ -702,10 +702,208 @@
 
 /* Hero Section */
 .csu-hero {
-  background: linear-gradient(to right, rgba(13, 148, 95, 0.9), rgba(13, 148, 95, 0.7)), url('/csu_family_health.png') center/cover no-repeat;
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.35) 0%, rgba(16, 185, 129, 0.18) 100%), url('/csu_family_health.png') center/cover no-repeat;
   color: white;
-  padding: 5rem 1rem;
-  border-radius: 0 0 30px 30px;
+  padding: 4.5rem 2rem;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.25);
+  margin-bottom: 3.5rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.csu-hero::after {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%; width: 200%; height: 200%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+  transform: rotate(30deg);
+  pointer-events: none;
+}
+
+.csu-hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.csu-hero-title {
+  font-family: var(--font-title);
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 2rem;
+}
+
+.csu-btn-cta {
+  background-color: var(--secondary);
+  color: white;
+  padding: 1rem 2.5rem;
+  font-size: 1.1rem;
+  border-radius: 50px;
+  border: none;
+  font-weight: bold;
+  box-shadow: 0 4px 15px rgba(255, 127, 17, 0.4);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.csu-btn-cta:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(255, 127, 17, 0.6);
+  background-color: #e66c00;
+}
+
+/* Section Common */
+.section-padding {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.csu-section-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.csu-section-title {
+  font-family: var(--font-title);
+  font-size: 2rem;
+  color: var(--primary);
+  display: inline-block;
+  padding-bottom: 0.5rem;
+  position: relative;
+}
+
+.csu-section-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 60px; height: 4px;
+  background-color: var(--secondary);
+  border-radius: 2px;
+}
+
+.csu-bg-green {
+  color: var(--success);
+}
+.csu-bg-green::after {
+  background-color: var(--success);
+}
+
+/* Features Grid */
+.csu-features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 2rem;
+}
+
+.csu-feature-card {
+  text-align: center;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.csu-feature-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  background: var(--bg-card-subtle);
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--border-color);
+}
+
+/* Gratuite Grid */
+.csu-gratuite-section {
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.csu-gratuite-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.csu-gratuite-card {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  padding: 1.5rem;
+}
+
+.csu-gratuite-icon-wrapper {
+  flex: 0 0 60px;
+  width: 60px; height: 60px;
+  background-image: radial-gradient(circle, #fff 10%, transparent 11%);
+  background-size: 20px 20px;
+}
+
+.digital-card-logo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.digital-card-chip {
+  width: 45px;
+  height: 35px;
+  background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+  border-radius: 6px;
+}
+
+.digital-card-qr {
+  background-color: #fff;
+  padding: 0.5rem;
+  border-radius: 8px;
+  width: 90px;
+  height: 90px;
+}
+
+.digital-card-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 1.5rem;
+}
+
+.digital-card-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 0.2rem;
+}
+
+.digital-card-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* =========================================================
+   Programmes CSU - Premium Redesign
+========================================================= */
+
+.programmes-csu-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Hero Section */
+.csu-hero {
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.35) 0%, rgba(16, 185, 129, 0.18) 100%), url('/csu_family_health.png') center/cover no-repeat;
+  color: white;
+  padding: 4.5rem 2rem;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.25);
+  margin-bottom: 3.5rem;
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -918,56 +1116,22 @@
     text-align: center;
     padding: 2rem;
   }
-  .csu-section-title::after {
-    left: 50%;
-    transform: translateX(-50%);
-  }
-}
-
-/* Home Citizen Login Card styling for dark theme support */
-.citizen-login-card {
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.95)), url("/citizen_portal_bg_real.png") center/cover no-repeat !important;
-}
-
-.dark-theme .citizen-login-card {
-  background: linear-gradient(to bottom, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.95)), url("/citizen_portal_bg_real.png") center/cover no-repeat !important;
 }
 
 /* Home Sponsorship Banner styling with high-contrast text support */
-.parrainage-teaser-banner {
+.parrainage-teaser-banner, .dark-theme .parrainage-teaser-banner {
   margin-top: 2rem !important;
-  padding: 2.5rem !important;
-  background: linear-gradient(to right, rgba(5, 150, 105, 0.9), rgba(5, 150, 105, 0.8)), url("/csu_parrainage_hero_real.png") center/cover no-repeat !important;
+  padding: 3.5rem 2.5rem !important;
+  background: linear-gradient(135deg, rgba(5, 150, 105, 0.35) 0%, rgba(16, 185, 129, 0.18) 100%), url("/csu_parrainage_hero_real.png") center/cover no-repeat !important;
   border-left: 5px solid #34d399 !important;
+  border-radius: 24px !important;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.25) !important;
   color: #ffffff !important;
   display: flex !important;
   flex-direction: column !important;
   gap: 1.25rem !important;
   position: relative !important;
   overflow: hidden !important;
-}
-
-/* Dark mode green for sponsorship teaser banner matching the top banner */
-.dark-theme .parrainage-teaser-banner {
-  background: linear-gradient(to right, rgba(5, 150, 105, 0.9), rgba(5, 150, 105, 0.8)), url("/csu_parrainage_hero_real.png") center/cover no-repeat !important;
-  border-left: 5px solid var(--primary) !important;
-}
-
-.parrainage-teaser-banner h3 {
-  color: #ffffff !important;
-}
-
-.parrainage-teaser-banner p {
-  color: #f1f5f9 !important;
-}
-
-.parrainage-teaser-banner strong {
-  font-weight: 700;
-}
-
-/* Custom routing container hide fallback */
-.leaflet-routing-container {
-  display: none !important;
 }
 
 /* Info Boxes Styles for Cartographie & BaseNationale */
@@ -977,9 +1141,11 @@
   border: 1px solid rgba(245, 158, 11, 0.25);
   border-radius: 12px;
 }
+
 .info-box-landmark .info-box-title {
   color: #b45309;
 }
+
 .info-box-landmark .info-box-text {
   color: #78350f;
 }
@@ -988,9 +1154,11 @@
   background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(251, 191, 36, 0.08) 100%) !important;
   border: 1px solid rgba(245, 158, 11, 0.4) !important;
 }
+
 .dark-theme .info-box-landmark .info-box-title {
   color: #fbbf24 !important;
 }
+
 .dark-theme .info-box-landmark .info-box-text {
   color: #ffedd5 !important;
 }
@@ -1001,9 +1169,11 @@
   border: 1px solid rgba(59, 130, 246, 0.18);
   border-radius: 12px;
 }
+
 .info-box-tips .info-box-title {
   color: #1d4ed8;
 }
+
 .info-box-tips .info-box-text {
   color: #1e3a8a;
 }
@@ -1012,9 +1182,11 @@
   background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(37, 99, 235, 0.08) 100%) !important;
   border: 1px solid rgba(59, 130, 246, 0.35) !important;
 }
+
 .dark-theme .info-box-tips .info-box-title {
   color: #60a5fa !important;
 }
+
 .dark-theme .info-box-tips .info-box-text {
   color: #eff6ff !important;
 }
@@ -1026,9 +1198,11 @@
   border: 1px solid rgba(16, 185, 129, 0.22);
   border-radius: 8px;
 }
+
 .info-box-coverage .info-box-text {
   color: #065f46;
 }
+
 .info-box-coverage .info-box-value {
   color: var(--success);
 }
@@ -1037,9 +1211,11 @@
   background-color: rgba(16, 185, 129, 0.15) !important;
   border: 1px solid rgba(16, 185, 129, 0.4) !important;
 }
+
 .dark-theme .info-box-coverage .info-box-text {
   color: #a7f3d0 !important;
 }
+
 .dark-theme .info-box-coverage .info-box-value {
   color: #34d399 !important;
 }
