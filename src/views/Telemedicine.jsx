@@ -334,15 +334,29 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
       payment_status: 'paid',
       payment_method: providerName,
       amount: 2500,
-      status: 'called'
+      status: 'waiting' // En attente dans la file
     };
-    setQueue([newPatient, ...queue]);
+    
+    // Le patient rejoint la file d'attente à la suite des autres patients
+    setQueue([...queue, newPatient]);
     setActiveDoctor(targetDoc);
     setConsultReason('');
-    
-    // Lancement IMMÉDIAT de la salle de Visioconférence HD WebRTC en direct avec le Médecin !
-    startCamera();
-    setActiveModal('webrtc');
+    setActiveModal(null);
+
+    const positionNum = queue.length + 1;
+    alert(`✅ Règlement de 2 500 FCFA effectué avec succès via ${providerName} !\n\nVous êtes bien inscrit(e) en Salle d'Attente à la Position n°${positionNum}.\nVous recevrez une notification préalable dès que votre tour approchera.`);
+  };
+
+  // Simulation d'avancement de la file d'attente pour test rapide
+  const handleAdvanceMyQueue = (patientId) => {
+    setQueue(prevQueue => prevQueue.map(p => {
+      if (p.id === patientId || p.cmu_number === activeCmuNumber) {
+        if (p.status === 'waiting') return { ...p, status: 'next' };
+        if (p.status === 'next') return { ...p, status: 'called' };
+        return { ...p, status: 'called' };
+      }
+      return p;
+    }));
   };
 
   const handleProcessPayment = (e) => {
@@ -517,33 +531,122 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
           </div>
         </div>
 
-        {/* BANNER RECONNECT / APPAREIL ACTIF APRÈS PAIEMENT ASSURÉ */}
+        {/* SALLE D'ATTENTE VIRTUELLE & BANNER NOTIFICATION PATIENT */}
         {(() => {
-          const myItem = queue.find(q => q.cmu_number === activeCmuNumber || q.patient_name.includes(activeLastName));
-          if (!myItem) return null;
+          const myIndex = queue.findIndex(q => q.cmu_number === activeCmuNumber || q.patient_name.includes(activeLastName));
+          if (myIndex === -1) return null;
+          
+          const myItem = queue[myIndex];
+          const positionInQueue = myIndex + 1;
+          const status = myItem.status || 'waiting';
+
+          // Cas 1 : En attente dans la file (Position > 1 ou Attente simple)
+          if (status === 'waiting' && positionInQueue > 1) {
+            return (
+              <div className="p-4 rounded-4 mb-5 text-white shadow-lg position-relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', borderRadius: '24px', border: '2px solid #059669', boxShadow: '0 10px 30px rgba(5,150,105,0.2)' }}>
+                <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                  <div>
+                    <div className="d-flex align-items-center gap-2 mb-1">
+                      <span className="badge bg-success text-white fw-bold px-3 py-1.5" style={{ borderRadius: '20px', fontSize: '0.8rem' }}>
+                        🟢 EN SALLE D'ATTENTE VIRTUELLE (RÈGLEMENT EFFECTUÉ - 2 500 FCFA)
+                      </span>
+                    </div>
+                    <h4 className="fw-extrabold mb-1 text-white">
+                      Vous êtes à la Position <span className="text-warning">n°{positionInQueue}</span> dans l'ordre d'arrivée
+                    </h4>
+                    <p className="mb-0 text-white-50 small">
+                      Médecin demandé : <strong>{myItem.requested_doctor}</strong> | Motif : {myItem.reason} | Mode de règlement : {myItem.payment_method}
+                    </p>
+                    <small className="text-emerald-400 d-block mt-1 fw-semibold" style={{ color: '#34d399' }}>
+                      ⚡ Temps d'attente estimé : ~{positionInQueue * 4} minutes. Vous serez notifié(e) automatiquement avant votre passage.
+                    </small>
+                  </div>
+
+                  <div className="d-flex flex-column gap-2 align-items-end">
+                    <button
+                      type="button"
+                      className="btn btn-secondary text-white fw-bold px-4 py-2 opacity-75"
+                      style={{ borderRadius: '12px', fontSize: '0.88rem', cursor: 'not-allowed' }}
+                      disabled
+                    >
+                      ⏳ En attente de votre tour (Position n°{positionInQueue})
+                    </button>
+                    
+                    {/* Bouton de simulation pour test utilisateur */}
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-warning text-warning fw-bold px-3 py-1"
+                      style={{ borderRadius: '8px', fontSize: '0.75rem', cursor: 'pointer' }}
+                      onClick={() => handleAdvanceMyQueue(myItem.id)}
+                      title="Cliquer pour simuler le passage du temps et recevoir la notification du médecin"
+                    >
+                      ⏩ Simuler l'avancement de mon tour (Test Démo)
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
+          // Cas 2 : Prochain patient (Position 1 ou Statut 'next') — NOTIFICATION PRÉALABLE
+          if (status === 'next' || (status === 'waiting' && positionInQueue === 1)) {
+            return (
+              <div className="p-4 rounded-4 mb-5 text-white shadow-lg position-relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)', borderRadius: '24px', border: '2px solid #f59e0b', boxShadow: '0 12px 35px rgba(245,158,11,0.35)' }}>
+                <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                  <div>
+                    <div className="d-flex align-items-center gap-2 mb-1">
+                      <span className="spinner-grow spinner-grow-sm text-white" role="status"></span>
+                      <span className="badge bg-white text-dark fw-extrabold px-3 py-1.5" style={{ borderRadius: '20px', fontSize: '0.82rem' }}>
+                        🔔 ALERTE PRÉALABLE : VOUS ÊTES LE PROCHAIN PATIENT !
+                      </span>
+                    </div>
+                    <h4 className="fw-extrabold mb-1 text-white">
+                      Préparez votre micro et votre caméra 📹
+                    </h4>
+                    <p className="mb-0 text-white-50 small">
+                      Le <strong>{myItem.requested_doctor}</strong> termine la consultation précédente et va vous recevoir d'un instant à l'autre.
+                    </p>
+                  </div>
+
+                  <div className="d-flex flex-column gap-2 align-items-end">
+                    <button
+                      type="button"
+                      className="btn btn-light text-warning fw-extrabold px-4 py-2.5 shadow"
+                      style={{ borderRadius: '12px', fontSize: '0.9rem', cursor: 'pointer' }}
+                      onClick={() => handleAdvanceMyQueue(myItem.id)}
+                    >
+                      📞 Simuler l'Appel du Médecin (C'est votre tour)
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
+          // Cas 3 : C'est votre tour ! (Statut 'called') — ACCÈS DIRECT À LA VISIOCONFÉRENCE
           return (
-            <div className="p-4 rounded-4 mb-5 text-white shadow-lg position-relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #059669 0%, #047857 100%)', borderRadius: '20px', border: '2px solid #10b981', boxShadow: '0 10px 30px rgba(16,185,129,0.3)' }}>
+            <div className="p-4 rounded-4 mb-5 text-white shadow-lg position-relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', borderRadius: '24px', border: '2px solid #34d399', boxShadow: '0 15px 40px rgba(16,185,129,0.4)' }}>
               <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div>
                   <div className="d-flex align-items-center gap-2 mb-1">
                     <span className="spinner-grow spinner-grow-sm text-warning" role="status"></span>
-                    <span className="badge bg-white text-success fw-bold px-3 py-1" style={{ borderRadius: '20px', fontSize: '0.8rem' }}>
-                      ● CONSULTATION EN DIRECT PRÊTE (PAYÉ 2 500 FCFA)
+                    <span className="badge bg-white text-success fw-extrabold px-3 py-1.5" style={{ borderRadius: '20px', fontSize: '0.85rem' }}>
+                      🔔 C'EST VOTRE TOUR ! LE MÉDECIN VOUS APPELLE
                     </span>
                   </div>
                   <h4 className="fw-extrabold mb-1 text-white">
-                    Médecin Consultant : {myItem.requested_doctor || 'Dr. Ousmane Sow'}
+                    Le {myItem.requested_doctor} est prêt et vous attend en Salle de Consultation HD
                   </h4>
                   <p className="mb-0 text-white-50 small">
-                    Règlement effectué via <strong>{myItem.payment_method}</strong> | Motif : {myItem.reason}
+                    Règlement validé ({myItem.payment_method}) | Motif : {myItem.reason}
                   </p>
                 </div>
 
                 <div className="d-flex gap-2">
                   <button
                     type="button"
-                    className="btn btn-light text-success fw-extrabold px-4 py-2.5 shadow"
-                    style={{ borderRadius: '12px', fontSize: '0.95rem', cursor: 'pointer' }}
+                    className="btn btn-light text-success fw-extrabold px-4 py-3 shadow-lg"
+                    style={{ borderRadius: '14px', fontSize: '1.05rem', cursor: 'pointer', border: '2px solid #ffffff' }}
                     onClick={() => {
                       const docObj = doctorsList.find(d => d.name === myItem.requested_doctor) || doctorsList[0];
                       setActiveDoctor(docObj);
@@ -551,7 +654,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                       setActiveModal('webrtc');
                     }}
                   >
-                    🎥 Ouvrir / Reconnecter la Visioconférence Directe
+                    🎥 ENTRER EN VISIOCONFÉRENCE DIRECTE ›
                   </button>
                 </div>
               </div>
@@ -563,7 +666,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
         {roleMode === 'doctor' && (
           <div className="p-4 rounded-4 mb-5" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
             <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-              <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>📋 File d'attente Télémédecine (Mode Médecin de Garde)</h5>
+              <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>📋 File d'attente Télémédecine (Ordre d'arrivée des patients)</h5>
               <button 
                 type="button" 
                 style={{ background: '#059669', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontWeight: '800', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(5,150,105,0.3)' }}
@@ -576,17 +679,22 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
               <table className="table align-middle mb-0" style={{ background: 'transparent' }}>
                 <thead>
                   <tr className="small border-bottom" style={{ color: 'var(--text-sub)', borderColor: 'var(--border-color)' }}>
+                    <th>POSITION</th>
                     <th>ASSURÉ</th>
                     <th>N° CMU</th>
                     <th>MOTIF & SYMPTÔMES</th>
                     <th>ARRIVÉE</th>
                     <th>RÈGLEMENT</th>
-                    <th className="text-end">ACTION</th>
+                    <th>STATUT</th>
+                    <th className="text-end">ACTIONS MÉDECIN</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {queue.map(p => (
+                  {queue.map((p, idx) => (
                     <tr key={p.id} className="border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+                      <td className="fw-bold text-center" style={{ color: 'var(--text-main)' }}>
+                        <span className="badge rounded-circle bg-secondary p-2" style={{ width: '28px', height: '28px' }}>#{idx + 1}</span>
+                      </td>
                       <td className="fw-bold" style={{ color: 'var(--text-main)' }}>{p.patient_name}</td>
                       <td className="text-success small fw-mono">{p.cmu_number}</td>
                       <td className="small" style={{ color: 'var(--text-sub)' }}>{p.reason}</td>
@@ -596,14 +704,42 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                           ✅ Reglé ({p.payment_method || 'Wave'})
                         </span>
                       </td>
+                      <td>
+                        {p.status === 'called' ? (
+                          <span className="badge bg-success text-white">🟢 Appel en cours / Reçu</span>
+                        ) : p.status === 'next' ? (
+                          <span className="badge bg-warning text-dark">🔔 Prochain notifié</span>
+                        ) : (
+                          <span className="badge bg-secondary text-white">⏳ En attente (#{idx + 1})</span>
+                        )}
+                      </td>
                       <td className="text-end">
-                        <button 
-                          type="button" 
-                          style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.4rem 0.85rem', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer' }}
-                          onClick={() => handleStartCall(doctorsList[0])}
-                        >
-                          🎥 Démarrer l'appel HD
-                        </button>
+                        <div className="d-flex gap-1 justify-content-end">
+                          <button 
+                            type="button" 
+                            className="btn btn-sm btn-outline-warning text-warning fw-bold"
+                            style={{ fontSize: '0.72rem', borderRadius: '6px' }}
+                            onClick={() => {
+                              setQueue(queue.map(item => item.id === p.id ? { ...item, status: 'next' } : item));
+                              alert(`🔔 Notification préalable envoyée à ${p.patient_name} ("Vous êtes le prochain patient") !`);
+                            }}
+                            title="Notifier à l'avance que le tour du patient approche"
+                          >
+                            🔔 Notifier
+                          </button>
+                          
+                          <button 
+                            type="button" 
+                            style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.3rem 0.65rem', fontWeight: '700', fontSize: '0.75rem', cursor: 'pointer' }}
+                            onClick={() => {
+                              setQueue(queue.map(item => item.id === p.id ? { ...item, status: 'called' } : item));
+                              handleStartCall(doctorsList.find(d => d.name === p.requested_doctor) || doctorsList[0]);
+                            }}
+                            title="Recevoir le patient en Visioconférence HD"
+                          >
+                            🎥 Recevoir
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
