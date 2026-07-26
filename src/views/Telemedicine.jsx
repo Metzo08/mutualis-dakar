@@ -19,16 +19,17 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
   // Swap Main Screen vs PIP Screen
   const [swappedViews, setSwappedViews] = useState(false);
 
-  // Liste des Praticiens Agréés
-  const doctorsList = [
+  // Liste des Praticiens Agréés (Persistée localement pour chaque Union Départementale)
+  const defaultDoctorsList = [
     {
       id: 1,
       name: 'Dr. Ousmane Sow',
-      specialty: 'Médecine Générale',
+      specialty: 'Médecine Générale & Urgences',
       category: 'generaliste',
       rating: '4.9 (124 avis)',
       cnom: 'CNOM: 4522-SN',
       langs: ['FR', 'WO', 'EN'],
+      department: 'Dakar Centre (Médina / Plateau)',
       avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=180',
       available: true
     },
@@ -40,21 +41,53 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
       rating: '5.0 (89 avis)',
       cnom: 'CNOM: 3108-SN',
       langs: ['FR', 'WO'],
+      department: 'Pikine & Guédiawaye',
       avatar: '/dr_fatou_diop.png',
       available: true
     },
     {
       id: 3,
       name: 'Dr. Cheikh Tidiane Seck',
-      specialty: 'Cardiologie & Médecine Générale',
+      specialty: 'Cardiologie & Médecine Interne',
       category: 'cardio',
       rating: '4.8 (96 avis)',
       cnom: 'CNOM: 9921-SN',
       langs: ['FR', 'WO'],
+      department: 'Rufisque & Bargny',
       avatar: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=180',
       available: true
     }
   ];
+
+  const [doctorsList, setDoctorsList] = useState(() => {
+    try {
+      const saved = localStorage.getItem('cmu-doctors-list');
+      return saved ? JSON.parse(saved) : defaultDoctorsList;
+    } catch (e) {
+      return defaultDoctorsList;
+    }
+  });
+
+  // Sauvegarde automatique de la liste des médecins
+  useEffect(() => {
+    try {
+      localStorage.setItem('cmu-doctors-list', JSON.stringify(doctorsList));
+    } catch (e) {
+      console.warn("Storage warning:", e);
+    }
+  }, [doctorsList]);
+
+  // Formulaire d'ajout Médecin par l'Agent de l'Union Départementale
+  const [newDocName, setNewDocName] = useState('');
+  const [newDocSpecialty, setNewDocSpecialty] = useState('Médecine Générale');
+  const [newDocCategory, setNewDocCategory] = useState('generaliste');
+  const [newDocCnom, setNewDocCnom] = useState('');
+  const [newDocDept, setNewDocDept] = useState('Union Départementale Dakar');
+  const [newDocLangs, setNewDocLangs] = useState('FR, WO');
+  const [newDocAvatar, setNewDocAvatar] = useState('https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=180');
+
+  // Détails CNOM Médecin pour la modale d'accréditation
+  const [selectedCnomDoctor, setSelectedCnomDoctor] = useState(null);
 
   // File d'attente Télémédecine
   const [queue, setQueue] = useState([
@@ -367,20 +400,28 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
           </div>
 
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <button 
-              type="button" 
-              style={{ background: roleMode === 'citizen' ? '#10b981' : 'var(--bg-card)', color: roleMode === 'citizen' ? '#ffffff' : 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.85rem', fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer' }}
-              onClick={() => setRoleMode('citizen')}
-            >
-              Espace Assuré
-            </button>
-            <button 
-              type="button" 
-              style={{ background: roleMode === 'doctor' ? '#10b981' : 'var(--bg-card)', color: roleMode === 'doctor' ? '#ffffff' : 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.85rem', fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer' }}
-              onClick={() => setRoleMode('doctor')}
-            >
-              Espace Médecin de Garde
-            </button>
+            {!isAgent ? (
+              <span className="badge bg-success-subtle text-success border border-success px-3 py-1.5 fw-bold" style={{ borderRadius: '8px', fontSize: '0.8rem' }}>
+                🟢 Espace Assuré (Connecté)
+              </span>
+            ) : (
+              <>
+                <button 
+                  type="button" 
+                  style={{ background: roleMode === 'citizen' ? '#10b981' : 'var(--bg-card)', color: roleMode === 'citizen' ? '#ffffff' : 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.85rem', fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer' }}
+                  onClick={() => setRoleMode('citizen')}
+                >
+                  Espace Assuré
+                </button>
+                <button 
+                  type="button" 
+                  style={{ background: roleMode === 'doctor' ? '#10b981' : 'var(--bg-card)', color: roleMode === 'doctor' ? '#ffffff' : 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.85rem', fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer' }}
+                  onClick={() => setRoleMode('doctor')}
+                >
+                  Espace Médecin de Garde
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -413,21 +454,58 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
             <div className="col-lg-4">
               <div className="p-4 rounded-4" style={{ background: 'rgba(255, 255, 255, 0.22)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.45)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)' }}>
                 <div className="d-flex align-items-center justify-content-between mb-2">
-                  <span className="fw-bold text-white" style={{ fontSize: '0.88rem', letterSpacing: '0.5px' }}>🟢 15 MÉDECINS EN LIGNE</span>
+                  <span 
+                    className="fw-bold text-white" 
+                    style={{ fontSize: '0.88rem', letterSpacing: '0.5px', cursor: 'pointer' }}
+                    onClick={() => setActiveModal('all_doctors')}
+                    title="Cliquer pour voir la liste complète des 15 médecins"
+                  >
+                    🟢 15 MÉDECINS EN LIGNE 🔍
+                  </span>
                   <span className="badge" style={{ background: '#10b981', color: '#ffffff', fontSize: '0.72rem', fontWeight: '800' }}>Disponible 24/7</span>
                 </div>
 
                 <div className="d-flex align-items-center gap-2 my-2">
                   <div className="d-flex" style={{ marginLeft: '10px' }}>
                     {doctorsList.map((d, i) => (
-                      <img key={i} src={d.avatar} onError={(e) => { e.target.src = '/mariama_avatar.png'; }} alt={d.name} title={d.name} style={{ width: '38px', height: '38px', borderRadius: '50%', border: '2px solid #ffffff', marginLeft: '-10px', objectFit: 'cover', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }} />
+                      <img 
+                        key={d.id || i} 
+                        src={d.avatar} 
+                        onError={(e) => { e.target.src = '/mariama_avatar.png'; }} 
+                        alt={d.name} 
+                        title={`Consulter ${d.name}`} 
+                        style={{ width: '38px', height: '38px', borderRadius: '50%', border: '2px solid #ffffff', marginLeft: '-10px', objectFit: 'cover', boxShadow: '0 2px 6px rgba(0,0,0,0.3)', cursor: 'pointer' }}
+                        onClick={() => {
+                          setSelectedDoctor(d);
+                          setActiveModal('join_queue');
+                        }} 
+                      />
                     ))}
-                    <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#047857', border: '2px solid #ffffff', color: '#ffffff', fontWeight: '800', fontSize: '0.78rem', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: '-10px', boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>+12</div>
+                    <div 
+                      style={{ width: '38px', height: '38px', borderRadius: '50%', background: '#047857', border: '2px solid #ffffff', color: '#ffffff', fontWeight: '800', fontSize: '0.78rem', display: 'flex', alignItems: 'center', justifyContent: 'center', marginLeft: '-10px', boxShadow: '0 2px 6px rgba(0,0,0,0.3)', cursor: 'pointer' }}
+                      onClick={() => setActiveModal('all_doctors')}
+                      title="Voir les 15 médecins disponibles de la région"
+                    >
+                      +12
+                    </div>
                   </div>
                 </div>
 
                 <div className="mt-2 pt-2 border-top border-white border-opacity-25">
-                  <small className="text-white d-block fw-semibold" style={{ fontSize: '0.82rem', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>Dr. Ousmane Sow • Dr. Fatou Diop • Dr. Cheikh Tidiane Seck</small>
+                  <small className="text-white d-block fw-semibold" style={{ fontSize: '0.82rem', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
+                    {doctorsList.map((d, idx) => (
+                      <span 
+                        key={d.id || idx} 
+                        style={{ cursor: 'pointer', textDecoration: 'underline text-decoration-color: rgba(255,255,255,0.4)', marginRight: '6px' }}
+                        onClick={() => {
+                          setSelectedDoctor(d);
+                          setActiveModal('join_queue');
+                        }}
+                      >
+                        {d.name}{idx < doctorsList.length - 1 ? ' • ' : ''}
+                      </span>
+                    ))}
+                  </small>
                   <small className="text-white-50 d-block mt-1" style={{ fontSize: '0.78rem' }}>Temps d'attente estimé : <span className="fw-bold text-warning" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.4)' }}>⚡ 4 min</span></small>
                 </div>
               </div>
@@ -438,7 +516,16 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
         {/* SECTION MÉDECINS DE GARDE / FILE D'ATTENTE */}
         {roleMode === 'doctor' && (
           <div className="p-4 rounded-4 mb-5" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
-            <h5 className="fw-bold mb-3" style={{ color: 'var(--text-main)' }}>📋 File d'attente Télémédecine (Mode Médecin de Garde)</h5>
+            <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+              <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>📋 File d'attente Télémédecine (Mode Médecin de Garde)</h5>
+              <button 
+                type="button" 
+                style={{ background: '#059669', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontWeight: '800', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(5,150,105,0.3)' }}
+                onClick={() => setActiveModal('add_doctor')}
+              >
+                ➕ Ajouter un Médecin (Union Départementale)
+              </button>
+            </div>
             <div className="table-responsive">
               <table className="table align-middle mb-0" style={{ background: 'transparent' }}>
                 <thead>
@@ -542,9 +629,25 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                         </div>
 
                         <div className="d-flex gap-2 mb-3 flex-wrap">
-                          <span style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', padding: '0.2rem 0.5rem', borderRadius: '6px', fontSize: '0.7rem' }}>🆔 {doc.cnom}</span>
+                          <span 
+                            style={{ background: 'rgba(16,185,129,0.12)', color: '#10b981', border: '1px solid rgba(16,185,129,0.3)', padding: '0.2rem 0.5rem', borderRadius: '6px', fontSize: '0.72rem', fontWeight: '700', cursor: 'pointer' }}
+                            onClick={() => {
+                              setSelectedCnomDoctor(doc);
+                              setActiveModal('cnom_info');
+                            }}
+                            title="Cliquer pour vérifier l'accréditation Ordre des Médecins"
+                          >
+                            🆔 {doc.cnom} 🔍
+                          </span>
                           {doc.langs.map((l, idx) => (
-                            <span key={idx} style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', padding: '0.2rem 0.5rem', borderRadius: '6px', fontSize: '0.7rem' }}>🌐 {l}</span>
+                            <span 
+                              key={idx} 
+                              style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', padding: '0.2rem 0.5rem', borderRadius: '6px', fontSize: '0.72rem', fontWeight: '600', cursor: 'pointer' }}
+                              onClick={() => setSearchQuery(l)}
+                              title={`Filtrer par la langue ${l}`}
+                            >
+                              🌐 {l}
+                            </span>
                           ))}
                         </div>
                       </div>
@@ -1101,6 +1204,208 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
             <div className="d-flex justify-content-end gap-2">
               <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.6rem 1.25rem', fontWeight: '700', cursor: 'pointer' }} onClick={() => setActiveModal(null)}>Fermer</button>
               <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.6rem 1.4rem', fontWeight: '700', cursor: 'pointer', boxShadow: '0 4px 14px rgba(16,185,129,0.3)' }} onClick={handleDownloadPrescription}>📥 Télécharger Ordonnance PDF Officielle (🇸🇳)</button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* MODAL AJOUT MÉDECIN DE GARDE (UNION DÉPARTEMENTALE) */}
+      {activeModal === 'add_doctor' && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
+          <div style={{ maxWidth: '580px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
+            <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2" style={{ borderColor: 'var(--border-color)' }}>
+              <h5 className="fw-bold text-success mb-0 d-flex align-items-center gap-2">
+                <span>👨‍⚕️</span> Enregistrement d'un Médecin de Garde
+              </h5>
+              <button type="button" className="btn-close" onClick={() => setActiveModal(null)}></button>
+            </div>
+
+            <p className="small text-muted mb-4">
+              Réservé aux Agents d'Unions Départementales UNAMUSC. Ajoutez un praticien assermenté au réseau régional de garde.
+            </p>
+
+            <form onSubmit={handleAddDoctor}>
+              <div className="mb-3">
+                <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Nom Complet du Médecin *</label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} 
+                  placeholder="Ex: Dr. Mariama Bâ" 
+                  value={newDocName} 
+                  onChange={(e) => setNewDocName(e.target.value)} 
+                  required 
+                />
+              </div>
+
+              <div className="row g-3 mb-3">
+                <div className="col-md-6">
+                  <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Spécialité Médicale *</label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} 
+                    placeholder="Ex: Pédiatrie & Néonatologie" 
+                    value={newDocSpecialty} 
+                    onChange={(e) => setNewDocSpecialty(e.target.value)} 
+                    required 
+                  />
+                </div>
+
+                <div className="col-md-6">
+                  <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Catégorie *</label>
+                  <select 
+                    className="form-select" 
+                    style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }}
+                    value={newDocCategory}
+                    onChange={(e) => setNewDocCategory(e.target.value)}
+                  >
+                    <option value="generaliste">Médecine Générale</option>
+                    <option value="pediatrie">Pédiatrie</option>
+                    <option value="cardio">Cardiologie</option>
+                    <option value="gyneco">Gynécologie</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="row g-3 mb-3">
+                <div className="col-md-6">
+                  <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>N° d'Ordre CNOM *</label>
+                  <input 
+                    type="text" 
+                    className="form-control fw-mono" 
+                    style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} 
+                    placeholder="Ex: CNOM: 7812-SN" 
+                    value={newDocCnom} 
+                    onChange={(e) => setNewDocCnom(e.target.value)} 
+                    required 
+                  />
+                </div>
+
+                <div className="col-md-6">
+                  <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Union Départementale / Secteur *</label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} 
+                    placeholder="Ex: Union Départementale Pikine" 
+                    value={newDocDept} 
+                    onChange={(e) => setNewDocDept(e.target.value)} 
+                    required 
+                  />
+                </div>
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Langues Parlées (séparées par virgules) *</label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} 
+                  placeholder="Ex: FR, WO, PULAAR" 
+                  value={newDocLangs} 
+                  onChange={(e) => setNewDocLangs(e.target.value)} 
+                  required 
+                />
+              </div>
+
+              <div className="d-flex justify-content-end gap-2 mt-4">
+                <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.65rem 1.25rem' }} onClick={() => setActiveModal(null)}>Annuler</button>
+                <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.65rem 1.5rem', fontWeight: '800' }}>
+                  💾 Enregistrer le Médecin dans le Réseau
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* MODAL VÉRIFICATION ACCRÉDITATION CNOM */}
+      {activeModal === 'cnom_info' && selectedCnomDoctor && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
+          <div style={{ maxWidth: '500px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
+            <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2" style={{ borderColor: 'var(--border-color)' }}>
+              <h5 className="fw-bold text-success mb-0 d-flex align-items-center gap-2">
+                <span>🆔</span> Accréditation Ordre des Médecins 🇸🇳
+              </h5>
+              <button type="button" className="btn-close" onClick={() => setActiveModal(null)}></button>
+            </div>
+
+            <div className="text-center my-3">
+              <img src={selectedCnomDoctor.avatar} onError={(e) => { e.target.src = '/dr_fatou_diop.png'; }} alt={selectedCnomDoctor.name} style={{ width: '80px', height: '80px', borderRadius: '20px', objectFit: 'cover', border: '3px solid #10b981' }} />
+              <h5 className="fw-bold mt-2 mb-0" style={{ color: 'var(--text-main)' }}>{selectedCnomDoctor.name}</h5>
+              <span className="badge bg-success-subtle text-success border border-success px-3 py-1 mt-1" style={{ borderRadius: '12px' }}>
+                {selectedCnomDoctor.specialty}
+              </span>
+            </div>
+
+            <div className="p-3 rounded-4 mb-3 border border-success" style={{ background: 'var(--bg-card-subtle)', fontSize: '0.85rem' }}>
+              <div className="d-flex justify-content-between mb-2">
+                <span className="text-muted fw-semibold">N° Ordre des Médecins :</span>
+                <strong className="text-success fw-mono">{selectedCnomDoctor.cnom}</strong>
+              </div>
+              <div className="d-flex justify-content-between mb-2">
+                <span className="text-muted fw-semibold">Statut d'Assermentation :</span>
+                <span className="badge bg-success text-white">● Praticien Agréé & Validé</span>
+              </div>
+              <div className="d-flex justify-content-between mb-2">
+                <span className="text-muted fw-semibold">Secteur / Union :</span>
+                <strong>{selectedCnomDoctor.department || 'Dakar Centre'}</strong>
+              </div>
+              <div className="d-flex justify-content-between">
+                <span className="text-muted fw-semibold">Langues de Consultation :</span>
+                <strong>{selectedCnomDoctor.langs.join(', ')}</strong>
+              </div>
+            </div>
+
+            <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 1.5rem', fontWeight: '700', width: '100%', cursor: 'pointer' }} onClick={() => setActiveModal(null)}>Fermer</button>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* MODAL RÉSEAU DES 15 MÉDECINS EN LIGNE (+12) */}
+      {activeModal === 'all_doctors' && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
+          <div style={{ maxWidth: '780px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
+            <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2" style={{ borderColor: 'var(--border-color)' }}>
+              <h5 className="fw-bold text-success mb-0 d-flex align-items-center gap-2">
+                <span>🟢</span> Réseau National des 15 Médecins de Garde UNAMUSC 🇸🇳
+              </h5>
+              <button type="button" className="btn-close" onClick={() => setActiveModal(null)}></button>
+            </div>
+
+            <div className="row g-3 my-2">
+              {doctorsList.map((doc) => (
+                <div key={doc.id} className="col-md-6">
+                  <div className="p-3 rounded-4 border d-flex align-items-center justify-content-between" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)' }}>
+                    <div className="d-flex align-items-center gap-3">
+                      <img src={doc.avatar} onError={(e) => { e.target.src = '/dr_fatou_diop.png'; }} alt={doc.name} style={{ width: '48px', height: '48px', borderRadius: '12px', objectFit: 'cover' }} />
+                      <div>
+                        <strong className="d-block text-success" style={{ fontSize: '0.9rem' }}>{doc.name}</strong>
+                        <small className="text-muted d-block" style={{ fontSize: '0.74rem' }}>{doc.specialty}</small>
+                        <small className="text-success fw-mono d-block" style={{ fontSize: '0.68rem' }}>{doc.cnom}</small>
+                      </div>
+                    </div>
+                    <button 
+                      type="button" 
+                      style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.4rem 0.75rem', fontWeight: '700', fontSize: '0.78rem', cursor: 'pointer' }}
+                      onClick={() => {
+                        setSelectedDoctor(doc);
+                        setActiveModal('join_queue');
+                      }}
+                    >
+                      Consulter
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="d-flex justify-content-end mt-4">
+              <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 1.5rem', fontWeight: '700' }} onClick={() => setActiveModal(null)}>Fermer</button>
             </div>
           </div>
         </div>,
