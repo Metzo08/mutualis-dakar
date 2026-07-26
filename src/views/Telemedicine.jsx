@@ -322,6 +322,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
     e.preventDefault();
     if (!consultReason.trim()) return;
     const providerName = paymentProvider === 'orange' ? 'Orange Money' : paymentProvider === 'wave' ? 'Wave' : 'Free Money';
+    const targetDoc = selectedDoctor || doctorsList[0];
     const newPatient = {
       id: Date.now(),
       patient_name: `${activeFirstName} ${activeLastName}`,
@@ -329,16 +330,19 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
       reason: consultReason,
       urgency: urgencyLevel,
       joined_at: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-      requested_doctor: selectedDoctor?.name || 'Dr. Ousmane Sow',
+      requested_doctor: targetDoc.name,
       payment_status: 'paid',
       payment_method: providerName,
       amount: 2500,
-      status: 'waiting' // 'waiting' | 'called' | 'in_call'
+      status: 'called'
     };
     setQueue([newPatient, ...queue]);
-    setActiveModal(null);
+    setActiveDoctor(targetDoc);
     setConsultReason('');
-    alert(`✅ Règlement de 2 500 FCFA effectué avec succès via ${providerName} !\n\nVous êtes maintenant inscrit(e) en Salle d'Attente pour le ${selectedDoctor?.name || 'Dr. Ousmane Sow'}. Le médecin vous recevra lorsque votre tour arrivera.`);
+    
+    // Lancement IMMÉDIAT de la salle de Visioconférence HD WebRTC en direct avec le Médecin !
+    startCamera();
+    setActiveModal('webrtc');
   };
 
   const handleProcessPayment = (e) => {
@@ -512,6 +516,48 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
             </div>
           </div>
         </div>
+
+        {/* BANNER RECONNECT / APPAREIL ACTIF APRÈS PAIEMENT ASSURÉ */}
+        {(() => {
+          const myItem = queue.find(q => q.cmu_number === activeCmuNumber || q.patient_name.includes(activeLastName));
+          if (!myItem) return null;
+          return (
+            <div className="p-4 rounded-4 mb-5 text-white shadow-lg position-relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #059669 0%, #047857 100%)', borderRadius: '20px', border: '2px solid #10b981', boxShadow: '0 10px 30px rgba(16,185,129,0.3)' }}>
+              <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <div>
+                  <div className="d-flex align-items-center gap-2 mb-1">
+                    <span className="spinner-grow spinner-grow-sm text-warning" role="status"></span>
+                    <span className="badge bg-white text-success fw-bold px-3 py-1" style={{ borderRadius: '20px', fontSize: '0.8rem' }}>
+                      ● CONSULTATION EN DIRECT PRÊTE (PAYÉ 2 500 FCFA)
+                    </span>
+                  </div>
+                  <h4 className="fw-extrabold mb-1 text-white">
+                    Médecin Consultant : {myItem.requested_doctor || 'Dr. Ousmane Sow'}
+                  </h4>
+                  <p className="mb-0 text-white-50 small">
+                    Règlement effectué via <strong>{myItem.payment_method}</strong> | Motif : {myItem.reason}
+                  </p>
+                </div>
+
+                <div className="d-flex gap-2">
+                  <button
+                    type="button"
+                    className="btn btn-light text-success fw-extrabold px-4 py-2.5 shadow"
+                    style={{ borderRadius: '12px', fontSize: '0.95rem', cursor: 'pointer' }}
+                    onClick={() => {
+                      const docObj = doctorsList.find(d => d.name === myItem.requested_doctor) || doctorsList[0];
+                      setActiveDoctor(docObj);
+                      startCamera();
+                      setActiveModal('webrtc');
+                    }}
+                  >
+                    🎥 Ouvrir / Reconnecter la Visioconférence Directe
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* SECTION MÉDECINS DE GARDE / FILE D'ATTENTE */}
         {roleMode === 'doctor' && (
