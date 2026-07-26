@@ -288,6 +288,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
   const handleJoinQueue = (e) => {
     e.preventDefault();
     if (!consultReason.trim()) return;
+    const providerName = paymentProvider === 'orange' ? 'Orange Money' : paymentProvider === 'wave' ? 'Wave' : 'Free Money';
     const newPatient = {
       id: Date.now(),
       patient_name: `${activeFirstName} ${activeLastName}`,
@@ -295,21 +296,22 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
       reason: consultReason,
       urgency: urgencyLevel,
       joined_at: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-      requested_doctor: selectedDoctor.name,
+      requested_doctor: selectedDoctor?.name || 'Dr. Ousmane Sow',
       payment_status: 'paid',
-      payment_method: 'Orange Money',
-      amount: 2500
+      payment_method: providerName,
+      amount: 2500,
+      status: 'waiting' // 'waiting' | 'called' | 'in_call'
     };
     setQueue([newPatient, ...queue]);
     setActiveModal(null);
     setConsultReason('');
-    alert("✅ Inscription validée ! Vous êtes placé(e) dans la file d'attente.");
+    alert(`✅ Règlement de 2 500 FCFA effectué avec succès via ${providerName} !\n\nVous êtes maintenant inscrit(e) en Salle d'Attente pour le ${selectedDoctor?.name || 'Dr. Ousmane Sow'}. Le médecin vous recevra lorsque votre tour arrivera.`);
   };
 
   const handleProcessPayment = (e) => {
     e.preventDefault();
     setActiveModal(null);
-    alert(`✅ Règlement de 2 500 FCFA effectué via ${paymentProvider === 'orange' ? 'Orange Money' : 'Wave'} !`);
+    alert(`✅ Règlement du ticket modérateur de 2 500 FCFA effectué avec succès via ${paymentProvider === 'orange' ? 'Orange Money' : paymentProvider === 'wave' ? 'Wave' : 'Free Money'} !`);
   };
 
   const handleStartCall = (doc) => {
@@ -558,9 +560,16 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                       <button 
                         type="button"
                         style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.55rem', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer', width: '100%' }} 
-                        onClick={() => handleStartCall(doc)}
+                        onClick={() => {
+                          setSelectedDoctor(doc);
+                          if (roleMode === 'citizen') {
+                            setActiveModal('join_queue');
+                          } else {
+                            handleStartCall(doc);
+                          }
+                        }}
                       >
-                        Consulter ›
+                        {roleMode === 'citizen' ? '🏥 Entrer en Salle d\'Attente (2 500 FCFA) ›' : 'Consulter ›'}
                       </button>
                     </div>
                   </div>
@@ -629,11 +638,22 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
       </div>
 
-      {/* JOIN QUEUE MODAL */}
-      {activeModal === 'join_queue' && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ maxWidth: '520px', width: '90%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)' }}>
-            <h5 className="fw-bold text-success mb-3">🚪 Inscription en Salle d'Attente Virtuelle</h5>
+      {/* JOIN QUEUE & PAYMENT INTEGRATED MODAL (React Portal — Centered on Screen) */}
+      {activeModal === 'join_queue' && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
+          <div style={{ maxWidth: '580px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h5 className="fw-bold text-success mb-0 d-flex align-items-center gap-2">
+                <span>🚪</span> Entrée en Salle d'Attente Virtuelle
+              </h5>
+              <button type="button" className="btn-close" onClick={() => setActiveModal(null)}></button>
+            </div>
+
+            <div className="p-3 rounded-3 mb-3 border border-success" style={{ background: 'var(--bg-card-subtle)' }}>
+              <small className="text-muted d-block fw-semibold mb-1">Médecin Consultant Sélectionné :</small>
+              <h6 className="fw-bold mb-0 text-success">{selectedDoctor?.name || 'Dr. Ousmane Sow'} ({selectedDoctor?.specialty || 'Médecine Générale'})</h6>
+              <small className="text-muted d-block mt-1">Prise en charge UNAMUSC à 80% — Ticket modérateur restant : <strong>2 500 FCFA</strong></small>
+            </div>
             
             <form onSubmit={handleJoinQueue}>
               <div className="mb-3">
@@ -644,7 +664,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                   rows={3} 
                   value={consultReason} 
                   onChange={(e) => setConsultReason(e.target.value)}
-                  placeholder="Décrivez vos symptômes actuels..."
+                  placeholder="Ex: Fièvre, toux sèche, maux de tête depuis 48h..."
                   required 
                 />
               </div>
@@ -664,29 +684,105 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                 </select>
               </div>
 
+              {/* RÈGLEMENT OBLIGATOIRE DU TICKET MODÉRATEUR */}
+              <div className="mb-3">
+                <label className="form-label small fw-bold text-success">Mode de Règlement Mobile Money (2 500 FCFA) *</label>
+                <div className="d-flex gap-2 mb-3">
+                  <button 
+                    type="button" 
+                    style={{ 
+                      flex: 1, 
+                      padding: '0.75rem 0.5rem', 
+                      borderRadius: '12px', 
+                      background: paymentProvider === 'orange' ? '#ff7900' : 'var(--bg-card-subtle)', 
+                      color: paymentProvider === 'orange' ? '#ffffff' : 'var(--text-main)', 
+                      border: paymentProvider === 'orange' ? '2px solid #ff7900' : '1px solid var(--border-color)',
+                      fontWeight: '700',
+                      fontSize: '0.82rem',
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => setPaymentProvider('orange')}
+                  >
+                    🟧 Orange Money
+                  </button>
+
+                  <button 
+                    type="button" 
+                    style={{ 
+                      flex: 1, 
+                      padding: '0.75rem 0.5rem', 
+                      borderRadius: '12px', 
+                      background: paymentProvider === 'wave' ? '#1dc4ff' : 'var(--bg-card-subtle)', 
+                      color: paymentProvider === 'wave' ? '#ffffff' : 'var(--text-main)', 
+                      border: paymentProvider === 'wave' ? '2px solid #1dc4ff' : '1px solid var(--border-color)',
+                      fontWeight: '700',
+                      fontSize: '0.82rem',
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => setPaymentProvider('wave')}
+                  >
+                    🌊 Wave
+                  </button>
+
+                  <button 
+                    type="button" 
+                    style={{ 
+                      flex: 1, 
+                      padding: '0.75rem 0.5rem', 
+                      borderRadius: '12px', 
+                      background: paymentProvider === 'free' ? '#e11d48' : 'var(--bg-card-subtle)', 
+                      color: paymentProvider === 'free' ? '#ffffff' : 'var(--text-main)', 
+                      border: paymentProvider === 'free' ? '2px solid #e11d48' : '1px solid var(--border-color)',
+                      fontWeight: '700',
+                      fontSize: '0.82rem',
+                      cursor: 'pointer'
+                    }}
+                    onClick={() => setPaymentProvider('free')}
+                  >
+                    🔴 Free Money
+                  </button>
+                </div>
+
+                <input 
+                  type="text" 
+                  className="form-control fw-bold" 
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} 
+                  value={phoneNum} 
+                  onChange={(e) => setPhoneNum(e.target.value)} 
+                  placeholder="Numéro de téléphone Mobile Money"
+                  required 
+                />
+              </div>
+
               <div className="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setActiveModal(null)}>Annuler</button>
-                <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700' }}>Entrer dans la file</button>
+                <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.65rem 1.25rem' }} onClick={() => setActiveModal(null)}>Annuler</button>
+                <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.65rem 1.5rem', fontWeight: '800' }}>
+                  💳 Payer 2 500 FCFA & Entrer en Salle d'Attente
+                </button>
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* PAYMENT MODAL (ORANGE MONEY / WAVE) */}
-      {activeModal === 'payment' && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ maxWidth: '480px', width: '90%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)' }}>
-            <h5 className="fw-bold text-success mb-2">💳 Paiement Mobile Téléconsultation (2 500 FCFA)</h5>
+      {/* PAYMENT MODAL (ORANGE MONEY / WAVE — React Portal — Centered on Screen) */}
+      {activeModal === 'payment' && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
+          <div style={{ maxWidth: '480px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
+            <div className="d-flex justify-content-between align-items-center mb-2">
+              <h5 className="fw-bold text-success mb-0">💳 Paiement Mobile Téléconsultation (2 500 FCFA)</h5>
+              <button type="button" className="btn-close" onClick={() => setActiveModal(null)}></button>
+            </div>
             <p className="small mb-3" style={{ color: 'var(--text-sub)' }}>Ticket modérateur restant. Prise en charge UNAMUSC à 80% garantie.</p>
 
             <form onSubmit={handleProcessPayment}>
-              <div className="d-flex gap-3 mb-4">
+              <div className="d-flex gap-2 mb-4">
                 <button 
                   type="button" 
                   style={{ 
                     flex: 1, 
-                    padding: '0.85rem', 
+                    padding: '0.85rem 0.5rem', 
                     borderRadius: '12px', 
                     background: paymentProvider === 'orange' ? '#ff7900' : 'var(--bg-card-subtle)', 
                     color: paymentProvider === 'orange' ? '#ffffff' : 'var(--text-main)', 
@@ -696,7 +792,6 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                   }}
                   onClick={() => setPaymentProvider('orange')}
                 >
-                  <img src="/logo_orange_money.png" alt="Orange Money" style={{ height: '24px', borderRadius: '4px', background: '#ffffff', padding: '2px', marginRight: '6px' }} />
                   Orange Money
                 </button>
 
@@ -704,7 +799,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                   type="button" 
                   style={{ 
                     flex: 1, 
-                    padding: '0.85rem', 
+                    padding: '0.85rem 0.5rem', 
                     borderRadius: '12px', 
                     background: paymentProvider === 'wave' ? '#1dc4ff' : 'var(--bg-card-subtle)', 
                     color: paymentProvider === 'wave' ? '#ffffff' : 'var(--text-main)', 
@@ -714,7 +809,6 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                   }}
                   onClick={() => setPaymentProvider('wave')}
                 >
-                  <img src="/logo_wave.png" alt="Wave" style={{ height: '24px', borderRadius: '4px', marginRight: '6px' }} />
                   Wave
                 </button>
               </div>
@@ -737,13 +831,14 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* WEBRTC LIVE SESSION MODAL WITH RESPONSIVE DUAL VIEW & REAL MIC VU-METER */}
-      {activeModal === 'webrtc' && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-          <div style={{ maxWidth: '1000px', width: '95%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '1.25rem', border: '1px solid var(--border-color)', maxHeight: '94vh', overflowY: 'auto' }}>
+      {/* WEBRTC LIVE SESSION MODAL WITH RESPONSIVE DUAL VIEW & REAL MIC VU-METER (React Portal — Centered on Screen) */}
+      {activeModal === 'webrtc' && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', overflowY: 'auto' }}>
+          <div style={{ maxWidth: '1000px', width: '95%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '1.25rem', border: '1px solid var(--border-color)', maxHeight: '94vh', overflowY: 'auto', margin: 'auto' }}>
             
             {/* Header Status Bar */}
             <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2" style={{ borderColor: 'var(--border-color)' }}>
@@ -908,7 +1003,8 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
             </div>
 
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* QR CODE MODAL (React Portal — Centered on Screen) */}
