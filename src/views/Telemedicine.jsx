@@ -1140,7 +1140,19 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                 </h6>
                 <span className="badge bg-danger text-white" style={{ fontSize: '0.72rem' }}>● EN DIRECT (1080p WebRTC)</span>
               </div>
-              <button className="btn-close" onClick={() => setActiveModal(null)}></button>
+              <button 
+                type="button" 
+                className="btn btn-sm btn-danger fw-bold d-flex align-items-center gap-1 shadow-sm"
+                style={{ borderRadius: '10px', padding: '0.4rem 0.9rem', fontSize: '0.82rem', background: '#dc2626', border: 'none' }}
+                onClick={() => {
+                  if (streamRef.current) {
+                    streamRef.current.getTracks().forEach(t => t.stop());
+                  }
+                  setActiveModal(null);
+                }}
+              >
+                <span>❌ Terminer & Fermer</span>
+              </button>
             </div>
 
             <div className="row g-3">
@@ -1266,10 +1278,15 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
                   <button 
                     type="button" 
-                    style={{ background: '#dc2626', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer' }} 
-                    onClick={() => setActiveModal(null)}
+                    style={{ background: '#dc2626', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.55rem 1.25rem', fontWeight: '800', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(220,38,38,0.35)' }} 
+                    onClick={() => {
+                      if (streamRef.current) {
+                        streamRef.current.getTracks().forEach(t => t.stop());
+                      }
+                      setActiveModal(null);
+                    }}
                   >
-                    Raccrocher
+                    🛑 Raccrocher & Fermer
                   </button>
                 </div>
               </div>
