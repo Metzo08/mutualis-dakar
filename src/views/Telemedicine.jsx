@@ -402,18 +402,10 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
               <div className="d-flex gap-3 flex-wrap">
                 <button 
                   type="button"
-                  style={{ background: '#ffffff', color: '#047857', border: 'none', borderRadius: '12px', padding: '0.8rem 1.5rem', fontWeight: '800', fontSize: '0.92rem', boxShadow: '0 4px 15px rgba(0,0,0,0.2)', cursor: 'pointer' }}
+                  style={{ background: '#ffffff', color: '#047857', border: 'none', borderRadius: '12px', padding: '0.8rem 1.75rem', fontWeight: '800', fontSize: '0.95rem', boxShadow: '0 4px 15px rgba(0,0,0,0.2)', cursor: 'pointer' }}
                   onClick={() => setActiveModal('join_queue')}
                 >
                   ⚡ Entrer en salle d'attente
-                </button>
-
-                <button 
-                  type="button"
-                  style={{ background: 'rgba(255,255,255,0.25)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.5)', borderRadius: '12px', padding: '0.8rem 1.5rem', fontWeight: '700', fontSize: '0.92rem', cursor: 'pointer', backdropFilter: 'blur(6px)' }}
-                  onClick={() => setActiveModal('payment')}
-                >
-                  💳 Régler ticket modérateur (2 500 FCFA)
                 </button>
               </div>
             </div>
@@ -692,54 +684,69 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                     type="button" 
                     style={{ 
                       flex: 1, 
-                      padding: '0.75rem 0.5rem', 
+                      padding: '0.75rem 0.35rem', 
                       borderRadius: '12px', 
-                      background: paymentProvider === 'orange' ? '#ff7900' : 'var(--bg-card-subtle)', 
-                      color: paymentProvider === 'orange' ? '#ffffff' : 'var(--text-main)', 
+                      background: paymentProvider === 'orange' ? 'rgba(255,121,0,0.18)' : 'var(--bg-card-subtle)', 
+                      color: 'var(--text-main)', 
                       border: paymentProvider === 'orange' ? '2px solid #ff7900' : '1px solid var(--border-color)',
                       fontWeight: '700',
-                      fontSize: '0.82rem',
-                      cursor: 'pointer'
+                      fontSize: '0.8rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
                     }}
                     onClick={() => setPaymentProvider('orange')}
                   >
-                    🟧 Orange Money
+                    <img src="/logo_orange_money.png" alt="Orange Money" style={{ height: '22px', borderRadius: '4px', background: '#ffffff', padding: '1px' }} />
+                    <span>Orange Money</span>
                   </button>
 
                   <button 
                     type="button" 
                     style={{ 
                       flex: 1, 
-                      padding: '0.75rem 0.5rem', 
+                      padding: '0.75rem 0.35rem', 
                       borderRadius: '12px', 
-                      background: paymentProvider === 'wave' ? '#1dc4ff' : 'var(--bg-card-subtle)', 
-                      color: paymentProvider === 'wave' ? '#ffffff' : 'var(--text-main)', 
+                      background: paymentProvider === 'wave' ? 'rgba(29,196,255,0.18)' : 'var(--bg-card-subtle)', 
+                      color: 'var(--text-main)', 
                       border: paymentProvider === 'wave' ? '2px solid #1dc4ff' : '1px solid var(--border-color)',
                       fontWeight: '700',
-                      fontSize: '0.82rem',
-                      cursor: 'pointer'
+                      fontSize: '0.8rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
                     }}
                     onClick={() => setPaymentProvider('wave')}
                   >
-                    🌊 Wave
+                    <img src="/logo_wave.png" alt="Wave" style={{ height: '22px', borderRadius: '4px' }} />
+                    <span>Wave</span>
                   </button>
 
                   <button 
                     type="button" 
                     style={{ 
                       flex: 1, 
-                      padding: '0.75rem 0.5rem', 
+                      padding: '0.75rem 0.35rem', 
                       borderRadius: '12px', 
-                      background: paymentProvider === 'free' ? '#e11d48' : 'var(--bg-card-subtle)', 
-                      color: paymentProvider === 'free' ? '#ffffff' : 'var(--text-main)', 
+                      background: paymentProvider === 'free' ? 'rgba(225,29,72,0.18)' : 'var(--bg-card-subtle)', 
+                      color: 'var(--text-main)', 
                       border: paymentProvider === 'free' ? '2px solid #e11d48' : '1px solid var(--border-color)',
                       fontWeight: '700',
-                      fontSize: '0.82rem',
-                      cursor: 'pointer'
+                      fontSize: '0.8rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '6px'
                     }}
                     onClick={() => setPaymentProvider('free')}
                   >
-                    🔴 Free Money
+                    <img src="/logo_free_money.svg" alt="Free Money" style={{ height: '22px', borderRadius: '4px' }} />
+                    <span>Free Money</span>
                   </button>
                 </div>
 
@@ -1009,14 +1016,27 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
       {/* QR CODE MODAL (React Portal — Centered on Screen) */}
       {activeModal === 'qr' && createPortal(
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
-          <div style={{ maxWidth: '420px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', textAlign: 'center', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
-            <h5 className="fw-bold text-success mb-2 text-center">📲 QR Code CMU Assuré</h5>
-            <div className="p-3 bg-white rounded-3 d-inline-block mx-auto my-3" style={{ width: '180px', height: '180px' }}>
-              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${activeCmuNumber}`} alt="QR Code CMU" style={{ width: '100%', height: '100%' }} />
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', overflowY: 'auto' }}>
+          <div style={{ maxWidth: '440px', width: '92%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '1.75rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="d-flex justify-content-between align-items-center w-100 mb-3 border-bottom pb-2" style={{ borderColor: 'var(--border-color)' }}>
+              <h5 className="fw-bold text-success mb-0 d-flex align-items-center gap-2">
+                <span>📲</span> QR Code CMU Assuré
+              </h5>
+              <button type="button" className="btn-close" onClick={() => setActiveModal(null)}></button>
             </div>
-            <strong className="d-block text-warning text-center mb-3">{activeCmuNumber}</strong>
-            <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.5rem 1.5rem', fontWeight: '700', width: '100%' }} onClick={() => setActiveModal(null)}>Fermer</button>
+            
+            <p className="small text-muted mb-2 text-center" style={{ fontSize: '0.82rem' }}>Présentez ce QR Code lors de votre prise en charge médicale ou en pharmacie agréée</p>
+
+            <div className="p-3 bg-white rounded-4 border border-success d-flex align-items-center justify-content-center my-2 shadow-sm" style={{ width: '210px', height: '210px' }}>
+              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${activeCmuNumber}`} alt="QR Code CMU" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+            </div>
+
+            <div className="my-2 px-3 py-1.5 rounded-pill border border-success text-center" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981' }}>
+              <small className="d-block text-muted fw-bold" style={{ fontSize: '0.68rem' }}>N° CMU TITULAIRE</small>
+              <strong className="fs-6 fw-mono">{activeCmuNumber}</strong>
+            </div>
+
+            <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 1.5rem', fontWeight: '700', width: '100%', marginTop: '0.75rem', cursor: 'pointer' }} onClick={() => setActiveModal(null)}>Fermer</button>
           </div>
         </div>,
         document.body

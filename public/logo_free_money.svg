@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 100" width="300" height="100">
+  <rect width="300" height="100" fill="#ffffff" rx="16"/>
+  <!-- Free Text (Red Italic) -->
+  <text x="35" y="58" font-family="'Helvetica Neue', Arial, sans-serif" font-size="44" font-weight="bold" font-style="italic" fill="#dc2626">free</text>
+  <!-- Speed lines under free -->
+  <rect x="35" y="68" width="40" height="4" fill="#dc2626" rx="2"/>
+  <rect x="42" y="76" width="25" height="4" fill="#dc2626" rx="2"/>
+  <!-- MONEY Text (Black Bold) -->
+  <text x="135" y="58" font-family="'Helvetica Neue', Arial, sans-serif" font-size="36" font-weight="900" letter-spacing="2" fill="#18181b">MONEY</text>
+</svg>
