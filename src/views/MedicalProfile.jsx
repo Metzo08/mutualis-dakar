@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
 
@@ -6,7 +6,13 @@ import { generateOfficialPdf } from '../utils/pdfGenerator';
 export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, partnerUser = null }) {
   const isDoctorOrAgent = (userRole === 'agent' || userRole === 'partner' || userRole === 'doctor' || !!agentUser || !!partnerUser);
   const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'history', 'lab'
+  const [searchTerm, setSearchTerm] = useState('');
   
+  // Nom et N° CMU dynamique
+  const activeFirstName = citizenUser?.first_name || citizenUser?.firstName || 'Awa';
+  const activeLastName = citizenUser?.last_name || citizenUser?.lastName || 'Ndiaye';
+  const activeCmuNumber = citizenUser?.cmu_number || citizenUser?.cmuNumber || 'CMU-DKR-2026-8812';
+
   // Modales
   const [showShareModal, setShowShareModal] = useState(false);
   const [showAddExamModal, setShowAddExamModal] = useState(false);
@@ -40,18 +46,35 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
     }
   };
 
-  // Antécédents Médicaux Éditables
-  const [antecedents, setAntecedents] = useState({
+  // Antécédents Médicaux Éditables & Persistés
+  const defaultAntecedents = {
     bloodGroup: 'A+',
     rhesus: 'Positif',
     allergies: 'Pénicilline (Sévère), Pollen de Graminées',
     chronicConditions: 'Hypertension artérielle (HTA), Diabète Type 2',
     surgeries: 'Appendicectomie (2021)',
     emergencyContact: 'Moussa Sow (Frère) — +221 77 450 12 34'
+  };
+
+  const [antecedents, setAntecedents] = useState(() => {
+    try {
+      const saved = localStorage.getItem('cmu-antecedents');
+      return saved ? JSON.parse(saved) : defaultAntecedents;
+    } catch (e) {
+      return defaultAntecedents;
+    }
   });
 
-  // Imagerie & Examens DICOM
-  const [exams, setExams] = useState([
+  useEffect(() => {
+    try {
+      localStorage.setItem('cmu-antecedents', JSON.stringify(antecedents));
+    } catch (e) {
+      console.warn("Storage error:", e);
+    }
+  }, [antecedents]);
+
+  // Imagerie & Examens DICOM Persistés
+  const defaultExams = [
     {
       id: 501,
       title: 'Scanner Thoracique',
@@ -88,7 +111,24 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
       cliches: 3,
       preview: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=400'
     }
-  ]);
+  ];
+
+  const [exams, setExams] = useState(() => {
+    try {
+      const saved = localStorage.getItem('cmu-exams');
+      return saved ? JSON.parse(saved) : defaultExams;
+    } catch (e) {
+      return defaultExams;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('cmu-exams', JSON.stringify(exams));
+    } catch (e) {
+      console.warn("Storage error:", e);
+    }
+  }, [exams]);
 
   // Modale Visionneuse DICOM
   const [viewingExam, setViewingExam] = useState(null);
@@ -96,10 +136,66 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
   const [dicomInvert, setDicomInvert] = useState(false);
   const [activeCliche, setActiveCliche] = useState(1);
 
-  // Formulaire d'ajout
   const [newExamTitle, setNewExamTitle] = useState('');
   const [newExamType, setNewExamType] = useState('Scanner');
   const [newExamFacility, setNewExamFacility] = useState('Laboratoire Bio24');
+  const [newExamDoctor, setNewExamDoctor] = useState('');
+
+  // Historique Médical Persisté
+  const defaultHistory = [
+    { id: 1, date: '12/05/2026', acte: 'Téléconsultation Généraliste', praticien: 'Dr. Ousmane Sow', conclusion: 'Grippe saisonnière. Ordonnance émise.' },
+    { id: 2, date: '15/03/2026', acte: 'Consultation Prénatale CPN 2', praticien: 'Dr. Mariama Ba', conclusion: 'Tension 12/8. Évolution normale.' }
+  ];
+  const [historyEntries, setHistoryEntries] = useState(() => {
+    try {
+      const saved = localStorage.getItem('cmu-history');
+      return saved ? JSON.parse(saved) : defaultHistory;
+    } catch (e) { return defaultHistory; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem('cmu-history', JSON.stringify(historyEntries)); } catch (e) { /* ignore */ }
+  }, [historyEntries]);
+
+  const [showAddHistoryModal, setShowAddHistoryModal] = useState(false);
+  const [newHistoryActe, setNewHistoryActe] = useState('');
+  const [newHistoryPraticien, setNewHistoryPraticien] = useState('');
+  const [newHistoryConclusion, setNewHistoryConclusion] = useState('');
+
+  const handleAddHistory = (e) => {
+    e.preventDefault();
+    if (!newHistoryActe) return;
+    setHistoryEntries([{
+      id: Date.now(),
+      date: new Date().toLocaleDateString('fr-FR'),
+      acte: newHistoryActe,
+      praticien: newHistoryPraticien || 'Non spécifié',
+      conclusion: newHistoryConclusion || 'En attente de conclusions.'
+    }, ...historyEntries]);
+    setShowAddHistoryModal(false);
+    setNewHistoryActe(''); setNewHistoryPraticien(''); setNewHistoryConclusion('');
+    alert('✅ Entrée ajoutée à l\'historique médical !');
+  };
+
+  // Résultats Laboratoire Persistés
+  const defaultLabResults = [
+    { id: 1, examen: 'Glycémie à jeun', resultat: '0.95 g/L', reference: '0.70 - 1.10 g/L', statut: 'Normal' },
+    { id: 2, examen: 'Hémoglobine (NFS)', resultat: '14.2 g/dL', reference: '12.0 - 16.0 g/dL', statut: 'Normal' }
+  ];
+  const [labResults, setLabResults] = useState(() => {
+    try {
+      const saved = localStorage.getItem('cmu-lab');
+      return saved ? JSON.parse(saved) : defaultLabResults;
+    } catch (e) { return defaultLabResults; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem('cmu-lab', JSON.stringify(labResults)); } catch (e) { /* ignore */ }
+  }, [labResults]);
+
+  const [showAddLabModal, setShowAddLabModal] = useState(false);
+  const [newLabExamen, setNewLabExamen] = useState('');
+  const [newLabResultat, setNewLabResultat] = useState('');
+  const [newLabReference, setNewLabReference] = useState('');
+  const [newLabStatut, setNewLabStatut] = useState('Normal');
 
   const handleAddExam = (e) => {
     e.preventDefault();
@@ -110,7 +206,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
       exam_type: newExamType,
       badge: 'HD DICOM',
       facility: newExamFacility,
-      doctor: 'Dr. Aminata Ndiaye',
+      doctor: newExamDoctor || 'Non spécifié',
       date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }),
       conclusion: 'Examen enregistré et certifié.',
       cliches: 1,
@@ -119,6 +215,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
     setExams([...exams, added]);
     setShowAddExamModal(false);
     setNewExamTitle('');
+    setNewExamDoctor('');
     alert("✅ Examen DICOM / Rapport PDF ajouté avec succès !");
   };
 
@@ -130,15 +227,15 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
 
   const handleDownloadFullBooklet = () => {
     generateOfficialPdf({
-      filename: 'dossier_medical_partage_awa_ndiaye.pdf',
+      filename: `dossier_medical_partage_${activeLastName.toLowerCase()}.pdf`,
       docType: 'DOSSIER MÉDICAL PARTAGÉ CERTIFIÉ',
       title: 'Carnet de Santé Numérique & Bilan Médical',
-      referenceNo: 'DOSSIER-MED-2026-8812',
-      beneficiaryName: 'Awa Ndiaye',
-      cmuNumber: 'CMU-DKR-2026-8812',
+      referenceNo: `DOSSIER-MED-${activeCmuNumber}`,
+      beneficiaryName: `${activeFirstName} ${activeLastName}`,
+      cmuNumber: activeCmuNumber,
       structureName: 'Réseau Établissements Agréés Sénégal',
       details: [
-        { label: 'Assurée Bénéficiaire', value: 'Awa Ndiaye' },
+        { label: 'Assurée Bénéficiaire', value: `${activeFirstName} ${activeLastName}` },
         { label: 'Groupe Sanguin', value: `${antecedents.bloodGroup} (Rhésus ${antecedents.rhesus})` },
         { label: 'Allergies & Alertes', value: antecedents.allergies },
         { label: 'Affections Longue Durée (ALD)', value: antecedents.chronicConditions },
@@ -155,8 +252,8 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
       docType: 'COMPTE-RENDU D\'IMAGERIE RADIOLOGIQUE DICOM',
       title: `Rapport Radiologique Certifié — ${ex.title}`,
       referenceNo: `EXAM-DICOM-#${ex.id}`,
-      beneficiaryName: 'Awa Ndiaye',
-      cmuNumber: 'CMU-DKR-2026-8812',
+      beneficiaryName: `${activeFirstName} ${activeLastName}`,
+      cmuNumber: activeCmuNumber,
       structureName: ex.facility,
       details: [
         { label: 'Intitulé de l\'Examen', value: ex.title },
@@ -239,6 +336,8 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
               type="text" 
               placeholder="Rechercher un examen..." 
               style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem', width: '200px' }} 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
         </div>
@@ -417,7 +516,11 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
 
                 {/* Exam Cards Grid */}
                 <div className="row g-3">
-                  {exams.map(ex => (
+                  {exams.filter(ex => {
+                    if (!searchTerm.trim()) return true;
+                    const q = searchTerm.toLowerCase();
+                    return ex.title.toLowerCase().includes(q) || ex.exam_type.toLowerCase().includes(q) || ex.facility.toLowerCase().includes(q) || (ex.doctor && ex.doctor.toLowerCase().includes(q));
+                  }).map(ex => (
                     <div key={ex.id} className="col-md-6">
                       <div className="rounded-4 overflow-hidden h-100 d-flex flex-column justify-content-between" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
                         
@@ -492,7 +595,16 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
         {/* TAB 2: HISTORIQUE MÉDICAL */}
         {activeTab === 'history' && (
           <div className="p-4 rounded-4 mb-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-            <h5 className="fw-bold mb-3" style={{ color: 'var(--text-main)' }}>📜 Historique Médical Complet</h5>
+            <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+              <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>📜 Historique Médical Complet</h5>
+              <button 
+                type="button" 
+                style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontWeight: '800', fontSize: '0.82rem', cursor: 'pointer' }}
+                onClick={() => setShowAddHistoryModal(true)}
+              >
+                ➕ Ajouter une entrée
+              </button>
+            </div>
             <div className="table-responsive">
               <table className="table align-middle mb-0" style={{ background: 'transparent' }}>
                 <thead>
@@ -501,21 +613,34 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                     <th>ACTE / CONSULTATION</th>
                     <th>PRATICIEN / STRUCTURE</th>
                     <th>CONCLUSION</th>
+                    <th className="text-end">ACTION</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className="border-bottom" style={{ borderColor: 'var(--border-color)' }}>
-                    <td style={{ color: 'var(--text-sub)' }}>12/05/2026</td>
-                    <td className="fw-bold" style={{ color: 'var(--text-main)' }}>Téléconsultation Généraliste</td>
-                    <td style={{ color: 'var(--text-sub)' }}>Dr. Ousmane Sow</td>
-                    <td style={{ color: 'var(--text-sub)' }}>Grippe saisonnière. Ordonnance émise.</td>
-                  </tr>
-                  <tr className="border-bottom" style={{ borderColor: 'var(--border-color)' }}>
-                    <td style={{ color: 'var(--text-sub)' }}>15/03/2026</td>
-                    <td className="fw-bold" style={{ color: 'var(--text-main)' }}>Consultation Prénatale CPN 2</td>
-                    <td style={{ color: 'var(--text-sub)' }}>Dr. Mariama Ba</td>
-                    <td style={{ color: 'var(--text-sub)' }}>Tension 12/8. Évolution normale.</td>
-                  </tr>
+                  {historyEntries.map(h => (
+                    <tr key={h.id} className="border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+                      <td style={{ color: 'var(--text-sub)' }}>{h.date}</td>
+                      <td className="fw-bold" style={{ color: 'var(--text-main)' }}>{h.acte}</td>
+                      <td style={{ color: 'var(--text-sub)' }}>{h.praticien}</td>
+                      <td style={{ color: 'var(--text-sub)' }}>{h.conclusion}</td>
+                      <td className="text-end">
+                        <button 
+                          type="button" 
+                          style={{ background: 'rgba(220,38,38,0.15)', color: '#dc2626', border: 'none', borderRadius: '6px', padding: '0.25rem 0.5rem', fontSize: '0.72rem', fontWeight: '700', cursor: 'pointer' }}
+                          onClick={() => {
+                            if (window.confirm('Supprimer cette entrée de l\'historique ?')) {
+                              setHistoryEntries(historyEntries.filter(item => item.id !== h.id));
+                            }
+                          }}
+                        >
+                          🗑 Supprimer
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {historyEntries.length === 0 && (
+                    <tr><td colSpan={5} className="text-center py-4" style={{ color: 'var(--text-sub)' }}>Aucune entrée dans l'historique médical.</td></tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -525,7 +650,16 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
         {/* TAB 3: LABORATOIRE */}
         {activeTab === 'lab' && (
           <div className="p-4 rounded-4 mb-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-            <h5 className="fw-bold mb-3" style={{ color: 'var(--text-main)' }}>🧪 Résultats d'Analyses Biologiques</h5>
+            <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+              <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>🧪 Résultats d'Analyses Biologiques</h5>
+              <button 
+                type="button" 
+                style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontWeight: '800', fontSize: '0.82rem', cursor: 'pointer' }}
+                onClick={() => setShowAddLabModal(true)}
+              >
+                ➕ Ajouter un résultat
+              </button>
+            </div>
             <div className="table-responsive">
               <table className="table align-middle mb-0" style={{ background: 'transparent' }}>
                 <thead>
@@ -534,21 +668,42 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                     <th>RÉSULTAT</th>
                     <th>VALEURS DE RÉFÉRENCE</th>
                     <th>STATUT</th>
+                    <th className="text-end">ACTION</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className="border-bottom" style={{ borderColor: 'var(--border-color)' }}>
-                    <td className="fw-bold" style={{ color: 'var(--text-main)' }}>Glycémie à jeun</td>
-                    <td className="text-success fw-bold">0.95 g/L</td>
-                    <td style={{ color: 'var(--text-sub)' }}>0.70 - 1.10 g/L</td>
-                    <td><span style={{ background: 'rgba(16,185,129,0.2)', color: '#10b981', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700' }}>Normal</span></td>
-                  </tr>
-                  <tr className="border-bottom" style={{ borderColor: 'var(--border-color)' }}>
-                    <td className="fw-bold" style={{ color: 'var(--text-main)' }}>Hémoglobine (NFS)</td>
-                    <td className="text-success fw-bold">14.2 g/dL</td>
-                    <td style={{ color: 'var(--text-sub)' }}>12.0 - 16.0 g/dL</td>
-                    <td><span style={{ background: 'rgba(16,185,129,0.2)', color: '#10b981', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700' }}>Normal</span></td>
-                  </tr>
+                  {labResults.map(lr => (
+                    <tr key={lr.id} className="border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+                      <td className="fw-bold" style={{ color: 'var(--text-main)' }}>{lr.examen}</td>
+                      <td className={lr.statut === 'Normal' ? 'text-success fw-bold' : 'text-danger fw-bold'}>{lr.resultat}</td>
+                      <td style={{ color: 'var(--text-sub)' }}>{lr.reference}</td>
+                      <td>
+                        <span style={{ 
+                          background: lr.statut === 'Normal' ? 'rgba(16,185,129,0.2)' : lr.statut === 'Élevé' ? 'rgba(239,68,68,0.2)' : 'rgba(245,158,11,0.2)', 
+                          color: lr.statut === 'Normal' ? '#10b981' : lr.statut === 'Élevé' ? '#ef4444' : '#f59e0b', 
+                          padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700' 
+                        }}>
+                          {lr.statut}
+                        </span>
+                      </td>
+                      <td className="text-end">
+                        <button 
+                          type="button" 
+                          style={{ background: 'rgba(220,38,38,0.15)', color: '#dc2626', border: 'none', borderRadius: '6px', padding: '0.25rem 0.5rem', fontSize: '0.72rem', fontWeight: '700', cursor: 'pointer' }}
+                          onClick={() => {
+                            if (window.confirm('Supprimer ce résultat ?')) {
+                              setLabResults(labResults.filter(item => item.id !== lr.id));
+                            }
+                          }}
+                        >
+                          🗑 Supprimer
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {labResults.length === 0 && (
+                    <tr><td colSpan={5} className="text-center py-4" style={{ color: 'var(--text-sub)' }}>Aucun résultat d'analyse enregistré.</td></tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -716,9 +871,96 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
               <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }} value={newExamFacility} onChange={(e) => setNewExamFacility(e.target.value)} placeholder="Ex: Hôpital Principal de Dakar" required />
             </div>
 
+            <div className="mb-3">
+              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Médecin Prescripteur</label>
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }} value={newExamDoctor} onChange={(e) => setNewExamDoctor(e.target.value)} placeholder="Ex: Dr. Aminata Ndiaye" />
+            </div>
+
             <div className="d-flex justify-content-end gap-2 mt-4">
               <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.6rem 1.25rem', fontWeight: '700' }} onClick={() => setShowAddExamModal(false)}>Annuler</button>
               <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.6rem 1.4rem', fontWeight: '800', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}>Ajouter l'examen</button>
+            </div>
+          </form>
+        </div>,
+        document.body
+      )}
+
+      {/* ADD HISTORY MODAL (React Portal) */}
+      {showAddHistoryModal && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
+          <form onSubmit={handleAddHistory} style={{ maxWidth: '520px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h5 className="fw-bold text-success mb-0">➕ Ajouter une entrée à l'Historique</h5>
+              <button type="button" className="btn-close" onClick={() => setShowAddHistoryModal(false)}></button>
+            </div>
+            
+            <div className="mb-3">
+              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Acte / Consultation *</label>
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }} value={newHistoryActe} onChange={(e) => setNewHistoryActe(e.target.value)} placeholder="Ex: Consultation Généraliste" required />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Praticien / Structure</label>
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }} value={newHistoryPraticien} onChange={(e) => setNewHistoryPraticien(e.target.value)} placeholder="Ex: Dr. Ousmane Sow" />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Conclusion</label>
+              <textarea className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }} rows={3} value={newHistoryConclusion} onChange={(e) => setNewHistoryConclusion(e.target.value)} placeholder="Ex: Bilan normal. Ordonnance émise." />
+            </div>
+
+            <div className="d-flex justify-content-end gap-2 mt-4">
+              <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.6rem 1.25rem', fontWeight: '700' }} onClick={() => setShowAddHistoryModal(false)}>Annuler</button>
+              <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.6rem 1.4rem', fontWeight: '800', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}>Ajouter</button>
+            </div>
+          </form>
+        </div>,
+        document.body
+      )}
+
+      {/* ADD LAB RESULT MODAL (React Portal) */}
+      {showAddLabModal && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            if (!newLabExamen) return;
+            setLabResults([{ id: Date.now(), examen: newLabExamen, resultat: newLabResultat, reference: newLabReference, statut: newLabStatut }, ...labResults]);
+            setShowAddLabModal(false);
+            setNewLabExamen(''); setNewLabResultat(''); setNewLabReference(''); setNewLabStatut('Normal');
+            alert('✅ Résultat d\'analyse ajouté avec succès !');
+          }} style={{ maxWidth: '520px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h5 className="fw-bold text-success mb-0">➕ Ajouter un Résultat d'Analyse</h5>
+              <button type="button" className="btn-close" onClick={() => setShowAddLabModal(false)}></button>
+            </div>
+            
+            <div className="mb-3">
+              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Nom de l'examen *</label>
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }} value={newLabExamen} onChange={(e) => setNewLabExamen(e.target.value)} placeholder="Ex: Créatinine, Cholestérol..." required />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Résultat</label>
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }} value={newLabResultat} onChange={(e) => setNewLabResultat(e.target.value)} placeholder="Ex: 0.95 g/L" />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Valeurs de référence</label>
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }} value={newLabReference} onChange={(e) => setNewLabReference(e.target.value)} placeholder="Ex: 0.70 - 1.10 g/L" />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Statut</label>
+              <select className="form-select" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }} value={newLabStatut} onChange={(e) => setNewLabStatut(e.target.value)}>
+                <option value="Normal">🟢 Normal</option>
+                <option value="Élevé">🔴 Élevé</option>
+                <option value="Bas">🟡 Bas</option>
+              </select>
+            </div>
+
+            <div className="d-flex justify-content-end gap-2 mt-4">
+              <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.6rem 1.25rem', fontWeight: '700' }} onClick={() => setShowAddLabModal(false)}>Annuler</button>
+              <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.6rem 1.4rem', fontWeight: '800', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}>Ajouter</button>
             </div>
           </form>
         </div>,
