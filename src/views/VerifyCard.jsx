@@ -39,6 +39,18 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
   const [allergies, setAllergies] = useState('Pénicilline, Aspirine');
   const [chronicCond, setChronicCond] = useState('Hypertension artérielle (HTA)');
 
+  // Bloque le défilement de la page lorsque la modale vidéo publicitaire est ouverte
+  useEffect(() => {
+    if (showAdModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [showAdModal]);
+
   // Extrait le numéro CMU/CSU du hash URL (#/verify/SN-DK-MED-8472 ou #/verify/CMU-DKR-2026-8812)
   useEffect(() => {
     let rawHash = window.location.hash.replace(/^#\/?verify\/?/i, '').replace(/^#\/?/, '').trim();
@@ -361,30 +373,43 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
         )}
       </div>
 
-      {/* MODALE PUBLICITÉ VIDÉO & SPONSORS LORS DU SCAN DE CARTE */}
-      {showAdModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(15, 23, 42, 0.92)',
-          backdropFilter: 'blur(10px)',
-          zIndex: 9999,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '1rem'
-        }} className="fade-in">
-          <div style={{
-            maxWidth: '750px',
-            width: '100%',
-            backgroundColor: '#0f172a',
-            border: '2px solid #059669',
-            borderRadius: '24px',
-            overflow: 'hidden',
-            boxShadow: '0 25px 60px rgba(0, 0, 0, 0.6)',
-            color: '#fff'
-          }}>
+      {/* MODALE PUBLICITÉ VIDÉO & SPONSORS LORS DU SCAN DE CARTE (REACT PORTAL CENTRÉ SUR L'ÉCRAN MOBILE) */}
+      {showAdModal && createPortal(
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            width: '100vw', height: '100vh',
+            backgroundColor: 'rgba(15, 23, 42, 0.94)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            zIndex: 999999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem',
+            boxSizing: 'border-box'
+          }} 
+          className="fade-in"
+          onClick={() => setShowAdModal(false)}
+        >
+          <div 
+            style={{
+              maxWidth: '720px',
+              width: '100%',
+              maxHeight: '92vh',
+              overflowY: 'auto',
+              backgroundColor: '#0f172a',
+              border: '2px solid #059669',
+              borderRadius: '24px',
+              boxShadow: '0 25px 70px rgba(0, 0, 0, 0.8)',
+              color: '#fff',
+              display: 'flex',
+              flexDirection: 'column',
+              margin: 'auto'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
             {/* Defilement sponsors */}
             <div style={{
               background: 'linear-gradient(90deg, #059669 0%, #1e40af 100%)',
@@ -437,7 +462,7 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
             </div>
 
             {/* Footer popup */}
-            <div style={{ padding: '1.25rem', textAlign: 'center', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#1e293b' }}>
+            <div style={{ padding: '1.25rem', textAlign: 'center', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#1e293b', flexWrap: 'wrap', gap: '0.5rem' }}>
               <div style={{ fontSize: '0.85rem', color: '#94a3b8' }}>
                 💡 Présentation officielle des services de Couverture Santé Universelle
               </div>
@@ -445,13 +470,14 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
                 type="button" 
                 className="btn btn-primary fw-bold"
                 onClick={() => setShowAdModal(false)}
-                style={{ borderRadius: '12px', padding: '0.6rem 1.5rem' }}
+                style={{ borderRadius: '12px', padding: '0.6rem 1.5rem', background: '#059669', borderColor: '#059669' }}
               >
                 ✅ Accéder à ma carte d'assuré
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* AFFICHAGE DU PASS CARTE CSU NUMÉRIQUE DESIGN HAUTE DÉFINITION SUR MOBILE & DESKTOP */}
