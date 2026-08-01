@@ -12,7 +12,7 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showAdModal, setShowAdModal] = useState(false);
+  const [showAdModal, setShowAdModal] = useState(true);
   const [showQrModal, setShowQrModal] = useState(false);
 
   // Modales d'actions rapides médicales depuis le QR Code
@@ -458,15 +458,31 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
       {result && (
         <div className="fade-in-up">
 
-          {/* BOUTON REVOIR LA VIDÉO SEUL (Sponsors retirés de la carte selon demande) */}
-          <div className="d-flex justify-content-end mb-3">
+          {/* BANDEAU DE DÉFILEMENT SPONSORS */}
+          <div className="p-2.5 mb-3.5 rounded-4 shadow-sm d-flex align-items-center justify-content-between overflow-hidden" 
+               style={{ background: 'linear-gradient(135deg, rgba(5,150,105,0.12) 0%, rgba(30,64,175,0.12) 100%)', border: '1px solid rgba(5,150,105,0.3)', borderRadius: '16px', gap: '0.75rem' }}>
+            <div className="marquee-container" style={{ flex: 1 }}>
+              <div className="marquee-content">
+                <span className="fw-bold d-inline-flex align-items-center gap-2" style={{ fontSize: '0.88rem', color: 'var(--text-main)' }}>
+                  <img src="/logo_wave.png" alt="Wave" style={{ height: '22px', borderRadius: '3px' }} />
+                  ✨ Sponsorisé par PATISEN & Wave — RÉPUBLIQUE DU SÉNÉGAL 🇸🇳
+                </span>
+                <span className="fw-bold d-inline-flex align-items-center gap-2" style={{ fontSize: '0.88rem', color: 'var(--text-main)' }}>
+                  🇸🇳 PROGRAMME NATIONAL DE LA COUVERTURE SANITAIRE UNIVERSELLE DU SÉNÉGAL (UNAMUSC)
+                </span>
+                <span className="fw-bold d-inline-flex align-items-center gap-2" style={{ fontSize: '0.88rem', color: 'var(--text-main)' }}>
+                  <img src="/logo_wave.png" alt="Wave" style={{ height: '22px', borderRadius: '3px' }} />
+                  ✨ Sponsorisé par PATISEN & Wave — RÉPUBLIQUE DU SÉNÉGAL 🇸🇳
+                </span>
+              </div>
+            </div>
             <button 
               type="button" 
-              className="btn btn-outline-success btn-sm fw-bold py-1.5 px-3"
-              style={{ fontSize: '0.82rem', borderRadius: '12px' }}
+              className="btn btn-outline-success btn-sm fw-bold py-1 px-2.5 flex-shrink-0"
+              style={{ fontSize: '0.78rem', borderRadius: '8px' }}
               onClick={() => setShowAdModal(true)}
             >
-              ▶️ Revoir la vidéo explicative
+              ▶️ Revoir la vidéo
             </button>
           </div>
           
