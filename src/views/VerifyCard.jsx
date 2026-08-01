@@ -622,117 +622,144 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
             <div className="verified-cards-wrapper">
               {/* ⚡ HUB D'ACTIONS MÉDICALES INSTANTANÉES (DEMANDE GARANTIE, ORDONNANCE, TÉLÉMÉDECINE, RADIOS) */}
               <div className="card shadow-sm border-0 p-4 mb-4" style={{ borderRadius: '24px', background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
-                <h5 className="fw-extrabold mb-2 pb-2 border-bottom d-flex align-items-center gap-2" style={{ color: '#059669', borderColor: 'var(--border-color)', fontSize: '1.15rem' }}>
-                  <span>⚡</span> Hub d'actions médicales instantanées (Scan QR code)
-                </h5>
-                <p className="small text-muted mb-3" style={{ fontSize: '0.86rem' }}>
-                  Déclenchez directement les services médicaux certifiés Tiers-Payant pour <strong>{result.firstName} {result.lastName}</strong> :
-                </p>
+                <div className="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom flex-wrap gap-2" style={{ borderColor: 'var(--border-color)' }}>
+                  <div>
+                    <h5 className="fw-extrabold mb-1 d-flex align-items-center gap-2" style={{ color: '#059669', fontSize: '1.15rem' }}>
+                      <span>⚡</span> Hub d'actions médicales (Scan QR Code)
+                    </h5>
+                    <span className="small text-muted" style={{ fontSize: '0.84rem' }}>
+                      Services de prise en charge certifiés Tiers-Payant pour <strong>{result.firstName} {result.lastName}</strong>
+                    </span>
+                  </div>
+                  <span className="badge bg-success text-white px-3 py-1.5" style={{ borderRadius: '10px', fontSize: '0.78rem' }}>
+                    🟢 Assuré Actif
+                  </span>
+                </div>
 
                 <div className="row g-3">
                   {/* Action 1: Lettre de Garantie */}
-                  <div className="col-6 col-md-3">
+                  <div className="col-12 col-sm-6 col-lg-3">
                     <button 
                       type="button" 
-                      className="btn w-100 p-3.5 text-start d-flex flex-column gap-2 h-100 position-relative overflow-hidden" 
+                      className="btn w-100 p-3.5 text-start d-flex flex-column justify-content-between h-100 shadow-sm" 
                       style={{
-                        background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.12) 0%, rgba(16, 185, 129, 0.05) 100%)',
+                        background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.08) 0%, rgba(16, 185, 129, 0.03) 100%)',
                         border: '1.5px solid rgba(5, 150, 105, 0.35)',
-                        borderRadius: '18px',
+                        borderRadius: '20px',
                         color: 'var(--text-main)',
-                        cursor: 'pointer',
-                        boxShadow: '0 4px 15px rgba(5, 150, 105, 0.08)'
+                        minHeight: '125px',
+                        transition: 'all 0.2s ease',
+                        boxShadow: '0 6px 16px rgba(5, 150, 105, 0.06)'
                       }}
                       onClick={() => setActiveModal('guarantee')}
                     >
-                      <div className="d-flex align-items-center justify-content-between w-100">
-                        <span className="fs-3 p-2 rounded-3" style={{ background: 'rgba(5, 150, 105, 0.18)', color: '#059669' }}>📜</span>
-                        <span className="badge bg-success text-white px-2 py-1" style={{ fontSize: '0.68rem', borderRadius: '6px' }}>80-100%</span>
+                      <div className="d-flex align-items-center justify-content-between w-100 mb-2">
+                        <div className="d-flex align-items-center gap-2">
+                          <span className="fs-3 p-2 rounded-3" style={{ background: 'rgba(5, 150, 105, 0.18)', color: '#059669', lineHeight: 1 }}>📜</span>
+                          <span className="fw-extrabold" style={{ fontSize: '1rem', color: 'var(--text-main)' }}>Lettre de garantie</span>
+                        </div>
+                        <span className="badge bg-success text-white px-2.5 py-1" style={{ fontSize: '0.72rem', borderRadius: '8px' }}>80-100%</span>
                       </div>
-                      <div>
-                        <strong className="d-block text-main fw-extrabold" style={{ fontSize: '0.92rem' }}>Lettre de garantie</strong>
-                        <small style={{ color: 'var(--text-sub)', fontSize: '0.76rem', lineHeight: '1.3' }}>Prise en charge hospitalière</small>
+                      <div className="mt-1">
+                        <small className="d-block text-muted" style={{ fontSize: '0.8rem', lineHeight: '1.4' }}>
+                          Prise en charge hospitalière certifiée
+                        </small>
                       </div>
                     </button>
                   </div>
 
-                  {/* Action 2: Bon Pharmacie 48h */}
-                  <div className="col-6 col-md-3">
+                  {/* Action 2: Bon pharmacie 48h */}
+                  <div className="col-12 col-sm-6 col-lg-3">
                     <button 
                       type="button" 
-                      className="btn w-100 p-3.5 text-start d-flex flex-column gap-2 h-100 position-relative overflow-hidden" 
+                      className="btn w-100 p-3.5 text-start d-flex flex-column justify-content-between h-100 shadow-sm" 
                       style={{
-                        background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(217, 119, 6, 0.05) 100%)',
+                        background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.03) 100%)',
                         border: '1.5px solid rgba(245, 158, 11, 0.35)',
-                        borderRadius: '18px',
+                        borderRadius: '20px',
                         color: 'var(--text-main)',
-                        cursor: 'pointer',
-                        boxShadow: '0 4px 15px rgba(245, 158, 11, 0.08)'
+                        minHeight: '125px',
+                        transition: 'all 0.2s ease',
+                        boxShadow: '0 6px 16px rgba(245, 158, 11, 0.06)'
                       }}
                       onClick={() => setActiveModal('order')}
                     >
-                      <div className="d-flex align-items-center justify-content-between w-100">
-                        <span className="fs-3 p-2 rounded-3" style={{ background: 'rgba(245, 158, 11, 0.18)', color: '#f59e0b' }}>💊</span>
-                        <span className="badge text-white px-2 py-1" style={{ background: '#f59e0b', fontSize: '0.68rem', borderRadius: '6px' }}>48h Tiers-Payant</span>
+                      <div className="d-flex align-items-center justify-content-between w-100 mb-2">
+                        <div className="d-flex align-items-center gap-2">
+                          <span className="fs-3 p-2 rounded-3" style={{ background: 'rgba(245, 158, 11, 0.18)', color: '#f59e0b', lineHeight: 1 }}>💊</span>
+                          <span className="fw-extrabold" style={{ fontSize: '1rem', color: 'var(--text-main)' }}>Bon pharmacie</span>
+                        </div>
+                        <span className="badge text-dark fw-bold px-2.5 py-1" style={{ background: '#fef08a', border: '1px solid #f59e0b', fontSize: '0.72rem', borderRadius: '8px' }}>48h Tiers-Payant</span>
                       </div>
-                      <div>
-                        <strong className="d-block text-main fw-extrabold" style={{ fontSize: '0.92rem' }}>Bon pharmacie</strong>
-                        <small style={{ color: 'var(--text-sub)', fontSize: '0.76rem', lineHeight: '1.3' }}>Ordonnance certifiée</small>
+                      <div className="mt-1">
+                        <small className="d-block text-muted" style={{ fontSize: '0.8rem', lineHeight: '1.4' }}>
+                          Ordonnance et médicaments pris en charge
+                        </small>
                       </div>
                     </button>
                   </div>
 
                   {/* Action 3: Télémédecine WebRTC */}
-                  <div className="col-6 col-md-3">
+                  <div className="col-12 col-sm-6 col-lg-3">
                     <button 
                       type="button" 
-                      className="btn w-100 p-3.5 text-start d-flex flex-column gap-2 h-100 position-relative overflow-hidden" 
+                      className="btn w-100 p-3.5 text-start d-flex flex-column justify-content-between h-100 shadow-sm" 
                       style={{
-                        background: 'linear-gradient(135deg, rgba(30, 64, 175, 0.12) 0%, rgba(59, 130, 246, 0.05) 100%)',
+                        background: 'linear-gradient(135deg, rgba(30, 64, 175, 0.08) 0%, rgba(59, 130, 246, 0.03) 100%)',
                         border: '1.5px solid rgba(30, 64, 175, 0.35)',
-                        borderRadius: '18px',
+                        borderRadius: '20px',
                         color: 'var(--text-main)',
-                        cursor: 'pointer',
-                        boxShadow: '0 4px 15px rgba(30, 64, 175, 0.08)'
+                        minHeight: '125px',
+                        transition: 'all 0.2s ease',
+                        boxShadow: '0 6px 16px rgba(30, 64, 175, 0.06)'
                       }}
                       onClick={() => {
                         if (setView) setView('telemedicine');
                         else window.location.hash = '#telemedicine';
                       }}
                     >
-                      <div className="d-flex align-items-center justify-content-between w-100">
-                        <span className="fs-3 p-2 rounded-3" style={{ background: 'rgba(30, 64, 175, 0.18)', color: '#1e40af' }}>🎥</span>
-                        <span className="badge text-white px-2 py-1" style={{ background: '#1e40af', fontSize: '0.68rem', borderRadius: '6px' }}>En Ligne 24/7</span>
+                      <div className="d-flex align-items-center justify-content-between w-100 mb-2">
+                        <div className="d-flex align-items-center gap-2">
+                          <span className="fs-3 p-2 rounded-3" style={{ background: 'rgba(30, 64, 175, 0.18)', color: '#1e40af', lineHeight: 1 }}>🎥</span>
+                          <span className="fw-extrabold" style={{ fontSize: '1rem', color: 'var(--text-main)' }}>Télémédecine</span>
+                        </div>
+                        <span className="badge text-white px-2.5 py-1" style={{ background: '#1e40af', fontSize: '0.72rem', borderRadius: '8px' }}>Direct 24/7</span>
                       </div>
-                      <div>
-                        <strong className="d-block text-main fw-extrabold" style={{ fontSize: '0.92rem' }}>Télémédecine</strong>
-                        <small style={{ color: 'var(--text-sub)', fontSize: '0.76rem', lineHeight: '1.3' }}>Téléconsultation directe</small>
+                      <div className="mt-1">
+                        <small className="d-block text-muted" style={{ fontSize: '0.8rem', lineHeight: '1.4' }}>
+                          Téléconsultation avec un médecin agréé
+                        </small>
                       </div>
                     </button>
                   </div>
 
                   {/* Action 4: Radios & Analyses */}
-                  <div className="col-6 col-md-3">
+                  <div className="col-12 col-sm-6 col-lg-3">
                     <button 
                       type="button" 
-                      className="btn w-100 p-3.5 text-start d-flex flex-column gap-2 h-100 position-relative overflow-hidden" 
+                      className="btn w-100 p-3.5 text-start d-flex flex-column justify-content-between h-100 shadow-sm" 
                       style={{
-                        background: 'linear-gradient(135deg, rgba(147, 51, 234, 0.12) 0%, rgba(168, 85, 247, 0.05) 100%)',
+                        background: 'linear-gradient(135deg, rgba(147, 51, 234, 0.08) 0%, rgba(168, 85, 247, 0.03) 100%)',
                         border: '1.5px solid rgba(147, 51, 234, 0.35)',
-                        borderRadius: '18px',
+                        borderRadius: '20px',
                         color: 'var(--text-main)',
-                        cursor: 'pointer',
-                        boxShadow: '0 4px 15px rgba(147, 51, 234, 0.08)'
+                        minHeight: '125px',
+                        transition: 'all 0.2s ease',
+                        boxShadow: '0 6px 16px rgba(147, 51, 234, 0.06)'
                       }}
                       onClick={() => setActiveModal('imaging')}
                     >
-                      <div className="d-flex align-items-center justify-content-between w-100">
-                        <span className="fs-3 p-2 rounded-3" style={{ background: 'rgba(147, 51, 234, 0.18)', color: '#9333ea' }}>🩻</span>
-                        <span className="badge text-white px-2 py-1" style={{ background: '#9333ea', fontSize: '0.68rem', borderRadius: '6px' }}>DICOM & Labo</span>
+                      <div className="d-flex align-items-center justify-content-between w-100 mb-2">
+                        <div className="d-flex align-items-center gap-2">
+                          <span className="fs-3 p-2 rounded-3" style={{ background: 'rgba(147, 51, 234, 0.18)', color: '#9333ea', lineHeight: 1 }}>🩻</span>
+                          <span className="fw-extrabold" style={{ fontSize: '1rem', color: 'var(--text-main)' }}>Radios & Labo</span>
+                        </div>
+                        <span className="badge text-white px-2.5 py-1" style={{ background: '#9333ea', fontSize: '0.72rem', borderRadius: '8px' }}>DICOM</span>
                       </div>
-                      <div>
-                        <strong className="d-block text-main fw-extrabold" style={{ fontSize: '0.92rem' }}>Radios & Analyses</strong>
-                        <small style={{ color: 'var(--text-sub)', fontSize: '0.76rem', lineHeight: '1.3' }}>Dossier imagerie</small>
+                      <div className="mt-1">
+                        <small className="d-block text-muted" style={{ fontSize: '0.8rem', lineHeight: '1.4' }}>
+                          Transmettre des imageries ou bilans
+                        </small>
                       </div>
                     </button>
                   </div>
@@ -741,60 +768,58 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
 
               {/* 🛡️ DROITS OUVERTS & DOSSIER MÉDICAL DÉTAILLÉ */}
               <div className="card shadow-sm border-0 p-4 mb-4" style={{ borderRadius: '24px', background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
-                <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom flex-wrap gap-2" style={{ borderColor: 'var(--border-color)' }}>
-                  <h5 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)', fontSize: '1.1rem' }}>
+                <div className="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom flex-wrap gap-2" style={{ borderColor: 'var(--border-color)' }}>
+                  <h5 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>
                     <span>🛡️</span> Droits ouverts & Dossier Médical
                   </h5>
-                  <button 
-                    className="btn btn-sm btn-outline-success fw-bold px-3 py-1.5" 
-                    style={{ borderRadius: '10px', fontSize: '0.8rem' }}
-                    onClick={() => setActiveModal('antecedents')}
-                  >
-                    ✏️ Modifier antécédents
-                  </button>
+                  
+                  {/* L'assuré ne modifie pas son dossier médical lui-même : Accès en lecture seule */}
+                  <span className="badge px-3 py-2 fw-bold text-success border border-success d-inline-flex align-items-center gap-1.5" style={{ background: 'rgba(5, 150, 105, 0.12)', borderRadius: '12px', fontSize: '0.82rem' }}>
+                    🔒 Lecture seule (Réservé aux professionnels de santé)
+                  </span>
                 </div>
 
-                <div className="row g-3 mb-4">
+                <div className="row g-3.5 mb-4">
                   <div className="col-12 col-md-6">
-                    <div className="p-3.5 rounded-4 border h-100" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)', borderRadius: '16px' }}>
-                      <small className="d-block mb-1 text-uppercase fw-bold" style={{ color: 'var(--text-sub)', fontSize: '0.74rem', letterSpacing: '0.05em' }}>
-                        Mutuelle de rattachement :
+                    <div className="p-3.5 rounded-4 border h-100 shadow-sm" style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.05) 0%, rgba(5, 150, 105, 0.01) 100%)', borderColor: 'rgba(5, 150, 105, 0.25)', borderRadius: '18px' }}>
+                      <small className="d-block mb-1 text-uppercase fw-bold" style={{ color: '#059669', fontSize: '0.76rem', letterSpacing: '0.06em' }}>
+                        🏥 Mutuelle de rattachement :
                       </small>
-                      <h6 className="fw-bold text-success mb-0" style={{ fontSize: '0.96rem', lineHeight: '1.45', color: '#059669' }}>
+                      <h6 className="fw-bold mb-0" style={{ fontSize: '1.02rem', lineHeight: '1.45', color: 'var(--text-main)' }}>
                         {result.mutuelleName}
                       </h6>
                     </div>
                   </div>
 
                   <div className="col-12 col-md-6">
-                    <div className="p-3.5 rounded-4 border h-100" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)', borderRadius: '16px' }}>
-                      <small className="d-block mb-1 text-uppercase fw-bold" style={{ color: 'var(--text-sub)', fontSize: '0.74rem', letterSpacing: '0.05em' }}>
-                        Formule souscrite :
+                    <div className="p-3.5 rounded-4 border h-100 shadow-sm" style={{ background: 'linear-gradient(135deg, rgba(30, 64, 175, 0.05) 0%, rgba(30, 64, 175, 0.01) 100%)', borderColor: 'rgba(30, 64, 175, 0.25)', borderRadius: '18px' }}>
+                      <small className="d-block mb-1 text-uppercase fw-bold" style={{ color: '#1e40af', fontSize: '0.76rem', letterSpacing: '0.06em' }}>
+                        📋 Formule souscrite :
                       </small>
-                      <h6 className="fw-bold mb-0" style={{ fontSize: '0.96rem', color: 'var(--text-main)' }}>
+                      <h6 className="fw-bold mb-0" style={{ fontSize: '1.02rem', lineHeight: '1.45', color: 'var(--text-main)' }}>
                         {result.packageType}
                       </h6>
                     </div>
                   </div>
 
                   <div className="col-12 col-md-6">
-                    <div className="p-3.5 rounded-4 border h-100" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)', borderRadius: '16px' }}>
-                      <small className="d-block mb-1 text-uppercase fw-bold" style={{ color: 'var(--text-sub)', fontSize: '0.74rem', letterSpacing: '0.05em' }}>
-                        Contact d'urgence & téléphone :
+                    <div className="p-3.5 rounded-4 border h-100 shadow-sm" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)', borderRadius: '18px' }}>
+                      <small className="d-block mb-1 text-uppercase fw-bold" style={{ color: 'var(--text-sub)', fontSize: '0.76rem', letterSpacing: '0.06em' }}>
+                        📞 Contact d'urgence & téléphone :
                       </small>
-                      <h6 className="fw-bold mb-0" style={{ fontSize: '0.96rem', color: 'var(--text-main)' }}>
+                      <h6 className="fw-bold mb-0" style={{ fontSize: '1.02rem', color: 'var(--text-main)' }}>
                         {result.phone}
                       </h6>
                     </div>
                   </div>
 
                   <div className="col-12 col-md-6">
-                    <div className="p-3.5 rounded-4 border h-100" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)', borderRadius: '16px' }}>
-                      <small className="d-block mb-1 text-uppercase fw-bold" style={{ color: 'var(--text-sub)', fontSize: '0.74rem', letterSpacing: '0.05em' }}>
-                        Groupe sanguin & allergies :
+                    <div className="p-3.5 rounded-4 border h-100 shadow-sm" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)', borderRadius: '18px' }}>
+                      <small className="d-block mb-1 text-uppercase fw-bold" style={{ color: 'var(--text-sub)', fontSize: '0.76rem', letterSpacing: '0.06em' }}>
+                        🩸 Groupe sanguin & allergies :
                       </small>
-                      <h6 className="fw-bold mb-0" style={{ fontSize: '0.96rem', color: 'var(--text-main)' }}>
-                        🔴 {result.bloodGroup} <span className="text-muted font-normal">(Allergies : {result.allergies || 'Aucune connue'})</span>
+                      <h6 className="fw-bold mb-0" style={{ fontSize: '1.02rem', color: 'var(--text-main)' }}>
+                        🔴 {result.bloodGroup} <span className="text-muted fw-normal" style={{ fontSize: '0.9rem' }}>(Allergies : {result.allergies || 'Aucune connue'})</span>
                       </h6>
                     </div>
                   </div>
@@ -802,42 +827,55 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
 
                 {/* Ayants droit rattachés */}
                 {result.familyMembers && result.familyMembers.length > 0 && (
-                  <div className="p-3.5 rounded-4 border" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)', borderRadius: '16px' }}>
-                    <h6 className="fw-bold mb-2.5 d-flex align-items-center gap-2" style={{ fontSize: '0.9rem', color: 'var(--text-main)' }}>
-                      👨‍👩‍👧‍👦 Ayants droit rattachés à la carte :
+                  <div className="p-4 rounded-4 border mb-3" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)', borderRadius: '20px' }}>
+                    <h6 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ fontSize: '0.98rem', color: 'var(--text-main)' }}>
+                      <span>👨‍👩‍👧‍👦</span> Ayants droit rattachés à la carte d'adhérent :
                     </h6>
-                    <div className="d-flex flex-column gap-2">
+                    <div className="d-flex flex-column gap-3">
                       {result.familyMembers.map((fm, idx) => (
-                        <div key={idx} className="d-flex justify-content-between align-items-center p-2.5 rounded-3 border" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)' }}>
-                          <div className="d-flex align-items-center gap-2">
-                            <span className="p-1.5 rounded-circle bg-primary text-white" style={{ fontSize: '0.75rem', width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>👤</span>
+                        <div key={idx} className="d-flex justify-content-between align-items-center p-3 rounded-3 border flex-wrap gap-2" style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)', borderRadius: '14px' }}>
+                          <div className="d-flex align-items-center gap-3">
+                            <div className="p-2 rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style={{ width: '36px', height: '36px', fontSize: '1rem' }}>
+                              👤
+                            </div>
                             <div>
-                              <strong style={{ fontSize: '0.88rem', color: 'var(--text-main)' }}>{fm.name}</strong>
-                              <small className="d-block text-muted" style={{ fontSize: '0.75rem' }}>{fm.relation} • {fm.age} ans</small>
+                              <div className="d-flex align-items-center gap-2 flex-wrap">
+                                <strong style={{ fontSize: '0.98rem', color: 'var(--text-main)' }}>{fm.name}</strong>
+                                <span className="badge bg-secondary-subtle text-secondary border border-secondary px-2.5 py-1" style={{ fontSize: '0.75rem', borderRadius: '8px' }}>
+                                  {fm.relation} • {fm.age} ans
+                                </span>
+                              </div>
+                              <small className="d-block text-muted mt-0.5" style={{ fontSize: '0.78rem' }}>
+                                Couverture santé familiale active
+                              </small>
                             </div>
                           </div>
-                          <div className="text-end">
-                            <code style={{ fontSize: '0.78rem', color: '#059669', background: 'rgba(5, 150, 105, 0.1)', padding: '0.15rem 0.45rem', borderRadius: '6px' }}>
+
+                          <div className="text-end d-flex align-items-center gap-2">
+                            <code style={{ fontSize: '0.82rem', color: '#059669', background: 'rgba(5, 150, 105, 0.12)', padding: '0.3rem 0.6rem', borderRadius: '8px', fontWeight: 'bold' }}>
                               {getBeneficiaryCode(result.cmuNumber, idx + 2)}
                             </code>
-                            <span className="d-block badge bg-success text-white mt-1" style={{ fontSize: '0.68rem', borderRadius: '6px' }}>Couvert 100%</span>
+                            <span className="badge bg-success text-white px-2.5 py-1.5" style={{ fontSize: '0.72rem', borderRadius: '8px' }}>
+                              Couvert 100%
+                            </span>
                           </div>
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
+
                 {/* Horodatage certifié & Bouton d'export PDF */}
                 <div className="pt-3 border-top d-flex justify-content-between align-items-center flex-wrap gap-2 mt-4" style={{ borderColor: 'var(--border-color)' }}>
-                  <span className="text-muted small" style={{ fontSize: '0.8rem' }}>
+                  <span className="text-muted small" style={{ fontSize: '0.82rem' }}>
                     🕒 Vérifié le : <strong>{new Date(result.checkedAt).toLocaleString('fr-FR')}</strong>
                   </span>
 
                   <button 
                     type="button" 
-                    className="btn btn-outline-success fw-bold btn-sm px-3.5 py-2"
+                    className="btn btn-outline-success fw-bold btn-sm px-4 py-2"
                     onClick={handlePrintCertificate}
-                    style={{ borderRadius: '12px', fontSize: '0.85rem' }}
+                    style={{ borderRadius: '12px', fontSize: '0.88rem' }}
                   >
                     🖨️ Imprimer le certificat PDF
                   </button>
