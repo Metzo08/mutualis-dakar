@@ -79,57 +79,54 @@ export default function CmuCard({ citizen }) {
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 1 }}>
             <div>
-              <div style={{ fontSize: '0.7rem', opacity: 0.9, letterSpacing: '1px', textTransform: 'uppercase' }}>
+              <div style={{ fontSize: '0.74rem', opacity: 0.9, letterSpacing: '1px', textTransform: 'uppercase', fontWeight: '700' }}>
                 Couverture Santé Universelle
               </div>
-              <div style={{ fontSize: '1.1rem', fontWeight: '800', letterSpacing: '0.5px' }}>
+              <div style={{ fontSize: '1.2rem', fontWeight: '800', letterSpacing: '0.5px' }}>
                 MUTUALIS DAKAR 🇸🇳
               </div>
             </div>
             <span style={{
-              background: isActive ? 'rgba(34,197,94,0.9)' : 'rgba(239,68,68,0.9)',
-              padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.65rem', fontWeight: '700',
-              whiteSpace: 'nowrap'
+              background: isActive ? '#10b981' : '#ef4444',
+              padding: '0.25rem 0.75rem', borderRadius: '16px', fontSize: '0.72rem', fontWeight: '800',
+              whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
             }}>
-              {isActive ? '● ACTIF' : '● SUSPENDU'}
+              {isActive ? '● ACTIF' : '🔴 SUSPENDU'}
             </span>
           </div>
 
-          <div style={{ position: 'relative', zIndex: 1 }}>
-            <div style={{ fontSize: '1.15rem', fontWeight: '700', marginBottom: '0.15rem' }}>{fullName}</div>
-            <div style={{ fontSize: '0.75rem', opacity: 0.9, display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-              <span>📦 {citizen.packageType || '—'}</span>
-              <span>🏥 {citizen.mutuelleName || '—'}</span>
+          <div style={{ position: 'relative', zIndex: 1, my: '0.5rem' }}>
+            <div style={{ fontSize: '1.25rem', fontWeight: '800', marginBottom: '0.35rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>{fullName || 'Awa Ndiaye'}</div>
+            <div style={{ fontSize: '0.8rem', fontWeight: '700', display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+              <span style={{ background: '#ffffff', color: '#047857', padding: '0.2rem 0.55rem', borderRadius: '8px' }}>
+                📦 {citizen.packageType || 'maternité 100%'}
+              </span>
+              <span style={{ background: 'rgba(255,255,255,0.22)', padding: '0.2rem 0.55rem', borderRadius: '8px' }}>
+                🏥 {citizen.mutuelleName || '—'}
+              </span>
             </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', position: 'relative', zIndex: 1 }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            position: 'relative', 
+            zIndex: 1,
+            background: 'rgba(0,0,0,0.25)',
+            padding: '0.5rem 0.75rem',
+            borderRadius: '12px',
+            border: '1px solid rgba(255,255,255,0.15)'
+          }}>
             <div>
-              <div style={{ fontSize: '0.55rem', opacity: 0.8, textTransform: 'uppercase' }}>N° Carte CSU / Code Patient IPP</div>
-              <div style={{ fontSize: '0.9rem', fontWeight: '700', fontFamily: 'monospace', letterSpacing: '1px' }}>
-                {citizen.cmuNumber || '—'} {citizen.patientCode ? `| IPP: ${citizen.patientCode}` : '| IPP: IPP-DKR-2026-88'}
+              <div style={{ fontSize: '0.6rem', opacity: 0.85, textTransform: 'uppercase', fontWeight: '700' }}>N° Carte CSU / Code Patient IPP</div>
+              <div style={{ fontSize: '0.85rem', fontWeight: '800', fontFamily: 'monospace', letterSpacing: '0.5px' }}>
+                {citizen.cmuNumber || 'CMU-DKR-2026-8812'} {citizen.patientCode ? `| IPP: ${citizen.patientCode}` : '| IPP: IPP-DKR-2026-88'}
               </div>
             </div>
-            <div style={{ fontSize: '0.6rem', opacity: 0.8, textAlign: 'right' }}>
-              👆 Toucher pour<br />le QR Code Tri-Layer
+            <div style={{ fontSize: '0.68rem', fontWeight: '800', color: '#fef08a', textAlign: 'right' }}>
+              👆 Toucher pour<br />le QR Code Tri-Laye
             </div>
-          </div>
-
-          {/* Encart publicitaire & Sponsoring RSE */}
-          <div style={{ 
-            position: 'relative', 
-            zIndex: 1, 
-            marginTop: '0.2rem', 
-            padding: '0.15rem 0.5rem', 
-            background: 'rgba(255,255,255,0.15)', 
-            borderRadius: '6px', 
-            fontSize: '0.55rem', 
-            display: 'flex', 
-            justify: 'space-between', 
-            alignItems: 'center' 
-          }}>
-            <span>✨ Sponsorisé par <strong>PATISEN</strong> & <strong>Wave</strong></span>
-            <span style={{ opacity: 0.8 }}>RÉPUBLIQUE DU SÉNÉGAL 🇸🇳</span>
           </div>
         </div>
 

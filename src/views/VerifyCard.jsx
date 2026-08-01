@@ -13,6 +13,7 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showAdModal, setShowAdModal] = useState(false);
+  const [showQrModal, setShowQrModal] = useState(false);
 
   // Modales d'actions rapides médicales depuis le QR Code
   const [activeModal, setActiveModal] = useState(null); // 'guarantee' | 'order' | 'imaging' | 'antecedents' | 'telemedicine'
@@ -457,67 +458,59 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
       {result && (
         <div className="fade-in-up">
 
-          {/* BANDEAU DE DÉFILEMENT SPONSORS */}
-          <div className="p-2.5 mb-3.5 rounded-4 shadow-sm d-flex align-items-center justify-content-between overflow-hidden" 
-               style={{ background: 'linear-gradient(135deg, rgba(5,150,105,0.12) 0%, rgba(30,64,175,0.12) 100%)', border: '1px solid rgba(5,150,105,0.3)', borderRadius: '16px', gap: '0.75rem' }}>
-            <div className="marquee-container" style={{ flex: 1 }}>
-              <div className="marquee-content">
-                <span className="fw-bold d-inline-flex align-items-center gap-2" style={{ fontSize: '0.88rem', color: 'var(--text-main)' }}>
-                  <img src="/logo_wave.png" alt="Wave" style={{ height: '22px', borderRadius: '3px' }} />
-                  ✨ Sponsorisé par PATISEN & Wave — RÉPUBLIQUE DU SÉNÉGAL 🇸🇳
-                </span>
-                <span className="fw-bold d-inline-flex align-items-center gap-2" style={{ fontSize: '0.88rem', color: 'var(--text-main)' }}>
-                  🇸🇳 PROGRAMME NATIONAL DE LA COUVERTURE SANITAIRE UNIVERSELLE DU SÉNÉGAL (UNAMUSC)
-                </span>
-                <span className="fw-bold d-inline-flex align-items-center gap-2" style={{ fontSize: '0.88rem', color: 'var(--text-main)' }}>
-                  <img src="/logo_wave.png" alt="Wave" style={{ height: '22px', borderRadius: '3px' }} />
-                  ✨ Sponsorisé par PATISEN & Wave — RÉPUBLIQUE DU SÉNÉGAL 🇸🇳
-                </span>
-              </div>
-            </div>
+          {/* BOUTON REVOIR LA VIDÉO SEUL (Sponsors retirés de la carte selon demande) */}
+          <div className="d-flex justify-content-end mb-3">
             <button 
               type="button" 
-              className="btn btn-outline btn-sm fw-bold py-1 px-2.5 flex-shrink-0"
-              style={{ fontSize: '0.78rem', borderRadius: '8px' }}
+              className="btn btn-outline-success btn-sm fw-bold py-1.5 px-3"
+              style={{ fontSize: '0.82rem', borderRadius: '12px' }}
               onClick={() => setShowAdModal(true)}
             >
-              ▶️ Revoir la vidéo
+              ▶️ Revoir la vidéo explicative
             </button>
           </div>
           
-          {/* CARTE PASS DIGITALE CSU EXCLUSIVE (Style Apple / Google Wallet UNAMUSC) */}
+          {/* CARTE NUMÉRIQUE CSU EXCLUSIVE MUTUALIS DAKAR */}
           <div 
-            className="p-4 rounded-4 text-white shadow-lg position-relative overflow-hidden mb-4"
+            className="p-4 rounded-4 text-white shadow-lg position-relative overflow-hidden mb-4 cursor-pointer"
             style={{
-              background: result.valid 
+              background: (result.valid && result.status !== 'suspended' && result.status !== 'suspendu')
                 ? 'linear-gradient(135deg, #059669 0%, #047857 50%, #064e3b 100%)' 
                 : 'linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #7f1d1d 100%)',
-              boxShadow: result.valid ? '0 18px 40px -10px rgba(5, 150, 105, 0.45)' : '0 18px 40px -10px rgba(220, 38, 38, 0.45)',
-              border: '1px solid rgba(255, 255, 255, 0.25)',
-              borderRadius: '26px'
+              boxShadow: (result.valid && result.status !== 'suspended' && result.status !== 'suspendu') ? '0 20px 45px -10px rgba(5, 150, 105, 0.45)' : '0 20px 45px -10px rgba(220, 38, 38, 0.45)',
+              border: '1.5px solid rgba(255, 255, 255, 0.3)',
+              borderRadius: '26px',
+              cursor: 'pointer'
             }}
+            onClick={() => setShowQrModal(true)}
+            title="Toucher pour ouvrir le QR Code Tri-Laye grand format"
           >
-            {/* Entête Carte Officielle */}
-            <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            {/* Motifs géométriques en arrière-plan */}
+            <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '160px', height: '160px', background: 'rgba(255,255,255,0.08)', borderRadius: '50%', pointerEvents: 'none' }} />
+            <div style={{ position: 'absolute', bottom: '-50px', left: '-30px', width: '140px', height: '140px', background: 'rgba(255,255,255,0.06)', borderRadius: '50%', pointerEvents: 'none' }} />
+
+            {/* ENTÊTE DE LA CARTE */}
+            <div className="d-flex justify-content-between align-items-start mb-3 position-relative" style={{ zIndex: 2 }}>
               <div>
-                <span className="badge px-3 py-1 fw-bold text-white mb-1.5 d-inline-block" style={{ background: 'rgba(255, 255, 255, 0.22)', backdropFilter: 'blur(6px)', borderRadius: '20px', fontSize: '0.74rem' }}>
-                  🇸🇳 COUVERTURE SANITAIRE UNIVERSELLE DU SÉNÉGAL
+                <span className="d-block text-uppercase fw-bold opacity-90 mb-0.5" style={{ fontSize: '0.78rem', letterSpacing: '1px' }}>
+                  Couverture Santé Universelle
                 </span>
-                <h5 className="fw-bold mb-0 text-white" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.3)', letterSpacing: '0.5px', fontSize: '1.1rem' }}>
-                  MUTUALIS DAKAR <span className="small opacity-75">SN</span>
-                </h5>
+                <h4 className="fw-extrabold mb-0 text-white" style={{ fontSize: '1.35rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)', letterSpacing: '0.5px' }}>
+                  MUTUALIS DAKAR 🇸🇳
+                </h4>
               </div>
 
               <span 
-                className="badge px-3 py-2 fw-bold text-white shadow-sm"
+                className="badge px-3 py-2 fw-extrabold text-white shadow-sm d-inline-flex align-items-center gap-1.5"
                 style={{
                   background: (result.valid && result.status !== 'suspended' && result.status !== 'suspendu') ? '#10b981' : '#ef4444',
                   borderRadius: '20px',
-                  fontSize: '0.82rem',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                  fontSize: '0.84rem',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
                   cursor: 'pointer'
                 }}
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   setResult(prev => ({
                     ...prev,
                     valid: !(prev.valid && prev.status !== 'suspended' && prev.status !== 'suspendu'),
@@ -526,22 +519,22 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
                 }}
                 title="Cliquer pour basculer le statut d'inactif à actif pour le test"
               >
-                {(result.valid && result.status !== 'suspended' && result.status !== 'suspendu') ? '🟢 + ACTIF (VALIDE)' : '🔴 SUSPENDU'}
+                {(result.valid && result.status !== 'suspended' && result.status !== 'suspendu') ? '● ACTIF' : '🔴 SUSPENDU'}
               </span>
             </div>
 
-            <hr className="my-3 opacity-25" />
+            <hr className="my-2.5 opacity-25" />
 
-            {/* Corps de Carte Pass avec Photo Réelle de l'Assuré */}
-            <div className="row g-3 align-items-center">
+            {/* CORPS DE LA CARTE : PHOTO + NOM + MUTUELLE & FORMULE */}
+            <div className="row g-3 align-items-center mb-3 position-relative" style={{ zIndex: 2 }}>
               <div className="col-auto">
                 <img 
                   src={result.photoUrl || '/csu_profile_hero_real.png'} 
                   alt={`${result.firstName} ${result.lastName}`}
                   onError={(e) => { e.target.onerror = null; e.target.src = '/csu_profile_hero_real.png'; }}
                   style={{
-                    width: '80px',
-                    height: '80px',
+                    width: '76px',
+                    height: '76px',
                     borderRadius: '50%',
                     objectFit: 'cover',
                     border: '3px solid #ffffff',
@@ -551,19 +544,16 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
               </div>
 
               <div className="col">
-                <h3 className="fw-bold mb-1 text-white" style={{ fontSize: '1.45rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
+                <h3 className="fw-extrabold mb-1.5 text-white" style={{ fontSize: '1.45rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
                   {result.firstName} {result.lastName}
                 </h3>
-                <div className="d-flex flex-wrap gap-2 align-items-center mb-1.5">
-                  <span className="px-2.5 py-1 bg-dark text-emerald border border-success rounded-3 fw-bold" style={{ fontSize: '0.82rem', color: '#6ee7b7' }}>
-                    N° CSU Bénéficiaire : {getBeneficiaryCode(result.cmuNumber, 1)}
+                <div className="d-flex flex-wrap gap-2 align-items-center mb-1">
+                  <span className="badge bg-white text-emerald fw-bold px-2.5 py-1.5 d-inline-flex align-items-center gap-1" style={{ color: '#047857', borderRadius: '8px', fontSize: '0.8rem' }}>
+                    📦 maternité 100%
                   </span>
-                  <span className="badge bg-white text-dark px-2.5 py-1 fw-bold" style={{ borderRadius: '8px', fontSize: '0.76rem' }}>
-                    Code Adhérent : {getAdherentCode(result.cmuNumber)}
+                  <span className="badge px-2.5 py-1.5 fw-bold text-white d-inline-flex align-items-center gap-1" style={{ background: 'rgba(255,255,255,0.22)', borderRadius: '8px', fontSize: '0.8rem' }}>
+                    🏥 {result.mutuelleName ? result.mutuelleName : '—'}
                   </span>
-                </div>
-                <div className="small text-white-50" style={{ fontSize: '0.82rem' }}>
-                  🏥 {result.mutuelleName}
                 </div>
               </div>
 
@@ -572,9 +562,28 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
                   <img 
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=${encodeURIComponent(result.cmuNumber)}`} 
                     alt="QR Code CSU" 
-                    style={{ width: '75px', height: '75px' }} 
+                    style={{ width: '70px', height: '70px' }} 
                   />
                 </div>
+              </div>
+            </div>
+
+            {/* PIED DE LA CARTE : N° CARTE CSU / CODE IPP & TAP TO QR */}
+            <div className="p-3 rounded-3 position-relative" style={{ background: 'rgba(0, 0, 0, 0.28)', backdropFilter: 'blur(8px)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.18)', zIndex: 2 }}>
+              <small className="d-block text-uppercase fw-bold opacity-85 mb-0.5" style={{ fontSize: '0.74rem', letterSpacing: '0.05em' }}>
+                N° Carte CSU / Code Patient IPP
+              </small>
+              <div className="fw-extrabold font-monospace text-white mb-2" style={{ fontSize: '1.02rem', letterSpacing: '0.5px' }}>
+                {getBeneficiaryCode(result.cmuNumber, 1)} | IPP: {result.ippNumber || 'IPP-DKR-2026-88'}
+              </div>
+
+              <div className="d-flex align-items-center justify-content-between pt-2 border-top" style={{ borderColor: 'rgba(255,255,255,0.2)' }}>
+                <span className="fw-extrabold d-inline-flex align-items-center gap-1.5" style={{ fontSize: '0.86rem', color: '#fef08a' }}>
+                  👆 Toucher pour le QR Code Tri-Laye
+                </span>
+                <span className="badge bg-white text-dark px-2.5 py-1 fw-bold" style={{ borderRadius: '8px', fontSize: '0.76rem' }}>
+                  QR Code HD 📱
+                </span>
               </div>
             </div>
           </div>
@@ -884,6 +893,57 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
             </div>
           )}
         </div>
+      )}
+
+      {/* MODALE PORTAL : QR CODE TRI-LAYE HD SUR TOUCHER DE LA CARTE */}
+      {showQrModal && createPortal(
+        <div 
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh',
+            background: 'rgba(15, 23, 42, 0.88)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
+            zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem'
+          }}
+          onClick={() => setShowQrModal(false)}
+        >
+          <div 
+            style={{
+              maxWidth: '420px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)',
+              borderRadius: '24px', padding: '2rem', textAlign: 'center', border: '2px solid #059669',
+              boxShadow: '0 25px 70px rgba(0,0,0,0.75)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h5 className="fw-extrabold mb-0 text-success" style={{ fontSize: '1.15rem' }}>📱 QR Code Tri-Laye CSU</h5>
+              <button type="button" className="btn-close" onClick={() => setShowQrModal(false)}></button>
+            </div>
+
+            <div className="p-3 bg-white rounded-4 shadow-sm d-inline-block mb-3">
+              <img 
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(result.cmuNumber)}`} 
+                alt="QR Code Tri-Laye" 
+                style={{ width: '210px', height: '210px' }} 
+              />
+            </div>
+
+            <div className="fw-extrabold text-main font-monospace mb-1" style={{ fontSize: '1.1rem' }}>
+              {getBeneficiaryCode(result.cmuNumber, 1)}
+            </div>
+            <small className="d-block text-muted mb-4" style={{ fontSize: '0.85rem' }}>
+              Code Patient IPP: {result.ippNumber || 'IPP-DKR-2026-88'}
+            </small>
+
+            <button 
+              type="button" 
+              className="btn w-100 fw-bold py-2.5"
+              style={{ borderRadius: '14px', background: '#059669', color: '#fff', fontSize: '0.95rem' }}
+              onClick={() => setShowQrModal(false)}
+            >
+              ✅ Fermer
+            </button>
+          </div>
+        </div>,
+        document.body
       )}
 
       {/* MODALE 1 : Demander une Lettre de Garantie Rapide (React Portal — Centré) */}
