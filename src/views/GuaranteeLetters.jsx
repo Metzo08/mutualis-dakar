@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
+import { getBeneficiaryInfo, getAdherentCode, getBeneficiaryCode } from '../utils/csuFormatter';
 
 export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, partnerUser = null, setView = null }) {
   const defaultLetters = [
@@ -8,7 +9,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
       id: 201,
       first_name: 'Amadou',
       last_name: 'Sow',
-      cmu_number: 'CMU-DKR-2026-8812',
+      cmu_number: 'CSU-DKR-2026-8812.2',
       ipp_number: 'IPP-FANN-2026-8812',
       hospital_name: 'Hôpital Universitaire de Fann (Dakar)',
       medical_act: 'Intervention chirurgicale ORL — (Hôpital Universitaire de Fann)',
@@ -40,18 +41,77 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
     }
   ];
 
-  // Identification du rôle et accès
-  const isAgent = (userRole === 'agent' || !!agentUser || !!partnerUser);
-  const isCitizen = (!isAgent && !!citizenUser);
-  const isPublic = (!isAgent && !isCitizen);
+  const isDoctor = (userRole === 'doctor' || userRole === 'partner' || userRole === 'prestataire' || !!partnerUser);
+  const isAgent = (userRole === 'agent' || !!agentUser || userRole === 'superadmin');
+  const isStaff = (isDoctor || isAgent);
+  const isCitizen = (!isStaff && (!!citizenUser || userRole === 'citizen' || userRole === 'citizen_suspended'));
+  const isPublic = (!isStaff && !isCitizen);
+
+  const isSuspended = (
+    userRole === 'citizen_suspended' || 
+    citizenUser?.status === 'suspended' || 
+    citizenUser?.status === 'inactif' || 
+    citizenUser?.status === 'suspendu' || 
+    localStorage.getItem('cmu-portal-mode') === 'citizen_suspended' ||
+    localStorage.getItem('cmu-cotisation-suspended') === 'true'
+  );
 
   const [publicSearchCmu, setPublicSearchCmu] = useState('');
   const [requestCategory, setRequestCategory] = useState('hospital'); // 'hospital' | 'pharmacy'
 
+  // State pour le simulateur public de devis UNAMUSC
+  const [simAmount, setSimAmount] = useState(250000);
+  const [simType, setSimType] = useState('hospital'); // 'hospital' | 'pharmacy'
+
   // Informations assuré actif
-  const activeCmuNumber = citizenUser?.cmu_number || citizenUser?.cmuNumber || localStorage.getItem('cmu-active-number') || 'CMU-DKR-2026-8812';
-  const activeFirstName = citizenUser?.first_name || citizenUser?.firstName || 'Amadou';
-  const activeLastName = citizenUser?.last_name || citizenUser?.lastName || 'Sow';
+  const activeCmuNumber = citizenUser?.cmu_number || citizenUser?.cmuNumber || localStorage.getItem('cmu-active-number') || 'SN-DK-MED-8472';
+  const activeFirstName = citizenUser?.first_name || citizenUser?.firstName || 'Modou';
+  const activeLastName = citizenUser?.last_name || citizenUser?.lastName || 'Diop';
+
+  const isStudent = (citizenUser?.packageType === 'scolaire' || (citizenUser?.firstName || '').toLowerCase().includes('ibrahima'));
+  const isBsf = (citizenUser?.packageType === 'gratuité' || (citizenUser?.firstName || '').toLowerCase().includes('fatou'));
+
+  const userLetters = [
+    {
+      id: 101,
+      first_name: activeFirstName,
+      last_name: activeLastName,
+      cmu_number: getBeneficiaryCode(activeCmuNumber, 1),
+      ipp_number: `IPP-DKR-${getAdherentCode(activeCmuNumber).slice(-4)}`,
+      hospital_name: isStudent ? 'Centre Médical Universitaire UCAD / Hôpital Fann' : isBsf ? 'Hôpital Aristide Le Dantec (Dakar)' : 'Polyclinique de la Médina',
+      medical_act: isStudent ? 'Consultation & soins de santé étudiants — (Gratuité CSU Jeunes)' : isBsf ? 'Prise en charge d\'urgence & soins généraux — (Bourse Sécurité Familiale)' : 'Intervention chirurgicale ORL & consultation spécialisée',
+      estimated_amount: isStudent ? 120000 : isBsf ? 350000 : 250000,
+      guaranteed_percentage: isStudent ? 100 : isBsf ? 100 : 80,
+      max_amount: isStudent ? 120000 : isBsf ? 350000 : 200000,
+      patient_rest: isStudent ? 0 : isBsf ? 0 : 50000,
+      status: 'approved',
+      validation_code: `GAR-2026-${getAdherentCode(activeCmuNumber).slice(-4)}`,
+      created_at: new Date().toISOString(),
+      agent_note: isStudent 
+        ? 'Prise en charge 100% accordée au titre de la gratuité CSU Jeunes & Étudiants (UNAMUSC).' 
+        : isBsf 
+        ? 'Prise en charge 100% accordée au titre du filet social Bourse de Sécurité Familiale (BSF).' 
+        : 'Prise en charge 80% validée sous le système de Tiers-Payant UNAMUSC Dakar.'
+    },
+    {
+      id: 102,
+      first_name: 'Amadou',
+      last_name: 'Sow',
+      cmu_number: getBeneficiaryCode(activeCmuNumber, 2),
+      ipp_number: `IPP-FANN-${getAdherentCode(activeCmuNumber).slice(-4)}`,
+      hospital_name: 'Hôpital Universitaire de Fann (Dakar)',
+      medical_act: 'Intervention chirurgicale ORL — (Hôpital Universitaire de Fann)',
+      estimated_amount: 250000,
+      guaranteed_percentage: 80,
+      max_amount: 200000,
+      patient_rest: 50000,
+      status: 'pending',
+      validation_code: `GAR-2026-FANN-88`,
+      created_at: new Date(Date.now() - 3600000 * 4).toISOString(),
+      agent_note: 'Dossier en cours d\'instruction par l\'agent UNAMUSC.'
+    },
+    ...defaultLetters
+  ];
 
   const [letters, setLetters] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -82,11 +142,11 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
       if (json.success && json.data && json.data.length > 0) {
         setLetters(json.data);
       } else {
-        setLetters(defaultLetters);
+        setLetters(citizenUser ? userLetters : defaultLetters);
       }
     } catch (err) {
       console.warn('Utilisation des garanties de démonstration:', err);
-      setLetters(defaultLetters);
+      setLetters(citizenUser ? userLetters : defaultLetters);
     } finally {
       setLoading(false);
     }
@@ -103,6 +163,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
     const guaranteeAmt = letter.guaranteed_amount || letter.max_amount || (letter.estimated_amount * ((letter.guaranteed_percentage || 80) / 100));
     const patientRest = Math.max(0, letter.estimated_amount - guaranteeAmt);
+    const bInfo = getBeneficiaryInfo(`${letter.first_name} ${letter.last_name}`, letter.cmu_number || activeCmuNumber);
 
     const printWin = window.open('', '_blank', 'width=980,height=1150');
     printWin.document.write(`
@@ -156,10 +217,15 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
             <!-- Grille des caractéristiques & prise en charge -->
             <div class="row g-4 mb-4 p-4 rounded-3" style="background: #f8fafc; border: 1.5px solid #cbd5e1;">
               <div class="col-6">
-                <span class="small fw-bold d-block mb-1 text-muted text-uppercase">👤 BÉNÉFICIAIRE ASSURÉ :</span>
+                <span class="small fw-bold d-block mb-1 text-muted text-uppercase">👤 BÉNÉFICIAIRE ASSURÉ(E) :</span>
                 <h5 class="fw-bold mb-1" style="color: #0f172a;">${letter.first_name} ${letter.last_name}</h5>
-                <div class="small" style="color: #334155;">N° Carte CMU : <strong>${letter.cmu_number}</strong> | IPP : <strong>${letter.ipp_number || 'IPP-FANN-2026-8812'}</strong></div>
-                <small class="text-success fw-bold d-block mt-1">Organisme Émetteur : Tiers-Payant UNAMUSC Sénégal</small>
+                <div class="small mb-1" style="color: #334155;">
+                  <strong>N° CSU Bénéficiaire :</strong> <span style="color: #047857; font-weight: bold; font-family: monospace;">${bInfo.beneficiaryCode}</span> <span class="badge bg-success-subtle text-success border border-success" style="font-size: 0.68rem;">${bInfo.index === 1 ? 'Titulaire .1' : 'Ayant droit .' + bInfo.index}</span>
+                </div>
+                <div class="small" style="color: #475569;">
+                  <strong>Code Adhérent principal :</strong> <span style="font-weight: bold; font-family: monospace;">${bInfo.adherentCode}</span> | IPP : <strong>${letter.ipp_number || 'IPP-FANN-2026-8812'}</strong>
+                </div>
+                <small class="text-success fw-bold d-block mt-1.5">Organisme Émetteur : Tiers-Payant UNAMUSC Sénégal</small>
               </div>
 
               <div class="col-6">
@@ -184,14 +250,12 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
             </div>
 
             <!-- Engagement Financier UNAMUSC & Tampon Numérique QR Code -->
-            <div class="row g-4 align-items-center">
+            <div class="row align-items-center p-3 rounded-3" style="background: #f1f5f9; border: 1px solid #cbd5e1;">
               <div class="col-8">
-                <div class="p-3 rounded-3" style="background: #f0fdf4; border: 1px solid #86efac;">
-                  <strong class="small d-block text-success mb-1 fw-bold">Clause officielle d'engagement financier UNAMUSC :</strong>
-                  <p class="small mb-0 text-dark" style="line-height: 1.5; color: #0f172a;">
-                    ${letter.agent_note || 'L\'Union Nationale des Mutuelles de Santé Communautaires (UNAMUSC) s\'engage sous le Programme National de la Couverture Sanitaire du Sénégal à régler directement à l\'établissement hospitalier le montant garanti sous présentation de la facture finale conforme.'}
-                  </p>
-                </div>
+                <span class="small fw-bold text-uppercase d-block mb-1" style="color: #047857;">Clause officielle d'engagement financier UNAMUSC :</span>
+                <p class="small mb-0 text-secondary" style="font-size: 0.78rem; line-height: 1.45;">
+                  ${letter.agent_note || 'L\'UNAMUSC s\'engage sous le Programme National de la Couverture Sanitaire du Sénégal à régler directement à l\'établissement hospitalier le montant garanti sous présentation de la facture conforme.'}
+                </p>
               </div>
 
               <div class="col-4 text-center">
@@ -221,6 +285,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
     const letter = letterToPrint || selectedLetter || letters[0];
     if (!letter) return;
     const guaranteeAmt = letter.guaranteed_amount || letter.max_amount || (letter.estimated_amount * ((letter.guaranteed_percentage || 80) / 100));
+    const bInfo = getBeneficiaryInfo(`${letter.first_name} ${letter.last_name}`, letter.cmu_number || activeCmuNumber);
 
     generateOfficialPdf({
       filename: `lettre_garantie_${letter.validation_code}.pdf`,
@@ -228,10 +293,11 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
       title: 'Attestation de Prise en Charge Hospitalière',
       referenceNo: letter.validation_code,
       beneficiaryName: `${letter.first_name} ${letter.last_name}`,
-      cmuNumber: letter.cmu_number,
+      cmuNumber: bInfo.beneficiaryCode,
       structureName: letter.hospital_name || 'Hôpital Universitaire de Fann (Dakar)',
       details: [
-        { label: 'Assuré Bénéficiaire', value: `${letter.first_name} ${letter.last_name} (${letter.cmu_number})` },
+        { label: 'N° CSU Bénéficiaire', value: `${bInfo.beneficiaryCode} (${bInfo.index === 1 ? 'Titulaire .1' : 'Ayant droit .' + bInfo.index})` },
+        { label: 'Code Adhérent principal', value: bInfo.adherentCode },
         { label: 'Acte Médical / Intervention', value: letter.medical_act },
         { label: 'Établissement Récepteur', value: letter.hospital_name || 'Hôpital Universitaire de Fann' },
         { label: 'Montant Devis Soumis', value: `${Number(letter.estimated_amount).toLocaleString()} FCFA` },
@@ -244,14 +310,13 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
   // Filtrage strict selon le rôle (RBAC) & Confidentialité des données de santé
   const visibleLetters = letters.filter((item) => {
-    if (isAgent) return true; // L'agent UNAMUSC habilité a accès à l'ensemble des dossiers
+    if (isAgent) return true; // L'agent UNAMUSC ou médecin habilité a accès à l'ensemble des dossiers
     if (isCitizen) {
-      // L'assuré connecté ne voit QUE SES PROPRES DEMANDES
-      return (
-        item.cmu_number === activeCmuNumber ||
-        (item.first_name?.toLowerCase() === activeFirstName?.toLowerCase() && item.last_name?.toLowerCase() === activeLastName?.toLowerCase()) ||
-        item.cmu_number === 'CMU-DKR-2026-8812' // fallback démo pour Amadou Sow
-      );
+      // L'assuré connecté ne voit STRICTEMENT QUE SES PROPRES DEMANDES
+      const cmuMatch = (item.cmu_number || '').trim().toLowerCase() === activeCmuNumber.trim().toLowerCase();
+      const nameMatch = (item.first_name || '').trim().toLowerCase() === activeFirstName.trim().toLowerCase() && 
+                        (item.last_name || '').trim().toLowerCase() === activeLastName.trim().toLowerCase();
+      return cmuMatch || nameMatch;
     }
     // Visiteur public non connecté : masquage strict des dossiers d'autrui
     if (publicSearchCmu.trim()) {
@@ -400,6 +465,55 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
   const totalApproved = letters.filter(l => l.status === 'approved').length;
   const totalGuaranteedSum = letters.filter(l => l.status === 'approved').reduce((acc, l) => acc + (l.max_amount || 0), 0);
 
+  if (isCitizen && isSuspended) {
+    return (
+      <div className="container py-5 fade-in-up">
+        <div style={{ maxWidth: '850px', margin: '0 auto' }}>
+          <div className="card shadow-lg border-0 p-4 p-md-5 text-center my-4" style={{ borderRadius: '24px', background: 'var(--bg-card)', color: 'var(--text-main)', border: '2px solid #ef4444' }}>
+            <div className="d-inline-flex align-items-center justify-content-center p-3 rounded-circle mb-3 mx-auto" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', width: '70px', height: '70px' }}>
+              <span style={{ fontSize: '2.2rem' }}>⚠️</span>
+            </div>
+            
+            <h3 className="fw-bold mb-2 text-danger" style={{ fontSize: '1.4rem' }}>⚠️ Accès aux garanties refusé — Couverture CSU suspendue</h3>
+            
+            <div className="mb-3">
+              <code className="px-3 py-1.5 bg-dark text-warning border border-warning rounded-3 fw-bold d-inline-block" style={{ fontSize: '1.05rem', color: '#f59e0b' }}>
+                {activeCmuNumber}
+              </code>
+            </div>
+
+            <p className="lead mb-4 mx-auto" style={{ maxWidth: '640px', fontSize: '1.05rem', lineHeight: '1.65' }}>
+              Votre cotisation annuelle n'est pas à jour. La demande et le téléchargement des lettres de garantie hospitalières sont suspendus.
+              <br />
+              <strong className="d-block mt-2 text-danger">Veuillez régulariser votre cotisation et celui des membres de votre famille pour un montant de 10 500 FCFA.</strong>
+            </p>
+
+            <div className="d-flex justify-content-center gap-3">
+              <button 
+                type="button" 
+                className="btn btn-emerald btn-lg px-4 py-3 fw-bold d-inline-flex align-items-center gap-2 shadow"
+                style={{ background: '#10b981', borderColor: '#10b981', color: '#ffffff', borderRadius: '16px', fontSize: '1.05rem', cursor: 'pointer', boxShadow: '0 6px 20px rgba(16, 185, 129, 0.35)' }}
+                onClick={() => {
+                  localStorage.setItem('cmu-pending-renewal', JSON.stringify({
+                    cmuNumber: activeCmuNumber,
+                    amount: 10500,
+                    familyCount: 3,
+                    firstName: activeFirstName,
+                    lastName: activeLastName
+                  }));
+                  if (setView) setView('payments');
+                  window.location.hash = '#payments';
+                }}
+              >
+                💳 Renouveler ma cotisation (10 500 FCFA)
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container py-4 fade-in-up">
       {/* Banner signature de la plateforme */}
@@ -426,7 +540,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               border: '1px solid rgba(255, 255, 255, 0.35)'
             }}
           >
-            🇸🇳 UNAMUSC SÉNÉGAL — LETTRES DE GARANTIE (80%) & BONS PHARMACIE (50%)
+            🇸🇳 UNAMUSC Sénégal — Lettres de garantie (80%) & bons pharmacie (50%)
           </span>
           <h1 className="fw-extrabold mb-2 text-white text-center" style={{ fontSize: '2.35rem', letterSpacing: '-0.02em', textShadow: '0 3px 6px rgba(0,0,0,0.4)' }}>
             {lang === 'wo' ? 'Bons de commande ak bataaxal u garansi' : 'Bons de commande & lettres de garantie'}
@@ -437,39 +551,41 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               : 'Demandez votre lettre de garantie hospitalière (80%) ou bon de commande pharmacie (50%) en ligne sous le Tiers-Payant UNAMUSC.'}
           </p>
 
-          <div className="d-flex justify-content-center align-items-center flex-wrap gap-4 mt-3 w-100">
+          <div className="d-flex justify-content-center align-items-center flex-wrap gap-4 mt-4 w-100">
             <button 
               type="button"
-              className="btn fw-bold text-white shadow-sm px-4 py-2.5 mx-2"
+              className="btn fw-bold text-white shadow-md px-4 py-3"
               style={{
-                background: activeTab === 'list' ? '#059669' : 'rgba(255, 255, 255, 0.18)',
+                background: activeTab === 'list' ? '#059669' : 'rgba(255, 255, 255, 0.22)',
                 color: '#ffffff',
-                border: activeTab === 'list' ? '2px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.4)',
-                borderRadius: '12px',
-                fontSize: '0.94rem',
-                boxShadow: activeTab === 'list' ? '0 4px 14px rgba(5, 150, 105, 0.5)' : 'none',
-                transition: 'all 0.2s'
+                border: activeTab === 'list' ? '2px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.45)',
+                borderRadius: '14px',
+                fontSize: '0.98rem',
+                boxShadow: activeTab === 'list' ? '0 6px 18px rgba(5, 150, 105, 0.6)' : '0 2px 8px rgba(0,0,0,0.2)',
+                transition: 'all 0.2s',
+                minHeight: '52px'
               }}
               onClick={() => setActiveTab('list')}
             >
-              📋 {isAgent ? `Instructions Agent (${letters.length})` : `Mes Dossiers & Attestations (${visibleLetters.length})`}
+              📋 {isAgent ? `Instructions Agent (${letters.length})` : `Mes dossiers & attestations (${visibleLetters.length})`}
             </button>
 
             <button 
               type="button"
-              className="btn fw-bold text-white shadow-sm px-4 py-2.5 mx-2"
+              className="btn fw-bold text-white shadow-md px-4 py-3"
               style={{
-                background: activeTab === 'new' ? '#059669' : 'rgba(255, 255, 255, 0.18)',
+                background: activeTab === 'new' ? '#059669' : 'rgba(255, 255, 255, 0.22)',
                 color: '#ffffff',
-                border: activeTab === 'new' ? '2px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.4)',
-                borderRadius: '12px',
-                fontSize: '0.94rem',
-                boxShadow: activeTab === 'new' ? '0 4px 14px rgba(5, 150, 105, 0.5)' : 'none',
-                transition: 'all 0.2s'
+                border: activeTab === 'new' ? '2px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.45)',
+                borderRadius: '14px',
+                fontSize: '0.98rem',
+                boxShadow: activeTab === 'new' ? '0 6px 18px rgba(5, 150, 105, 0.6)' : '0 2px 8px rgba(0,0,0,0.2)',
+                transition: 'all 0.2s',
+                minHeight: '52px'
               }}
               onClick={() => setActiveTab('new')}
             >
-              ➕ {lang === 'wo' ? 'Demande bu bees' : 'Nouvelle demande (Garantie / Bon)'}
+              ➕ {lang === 'wo' ? 'Demande bu bees' : 'Nouvelle demande (garantie / bon)'}
             </button>
           </div>
         </div>
@@ -698,40 +814,246 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
         document.body
       )}
 
-      {/* BANNIÈRE SÉCURITÉ CONFIDENTIALITÉ S'IL S'AGIT D'UN VISITEUR NON CONNECTÉ SANS RECHERCHE */}
+      {/* EXPERIENCE PORTAIL UNIFIEE POUR LES VISITEURS NON CONNECTÉS (Remplaçant l'ancien bloc restreint) */}
       {isPublic && !publicSearchCmu && activeTab === 'list' && (
-        <div className="card shadow-sm border-0 p-4 mb-4 text-center rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', borderLeft: '6px solid #059669' }}>
-          <div className="fs-1 mb-2">🔒</div>
-          <h4 className="fw-bold text-success">Accès Sécurisé & Protection des Données de Santé UNAMUSC</h4>
-          <p className="text-muted mx-auto" style={{ maxWidth: '680px', lineHeight: '1.6' }}>
-            Afin de préserver la confidentialité des données médicales des citoyens, la liste globale des demandes est réservée aux agents habilités de l'UNAMUSC. Connectez-vous ou saisissez votre N° de Carte CMU pour accéder à vos attestations personnelles.
-          </p>
+        <div className="fade-in-up" style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+          
+          {/* CARTE CENTRALE DE RECHERCHE & AUTHENTIFICATION */}
+          <div className="card shadow-lg border-0 p-4 p-md-5 rounded-4 text-left" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', borderTop: '6px solid #059669', boxShadow: 'var(--shadow-lg)', padding: '2.75rem 2.25rem' }}>
+            <div className="d-flex align-items-center gap-3.5 mb-4">
+              <div style={{ background: 'rgba(5, 150, 105, 0.15)', color: '#059669', padding: '0.85rem 1rem', borderRadius: '18px', fontSize: '2rem' }}>
+                🔒
+              </div>
+              <div>
+                <h3 className="fw-extrabold mb-1.5" style={{ color: 'var(--primary)', fontSize: '1.45rem' }}>
+                  Accès sécurisé & consultation des attestations UNAMUSC
+                </h3>
+                <p className="text-muted mb-0" style={{ fontSize: '0.95rem', lineHeight: '1.6' }}>
+                  Afin de préserver la confidentialité des données médicales des citoyens, la liste globale des garanties est réservée aux agents habilités. Saisissez votre N° de Carte CMU ou votre code de garantie pour consulter votre dossier.
+                </p>
+              </div>
+            </div>
 
-          <div className="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-2">
-            {setView && (
-              <button className="btn btn-success fw-bold px-4 py-2.5" onClick={() => setView('login')} style={{ borderRadius: '12px', background: '#059669' }}>
-                🔐 Se connecter à mon Espace Assuré / Agent
+            {/* Barre de recherche avec exemples et bouton */}
+            <div className="p-4 rounded-4 mb-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+              <label className="form-label small fw-bold mb-2.5 text-uppercase" style={{ color: 'var(--primary)', fontSize: '0.82rem', letterSpacing: '0.5px' }}>
+                🔎 Rechercher directement mon dossier avec mon n° de carte CMU ou code d'homologation :
+              </label>
+              <div className="input-group mb-3">
+                <input 
+                  type="text" 
+                  className="form-control fw-bold input" 
+                  placeholder="Ex: CMU-DKR-2026-8812 ou GAR-2026-FANN-88" 
+                  value={publicSearchCmu} 
+                  onChange={(e) => setPublicSearchCmu(e.target.value)} 
+                  style={{ borderRadius: '14px 0 0 14px', height: '54px', fontSize: '1.05rem', paddingLeft: '1.25rem' }}
+                />
+                <button 
+                  className="btn btn-success fw-bold px-4" 
+                  style={{ borderRadius: '0 14px 14px 0', background: '#059669', fontSize: '1rem', height: '54px' }}
+                >
+                  🔍 Consulter mon dossier
+                </button>
+              </div>
+
+              {/* Suggestions rapides */}
+              <div className="d-flex align-items-center flex-wrap gap-3 mt-3 pt-1">
+                <span className="small text-muted fw-bold me-2" style={{ fontSize: '0.85rem' }}>Exemples de démonstration :</span>
+                <div className="d-flex flex-wrap gap-2.5">
+                  <button 
+                    type="button" 
+                    className="btn btn-outline-secondary py-2 px-3.5 fw-bold"
+                    style={{ fontSize: '0.82rem', borderRadius: '10px', margin: '0.15rem' }}
+                    onClick={() => setPublicSearchCmu('CMU-DKR-2026-8812')}
+                  >
+                    CMU-DKR-2026-8812 (Amadou Sow)
+                  </button>
+                  <button 
+                    type="button" 
+                    className="btn btn-outline-secondary py-2 px-3.5 fw-bold"
+                    style={{ fontSize: '0.82rem', borderRadius: '10px', margin: '0.15rem' }}
+                    onClick={() => setPublicSearchCmu('CMU-DKR-2026-4401')}
+                  >
+                    CMU-DKR-2026-4401 (Fatou Diop)
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Boutons d'action rapide */}
+            <div className="d-flex gap-4 flex-wrap pt-3" style={{ marginTop: '0.75rem' }}>
+              {setView && (
+                <button 
+                  className="btn btn-success fw-bold px-4 py-3" 
+                  onClick={() => setView('login')} 
+                  style={{ borderRadius: '14px', background: '#059669', fontSize: '0.98rem', boxShadow: '0 6px 16px rgba(5,150,105,0.35)', minHeight: '52px' }}
+                >
+                  🔐 Se connecter à mon espace assuré / agent
+                </button>
+              )}
+              <button 
+                className="btn btn-outline-success fw-bold px-4 py-3" 
+                onClick={() => setActiveTab('new')} 
+                style={{ borderRadius: '14px', fontSize: '0.98rem', minHeight: '52px' }}
+              >
+                ➕ Soumettre une demande de prise en charge (80%)
               </button>
-            )}
-            <button className="btn btn-outline-success fw-bold px-4 py-2.5" onClick={() => setActiveTab('new')} style={{ borderRadius: '12px' }}>
-              ➕ Soumettre une demande de prise en charge
-            </button>
+            </div>
           </div>
 
-          <div className="mt-4 pt-3 border-top mx-auto" style={{ maxWidth: '520px', borderColor: 'var(--border-color)' }}>
-            <label className="form-label small text-muted fw-bold mb-2">Rechercher directement mon dossier avec mon N° de Carte CMU :</label>
-            <div className="input-group">
-              <input 
-                type="text" 
-                className="form-control fw-bold input" 
-                placeholder="Ex: CMU-DKR-2026-8812" 
-                value={publicSearchCmu} 
-                onChange={(e) => setPublicSearchCmu(e.target.value)} 
-                style={{ borderRadius: '12px 0 0 12px', height: '48px' }}
-              />
-              <button className="btn btn-success fw-bold px-4" style={{ borderRadius: '0 12px 12px 0', background: '#059669' }}>
-                🔍 Consulter
-              </button>
+          {/* SIMULATEUR INTERACTIF DE PRISE EN CHARGE CMU */}
+          <div className="card shadow-md border-0 p-4 p-md-5 rounded-4 text-left" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)', padding: '2.75rem 2.25rem' }}>
+            <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4 pb-2">
+              <div>
+                <span className="badge bg-success-subtle text-success border border-success px-3.5 py-1.5 fw-bold mb-2.5 d-inline-block" style={{ borderRadius: '20px', fontSize: '0.82rem' }}>
+                  🧮 CALCULATEUR DE DEVIS & SIMULATEUR UNAMUSC
+                </span>
+                <h3 className="fw-extrabold mb-1.5" style={{ color: 'var(--primary)', fontSize: '1.45rem' }}>
+                  Simulez la prise en charge de vos soins hospitaliers & médicaments
+                </h3>
+                <p className="text-muted mb-0" style={{ fontSize: '0.95rem' }}>
+                  Estimez instantanément la part couverte par l'UNAMUSC et le ticket modérateur restant à votre charge.
+                </p>
+              </div>
+            </div>
+
+            <div className="row g-4 g-xl-5 align-items-center">
+              <div className="col-lg-6">
+                <div className="form-group mb-4">
+                  <label className="form-label small fw-bold mb-2 text-uppercase" style={{ color: 'var(--primary)', fontSize: '0.82rem', letterSpacing: '0.5px' }}>Type de prestation sanitaire :</label>
+                  <div className="d-flex gap-2.5">
+                    <button 
+                      type="button" 
+                      className={`btn flex-fill fw-bold py-2.5 px-3 ${simType === 'hospital' ? 'btn-success text-white' : 'btn-outline-secondary'}`}
+                      onClick={() => setSimType('hospital')}
+                      style={{ borderRadius: '12px', fontSize: '0.9rem', height: '48px' }}
+                    >
+                      🏥 Hospitalisation & chirurgie (80%)
+                    </button>
+                    <button 
+                      type="button" 
+                      className={`btn flex-fill fw-bold py-2.5 px-3 ${simType === 'pharmacy' ? 'btn-success text-white' : 'btn-outline-secondary'}`}
+                      onClick={() => setSimType('pharmacy')}
+                      style={{ borderRadius: '12px', fontSize: '0.9rem', height: '48px' }}
+                    >
+                      💊 Ordonnance pharmacie (50%)
+                    </button>
+                  </div>
+                </div>
+
+                <div className="form-group mb-0">
+                  <label className="form-label small fw-bold mb-2 text-uppercase" style={{ color: 'var(--primary)', fontSize: '0.82rem', letterSpacing: '0.5px' }}>Montant estimatif du devis soumis (FCFA) :</label>
+                  <input 
+                    type="number" 
+                    className="form-control input fw-bold text-success fs-5 mb-2"
+                    value={simAmount}
+                    onChange={(e) => setSimAmount(Math.max(0, parseFloat(e.target.value) || 0))}
+                    style={{ borderRadius: '12px', height: '54px', paddingLeft: '1.25rem' }}
+                    step={5000}
+                  />
+                  <small className="text-muted d-block" style={{ fontSize: '0.82rem' }}>Exemples : 100 000 FCFA (radiologies), 250 000 FCFA (chirurgie Fann), 500 000 FCFA (hospitalisation 10j)</small>
+                </div>
+              </div>
+
+              <div className="col-lg-6">
+                {(() => {
+                  const pct = simType === 'hospital' ? 80 : 50;
+                  const cmuPart = simAmount * (pct / 100);
+                  const patientPart = simAmount - cmuPart;
+
+                  return (
+                    <div className="p-4 p-md-4.5 rounded-4 shadow-sm" style={{ background: 'var(--bg-card-subtle)', border: '2px solid #059669', padding: '1.75rem 1.5rem' }}>
+                      <div className="d-flex justify-content-between align-items-center mb-3.5 border-bottom pb-3" style={{ borderColor: 'var(--border-color)' }}>
+                        <span className="fw-bold fs-6" style={{ color: 'var(--text-main)' }}>Taux de garantie UNAMUSC :</span>
+                        <span className="badge bg-success fs-6 fw-bold px-3.5 py-1.5" style={{ borderRadius: '12px' }}>{pct}% prise en charge</span>
+                      </div>
+
+                      <div className="row g-3 my-2">
+                        <div className="col-6">
+                          <span className="small text-muted d-block fw-bold mb-1" style={{ fontSize: '0.82rem' }}>Part payée par l'UNAMUSC ({pct}%) :</span>
+                          <h3 className="fw-extrabold text-success mb-1" style={{ fontSize: '1.75rem' }}>{cmuPart.toLocaleString()} FCFA</h3>
+                          <small className="text-success fw-bold" style={{ fontSize: '0.78rem' }}>Règlement direct à l'établissement</small>
+                        </div>
+
+                        <div className="col-6 border-start ps-3.5" style={{ borderColor: 'var(--border-color)' }}>
+                          <span className="small text-muted d-block fw-bold mb-1" style={{ fontSize: '0.82rem' }}>Ticket modérateur patient ({100 - pct}%) :</span>
+                          <h3 className="fw-extrabold text-warning mb-1" style={{ fontSize: '1.75rem' }}>{patientPart.toLocaleString()} FCFA</h3>
+                          <small className="text-warning fw-bold" style={{ fontSize: '0.78rem' }}>À payer par l'assuré au guichet</small>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 pt-3 border-top text-center" style={{ borderColor: 'var(--border-color)' }}>
+                        <button 
+                          className="btn btn-success fw-bold w-100 py-3" 
+                          style={{ borderRadius: '12px', background: '#059669', height: '52px', fontSize: '1.02rem' }}
+                          onClick={() => setActiveTab('new')}
+                        >
+                          📋 Demander cette prise en charge officielle
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          </div>
+
+          {/* GRILLE DES 4 ENGAGEMENTS TIERS-PAYANT UNAMUSC */}
+          <div className="grid grid-4" style={{ gap: '1.5rem' }}>
+            <div className="card p-4 text-left shadow-sm" style={{ borderRadius: '20px', background: 'var(--card-bg)', border: '1px solid var(--border-color)', padding: '1.75rem 1.5rem' }}>
+              <div style={{ fontSize: '2.4rem', marginBottom: '0.75rem' }}>🏥</div>
+              <h5 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.5rem' }}>Hospitalisation & chirurgie</h5>
+              <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', margin: 0, lineHeight: '1.6' }}>
+                Prise en charge à 80% des frais de bloc, séjour et soins intégraux dans tous les centres hospitaliers régionaux.
+              </p>
+            </div>
+
+            <div className="card p-4 text-left shadow-sm" style={{ borderRadius: '20px', background: 'var(--card-bg)', border: '1px solid var(--border-color)', padding: '1.75rem 1.5rem' }}>
+              <div style={{ fontSize: '2.4rem', marginBottom: '0.75rem' }}>💊</div>
+              <h5 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.5rem' }}>Bons de commande pharmacie</h5>
+              <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', margin: 0, lineHeight: '1.6' }}>
+                Délivrance directe des médicaments essentiels prescrits avec 50% de réduction immédiate en officine conventionnée.
+              </p>
+            </div>
+
+            <div className="card p-4 text-left shadow-sm" style={{ borderRadius: '20px', background: 'var(--card-bg)', border: '1px solid var(--border-color)', padding: '1.75rem 1.5rem' }}>
+              <div style={{ fontSize: '2.4rem', marginBottom: '0.75rem' }}>⚡</div>
+              <h5 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.5rem' }}>Instruction rapide 48h</h5>
+              <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', margin: 0, lineHeight: '1.6' }}>
+                Validation et homologation par l'Agent Régional mutualiste sous 48 heures ouvrées avec notification SMS.
+              </p>
+            </div>
+
+            <div className="card p-4 text-left shadow-sm" style={{ borderRadius: '20px', background: 'var(--card-bg)', border: '1px solid var(--border-color)', padding: '1.75rem 1.5rem' }}>
+              <div style={{ fontSize: '2.4rem', marginBottom: '0.75rem' }}>📜</div>
+              <h5 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.5rem' }}>Attestation QR code officielle</h5>
+              <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', margin: 0, lineHeight: '1.6' }}>
+                Tampon numérique infalsifiable imprimable ou téléchargeable en PDF A4 officiel pour les admissions d'urgence.
+              </p>
+            </div>
+          </div>
+
+          {/* RÉSEAU HOSPITALIER CONVENTIONNÉ SÉNÉGAL */}
+          <div className="card shadow-sm border-0 p-4 p-md-5 rounded-4 text-left" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)', padding: '2.5rem 2rem' }}>
+            <h4 className="fw-bold mb-4 d-flex align-items-center gap-2.5" style={{ color: 'var(--primary)', fontSize: '1.25rem' }}>
+              <span>🏛️</span> Établissements Hospitaliers Référents Conventionnés Tiers-Payant UNAMUSC
+            </h4>
+
+            <div className="grid grid-3" style={{ gap: '1.25rem' }}>
+              {[
+                { name: 'Hôpital Universitaire de Fann', dept: 'Dakar Fann / Point E', badge: 'Centre Régional Habilité' },
+                { name: 'Hôpital Aristide Le Dantec', dept: 'Dakar Plateau', badge: 'Chirurgie & Oncologie' },
+                { name: 'Hôpital Général Idrissa Pouye', dept: 'Pikine / Guédiawaye', badge: 'Urgences 24h/7' },
+                { name: 'Centre Hospitalier Abass Ndao', dept: 'Médina / Fass', badge: 'Maternité & Diabétologie' },
+                { name: 'Hôpital d\'Enfants Albert Royer', dept: 'Fann / Pédiatrie', badge: 'Pédiatrie 100% CMU' },
+                { name: 'Clinique Pasteur & Polycliniques', dept: 'Dakar Métropole', badge: 'Tiers-Payant Privé' }
+              ].map((h, idx) => (
+                <div key={idx} className="p-3.5 rounded-4 border" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)', padding: '1.25rem 1.1rem' }}>
+                  <span className="badge bg-success-subtle text-success border border-success mb-2" style={{ fontSize: '0.75rem', padding: '0.3rem 0.65rem', borderRadius: '8px' }}>{h.badge}</span>
+                  <h6 className="fw-bold mb-1" style={{ color: 'var(--primary)', fontSize: '0.98rem' }}>{h.name}</h6>
+                  <small className="text-muted d-block" style={{ fontSize: '0.82rem' }}>{h.dept}</small>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -777,9 +1099,42 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 <tbody>
                   {visibleLetters.map((item) => (
                     <tr key={item.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                      <td style={{ padding: '0.85rem' }}>
-                        <strong className="d-block" style={{ color: 'var(--text-main)' }}>{item.first_name} {item.last_name}</strong>
-                        <small className="text-muted">N° CMU : {item.cmu_number}</small>
+                      <td style={{ padding: '1rem 0.85rem', minWidth: '230px', verticalAlign: 'top' }}>
+                        {(() => {
+                          const bInfo = getBeneficiaryInfo(`${item.first_name} ${item.last_name}`, item.cmu_number || activeCmuNumber);
+                          return (
+                            <div className="d-flex flex-column gap-1.5">
+                              <div className="d-flex align-items-center gap-2 flex-wrap">
+                                <strong style={{ color: 'var(--text-main)', fontSize: '0.95rem', fontWeight: '700' }}>
+                                  {item.first_name} {item.last_name}
+                                </strong>
+                                {bInfo.index === 1 ? (
+                                  <span className="badge bg-success-subtle text-success border border-success px-2 py-0.5" style={{ fontSize: '0.68rem', borderRadius: '6px' }}>
+                                    Titulaire .1
+                                  </span>
+                                ) : (
+                                  <span className="badge bg-warning-subtle text-warning border border-warning px-2 py-0.5" style={{ fontSize: '0.68rem', borderRadius: '6px' }}>
+                                    Ayant droit .{bInfo.index}
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="d-flex flex-column gap-1 mt-0.5">
+                                <div className="d-flex align-items-center gap-1.5 flex-wrap">
+                                  <span style={{ color: 'var(--text-sub)', fontSize: '0.76rem', fontWeight: '500' }}>N° CSU :</span>
+                                  <code className="px-2 py-0.5 bg-dark text-success border border-success rounded-2 fw-bold" style={{ fontSize: '0.78rem' }}>
+                                    {bInfo.beneficiaryCode}
+                                  </code>
+                                </div>
+
+                                <div className="d-flex align-items-center gap-1.5 flex-wrap" style={{ fontSize: '0.74rem' }}>
+                                  <span style={{ color: 'var(--text-sub)' }}>Code adhérent :</span>
+                                  <span className="fw-semibold" style={{ color: 'var(--text-main)' }}>{bInfo.adherentCode}</span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
                       </td>
                       <td style={{ padding: '0.85rem', maxWidth: '260px' }}>
                         <span className="d-block fw-semibold small" style={{ color: 'var(--text-main)' }}>{item.medical_act}</span>
@@ -823,8 +1178,27 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                             onClick={() => openInstructionModal(item)}
                             style={{ background: '#059669', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
                           >
-                            {item.status === 'approved' ? '📄 Certificat PDF / Garanties' : '⚙️ Instruire le dossier'}
+                            {item.status === 'approved' ? '📄 Certificat PDF / Garanties' : '⚙️ Instruire & Homologuer (Agent)'}
                           </button>
+                        ) : isDoctor ? (
+                          <div className="d-flex justify-content-end gap-1.5">
+                            <button 
+                              type="button"
+                              className="btn btn-sm btn-outline-success fw-bold px-2.5 py-1.5"
+                              onClick={() => openInstructionModal(item)}
+                              style={{ borderRadius: '8px', fontSize: '0.8rem' }}
+                            >
+                              🩺 Éditer prescription
+                            </button>
+                            <button 
+                              type="button"
+                              className="btn btn-sm text-white fw-bold px-2.5 py-1.5"
+                              onClick={() => generateAndPrintPDFWindow(item)}
+                              style={{ background: '#059669', border: 'none', borderRadius: '8px', fontSize: '0.8rem' }}
+                            >
+                              🖨️ PDF
+                            </button>
+                          </div>
                         ) : (
                           <button 
                             type="button"

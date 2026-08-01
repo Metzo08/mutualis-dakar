@@ -8,10 +8,13 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
   const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'history', 'lab'
   const [searchTerm, setSearchTerm] = useState('');
   
-  // Nom et N° CMU dynamique
-  const activeFirstName = citizenUser?.first_name || citizenUser?.firstName || 'Awa';
-  const activeLastName = citizenUser?.last_name || citizenUser?.lastName || 'Ndiaye';
-  const activeCmuNumber = citizenUser?.cmu_number || citizenUser?.cmuNumber || 'CMU-DKR-2026-8812';
+  // Nom et N° CSU dynamique
+  const activeFirstName = citizenUser?.firstName || citizenUser?.first_name || 'Modou';
+  const activeLastName = citizenUser?.lastName || citizenUser?.last_name || 'Diop';
+  const activeCmuNumber = citizenUser?.cmuNumber || citizenUser?.cmu_number || 'SN-DK-MED-8472';
+
+  const isStudent = (citizenUser?.packageType === 'scolaire' || (citizenUser?.firstName || '').toLowerCase().includes('ibrahima'));
+  const isBsf = (citizenUser?.packageType === 'gratuité' || (citizenUser?.firstName || '').toLowerCase().includes('fatou'));
 
   // Modales
   const [showShareModal, setShowShareModal] = useState(false);
@@ -20,7 +23,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
   const [copiedLink, setCopiedLink] = useState(false);
 
   const handleCopyShareLink = () => {
-    const shareUrl = `https://mutualis.sn/dossier-partage/849-201`;
+    const shareUrl = `https://mutualis.sn/dossier-partage/${activeCmuNumber.slice(-4)}`;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(shareUrl);
     }
@@ -30,14 +33,14 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
 
   const handleShareWhatsApp = (e) => {
     if (e) e.preventDefault();
-    const shareText = `Bonjour Docteur, voici l'accès sécurisé à mon dossier médical certifié UNAMUSC Sénégal (Code OTP 24h : 849-201) : https://mutualis.sn/dossier-partage/849-201`;
+    const shareText = `Bonjour Docteur, voici l'accès sécurisé au dossier médical certifié UNAMUSC de ${activeFirstName} ${activeLastName} (${activeCmuNumber}) : https://mutualis.sn/dossier-partage/${activeCmuNumber.slice(-4)}`;
     const waUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
     
     if (navigator.share) {
       navigator.share({
         title: 'Dossier Médical UNAMUSC',
         text: shareText,
-        url: 'https://mutualis.sn/dossier-partage/849-201'
+        url: `https://mutualis.sn/dossier-partage/${activeCmuNumber.slice(-4)}`
       }).catch(() => {
         window.open(waUrl, '_blank', 'noopener,noreferrer');
       });
@@ -46,89 +49,169 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
     }
   };
 
-  // Antécédents Médicaux Éditables & Persistés
-  const defaultAntecedents = {
-    bloodGroup: 'A+',
-    rhesus: 'Positif',
-    allergies: 'Pénicilline (Sévère), Pollen de Graminées',
-    chronicConditions: 'Hypertension artérielle (HTA), Diabète Type 2',
-    surgeries: 'Appendicectomie (2021)',
-    emergencyContact: 'Moussa Sow (Frère) — +221 77 450 12 34'
+  // Générateurs de données médicales propres à chaque assuré
+  const getAntecedentsForUser = (cmuNum, isStud, isBsfUser, fName) => {
+    if (isStud || (fName || '').toLowerCase().includes('ibrahima')) {
+      return {
+        bloodGroup: 'O+',
+        rhesus: 'positif',
+        allergies: 'Aucune allergie connue (Bilan médical UCAD 2026)',
+        chronicConditions: 'Aucune affection de longue durée — Aptitude sportive UCAD validée',
+        surgeries: 'Aucune chirurgie antérieure',
+        emergencyContact: 'Papa Sarr (Père) — +221 77 654 32 10'
+      };
+    }
+    if (isBsfUser || (fName || '').toLowerCase().includes('fatou')) {
+      return {
+        bloodGroup: 'B+',
+        rhesus: 'positif',
+        allergies: 'Pénicilline (Modérée)',
+        chronicConditions: 'Hypertension artérielle (Suivi programme gratuité BSF)',
+        surgeries: 'Césarienne (2018)',
+        emergencyContact: 'Mamadou Diallo (Époux) — +221 77 123 99 88'
+      };
+    }
+    return {
+      bloodGroup: 'A+',
+      rhesus: 'positif',
+      allergies: 'Pollen de graminées (Médina)',
+      chronicConditions: 'Bilan de santé annuel régulier à la Médina',
+      surgeries: 'Appendicectomie (2021)',
+      emergencyContact: 'Sokhna Diop (Épouse) — +221 77 987 65 43'
+    };
   };
 
-  const [antecedents, setAntecedents] = useState(() => {
-    try {
-      const saved = localStorage.getItem('cmu-antecedents');
-      return saved ? JSON.parse(saved) : defaultAntecedents;
-    } catch (e) {
-      return defaultAntecedents;
+  const getExamsForUser = (cmuNum, isStud, isBsfUser, fName) => {
+    if (isStud || (fName || '').toLowerCase().includes('ibrahima')) {
+      return [
+        {
+          id: 601,
+          title: 'Radiographie thoracique d\'incorporate UCAD',
+          exam_type: 'Radiographie',
+          badge: 'BILAN UCAD',
+          facility: 'Centre médical universitaire (Fann)',
+          doctor: 'Dr. Ousmane Sow — Pavillon santé UCAD',
+          date: '02 Fév 2026',
+          conclusion: 'Cliché pulmonaire normal. Absence d\'anomalie parenchymateuse. Aptitude physique universitaire validée.',
+          cliches: 2,
+          preview: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?w=400'
+        },
+        {
+          id: 602,
+          title: 'Échographie abdominale de contrôle sportif',
+          exam_type: 'Échographie',
+          badge: 'SPORTS MED',
+          facility: 'Hôpital universitaire de Fann',
+          doctor: 'Dr. Cheikh Anta Diop',
+          date: '10 Janv 2026',
+          conclusion: 'Organes abdominaux de morphologie et d\'écho-structure normales. Examen satisfaisant.',
+          cliches: 3,
+          preview: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=400'
+        }
+      ];
     }
-  });
+    if (isBsfUser || (fName || '').toLowerCase().includes('fatou')) {
+      return [
+        {
+          id: 701,
+          title: 'Échographie maternelle & pelvienne BSF',
+          exam_type: 'Échographie',
+          badge: 'GRATUITÉ BSF',
+          facility: 'Hôpital Aristide Le Dantec (Dakar)',
+          doctor: 'Dr. Mariama Ba — Service maternité Le Dantec',
+          date: '14 Avril 2026',
+          conclusion: 'Examen gynécologique et pelvien satisfaisant. Bilan de gratuité 100% BSF validé.',
+          cliches: 3,
+          preview: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=400'
+        }
+      ];
+    }
+    return [
+      {
+        id: 501,
+        title: 'Scanner thoracique médina',
+        exam_type: 'Scanner',
+        badge: 'HD DICOM',
+        facility: 'Polyclinique de la Médina',
+        doctor: 'Dr. Cheikh Anta Diop — Abass Ndao',
+        date: '12 Mars 2026',
+        conclusion: 'Examen de contrôle pulmonaire satisfaisant sans anomalie évolutive. Recommandation : suivi annuel.',
+        cliches: 4,
+        preview: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?w=400'
+      },
+      {
+        id: 502,
+        title: 'Échocardiographie de contrôle',
+        exam_type: 'Échographie',
+        badge: 'CARDIOLOGIE',
+        facility: 'Centre médical SOS Médina',
+        doctor: 'Dr. Sy — Cardiologue',
+        date: '15 Janv 2026',
+        conclusion: 'Fonction ventriculaire droite et gauche conservées. Bilan tensionnel satisfaisant.',
+        cliches: 3,
+        preview: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=400'
+      }
+    ];
+  };
+
+  const getHistoryForUser = (cmuNum, isStud, isBsfUser, fName) => {
+    if (isStud || (fName || '').toLowerCase().includes('ibrahima')) {
+      return [
+        { id: 1, date: '02/02/2026', acte: 'Bilan de Santé Universitaire & Aptitude', praticien: 'Dr. Ousmane Sow (Pavillon Santé UCAD)', conclusion: 'Aptitude physique & sportive confirmée.' },
+        { id: 2, date: '10/01/2026', acte: 'Consultation Médecine du Sport UCAD', praticien: 'Dr. Cheikh Anta Diop', conclusion: 'Examen clinique sans anomalie.' }
+      ];
+    }
+    if (isBsfUser || (fName || '').toLowerCase().includes('fatou')) {
+      return [
+        { id: 1, date: '14/04/2026', acte: 'Consultation Suivi Filet Social BSF', praticien: 'Dr. Mariama Ba (Le Dantec)', conclusion: 'Examen gynécologique et ordonnance gratuite émise.' },
+        { id: 2, date: '12/03/2026', acte: 'Prise de Sang & Bilan Biologique BSF', praticien: 'Laboratoire Bio24 Pikine', conclusion: 'Paramètres biologiques dans les normes.' }
+      ];
+    }
+    return [
+      { id: 1, date: '12/05/2026', acte: 'Consultation généraliste Médina', praticien: 'Dr. Cheikh Anta Diop (Abass Ndao)', conclusion: 'Contrôle tensionnel satisfaisant.' },
+      { id: 2, date: '15/01/2026', acte: 'Échocardiographie de contrôle', praticien: 'Dr. Sy (Cardiologue)', conclusion: 'Fonction ventriculaire conservée.' }
+    ];
+  };
+
+  const [antecedents, setAntecedents] = useState(() => getAntecedentsForUser(activeCmuNumber, isStudent, isBsf, activeFirstName));
+  const [exams, setExams] = useState(() => getExamsForUser(activeCmuNumber, isStudent, isBsf, activeFirstName));
+  const [historyEntries, setHistoryEntries] = useState(() => getHistoryForUser(activeCmuNumber, isStudent, isBsf, activeFirstName));
 
   useEffect(() => {
     try {
-      localStorage.setItem('cmu-antecedents', JSON.stringify(antecedents));
+      const savedAnt = localStorage.getItem(`cmu-antecedents-${activeCmuNumber}`);
+      setAntecedents(savedAnt ? JSON.parse(savedAnt) : getAntecedentsForUser(activeCmuNumber, isStudent, isBsf, activeFirstName));
+
+      const savedExams = localStorage.getItem(`cmu-exams-${activeCmuNumber}`);
+      setExams(savedExams ? JSON.parse(savedExams) : getExamsForUser(activeCmuNumber, isStudent, isBsf, activeFirstName));
+
+      const savedHist = localStorage.getItem(`cmu-history-${activeCmuNumber}`);
+      setHistoryEntries(savedHist ? JSON.parse(savedHist) : getHistoryForUser(activeCmuNumber, isStudent, isBsf, activeFirstName));
     } catch (e) {
-      console.warn("Storage error:", e);
+      console.warn("Storage load error:", e);
     }
-  }, [antecedents]);
+  }, [activeCmuNumber, activeFirstName, isStudent, isBsf]);
 
-  // Imagerie & Examens DICOM Persistés
-  const defaultExams = [
-    {
-      id: 501,
-      title: 'Scanner Thoracique',
-      exam_type: 'Scanner',
-      badge: 'HD DICOM',
-      facility: 'Clinique Pasteur (Dakar)',
-      doctor: 'Dr. Coumba Diop — Hôpital Fann',
-      date: '12 Mars 2024',
-      conclusion: 'Examen de contrôle post-traitement. Bilan satisfaisant sans anomalie évolutive. Recommandation : contrôle dans 6 mois.',
-      cliches: 4,
-      preview: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?w=400'
-    },
-    {
-      id: 502,
-      title: 'IRM Cérébrale',
-      exam_type: 'IRM',
-      badge: '3D RENDERING',
-      facility: 'Centre Médical SOS',
-      doctor: 'Dr. Cheikh Tidiane Ndiaye',
-      date: '02 Fév 2024',
-      conclusion: 'Structure cérébrale d\'aspect normal. Pas de lésion récente identifiée.',
-      cliches: 2,
-      preview: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=400'
-    },
-    {
-      id: 503,
-      title: 'Échocardiographie',
-      exam_type: 'Écho',
-      badge: 'HD ULTRASOUND',
-      facility: 'Cabinet Dr. Sy',
-      doctor: 'Dr. Sy',
-      date: '15 Jan 2024',
-      conclusion: 'Fonction ventriculaire gauche conservée. Fraction d\'éjection à 65%.',
-      cliches: 3,
-      preview: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=400'
-    }
-  ];
-
-  const [exams, setExams] = useState(() => {
+  const handleUpdateAntecedents = (updated) => {
+    setAntecedents(updated);
     try {
-      const saved = localStorage.getItem('cmu-exams');
-      return saved ? JSON.parse(saved) : defaultExams;
-    } catch (e) {
-      return defaultExams;
-    }
-  });
+      localStorage.setItem(`cmu-antecedents-${activeCmuNumber}`, JSON.stringify(updated));
+    } catch (e) {}
+  };
 
-  useEffect(() => {
+  const handleUpdateExams = (updatedExams) => {
+    setExams(updatedExams);
     try {
-      localStorage.setItem('cmu-exams', JSON.stringify(exams));
-    } catch (e) {
-      console.warn("Storage error:", e);
-    }
-  }, [exams]);
+      localStorage.setItem(`cmu-exams-${activeCmuNumber}`, JSON.stringify(updatedExams));
+    } catch (e) {}
+  };
+
+  const handleUpdateHistory = (updatedHistory) => {
+    setHistoryEntries(updatedHistory);
+    try {
+      localStorage.setItem(`cmu-history-${activeCmuNumber}`, JSON.stringify(updatedHistory));
+    } catch (e) {}
+  };
 
   // Modale Visionneuse DICOM
   const [viewingExam, setViewingExam] = useState(null);
@@ -141,21 +224,6 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
   const [newExamFacility, setNewExamFacility] = useState('Laboratoire Bio24');
   const [newExamDoctor, setNewExamDoctor] = useState('');
 
-  // Historique Médical Persisté
-  const defaultHistory = [
-    { id: 1, date: '12/05/2026', acte: 'Téléconsultation Généraliste', praticien: 'Dr. Ousmane Sow', conclusion: 'Grippe saisonnière. Ordonnance émise.' },
-    { id: 2, date: '15/03/2026', acte: 'Consultation Prénatale CPN 2', praticien: 'Dr. Mariama Ba', conclusion: 'Tension 12/8. Évolution normale.' }
-  ];
-  const [historyEntries, setHistoryEntries] = useState(() => {
-    try {
-      const saved = localStorage.getItem('cmu-history');
-      return saved ? JSON.parse(saved) : defaultHistory;
-    } catch (e) { return defaultHistory; }
-  });
-  useEffect(() => {
-    try { localStorage.setItem('cmu-history', JSON.stringify(historyEntries)); } catch (e) { /* ignore */ }
-  }, [historyEntries]);
-
   const [showAddHistoryModal, setShowAddHistoryModal] = useState(false);
   const [newHistoryActe, setNewHistoryActe] = useState('');
   const [newHistoryPraticien, setNewHistoryPraticien] = useState('');
@@ -164,32 +232,49 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
   const handleAddHistory = (e) => {
     e.preventDefault();
     if (!newHistoryActe) return;
-    setHistoryEntries([{
+    const newEntry = {
       id: Date.now(),
       date: new Date().toLocaleDateString('fr-FR'),
       acte: newHistoryActe,
       praticien: newHistoryPraticien || 'Non spécifié',
       conclusion: newHistoryConclusion || 'En attente de conclusions.'
-    }, ...historyEntries]);
+    };
+    handleUpdateHistory([newEntry, ...historyEntries]);
     setShowAddHistoryModal(false);
     setNewHistoryActe(''); setNewHistoryPraticien(''); setNewHistoryConclusion('');
     alert('✅ Entrée ajoutée à l\'historique médical !');
   };
 
-  // Résultats Laboratoire Persistés
-  const defaultLabResults = [
-    { id: 1, examen: 'Glycémie à jeun', resultat: '0.95 g/L', reference: '0.70 - 1.10 g/L', statut: 'Normal' },
-    { id: 2, examen: 'Hémoglobine (NFS)', resultat: '14.2 g/dL', reference: '12.0 - 16.0 g/dL', statut: 'Normal' }
-  ];
-  const [labResults, setLabResults] = useState(() => {
-    try {
-      const saved = localStorage.getItem('cmu-lab');
-      return saved ? JSON.parse(saved) : defaultLabResults;
-    } catch (e) { return defaultLabResults; }
-  });
+  // Résultats Laboratoire Persistés & Isolés par assuré
+  const getLabResultsForUser = (cmuNum, isStud, isBsfUser) => {
+    if (isStud) {
+      return [
+        { id: 1, examen: 'Bilan sanguin de santé UCAD', resultat: '14.5 g/dL', reference: '12.0 - 16.0 g/dL', statut: 'Normal (Bilan UCAD)' },
+        { id: 2, examen: 'Glycémie à jeun', resultat: '0.90 g/L', reference: '0.70 - 1.10 g/L', statut: 'Normal' }
+      ];
+    }
+    if (isBsfUser) {
+      return [
+        { id: 1, examen: 'Profil lipidique & BSF', resultat: '1.80 g/L', reference: '< 2.00 g/L', statut: 'Normal' },
+        { id: 2, examen: 'Glycémie à jeun', resultat: '0.98 g/L', reference: '0.70 - 1.10 g/L', statut: 'Normal (Suivi BSF)' }
+      ];
+    }
+    return [
+      { id: 1, examen: 'Glycémie à jeun', resultat: '0.95 g/L', reference: '0.70 - 1.10 g/L', statut: 'Normal' },
+      { id: 2, examen: 'Hémoglobine (NFS)', resultat: '14.2 g/dL', reference: '12.0 - 16.0 g/dL', statut: 'Normal' }
+    ];
+  };
+
+  const [labResults, setLabResults] = useState(() => getLabResultsForUser(activeCmuNumber, isStudent, isBsf));
+
   useEffect(() => {
-    try { localStorage.setItem('cmu-lab', JSON.stringify(labResults)); } catch (e) { /* ignore */ }
-  }, [labResults]);
+    try {
+      const savedLab = localStorage.getItem(`cmu-lab-${activeCmuNumber}`);
+      setLabResults(savedLab ? JSON.parse(savedLab) : getLabResultsForUser(activeCmuNumber, isStudent, isBsf));
+    } catch (e) {
+      setLabResults(getLabResultsForUser(activeCmuNumber, isStudent, isBsf));
+    }
+  }, [activeCmuNumber, isStudent, isBsf]);
 
   const [showAddLabModal, setShowAddLabModal] = useState(false);
   const [newLabExamen, setNewLabExamen] = useState('');
@@ -236,11 +321,11 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
       structureName: 'Réseau Établissements Agréés Sénégal',
       details: [
         { label: 'Assurée Bénéficiaire', value: `${activeFirstName} ${activeLastName}` },
-        { label: 'Groupe Sanguin', value: `${antecedents.bloodGroup} (Rhésus ${antecedents.rhesus})` },
+        { label: 'Groupe sanguin', value: `${antecedents.bloodGroup} (Rhésus positif)` },
         { label: 'Allergies & Alertes', value: antecedents.allergies },
         { label: 'Affections Longue Durée (ALD)', value: antecedents.chronicConditions },
         { label: 'Interventions Chirurgicales', value: antecedents.surgeries },
-        { label: 'Examens DICOM Enregistrés', value: `${exams.length} examens certifiés (Scanner Thoracique, IRM Cérébrale, Échocardiographie)` }
+        { label: 'Examens DICOM Enregistrés', value: `${exams.length} examens certifiés (Scanner thoracique, IRM Cérébrale, Échocardiographie)` }
       ],
       notes: 'Ce dossier médical numérique est conforme aux normes d\'interopérabilité sanitaire du Sénégal (DHIS2 & CNOM).'
     });
@@ -266,6 +351,152 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
       notes: 'Rapport validé électroniquement sous le standard DICOM 3.0 HD par le médecin radiologue agréé.'
     });
   };
+
+  // Guard de confidentialité : si l'utilisateur n'est pas connecté, masquer les données médicales privées
+  if (!citizenUser && !agentUser && !partnerUser && userRole !== 'agent' && userRole !== 'partner' && userRole !== 'doctor') {
+    return (
+      <div className="medical-profile-view fade-in-up" style={{ minHeight: '80vh', padding: '2rem 1rem' }}>
+        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+          {/* Header Banner */}
+          <div className="p-5 rounded-4 text-center text-white mb-4" style={{
+            background: 'linear-gradient(135deg, #064e3b 0%, #047857 50%, #059669 100%)',
+            borderRadius: '24px',
+            boxShadow: 'var(--shadow-lg)',
+            border: '1px solid rgba(255, 255, 255, 0.2)'
+          }}>
+            <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>🩺</div>
+            <span className="badge mb-2" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.82rem', fontWeight: 'bold' }}>
+              Dossier médical partagé & radiographies DICOM
+            </span>
+            <h2 className="fw-bold mb-2" style={{ color: '#fff', fontSize: '2rem' }}>
+              Espace confidentialité — données médicales protégées
+            </h2>
+            <p className="small mb-4" style={{ color: '#ecfdf5', maxWidth: '680px', margin: '0 auto', lineHeight: '1.6', fontSize: '0.95rem' }}>
+              Les données contenues dans le dossier médical partagé (groupe sanguin, allergies, radiographies certifiées, examens de laboratoire) sont protégées par le secret médical. Veuillez vous connecter ou saisir votre code d'accès sécurisé.
+            </p>
+
+            <div style={{ display: 'flex', gap: '1.25rem', justifyContent: 'center', flexWrap: 'wrap', marginTop: '1.5rem' }}>
+              <button 
+                className="btn btn-light fw-bold px-4 py-3" 
+                style={{ borderRadius: '14px', color: '#047857', fontSize: '0.98rem', boxShadow: '0 4px 14px rgba(0,0,0,0.15)' }}
+                onClick={() => (window.location.hash = '#/login')}
+              >
+                🔐 Se connecter à mon dossier médical
+              </button>
+            </div>
+          </div>
+
+          {/* Quick OTP / CMU Card Verification */}
+          <div className="card p-4 p-md-5 mb-4 text-left shadow-sm" style={{ borderRadius: '20px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', padding: '2.25rem 2rem' }}>
+            <h4 style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--primary)', marginBottom: '0.75rem' }}>
+              🔑 Accès praticien avec code OTP 24h ou n° CMU
+            </h4>
+            <p style={{ fontSize: '0.92rem', color: 'var(--text-sub)', marginBottom: '1.5rem', lineHeight: '1.6' }}>
+              Si un patient vous a transmis un code de partage temporaire, saisissez son matricule d'assuré et le jeton OTP pour accéder à ses examens.
+            </p>
+            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
+              <input 
+                type="text" 
+                className="form-control fw-bold" 
+                placeholder="N° CMU (ex: CMU-DKR-2026-8812)"
+                style={{ flex: 1, minWidth: '220px', height: '52px', fontSize: '0.95rem', borderRadius: '12px' }}
+              />
+              <input 
+                type="text" 
+                className="form-control fw-bold" 
+                placeholder="Code OTP (ex: 849-201)"
+                style={{ width: '180px', height: '52px', fontSize: '0.95rem', borderRadius: '12px' }}
+              />
+              <button 
+                className="btn btn-success fw-bold px-4 py-3"
+                style={{ borderRadius: '12px', background: '#059669', height: '52px', fontSize: '0.95rem' }}
+                onClick={() => (window.location.hash = '#/login')}
+              >
+                🔓 Déverrouiller le dossier
+              </button>
+            </div>
+          </div>
+
+          {/* Standards & Certifications Grid */}
+          <div className="grid grid-3" style={{ gap: '1.25rem' }}>
+            <div className="card p-3 text-left" style={{ borderRadius: '16px', background: 'var(--bg-card-subtle)' }}>
+              <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>📁</div>
+              <h5 style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.25rem' }}>Interopérabilité DHIS2</h5>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)', margin: 0 }}>Dossier synchronisé avec le Système National d'Information Sanitaire du Ministère de la Santé du Sénégal.</p>
+            </div>
+            <div className="card p-3 text-left" style={{ borderRadius: '16px', background: 'var(--bg-card-subtle)' }}>
+              <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>🩻</div>
+              <h5 style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.25rem' }}>Clichés HD DICOM 3.0</h5>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)', margin: 0 }}>Visualisation haute définition des scanners, IRM et radiographies certifiées par des praticiens agréés.</p>
+            </div>
+            <div className="card p-3 text-left" style={{ borderRadius: '16px', background: 'var(--bg-card-subtle)' }}>
+              <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>🛡️</div>
+              <h5 style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.25rem' }}>Chiffrement AES-256</h5>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)', margin: 0 }}>Vos données personnelles de santé sont cryptées et inaccessibles sans votre autorisation préalable.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const isCitizen = (userRole === 'citizen' || userRole === 'citizen_suspended' || (!isDoctorOrAgent && !!citizenUser));
+  const isSuspended = (
+    userRole === 'citizen_suspended' || 
+    citizenUser?.status === 'suspended' || 
+    citizenUser?.status === 'inactif' || 
+    citizenUser?.status === 'suspendu' || 
+    localStorage.getItem('cmu-portal-mode') === 'citizen_suspended' ||
+    localStorage.getItem('cmu-cotisation-suspended') === 'true'
+  );
+
+  if (isCitizen && isSuspended) {
+    return (
+      <div className="medical-profile-view fade-in-up" style={{ minHeight: '80vh', padding: '2rem 1rem' }}>
+        <div style={{ maxWidth: '850px', margin: '0 auto' }}>
+          <div className="card shadow-lg border-0 p-4 p-md-5 text-center my-4" style={{ borderRadius: '24px', background: 'var(--bg-card)', color: 'var(--text-main)', border: '2px solid #ef4444' }}>
+            <div className="d-inline-flex align-items-center justify-content-center p-3 rounded-circle mb-3 mx-auto" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', width: '70px', height: '70px' }}>
+              <span style={{ fontSize: '2.2rem' }}>⚠️</span>
+            </div>
+            
+            <h3 className="fw-bold mb-2 text-danger" style={{ fontSize: '1.4rem' }}>⚠️ Accès au dossier restreint — Couverture CSU suspendue</h3>
+            
+            <div className="mb-3">
+              <code className="px-3 py-1.5 bg-dark text-warning border border-warning rounded-3 fw-bold d-inline-block" style={{ fontSize: '1.05rem', color: '#f59e0b' }}>
+                {activeCmuNumber}
+              </code>
+            </div>
+
+            <p className="lead mb-4 mx-auto" style={{ maxWidth: '640px', fontSize: '1.05rem', lineHeight: '1.65' }}>
+              Votre cotisation annuelle n'est pas à jour. La consultation de votre dossier médical partagé et la délivrance d'actes sont suspendues.
+              <br />
+              <strong className="d-block mt-2 text-danger">Veuillez régulariser votre cotisation et celui des membres de votre famille pour un montant de 10 500 FCFA.</strong>
+            </p>
+
+            <div className="d-flex justify-content-center gap-3">
+              <button 
+                type="button" 
+                className="btn btn-emerald btn-lg px-4 py-3 fw-bold d-inline-flex align-items-center gap-2 shadow"
+                style={{ background: '#10b981', borderColor: '#10b981', color: '#ffffff', borderRadius: '16px', fontSize: '1.05rem', cursor: 'pointer', boxShadow: '0 6px 20px rgba(16, 185, 129, 0.35)' }}
+                onClick={() => {
+                  localStorage.setItem('cmu-pending-renewal', JSON.stringify({
+                    cmuNumber: activeCmuNumber,
+                    amount: 10500,
+                    familyCount: 3,
+                    firstName: activeFirstName,
+                    lastName: activeLastName
+                  }));
+                  window.location.hash = '#payments';
+                }}
+              >
+                💳 Renouveler ma cotisation (10 500 FCFA)
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="medical-profile-view fade-in-up" style={{ minHeight: '100vh', paddingBottom: '3rem' }}>
@@ -394,12 +625,12 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
             <div className="col-lg-4">
               <div className="d-flex flex-column gap-4">
                 
-                {/* Groupe Sanguin Card */}
+                {/* Groupe sanguin Card */}
                 <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
                   <div className="d-flex justify-content-between align-items-center mb-2">
                     <div className="d-flex align-items-center gap-2 text-danger">
                       <span style={{ fontSize: '1.2rem' }}>🩸</span>
-                      <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>Groupe Sanguin</h6>
+                      <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>Groupe sanguin</h6>
                     </div>
                     <span style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.72rem', fontWeight: '700' }}>Urgent</span>
                   </div>
@@ -414,12 +645,12 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                   </small>
                 </div>
 
-                {/* Allergies & Alertes Card */}
+                {/* Allergies & alertes Card */}
                 <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
                   <div className="d-flex justify-content-between align-items-center mb-3">
                     <div className="d-flex align-items-center gap-2 text-warning">
                       <span style={{ fontSize: '1.2rem' }}>⚠️</span>
-                      <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>Allergies & Alertes</h6>
+                      <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>Allergies & alertes</h6>
                     </div>
                     {isDoctorOrAgent ? (
                       <button 
@@ -503,14 +734,14 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
               </div>
             </div>
 
-            {/* Right Column: Radiographies & Examens DICOM Grid */}
+            {/* Right Column: Radiographies & examens certifiés Grid */}
             <div className="col-lg-8">
               <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
                 
                 <div className="d-flex justify-content-between align-items-center mb-4">
                   <div className="d-flex align-items-center gap-2">
                     <span style={{ fontSize: '1.3rem' }}>🩻</span>
-                    <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.2rem' }}>Radiographies & Examens Certifiés</h5>
+                    <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.2rem' }}>Radiographies & examens certifiés</h5>
                   </div>
                 </div>
 

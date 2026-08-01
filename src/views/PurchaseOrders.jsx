@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { getBeneficiaryInfo, getAdherentCode, getBeneficiaryCode } from '../utils/csuFormatter';
 
 export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, partnerUser = null, setView = null }) {
   const defaultOrders = [
@@ -7,7 +8,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
       id: 101,
       first_name: 'Amadou',
       last_name: 'Sow',
-      cmu_number: 'CMU-DKR-2026-8812',
+      cmu_number: 'CSU-DKR-2026-8812.2',
       items_json: JSON.stringify([
         { name: 'Amoxicilline 500mg (Gélules)', qty: 2, price: 3500 },
         { name: 'Paracétamol 1000mg', qty: 1, price: 1500 }
@@ -39,10 +40,13 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
     }
   ];
 
-  // Identification du rôle et accès
-  const isAgent = (userRole === 'agent' || !!agentUser || !!partnerUser);
-  const isCitizen = (!isAgent && !!citizenUser);
-  const isPublic = (!isAgent && !isCitizen);
+  // Identification méticuleuse du rôle et privilèges RBAC V6
+  const isPharmacist = (userRole === 'pharmacist' || agentUser?.role?.includes('Pharmacien'));
+  const isDoctor = (userRole === 'doctor' || userRole === 'partner' || userRole === 'prestataire' || partnerUser?.role?.includes('Médecin') || !!partnerUser);
+  const isAgent = (userRole === 'agent' || (!!agentUser && !isPharmacist) || userRole === 'superadmin');
+  const isStaff = (isDoctor || isAgent || isPharmacist);
+  const isCitizen = (!isStaff && (!!citizenUser || userRole === 'citizen' || userRole === 'citizen_suspended'));
+  const isPublic = (!isStaff && !isCitizen);
 
   const [publicSearchCmu, setPublicSearchCmu] = useState('');
 
@@ -280,7 +284,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
   };
   
   const visibleOrders = orders.filter((o) => {
-    if (isAgent) return true; // Les agents UNAMUSC et pharmaciens ont accès à tous les bons
+    if (isStaff) return true; // Les agents UNAMUSC, médecins et pharmaciens ont accès à tous les bons de commande
     if (isCitizen) {
       // L'assuré connecté ne voit QUE SES PROPRES BONS DE COMMANDE
       return (
@@ -360,6 +364,64 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
 
     setRedeemSuccess('✅ Bon de commande validé avec succès par la pharmacie ! Médicaments délivrés.');
   };
+
+  const isSuspended = (
+    userRole === 'citizen_suspended' || 
+    citizenUser?.status === 'suspended' || 
+    citizenUser?.status === 'inactif' || 
+    citizenUser?.status === 'suspendu' || 
+    localStorage.getItem('cmu-portal-mode') === 'citizen_suspended' ||
+    localStorage.getItem('cmu-cotisation-suspended') === 'true'
+  );
+
+  if (isCitizen && isSuspended) {
+    return (
+      <div className="container py-5 fade-in-up">
+        <div style={{ maxWidth: '850px', margin: '0 auto' }}>
+          <div className="card shadow-lg border-0 p-4 p-md-5 text-center my-4" style={{ borderRadius: '24px', background: 'var(--bg-card)', color: 'var(--text-main)', border: '2px solid #ef4444' }}>
+            <div className="d-inline-flex align-items-center justify-content-center p-3 rounded-circle mb-3 mx-auto" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', width: '70px', height: '70px' }}>
+              <span style={{ fontSize: '2.2rem' }}>⚠️</span>
+            </div>
+            
+            <h3 className="fw-bold mb-2 text-danger" style={{ fontSize: '1.4rem' }}>⚠️ Accès à la pharmacie refusé — Couverture CSU suspendue</h3>
+            
+            <div className="mb-3">
+              <code className="px-3 py-1.5 bg-dark text-warning border border-warning rounded-3 fw-bold d-inline-block" style={{ fontSize: '1.05rem', color: '#f59e0b' }}>
+                {activeCmuNumber}
+              </code>
+            </div>
+
+            <p className="lead mb-4 mx-auto" style={{ maxWidth: '640px', fontSize: '1.05rem', lineHeight: '1.65' }}>
+              Votre cotisation annuelle n'est pas à jour. La délivrance et l'utilisation des bons de commande pharmacie sont suspendues.
+              <br />
+              <strong className="d-block mt-2 text-danger">Veuillez régulariser votre cotisation et celui des membres de votre famille pour un montant de 10 500 FCFA.</strong>
+            </p>
+
+            <div className="d-flex justify-content-center gap-3">
+              <button 
+                type="button" 
+                className="btn btn-emerald btn-lg px-4 py-3 fw-bold d-inline-flex align-items-center gap-2 shadow"
+                style={{ background: '#10b981', borderColor: '#10b981', color: '#ffffff', borderRadius: '16px', fontSize: '1.05rem', cursor: 'pointer', boxShadow: '0 6px 20px rgba(16, 185, 129, 0.35)' }}
+                onClick={() => {
+                  localStorage.setItem('cmu-pending-renewal', JSON.stringify({
+                    cmuNumber: activeCmuNumber,
+                    amount: 10500,
+                    familyCount: 3,
+                    firstName: activeFirstName,
+                    lastName: activeLastName
+                  }));
+                  if (setView) setView('payments');
+                  window.location.hash = '#payments';
+                }}
+              >
+                💳 Renouveler ma cotisation (10 500 FCFA)
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container py-4 fade-in-up">
@@ -526,7 +588,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
           <div className="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-2">
             {setView && (
               <button className="btn btn-success fw-bold px-4 py-2.5" onClick={() => setView('login')} style={{ borderRadius: '12px', background: '#059669' }}>
-                🔐 Se connecter à mon Espace Assuré / Pharmacie
+                🔐 Se connecter à mon espace assuré / pharmacie
               </button>
             )}
           </div>
@@ -551,11 +613,11 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
       )}
 
       {/* Liste des bons de commande */}
-      {(isAgent || isCitizen || (isPublic && publicSearchCmu)) && (
+      {(isStaff || isCitizen || (isPublic && publicSearchCmu)) && (
         <div className="card shadow-sm border-0 p-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
           <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
             <h4 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>
-              📋 {isAgent ? 'Tous les Bons de Commande Pharmacie' : 'Mes Bons de Commande Médicaments (48h)'}
+              📋 {isDoctor ? 'Ordonnances & bons de commande prescrits' : isAgent ? 'Gestion & validation des bons pharmacie UNAMUSC' : 'Mes bons de commande médicaments (48h)'}
             </h4>
 
             {isCitizen && (
@@ -605,9 +667,42 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                           </code>
                           <small className="text-muted d-block">{new Date(ord.created_at).toLocaleDateString('fr-FR')}</small>
                         </td>
-                        <td className="fw-bold" style={{ color: 'var(--text-main)', padding: '0.85rem' }}>
-                          {ord.first_name} {ord.last_name}
-                          <small className="text-muted d-block">{ord.cmu_number}</small>
+                        <td style={{ padding: '1rem 0.85rem', minWidth: '230px', verticalAlign: 'top' }}>
+                          {(() => {
+                            const bInfo = getBeneficiaryInfo(`${ord.first_name} ${ord.last_name}`, ord.cmu_number || activeCmuNumber);
+                            return (
+                              <div className="d-flex flex-column gap-1.5">
+                                <div className="d-flex align-items-center gap-2 flex-wrap">
+                                  <strong style={{ color: 'var(--text-main)', fontSize: '0.95rem', fontWeight: '700' }}>
+                                    {ord.first_name} {ord.last_name}
+                                  </strong>
+                                  {bInfo.index === 1 ? (
+                                    <span className="badge bg-success-subtle text-success border border-success px-2 py-0.5" style={{ fontSize: '0.68rem', borderRadius: '6px' }}>
+                                      Titulaire .1
+                                    </span>
+                                  ) : (
+                                    <span className="badge bg-warning-subtle text-warning border border-warning px-2 py-0.5" style={{ fontSize: '0.68rem', borderRadius: '6px' }}>
+                                      Ayant droit .{bInfo.index}
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div className="d-flex flex-column gap-1 mt-0.5">
+                                  <div className="d-flex align-items-center gap-1.5 flex-wrap">
+                                    <span style={{ color: 'var(--text-sub)', fontSize: '0.76rem', fontWeight: '500' }}>N° CSU :</span>
+                                    <code className="px-2 py-0.5 bg-dark text-success border border-success rounded-2 fw-bold" style={{ fontSize: '0.78rem' }}>
+                                      {bInfo.beneficiaryCode}
+                                    </code>
+                                  </div>
+
+                                  <div className="d-flex align-items-center gap-1.5 flex-wrap" style={{ fontSize: '0.74rem' }}>
+                                    <span style={{ color: 'var(--text-sub)' }}>Code adhérent :</span>
+                                    <span className="fw-semibold" style={{ color: 'var(--text-main)' }}>{bInfo.adherentCode}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })()}
                         </td>
                         <td style={{ padding: '0.85rem', maxWidth: '240px' }}>
                           {itemsList.map((i, idx) => (
@@ -641,14 +736,14 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                               📄 Imprimer Bon PDF
                             </button>
 
-                            {isAgent && ord.status === 'active' && (
+                            {(isAgent || isPharmacist) && ord.status === 'active' && (
                               <button 
                                 type="button"
                                 className="btn btn-sm text-white fw-bold px-3 py-1.5"
                                 onClick={() => openPharmacistEditModal(ord)}
                                 style={{ background: '#059669', border: 'none', borderRadius: '8px' }}
                               >
-                                📲 Valider Prix & Délivrer
+                                💊 Valider délivrance en pharmacie (50%)
                               </button>
                             )}
                           </div>

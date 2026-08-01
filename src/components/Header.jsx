@@ -32,8 +32,8 @@ export default function Header({
       depts: 'Unions & stats',
       profileGuest: 'Visiteur',
       profileGuestRole: 'Non connecté',
-      profileCitizenRole: 'Assuré cmu',
-      profileName: 'Agent cmu',
+      profileCitizenRole: 'Assuré CSU',
+      profileName: 'Agent CSU',
       profileRole: 'Superviseur régional',
       portalLabel: 'Portail actif',
       portalCitizen: 'Citoyen 🇸🇳',
@@ -48,7 +48,7 @@ export default function Header({
       myClaims: 'Mes remboursements',
       cotisations: 'Cotisations',
       myCotisations: 'Mes cotisations',
-      partner: 'Espace partenaire',
+      partner: 'Espace prestataire',
       regionalStats: 'Stats inter-régions',
       loyalty: 'Fidélité',
       payments: 'Paiement',
@@ -70,7 +70,7 @@ export default function Header({
       profileGuest: 'Gan',
       profileGuestRole: 'Amul compte',
       profileCitizenRole: 'Ki bokk',
-      profileName: 'Woyofal cmu',
+      profileName: 'Woyofal csu',
       profileRole: 'Njiit gobal',
       portalLabel: 'Portail',
       portalCitizen: 'Citoyen 🇸🇳',
@@ -85,7 +85,7 @@ export default function Header({
       myClaims: 'Sama remboursement',
       cotisations: 'Cotisation',
       myCotisations: 'Sama cotisation',
-      partner: 'Espace partenaire',
+      partner: 'Espace prestataire',
       regionalStats: 'Stats région',
       loyalty: 'Fidélité',
       payments: 'Fay',
@@ -167,6 +167,16 @@ export default function Header({
         };
       }
     }
+  };
+
+  const isMaleUser = () => {
+    if (portalMode === 'citizen' && citizenUser) {
+      if (citizenUser.gender === 'M' || citizenUser.sexe === 'M') return true;
+      const firstName = (citizenUser.firstName || citizenUser.first_name || '').toLowerCase();
+      const maleNames = ['ibrahima', 'modou', 'amadou', 'moustapha', 'abdoulaye', 'cheikh', 'moussa', 'ousmane', 'mamadou', 'babacar', 'samba', 'aliou', 'boubacar', 'omar', 'pape'];
+      if (maleNames.some(n => firstName.includes(n))) return true;
+    }
+    return false;
   };
 
   const profile = getProfileInfo();
@@ -305,14 +315,16 @@ export default function Header({
           {lang === 'fr' ? 'Dossier & radios' : 'Tére fajj'}
         </button>
 
-        {/* Carnet de Santé Maternelle */}
-        <button 
-          className={`nav-item ${currentView === 'maternity' ? 'active' : ''}`}
-          onClick={() => navigateTo('maternity')}
-        >
-          <span className="nav-icon">🤱</span>
-          {lang === 'fr' ? 'Carnet maternité' : 'Tére wéru jégen'}
-        </button>
+        {/* Carnet de Santé Maternelle (Uniquement si ce n'est pas un homme) */}
+        {!isMaleUser() && (
+          <button 
+            className={`nav-item ${currentView === 'maternity' ? 'active' : ''}`}
+            onClick={() => navigateTo('maternity')}
+          >
+            <span className="nav-icon">🤱</span>
+            {lang === 'fr' ? 'Carnet maternité' : 'Tére wéru jégen'}
+          </button>
+        )}
 
         {/* Parrainage solidaire (Public Dedicated Page) */}
         <button 
@@ -561,21 +573,36 @@ export default function Header({
             {t.loyalty}
           </button>
         )}
+        {/* Option 18: Super Admin Governance View */}
+        {(portalMode === 'superadmin' || (agentUser && agentUser.role === 'Super Admin')) && (
+          <button
+            className={`nav-item ${currentView === 'superadmin-governance' ? 'active' : ''}`}
+            onClick={() => setView('superadmin-governance')}
+            style={{ borderLeft: '3px solid #818cf8' }}
+          >
+            <span className="nav-icon">👑</span>
+            {lang === 'fr' ? 'Gouvernance Super Admin' : 'Njiit bu rëy Super Admin'}
+          </button>
+        )}
       </nav>
 
-      {/* Portal switcher controls */}
+      {/* Portal switcher controls V6 RBAC Matrix */}
       <div style={{ marginTop: 'auto', borderTop: '1px solid var(--border-color)', paddingTop: '1.25rem' }}>
         <label style={{ fontSize: '0.65rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-          {t.portalLabel}
+          Sélecteur de rôle & profil RBAC V6
         </label>
-        <div style={{ display: 'flex', gap: '0.35rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.35rem' }}>
           <button 
             className="portal-switch-btn"
-            onClick={() => { setPortalMode('citizen'); setView('home'); }}
+            onClick={() => {
+              localStorage.setItem('cmu-portal-mode', 'citizen');
+              setPortalMode('citizen');
+              setView('guarantees');
+            }}
+            title="Profil Assuré — Cotisation à jour (Actif)"
             style={{
-              flex: '1',
               padding: '0.45rem 0.2rem',
-              fontSize: '0.72rem',
+              fontSize: '0.7rem',
               fontWeight: 'bold',
               borderRadius: '8px',
               border: '1px solid var(--border-color)',
@@ -585,13 +612,71 @@ export default function Header({
               transition: 'all 0.2s'
             }}
           >
-            {t.portalCitizen}
+            Assuré Actif 🟢
           </button>
           <button 
             className="portal-switch-btn"
-            onClick={() => { setPortalMode('agent'); setView('home'); }}
+            onClick={() => {
+              localStorage.setItem('cmu-portal-mode', 'citizen_suspended');
+              setPortalMode('citizen_suspended');
+              setView('guarantees');
+            }}
+            title="Profil Assuré — Cotisation expirée / suspendue (Test d'accès refusé)"
             style={{
-              flex: '1',
+              padding: '0.45rem 0.2rem',
+              fontSize: '0.7rem',
+              fontWeight: 'bold',
+              borderRadius: '8px',
+              border: '1px solid #ef4444',
+              background: portalMode === 'citizen_suspended' ? '#dc2626' : 'transparent',
+              color: portalMode === 'citizen_suspended' ? '#fff' : '#ef4444',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+          >
+            Assuré Expiré 🔴
+          </button>
+          <button 
+            className="portal-switch-btn"
+            onClick={() => { setPortalMode('doctor'); setView('telemedicine'); }}
+            title="Dr. Cheikh Anta Diop (Médecin Prescripteur)"
+            style={{
+              padding: '0.45rem 0.2rem',
+              fontSize: '0.72rem',
+              fontWeight: 'bold',
+              borderRadius: '8px',
+              border: '1px solid var(--border-color)',
+              background: (portalMode === 'doctor' || portalMode === 'partner') ? '#059669' : 'transparent',
+              color: (portalMode === 'doctor' || portalMode === 'partner') ? '#fff' : 'var(--text-sub)',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+          >
+            Médecin 🩺
+          </button>
+          <button 
+            className="portal-switch-btn"
+            onClick={() => { setPortalMode('midwife'); setView('maternity'); }}
+            title="Sage-Femme d'État (Soins Maternité CPN/PEV)"
+            style={{
+              padding: '0.45rem 0.2rem',
+              fontSize: '0.72rem',
+              fontWeight: 'bold',
+              borderRadius: '8px',
+              border: '1px solid var(--border-color)',
+              background: portalMode === 'midwife' ? '#047857' : 'transparent',
+              color: portalMode === 'midwife' ? '#fff' : 'var(--text-sub)',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+          >
+            Sage-femme 🤱
+          </button>
+          <button 
+            className="portal-switch-btn"
+            onClick={() => { setPortalMode('agent'); setView('dashboard'); }}
+            title="Agent Instructeur Mutuelle UDMS"
+            style={{
               padding: '0.45rem 0.2rem',
               fontSize: '0.72rem',
               fontWeight: 'bold',
@@ -603,7 +688,43 @@ export default function Header({
               transition: 'all 0.2s'
             }}
           >
-            {t.portalAgent}
+            Agent UDMS 💼
+          </button>
+          <button 
+            className="portal-switch-btn"
+            onClick={() => { setPortalMode('pharmacist'); setView('purchase-orders'); }}
+            title="Pharmacien Agréé UNAMUSC (Délivrance Bons 50%)"
+            style={{
+              padding: '0.45rem 0.2rem',
+              fontSize: '0.72rem',
+              fontWeight: 'bold',
+              borderRadius: '8px',
+              border: '1px solid var(--border-color)',
+              background: portalMode === 'pharmacist' ? '#d97706' : 'transparent',
+              color: portalMode === 'pharmacist' ? '#fff' : 'var(--text-sub)',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+          >
+            Pharmacien 💊
+          </button>
+          <button 
+            className="portal-switch-btn"
+            onClick={() => { setPortalMode('superadmin'); setView('superadmin-governance'); }}
+            title="Super Administrateur DSI UNAMUSC"
+            style={{
+              padding: '0.45rem 0.2rem',
+              fontSize: '0.72rem',
+              fontWeight: 'bold',
+              borderRadius: '8px',
+              border: '1px solid #4338ca',
+              background: portalMode === 'superadmin' ? '#312e81' : 'transparent',
+              color: portalMode === 'superadmin' ? '#fff' : 'var(--text-sub)',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+          >
+            Super admin 👑
           </button>
         </div>
       </div>

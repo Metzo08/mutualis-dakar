@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
 
-// Carte CMU numérique : affiche les informations de l'assuré + QR code vérifiable.
+// Carte CSU numérique : affiche les informations de l'assuré + QR code vérifiable.
 // Le QR code encode une URL de vérification publique (/api/cmu-card/:cmuNumber).
 // Fonctionne hors-ligne (les données sont issues du state citoyen connecté).
 export default function CmuCard({ citizen }) {
@@ -80,7 +80,7 @@ export default function CmuCard({ citizen }) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 1 }}>
             <div>
               <div style={{ fontSize: '0.7rem', opacity: 0.9, letterSpacing: '1px', textTransform: 'uppercase' }}>
-                Couverture Maladie Universelle
+                Couverture Santé Universelle
               </div>
               <div style={{ fontSize: '1.1rem', fontWeight: '800', letterSpacing: '0.5px' }}>
                 MUTUALIS DAKAR 🇸🇳
@@ -105,9 +105,9 @@ export default function CmuCard({ citizen }) {
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', position: 'relative', zIndex: 1 }}>
             <div>
-              <div style={{ fontSize: '0.55rem', opacity: 0.8, textTransform: 'uppercase' }}>N° Carte CMU / Code Patient IPP</div>
+              <div style={{ fontSize: '0.55rem', opacity: 0.8, textTransform: 'uppercase' }}>N° Carte CSU / Code Patient IPP</div>
               <div style={{ fontSize: '0.9rem', fontWeight: '700', fontFamily: 'monospace', letterSpacing: '1px' }}>
-                {citizen.cmuNumber || '—'} {citizen.patientCode ? `| IPP: ${citizen.patientCode}` : '| IPP: IPP-COUD-2026-88'}
+                {citizen.cmuNumber || '—'} {citizen.patientCode ? `| IPP: ${citizen.patientCode}` : '| IPP: IPP-DKR-2026-88'}
               </div>
             </div>
             <div style={{ fontSize: '0.6rem', opacity: 0.8, textAlign: 'right' }}>
@@ -152,7 +152,7 @@ export default function CmuCard({ citizen }) {
           }}
         >
           {qrUrl ? (
-            <img src={qrUrl} alt="QR code CMU" style={{ width: '110px', height: '110px' }} />
+            <img src={qrUrl} alt="QR code CSU" style={{ width: '110px', height: '110px' }} />
           ) : (
             <div style={{ width: '110px', height: '110px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f3f4f6', borderRadius: '8px', fontSize: '0.7rem', color: '#999' }}>
               Génération...
@@ -163,7 +163,7 @@ export default function CmuCard({ citizen }) {
               🔒 QR Code Tri-Layer Sécurisé
             </div>
             <div style={{ fontSize: '0.6rem', color: '#64748b' }}>
-              Scanner pour Statut CMU, Urgence SOS & Imagerie
+              Scanner pour Statut CSU, Urgence SOS & Imagerie
             </div>
           </div>
         </div>
@@ -174,7 +174,7 @@ export default function CmuCard({ citizen }) {
         {qrUrl && (
           <a
             href={qrUrl}
-            download={`carte-cmu-${citizen.cmuNumber}.png`}
+            download={`carte-csu-${citizen.cmuNumber}.png`}
             className="btn btn-outline btn-sm"
             style={{ fontSize: '0.75rem', padding: '0.4rem 0.8rem', textDecoration: 'none' }}
           >

@@ -62,6 +62,37 @@ export default function Cotisations({ lang, portalMode, citizenUser, agentUser }
     daysLeft: 'fan ci yërmaale'
   };
 
+  const defaultCotisations = [
+    {
+      id: 1,
+      cmu_number: citizenUser?.cmuNumber || 'CMU-DKR-2026-8812',
+      adherent_name: `${citizenUser?.firstName || 'Awa'} ${citizenUser?.lastName || 'Ndiaye'}`,
+      beneficiary_code: 'CSU-DKR-2026-8812.1',
+      phone: citizenUser?.phone || '+221 78 123 45 67',
+      amount: 10500,
+      payment_method: 'Wave',
+      status: (localStorage.getItem('cmu-portal-mode') === 'citizen_suspended' || localStorage.getItem('cmu-cotisation-suspended') === 'true') ? 'expired' : 'active',
+      period_start: '2026-01-01',
+      period_end: '2026-12-31',
+      created_at: '2026-01-04T10:15:00Z',
+      mutuelle_name: 'Union Départementale des Mutuelles de Santé de Dakar (UDMS)'
+    },
+    {
+      id: 2,
+      cmu_number: citizenUser?.cmuNumber || 'CMU-DKR-2026-8812',
+      adherent_name: `${citizenUser?.firstName || 'Awa'} ${citizenUser?.lastName || 'Ndiaye'}`,
+      beneficiary_code: 'CSU-DKR-2026-8812.1',
+      phone: citizenUser?.phone || '+221 78 123 45 67',
+      amount: 10500,
+      payment_method: 'Orange Money',
+      status: 'active',
+      period_start: '2025-01-01',
+      period_end: '2025-12-31',
+      created_at: '2025-01-03T14:30:00Z',
+      mutuelle_name: 'Union Départementale des Mutuelles de Santé de Dakar (UDMS)'
+    }
+  ];
+
   const fetchCotisations = (p = 1) => {
     setLoading(true);
     const token = localStorage.getItem('cmu-token') || '';
@@ -70,11 +101,15 @@ export default function Cotisations({ lang, portalMode, citizenUser, agentUser }
     fetch(url, { headers: { Authorization: `Bearer ${token}` } })
       .then((res) => res.json())
       .then((payload) => {
-        setCotisations(Array.isArray(payload) ? payload : payload.data || []);
+        const list = Array.isArray(payload) ? payload : payload.data || [];
+        setCotisations(list.length > 0 ? list : defaultCotisations);
         if (payload.pagination) { setPagination(payload.pagination); setPage(payload.pagination.page); }
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        setCotisations(defaultCotisations);
+        setLoading(false);
+      });
   };
 
   useEffect(() => { fetchCotisations(1); }, [filterStatus]);

@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
+import { initiatePayment, getProviderInfo, validatePhoneForProvider } from '../services/paymentService';
 
 // Design Premium Haut de Gamme — Télémédecine Visioconférence Bidirectionnelle & Vu-mètre Micro Réel
-export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, setView = null }) {
-  const isAgent = (userRole === 'agent' || !!agentUser);
+export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, partnerUser = null, setView = null }) {
+  const isDoctorOrPartner = (userRole === 'doctor' || userRole === 'partner' || userRole === 'prestataire' || userRole === 'agent' || !!partnerUser || !!agentUser);
 
   // Assuré actif
   const activeCmuNumber = citizenUser?.cmu_number || citizenUser?.cmuNumber || 'CMU-DKR-2026-8812';
@@ -12,7 +13,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
   const activeLastName = citizenUser?.last_name || citizenUser?.lastName || 'Ndiaye';
 
   // Mode de rôle (Assuré ou Médecin de Garde)
-  const [roleMode, setRoleMode] = useState(isAgent ? 'doctor' : 'citizen');
+  const [roleMode, setRoleMode] = useState(isDoctorOrPartner ? 'doctor' : 'citizen');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
 
@@ -24,7 +25,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
     {
       id: 1,
       name: 'Dr. Ousmane Sow',
-      specialty: 'Médecine Générale & Urgences',
+      specialty: 'Médecine générale & urgences',
       category: 'generaliste',
       rating: '4.9 (124 avis)',
       cnom: 'CNOM: 4522-SN',
@@ -36,7 +37,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
     {
       id: 2,
       name: 'Dr. Fatou Diop',
-      specialty: 'Gynécologie & Obstétrique',
+      specialty: 'Gynécologie & obstétrique',
       category: 'pediatrie',
       rating: '5.0 (89 avis)',
       cnom: 'CNOM: 3108-SN',
@@ -48,7 +49,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
     {
       id: 3,
       name: 'Dr. Cheikh Tidiane Seck',
-      specialty: 'Cardiologie & Médecine Interne',
+      specialty: 'Cardiologie & médecine interne',
       category: 'cardio',
       rating: '4.8 (96 avis)',
       cnom: 'CNOM: 9921-SN',
@@ -89,20 +90,8 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
   // Détails CNOM Médecin pour la modale d'accréditation
   const [selectedCnomDoctor, setSelectedCnomDoctor] = useState(null);
 
-  // File d'attente Télémédecine
+  // File d'attente Télémédecine (Vide pour l'utilisateur tant qu'il n'a pas payé)
   const [queue, setQueue] = useState([
-    {
-      id: 1,
-      patient_name: 'Awa Ndiaye',
-      cmu_number: 'CMU-DKR-2026-8812',
-      reason: 'Migraine pulsatile aiguë & toux sèche depuis 48h',
-      urgency: 'high',
-      joined_at: new Date(Date.now() - 5 * 60000).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-      requested_doctor: 'Dr. Ousmane Sow',
-      payment_status: 'paid',
-      payment_method: 'Orange Money',
-      amount: 2500
-    },
     {
       id: 2,
       patient_name: 'Moussa Diallo',
@@ -120,6 +109,10 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
   // Modales uniques
   const [activeModal, setActiveModal] = useState(null); // 'join_queue', 'payment', 'webrtc', 'qr', 'prescription'
 
+  // Toast de notification
+  const [notifToast, setNotifToast] = useState(null); // { type, title, message, icon }
+  const toastTimerRef = useRef(null);
+
   // Modale Inscription
   const [consultReason, setConsultReason] = useState('');
   const [urgencyLevel, setUrgencyLevel] = useState('routine');
@@ -128,6 +121,12 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
   // Modale Paiement
   const [paymentProvider, setPaymentProvider] = useState('orange');
   const [phoneNum, setPhoneNum] = useState('77 602 67 83');
+
+  // ── Pipeline de Paiement Multi-Étapes ──────────────────────────────────────
+  // 'form' | 'processing' | 'success' | 'error'
+  const [payStep, setPayStep] = useState('form');
+  const [txnResult, setTxnResult] = useState(null); // { ref, provider, phone, amount, timestamp, message }
+  const [phoneError, setPhoneError] = useState('');
 
   // Session WebRTC
   const [activeDoctor, setActiveDoctor] = useState(doctorsList[0]);
@@ -318,52 +317,130 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
     }
   };
 
-  const handleJoinQueue = (e) => {
+  const handleJoinQueue = async (e) => {
     e.preventDefault();
     if (!consultReason.trim()) return;
-    const providerName = paymentProvider === 'orange' ? 'Orange Money' : paymentProvider === 'wave' ? 'Wave' : 'Free Money';
-    const targetDoc = selectedDoctor || doctorsList[0];
-    const newPatient = {
-      id: Date.now(),
-      patient_name: `${activeFirstName} ${activeLastName}`,
-      cmu_number: activeCmuNumber,
-      reason: consultReason,
-      urgency: urgencyLevel,
-      joined_at: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-      requested_doctor: targetDoc.name,
-      payment_status: 'paid',
-      payment_method: providerName,
-      amount: 2500,
-      status: 'waiting' // En attente dans la file
-    };
-    
-    // Le patient rejoint la file d'attente à la suite des autres patients
-    setQueue([...queue, newPatient]);
-    setActiveDoctor(targetDoc);
-    setConsultReason('');
-    setActiveModal(null);
 
-    const positionNum = queue.length + 1;
-    alert(`✅ Règlement de 2 500 FCFA effectué avec succès via ${providerName} !\n\nVous êtes bien inscrit(e) en Salle d'Attente à la Position n°${positionNum}.\nVous recevrez une notification préalable dès que votre tour approchera.`);
+    // Validation du numéro de téléphone
+    const validation = validatePhoneForProvider(phoneNum, paymentProvider);
+    if (!validation.valid) {
+      setPhoneError(validation.error);
+      return;
+    }
+    setPhoneError('');
+
+    const providerInfo = getProviderInfo(paymentProvider);
+    const targetDoc = selectedDoctor || doctorsList[0];
+
+    // Étape 1 : afficher le spinner de traitement
+    setPayStep('processing');
+
+    // Étape 2 : appeler le service de paiement (mock ou réel)
+    const result = await initiatePayment({
+      provider: paymentProvider,
+      phone: phoneNum,
+      amount: 2500,
+      orderId: activeCmuNumber,
+    });
+
+    if (result.success) {
+      // Étape 3 : paiement réussi — enregistrer dans la file
+      const positionNum = queue.length + 1;
+      const newPatient = {
+        id: Date.now(),
+        patient_name: `${activeFirstName} ${activeLastName}`,
+        cmu_number: activeCmuNumber,
+        reason: consultReason,
+        urgency: urgencyLevel,
+        joined_at: new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
+        requested_doctor: targetDoc.name,
+        payment_status: 'paid',
+        payment_method: providerInfo.name,
+        payment_ref: result.transactionRef,
+        amount: 2500,
+        status: 'waiting',
+      };
+      setQueue([...queue, newPatient]);
+      setActiveDoctor(targetDoc);
+      setTxnResult({ ...result, positionNum });
+      setPayStep('success');
+
+      // Toast vocal de confirmation
+      speakAndToast({
+        type: 'success',
+        icon: '✅',
+        title: 'Paiement confirmé !',
+        message: `2 500 FCFA réglés via ${providerInfo.name}. Position n°${positionNum}.`,
+        speech: `Paiement confirmé. Référence ${result.transactionRef}. Vous êtes en position numéro ${positionNum} dans la salle d'attente.`
+      });
+    } else {
+      // Étape 3 : paiement échoué
+      setTxnResult(result);
+      setPayStep('error');
+    }
+  };
+
+  const resetPaymentModal = () => {
+    setPayStep('form');
+    setTxnResult(null);
+    setPhoneError('');
+    setActiveModal(null);
+    setConsultReason('');
+  };
+
+  // Annonce vocale + Toast de notification (Web Speech API — aucun fichier audio requis)
+  const speakAndToast = (toast) => {
+    // Afficher le beau toast
+    setNotifToast(toast);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setNotifToast(null), 5000);
+
+    // Voix française via Web Speech API
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(toast.speech || toast.message);
+      utter.lang = 'fr-FR';
+      utter.rate = 0.95;
+      utter.pitch = 1.1;
+      utter.volume = 1;
+      // Sélectionner une voix française si disponible
+      const voices = window.speechSynthesis.getVoices();
+      const frVoice = voices.find(v => v.lang.startsWith('fr'));
+      if (frVoice) utter.voice = frVoice;
+      window.speechSynthesis.speak(utter);
+    }
   };
 
   // Simulation d'avancement de la file d'attente pour test rapide
   const handleAdvanceMyQueue = (patientId) => {
     setQueue(prevQueue => prevQueue.map(p => {
       if (p.id === patientId || p.cmu_number === activeCmuNumber) {
-        if (p.status === 'waiting') return { ...p, status: 'next' };
-        if (p.status === 'next') return { ...p, status: 'called' };
+        if (p.status === 'waiting') {
+          speakAndToast({
+            type: 'warning',
+            icon: '🔔',
+            title: 'Alerte préalable',
+            message: 'Vous êtes le prochain patient. Préparez votre micro et votre caméra.',
+            speech: `Attention ${activeFirstName}. Vous êtes le prochain patient. Veuillez préparer votre micro et votre caméra. Le médecin va vous recevoir dans un instant.`
+          });
+          return { ...p, status: 'next' };
+        }
+        if (p.status === 'next') {
+          speakAndToast({
+            type: 'success',
+            icon: '🏥',
+            title: "C'est votre tour !",
+            message: 'Le médecin est prêt à vous recevoir. La consultation commence maintenant.',
+            speech: `${activeFirstName}, c'est votre tour. Le médecin est prêt à vous recevoir. La consultation de télémédecine commence maintenant. Bienvenue.`
+          });
+          return { ...p, status: 'called' };
+        }
         return { ...p, status: 'called' };
       }
       return p;
     }));
   };
 
-  const handleProcessPayment = (e) => {
-    e.preventDefault();
-    setActiveModal(null);
-    alert(`✅ Règlement du ticket modérateur de 2 500 FCFA effectué avec succès via ${paymentProvider === 'orange' ? 'Orange Money' : paymentProvider === 'wave' ? 'Wave' : 'Free Money'} !`);
-  };
 
   const handleStartCall = (doc) => {
     setActiveDoctor(doc);
@@ -397,11 +474,173 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
     });
   };
 
+  const handleAddDoctor = (e) => {
+    e.preventDefault();
+    if (!newDocName) return;
+    const newDoc = {
+      id: Date.now(),
+      name: newDocName,
+      specialty: newDocSpecialty,
+      category: newDocCategory,
+      rating: '5.0 (Nouveau)',
+      cnom: newDocCnom || 'CNOM: 2026-SN',
+      langs: newDocLangs.split(',').map(s => s.trim()),
+      department: newDocDept,
+      avatar: newDocAvatar,
+      available: true
+    };
+    setDoctorsList([newDoc, ...doctorsList]);
+    setActiveModal(null);
+    setNewDocName('');
+    alert('✅ Nouveau médecin praticien ajouté au réseau UNAMUSC avec succès !');
+  };
+
   const filteredDoctors = doctorsList.filter(d => {
     const matchSearch = d.name.toLowerCase().includes(searchQuery.toLowerCase()) || d.specialty.toLowerCase().includes(searchQuery.toLowerCase());
     const matchCat = activeCategory === 'all' || d.category === activeCategory;
     return matchSearch && matchCat;
   });
+
+  // Guard de confidentialité : si l'utilisateur n'est pas connecté, masquer les données de santé
+  if (!citizenUser && !agentUser && !partnerUser && userRole !== 'agent' && userRole !== 'partner' && userRole !== 'doctor') {
+    return (
+      <div className="telemed-view fade-in-up" style={{ minHeight: '80vh', padding: '2rem 1rem' }}>
+        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+          {/* Header Banner */}
+          <div className="p-5 rounded-4 text-center text-white mb-4" style={{
+            background: 'linear-gradient(135deg, #065f46 0%, #047857 50%, #059669 100%)',
+            borderRadius: '24px',
+            boxShadow: 'var(--shadow-lg)',
+            border: '1px solid rgba(255, 255, 255, 0.2)'
+          }}>
+            <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>🔒</div>
+            <span className="badge mb-2" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.82rem', fontWeight: 'bold' }}>
+              Protection du secret médical & données de santé
+            </span>
+            <h2 className="fw-bold mb-2" style={{ color: '#fff', fontSize: '2rem' }}>
+              Accès sécurisé — télémédecine UNAMUSC 24h/7
+            </h2>
+            <p className="small mb-4" style={{ color: '#ecfdf5', maxWidth: '680px', margin: '0 auto', lineHeight: '1.6', fontSize: '0.95rem' }}>
+              Afin de préserver la confidentialité absolue des consultations médicales, des ordonnances numérisées et du secret professionnel au Sénégal, la salle d'attente virtuelle et le réseau de médecins agréés sont réservés aux assurés et professionnels identifiés.
+            </p>
+
+            <div style={{ display: 'flex', gap: '1.25rem', justifyContent: 'center', flexWrap: 'wrap', marginTop: '1.5rem' }}>
+              <button 
+                className="btn btn-light fw-bold px-4 py-3" 
+                style={{ borderRadius: '14px', color: '#047857', fontSize: '0.98rem', boxShadow: '0 4px 14px rgba(0,0,0,0.15)' }}
+                onClick={() => setView ? setView('login') : (window.location.hash = '#/login')}
+              >
+                🔐 Se connecter à mon espace assuré / agent
+              </button>
+            </div>
+          </div>
+
+          {/* Quick Search Card */}
+          <div className="card p-4 mb-4 text-left shadow-sm" style={{ borderRadius: '20px', background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <h4 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--primary)', marginBottom: '0.75rem' }}>
+              🔎 Accès rapide avec mon n° de carte CMU
+            </h4>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', marginBottom: '1.25rem' }}>
+              Saisissez votre matricule d'assuré social pour vérifier vos droits à la téléconsultation prise en charge à 80% par l'UNAMUSC.
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              <input 
+                type="text" 
+                className="form-control" 
+                placeholder="Ex: CMU-DKR-2026-8812"
+                style={{ flex: 1, minWidth: '240px', fontSize: '0.9rem' }}
+              />
+              <button 
+                className="btn btn-primary fw-bold px-4"
+                style={{ borderRadius: '10px' }}
+                onClick={() => setView ? setView('login') : (window.location.hash = '#/login')}
+              >
+                Vérifier mes droits & consulter
+              </button>
+            </div>
+          </div>
+
+          {/* Service Features Grid */}
+          <div className="grid grid-3" style={{ gap: '1.25rem' }}>
+            <div className="card p-3 text-left" style={{ borderRadius: '16px', background: 'var(--bg-card-subtle)' }}>
+              <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>🩺</div>
+              <h5 style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.25rem' }}>Médecins agréés CNOM</h5>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)', margin: 0 }}>Consultation vidéo WebRTC en moins de 10 min avec des praticiens inscrits au Conseil National de l'Ordre des Médecins.</p>
+            </div>
+            <div className="card p-3 text-left" style={{ borderRadius: '16px', background: 'var(--bg-card-subtle)' }}>
+              <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>📜</div>
+              <h5 style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.25rem' }}>Ordonnances certifiées QR code</h5>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)', margin: 0 }}>Délivrance instantanée de prescriptions valables dans toutes les pharmacies partenaires de Dakar avec Tiers-Payant.</p>
+            </div>
+            <div className="card p-3 text-left" style={{ borderRadius: '16px', background: 'var(--bg-card-subtle)' }}>
+              <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>💳</div>
+              <h5 style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.25rem' }}>Tiers-payant 80% CMU</h5>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)', margin: 0 }}>Tarif réglementé de 2 500 FCFA pris en charge par l'Union Régionale des Mutuelles de Santé de Dakar.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const isCitizen = (!isDoctorOrPartner && (!!citizenUser || userRole === 'citizen' || userRole === 'citizen_suspended'));
+  const isSuspended = (
+    userRole === 'citizen_suspended' || 
+    citizenUser?.status === 'suspended' || 
+    citizenUser?.status === 'inactif' || 
+    citizenUser?.status === 'suspendu' || 
+    localStorage.getItem('cmu-portal-mode') === 'citizen_suspended' ||
+    localStorage.getItem('cmu-cotisation-suspended') === 'true'
+  );
+
+  if (isCitizen && isSuspended) {
+    return (
+      <div className="telemed-view fade-in-up" style={{ minHeight: '80vh', padding: '2rem 1rem' }}>
+        <div style={{ maxWidth: '850px', margin: '0 auto' }}>
+          <div className="card shadow-lg border-0 p-4 p-md-5 text-center my-4" style={{ borderRadius: '24px', background: 'var(--bg-card)', color: 'var(--text-main)', border: '2px solid #ef4444' }}>
+            <div className="d-inline-flex align-items-center justify-content-center p-3 rounded-circle mb-3 mx-auto" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', width: '70px', height: '70px' }}>
+              <span style={{ fontSize: '2.2rem' }}>⚠️</span>
+            </div>
+            
+            <h3 className="fw-bold mb-2 text-danger" style={{ fontSize: '1.4rem' }}>⚠️ Accès aux soins refusé — Couverture CSU suspendue</h3>
+            
+            <div className="mb-3">
+              <code className="px-3 py-1.5 bg-dark text-warning border border-warning rounded-3 fw-bold d-inline-block" style={{ fontSize: '1.05rem', color: '#f59e0b' }}>
+                {activeCmuNumber}
+              </code>
+            </div>
+
+            <p className="lead mb-4 mx-auto" style={{ maxWidth: '640px', fontSize: '1.05rem', lineHeight: '1.65' }}>
+              Votre cotisation annuelle n'est pas à jour. Tous vos droits et accès aux services de télémédecine sont suspendus.
+              <br />
+              <strong className="d-block mt-2 text-danger">Veuillez régulariser votre cotisation et celui des membres de votre famille pour un montant de 10 500 FCFA.</strong>
+            </p>
+
+            <div className="d-flex justify-content-center gap-3">
+              <button 
+                type="button" 
+                className="btn btn-emerald btn-lg px-4 py-3 fw-bold d-inline-flex align-items-center gap-2 shadow"
+                style={{ background: '#10b981', borderColor: '#10b981', color: '#ffffff', borderRadius: '16px', fontSize: '1.05rem', cursor: 'pointer', boxShadow: '0 6px 20px rgba(16, 185, 129, 0.35)' }}
+                onClick={() => {
+                  localStorage.setItem('cmu-pending-renewal', JSON.stringify({
+                    cmuNumber: activeCmuNumber,
+                    amount: 10500,
+                    familyCount: 3,
+                    firstName: activeFirstName,
+                    lastName: activeLastName
+                  }));
+                  if (setView) setView('payments');
+                  window.location.hash = '#payments';
+                }}
+              >
+                💳 Renouveler ma cotisation (10 500 FCFA)
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="telemed-view fade-in-up" style={{ minHeight: '100vh', paddingBottom: '3rem' }}>
@@ -418,9 +657,9 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
           </div>
 
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            {!isAgent ? (
+            {!isDoctorOrPartner ? (
               <span className="badge bg-success-subtle text-success border border-success px-3 py-1.5 fw-bold" style={{ borderRadius: '8px', fontSize: '0.8rem' }}>
-                🟢 Espace Assuré (Connecté)
+                🟢 Espace assuré (connecté)
               </span>
             ) : (
               <>
@@ -429,14 +668,14 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                   style={{ background: roleMode === 'citizen' ? '#10b981' : 'var(--bg-card)', color: roleMode === 'citizen' ? '#ffffff' : 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.85rem', fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer' }}
                   onClick={() => setRoleMode('citizen')}
                 >
-                  Espace Assuré
+                  Espace assuré
                 </button>
                 <button 
                   type="button" 
                   style={{ background: roleMode === 'doctor' ? '#10b981' : 'var(--bg-card)', color: roleMode === 'doctor' ? '#ffffff' : 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.85rem', fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer' }}
                   onClick={() => setRoleMode('doctor')}
                 >
-                  Espace Médecin de Garde
+                  Espace médecin de garde
                 </button>
               </>
             )}
@@ -461,7 +700,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
               <div className="d-flex gap-3 flex-wrap">
                 <button 
                   type="button"
-                  style={{ background: '#ffffff', color: '#047857', border: 'none', borderRadius: '12px', padding: '0.8rem 1.75rem', fontWeight: '800', fontSize: '0.95rem', boxShadow: '0 4px 15px rgba(0,0,0,0.2)', cursor: 'pointer' }}
+                  style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.8rem 1.75rem', fontWeight: '800', fontSize: '0.95rem', boxShadow: '0 4px 20px rgba(16,185,129,0.45)', cursor: 'pointer' }}
                   onClick={() => setActiveModal('join_queue')}
                 >
                   ⚡ Entrer en salle d'attente
@@ -575,8 +814,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                     {/* Bouton de simulation pour test utilisateur */}
                     <button
                       type="button"
-                      className="btn btn-sm btn-outline-warning text-warning fw-bold px-3 py-1"
-                      style={{ borderRadius: '8px', fontSize: '0.75rem', cursor: 'pointer' }}
+                      style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.5)', borderRadius: '8px', padding: '0.35rem 0.85rem', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer' }}
                       onClick={() => handleAdvanceMyQueue(myItem.id)}
                       title="Cliquer pour simuler le passage du temps et recevoir la notification du médecin"
                     >
@@ -717,11 +955,16 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                         <div className="d-flex gap-1 justify-content-end">
                           <button 
                             type="button" 
-                            className="btn btn-sm btn-outline-warning text-warning fw-bold"
-                            style={{ fontSize: '0.72rem', borderRadius: '6px' }}
+                            style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.5)', borderRadius: '6px', padding: '0.3rem 0.65rem', fontWeight: '700', fontSize: '0.72rem', cursor: 'pointer' }}
                             onClick={() => {
                               setQueue(queue.map(item => item.id === p.id ? { ...item, status: 'next' } : item));
-                              alert(`🔔 Notification préalable envoyée à ${p.patient_name} ("Vous êtes le prochain patient") !`);
+                              speakAndToast({
+                                type: 'warning',
+                                icon: '🔔',
+                                title: 'Notification envoyée',
+                                message: `${p.patient_name} a été notifié(e) : vous êtes le prochain patient.`,
+                                speech: `${p.patient_name}, c'est bientôt votre tour. Veuillez préparer votre micro et votre caméra. Le médecin va vous recevoir dans un instant.`
+                              });
                             }}
                             title="Notifier à l'avance que le tour du patient approche"
                           >
@@ -756,7 +999,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
           <div className="col-lg-8">
             <div className="mb-4">
               <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>👨‍⚕️ Praticiens Disponibles</h5>
+                <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>👨‍⚕️ Praticiens disponibles</h5>
                 
                 {/* Search & Category Filter Bar */}
                 <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
@@ -790,7 +1033,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                       style={{ background: activeCategory === 'cardio' ? '#10b981' : 'transparent', color: activeCategory === 'cardio' ? '#ffffff' : 'var(--text-sub)', border: 'none', borderRadius: '8px', padding: '0.3rem 0.75rem', fontWeight: '700', fontSize: '0.78rem', cursor: 'pointer' }} 
                       onClick={() => setActiveCategory('cardio')}
                     >
-                      Cardiologue
+                      Cardiologie
                     </button>
                   </div>
                 </div>
@@ -846,7 +1089,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                           }
                         }}
                       >
-                        {roleMode === 'citizen' ? '🏥 Entrer en Salle d\'Attente (2 500 FCFA) ›' : 'Consulter ›'}
+                        {roleMode === 'citizen' ? '🏥 Entrer en salle d\'attente (2 500 FCFA) ›' : 'Consulter ›'}
                       </button>
                     </div>
                   </div>
@@ -859,11 +1102,11 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
           <div className="col-lg-4">
             <div className="d-flex flex-column gap-4">
               
-              {/* Card Ordonnances Digitales */}
+              {/* Card Ordonnances digitales */}
               <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
                 <div className="d-flex align-items-center gap-2 mb-2 text-success">
                   <span style={{ fontSize: '1.3rem' }}>💊</span>
-                  <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>Ordonnances Digitales</h6>
+                  <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>Ordonnances digitales</h6>
                 </div>
                 <p className="small mb-3" style={{ color: 'var(--text-sub)' }}>
                   Retrouvez vos prescriptions certifiées. Scannez le QR Code directement en pharmacie agréée (50% Tiers-Payant).
@@ -875,7 +1118,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                     style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.65rem 1rem', fontWeight: '700', width: '100%', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}
                     onClick={() => setActiveModal('prescription')}
                   >
-                    💊 Consulter mon Ordonnance Digital (PDF & QR)
+                    💊 Consulter mon ordonnance digitale (PDF & QR)
                   </button>
 
                   <button 
@@ -894,9 +1137,9 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                 </div>
               </div>
 
-              {/* Card QR Code CMU */}
+              {/* Card QR Code CSU */}
               <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-                <h6 className="fw-bold mb-2" style={{ color: 'var(--text-main)' }}>📲 Présentation QR Code CMU</h6>
+                <h6 className="fw-bold mb-2" style={{ color: 'var(--text-main)' }}>📲 Présentation QR code CSU</h6>
                 <p className="small mb-3" style={{ color: 'var(--text-sub)' }}>Présentez votre pass sanitaire numérique au médecin lors de l'appel.</p>
                 
                 <button 
@@ -904,7 +1147,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                   style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.6rem 1rem', fontWeight: '700', width: '100%', fontSize: '0.85rem', cursor: 'pointer' }}
                   onClick={() => setActiveModal('qr')}
                 >
-                  Afficher QR Code Assuré
+                  Afficher QR code assuré
                 </button>
               </div>
 
@@ -917,215 +1160,234 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
       {/* JOIN QUEUE & PAYMENT INTEGRATED MODAL (React Portal — Centered on Screen) */}
       {activeModal === 'join_queue' && createPortal(
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
-          <div style={{ maxWidth: '580px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h5 className="fw-bold text-success mb-0 d-flex align-items-center gap-2">
-                <span>🚪</span> Entrée en Salle d'Attente Virtuelle
-              </h5>
-              <button type="button" className="btn-close" onClick={() => setActiveModal(null)}></button>
-            </div>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', zIndex: 999999, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
 
-            <div className="p-3 rounded-3 mb-3 border border-success" style={{ background: 'var(--bg-card-subtle)' }}>
-              <small className="text-muted d-block fw-semibold mb-1">Médecin Consultant Sélectionné :</small>
-              <h6 className="fw-bold mb-0 text-success">{selectedDoctor?.name || 'Dr. Ousmane Sow'} ({selectedDoctor?.specialty || 'Médecine Générale'})</h6>
-              <small className="text-muted d-block mt-1">Prise en charge UNAMUSC à 80% — Ticket modérateur restant : <strong>2 500 FCFA</strong></small>
-            </div>
-            
-            <form onSubmit={handleJoinQueue}>
-              <div className="mb-3">
-                <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Symptômes & Motif de consultation *</label>
-                <textarea 
-                  className="form-control" 
-                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }} 
-                  rows={3} 
-                  value={consultReason} 
-                  onChange={(e) => setConsultReason(e.target.value)}
-                  placeholder="Ex: Fièvre, toux sèche, maux de tête depuis 48h..."
-                  required 
-                />
+          {/* ════════ ÉTAPE : TRAITEMENT EN COURS ════════ */}
+          {payStep === 'processing' && (
+            <div style={{ maxWidth: '420px', width: '100%', background: 'var(--bg-card)', borderRadius: '28px', border: '1px solid var(--border-color)', boxShadow: '0 30px 80px rgba(0,0,0,0.8)', margin: 'auto', padding: '3rem 2rem', textAlign: 'center' }}>
+              <style>{`
+                @keyframes spinPay { to { transform: rotate(360deg); } }
+                @keyframes pulsePay { 0%,100%{opacity:1} 50%{opacity:0.4} }
+              `}</style>
+              <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: `${getProviderInfo(paymentProvider).bgColor}`, border: `3px solid ${getProviderInfo(paymentProvider).color}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', position: 'relative' }}>
+                <div style={{ width: '80px', height: '80px', borderRadius: '50%', border: `3px solid transparent`, borderTopColor: getProviderInfo(paymentProvider).color, position: 'absolute', top: '-3px', left: '-3px', animation: 'spinPay 1s linear infinite' }} />
+                <img src={getProviderInfo(paymentProvider).logo} alt="" style={{ width: '44px', height: '32px', objectFit: 'contain' }} />
               </div>
+              <h5 style={{ color: 'var(--text-main)', fontWeight: '800', marginBottom: '0.5rem' }}>Traitement en cours...</h5>
+              <p style={{ color: 'var(--text-sub)', fontSize: '0.88rem', animation: 'pulsePay 1.5s ease-in-out infinite' }}>
+                En attente de confirmation {getProviderInfo(paymentProvider).name}<br/>
+                <strong style={{ color: getProviderInfo(paymentProvider).color }}>Ne fermez pas cette fenêtre</strong>
+              </p>
+              <div style={{ marginTop: '1.5rem', background: 'var(--bg-card-subtle)', borderRadius: '12px', padding: '0.85rem 1rem', display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '0.82rem', color: 'var(--text-sub)' }}>Montant</span>
+                <span style={{ fontWeight: '800', color: 'var(--text-main)' }}>2 500 FCFA</span>
+              </div>
+              <p style={{ marginTop: '1rem', fontSize: '0.72rem', color: 'var(--text-sub)', opacity: 0.6 }}>🔒 Transaction sécurisée • Conforme BCEAO</p>
+            </div>
+          )}
 
-              <div className="mb-3">
-                <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Niveau d'urgence *</label>
-                <select 
-                  className="form-select" 
-                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }}
-                  value={urgencyLevel}
-                  onChange={(e) => setUrgencyLevel(e.target.value)}
+          {/* ════════ ÉTAPE : SUCCÈS ════════ */}
+          {payStep === 'success' && txnResult && (
+            <div style={{ maxWidth: '480px', width: '100%', background: 'var(--bg-card)', borderRadius: '28px', border: '1px solid rgba(16,185,129,0.4)', boxShadow: '0 30px 80px rgba(16,185,129,0.2)', margin: 'auto', overflow: 'hidden' }}>
+              {/* En-tête succès */}
+              <div style={{ background: 'linear-gradient(135deg, #064e3b 0%, #065f46 100%)', padding: '2rem', textAlign: 'center' }}>
+                <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(16,185,129,0.3)', border: '2px solid #10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', fontSize: '2rem' }}>✅</div>
+                <h4 style={{ color: '#ffffff', fontWeight: '800', margin: '0 0 0.25rem' }}>Paiement Confirmé !</h4>
+                <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.85rem', margin: 0 }}>Vous êtes en salle d'attente virtuelle</p>
+              </div>
+              {/* Reçu */}
+              <div style={{ padding: '1.5rem 2rem' }}>
+                {/* Référence */}
+                <div style={{ background: 'var(--bg-card-subtle)', borderRadius: '14px', padding: '1rem', marginBottom: '1rem', border: '1px solid var(--border-color)' }}>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-sub)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.4rem' }}>Référence Transaction</div>
+                  <div style={{ fontFamily: 'monospace', fontSize: '1.1rem', fontWeight: '800', color: '#10b981', letterSpacing: '0.08em' }}>{txnResult.transactionRef}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-sub)', marginTop: '0.25rem' }}>{new Date(txnResult.timestamp).toLocaleString('fr-FR')}</div>
+                </div>
+                {/* Détails paiement */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem', marginBottom: '1rem' }}>
+                  {[{l:'Opérateur', v: getProviderInfo(paymentProvider).name},{l:'Téléphone', v: txnResult.phone},{l:'Montant payé', v: '2 500 FCFA'},{l:'Position file', v: `N°${txnResult.positionNum}`}].map(item => (
+                    <div key={item.l} style={{ background: 'var(--bg-card-subtle)', borderRadius: '10px', padding: '0.65rem 0.85rem', border: '1px solid var(--border-color)' }}>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-sub)', fontWeight: '600' }}>{item.l}</div>
+                      <div style={{ fontSize: '0.88rem', fontWeight: '700', color: 'var(--text-main)', marginTop: '0.15rem' }}>{item.v}</div>
+                    </div>
+                  ))}
+                </div>
+                {/* Médecin */}
+                <div style={{ background: 'rgba(16,185,129,0.08)', borderRadius: '12px', padding: '0.85rem 1rem', border: '1px solid rgba(16,185,129,0.25)', display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                  <img src={selectedDoctor?.avatar || 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=180'} alt="" style={{ width: '36px', height: '36px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }} />
+                  <div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>Médecin assigné</div>
+                    <div style={{ fontWeight: '700', color: 'var(--text-main)', fontSize: '0.9rem' }}>{selectedDoctor?.name || 'Dr. Ousmane Sow'}</div>
+                  </div>
+                  <span style={{ marginLeft: 'auto', background: 'rgba(16,185,129,0.2)', color: '#10b981', fontSize: '0.72rem', fontWeight: '700', padding: '0.2rem 0.55rem', borderRadius: '20px', border: '1px solid rgba(16,185,129,0.35)', whiteSpace: 'nowrap' }}>Prise en charge 80%</span>
+                </div>
+                <button
+                  onClick={resetPaymentModal}
+                  style={{ width: '100%', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.85rem', fontWeight: '800', fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 6px 20px rgba(16,185,129,0.35)' }}
                 >
-                  <option value="routine">🟢 Consultation de routine (faible)</option>
-                  <option value="medium">🟡 Symptômes modérés (moyenne)</option>
-                  <option value="high">🟠 Douleurs / fièvre forte (élevée)</option>
-                  <option value="critical">🔴 Urgence vitale (priorité absolue)</option>
-                </select>
+                  ✅ Fermer et rejoindre la salle d'attente
+                </button>
+                <p style={{ textAlign: 'center', fontSize: '0.7rem', color: 'var(--text-sub)', marginTop: '0.75rem', opacity: 0.6 }}>Conservez la référence {txnResult.transactionRef} comme preuve de paiement</p>
+              </div>
+            </div>
+          )}
+
+          {/* ════════ ÉTAPE : ERREUR ════════ */}
+          {payStep === 'error' && txnResult && (
+            <div style={{ maxWidth: '420px', width: '100%', background: 'var(--bg-card)', borderRadius: '28px', border: '1px solid rgba(239,68,68,0.4)', boxShadow: '0 30px 80px rgba(239,68,68,0.15)', margin: 'auto', padding: '2.5rem 2rem', textAlign: 'center' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(239,68,68,0.15)', border: '2px solid #ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', fontSize: '2rem' }}>❌</div>
+              <h5 style={{ color: 'var(--text-main)', fontWeight: '800', marginBottom: '0.5rem' }}>Paiement échoué</h5>
+              <p style={{ color: 'var(--text-sub)', fontSize: '0.88rem', lineHeight: '1.6', marginBottom: '1.5rem' }}>{txnResult.message}</p>
+              <div style={{ background: 'var(--bg-card-subtle)', borderRadius: '12px', padding: '0.85rem 1rem', border: '1px solid var(--border-color)', marginBottom: '1.5rem', textAlign: 'left' }}>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-sub)', marginBottom: '0.3rem' }}>Causes possibles :</div>
+                <ul style={{ margin: 0, paddingLeft: '1.2rem', fontSize: '0.8rem', color: 'var(--text-sub)', lineHeight: '1.7' }}>
+                  <li>Solde insuffisant sur votre compte</li>
+                  <li>Numéro de téléphone incorrect</li>
+                  <li>Connexion réseau instable</li>
+                  <li>Plafond journalier atteint</li>
+                </ul>
+              </div>
+              <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <button onClick={resetPaymentModal}
+                  style={{ flex: 1, background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.75rem', fontWeight: '600', fontSize: '0.85rem', cursor: 'pointer' }}
+                >Annuler</button>
+                <button onClick={() => setPayStep('form')}
+                  style={{ flex: 2, background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.75rem', fontWeight: '700', fontSize: '0.88rem', cursor: 'pointer', boxShadow: '0 4px 15px rgba(16,185,129,0.35)' }}
+                >🔄 Réessayer</button>
+              </div>
+            </div>
+          )}
+
+          {/* ════════ ÉTAPE : FORMULAIRE ════════ */}
+          {payStep === 'form' && (
+            <div style={{ maxWidth: '600px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '28px', border: '1px solid var(--border-color)', boxShadow: '0 30px 80px rgba(0,0,0,0.8)', margin: 'auto' }}>
+              <div style={{ background: 'linear-gradient(135deg, #064e3b 0%, #065f46 100%)', padding: '1.75rem 2rem', borderRadius: '28px 28px 0 0' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.7)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.4rem' }}>Télémédecine UNAMUSC</div>
+                    <h5 style={{ color: '#ffffff', fontWeight: '800', margin: 0, fontSize: '1.2rem' }}>🏥 Entrer en salle d'attente virtuelle</h5>
+                    <p style={{ color: 'rgba(255,255,255,0.75)', margin: '0.3rem 0 0', fontSize: '0.85rem' }}>Prise en charge UNAMUSC 80% — Ticket modérateur : <strong style={{ color: '#6ee7b7' }}>2 500 FCFA</strong></p>
+                  </div>
+                  <button type="button" onClick={resetPaymentModal} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', borderRadius: '10px', width: '32px', height: '32px', cursor: 'pointer', fontSize: '1.1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+                </div>
+                <div style={{ marginTop: '1rem', background: 'rgba(255,255,255,0.1)', borderRadius: '12px', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', border: '1px solid rgba(255,255,255,0.2)' }}>
+                  <img src={selectedDoctor?.avatar || 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=180'} alt="" style={{ width: '40px', height: '40px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0 }} />
+                  <div>
+                    <div style={{ color: '#ffffff', fontWeight: '700', fontSize: '0.9rem' }}>{selectedDoctor?.name || 'Dr. Ousmane Sow'}</div>
+                    <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.78rem' }}>{selectedDoctor?.specialty || 'Médecine générale & urgences'} • Disponible maintenant</div>
+                  </div>
+                  <span style={{ marginLeft: 'auto', background: 'rgba(16,185,129,0.3)', color: '#6ee7b7', padding: '0.25rem 0.65rem', borderRadius: '20px', fontSize: '0.72rem', fontWeight: '700', border: '1px solid rgba(16,185,129,0.4)' }}>⚡ En ligne</span>
+                </div>
               </div>
 
-              {/* RÈGLEMENT OBLIGATOIRE DU TICKET MODÉRATEUR */}
-              <div className="mb-3">
-                <label className="form-label small fw-bold text-success">Mode de Règlement Mobile Money (2 500 FCFA) *</label>
-                <div className="d-flex gap-2 mb-3">
-                  <button 
-                    type="button" 
-                    style={{ 
-                      flex: 1, 
-                      padding: '0.75rem 0.35rem', 
-                      borderRadius: '12px', 
-                      background: paymentProvider === 'orange' ? 'rgba(255,121,0,0.18)' : 'var(--bg-card-subtle)', 
-                      color: 'var(--text-main)', 
-                      border: paymentProvider === 'orange' ? '2px solid #ff7900' : '1px solid var(--border-color)',
-                      fontWeight: '700',
-                      fontSize: '0.8rem',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px'
-                    }}
-                    onClick={() => setPaymentProvider('orange')}
-                  >
-                    <img src="/logo_orange_money.png" alt="Orange Money" style={{ height: '22px', borderRadius: '4px', background: '#ffffff', padding: '1px' }} />
-                    <span>Orange Money</span>
-                  </button>
+            {/* Corps du formulaire */}
+            <div style={{ padding: '1.75rem 2rem' }}>
+              <form onSubmit={handleJoinQueue}>
 
-                  <button 
-                    type="button" 
-                    style={{ 
-                      flex: 1, 
-                      padding: '0.75rem 0.35rem', 
-                      borderRadius: '12px', 
-                      background: paymentProvider === 'wave' ? 'rgba(29,196,255,0.18)' : 'var(--bg-card-subtle)', 
-                      color: 'var(--text-main)', 
-                      border: paymentProvider === 'wave' ? '2px solid #1dc4ff' : '1px solid var(--border-color)',
-                      fontWeight: '700',
-                      fontSize: '0.8rem',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px'
-                    }}
-                    onClick={() => setPaymentProvider('wave')}
-                  >
-                    <img src="/logo_wave.png" alt="Wave" style={{ height: '22px', borderRadius: '4px' }} />
-                    <span>Wave</span>
-                  </button>
-
-                  <button 
-                    type="button" 
-                    style={{ 
-                      flex: 1, 
-                      padding: '0.75rem 0.35rem', 
-                      borderRadius: '12px', 
-                      background: paymentProvider === 'free' ? 'rgba(225,29,72,0.18)' : 'var(--bg-card-subtle)', 
-                      color: 'var(--text-main)', 
-                      border: paymentProvider === 'free' ? '2px solid #e11d48' : '1px solid var(--border-color)',
-                      fontWeight: '700',
-                      fontSize: '0.8rem',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px'
-                    }}
-                    onClick={() => setPaymentProvider('free')}
-                  >
-                    <img src="/logo_free_money.svg" alt="Free Money" style={{ height: '22px', borderRadius: '4px' }} />
-                    <span>Free Money</span>
-                  </button>
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', color: 'var(--text-sub)', marginBottom: '0.5rem' }}>Symptômes &amp; motif de consultation *</label>
+                  <textarea
+                    style={{ width: '100%', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.75rem 1rem', fontSize: '0.88rem', lineHeight: '1.5', resize: 'vertical', outline: 'none', boxSizing: 'border-box' }}
+                    rows={3} value={consultReason} onChange={(e) => setConsultReason(e.target.value)}
+                    placeholder="Ex : Fièvre, toux sèche, maux de tête depuis 48h..." required
+                  />
                 </div>
 
-                <input 
-                  type="text" 
-                  className="form-control fw-bold" 
-                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} 
-                  value={phoneNum} 
-                  onChange={(e) => setPhoneNum(e.target.value)} 
-                  placeholder="Numéro de téléphone Mobile Money"
-                  required 
-                />
-              </div>
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', color: 'var(--text-sub)', marginBottom: '0.5rem' }}>Niveau d'urgence *</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                    {[{v:'routine',l:'🟢 Routine',s:'Consultation de routine'},{v:'medium',l:'🟡 Modéré',s:'Symptômes modérés'},{v:'high',l:'🟠 Élevé',s:'Douleurs / fièvre forte'},{v:'critical',l:'🔴 Urgence',s:'Priorité absolue'}].map(u => (
+                      <button key={u.v} type="button" onClick={() => setUrgencyLevel(u.v)}
+                        style={{ padding: '0.65rem 0.75rem', borderRadius: '10px', border: urgencyLevel === u.v ? '2px solid #10b981' : '1px solid var(--border-color)', background: urgencyLevel === u.v ? 'rgba(16,185,129,0.15)' : 'var(--bg-card-subtle)', color: urgencyLevel === u.v ? '#10b981' : 'var(--text-sub)', fontWeight: '700', fontSize: '0.78rem', cursor: 'pointer', textAlign: 'left' }}>
+                        <div>{u.l}</div><div style={{ fontSize: '0.7rem', fontWeight: '400', opacity: 0.7 }}>{u.s}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-              <div className="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.65rem 1.25rem' }} onClick={() => setActiveModal(null)}>Annuler</button>
-                <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.65rem 1.5rem', fontWeight: '800' }}>
-                  💳 Payer 2 500 FCFA & Entrer en Salle d'Attente
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>,
-        document.body
-      )}
+                <div style={{ borderTop: '1px solid var(--border-color)', margin: '0 0 1.25rem', position: 'relative' }}>
+                  <span style={{ position: 'absolute', top: '-0.6rem', left: '50%', transform: 'translateX(-50%)', background: 'var(--bg-card)', padding: '0 0.75rem', fontSize: '0.72rem', color: 'var(--text-sub)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>Règlement mobile money</span>
+                </div>
 
-      {/* PAYMENT MODAL (ORANGE MONEY / WAVE — React Portal — Centered on Screen) */}
-      {activeModal === 'payment' && createPortal(
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
-          <div style={{ maxWidth: '480px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
-            <div className="d-flex justify-content-between align-items-center mb-2">
-              <h5 className="fw-bold text-success mb-0">💳 Paiement Mobile Téléconsultation (2 500 FCFA)</h5>
-              <button type="button" className="btn-close" onClick={() => setActiveModal(null)}></button>
+                <div style={{ marginBottom: '1rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', color: 'var(--text-sub)', marginBottom: '0.75rem' }}>Choisissez votre opérateur *</label>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.6rem', marginBottom: '1rem' }}>
+
+                    <button type="button" onClick={() => { setPaymentProvider('orange'); setPhoneError(''); }}
+                      style={{ padding: '0.85rem 0.5rem', borderRadius: '14px', border: paymentProvider === 'orange' ? '2px solid #ff7900' : '1px solid var(--border-color)', background: paymentProvider === 'orange' ? 'rgba(255,121,0,0.12)' : 'var(--bg-card-subtle)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                      <div style={{ width: '56px', height: '40px', borderRadius: '8px', background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px', overflow: 'hidden' }}>
+                        <img src="/logo_orange_money.png" alt="Orange Money" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                      </div>
+                      <span style={{ fontSize: '0.72rem', fontWeight: '700', color: paymentProvider === 'orange' ? '#ff7900' : 'var(--text-sub)', textAlign: 'center' }}>Orange Money</span>
+                      {paymentProvider === 'orange' && <span style={{ fontSize: '0.62rem', color: '#ff7900', fontWeight: '800' }}>✓ Sélectionné</span>}
+                    </button>
+
+                    <button type="button" onClick={() => { setPaymentProvider('wave'); setPhoneError(''); }}
+                      style={{ padding: '0.85rem 0.5rem', borderRadius: '14px', border: paymentProvider === 'wave' ? '2px solid #1dc4ff' : '1px solid var(--border-color)', background: paymentProvider === 'wave' ? 'rgba(29,196,255,0.12)' : 'var(--bg-card-subtle)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                      <div style={{ width: '56px', height: '40px', borderRadius: '8px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <img src="/logo_wave.png" alt="Wave" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                      <span style={{ fontSize: '0.72rem', fontWeight: '700', color: paymentProvider === 'wave' ? '#1dc4ff' : 'var(--text-sub)', textAlign: 'center' }}>Wave</span>
+                      {paymentProvider === 'wave' && <span style={{ fontSize: '0.62rem', color: '#1dc4ff', fontWeight: '800' }}>✓ Sélectionné</span>}
+                    </button>
+
+                    <button type="button" onClick={() => { setPaymentProvider('free'); setPhoneError(''); }}
+                      style={{ padding: '0.85rem 0.5rem', borderRadius: '14px', border: paymentProvider === 'free' ? '2px solid #e11d48' : '1px solid var(--border-color)', background: paymentProvider === 'free' ? 'rgba(225,29,72,0.12)' : 'var(--bg-card-subtle)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                      <div style={{ width: '56px', height: '40px', borderRadius: '8px', background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '3px', overflow: 'hidden' }}>
+                        <img src="/logo_free_money.svg" alt="Free Money" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                      </div>
+                      <span style={{ fontSize: '0.72rem', fontWeight: '700', color: paymentProvider === 'free' ? '#e11d48' : 'var(--text-sub)', textAlign: 'center' }}>Free Money</span>
+                      {paymentProvider === 'free' && <span style={{ fontSize: '0.62rem', color: '#e11d48', fontWeight: '800' }}>✓ Sélectionné</span>}
+                    </button>
+                  </div>
+
+                  <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', color: 'var(--text-sub)', marginBottom: '0.5rem' }}>N° de téléphone mobile money *</label>
+                  <div style={{ position: 'relative' }}>
+                    <span style={{ position: 'absolute', left: '0.9rem', top: '50%', transform: 'translateY(-50%)', fontSize: '1.1rem' }}>📱</span>
+                    <input type="tel"
+                      style={{ width: '100%', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: phoneError ? '1px solid #ef4444' : '1px solid var(--border-color)', borderRadius: '12px', padding: '0.75rem 1rem 0.75rem 2.5rem', fontSize: '0.95rem', fontWeight: '700', outline: 'none', letterSpacing: '0.05em', boxSizing: 'border-box' }}
+                      value={phoneNum} onChange={(e) => { setPhoneNum(e.target.value); setPhoneError(''); }}
+                      placeholder="Ex : 77 602 67 83" required
+                    />
+                  </div>
+                  {phoneError && <p style={{ color: '#ef4444', fontSize: '0.78rem', marginTop: '0.4rem', fontWeight: '600' }}>⚠️ {phoneError}</p>}
+
+                  <div style={{ marginTop: '1rem', background: paymentProvider === 'orange' ? 'rgba(255,121,0,0.08)' : paymentProvider === 'wave' ? 'rgba(29,196,255,0.08)' : 'rgba(225,29,72,0.08)', border: `1px solid ${paymentProvider === 'orange' ? 'rgba(255,121,0,0.3)' : paymentProvider === 'wave' ? 'rgba(29,196,255,0.3)' : 'rgba(225,29,72,0.3)'}`, borderRadius: '12px', padding: '0.85rem 1rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.82rem', color: 'var(--text-sub)', fontWeight: '600' }}>Ticket modérateur (20%)</span>
+                      <span style={{ fontWeight: '800', fontSize: '1rem', color: 'var(--text-main)' }}>2 500 FCFA</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.3rem' }}>
+                      <span style={{ fontSize: '0.78rem', color: 'var(--text-sub)' }}>Prise en charge UNAMUSC (80%)</span>
+                      <span style={{ fontWeight: '700', fontSize: '0.85rem', color: '#10b981' }}>10 000 FCFA couverts</span>
+                    </div>
+                    <div style={{ borderTop: '1px dashed var(--border-color)', marginTop: '0.5rem', paddingTop: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-sub)', fontWeight: '600' }}>Via {getProviderInfo(paymentProvider).name} → {phoneNum || '---'}</span>
+                      <span style={{ fontSize: '0.72rem', color: '#10b981', fontWeight: '700' }}>🔒 Sécurisé</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.5rem' }}>
+                  <button type="button"
+                    style={{ flex: 1, background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.75rem', fontWeight: '600', fontSize: '0.88rem', cursor: 'pointer' }}
+                    onClick={resetPaymentModal}>Annuler</button>
+                  <button type="submit"
+                    style={{ flex: 2, background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.85rem 1rem', fontWeight: '800', fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 6px 20px rgba(16,185,129,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                    💳 Payer 2 500 FCFA &amp; entrer en salle d'attente
+                  </button>
+                </div>
+                <p style={{ textAlign: 'center', fontSize: '0.72rem', color: 'var(--text-sub)', marginTop: '0.85rem', opacity: 0.7 }}>🔒 Paiement sécurisé • Aucun partage de vos données bancaires • Conforme BCEAO</p>
+              </form>
             </div>
-            <p className="small mb-3" style={{ color: 'var(--text-sub)' }}>Ticket modérateur restant. Prise en charge UNAMUSC à 80% garantie.</p>
-
-            <form onSubmit={handleProcessPayment}>
-              <div className="d-flex gap-2 mb-4">
-                <button 
-                  type="button" 
-                  style={{ 
-                    flex: 1, 
-                    padding: '0.85rem 0.5rem', 
-                    borderRadius: '12px', 
-                    background: paymentProvider === 'orange' ? '#ff7900' : 'var(--bg-card-subtle)', 
-                    color: paymentProvider === 'orange' ? '#ffffff' : 'var(--text-main)', 
-                    border: paymentProvider === 'orange' ? '2px solid #ff7900' : '1px solid var(--border-color)',
-                    fontWeight: '700',
-                    cursor: 'pointer'
-                  }}
-                  onClick={() => setPaymentProvider('orange')}
-                >
-                  Orange Money
-                </button>
-
-                <button 
-                  type="button" 
-                  style={{ 
-                    flex: 1, 
-                    padding: '0.85rem 0.5rem', 
-                    borderRadius: '12px', 
-                    background: paymentProvider === 'wave' ? '#1dc4ff' : 'var(--bg-card-subtle)', 
-                    color: paymentProvider === 'wave' ? '#ffffff' : 'var(--text-main)', 
-                    border: paymentProvider === 'wave' ? '2px solid #1dc4ff' : '1px solid var(--border-color)',
-                    fontWeight: '700',
-                    cursor: 'pointer'
-                  }}
-                  onClick={() => setPaymentProvider('wave')}
-                >
-                  Wave
-                </button>
-              </div>
-
-              <div className="mb-3">
-                <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Numéro Mobile Money *</label>
-                <input 
-                  type="text" 
-                  className="form-control fw-bold" 
-                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} 
-                  value={phoneNum} 
-                  onChange={(e) => setPhoneNum(e.target.value)} 
-                  required 
-                />
-              </div>
-
-              <div className="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setActiveModal(null)}>Annuler</button>
-                <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700' }}>Payer 2 500 FCFA</button>
-              </div>
-            </form>
           </div>
+          )}
+
         </div>,
         document.body
       )}
+
+
 
       {/* WEBRTC LIVE SESSION MODAL WITH RESPONSIVE DUAL VIEW & REAL MIC VU-METER (React Portal — Centered on Screen) */}
       {activeModal === 'webrtc' && createPortal(
@@ -1322,7 +1584,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
           <div style={{ maxWidth: '440px', width: '92%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '1.75rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             <div className="d-flex justify-content-between align-items-center w-100 mb-3 border-bottom pb-2" style={{ borderColor: 'var(--border-color)' }}>
               <h5 className="fw-bold text-success mb-0 d-flex align-items-center gap-2">
-                <span>📲</span> QR Code CMU Assuré
+                <span>📲</span> QR code CSU assuré
               </h5>
               <button type="button" className="btn-close" onClick={() => setActiveModal(null)}></button>
             </div>
@@ -1330,11 +1592,11 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
             <p className="small text-muted mb-2 text-center" style={{ fontSize: '0.82rem' }}>Présentez ce QR Code lors de votre prise en charge médicale ou en pharmacie agréée</p>
 
             <div className="p-3 bg-white rounded-4 border border-success d-flex align-items-center justify-content-center my-2 shadow-sm" style={{ width: '210px', height: '210px' }}>
-              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${activeCmuNumber}`} alt="QR Code CMU" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${activeCmuNumber}`} alt="QR code CSU" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </div>
 
             <div className="my-2 px-3 py-1.5 rounded-pill border border-success text-center" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981' }}>
-              <small className="d-block text-muted fw-bold" style={{ fontSize: '0.68rem' }}>N° CMU TITULAIRE</small>
+              <small className="d-block text-muted fw-bold" style={{ fontSize: '0.68rem' }}>N° CSU TITULAIRE</small>
               <strong className="fs-6 fw-mono">{activeCmuNumber}</strong>
             </div>
 
@@ -1351,7 +1613,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
             <div className="d-flex justify-content-between align-items-center mb-3">
               <div className="d-flex align-items-center gap-2">
                 <span style={{ fontSize: '1.4rem' }}>💊</span>
-                <h5 className="fw-bold text-success mb-0" style={{ fontSize: '1.15rem' }}>Ordonnance Médicale Certifiée UNAMUSC 🇸🇳</h5>
+                <h5 className="fw-bold text-success mb-0" style={{ fontSize: '1.15rem' }}>Ordonnance médicale certifiée UNAMUSC 🇸🇳</h5>
               </div>
               <button type="button" className="btn-close" onClick={() => setActiveModal(null)}></button>
             </div>
@@ -1360,7 +1622,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
               <div className="d-flex justify-content-between align-items-start mb-3 border-bottom pb-2" style={{ borderColor: 'var(--border-color)' }}>
                 <div>
                   <strong className="text-success d-block" style={{ fontSize: '0.98rem' }}>Dr. Ousmane Sow</strong>
-                  <small style={{ color: 'var(--text-sub)', fontSize: '0.78rem' }}>Médecin Généraliste — CNOM: 4522-SN</small>
+                  <small style={{ color: 'var(--text-sub)', fontSize: '0.78rem' }}>Médecin généraliste — CNOM: 4522-SN</small>
                 </div>
                 <span className="badge bg-success-subtle text-success border border-success px-2.5 py-1.5 fw-bold" style={{ borderRadius: '10px', fontSize: '0.72rem' }}>
                   ● BON PHARMACIE 50% VALIDE
@@ -1370,7 +1632,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
               <div className="mb-3 p-3 rounded-3" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
                 <small className="d-block text-muted fw-bold mb-1" style={{ fontSize: '0.72rem' }}>PATIENT(E) BÉNÉFICIAIRE :</small>
                 <strong style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>{activeFirstName} {activeLastName}</strong>
-                <small className="d-block text-success fw-bold" style={{ fontSize: '0.78rem' }}>N° CMU : {activeCmuNumber}</small>
+                <small className="d-block text-success fw-bold" style={{ fontSize: '0.78rem' }}>N° CSU : {activeCmuNumber}</small>
               </div>
 
               <div className="mb-3">
@@ -1605,6 +1867,93 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
             <div className="d-flex justify-content-end mt-4">
               <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 1.5rem', fontWeight: '700' }} onClick={() => setActiveModal(null)}>Fermer</button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* TOAST DE NOTIFICATION (Portal centré en haut à droite) */}
+      {notifToast && createPortal(
+        <div
+          onClick={() => setNotifToast(null)}
+          style={{
+            position: 'fixed', top: '1.5rem', right: '1.5rem', zIndex: 9999999,
+            maxWidth: '400px', width: '100%',
+            animation: 'slideInToast 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards',
+            cursor: 'pointer'
+          }}
+        >
+          <style>{`
+            @keyframes slideInToast {
+              from { opacity: 0; transform: translateX(120%) scale(0.85); }
+              to   { opacity: 1; transform: translateX(0) scale(1); }
+            }
+            @keyframes toastProgress {
+              from { width: 100%; }
+              to   { width: 0%; }
+            }
+          `}</style>
+          <div style={{
+            background: notifToast.type === 'success'
+              ? 'linear-gradient(135deg, #064e3b 0%, #065f46 100%)'
+              : 'linear-gradient(135deg, #78350f 0%, #92400e 100%)',
+            borderRadius: '20px',
+            padding: '1.25rem 1.5rem 0.75rem 1.5rem',
+            boxShadow: notifToast.type === 'success'
+              ? '0 20px 60px rgba(16,185,129,0.45), 0 4px 20px rgba(0,0,0,0.4)'
+              : '0 20px 60px rgba(245,158,11,0.4), 0 4px 20px rgba(0,0,0,0.4)',
+            border: notifToast.type === 'success'
+              ? '1px solid rgba(16,185,129,0.5)'
+              : '1px solid rgba(245,158,11,0.5)',
+            overflow: 'hidden',
+            position: 'relative'
+          }}>
+            {/* Barre de progression */}
+            <div style={{
+              position: 'absolute', bottom: 0, left: 0, height: '3px',
+              background: notifToast.type === 'success' ? '#10b981' : '#f59e0b',
+              borderRadius: '0 0 20px 20px',
+              animation: 'toastProgress 5s linear forwards'
+            }} />
+
+            {/* Contenu */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem' }}>
+              {/* Icône */}
+              <div style={{
+                width: '48px', height: '48px', borderRadius: '14px', flexShrink: 0,
+                background: notifToast.type === 'success'
+                  ? 'rgba(16,185,129,0.25)' : 'rgba(245,158,11,0.25)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '1.6rem', border: notifToast.type === 'success'
+                  ? '1px solid rgba(16,185,129,0.4)' : '1px solid rgba(245,158,11,0.4)'
+              }}>
+                {notifToast.icon}
+              </div>
+              {/* Texte */}
+              <div style={{ flex: 1 }}>
+                <div style={{
+                  fontWeight: '800', fontSize: '1rem', color: '#ffffff',
+                  marginBottom: '0.3rem', letterSpacing: '-0.01em'
+                }}>
+                  {notifToast.title}
+                </div>
+                <div style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.85)', lineHeight: '1.5' }}>
+                  {notifToast.message}
+                </div>
+                <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)', marginTop: '0.4rem' }}>
+                  🔊 Message vocal diffusé • Cliquez pour fermer
+                </div>
+              </div>
+              {/* Bouton fermer */}
+              <button
+                onClick={(e) => { e.stopPropagation(); setNotifToast(null); }}
+                style={{
+                  background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff',
+                  borderRadius: '8px', width: '28px', height: '28px', cursor: 'pointer',
+                  fontSize: '1rem', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}
+              >✕</button>
             </div>
           </div>
         </div>,

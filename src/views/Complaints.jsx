@@ -1,19 +1,24 @@
 import React, { useState, useEffect } from 'react';
 
-export default function Complaints({ lang, portalMode, citizenUser, agentUser }) {
+export default function Complaints({ lang, portalMode, citizenUser, agentUser, partnerUser }) {
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Form states (Citizen)
-  const [formName, setFormName] = useState(citizenUser ? `${citizenUser.firstName} ${citizenUser.lastName}` : '');
-  const [formPhone, setFormPhone] = useState(citizenUser ? citizenUser.phone : '');
-  const [formTitle, setFormTitle] = useState('Refus de tiers-payant');
+  // Form states
+  const [formName, setFormName] = useState(
+    partnerUser ? partnerUser.structureName : (citizenUser ? `${citizenUser.firstName} ${citizenUser.lastName}` : '')
+  );
+  const [formPhone, setFormPhone] = useState(
+    partnerUser ? (partnerUser.phone || '33 821 44 55') : (citizenUser ? citizenUser.phone : '')
+  );
+  const [formTitle, setFormTitle] = useState('Prise en charge & Décompte tiers-payant');
+  const [formRecipient, setFormRecipient] = useState('Assuré (Modou Diop - SN-DK-MED-8472)');
   const [formDescription, setFormDescription] = useState('');
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [submitLoading, setSubmitLoading] = useState(false);
 
-  // Agent states
+  // Agent / Partner / SuperAdmin states
   const [selectedComplaint, setSelectedComplaint] = useState(null);
   const [resolvingId, setResolvingId] = useState(null);
   const [resolutionNotes, setResolutionNotes] = useState('');
@@ -23,8 +28,10 @@ export default function Complaints({ lang, portalMode, citizenUser, agentUser })
     fr: {
       titleCitizen: 'Signaler une réclamation',
       subtitleCitizen: 'Un problème avec votre mutuelle ou un hôpital ? Déposez une réclamation en ligne. Nos agents régionaux prendront contact sous 48h.',
-      titleAgent: 'Suivi des réclamations usagers',
-      subtitleAgent: 'Consultez, analysez et résolvez les plaintes déposées par les assurés sociaux de Dakar.',
+      titlePartner: 'Messagerie & Réclamations Prestataire',
+      subtitlePartner: 'Espace d\'échange privé et sécurisé avec les bénéficiaires et agents régionaux.',
+      titleAgent: 'Suivi des réclamations usagers & prestataires',
+      subtitleAgent: 'Consultez, analysez et résolvez les plaintes déposées par les assurés sociaux et les prestataires de Dakar.',
       nameLabel: 'Votre nom complet',
       phoneLabel: 'Numéro de portable',
       subjectLabel: 'Objet de la réclamation',
@@ -80,29 +87,47 @@ export default function Complaints({ lang, portalMode, citizenUser, agentUser })
 
   const fetchComplaints = () => {
     setLoading(true);
-    fetch('http://localhost:5000/api/complaints', {
-      headers: { 'Authorization': `Bearer ${localStorage.getItem('cmu-token') || ''}` }
-    })
-      .then(res => res.json())
-      .then(payload => {
-        const list = Array.isArray(payload) ? payload : (payload.data || []);
-        setComplaints(list);
+    const stored = localStorage.getItem('cmu-complaints');
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        setComplaints(parsed);
         setLoading(false);
-      })
-      .catch(() => {
-        setLoading(false);
-        // Fallback local complaints
-        setComplaints([
-          { id: 1, beneficiary_name: 'Awa Ndiaye', phone: '779876543', title: 'Refus de tiers-payant', description: 'La pharmacie du Plateau a refusé d\'appliquer le taux de 80% sur mon ordonnance d\'Amoxicilline sous prétexte que le système était hors ligne.', status: 'open', created_at: new Date().toISOString() },
-          { id: 2, beneficiary_name: 'Modou Diop', phone: '771234567', title: 'Erreur orthographe prénom', description: 'Mon prénom est enregistré en tant que Moudou au lieu de Modou. Merci de corriger.', status: 'resolved', created_at: new Date().toISOString() }
-        ]);
-      });
+        return;
+      } catch (e) {}
+    }
+
+    const defaultSeed = [
+      { 
+        id: 1, 
+        beneficiary_name: 'Awa Ndiaye', 
+        phone: '779876543', 
+        title: 'Refus de tiers-payant', 
+        description: 'La pharmacie du Plateau a refusé d\'appliquer le taux de 80% sur mon ordonnance.', 
+        sender: 'Awa Ndiaye',
+        recipient: 'Agent CMU Dakar',
+        status: 'open', 
+        created_at: new Date().toISOString() 
+      },
+      { 
+        id: 2, 
+        beneficiary_name: 'Polyclinique de la Médina', 
+        phone: '338214455', 
+        title: 'Validation décompte tiers-payant', 
+        description: 'Transmission du décompte de prise en charge pour Modou Diop.', 
+        sender: 'Polyclinique de la Médina',
+        recipient: 'Modou Diop',
+        status: 'resolved', 
+        created_at: new Date().toISOString() 
+      }
+    ];
+    setComplaints(defaultSeed);
+    localStorage.setItem('cmu-complaints', JSON.stringify(defaultSeed));
+    setLoading(false);
   };
 
   useEffect(() => {
-    if (portalMode === 'agent') {
-      fetchComplaints();
-    }
+    fetchComplaints();
   }, [portalMode]);
 
   const handleSubmit = (e) => {
@@ -114,32 +139,26 @@ export default function Complaints({ lang, portalMode, citizenUser, agentUser })
     }
 
     setSubmitLoading(true);
-    fetch('http://localhost:5000/api/complaints', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        beneficiaryName: formName,
-        phone: formPhone,
-        title: formTitle,
-        description: formDescription
-      })
-    })
-      .then(res => {
-        if (!res.ok) throw new Error('Erreur serveur');
-        return res.json();
-      })
-      .then(() => {
-        setSubmitSuccess(true);
-        setSubmitError('');
-        setFormDescription('');
-        setSubmitLoading(false);
-      })
-      .catch((err) => {
-        setSubmitLoading(false);
-        setSubmitError(lang === 'fr' 
-          ? 'Erreur lors de l\'envoi. Vérifiez votre connexion et réessayez.' 
-          : 'Jafe na. Saytul sa internet te repantal.');
-      });
+    const newEntry = {
+      id: Date.now(),
+      beneficiary_name: formName,
+      phone: formPhone,
+      title: formTitle,
+      description: formDescription,
+      sender: partnerUser ? partnerUser.structureName : formName,
+      recipient: partnerUser ? formRecipient : 'Agent CMU Dakar',
+      status: 'open',
+      created_at: new Date().toISOString()
+    };
+
+    const updated = [newEntry, ...complaints];
+    setComplaints(updated);
+    localStorage.setItem('cmu-complaints', JSON.stringify(updated));
+
+    setSubmitSuccess(true);
+    setSubmitError('');
+    setFormDescription('');
+    setSubmitLoading(false);
   };
 
   const handleResolve = (id) => {

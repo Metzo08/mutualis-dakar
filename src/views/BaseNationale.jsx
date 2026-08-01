@@ -2,7 +2,17 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery } from '@tanstack/react-query';
 
-export default function BaseNationale({ lang, setView }) {
+export default function BaseNationale({ lang, setView, setViewTab = null }) {
+  const handleJoinMutuelle = (item) => {
+    if (item && item.name) {
+      localStorage.setItem('cmu-selected-mutuelle-adhesion', item.name);
+    }
+    if (setViewTab) {
+      setViewTab('services', 'register');
+    } else {
+      setView('services');
+    }
+  };
   const [searchQuery, setSearchQuery] = useState('');
   const [regionFilter, setRegionFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -1140,7 +1150,7 @@ export default function BaseNationale({ lang, setView }) {
                       </button>
                       <button 
                         className="btn btn-primary btn-sm"
-                        onClick={() => setView('services')}
+                        onClick={() => handleJoinMutuelle(item)}
                       >
                         {t.btnJoin}
                       </button>
@@ -1240,8 +1250,9 @@ export default function BaseNationale({ lang, setView }) {
               <button 
                 className="btn btn-primary btn-sm"
                 onClick={() => {
+                  const m = selectedMutuelle;
                   setSelectedMutuelle(null);
-                  setView('services');
+                  handleJoinMutuelle(m);
                 }}
               >
                 {t.btnJoin}

@@ -40,6 +40,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
   
   // Renewal States
   const [renewPhone, setRenewPhone] = useState('');
+  const [renewPassword, setRenewPassword] = useState('');
   const [renewLogged, setRenewLogged] = useState(false);
   const [renewStep, setRenewStep] = useState(1); // 1: login, 2: dues info, 3: pay, 4: done
   const [renewOtpSent, setRenewOtpSent] = useState(false);
@@ -1840,15 +1841,26 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                   <input 
                     type="tel" 
                     className="form-control" 
-                    placeholder="e.g. 77 123 45 67" 
+                    placeholder="ex: 77 602 67 83 ou 78 123 45 67" 
                     value={renewPhone}
                     onChange={(e) => setRenewPhone(e.target.value)}
                     required
                   />
                 </div>
                 <div className="form-group" style={{ marginTop: '1.25rem' }}>
-                  <label className="form-label">{lang === 'fr' ? 'Mot de passe' : 'Code secret'}</label>
-                  <input type="password" className="form-control" placeholder="••••••" required />
+                  <label className="form-label">{lang === 'fr' ? 'Mot de passe (4 derniers chiffres du code adhérent)' : 'Code secret (4 chiffres mbindu)'}</label>
+                  <input 
+                    type="password" 
+                    className="form-control" 
+                    placeholder="ex: 8812 (pour CSU-DKR-2026-8812)" 
+                    maxLength={6}
+                    value={renewPassword}
+                    onChange={(e) => setRenewPassword(e.target.value)}
+                    required 
+                  />
+                  <small className="text-muted d-block mt-1" style={{ fontSize: '0.78rem' }}>
+                    💡 Indice : Vos 4 derniers chiffres de code adhérent CSU servent de mot de passe (ex: <strong>8812</strong>).
+                  </small>
                 </div>
                 <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1.5rem' }}>{t.renewLoginBtn}</button>
               </form>

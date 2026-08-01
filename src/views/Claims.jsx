@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
+import { formatFCFA } from '../utils/formatters';
 
 // Design Premium Haut de Gamme — Bons & Garanties (Prises en charge Tiers-Payant)
 export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser }) {
@@ -98,9 +99,9 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
       details: [
         { label: 'Bénéficiaire d\'Ayant droit', value: claim.beneficiary_name },
         { label: 'Établissement / Pharmacie Agréée', value: claim.structure_name },
-        { label: 'Montant Devis Soumis', value: `${claim.amount.toLocaleString('fr-FR')} FCFA` },
-        { label: 'Prise en charge UNAMUSC', value: `${claim.reimbursed_amount.toLocaleString('fr-FR')} FCFA (${claim.coverage_rate}%)` },
-        { label: 'Ticket Modérateur Assuré', value: `${(claim.amount - claim.reimbursed_amount).toLocaleString('fr-FR')} FCFA` },
+        { label: 'Montant Devis Soumis', value: formatFCFA(claim.amount) },
+        { label: 'Prise en charge UNAMUSC', value: `${formatFCFA(claim.reimbursed_amount)} (${claim.coverage_rate}%)` },
+        { label: 'Ticket Modérateur Assuré', value: formatFCFA(claim.amount - claim.reimbursed_amount) },
         { label: 'Date d\'émission officielle', value: claim.submitted_at }
       ],
       notes: isHosp 
@@ -331,7 +332,7 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
                   <div className="text-end">
                     <small className="d-block" style={{ color: 'var(--text-sub)' }}>Montant pris en charge :</small>
                     <h4 className="fw-bold text-success mb-0">
-                      {((parseFloat(form.amount) || 0) * (careTypeTab === 'hospitalisation' ? 0.8 : 0.5)).toLocaleString('fr-FR')} FCFA
+                      {formatFCFA((parseFloat(form.amount) || 0) * (careTypeTab === 'hospitalisation' ? 0.8 : 0.5))}
                     </h4>
                   </div>
                 </div>
@@ -481,9 +482,9 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
                     <td><span className="small" style={{ color: 'var(--text-sub)' }}>{c.structure_name}</span></td>
                     <td>
                       <strong style={{ color: 'var(--text-main)', fontSize: '0.9rem' }}>
-                        {c.amount.toLocaleString('fr-FR')} FCFA
+                        {formatFCFA(c.amount)}
                       </strong>
-                      <small className="text-success d-block" style={{ fontSize: '0.72rem' }}>({c.reimbursed_amount.toLocaleString('fr-FR')} FCFA pris en charge)</small>
+                      <small className="text-success d-block" style={{ fontSize: '0.72rem' }}>({formatFCFA(c.reimbursed_amount)} pris en charge)</small>
                     </td>
                     <td>
                       <span style={{ 
@@ -533,8 +534,8 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
               <div className="p-3 rounded-3 mb-3 border" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)' }}>
                 <small className="d-block" style={{ color: 'var(--text-sub)' }}>Bénéficiaire : <strong style={{ color: 'var(--text-main)' }}>{showDetailModal.beneficiary_name}</strong></small>
                 <small className="d-block" style={{ color: 'var(--text-sub)' }}>Structure : <strong style={{ color: 'var(--text-main)' }}>{showDetailModal.structure_name}</strong></small>
-                <small className="d-block" style={{ color: 'var(--text-sub)' }}>Montant Devis : <strong style={{ color: 'var(--text-main)' }}>{showDetailModal.amount.toLocaleString('fr-FR')} FCFA</strong></small>
-                <small className="d-block" style={{ color: 'var(--text-sub)' }}>Prise en charge UNAMUSC ({showDetailModal.coverage_rate}%) : <strong className="text-success">{showDetailModal.reimbursed_amount.toLocaleString('fr-FR')} FCFA</strong></small>
+                <small className="d-block" style={{ color: 'var(--text-sub)' }}>Montant Devis : <strong style={{ color: 'var(--text-main)' }}>{formatFCFA(showDetailModal.amount)}</strong></small>
+                <small className="d-block" style={{ color: 'var(--text-sub)' }}>Prise en charge UNAMUSC ({showDetailModal.coverage_rate}%) : <strong className="text-success">{formatFCFA(showDetailModal.reimbursed_amount)}</strong></small>
               </div>
               <div className="d-flex justify-content-end gap-2">
                 <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.5rem 1rem' }} onClick={() => setShowDetailModal(null)}>Fermer</button>

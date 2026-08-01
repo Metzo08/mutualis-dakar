@@ -227,7 +227,7 @@ export default function GalerieCSU({ lang }) {
       </div>
       )}
 
-      {/* Interactive Zoom Modal */}
+      {/* Interactive Zoom Modal Centré */}
       {selectedItem && (
         <div style={{
           position: 'fixed',
@@ -236,64 +236,125 @@ export default function GalerieCSU({ lang }) {
           right: 0,
           bottom: 0,
           background: 'rgba(15, 23, 42, 0.85)',
-          backdropFilter: 'blur(8px)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
           zIndex: 9999,
-          padding: '1.5rem'
+          padding: '1.25rem',
+          overflowY: 'auto'
         }} onClick={() => setSelectedItem(null)}>
           <div className="card scale-in" style={{
-            maxWidth: '850px',
+            maxWidth: '920px',
             width: '100%',
+            maxHeight: '90vh',
             padding: 0,
             overflow: 'hidden',
             background: 'var(--bg-card)',
             border: '1px solid var(--border-color)',
-            boxShadow: 'var(--shadow-2xl)',
-            textAlign: 'left'
+            borderRadius: '24px',
+            boxShadow: '0 25px 60px rgba(0, 0, 0, 0.5)',
+            textAlign: 'left',
+            position: 'relative'
           }} onClick={(e) => e.stopPropagation()}>
-            <div className="grid grid-2" style={{ gap: 0, alignItems: 'stretch' }}>
-              {/* Modal Left: Image */}
-              <div style={{ display: 'flex', height: '100%', minHeight: '400px', position: 'relative' }}>
+            
+            {/* Bouton de fermeture supérieur */}
+            <button 
+              onClick={() => setSelectedItem(null)}
+              style={{
+                position: 'absolute',
+                top: '12px',
+                right: '12px',
+                zIndex: 10,
+                background: 'rgba(0, 0, 0, 0.6)',
+                color: '#ffffff',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                borderRadius: '50%',
+                width: '36px',
+                height: '36px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '1.1rem',
+                fontWeight: 'bold'
+              }}
+            >
+              ✖
+            </button>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: window.innerWidth < 768 ? '1fr' : '1fr 1fr',
+              gap: 0,
+              maxHeight: '90vh',
+              overflowY: 'auto'
+            }}>
+              {/* Modal Left: Photo centrée */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: '#0f172a',
+                position: 'relative',
+                minHeight: '260px',
+                maxHeight: '520px',
+                overflow: 'hidden'
+              }}>
                 <img 
                   src={selectedItem.image} 
                   alt={selectedItem.title}
                   onError={(e) => { e.target.onerror = null; e.target.src = '/csu_gallery_hero_real.png'; }}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    maxHeight: '520px',
+                    objectFit: 'cover',
+                    display: 'block'
+                  }}
                 />
               </div>
 
-              {/* Modal Right: Details */}
-              <div style={{ padding: '2.5rem 2rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '400px' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', flex: 1 }}>
-                  <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.75rem' }}>
+              {/* Modal Right: Informations centrées & détaillées */}
+              <div style={{
+                padding: '2rem 1.75rem',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                background: 'var(--bg-card)',
+                maxHeight: '520px',
+                overflowY: 'auto'
+              }}>
+                <div>
+                  <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
                     {selectedItem.tags.map((tag, idx) => (
-                      <span key={idx} className="badge badge-success" style={{ fontSize: '0.7rem' }}>#{tag}</span>
+                      <span key={idx} className="badge badge-success" style={{ fontSize: '0.72rem', padding: '0.25rem 0.6rem' }}>#{tag}</span>
                     ))}
                   </div>
                   
-                  <h2 style={{ fontSize: '1.5rem', fontWeight: '900', color: 'var(--primary)', marginBottom: '1rem' }}>
+                  <h2 style={{ fontSize: '1.35rem', fontWeight: '850', color: 'var(--primary)', marginBottom: '0.85rem', lineHeight: '1.3' }}>
                     {selectedItem.title}
                   </h2>
-                  <p style={{ fontSize: '0.9rem', color: 'var(--text-sub)', lineHeight: '1.5', marginBottom: '1.5rem' }}>
+
+                  <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', lineHeight: '1.6', marginBottom: '1.25rem' }}>
                     {selectedItem.description}
                   </p>
                   
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', borderTop: '1px solid var(--border-color)', paddingTop: '1rem', fontSize: '0.85rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', borderTop: '1px solid var(--border-color)', paddingTop: '1rem', fontSize: '0.85rem' }}>
                     <div>
                       <strong style={{ color: 'var(--text-muted)' }}>📍 {t.location} : </strong>
-                      <span style={{ fontWeight: '600' }}>{selectedItem.location}</span>
+                      <span style={{ fontWeight: '700', color: 'var(--text-main)' }}>{selectedItem.location}</span>
                     </div>
                     <div>
                       <strong style={{ color: 'var(--text-muted)' }}>📅 {t.date} : </strong>
-                      <span style={{ fontWeight: '600' }}>{selectedItem.date}</span>
+                      <span style={{ fontWeight: '700', color: 'var(--text-main)' }}>{selectedItem.date}</span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--bg-card-subtle)', padding: '0.5rem 0.75rem', borderRadius: '8px', marginTop: '0.5rem' }}>
-                      <span style={{ fontSize: '1.2rem' }}>📈</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: 'var(--bg-card-subtle)', padding: '0.65rem 0.85rem', borderRadius: '12px', marginTop: '0.5rem', border: '1px solid var(--border-color)' }}>
+                      <span style={{ fontSize: '1.3rem' }}>📈</span>
                       <div>
-                        <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>{t.impact}</div>
-                        <div style={{ fontWeight: '800', color: 'var(--secondary)', fontSize: '0.95rem' }}>{selectedItem.impact}</div>
+                        <div style={{ fontSize: '0.68rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: '700' }}>{t.impact}</div>
+                        <div style={{ fontWeight: '850', color: 'var(--secondary)', fontSize: '0.95rem' }}>{selectedItem.impact}</div>
                       </div>
                     </div>
                   </div>
@@ -301,7 +362,8 @@ export default function GalerieCSU({ lang }) {
 
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
                   <button 
-                    className="btn btn-outline btn-sm" 
+                    className="btn btn-primary btn-sm" 
+                    style={{ borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700' }}
                     onClick={() => setSelectedItem(null)}
                   >
                     {t.btnClose}
@@ -309,6 +371,7 @@ export default function GalerieCSU({ lang }) {
                 </div>
               </div>
             </div>
+
           </div>
         </div>
       )}

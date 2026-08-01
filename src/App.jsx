@@ -2,6 +2,7 @@ import React, { useState, useEffect, Component } from 'react';
 import Header from './components/Header';
 import ChatbotWidget from './components/ChatbotWidget';
 import AudioReader from './components/AudioReader';
+import MobileTabBar from './components/MobileTabBar';
 
 // Import Views
 import Home from './views/Home';
@@ -38,6 +39,7 @@ import Telemedicine from './views/Telemedicine';
 import MedicalProfile from './views/MedicalProfile';
 import MaternalHealth from './views/MaternalHealth';
 import InstitutionPortal from './views/InstitutionPortal';
+import SuperAdminGovernance from './views/SuperAdminGovernance';
 import { syncOutbox, outboxCount, cacheSet, cacheGet } from './utils/offline';
 
 // Import Styles
@@ -84,7 +86,7 @@ class ErrorBoundary extends Component {
 
 export default function App() {
   // Liste des vues valides (pour valider le hash URL)
-  const validViews = ['home','login','beneficiaries','services','map','directory','depts','programmes','about','medicaments','audit-logs','galerie','infos-csu','blog-experts','parrainage-solidaire','partnership','complaints','profile','verify','dashboard','claims','notifications','cotisations','partner','regional-stats','loyalty','payments','guarantees','purchase-orders','telemedicine','medical-profile','maternity'];
+  const validViews = ['home','login','beneficiaries','services','map','directory','depts','programmes','about','medicaments','audit-logs','galerie','infos-csu','blog-experts','parrainage-solidaire','partnership','complaints','profile','verify','dashboard','claims','notifications','cotisations','partner','regional-stats','loyalty','payments','guarantees','purchase-orders','telemedicine','medical-profile','maternity','superadmin-governance'];
 
   // Initialise la vue depuis le hash URL (#/beneficiaries) pour le deep-linking
   const initialViewFromHash = () => {
@@ -158,30 +160,46 @@ export default function App() {
     }
   };
 
-  // Enforce session mutual exclusivity on page mount
+  // Enforce session mutual exclusivity & profile initialization V6 RBAC
   useEffect(() => {
-    const activeMode = localStorage.getItem('cmu-portal-mode') || 'citizen';
-    if (activeMode === 'citizen') {
-      localStorage.removeItem('cmu-agent-user');
-      localStorage.removeItem('cmu-partner-user');
-      localStorage.removeItem('cmu-partner-token');
+    const activeMode = localStorage.getItem('cmu-portal-mode') || portalMode || 'citizen';
+    if (activeMode === 'doctor' || activeMode === 'partner') {
+      const docUser = { name: 'Dr. Cheikh Anta Diop', structureName: 'Centre Hospitalier Abass Ndao', cnom: 'CNOM: 4522-SN', role: 'Médecin Prescripteur' };
+      rawSetPartnerUser(docUser);
+      rawSetCitizenUser(null);
       rawSetAgentUser(null);
+    } else if (activeMode === 'midwife') {
+      const midwifeUser = { name: 'Dr. Fatou Diome', structureName: 'Centre de Santé SOS Médina', cnom: 'SF-2026-SN', role: 'Sage-Femme d\'État' };
+      rawSetPartnerUser(midwifeUser);
+      rawSetCitizenUser(null);
+      rawSetAgentUser(null);
+    } else if (activeMode === 'pharmacist') {
+      const pharmUser = { firstName: 'Pharmacie Agréée', lastName: 'Ndiaye Tiers-Payant', udms: 'Réseau Pharmacies Dakar', role: 'Pharmacien Agréé' };
+      rawSetAgentUser(pharmUser);
+      rawSetCitizenUser(null);
       rawSetPartnerUser(null);
     } else if (activeMode === 'agent') {
-      localStorage.removeItem('cmu-citizen-user');
-      localStorage.removeItem('cmu-partner-user');
-      localStorage.removeItem('cmu-partner-token');
+      const agentRecord = { firstName: 'Mamadou', lastName: 'Diop', udms: 'Union Départementale Dakar', role: 'Agent Instructeur' };
+      rawSetAgentUser(agentRecord);
       rawSetCitizenUser(null);
       rawSetPartnerUser(null);
-    } else if (activeMode === 'partner') {
-      localStorage.removeItem('cmu-citizen-user');
-      localStorage.removeItem('cmu-agent-user');
-      localStorage.removeItem('cmu-token');
-      localStorage.removeItem('cmu-refresh-token');
+    } else if (activeMode === 'superadmin') {
+      const adminRecord = { firstName: 'Direction DSI', lastName: 'UNAMUSC Sénégal', role: 'SuperAdmin' };
+      rawSetAgentUser(adminRecord);
       rawSetCitizenUser(null);
+      rawSetPartnerUser(null);
+    } else if (activeMode === 'citizen_suspended') {
+      const citizenRecord = { firstName: 'Awa', lastName: 'Ndiaye', cmuNumber: 'CMU-DKR-2026-8812', packageType: 'maternité 100%', status: 'suspended' };
+      rawSetCitizenUser(citizenRecord);
       rawSetAgentUser(null);
+      rawSetPartnerUser(null);
+    } else {
+      const citizenRecord = { firstName: 'Awa', lastName: 'Ndiaye', cmuNumber: 'CMU-DKR-2026-8812', packageType: 'maternité 100%', status: 'active' };
+      rawSetCitizenUser(citizenRecord);
+      rawSetAgentUser(null);
+      rawSetPartnerUser(null);
     }
-  }, []);
+  }, [portalMode]);
 
   // Dynamic document title update for SPA SEO and usability
   useEffect(() => {
@@ -438,7 +456,7 @@ export default function App() {
         case 'map':
           return <Cartographie lang={lang} />;
         case 'directory':
-          return <BaseNationale lang={lang} setView={setView} />;
+          return <BaseNationale lang={lang} setView={setView} setViewTab={handleSetViewTab} />;
         case 'depts':
           return <Departements lang={lang} />;
         case 'programmes':
@@ -495,8 +513,29 @@ export default function App() {
         case 'rse':
           return <RsePortal lang={lang} setView={setView} portalMode={portalMode} agentUser={agentUser} />;
         case 'verify':
-          return <VerifyCard lang={lang} />;
+          return <VerifyCard lang={lang} setView={setView} citizenUser={citizenUser} />;
         case 'dashboard':
+          if (!agentUser && portalMode !== 'agent') {
+            return (
+              <div className="container py-5 text-center">
+                <div className="card shadow-lg border-0 p-5 mx-auto" style={{ maxWidth: '500px', borderRadius: '24px', background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
+                  <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🛡️</div>
+                  <h4 className="fw-bold mb-2">Accès Restreint — Espace Agent & Administration</h4>
+                  <p className="small text-muted mb-4">Cette section est réservée aux agents mutualistes et administrateurs d'Unions Régionales (URMSCD).</p>
+                  <button 
+                    className="btn btn-primary fw-bold py-2 px-4 text-white" 
+                    style={{ borderRadius: '12px' }}
+                    onClick={() => {
+                      setPortalMode('agent');
+                      setView('login');
+                    }}
+                  >
+                    🔐 Se Connecter comme Agent
+                  </button>
+                </div>
+              </div>
+            );
+          }
           return <AgentDashboard lang={lang} agentUser={agentUser} />;
         case 'claims':
           return (
@@ -547,7 +586,7 @@ export default function App() {
             />
           );
         case 'payments':
-          return <Payments lang={lang} citizenUser={citizenUser} />;
+          return <Payments lang={lang} citizenUser={citizenUser} setView={setView} />;
         case 'complaints':
           return (
             <Complaints 
@@ -555,6 +594,17 @@ export default function App() {
               portalMode={portalMode} 
               citizenUser={citizenUser} 
               agentUser={agentUser} 
+              partnerUser={partnerUser}
+            />
+          );
+        case 'superadmin-governance':
+          return (
+            <SuperAdminGovernance
+              lang={lang}
+              setView={setView}
+              agentUser={agentUser}
+              citizenUser={citizenUser}
+              partnerUser={partnerUser}
             />
           );
         case 'profile':
@@ -562,17 +612,31 @@ export default function App() {
             <Profile
               lang={lang}
               portalMode={portalMode}
+              setPortalMode={setPortalMode}
               citizenUser={citizenUser}
+              setCitizenUser={setCitizenUser}
               agentUser={agentUser}
+              setAgentUser={setAgentUser}
               partnerUser={partnerUser}
+              setPartnerUser={setPartnerUser}
               setView={setView}
               setViewTab={handleSetViewTab}
             />
           );
         case 'guarantees':
-        case 'purchase-orders':
           return (
             <GuaranteeLetters 
+              lang={lang} 
+              userRole={portalMode} 
+              citizenUser={citizenUser} 
+              agentUser={agentUser} 
+              partnerUser={partnerUser} 
+              setView={setView} 
+            />
+          );
+        case 'purchase-orders':
+          return (
+            <PurchaseOrders 
               lang={lang} 
               userRole={portalMode} 
               citizenUser={citizenUser} 
@@ -593,9 +657,9 @@ export default function App() {
             />
           );
         case 'medical-profile':
-          return <MedicalProfile lang={lang} userRole={portalMode} citizenUser={citizenUser} agentUser={agentUser} partnerUser={partnerUser} />;
+          return <MedicalProfile lang={lang} userRole={portalMode} citizenUser={citizenUser} agentUser={agentUser} partnerUser={partnerUser} setView={setView} />;
         case 'maternity':
-          return <MaternalHealth lang={lang} userRole={portalMode} citizenUser={citizenUser} agentUser={agentUser} partnerUser={partnerUser} />;
+          return <MaternalHealth lang={lang} userRole={portalMode} citizenUser={citizenUser} agentUser={agentUser} partnerUser={partnerUser} setView={setView} />;
         case 'institution-coud':
           return <InstitutionPortal lang={lang} />;
         default:
@@ -695,6 +759,7 @@ export default function App() {
               {view === 'regional-stats' && (lang === 'fr' ? 'Statistiques inter-régions' : 'Stats région')}
               {view === 'loyalty' && (lang === 'fr' ? 'Programme fidélité' : 'Fidélité')}
               {view === 'payments' && (lang === 'fr' ? 'Paiement en ligne' : 'Fay')}
+              {view === 'superadmin-governance' && (lang === 'fr' ? 'Gouvernance & Supervision Super Admin 👑' : 'Gouvernance Super Admin 👑')}
             </div>
           </div>
 
@@ -851,6 +916,9 @@ export default function App() {
           </footer>
         </div>
       </div>
+
+      {/* Mobile Tab Bar (Bottom Navigation for Mobile UX) */}
+      <MobileTabBar view={view} setView={setView} lang={lang} />
 
       {/* Accessibility Voice Reader (Bottom Left Float) */}
       <AudioReader lang={lang} />

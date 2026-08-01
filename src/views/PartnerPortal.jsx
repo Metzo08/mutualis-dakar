@@ -29,8 +29,8 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
 
   // Stats
   const [stats, setStats] = useState(null);
-
-  const isAgent = (portalMode === 'agent' && agentUser) || true; // Permet aux agents et administrateurs d'accéder au module UDMS
+  const isAuthenticated = !!partner || (portalMode === 'agent' && !!agentUser);
+  const isAgent = (portalMode === 'agent' && !!agentUser) || (partner && partner.isAgent);
 
   // ============================================================================
   // PRESTATAIRES & PROFESSIONNELS CRÉÉS PAR L'UNION DÉPARTEMENTALE (UDMS)
@@ -78,30 +78,18 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
       role: 'Médecin / Télémédecine WebRTC',
       udms: 'UDMS Pikine',
       commune: 'Pikine Nord',
-      agreement: 'AGR-2026-PKN-209',
+      agreement: 'AGR-2026-PKN-088',
       rate: 80,
-      phone: '+221 78 440 33 11',
+      phone: '+221 78 221 99 88',
       email: 'dr.sow@cmu-pikine.sn',
-      status: 'Actif & Agréé'
-    },
-    {
-      id: 105,
-      name: 'Laboratoire Biologique Pasteur',
-      role: 'Laboratoire d\'Analyses Médicales',
-      udms: 'UDMS Guédiawaye',
-      commune: 'Golf Sud',
-      agreement: 'AGR-2026-GDW-512',
-      rate: 90,
-      phone: '+221 33 837 12 00',
-      email: 'labo.pasteur@cmu-guediawaye.sn',
       status: 'Actif & Agréé'
     }
   ];
 
   const [prestataires, setPrestataires] = useState(() => {
     try {
-      const stored = localStorage.getItem('cmu_udms_prestataires');
-      return stored ? JSON.parse(stored) : defaultUdmsPrestataires;
+      const saved = localStorage.getItem('cmu_udms_prestataires');
+      return saved ? JSON.parse(saved) : defaultUdmsPrestataires;
     } catch (e) {
       return defaultUdmsPrestataires;
     }
@@ -110,7 +98,7 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
   const [selectedUdms, setSelectedUdms] = useState('UDMS Dakar');
   const [roleFilter, setRoleFilter] = useState('Tous');
 
-  // Formulaire de création par l'administrateur UDMS
+  // Nouveau prestataire par l'UDMS
   const [newPrestataire, setNewPrestataire] = useState({
     name: '',
     role: 'Médecin Généraliste / Spécialiste',
@@ -172,36 +160,36 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
   });
 
   const t = lang === 'fr' ? {
-    title: 'Espace partenaire & gestion des prestataires de santé',
+    title: 'Espace prestataire & gestion des praticiens de santé',
     subtitle: 'Portail de gestion des Unions Départementales (UDMS) — Création des médecins, pharmacies et centres d\'imagerie',
     username: 'Identifiant',
     password: 'Mot de passe',
     login: 'Se connecter',
     logout: 'Déconnexion',
-    demo: 'Démo : hp@cmu.sn / partenaire2026',
-    verifyTitle: 'Vérification carte CMU',
+    demo: 'Démo : partenaire@unamusc.sn / partenaire2026',
+    verifyTitle: 'Vérifier l\'éligibilité d\'un assuré',
     verifyPlaceholder: 'N° CMU (ex: SN-DK-MED-8472)',
     verifyBtn: 'Vérifier',
-    valid: 'Couverture active — tiers-payant autorisé',
-    invalid: 'Couverture inactive ou expirée — tiers-payant refusé',
-    tpTitle: 'Déclarer un tiers-payant',
+    valid: 'Couverture active — Tiers-payant autorisé (80%)',
+    invalid: 'Couverture inactive — Tiers-payant non autorisé',
+    tpTitle: 'Déclarer un acte Tiers-Payant',
     tpBeneficiary: 'Nom du patient',
     tpCareType: 'Type de soin',
     tpAmount: 'Montant facturé (FCFA)',
-    tpDesc: 'Description (optionnel)',
-    tpSubmit: 'Enregistrer le tiers-payant',
+    tpDesc: 'Description de l\'acte',
+    tpSubmit: 'Valider la prise en charge Tiers-Payant',
     consultation: 'Consultation',
     pharmacie: 'Pharmacie',
     hospitalisation: 'Hospitalisation',
-    acte: 'Acte médical'
+    acte: 'Acte technique'
   } : {
-    title: 'Espace partenaire fajukaay',
-    subtitle: 'Portail bu fajukaay yi nu agréer — saytu CMU ak tiers-payant',
+    title: 'Péku partenaire ak fajukaay yi',
+    subtitle: 'Portail UDMS — Saytu docteur, farmasi ak imagerie',
     username: 'Identifiant',
     password: 'Mot de passe',
     login: 'Duggu',
     logout: 'Genn',
-    demo: 'Démo : hp@cmu.sn / partenaire2026',
+    demo: 'Démo : partenaire@unamusc.sn / partenaire2026',
     verifyTitle: 'Saytu kàrt CMU',
     verifyPlaceholder: 'N° CMU (ex: SN-DK-MED-8472)',
     verifyBtn: 'Saytu',
@@ -225,8 +213,16 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
     setLoginError('');
     setTimeout(() => {
       setLoginLoading(false);
-      const user = { username: loginForm.username, structureName: 'UDMS Dakar — Centre de Santé', contactName: 'Admin UDMS Dakar', coverageRate: 85 };
+      const user = { 
+        username: loginForm.username || 'partenaire@unamusc.sn', 
+        structureName: 'UDMS Dakar — Centre de Santé & Tiers-Payant', 
+        contactName: 'Admin UDMS Dakar', 
+        coverageRate: 85,
+        isAgent: true
+      };
       setPartner(user);
+      localStorage.setItem('cmu-partner-user', JSON.stringify(user));
+      localStorage.setItem('cmu-partner-token', 'demo-token-2026');
       if (setPartnerUser) setPartnerUser(user);
     }, 600);
   };
@@ -235,6 +231,7 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
     localStorage.removeItem('cmu-partner-token');
     localStorage.removeItem('cmu-partner-user');
     setPartner(null);
+    if (setPartnerUser) setPartnerUser(null);
   };
 
   const verifyCard = (e) => {
@@ -290,7 +287,7 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
               border: '1px solid rgba(255, 255, 255, 0.3)'
             }}
           >
-            🏥 UNAMUSC — Administration des Unions Départementales & Espace Partenaires
+            🏥 UNAMUSC — Administration des unions départementales & espace partenaires
           </span>
           <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
             {t.title}
@@ -301,340 +298,534 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
         </div>
       </section>
 
-      {/* ============================================================================ */}
-      {/* MODULE ADMINISTRATEUR UDMS : CRÉATION DE PRESTATAIRES & MÉDECINS PAR RÔLE */}
-      {/* ============================================================================ */}
-      <div className="card shadow-sm border-0 p-4 mb-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-        <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 border-bottom pb-3" style={{ borderColor: 'var(--border-color)' }}>
-          <div>
-            <h4 className="fw-bold mb-1 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-              <span>🏛️</span> Module d'Administration de l'Union Départementale (UDMS)
-            </h4>
-            <p className="small text-muted mb-0">
-              Chaque administrateur d'Union Départementale peut agréer et créer des médecins, pharmacies, labos et centres de radiologie avec leurs rôles.
-            </p>
-          </div>
+      {!isAuthenticated ? (
+        <div className="fade-in-up" style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+          
+          {/* GRANDE SECTION SPLIT EN 2 COLONNES (Présentation + Connexion) */}
+          <div className="row g-4 g-xl-5 align-items-stretch">
+            {/* Colonne Gauche : Présentation du Portail Prestataires UNAMUSC */}
+            <div className="col-xl-7 col-lg-6">
+              <div className="card shadow-lg border-0 p-4 p-md-5 h-100 rounded-4 text-left d-flex flex-column justify-content-between" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', borderTop: '6px solid #059669', padding: '3rem 2.5rem' }}>
+                <div>
+                  <span className="badge bg-success-subtle text-success border border-success px-3.5 py-2 fw-bold mb-4 d-inline-block" style={{ borderRadius: '20px', fontSize: '0.85rem' }}>
+                    🏥 PORTAIL OFFICIEL DES STRUCTURES DE SANTÉ CONVENTIONNÉES
+                  </span>
+                  
+                  <h2 className="fw-extrabold mb-3.5" style={{ color: 'var(--primary)', fontSize: '2rem', lineHeight: '1.3', letterSpacing: '-0.01em' }}>
+                    Espace prestataires de santé & administration UDMS 🇸🇳
+                  </h2>
+                  
+                  <p className="text-muted mb-4" style={{ lineHeight: '1.7', fontSize: '1.02rem', opacity: 0.9 }}>
+                    Cet espace est réservé aux hôpitaux publics, cliniques privées, officines de pharmacie, centres d'imagerie et praticiens médicaux agréés par l'Union Nationale des Mutuelles de Santé Communautaires (UNAMUSC).
+                  </p>
 
-          <div className="d-flex gap-2">
-            <select 
-              className="form-select input fw-bold"
-              value={selectedUdms}
-              onChange={(e) => {
-                setSelectedUdms(e.target.value);
-                setNewPrestataire(prev => ({ ...prev, udms: e.target.value }));
-              }}
-              style={{ width: '220px', borderRadius: '10px' }}
-            >
-              <option value="Toutes">Toutes les UDMS (Région)</option>
-              <option value="UDMS Dakar">UDMS Dakar</option>
-              <option value="UDMS Pikine">UDMS Pikine</option>
-              <option value="UDMS Guédiawaye">UDMS Guédiawaye</option>
-              <option value="UDMS Rufisque">UDMS Rufisque</option>
-              <option value="UDMS Keur Massar">UDMS Keur Massar</option>
-            </select>
-          </div>
-        </div>
+                  <div className="d-flex flex-column gap-3.5 mb-4">
+                    <div className="d-flex gap-3.5 align-items-start p-3.5 rounded-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+                      <div style={{ fontSize: '1.85rem', color: '#059669', minWidth: '40px' }}>💳</div>
+                      <div>
+                        <h5 className="fw-bold mb-1.5" style={{ color: 'var(--primary)', fontSize: '1.05rem' }}>Télétransmission & Tiers-Payant (80% à 100%)</h5>
+                        <p className="text-muted mb-0" style={{ fontSize: '0.88rem', lineHeight: '1.55' }}>Validation en temps réel des cartes CMU et remboursement sous 72h des bordereaux d'actes médicaux.</p>
+                      </div>
+                    </div>
 
-        {udmsToast && (
-          <div className="alert alert-success d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm">
-            <span className="fs-4 me-2">✅</span>
-            <div style={{ color: 'var(--text-main)' }}>{udmsToast}</div>
-          </div>
-        )}
-
-        <div className="row g-4">
-          {/* Formulaire de création de prestataire par rôle */}
-          <div className="col-lg-5">
-            <div className="p-4 rounded-4 border" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
-              <h5 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--primary)' }}>
-                <span>✍️</span> Enregistrer un Prestataire / Médecin
-              </h5>
-
-              <form onSubmit={handleCreatePrestataireByUdms}>
-                <div className="mb-3">
-                  <label className="form-label small fw-semibold">Union Départementale (UDMS)</label>
-                  <select 
-                    className="form-select input fw-bold"
-                    value={newPrestataire.udms}
-                    onChange={(e) => setNewPrestataire({ ...newPrestataire, udms: e.target.value })}
-                    style={{ borderRadius: '10px' }}
-                  >
-                    <option value="UDMS Dakar">UDMS Dakar</option>
-                    <option value="UDMS Pikine">UDMS Pikine</option>
-                    <option value="UDMS Guédiawaye">UDMS Guédiawaye</option>
-                    <option value="UDMS Rufisque">UDMS Rufisque</option>
-                    <option value="UDMS Keur Massar">UDMS Keur Massar</option>
-                  </select>
-                </div>
-
-                <div className="mb-3">
-                  <label className="form-label small fw-semibold">Nom du Praticien ou de la Structure *</label>
-                  <input 
-                    type="text" 
-                    className="form-control input fw-bold"
-                    placeholder="Ex: Dr. Mamadou Ndiaye, Pharmacie Centrale..." 
-                    value={newPrestataire.name}
-                    onChange={(e) => setNewPrestataire({ ...newPrestataire, name: e.target.value })}
-                    style={{ borderRadius: '10px' }}
-                    required
-                  />
-                </div>
-
-                <div className="mb-3">
-                  <label className="form-label small fw-semibold">Rôle & Spécialité attribués *</label>
-                  <select 
-                    className="form-select input fw-bold"
-                    value={newPrestataire.role}
-                    onChange={(e) => setNewPrestataire({ ...newPrestataire, role: e.target.value })}
-                    style={{ borderRadius: '10px' }}
-                  >
-                    <option value="Médecin Généraliste / Spécialiste">Médecin Généraliste / Spécialiste</option>
-                    <option value="Pharmacie d'Officine (Bons 48h)">Pharmacie d'Officine (Bons 48h)</option>
-                    <option value="Centre d'Imagerie & Radiologie (DICOM)">Centre d'Imagerie & Radiologie (DICOM)</option>
-                    <option value="Laboratoire d'Analyses Médicales">Laboratoire d'Analyses Médicales</option>
-                    <option value="Hôpital / Structure Sanitaire">Hôpital / Structure Sanitaire</option>
-                    <option value="Sage-Femme / Infirmier (CPN Maternité)">Sage-Femme / Infirmier (CPN Maternité)</option>
-                  </select>
-                </div>
-
-                <div className="row g-2 mb-3">
-                  <div className="col-6">
-                    <label className="form-label small fw-semibold">N° Agrément UNAMUSC *</label>
-                    <input 
-                      type="text" 
-                      className="form-control input"
-                      placeholder="Ex: AGR-2026-DKR-901" 
-                      value={newPrestataire.agreement}
-                      onChange={(e) => setNewPrestataire({ ...newPrestataire, agreement: e.target.value })}
-                      style={{ borderRadius: '10px' }}
-                      required
-                    />
+                    <div className="d-flex gap-3.5 align-items-start p-3.5 rounded-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+                      <div style={{ fontSize: '1.85rem', color: '#059669', minWidth: '40px' }}>🏛️</div>
+                      <div>
+                        <h5 className="fw-bold mb-1.5" style={{ color: 'var(--primary)', fontSize: '1.05rem' }}>Habilitation des Unions Départementales (UDMS)</h5>
+                        <p className="text-muted mb-0" style={{ fontSize: '0.88rem', lineHeight: '1.55' }}>Gestion du conventionnement local des médecins, des tarifs réglementés et du contrôle médical.</p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="col-6">
-                    <label className="form-label small fw-semibold">Taux de Prise en charge</label>
-                    <select 
-                      className="form-select input"
-                      value={newPrestataire.rate}
-                      onChange={(e) => setNewPrestataire({ ...newPrestataire, rate: e.target.value })}
-                      style={{ borderRadius: '10px' }}
+                </div>
+
+                {/* Comptes Démo Rapides */}
+                <div className="p-4 rounded-4 border mt-4" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
+                  <span className="small text-muted fw-bold d-block mb-3 text-uppercase" style={{ fontSize: '0.8rem', letterSpacing: '0.5px' }}>
+                    💡 COMPTES DÉMO PRÉ-REMPLIS (CLIQUEZ POUR TESTER INSTANTANÉMENT) :
+                  </span>
+                  <div className="d-flex flex-wrap gap-2.5">
+                    <button 
+                      type="button" 
+                      className="btn btn-outline-success fw-bold px-3 py-2"
+                      style={{ fontSize: '0.82rem', borderRadius: '10px' }}
+                      onClick={() => setLoginForm({ username: 'AGR-2026-DKR-101', password: 'partenaire2026' })}
                     >
-                      <option value="80">80% (Général)</option>
-                      <option value="85">85% (Spécialités)</option>
-                      <option value="90">90% (Examens/Radios)</option>
-                      <option value="100">100% (Gratuité / Maternité)</option>
-                    </select>
+                      🩺 Dr. Ousmane Ndiaye (AGR-2026-DKR-101)
+                    </button>
+                    <button 
+                      type="button" 
+                      className="btn btn-outline-success fw-bold px-3 py-2"
+                      style={{ fontSize: '0.82rem', borderRadius: '10px' }}
+                      onClick={() => setLoginForm({ username: 'AGR-2026-DKR-404', password: 'partenaire2026' })}
+                    >
+                      💊 Pharmacie de la Médina (AGR-2026-DKR-404)
+                    </button>
+                    <button 
+                      type="button" 
+                      className="btn btn-outline-success fw-bold px-3 py-2"
+                      style={{ fontSize: '0.82rem', borderRadius: '10px' }}
+                      onClick={() => setLoginForm({ username: 'partenaire@unamusc.sn', password: 'partenaire2026' })}
+                    >
+                      🏛️ UDMS Dakar (partenaire@unamusc.sn)
+                    </button>
                   </div>
                 </div>
+              </div>
+            </div>
 
-                <div className="row g-2 mb-3">
-                  <div className="col-6">
-                    <label className="form-label small fw-semibold">Commune</label>
+            {/* Colonne Droite : Formulaire de Connexion SÉCURISÉ */}
+            <div className="col-xl-5 col-lg-6">
+              <div className="card shadow-lg border-0 p-4 p-md-5 h-100 rounded-4 text-left d-flex flex-column justify-content-center" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)', padding: '3rem 2.5rem' }}>
+                <div className="text-center mb-4 pb-2">
+                  <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.2rem', margin: '0 auto 1.25rem', boxShadow: '0 8px 20px rgba(16, 185, 129, 0.2)' }}>
+                    🔐
+                  </div>
+                  <h3 className="fw-bold mb-2" style={{ color: 'var(--text-main)', fontSize: '1.5rem' }}>Connexion espace prestataires</h3>
+                  <p className="small text-muted mb-0" style={{ fontSize: '0.9rem', lineHeight: '1.5' }}>Accès réservé aux praticiens de santé agréés et administrateurs d'Unions Départementales (UDMS).</p>
+                </div>
+
+                {loginError && <div className="alert alert-danger py-2.5 px-3 small mb-4 rounded-3 fw-bold">{loginError}</div>}
+
+                <form onSubmit={handleLogin}>
+                  <div className="mb-4">
+                    <label className="form-label small fw-bold mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.9rem' }}>Identifiant / Code agrément *</label>
                     <input 
                       type="text" 
-                      className="form-control input"
-                      placeholder="Ex: Dakar Plateau" 
-                      value={newPrestataire.commune}
-                      onChange={(e) => setNewPrestataire({ ...newPrestataire, commune: e.target.value })}
-                      style={{ borderRadius: '10px' }}
+                      className="form-control fw-bold fs-6" 
+                      style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', height: '54px', padding: '0.85rem 1.25rem' }} 
+                      placeholder="Ex: AGR-2026-DKR-101 ou partenaire@unamusc.sn" 
+                      value={loginForm.username} 
+                      onChange={(e) => setLoginForm({ ...loginForm, username: e.target.value })} 
+                      required 
                     />
                   </div>
-                  <div className="col-6">
-                    <label className="form-label small fw-semibold">Téléphone de contact *</label>
+
+                  <div className="mb-4 pb-2">
+                    <label className="form-label small fw-bold mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.9rem' }}>Mot de passe *</label>
                     <input 
-                      type="text" 
-                      className="form-control input"
-                      placeholder="+221 77..." 
-                      value={newPrestataire.phone}
-                      onChange={(e) => setNewPrestataire({ ...newPrestataire, phone: e.target.value })}
-                      style={{ borderRadius: '10px' }}
-                      required
+                      type="password" 
+                      className="form-control fw-bold fs-6" 
+                      style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', height: '54px', padding: '0.85rem 1.25rem' }} 
+                      placeholder="••••••••" 
+                      value={loginForm.password} 
+                      onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })} 
+                      required 
                     />
                   </div>
-                </div>
 
-                <div className="mb-4">
-                  <label className="form-label small fw-semibold">Adresse Email de connexion</label>
-                  <input 
-                    type="email" 
-                    className="form-control input"
-                    placeholder="praticien@cmu.sn" 
-                    value={newPrestataire.email}
-                    onChange={(e) => setNewPrestataire({ ...newPrestataire, email: e.target.value })}
-                    style={{ borderRadius: '10px' }}
-                  />
-                </div>
+                  <button 
+                    type="submit" 
+                    className="btn btn-success fw-bold w-100 py-3 text-white shadow-md" 
+                    disabled={loginLoading}
+                    style={{ borderRadius: '14px', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', border: 'none', fontSize: '1.05rem', height: '56px', boxShadow: '0 8px 24px rgba(16, 185, 129, 0.35)' }}
+                  >
+                    {loginLoading ? 'Vérification...' : '🔑 Se connecter au portail prestataire'}
+                  </button>
+                </form>
 
-                <button 
-                  type="submit" 
-                  className="btn text-white fw-bold w-100 py-2.5 shadow-sm"
-                  style={{ background: 'var(--primary)', borderColor: 'var(--primary)', borderRadius: '12px', fontSize: '0.95rem' }}
-                >
-                  ➕ Enregistrer & Agréer le Prestataire
-                </button>
-              </form>
+                <div className="mt-4 pt-4 border-top text-center" style={{ borderColor: 'var(--border-color)' }}>
+                  <small style={{ color: 'var(--text-sub)', fontSize: '0.82rem' }}>
+                    Besoin d'un agrément UDMS ? Contactez l'Union Nationale au <strong className="text-success">+221 77 602 67 83</strong>.
+                  </small>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Liste des Prestataires et Professionnels Agréés par l'UDMS */}
-          <div className="col-lg-7">
-            <div className="p-4 rounded-4 border h-100 d-flex flex-column" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
-              <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                <h5 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-                  <span>📋</span> Prestataires Agréés ({filteredPrestataires.length})
+          {/* GRILLE DES 4 GRANDS AXES PRESTATAIRES */}
+          <div className="grid grid-4" style={{ gap: '1.5rem' }}>
+            <div className="card p-4 text-left shadow-sm" style={{ borderRadius: '20px', background: 'var(--card-bg)', border: '1px solid var(--border-color)', padding: '1.75rem 1.5rem' }}>
+              <div style={{ fontSize: '2.4rem', marginBottom: '0.75rem' }}>🏥</div>
+              <h5 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.5rem' }}>Hôpitaux & cliniques</h5>
+              <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', margin: 0, lineHeight: '1.6' }}>
+                Prise en charge directe des lettres de garantie (80%) et télé-admission des urgences médicales.
+              </p>
+            </div>
+
+            <div className="card p-4 text-left shadow-sm" style={{ borderRadius: '16px', background: 'var(--card-bg)', border: '1px solid var(--border-color)', padding: '1.75rem 1.5rem' }}>
+              <div style={{ fontSize: '2.4rem', marginBottom: '0.75rem' }}>💊</div>
+              <h5 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.5rem' }}>Officines de pharmacie</h5>
+              <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', margin: 0, lineHeight: '1.6' }}>
+                Saisie des bons de commande pharmacie (50%) et remboursement direct du Tiers-Payant.
+              </p>
+            </div>
+
+            <div className="card p-4 text-left shadow-sm" style={{ borderRadius: '16px', background: 'var(--card-bg)', border: '1px solid var(--border-color)', padding: '1.75rem 1.5rem' }}>
+              <div style={{ fontSize: '2.4rem', marginBottom: '0.75rem' }}>🩻</div>
+              <h5 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.5rem' }}>Imagerie & laboratoires</h5>
+              <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', margin: 0, lineHeight: '1.6' }}>
+                Télétransmission des clichés radiologiques DICOM HD et des comptes-rendus d'examens biologiques.
+              </p>
+            </div>
+
+            <div className="card p-4 text-left shadow-sm" style={{ borderRadius: '16px', background: 'var(--card-bg)', border: '1px solid var(--border-color)', padding: '1.75rem 1.5rem' }}>
+              <div style={{ fontSize: '2.4rem', marginBottom: '0.75rem' }}>🏛️</div>
+              <h5 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.5rem' }}>Unions départementales</h5>
+              <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', margin: 0, lineHeight: '1.6' }}>
+                Agrément local des praticiens, enregistrement des conventions régionales et audits de réclamations.
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* User Status Bar with Logout */}
+          <div className="d-flex justify-content-between align-items-center mb-4 p-3 rounded-4" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)' }}>
+            <div className="d-flex align-items-center gap-2">
+              <span className="badge bg-success text-white p-2" style={{ borderRadius: '10px' }}>⚡ Connecté</span>
+              <div>
+                <strong className="d-block" style={{ color: 'var(--text-main)', fontSize: '0.92rem' }}>
+                  {partner?.structureName || agentUser?.firstName + ' ' + agentUser?.lastName || 'Prestataire Agréé UNAMUSC'}
+                </strong>
+                <small className="text-muted" style={{ fontSize: '0.75rem' }}>Identifiant : {partner?.username || agentUser?.email || 'hp@cmu.sn'}</small>
+              </div>
+            </div>
+            <button 
+              type="button" 
+              className="btn btn-sm btn-outline-danger fw-bold" 
+              style={{ borderRadius: '10px', padding: '0.4rem 0.9rem' }}
+              onClick={handleLogout}
+            >
+              🚪 Déconnexion
+            </button>
+          </div>
+
+          {/* ============================================================================ */}
+          {/* MODULE ADMINISTRATEUR UDMS : CRÉATION DE PRESTATAIRES & MÉDECINS PAR RÔLE */}
+          {/* ============================================================================ */}
+          <div className="card shadow-sm border-0 p-4 mb-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+            <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 border-bottom pb-3" style={{ borderColor: 'var(--border-color)' }}>
+              <div>
+                <h4 className="fw-bold mb-1 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
+                  <span>🏛️</span> Module d'Administration de l'Union Départementale (UDMS)
+                </h4>
+                <p className="small text-muted mb-0">
+                  Chaque administrateur d'Union Départementale peut agréer et créer des médecins, pharmacies, labos et centres de radiologie avec leurs rôles.
+                </p>
+              </div>
+
+              <div className="d-flex gap-2">
+                <select 
+                  className="form-select input fw-bold"
+                  value={selectedUdms}
+                  onChange={(e) => {
+                    setSelectedUdms(e.target.value);
+                    setNewPrestataire(prev => ({ ...prev, udms: e.target.value }));
+                  }}
+                  style={{ width: '220px', borderRadius: '10px' }}
+                >
+                  <option value="Toutes">Toutes les UDMS (Région)</option>
+                  <option value="UDMS Dakar">UDMS Dakar</option>
+                  <option value="UDMS Pikine">UDMS Pikine</option>
+                  <option value="UDMS Guédiawaye">UDMS Guédiawaye</option>
+                  <option value="UDMS Rufisque">UDMS Rufisque</option>
+                  <option value="UDMS Keur Massar">UDMS Keur Massar</option>
+                </select>
+              </div>
+            </div>
+
+            {udmsToast && (
+              <div className="alert alert-success d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm">
+                <span className="fs-4 me-2">✅</span>
+                <div style={{ color: 'var(--text-main)' }}>{udmsToast}</div>
+              </div>
+            )}
+
+            <div className="row g-4">
+              {/* Formulaire de création de prestataire par rôle */}
+              <div className="col-lg-5">
+                <div className="p-4 rounded-4 border" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
+                  <h5 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--primary)' }}>
+                    <span>✍️</span> Enregistrer un Prestataire / Médecin
+                  </h5>
+
+                  <form onSubmit={handleCreatePrestataireByUdms}>
+                    <div className="mb-3">
+                      <label className="form-label small fw-semibold">Union Départementale (UDMS)</label>
+                      <select 
+                        className="form-select input fw-bold"
+                        value={newPrestataire.udms}
+                        onChange={(e) => setNewPrestataire({ ...newPrestataire, udms: e.target.value })}
+                        style={{ borderRadius: '10px' }}
+                      >
+                        <option value="UDMS Dakar">UDMS Dakar</option>
+                        <option value="UDMS Pikine">UDMS Pikine</option>
+                        <option value="UDMS Guédiawaye">UDMS Guédiawaye</option>
+                        <option value="UDMS Rufisque">UDMS Rufisque</option>
+                        <option value="UDMS Keur Massar">UDMS Keur Massar</option>
+                      </select>
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label small fw-semibold">Nom du Praticien ou de la Structure *</label>
+                      <input 
+                        type="text" 
+                        className="form-control input fw-bold"
+                        placeholder="Ex: Dr. Mamadou Ndiaye, Pharmacie Centrale..." 
+                        value={newPrestataire.name}
+                        onChange={(e) => setNewPrestataire({ ...newPrestataire, name: e.target.value })}
+                        style={{ borderRadius: '10px' }}
+                        required
+                      />
+                    </div>
+
+                    <div className="mb-3">
+                      <label className="form-label small fw-semibold">Rôle & Spécialité attribués *</label>
+                      <select 
+                        className="form-select input fw-bold"
+                        value={newPrestataire.role}
+                        onChange={(e) => setNewPrestataire({ ...newPrestataire, role: e.target.value })}
+                        style={{ borderRadius: '10px' }}
+                      >
+                        <option value="Médecin Généraliste / Spécialiste">Médecin Généraliste / Spécialiste</option>
+                        <option value="Pharmacie d'Officine (Bons 48h)">Pharmacie d'Officine (Bons 48h)</option>
+                        <option value="Centre d'Imagerie & Radiologie (DICOM)">Centre d'Imagerie & Radiologie (DICOM)</option>
+                        <option value="Laboratoire d'Analyses Médicales">Laboratoire d'Analyses Médicales</option>
+                        <option value="Hôpital / Structure Sanitaire">Hôpital / Structure Sanitaire</option>
+                        <option value="Sage-Femme / Infirmier (CPN Maternité)">Sage-Femme / Infirmier (CPN Maternité)</option>
+                      </select>
+                    </div>
+
+                    <div className="row g-2 mb-3">
+                      <div className="col-6">
+                        <label className="form-label small fw-semibold">N° Agrément UNAMUSC *</label>
+                        <input 
+                          type="text" 
+                          className="form-control input"
+                          placeholder="Ex: AGR-2026-DKR-901" 
+                          value={newPrestataire.agreement}
+                          onChange={(e) => setNewPrestataire({ ...newPrestataire, agreement: e.target.value })}
+                          style={{ borderRadius: '10px' }}
+                          required
+                        />
+                      </div>
+                      <div className="col-6">
+                        <label className="form-label small fw-semibold">Taux de Prise en charge</label>
+                        <select 
+                          className="form-select input"
+                          value={newPrestataire.rate}
+                          onChange={(e) => setNewPrestataire({ ...newPrestataire, rate: e.target.value })}
+                          style={{ borderRadius: '10px' }}
+                        >
+                          <option value="80">80% (Général)</option>
+                          <option value="85">85% (Spécialités)</option>
+                          <option value="90">90% (Examens/Radios)</option>
+                          <option value="100">100% (Gratuité / Maternité)</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="row g-2 mb-3">
+                      <div className="col-6">
+                        <label className="form-label small fw-semibold">Commune</label>
+                        <input 
+                          type="text" 
+                          className="form-control input"
+                          placeholder="Ex: Dakar Plateau" 
+                          value={newPrestataire.commune}
+                          onChange={(e) => setNewPrestataire({ ...newPrestataire, commune: e.target.value })}
+                          style={{ borderRadius: '10px' }}
+                        />
+                      </div>
+                      <div className="col-6">
+                        <label className="form-label small fw-semibold">Téléphone de contact *</label>
+                        <input 
+                          type="text" 
+                          className="form-control input"
+                          placeholder="+221 77..." 
+                          value={newPrestataire.phone}
+                          onChange={(e) => setNewPrestataire({ ...newPrestataire, phone: e.target.value })}
+                          style={{ borderRadius: '10px' }}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mb-4">
+                      <label className="form-label small fw-semibold">Adresse Email de connexion</label>
+                      <input 
+                        type="email" 
+                        className="form-control input"
+                        placeholder="praticien@cmu.sn" 
+                        value={newPrestataire.email}
+                        onChange={(e) => setNewPrestataire({ ...newPrestataire, email: e.target.value })}
+                        style={{ borderRadius: '10px' }}
+                      />
+                    </div>
+
+                    <button 
+                      type="submit" 
+                      className="btn text-white fw-bold w-100 py-2.5 shadow-sm"
+                      style={{ background: 'var(--primary)', borderColor: 'var(--primary)', borderRadius: '12px', fontSize: '0.95rem' }}
+                    >
+                      ➕ Enregistrer & Agréer le Prestataire
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              {/* Liste des Prestataires et Professionnels Agréés par l'UDMS */}
+              <div className="col-lg-7">
+                <div className="p-4 rounded-4 border h-100 d-flex flex-column" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
+                  <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                    <h5 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
+                      <span>📋</span> Prestataires Agréés ({filteredPrestataires.length})
+                    </h5>
+
+                    <div className="d-flex gap-2">
+                      <select 
+                        className="form-select form-select-sm input"
+                        value={roleFilter}
+                        onChange={(e) => setRoleFilter(e.target.value)}
+                        style={{ width: '170px', borderRadius: '8px' }}
+                      >
+                        <option value="Tous">Tous les rôles</option>
+                        <option value="Médecin">Médecins</option>
+                        <option value="Pharmacie">Pharmacies</option>
+                        <option value="Imagerie">Imagerie / Radios</option>
+                        <option value="Laboratoire">Laboratoires</option>
+                        <option value="Hôpital">Hôpitaux</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="table-responsive flex-grow-1" style={{ maxHeight: '480px', overflowY: 'auto' }}>
+                    <table className="table table-hover align-middle mb-0" style={{ color: 'var(--text-main)' }}>
+                      <thead>
+                        <tr style={{ background: 'var(--card-bg)', borderBottom: '2px solid var(--border-color)' }}>
+                          <th style={{ padding: '0.75rem' }}>Praticien / Structure</th>
+                          <th style={{ padding: '0.75rem' }}>Rôle & Spécialité</th>
+                          <th style={{ padding: '0.75rem' }}>Union & Agrément</th>
+                          <th style={{ padding: '0.75rem' }}>Taux</th>
+                          <th style={{ padding: '0.75rem', textAlign: 'right' }}>Statut</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredPrestataires.length === 0 ? (
+                          <tr>
+                            <td colSpan="5" className="text-center py-4 text-muted">Aucun prestataire enregistré pour ces critères.</td>
+                          </tr>
+                        ) : (
+                          filteredPrestataires.map((p) => (
+                            <tr key={p.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                              <td style={{ padding: '0.75rem' }}>
+                                <strong className="d-block" style={{ color: 'var(--text-main)' }}>{p.name}</strong>
+                                <small className="text-muted">{p.commune} • {p.phone}</small>
+                              </td>
+                              <td style={{ padding: '0.75rem' }}>
+                                <span className="badge bg-primary-subtle text-primary border border-primary px-2.5 py-1" style={{ borderRadius: '6px', fontSize: '0.75rem' }}>
+                                  {p.role}
+                                </span>
+                              </td>
+                              <td style={{ padding: '0.75rem' }}>
+                                <span className="fw-semibold small d-block" style={{ color: 'var(--text-main)' }}>{p.udms}</span>
+                                <code className="text-success small fw-bold">{p.agreement}</code>
+                              </td>
+                              <td style={{ padding: '0.75rem' }}>
+                                <strong className="text-success">{p.rate}%</strong>
+                              </td>
+                              <td style={{ padding: '0.75rem', textAlign: 'right' }}>
+                                <span className="badge bg-success text-white px-2.5 py-1" style={{ borderRadius: '12px', fontSize: '0.75rem' }}>
+                                  ✅ {p.status}
+                                </span>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ============================================================================ */}
+          {/* SECTION VÉRIFICATION & TIERS-PAYANT DU PARTENAIRE */}
+          {/* ============================================================================ */}
+          <div className="row g-4">
+            {/* Vérification carte CMU */}
+            <div className="col-md-6">
+              <div className="card shadow-sm border-0 p-4 h-100" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+                <h5 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
+                  <span>🔍</span> {t.verifyTitle}
+                </h5>
+                <form onSubmit={verifyCard} className="mb-3">
+                  <div className="row g-2 mb-3">
+                    <div className="col-6">
+                      <input className="form-control input" placeholder="N° CMU (ex: SN-DK-MED-8472)" value={verifyNumber} onChange={(e) => setVerifyNumber(e.target.value)} style={{ borderRadius: '10px' }} />
+                    </div>
+                    <div className="col-6">
+                      <input className="form-control input" placeholder="Téléphone patient" value={verifyPhone} onChange={(e) => setVerifyPhone(e.target.value)} style={{ borderRadius: '10px' }} />
+                    </div>
+                  </div>
+                  <button type="submit" className="btn btn-primary text-white fw-bold px-4 w-100" disabled={verifyLoading} style={{ borderRadius: '10px' }}>
+                    {verifyLoading ? 'Vérification...' : `🔍 ${t.verifyBtn}`}
+                  </button>
+                </form>
+
+                {verifyResult && (
+                  <div className="p-3 rounded-3 border bg-success-subtle border-success">
+                    <h6 className="fw-bold text-success mb-1">{t.valid}</h6>
+                    <div className="small" style={{ color: 'var(--text-main)' }}>
+                      <strong>{verifyResult.firstName} {verifyResult.lastName}</strong> • {verifyResult.mutuelleName}<br />
+                      <span className="text-muted">Couverture valide jusqu'au 31/12/2026</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Déclaration tiers-payant */}
+            <div className="col-md-6">
+              <div className="card shadow-sm border-0 p-4 h-100" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+                <h5 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
+                  <span>📋</span> {t.tpTitle}
                 </h5>
 
-                <div className="d-flex gap-2">
-                  <select 
-                    className="form-select form-select-sm input"
-                    value={roleFilter}
-                    onChange={(e) => setRoleFilter(e.target.value)}
-                    style={{ width: '170px', borderRadius: '8px' }}
-                  >
-                    <option value="Tous">Tous les rôles</option>
-                    <option value="Médecin">Médecins</option>
-                    <option value="Pharmacie">Pharmacies</option>
-                    <option value="Imagerie">Imagerie / Radios</option>
-                    <option value="Laboratoire">Laboratoires</option>
-                    <option value="Hôpital">Hôpitaux</option>
-                  </select>
-                </div>
-              </div>
+                {tpResult && (
+                  <div className="alert alert-success p-2 mb-3 small fw-semibold">
+                    {tpResult.message}
+                  </div>
+                )}
 
-              <div className="table-responsive flex-grow-1" style={{ maxHeight: '480px', overflowY: 'auto' }}>
-                <table className="table table-hover align-middle mb-0" style={{ color: 'var(--text-main)' }}>
-                  <thead>
-                    <tr style={{ background: 'var(--card-bg)', borderBottom: '2px solid var(--border-color)' }}>
-                      <th style={{ padding: '0.75rem' }}>Praticien / Structure</th>
-                      <th style={{ padding: '0.75rem' }}>Rôle & Spécialité</th>
-                      <th style={{ padding: '0.75rem' }}>Union & Agrément</th>
-                      <th style={{ padding: '0.75rem' }}>Taux</th>
-                      <th style={{ padding: '0.75rem', textAlign: 'right' }}>Statut</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredPrestataires.length === 0 ? (
-                      <tr>
-                        <td colSpan="5" className="text-center py-4 text-muted">Aucun prestataire enregistré pour ces critères.</td>
-                      </tr>
-                    ) : (
-                      filteredPrestataires.map((p) => (
-                        <tr key={p.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                          <td style={{ padding: '0.75rem' }}>
-                            <strong className="d-block" style={{ color: 'var(--text-main)' }}>{p.name}</strong>
-                            <small className="text-muted">{p.commune} • {p.phone}</small>
-                          </td>
-                          <td style={{ padding: '0.75rem' }}>
-                            <span className="badge bg-primary-subtle text-primary border border-primary px-2.5 py-1" style={{ borderRadius: '6px', fontSize: '0.75rem' }}>
-                              {p.role}
-                            </span>
-                          </td>
-                          <td style={{ padding: '0.75rem' }}>
-                            <span className="fw-semibold small d-block" style={{ color: 'var(--text-main)' }}>{p.udms}</span>
-                            <code className="text-success small fw-bold">{p.agreement}</code>
-                          </td>
-                          <td style={{ padding: '0.75rem' }}>
-                            <strong className="text-success">{p.rate}%</strong>
-                          </td>
-                          <td style={{ padding: '0.75rem', textAlign: 'right' }}>
-                            <span className="badge bg-success text-white px-2.5 py-1" style={{ borderRadius: '12px', fontSize: '0.75rem' }}>
-                              ✅ {p.status}
-                            </span>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+                <form onSubmit={declareTierPayant}>
+                  <div className="row g-2 mb-2">
+                    <div className="col-6">
+                      <label className="form-label small fw-semibold">N° CMU Patient</label>
+                      <input className="form-control input" required value={tpForm.cmuNumber} onChange={(e) => setTpForm({ ...tpForm, cmuNumber: e.target.value })} style={{ borderRadius: '10px' }} />
+                    </div>
+                    <div className="col-6">
+                      <label className="form-label small fw-semibold">Nom du patient</label>
+                      <input className="form-control input" required value={tpForm.beneficiaryName} onChange={(e) => setTpForm({ ...tpForm, beneficiaryName: e.target.value })} style={{ borderRadius: '10px' }} />
+                    </div>
+                  </div>
+
+                  <div className="row g-2 mb-3">
+                    <div className="col-6">
+                      <label className="form-label small fw-semibold">Type de soin</label>
+                      <select className="form-select input" value={tpForm.careType} onChange={(e) => setTpForm({ ...tpForm, careType: e.target.value })} style={{ borderRadius: '10px' }}>
+                        <option value="consultation">Consultation médicale</option>
+                        <option value="pharmacie">Pharmacie / Ordonnance</option>
+                        <option value="hospitalisation">Hospitalisation</option>
+                        <option value="radiologie">Imagerie / Radiologie</option>
+                      </select>
+                    </div>
+                    <div className="col-6">
+                      <label className="form-label small fw-semibold">Montant facturé (FCFA)</label>
+                      <input type="number" className="form-control input" required value={tpForm.amount} onChange={(e) => setTpForm({ ...tpForm, amount: e.target.value })} style={{ borderRadius: '10px' }} />
+                    </div>
+                  </div>
+
+                  <button type="submit" className="btn btn-success text-white fw-bold w-100" disabled={tpLoading} style={{ borderRadius: '10px' }}>
+                    {tpLoading ? 'Traitement...' : `✍️ ${t.tpSubmit}`}
+                  </button>
+                </form>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* ============================================================================ */}
-      {/* SECTION VÉRIFICATION & TIERS-PAYANT DU PARTENAIRE */}
-      {/* ============================================================================ */}
-      <div className="row g-4">
-        {/* Vérification carte CMU */}
-        <div className="col-md-6">
-          <div className="card shadow-sm border-0 p-4 h-100" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-            <h5 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-              <span>🔍</span> {t.verifyTitle}
-            </h5>
-            <form onSubmit={verifyCard} className="mb-3">
-              <div className="row g-2 mb-3">
-                <div className="col-6">
-                  <input className="form-control input" placeholder="N° CMU (ex: SN-DK-MED-8472)" value={verifyNumber} onChange={(e) => setVerifyNumber(e.target.value)} style={{ borderRadius: '10px' }} />
-                </div>
-                <div className="col-6">
-                  <input className="form-control input" placeholder="Téléphone patient" value={verifyPhone} onChange={(e) => setVerifyPhone(e.target.value)} style={{ borderRadius: '10px' }} />
-                </div>
-              </div>
-              <button type="submit" className="btn btn-primary text-white fw-bold px-4 w-100" disabled={verifyLoading} style={{ borderRadius: '10px' }}>
-                {verifyLoading ? 'Vérification...' : `🔍 ${t.verifyBtn}`}
-              </button>
-            </form>
-
-            {verifyResult && (
-              <div className="p-3 rounded-3 border bg-success-subtle border-success">
-                <h6 className="fw-bold text-success mb-1">{t.valid}</h6>
-                <div className="small" style={{ color: 'var(--text-main)' }}>
-                  <strong>{verifyResult.firstName} {verifyResult.lastName}</strong> • {verifyResult.mutuelleName}<br />
-                  <span className="text-muted">Couverture valide jusqu'au 31/12/2026</span>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Déclaration tiers-payant */}
-        <div className="col-md-6">
-          <div className="card shadow-sm border-0 p-4 h-100" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-            <h5 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-              <span>📋</span> {t.tpTitle}
-            </h5>
-
-            {tpResult && (
-              <div className="alert alert-success p-2 mb-3 small fw-semibold">
-                {tpResult.message}
-              </div>
-            )}
-
-            <form onSubmit={declareTierPayant}>
-              <div className="row g-2 mb-2">
-                <div className="col-6">
-                  <label className="form-label small fw-semibold">N° CMU Patient</label>
-                  <input className="form-control input" required value={tpForm.cmuNumber} onChange={(e) => setTpForm({ ...tpForm, cmuNumber: e.target.value })} style={{ borderRadius: '10px' }} />
-                </div>
-                <div className="col-6">
-                  <label className="form-label small fw-semibold">Nom du patient</label>
-                  <input className="form-control input" required value={tpForm.beneficiaryName} onChange={(e) => setTpForm({ ...tpForm, beneficiaryName: e.target.value })} style={{ borderRadius: '10px' }} />
-                </div>
-              </div>
-
-              <div className="row g-2 mb-3">
-                <div className="col-6">
-                  <label className="form-label small fw-semibold">Type de soin</label>
-                  <select className="form-select input" value={tpForm.careType} onChange={(e) => setTpForm({ ...tpForm, careType: e.target.value })} style={{ borderRadius: '10px' }}>
-                    <option value="consultation">Consultation médicale</option>
-                    <option value="pharmacie">Pharmacie / Ordonnance</option>
-                    <option value="hospitalisation">Hospitalisation</option>
-                    <option value="radiologie">Imagerie / Radiologie</option>
-                  </select>
-                </div>
-                <div className="col-6">
-                  <label className="form-label small fw-semibold">Montant facturé (FCFA)</label>
-                  <input type="number" className="form-control input" required value={tpForm.amount} onChange={(e) => setTpForm({ ...tpForm, amount: e.target.value })} style={{ borderRadius: '10px' }} />
-                </div>
-              </div>
-
-              <button type="submit" className="btn btn-success text-white fw-bold w-100" disabled={tpLoading} style={{ borderRadius: '10px' }}>
-                {tpLoading ? 'Traitement...' : `✍️ ${t.tpSubmit}`}
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 }
