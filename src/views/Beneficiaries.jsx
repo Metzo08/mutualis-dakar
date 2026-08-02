@@ -322,7 +322,7 @@ export default function Beneficiaries({ lang, agentUser }) {
       allMutuelles: 'Toutes les mutuelles',
       thName: 'Bénéficiaire',
       thMutuelle: 'Mutuelle',
-      thCard: 'Carte CMU',
+      thCard: 'Carte CSU',
       thPackage: 'Formule',
       thStatus: 'Statut',
       thAction: 'Actions',
@@ -355,7 +355,7 @@ export default function Beneficiaries({ lang, agentUser }) {
       allMutuelles: 'Mutuelle yëpp',
       thName: 'Ki bokk',
       thMutuelle: 'Mutuelle',
-      thCard: 'Carte CMU',
+      thCard: 'Carte CSU',
       thPackage: 'Formule',
       thStatus: 'Statut',
       thAction: 'Liy xew',
@@ -830,7 +830,7 @@ export default function Beneficiaries({ lang, agentUser }) {
                 padding: '1rem'
               }}>
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>CARTE CMU DAKAR</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>CARTE CSU DAKAR</div>
                   <div style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--text-main)', marginTop: '0.2rem' }}>
                     {selectedBeneficiary.firstName} {selectedBeneficiary.lastName}
                   </div>
@@ -842,7 +842,7 @@ export default function Beneficiaries({ lang, agentUser }) {
                 {/* Simulated QR block */}
                 <div style={{ background: '#fff', padding: '4px', borderRadius: '4px', display: 'flex', alignItems: 'center', width: '60px', height: '60px' }}>
                   {qrCodeUrl ? (
-                    <img src={qrCodeUrl} alt="QR Code CMU" style={{ width: '100%', height: '100%', borderRadius: '2px' }} />
+                    <img src={qrCodeUrl} alt="QR Code CSU" style={{ width: '100%', height: '100%', borderRadius: '2px' }} />
                   ) : (
                     <div style={{ width: '100%', height: '100%', backgroundColor: '#fff' }} />
                   )}

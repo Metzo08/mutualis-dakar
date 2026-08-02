@@ -980,7 +980,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
                     
                     <div className="digital-card-qr" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', padding: '4px', borderRadius: '6px', width: '74px', height: '74px' }}>
                       {qrCodeUrl ? (
-                        <img src={qrCodeUrl} alt="QR Code CMU" style={{ width: '100%', height: '100%', borderRadius: '4px' }} />
+                        <img src={qrCodeUrl} alt="QR Code CSU" style={{ width: '100%', height: '100%', borderRadius: '4px' }} />
                       ) : (
                         <div style={{ width: '100%', height: '100%', backgroundColor: '#fff' }} />
                       )}
@@ -989,7 +989,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
 
                   <div className="digital-card-details">
                     <div>
-                      <div className="digital-card-label">ID CMU</div>
+                      <div className="digital-card-label">ID CSU</div>
                       <div className="digital-card-value" style={{ fontFamily: 'monospace' }}>{citizenUser.cmuNumber}</div>
                     </div>
                     <div>

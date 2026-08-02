@@ -129,7 +129,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               <div class="col-6">
                 <span class="small fw-bold d-block text-muted text-uppercase">👤 BÉNÉFICIAIRE ASSURÉ :</span>
                 <h5 class="fw-bold mb-0" style="color: #0f172a;">${voucher.first_name} ${voucher.last_name}</h5>
-                <small class="text-muted">N° Carte CMU : <strong>${voucher.cmu_number}</strong></small>
+                <small class="text-muted">N° Carte CSU : <strong>${voucher.cmu_number}</strong></small>
               </div>
               <div class="col-6 text-end">
                 <span class="small fw-bold d-block text-muted">📅 Date d'émission & validité :</span>
@@ -539,7 +539,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                   <div className="d-flex align-items-center gap-3">
                     <div>
                       <span className="fw-bold text-primary d-block">{(it.price * it.qty).toLocaleString()} FCFA</span>
-                      <small className="text-success">Pris en charge CMU (80%): {((it.price * it.qty) * 0.8).toLocaleString()} FCFA</small>
+                      <small className="text-success">Pris en charge CSU (80%): {((it.price * it.qty) * 0.8).toLocaleString()} FCFA</small>
                     </div>
                     <button className="btn btn-sm btn-outline-danger py-1 px-2" onClick={() => handleRemoveItem(idx)}>
                       🗑️
@@ -556,7 +556,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                   <strong className="fs-6">{items.reduce((a, b) => a + (b.price * b.qty), 0).toLocaleString()} FCFA</strong>
                 </div>
                 <div className="col-4 border-start border-end border-secondary">
-                  <span className="small text-success d-block">Prise en charge CMU (80%)</span>
+                  <span className="small text-success d-block">Prise en charge CSU (80%)</span>
                   <strong className="fs-5 text-success">{(items.reduce((a, b) => a + (b.price * b.qty), 0) * 0.8).toLocaleString()} FCFA</strong>
                 </div>
                 <div className="col-4">
@@ -594,7 +594,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
           </div>
 
           <div className="mt-4 pt-3 border-top mx-auto" style={{ maxWidth: '520px', borderColor: 'var(--border-color)' }}>
-            <label className="form-label small text-muted fw-bold mb-2">Rechercher directement votre bon avec votre N° de Carte CMU :</label>
+            <label className="form-label small text-muted fw-bold mb-2">Rechercher directement votre bon avec votre N° de Carte CSU :</label>
             <div className="input-group">
               <input 
                 type="text" 
@@ -635,7 +635,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               <p className="mt-2" style={{ fontSize: '0.9rem' }}>
                 {isCitizen 
                   ? 'Aucun bon de commande disponible pour votre compte assuré.' 
-                  : 'Aucun bon de commande ne correspond à ce N° de Carte CMU.'}
+                  : 'Aucun bon de commande ne correspond à ce N° de Carte CSU.'}
               </p>
             </div>
           ) : (
@@ -646,7 +646,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                     <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Code & Date</th>
                     <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Assuré</th>
                     <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Médicaments prescrits</th>
-                    <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Prise en charge CMU</th>
+                    <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Prise en charge CSU</th>
                     <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Chrono Validité</th>
                     <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Statut</th>
                     <th style={{ color: 'var(--text-main)', padding: '0.85rem', textAlign: 'right' }}>Actions</th>
@@ -724,6 +724,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                           {ord.status === 'active' && <span className="badge bg-success px-3 py-1.5" style={{ borderRadius: '12px' }}>✅ Actif (Prêt)</span>}
                           {ord.status === 'used' && <span className="badge bg-secondary px-3 py-1.5" style={{ borderRadius: '12px' }}>🔒 Délivré en pharmacie</span>}
                           {ord.status === 'expired' && <span className="badge bg-danger px-3 py-1.5" style={{ borderRadius: '12px' }}>⚠️ Expiré</span>}
+                          {ord.status === 'pending_review' && <span className="badge px-3 py-1.5" style={{ borderRadius: '12px', background: '#f59e0b', color: '#0f172a' }}>⏳ En attente validation ordonnance</span>}
                         </td>
                         <td style={{ textAlign: 'right', padding: '0.85rem' }}>
                           <div className="d-flex justify-content-end gap-2">
@@ -847,7 +848,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                     <strong>{selectedVoucher.first_name} {selectedVoucher.last_name}</strong>
                   </div>
                   <div className="col-6 text-end">
-                    <span className="small text-muted d-block">Code Carte CMU :</span>
+                    <span className="small text-muted d-block">Code Carte CSU :</span>
                     <strong>{selectedVoucher.cmu_number}</strong>
                   </div>
                 </div>

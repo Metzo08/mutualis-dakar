@@ -126,6 +126,20 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
   const [structureName, setStructureName] = useState('Hôpital Universitaire de Fann (Dakar)');
   const [submitting, setSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+  const [prescriptionPhoto, setPrescriptionPhoto] = useState('');
+  const [prescriptionPreview, setPrescriptionPreview] = useState('');
+
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPrescriptionPhoto(reader.result);
+        setPrescriptionPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   // Instruction Agent & Modal
   const [selectedLetter, setSelectedLetter] = useState(null);
@@ -351,7 +365,8 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
         status: 'pending',
         validation_code: `GAR-2026-${Math.floor(1000 + Math.random() * 9000)}`,
         created_at: new Date().toISOString(),
-        agent_note: 'Demande soumise par l\'assuré. En attente de vérification et d\'instruction par l\'agent UNAMUSC.'
+        prescription_photo: prescriptionPhoto || '/ordonnance_demo.jpg',
+        agent_note: 'Demande soumise par l\'assuré. En attente de vérification de l\'ordonnance et d\'instruction par le gérant UNAMUSC.'
       };
 
       try {
@@ -361,7 +376,8 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
           body: JSON.stringify({
             beneficiary_id: 1,
             medical_act: newLetter.medical_act,
-            estimated_amount: newLetter.estimated_amount
+            estimated_amount: newLetter.estimated_amount,
+            prescription_photo: newLetter.prescription_photo
           })
         });
       } catch (err) {
@@ -370,8 +386,8 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
       setLetters([newLetter, ...letters]);
       setSuccessMsg(lang === 'wo' 
-        ? 'Demande bi yónnee nañu ko ak jamm.' 
-        : 'Votre demande de lettre de garantie hospitalière a été soumise avec succès. L\'UNAMUSC procède à l\'instruction sous 24h.');
+        ? 'Demande bi yónnee nañu ko ak jamm. Ordonnance bi ñungi ko vérifié.' 
+        : 'Votre demande de lettre de garantie hospitalière et photo d\'ordonnance ont été soumises avec succès ! Le gérant UNAMUSC vérifie l\'ordonnance avant de délivrer le bon.');
     } else {
       // Création d'un Bon de Commande de Médicaments (Pharmacie Tiers-Payant 50%)
       const pharmCovered = estVal * 0.5;
@@ -387,16 +403,19 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
         total_amount: estVal,
         cmu_covered: pharmCovered,
         patient_pay: pharmRest,
-        status: 'active',
+        status: prescriptionPhoto ? 'pending_review' : 'active',
         created_at: new Date().toISOString(),
         expires_at: new Date(Date.now() + 48 * 3600 * 1000).toISOString(),
+        prescription_photo: prescriptionPhoto || '/ordonnance_demo.jpg',
         order_code: `ORD-2026-PHARM-${Math.floor(100 + Math.random() * 900)}`
       };
 
       const currentOrders = JSON.parse(localStorage.getItem('cmu_purchase_orders') || '[]');
       localStorage.setItem('cmu_purchase_orders', JSON.stringify([newOrder, ...currentOrders]));
 
-      setSuccessMsg(`Votre Bon de Commande Pharmacie (${newOrder.order_code}) a été généré avec succès (Prise en charge UNAMUSC 50%) ! Valable 48h dans toute pharmacie agréée.`);
+      setSuccessMsg(prescriptionPhoto 
+        ? `Votre Bon de Commande Pharmacie (${newOrder.order_code}) et votre ordonnance ont été soumis. Le gérant UNAMUSC vérifiera l'ordonnance avant d'activer votre bon (Tiers-Payant 50%). Vous serez notifié dès validation.`
+        : `Votre Bon de Commande Pharmacie (${newOrder.order_code}) a été généré (Prise en charge UNAMUSC 50%). Valable 48h dans toute pharmacie agréée UNAMUSC.`);
     }
 
     setMedicalAct('');
@@ -690,7 +709,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 </div>
 
                 <div className="col-md-4">
-                  <label className="form-label small fw-semibold">N° Carte CMU Assuré *</label>
+                  <label className="form-label small fw-semibold">N° Carte CSU Assuré *</label>
                   <input 
                     type="text" 
                     className="form-control input fw-bold text-success" 
@@ -765,6 +784,63 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 />
               </div>
 
+              {/* SECTION TÉLÉVERSEMENT ORDONNANCE (Pharmacie uniquement) */}
+              {requestCategory === 'pharmacy' && (
+                <div className="mb-4 p-4 rounded-3" style={{ background: 'rgba(5,150,105,0.07)', border: '2px dashed #059669', borderRadius: '16px' }}>
+                  <div className="d-flex align-items-center gap-2 mb-2">
+                    <span style={{ fontSize: '1.4rem' }}>📋</span>
+                    <div>
+                      <strong className="d-block fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>Téléverser l'ordonnance médicale *</strong>
+                      <small className="text-muted">Prenez en photo l'ordonnance prescrite par votre médecin et téléversez-la. Le gérant UNAMUSC vérifiera l'ordonnance avant d'accorder le bon de commande.</small>
+                    </div>
+                  </div>
+
+                  <label
+                    htmlFor="prescriptionUpload"
+                    className="d-flex flex-column align-items-center justify-content-center p-3 rounded-3 mt-2 cursor-pointer"
+                    style={{
+                      border: '2px solid #059669',
+                      background: 'var(--bg-body)',
+                      borderRadius: '12px',
+                      minHeight: '110px',
+                      cursor: 'pointer',
+                      transition: 'background 0.2s'
+                    }}
+                  >
+                    {prescriptionPreview ? (
+                      <div className="text-center">
+                        <img
+                          src={prescriptionPreview}
+                          alt="Aperçu ordonnance"
+                          style={{ maxHeight: '160px', maxWidth: '100%', borderRadius: '8px', objectFit: 'contain', marginBottom: '0.5rem' }}
+                        />
+                        <small className="text-success fw-bold d-block">✅ Ordonnance chargée — Cliquer pour modifier</small>
+                      </div>
+                    ) : (
+                      <div className="text-center text-muted">
+                        <div style={{ fontSize: '2.5rem', marginBottom: '0.4rem' }}>📷</div>
+                        <span className="fw-semibold d-block" style={{ fontSize: '0.9rem' }}>Cliquer pour prendre/sélectionner la photo de l'ordonnance</span>
+                        <small>Formats acceptés : JPG, PNG, HEIC — Max 10 Mo</small>
+                      </div>
+                    )}
+                    <input
+                      id="prescriptionUpload"
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={handlePhotoUpload}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+
+                  {!prescriptionPreview && (
+                    <small className="d-block text-warning fw-semibold mt-2">
+                      ⚠️ Aucune ordonnance téléversée. Le bon ne sera accordé qu'après vérification par le gérant UNAMUSC.
+                    </small>
+                  )}
+                </div>
+              )}
+
               {(() => {
                 const isPharm = requestCategory === 'pharmacy';
                 const pct = isPharm ? 50 : 80;
@@ -782,7 +858,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                         </strong>
                         <span className="small text-muted d-block">
                           {isPharm 
-                            ? 'Prise en charge directe 50% sur Bon de Commande Pharmacie (Tiers-Payant UNAMUSC).' 
+                            ? 'Prise en charge directe 50% sur Bon de Commande Pharmacie (Tiers-Payant UNAMUSC). Ordonnance requise.' 
                             : 'Prise en charge directe 80% sur Lettre de Garantie Hospitalière (Tiers-Payant UNAMUSC).'}
                         </span>
                         {estNum > 0 && (
@@ -805,7 +881,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               <div className="d-flex justify-content-end gap-2">
                 <button type="button" className="btn btn-secondary" onClick={() => setActiveTab('list')}>Annuler</button>
                 <button type="submit" className="btn btn-success text-white fw-bold px-4" disabled={submitting} style={{ borderRadius: '10px' }}>
-                  {submitting ? 'Transmission...' : '📤 Soumettre la demande à l\'UNAMUSC'}
+                  {submitting ? 'Transmission...' : requestCategory === 'pharmacy' ? '📷 Soumettre ordonnance & demander bon pharmacie' : '📤 Soumettre la demande à l\'UNAMUSC'}
                 </button>
               </div>
             </form>
@@ -829,7 +905,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   Accès sécurisé & consultation des attestations UNAMUSC
                 </h3>
                 <p className="text-muted mb-0" style={{ fontSize: '0.95rem', lineHeight: '1.6' }}>
-                  Afin de préserver la confidentialité des données médicales des citoyens, la liste globale des garanties est réservée aux agents habilités. Saisissez votre N° de Carte CMU ou votre code de garantie pour consulter votre dossier.
+                  Afin de préserver la confidentialité des données médicales des citoyens, la liste globale des garanties est réservée aux agents habilités. Saisissez votre N° de Carte CSU ou votre code de garantie pour consulter votre dossier.
                 </p>
               </div>
             </div>
@@ -1080,7 +1156,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
             <div className="text-center py-5 text-muted">
               {isCitizen 
                 ? 'Aucune demande de garantie enregistrée pour votre compte assuré.' 
-                : 'Aucun dossier ne correspond à ce N° de Carte CMU.'}
+                : 'Aucun dossier ne correspond à ce N° de Carte CSU.'}
             </div>
           ) : (
             <div className="table-responsive">
@@ -1315,6 +1391,28 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     </div>
                   </div>
 
+                  {/* SECTION ORDONNANCE MÉDICALE : AFFICHAGE POUR LE GÉRANT */}
+                  {selectedLetter.prescription_photo && selectedLetter.prescription_photo !== '/ordonnance_demo.jpg' && (
+                    <div className="mb-4 p-3 rounded-3" style={{ background: 'rgba(5,150,105,0.07)', border: '2px dashed #059669', borderRadius: '14px' }}>
+                      <strong className="d-block mb-2 fw-bold text-success" style={{ fontSize: '0.9rem' }}>
+                        📋 Ordonnance médicale téléversée par l'assuré — À vérifier avant accord :
+                      </strong>
+                      <img
+                        src={selectedLetter.prescription_photo}
+                        alt="Ordonnance médicale"
+                        style={{ maxWidth: '100%', maxHeight: '260px', borderRadius: '10px', objectFit: 'contain', border: '1.5px solid #059669', background: '#fff' }}
+                      />
+                      <div className="d-flex gap-2 mt-3 flex-wrap">
+                        <span className="badge px-3 py-2 fw-bold" style={{ background: '#f59e0b', color: '#0f172a', borderRadius: '10px', fontSize: '0.82rem' }}>
+                          ⏳ En attente de validation du gérant
+                        </span>
+                        <span className="badge bg-white text-dark border px-3 py-2 fw-bold" style={{ borderRadius: '10px', fontSize: '0.82rem' }}>
+                          🔍 Vérifiez lisibilité, signature & tampon médecin
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
                   {/* CALCULATEUR EXÉCUTIF DE COUVERTURE & RESTES À CHARGE */}
                   <div className="card p-4 rounded-4 border-0 mb-4 shadow-sm" style={{ background: 'rgba(5, 150, 105, 0.06)', borderLeft: '5px solid var(--primary)' }}>
                     <h5 className="fw-bold mb-3 text-success d-flex align-items-center gap-2">
@@ -1454,7 +1552,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                         </span>
                         <h5 className="fw-bold mb-1" style={{ color: '#0f172a' }}>{selectedLetter.first_name} {selectedLetter.last_name}</h5>
                         <div className="small" style={{ color: '#334155' }}>
-                          N° Carte CMU : <strong style={{ color: '#0f172a' }}>{selectedLetter.cmu_number}</strong> | IPP : <strong style={{ color: '#0f172a' }}>{selectedLetter.ipp_number || 'IPP-FANN-2026-8812'}</strong>
+                          N° Carte CSU : <strong style={{ color: '#0f172a' }}>{selectedLetter.cmu_number}</strong> | IPP : <strong style={{ color: '#0f172a' }}>{selectedLetter.ipp_number || 'IPP-FANN-2026-8812'}</strong>
                         </div>
                         <small className="text-success fw-bold d-block mt-1">
                           Organisme Émetteur : Tiers-Payant UNAMUSC Sénégal

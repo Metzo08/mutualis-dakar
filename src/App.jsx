@@ -750,7 +750,7 @@ export default function App() {
               {view === 'blog-experts' && (lang === 'fr' ? 'Espace blog & paroles d\'experts' : 'Waxu docteur yi')}
               {view === 'partnership' && (lang === 'fr' ? 'Espace partenariat' : 'Pekou partenariat')}
               {view === 'programmes' && (lang === 'fr' ? 'Programmes CSU' : 'Përogaraam CSU')}
-              {view === 'verify' && (lang === 'fr' ? 'Vérification carte CMU' : 'Saytu kàrt CMU')}
+              {view === 'verify' && (lang === 'fr' ? 'Vérification carte CSU' : 'Saytu kàrt CSU')}
               {view === 'dashboard' && (lang === 'fr' ? 'Tableau de bord CSU' : 'Tableau CSU')}
               {view === 'claims' && (lang === 'fr' ? 'Prise en charge & remboursements' : 'Prise en charge')}
               {view === 'notifications' && (lang === 'fr' ? 'Notifications SMS / WhatsApp' : 'Notifications')}

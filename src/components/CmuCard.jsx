@@ -121,7 +121,7 @@ export default function CmuCard({ citizen }) {
             <div>
               <div style={{ fontSize: '0.6rem', opacity: 0.85, textTransform: 'uppercase', fontWeight: '700' }}>N° Carte CSU / Code Patient IPP</div>
               <div style={{ fontSize: '0.85rem', fontWeight: '800', fontFamily: 'monospace', letterSpacing: '0.5px' }}>
-                {citizen.cmuNumber || 'CMU-DKR-2026-8812'} {citizen.patientCode ? `| IPP: ${citizen.patientCode}` : '| IPP: IPP-DKR-2026-88'}
+                {citizen.cmuNumber?.replace('CMU-', 'CSU-') || 'CSU-DKR-2026-8812'} {citizen.patientCode ? `| IPP: ${citizen.patientCode}` : '| IPP: IPP-DKR-2026-88'}
               </div>
             </div>
             <div style={{ fontSize: '0.68rem', fontWeight: '800', color: '#fef08a', textAlign: 'right' }}>
