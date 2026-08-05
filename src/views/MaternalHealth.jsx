@@ -4,125 +4,12 @@ import { generateOfficialPdf } from '../utils/pdfGenerator';
 
 // Design Premium Haut de Gamme — Carnet Maternité & Santé Enfant
 export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentUser = null, partnerUser = null, userRole = 'citizen', setView = null }) {
+  // ═══════════════════════════════════════════════════════
+  // TOUS LES HOOKS DOIVENT ÊTRE ICI — avant tout return conditionnel
+  // (règle des hooks React : ne jamais appeler useState/useEffect après un return)
+  // ═══════════════════════════════════════════════════════
   const [activeTab, setActiveTab] = useState('cpn'); // 'cpn', 'pev', 'advice'
 
-  // Détection du sexe masculin pour l'assuré connecté
-  const isMale = () => {
-    if (userRole === 'citizen' && citizenUser) {
-      if (citizenUser.gender === 'M' || citizenUser.sexe === 'M') return true;
-      const firstName = (citizenUser.firstName || citizenUser.first_name || '').toLowerCase();
-      const maleNames = ['ibrahima', 'modou', 'amadou', 'moustapha', 'abdoulaye', 'cheikh', 'moussa', 'ousmane', 'mamadou', 'babacar', 'samba', 'aliou', 'boubacar', 'omar', 'pape'];
-      if (maleNames.some(n => firstName.includes(n))) return true;
-    }
-    return false;
-  };
-
-  if (isMale()) {
-    return (
-      <div className="maternity-view fade-in-up" style={{ minHeight: '60vh', padding: '3rem 1rem' }}>
-        <div className="card text-center" style={{ maxWidth: '650px', margin: '0 auto', padding: '3rem 2rem', borderRadius: '24px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>ℹ️</div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--primary)', marginBottom: '0.75rem' }}>
-            Accès au Carnet Maternité
-          </h2>
-          <p style={{ fontSize: '0.95rem', color: 'var(--text-sub)', lineHeight: '1.6', marginBottom: '1.5rem' }}>
-            Bonjour <strong>{citizenUser.firstName || citizenUser.first_name} {citizenUser.lastName || citizenUser.last_name}</strong>. Le Carnet Maternité est réservé au suivi de la santé maternelle et des ayants droit mères/enfants. Votre suivi médical personnel est disponible dans votre rubrique <strong>Dossier & radios</strong>.
-          </p>
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button className="btn btn-primary" onClick={() => setView ? setView('medical-profile') : (window.location.hash = '#/medical-profile')}>
-              🩺 Consulter mon Dossier & radios
-            </button>
-            <button className="btn btn-outline" onClick={() => setView ? setView('profile') : (window.location.hash = '#/profile')}>
-              👤 Mon compte
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Guard de confidentialité : si l'utilisateur n'est pas connecté, masquer les données de maternité
-  if (!citizenUser && !agentUser && !partnerUser && userRole !== 'agent' && userRole !== 'partner') {
-    return (
-      <div className="maternity-view fade-in-up" style={{ minHeight: '80vh', padding: '2rem 1rem' }}>
-        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-          {/* Header Banner */}
-          <div className="p-5 rounded-4 text-center text-white mb-4" style={{
-            background: 'linear-gradient(135deg, #831843 0%, #9d174d 50%, #be185d 100%)',
-            borderRadius: '24px',
-            boxShadow: 'var(--shadow-lg)',
-            border: '1px solid rgba(255, 255, 255, 0.2)'
-          }}>
-            <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>🤱</div>
-            <span className="badge mb-2" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.82rem', fontWeight: 'bold' }}>
-              Programme national de santé maternelle & infantile
-            </span>
-            <h2 className="fw-bold mb-2" style={{ color: '#fff', fontSize: '2rem' }}>
-              Carnet de maternité — 100% gratuit UNAMUSC
-            </h2>
-            <p className="small mb-4" style={{ color: '#fce7f3', maxWidth: '680px', margin: '0 auto', lineHeight: '1.6', fontSize: '0.95rem' }}>
-              Afin de protéger le suivi prénatal, les rendez-vous CPN et le calendrier vaccinal des mères et des enfants, le carnet numérique est accessible exclusivement après authentification sécurisée.
-            </p>
-
-            <div style={{ display: 'flex', gap: '1.25rem', justifyContent: 'center', flexWrap: 'wrap', marginTop: '1.5rem' }}>
-              <button 
-                className="btn btn-light fw-bold px-4 py-3" 
-                style={{ borderRadius: '14px', color: '#9d174d', fontSize: '0.98rem', boxShadow: '0 4px 14px rgba(0,0,0,0.15)' }}
-                onClick={() => setView ? setView('login') : (window.location.hash = '#/login')}
-              >
-                🔐 Se connecter à mon carnet maternité
-              </button>
-            </div>
-          </div>
-
-          {/* Quick Search Card */}
-          <div className="card p-4 p-md-5 mb-4 text-left shadow-sm" style={{ borderRadius: '20px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', padding: '2.25rem 2rem' }}>
-            <h4 style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--primary)', marginBottom: '0.75rem' }}>
-              🔎 Vérifier mes droits à la gratuité maternité (100% CSU)
-            </h4>
-            <p style={{ fontSize: '0.92rem', color: 'var(--text-sub)', marginBottom: '1.5rem', lineHeight: '1.6' }}>
-              Saisissez le N° de votre carte CSU pour accéder à votre calendrier de consultations prénatales (CPN 1 à 4) et générer vos attestations d'accouchement gratuit.
-            </p>
-            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
-              <input 
-                type="text" 
-                className="form-control fw-bold" 
-                placeholder="Ex: SN-DK-MED-8472"
-                style={{ flex: 1, minWidth: '240px', height: '52px', fontSize: '0.95rem', borderRadius: '12px' }}
-              />
-              <button 
-                className="btn btn-success fw-bold px-4 py-3"
-                style={{ borderRadius: '12px', background: '#be185d', borderColor: '#be185d', height: '52px', fontSize: '0.95rem' }}
-                onClick={() => setView ? setView('login') : (window.location.hash = '#/login')}
-              >
-                🔍 Vérifier mes droits
-              </button>
-            </div>
-          </div>
-
-          {/* Key Advantages Grid */}
-          <div className="grid grid-3" style={{ gap: '1.25rem' }}>
-            <div className="card p-3 text-left" style={{ borderRadius: '16px', background: 'var(--bg-card-subtle)' }}>
-              <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>🩺</div>
-              <h5 style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.25rem' }}>4 CPN 100% gratuites</h5>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)', margin: 0 }}>Consultations prénatales réglementaires, échographies et bilans sanguins entièrement pris en charge par l'UNAMUSC.</p>
-            </div>
-            <div className="card p-3 text-left" style={{ borderRadius: '16px', background: 'var(--bg-card-subtle)' }}>
-              <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>🏥</div>
-              <h5 style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.25rem' }}>Accouchement 0 FCFA</h5>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)', margin: 0 }}>Prise en charge intégrale des accouchements simples et césariennes d'urgence dans tous les centres publics.</p>
-            </div>
-            <div className="card p-3 text-left" style={{ borderRadius: '16px', background: 'var(--bg-card-subtle)' }}>
-              <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>👶</div>
-              <h5 style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.25rem' }}>Vaccination PEV & pédiatrie</h5>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)', margin: 0 }}>Suivi vaccinal complet du programme PEV et soins gratuits pour les enfants jusqu'à l'âge de 5 ans.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  
   // Modales
   const [showGuaranteeModal, setShowGuaranteeModal] = useState(false);
   const [showRightsModal, setShowRightsModal] = useState(false);
@@ -198,27 +85,6 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
     }
   ]);
 
-  const handleAddAdvice = (e) => {
-    e.preventDefault();
-    if (!newAdviceForm.title || !newAdviceForm.content) return;
-    const newArticle = {
-      id: `advice_${Date.now()}`,
-      icon: newAdviceForm.icon || '💡',
-      badge: newAdviceForm.badge || 'Conseil Médical',
-      title: newAdviceForm.title,
-      subtitle: newAdviceForm.subtitle || 'Fiche d\'information santé prénatale & infantile',
-      image: '/csu_kids_real.png',
-      readTime: '3 min de lecture',
-      author: newAdviceForm.author || 'Sage-femme de garde UNAMUSC',
-      content: newAdviceForm.content.split('\n').filter(line => line.trim() !== ''),
-      tips: newAdviceForm.tips ? `💡 ${newAdviceForm.tips}` : '💡 Suivez les recommandations médicales de votre centre de santé de référence.'
-    };
-    setAdviceArticles([newArticle, ...adviceArticles]);
-    setShowAddAdviceModal(false);
-    setNewAdviceForm({ icon: '💡', badge: 'Santé & Nutrition', title: '', subtitle: '', author: 'Sage-femme Fatou Diome', content: '', tips: '' });
-    alert("✅ La nouvelle fiche conseil a bien été ajoutée au carnet de maternité !");
-  };
-
   // Formulaire question sage-femme
   const [midwifeQuestion, setMidwifeQuestion] = useState('');
   const [midwifeAnswers, setMidwifeAnswers] = useState([
@@ -269,12 +135,232 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
       completed: false
     }
   ]);
+  // Édition CPN (médecin / sage-femme / superadmin)
+  const [editingCpnId, setEditingCpnId] = useState(null);
+  const [editCpnForm, setEditCpnForm] = useState({ title: '', desc: '', date: '', doctor: '', status: '', completed: false });
+  const [showAddCpnModal, setShowAddCpnModal] = useState(false);
+  const [newCpnForm, setNewCpnForm] = useState({ title: '', desc: '', date: '', doctor: '', status: '', completed: false });
+  // Édition fiche conseil
+  const [editingAdviceId, setEditingAdviceId] = useState(null);
+  const [editAdviceForm, setEditAdviceForm] = useState(null);
+  // Réponse professionnel
+  const [replyingToIdx, setReplyingToIdx] = useState(null);
+  const [proReply, setProReply] = useState('');
+  // ═══════════════════════════════════════════════════════
+  // FIN DES HOOKS — les returns conditionnels peuvent maintenant suivre
+  // ═══════════════════════════════════════════════════════
+
+  // Détection du sexe masculin pour l'assuré connecté
+  const isMale = () => {
+    if (userRole === 'citizen' && citizenUser) {
+      if (citizenUser.gender === 'M' || citizenUser.sexe === 'M') return true;
+      const firstName = (citizenUser.firstName || citizenUser.first_name || '').toLowerCase();
+      const maleNames = ['ibrahima', 'modou', 'amadou', 'moustapha', 'abdoulaye', 'cheikh', 'moussa', 'ousmane', 'mamadou', 'babacar', 'samba', 'aliou', 'boubacar', 'omar', 'pape'];
+      if (maleNames.some(n => firstName.includes(n))) return true;
+    }
+    return false;
+  };
+
+  if (isMale()) {
+    return (
+      <div className="maternity-view fade-in-up" style={{ minHeight: '60vh', padding: '3rem 1rem' }}>
+        <div className="card text-center" style={{ maxWidth: '650px', margin: '0 auto', padding: '3rem 2rem', borderRadius: '24px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>ℹ️</div>
+          <h2 style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--primary)', marginBottom: '0.75rem' }}>
+            Accès au Carnet Maternité
+          </h2>
+          <p style={{ fontSize: '0.95rem', color: 'var(--text-sub)', lineHeight: '1.6', marginBottom: '1.5rem' }}>
+            Bonjour <strong>{citizenUser.firstName || citizenUser.first_name} {citizenUser.lastName || citizenUser.last_name}</strong>. Le Carnet Maternité est réservé au suivi de la santé maternelle et des ayants droit mères/enfants. Votre suivi médical personnel est disponible dans votre rubrique <strong>Dossier & radios</strong>.
+          </p>
+          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button className="btn btn-primary" onClick={() => setView ? setView('medical-profile') : (window.location.hash = '#/medical-profile')}>
+              🩺 Consulter mon Dossier & radios
+            </button>
+            <button className="btn btn-outline" onClick={() => setView ? setView('profile') : (window.location.hash = '#/profile')}>
+              👤 Mon compte
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Guard de confidentialité : si l'utilisateur n'est pas connecté, masquer les données de maternité
+  if (!citizenUser && !agentUser && !partnerUser && userRole !== 'agent' && userRole !== 'partner') {
+    return (
+      <div className="maternity-view fade-in-up" style={{ minHeight: '80vh', padding: '2rem 1rem' }}>
+        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+          {/* Header Banner */}
+          <div className="p-5 rounded-4 text-center text-white mb-4" style={{
+            background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.82) 0%, rgba(4, 120, 87, 0.88) 100%), url("/csu_family_health.png") center/cover no-repeat',
+            borderRadius: '24px',
+            boxShadow: 'var(--shadow-lg)',
+            border: '1px solid rgba(255, 255, 255, 0.2)'
+          }}>
+            <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>🤱</div>
+            <span className="badge mb-2" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.82rem', fontWeight: 'bold' }}>
+              Programme national de santé maternelle & infantile
+            </span>
+            <h2 className="fw-bold mb-2" style={{ color: '#fff', fontSize: '2rem' }}>
+              Carnet de maternité — 100% gratuit UNAMUSC
+            </h2>
+            <p className="small mb-4" style={{ color: '#fce7f3', maxWidth: '680px', margin: '0 auto', lineHeight: '1.6', fontSize: '0.95rem' }}>
+              Afin de protéger le suivi prénatal, les rendez-vous CPN et le calendrier vaccinal des mères et des enfants, le carnet numérique est accessible exclusivement après authentification sécurisée.
+            </p>
+
+            <div style={{ display: 'flex', gap: '1.25rem', justifyContent: 'center', flexWrap: 'wrap', marginTop: '1.5rem' }}>
+              <button 
+                className="btn btn-light fw-bold px-4 py-3" 
+                style={{ borderRadius: '14px', color: '#9d174d', fontSize: '0.98rem', boxShadow: '0 4px 14px rgba(0,0,0,0.15)' }}
+                onClick={() => setView ? setView('login') : (window.location.hash = '#/login')}
+              >
+                🔐 Se connecter à mon carnet maternité
+              </button>
+            </div>
+          </div>
+
+          {/* Quick Search Card */}
+          <div className="card p-4 p-md-5 mb-4 text-left shadow-sm" style={{ borderRadius: '20px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', padding: '2.25rem 2rem' }}>
+            <h4 style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--primary)', marginBottom: '0.75rem' }}>
+              🔎 Vérifier mes droits à la gratuité maternité (100% CSU)
+            </h4>
+            <p style={{ fontSize: '0.92rem', color: 'var(--text-sub)', marginBottom: '1.5rem', lineHeight: '1.6' }}>
+              Saisissez le N° de votre carte CSU pour accéder à votre calendrier de consultations prénatales (CPN 1 à 4) et générer vos attestations d'accouchement gratuit.
+            </p>
+            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
+              <input 
+                type="text" 
+                className="form-control fw-bold" 
+                placeholder="Ex: SN-DK-MED-8472"
+                style={{ flex: 1, minWidth: '240px', height: '52px', fontSize: '0.95rem', borderRadius: '12px' }}
+              />
+              <button 
+                className="btn btn-success fw-bold px-4 py-3"
+                style={{ borderRadius: '12px', background: '#be185d', borderColor: '#be185d', height: '52px', fontSize: '0.95rem' }}
+                onClick={() => setView ? setView('login') : (window.location.hash = '#/login')}
+              >
+                🔍 Vérifier mes droits
+              </button>
+            </div>
+          </div>
+
+          {/* Key Advantages Grid */}
+          <div className="grid grid-3" style={{ gap: '1.25rem' }}>
+            <div className="card p-3 text-left" style={{ borderRadius: '16px', background: 'var(--bg-card-subtle)' }}>
+              <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>🩺</div>
+              <h5 style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.25rem' }}>4 CPN 100% gratuites</h5>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)', margin: 0 }}>Consultations prénatales réglementaires, échographies et bilans sanguins entièrement pris en charge par l'UNAMUSC.</p>
+            </div>
+            <div className="card p-3 text-left" style={{ borderRadius: '16px', background: 'var(--bg-card-subtle)' }}>
+              <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>🏥</div>
+              <h5 style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.25rem' }}>Accouchement 0 FCFA</h5>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)', margin: 0 }}>Prise en charge intégrale des accouchements simples et césariennes d'urgence dans tous les centres publics.</p>
+            </div>
+            <div className="card p-3 text-left" style={{ borderRadius: '16px', background: 'var(--bg-card-subtle)' }}>
+              <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>👶</div>
+              <h5 style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.25rem' }}>Vaccination PEV & pédiatrie</h5>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)', margin: 0 }}>Suivi vaccinal complet du programme PEV et soins gratuits pour les enfants jusqu'à l'âge de 5 ans.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  const handleAddAdvice = (e) => {
+    e.preventDefault();
+    if (!newAdviceForm.title || !newAdviceForm.content) return;
+    const newArticle = {
+      id: `advice_${Date.now()}`,
+      icon: newAdviceForm.icon || '💡',
+      badge: newAdviceForm.badge || 'Conseil Médical',
+      title: newAdviceForm.title,
+      subtitle: newAdviceForm.subtitle || 'Fiche d\'information santé prénatale & infantile',
+      image: '/csu_kids_real.png',
+      readTime: '3 min de lecture',
+      author: newAdviceForm.author || 'Sage-femme de garde UNAMUSC',
+      content: newAdviceForm.content.split('\n').filter(line => line.trim() !== ''),
+      tips: newAdviceForm.tips ? `💡 ${newAdviceForm.tips}` : '💡 Suivez les recommandations médicales de votre centre de santé de référence.'
+    };
+    setAdviceArticles([newArticle, ...adviceArticles]);
+    setShowAddAdviceModal(false);
+    setNewAdviceForm({ icon: '💡', badge: 'Santé & Nutrition', title: '', subtitle: '', author: 'Sage-femme Fatou Diome', content: '', tips: '' });
+    alert("✅ La nouvelle fiche conseil a bien été ajoutée au carnet de maternité !");
+  };
+
+  // ─── Handlers (les hooks correspondants sont déclarés plus haut, avant les returns conditionnels) ───
 
   // Confirmer réservation CPN
   const handleConfirmBooking = (cpnId) => {
     setCpnVisits(cpnVisits.map(c => c.id === cpnId ? { ...c, completed: true, status: `CPN ${c.id} - CONFIRMÉE` } : c));
     setShowBookingModal(false);
     alert("✅ Rendez-vous CPN réservé et confirmé sous la prise en charge 100% UNAMUSC.");
+  };
+
+  // ─── ÉDITION CPN (médecin / sage-femme / superadmin) ───
+
+  const openEditCpn = (cpn) => {
+    setEditingCpnId(cpn.id);
+    setEditCpnForm({ title: cpn.title, desc: cpn.desc, date: cpn.date, doctor: cpn.doctor, status: cpn.status, completed: cpn.completed });
+  };
+
+  const handleSaveEditCpn = (e) => {
+    e.preventDefault();
+    setCpnVisits(cpnVisits.map(c => c.id === editingCpnId ? { ...c, ...editCpnForm } : c));
+    setEditingCpnId(null);
+    alert("✅ Consultation CPN modifiée et certifiée.");
+  };
+
+  const handleDeleteCpn = (cpnId) => {
+    if (window.confirm('Supprimer définitivement cette consultation CPN du carnet de maternité ?')) {
+      setCpnVisits(cpnVisits.filter(c => c.id !== cpnId));
+      alert("🗑 Consultation CPN supprimée.");
+    }
+  };
+
+  const handleAddCpn = (e) => {
+    e.preventDefault();
+    if (!newCpnForm.title) return;
+    const newCpn = { id: Date.now(), ...newCpnForm };
+    setCpnVisits([...cpnVisits, newCpn]);
+    setShowAddCpnModal(false);
+    setNewCpnForm({ title: '', desc: '', date: '', doctor: '', status: '', completed: false });
+    alert("✅ Nouvelle consultation CPN ajoutée au carnet de maternité.");
+  };
+
+  // ─── ÉDITION FICHE CONSEIL (médecin / sage-femme / superadmin) ───
+
+  const openEditAdvice = (art) => {
+    setEditingAdviceId(art.id);
+    setEditAdviceForm({ ...art, content: Array.isArray(art.content) ? art.content.join('\n') : art.content });
+  };
+
+  const handleSaveEditAdvice = (e) => {
+    e.preventDefault();
+    const updated = { ...editAdviceForm, content: editAdviceForm.content.split('\n').filter(l => l.trim()) };
+    setAdviceArticles(adviceArticles.map(a => a.id === editingAdviceId ? updated : a));
+    setEditingAdviceId(null);
+    setEditAdviceForm(null);
+    alert("✅ Fiche conseil modifiée et publiée.");
+  };
+
+  const handleDeleteAdvice = (artId) => {
+    if (window.confirm('Supprimer définitivement cette fiche conseil ?')) {
+      setAdviceArticles(adviceArticles.filter(a => a.id !== artId));
+      alert("🗑 Fiche conseil supprimée.");
+    }
+  };
+
+  // ─── RÉPONSE PROFESSIONNEL (médecin / sage-femme) ───
+
+  const handleProReply = (idx) => {
+    if (!proReply.trim()) return;
+    const updated = [...midwifeAnswers];
+    updated[idx] = { ...updated[idx], a: proReply, date: "À l'instant", doctor: isMidwife ? 'Sage-femme (UNAMUSC)' : 'Médecin (UNAMUSC)' };
+    setMidwifeAnswers(updated);
+    setReplyingToIdx(null);
+    setProReply('');
+    alert("✅ Réponse publiée — l'assurée est notifiée.");
   };
 
   // Poser question à la sage-femme
@@ -333,16 +419,99 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
     });
   };
 
-  const isDoctorOrAgent = (userRole === 'doctor' || userRole === 'partner' || userRole === 'agent' || userRole === 'midwife' || !!agentUser || !!partnerUser);
-  const isCitizen = (!isDoctorOrAgent && (!!citizenUser || userRole === 'citizen' || userRole === 'citizen_suspended'));
+  // ═══════════════════════════════════════════════════════
+  // RBAC — Définition granulaire des rôles (cohérent avec MedicalProfile)
+  // ═══════════════════════════════════════════════════════
+  const isSuperAdmin = userRole === 'superadmin' || agentUser?.role === 'SuperAdmin' || agentUser?.role === 'Super Admin';
+  const isDoctor     = userRole === 'doctor' || (userRole === 'partner' && partnerUser?.role?.toLowerCase().includes('médecin'));
+  const isMidwife    = userRole === 'midwife' || (userRole === 'partner' && partnerUser?.role?.toLowerCase().includes('sage'));
+  const isAgent      = (userRole === 'agent' || (!!agentUser && !isSuperAdmin)) && !isSuperAdmin;
+  const isPharmacist = userRole === 'pharmacist';
+  const isCitizen    = !isAgent && !isDoctor && !isMidwife && !isPharmacist && !isSuperAdmin && (!!citizenUser && (userRole === 'citizen' || userRole === 'citizen_suspended'));
+  // Peut remplir/modifier le carnet de maternité
+  const canEditMaternity = isDoctor || isMidwife || isSuperAdmin;
+  // Vue administrative (statistiques)
+  const isAdminStatsView = isAgent && !isSuperAdmin;
+  // Alias rétro-compatibilité
+  const isDoctorOrAgent = canEditMaternity || isAgent;
   const isSuspended = (
-    userRole === 'citizen_suspended' || 
-    citizenUser?.status === 'suspended' || 
-    citizenUser?.status === 'inactif' || 
-    citizenUser?.status === 'suspendu' || 
+    userRole === 'citizen_suspended' ||
+    citizenUser?.status === 'suspended' ||
+    citizenUser?.status === 'inactif' ||
+    citizenUser?.status === 'suspendu' ||
     localStorage.getItem('cmu-portal-mode') === 'citizen_suspended' ||
     localStorage.getItem('cmu-cotisation-suspended') === 'true'
   );
+
+  // ── PHARMACIEN : non concerné par le carnet de maternité ──
+  if (isPharmacist) {
+    return (
+      <div className="maternity-view fade-in-up" style={{ minHeight: '80vh', padding: '2rem 1rem' }}>
+        <div style={{ maxWidth: '700px', margin: '0 auto' }}>
+          <div className="p-5 rounded-4 text-center text-white" style={{ background: 'linear-gradient(135deg, #047857 0%, #059669 100%)', borderRadius: '24px', boxShadow: 'var(--shadow-lg)' }}>
+            <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>💊</div>
+            <span className="badge mb-3 d-inline-block" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.82rem', fontWeight: 'bold' }}>Pharmacien Agréé UNAMUSC</span>
+            <h2 className="fw-bold mb-3" style={{ color: '#fff', fontSize: '1.8rem' }}>Carnet de Maternité — Non concerné</h2>
+            <p className="mb-4" style={{ color: '#d1fae5', lineHeight: '1.6', maxWidth: '500px', margin: '0 auto 1.5rem' }}>
+              Le suivi de maternité est réservé aux assurées, médecins et sage-femmes. Votre espace pharmacien est dédié à la validation des bons de commande médicaments.
+            </p>
+            <button className="btn btn-light fw-bold px-4 py-3" style={{ borderRadius: '12px', color: '#047857' }} onClick={() => (window.location.hash = '#/purchase-orders')}>
+              💊 Accéder à mes Bons de Commande
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── AGENT (non superadmin) : vue statistiques administratives uniquement ──
+  if (isAdminStatsView) {
+    return (
+      <div className="maternity-view fade-in-up" style={{ minHeight: '80vh', padding: '2rem 1rem' }}>
+        <div style={{ maxWidth: '960px', margin: '0 auto' }}>
+          <div className="p-4 rounded-4 mb-4 d-flex align-items-center gap-3" style={{ background: 'linear-gradient(90deg, #1e3a5f 0%, #1d4ed8 100%)', borderRadius: '18px', color: '#fff' }}>
+            <span style={{ fontSize: '2.2rem' }}>🛡️</span>
+            <div>
+              <strong className="d-block" style={{ fontSize: '1.1rem' }}>Mode Agent Administratif — Statistiques Maternité UNAMUSC</strong>
+              <small style={{ opacity: 0.8 }}>Vue agrégée : suivi épidémiologique et statistiques. Le détail clinique reste réservé aux professionnel(le)s de santé.</small>
+            </div>
+          </div>
+
+          <div className="row g-4 mb-4">
+            <div className="col-md-4">
+              <div className="p-4 rounded-4 text-center" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '18px' }}>
+                <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🤰</div>
+                <h3 className="fw-bold mb-1" style={{ color: 'var(--text-main)' }}>142</h3>
+                <div className="small" style={{ color: 'var(--text-sub)' }}>Grossesses suivies (année)</div>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="p-4 rounded-4 text-center" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '18px' }}>
+                <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🏥</div>
+                <h3 className="fw-bold mb-1 text-success">128</h3>
+                <div className="small" style={{ color: 'var(--text-sub)' }}>Accouchements assistés</div>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="p-4 rounded-4 text-center" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '18px' }}>
+                <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📊</div>
+                <h3 className="fw-bold mb-1" style={{ color: 'var(--text-main)' }}>98%</h3>
+                <div className="small" style={{ color: 'var(--text-sub)' }}>Taux de réussite suivi</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '18px' }}>
+            <h5 className="fw-bold mb-3" style={{ color: 'var(--text-main)' }}>📋 Synthèse administrative</h5>
+            <div className="p-3 rounded-3" style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', borderLeft: '4px solid #3b82f6' }}>
+              <strong className="d-block small text-primary">🔒 Détail clinique protégé</strong>
+              <small style={{ color: 'var(--text-sub)' }}>Les données nominatives du carnet de maternité (consultations prénatales, échographies, accouchement) sont protégées par le secret médical et accessibles uniquement aux médecins et sage-femmes agréés.</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isCitizen && isSuspended) {
     return (
@@ -418,7 +587,44 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
       </div>
 
       <div style={{ maxWidth: '1320px', margin: '1.75rem auto 0 auto', padding: '0 1.5rem' }}>
-        
+
+        {/* BANNIÈRE DE RÔLE — distincte selon le profil */}
+        {(canEditMaternity || isSuperAdmin) && (
+          <div className="mb-4 p-3 rounded-4 d-flex align-items-center gap-3" style={{
+            borderRadius: '14px',
+            background: isSuperAdmin ? 'linear-gradient(90deg, rgba(234,179,8,0.15) 0%, rgba(234,179,8,0.05) 100%)'
+                     : 'linear-gradient(90deg, #0f766e 0%, #0d9488 100%)',
+            color: isSuperAdmin ? '#92400e' : '#ffffff',
+            border: isSuperAdmin ? '1px solid rgba(234,179,8,0.4)' : 'none'
+          }}>
+            <span style={{ fontSize: '1.6rem' }}>{isSuperAdmin ? '👑' : isMidwife ? '🤱' : '🩺'}</span>
+            <div>
+              <strong className="d-block" style={{ fontSize: '0.98rem' }}>
+                {isSuperAdmin && 'Mode SuperAdmin — Accès total'}
+                {isMidwife && 'Mode Sage-femme — Édition complète du carnet'}
+                {isDoctor && 'Mode Médecin — Édition complète du carnet'}
+              </strong>
+              <small style={{ opacity: 0.85 }}>
+                {isSuperAdmin ? 'Toutes les actions disponibles.' : 'Vous pouvez remplir les consultations prénatales, ajouter des fiches conseils et modifier le carnet.'}
+              </small>
+            </div>
+          </div>
+        )}
+        {isCitizen && (
+          <div className="mb-4 p-3 rounded-4 d-flex align-items-center gap-3" style={{
+            borderRadius: '14px',
+            background: 'rgba(16,185,129,0.1)',
+            border: '1px solid rgba(16,185,129,0.25)',
+            color: 'var(--text-main)'
+          }}>
+            <span style={{ fontSize: '1.6rem' }}>📖</span>
+            <div>
+              <strong className="d-block" style={{ fontSize: '0.98rem' }}>Mode lecture seule — Espace assuré</strong>
+              <small style={{ color: 'var(--text-sub)' }}>Consultez votre carnet de maternité, téléchargez le PDF et posez vos questions à la sage-femme.</small>
+            </div>
+          </div>
+        )}
+
         {/* Top Hero Banner Card */}
         <div 
           className="p-5 rounded-4 mb-5 text-white" 
@@ -537,40 +743,80 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                 {/* Timeline Items */}
                 <div className="d-flex flex-column gap-3">
                   {cpnVisits.map((item) => (
-                    <div key={item.id} className="p-3.5 rounded-4 d-flex align-items-start gap-3" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+                    <div key={item.id} className="p-3.5 rounded-4 d-flex align-items-start gap-3" style={{ background: 'var(--bg-card-subtle)', border: editingCpnId === item.id ? '2px solid #10b981' : '1px solid var(--border-color)' }}>
                       <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: item.completed ? '#10b981' : 'var(--bg-card)', color: item.completed ? '#ffffff' : 'var(--text-sub)', border: item.completed ? 'none' : '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', flexShrink: 0 }}>
                         {item.completed ? '✓' : '⌛'}
                       </div>
 
-                      <div className="flex-grow-1">
-                        <div className="d-flex justify-content-between align-items-center mb-1">
-                          <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', padding: '0.2rem 0.6rem', borderRadius: '6px', fontSize: '0.72rem', fontWeight: '700' }}>
-                            {item.status}
-                          </span>
-                          <span style={{ background: 'var(--bg-card)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', padding: '0.2rem 0.6rem', borderRadius: '6px', fontSize: '0.72rem', fontWeight: '600' }}>
-                            📅 {item.date}
-                          </span>
-                        </div>
-                        <h6 className="fw-bold mb-1" style={{ color: 'var(--text-main)', fontSize: '0.98rem' }}>{item.title}</h6>
-                        <p className="small mb-1" style={{ color: 'var(--text-sub)', lineHeight: '1.5' }}>{item.desc}</p>
-                        <small className="text-success fw-semibold" style={{ fontSize: '0.75rem' }}>👩‍⚕️ {item.doctor}</small>
-                      </div>
+                      {editingCpnId === item.id ? (
+                        <form onSubmit={handleSaveEditCpn} className="flex-grow-1 d-flex flex-column gap-2">
+                          <input type="text" className="form-control form-control-sm" placeholder="Titre CPN" value={editCpnForm.title} onChange={(e) => setEditCpnForm({ ...editCpnForm, title: e.target.value })} required />
+                          <textarea className="form-control form-control-sm" rows={2} placeholder="Description / observations cliniques" value={editCpnForm.desc} onChange={(e) => setEditCpnForm({ ...editCpnForm, desc: e.target.value })} />
+                          <div className="d-flex gap-2">
+                            <input type="text" className="form-control form-control-sm" placeholder="Date (JJ/MM/AAAA)" value={editCpnForm.date} onChange={(e) => setEditCpnForm({ ...editCpnForm, date: e.target.value })} style={{ maxWidth: '140px' }} />
+                            <input type="text" className="form-control form-control-sm" placeholder="Praticien" value={editCpnForm.doctor} onChange={(e) => setEditCpnForm({ ...editCpnForm, doctor: e.target.value })} />
+                          </div>
+                          <div className="d-flex gap-2">
+                            <input type="text" className="form-control form-control-sm" placeholder="Statut" value={editCpnForm.status} onChange={(e) => setEditCpnForm({ ...editCpnForm, status: e.target.value })} />
+                            <label className="d-flex align-items-center gap-1 small" style={{ color: 'var(--text-sub)' }}>
+                              <input type="checkbox" checked={editCpnForm.completed} onChange={(e) => setEditCpnForm({ ...editCpnForm, completed: e.target.checked })} /> Terminée
+                            </label>
+                          </div>
+                          <div className="d-flex gap-2">
+                            <button type="submit" className="btn btn-sm btn-success fw-bold" style={{ borderRadius: '8px' }}>💾 Enregistrer</button>
+                            <button type="button" className="btn btn-sm btn-secondary" onClick={() => setEditingCpnId(null)}>Annuler</button>
+                          </div>
+                        </form>
+                      ) : (
+                        <>
+                          <div className="flex-grow-1">
+                            <div className="d-flex justify-content-between align-items-center mb-1">
+                              <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', padding: '0.2rem 0.6rem', borderRadius: '6px', fontSize: '0.72rem', fontWeight: '700' }}>
+                                {item.status}
+                              </span>
+                              <span style={{ background: 'var(--bg-card)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', padding: '0.2rem 0.6rem', borderRadius: '6px', fontSize: '0.72rem', fontWeight: '600' }}>
+                                📅 {item.date}
+                              </span>
+                            </div>
+                            <h6 className="fw-bold mb-1" style={{ color: 'var(--text-main)', fontSize: '0.98rem' }}>{item.title}</h6>
+                            <p className="small mb-1" style={{ color: 'var(--text-sub)', lineHeight: '1.5' }}>{item.desc}</p>
+                            <small className="text-success fw-semibold" style={{ fontSize: '0.75rem' }}>👩‍⚕️ {item.doctor}</small>
+                          </div>
 
-                      {!item.completed && (
-                        <button 
-                          type="button"
-                          style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer' }}
-                          onClick={() => {
-                            setSelectedCpnForBooking(item);
-                            setShowBookingModal(true);
-                          }}
-                        >
-                          Réserver CPN
-                        </button>
+                          <div className="d-flex flex-column gap-1.5">
+                            {/* Assuré : réserver une CPN à venir */}
+                            {isCitizen && !item.completed && (
+                              <button
+                                type="button"
+                                style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer' }}
+                                onClick={() => {
+                                  setSelectedCpnForBooking(item);
+                                  setShowBookingModal(true);
+                                }}
+                              >
+                                Réserver CPN
+                              </button>
+                            )}
+                            {/* Médecin / Sage-femme / SuperAdmin : éditer / supprimer */}
+                            {canEditMaternity && (
+                              <>
+                                <button type="button" style={{ background: 'rgba(59,130,246,0.15)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '10px', padding: '0.4rem 0.7rem', fontWeight: '700', fontSize: '0.75rem', cursor: 'pointer' }} onClick={() => openEditCpn(item)}>✏️ Modifier</button>
+                                <button type="button" style={{ background: 'rgba(220,38,38,0.1)', color: '#dc2626', border: '1px solid rgba(220,38,38,0.3)', borderRadius: '10px', padding: '0.4rem 0.7rem', fontWeight: '700', fontSize: '0.75rem', cursor: 'pointer' }} onClick={() => handleDeleteCpn(item.id)}>🗑 Supprimer</button>
+                              </>
+                            )}
+                          </div>
+                        </>
                       )}
                     </div>
                   ))}
                 </div>
+
+                {/* Bouton ajouter CPN — médecin / sage-femme / superadmin */}
+                {canEditMaternity && (
+                  <button type="button" className="mt-3" style={{ background: 'rgba(16,185,129,0.12)', color: '#10b981', border: '2px dashed #10b981', borderRadius: '12px', padding: '0.75rem', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer', width: '100%' }} onClick={() => setShowAddCpnModal(true)}>
+                    ➕ Ajouter une consultation CPN ({isMidwife ? 'Sage-femme' : isSuperAdmin ? 'SuperAdmin' : 'Médecin'})
+                  </button>
+                )}
 
               </div>
             </div>
@@ -898,17 +1144,44 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                           {item.a}
                         </p>
                       </div>
+
+                      {/* Zone réponse professionnel (médecin / sage-femme / superadmin) */}
+                      {canEditMaternity && (
+                        <div className="mt-3 p-3 rounded-3" style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.25)' }}>
+                          {replyingToIdx === idx ? (
+                            <div className="d-flex flex-column gap-2">
+                              <textarea className="form-control form-control-sm" rows={3} placeholder="Saisissez votre réponse médicale..." value={proReply} onChange={(e) => setProReply(e.target.value)} style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '8px' }} />
+                              <div className="d-flex gap-2">
+                                <button type="button" className="btn btn-sm btn-success fw-bold" style={{ borderRadius: '8px' }} onClick={() => handleProReply(idx)}>📨 Publier la réponse</button>
+                                <button type="button" className="btn btn-sm btn-secondary" onClick={() => { setReplyingToIdx(null); setProReply(''); }}>Annuler</button>
+                              </div>
+                            </div>
+                          ) : (
+                            <button type="button" className="btn btn-sm fw-bold w-100" style={{ background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px' }} onClick={() => { setReplyingToIdx(idx); setProReply(item.a && !item.a.includes('Bonjour Awa') ? item.a : ''); }}>
+                              💬 Répondre en tant que {isMidwife ? 'sage-femme' : isSuperAdmin ? 'SuperAdmin' : 'médecin'}
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
 
-                <button 
-                  type="button"
-                  style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.8rem 1.5rem', fontWeight: '800', fontSize: '0.9rem', cursor: 'pointer', width: '100%', boxShadow: '0 4px 15px rgba(16,185,129,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
-                  onClick={() => setShowAskMidwifeModal(true)}
-                >
-                  <span>➕</span> Poser une nouvelle question à la sage-femme
-                </button>
+                {/* Bouton poser question — réservé à l'assuré */}
+                {isCitizen && (
+                  <button
+                    type="button"
+                    style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.8rem 1.5rem', fontWeight: '800', fontSize: '0.9rem', cursor: 'pointer', width: '100%', boxShadow: '0 4px 15px rgba(16,185,129,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                    onClick={() => setShowAskMidwifeModal(true)}
+                  >
+                    <span>➕</span> Poser une nouvelle question à la sage-femme
+                  </button>
+                )}
+                {canEditMaternity && (
+                  <div className="mt-2 text-center small" style={{ color: 'var(--text-sub)' }}>
+                    🔒 En tant que professionnel, vous répondez aux questions (aucune action sur le bouton ci-dessus).
+                  </div>
+                )}
               </div>
             </div>
 
@@ -951,14 +1224,19 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                       <small style={{ color: 'var(--text-sub)', fontSize: '0.76rem' }}>Recommandations médicales certifiées par l'équipe soignante UNAMUSC</small>
                     </div>
 
-                    {(userRole !== 'citizen' || partnerUser || agentUser) && (
-                      <button 
-                        type="button" 
+                    {canEditMaternity && (
+                      <button
+                        type="button"
                         style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.45rem 0.85rem', fontSize: '0.78rem', fontWeight: '800', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.25)' }}
                         onClick={() => setShowAddAdviceModal(true)}
                       >
-                        ➕ Ajouter une fiche (Sage-femme / Médecin)
+                        ➕ Ajouter une fiche ({isMidwife ? 'Sage-femme' : isSuperAdmin ? 'SuperAdmin' : 'Médecin'})
                       </button>
+                    )}
+                    {isCitizen && (
+                      <span className="badge bg-secondary-subtle text-secondary border border-secondary px-2.5 py-1.5" style={{ borderRadius: '8px', fontSize: '0.74rem' }}>
+                        🔒 Lecture seule — Modifications par votre sage-femme/médecin
+                      </span>
                     )}
                   </div>
                   
@@ -992,6 +1270,13 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                           <strong className="d-block" style={{ color: 'var(--text-main)', fontSize: '0.88rem', lineHeight: '1.3' }}>{art.title}</strong>
                           <small style={{ color: 'var(--text-sub)', fontSize: '0.75rem', lineHeight: '1.4' }}>{art.subtitle}</small>
                         </div>
+
+                        {canEditMaternity && (
+                          <div className="d-flex gap-1" onClick={(e) => e.stopPropagation()}>
+                            <button type="button" title="Modifier la fiche" style={{ background: 'rgba(59,130,246,0.15)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '8px', padding: '0.3rem 0.5rem', fontSize: '0.75rem', cursor: 'pointer' }} onClick={() => openEditAdvice(art)}>✏️</button>
+                            <button type="button" title="Supprimer la fiche" style={{ background: 'rgba(220,38,38,0.1)', color: '#dc2626', border: '1px solid rgba(220,38,38,0.3)', borderRadius: '8px', padding: '0.3rem 0.5rem', fontSize: '0.75rem', cursor: 'pointer' }} onClick={() => handleDeleteAdvice(art.id)}>🗑</button>
+                          </div>
+                        )}
 
                         <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '1.1rem' }}>›</span>
                       </div>
@@ -1400,6 +1685,78 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
             </div>
 
           </div>
+        </div>,
+        document.body
+      )}
+
+      {/* MODALE AJOUT CPN (médecin / sage-femme / superadmin) */}
+      {showAddCpnModal && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
+          <form onSubmit={handleAddCpn} style={{ maxWidth: '520px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '20px', padding: '2rem', border: '1px solid var(--border-color)', margin: 'auto' }}>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h5 className="fw-bold text-success mb-0">➕ Ajouter une consultation CPN</h5>
+              <button type="button" className="btn-close" onClick={() => setShowAddCpnModal(false)}></button>
+            </div>
+            <div className="mb-2">
+              <label className="form-label small fw-bold">Titre *</label>
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={newCpnForm.title} onChange={(e) => setNewCpnForm({ ...newCpnForm, title: e.target.value })} placeholder="Ex: CPN 3 (28-32 SA)" required />
+            </div>
+            <div className="mb-2">
+              <label className="form-label small fw-bold">Observations cliniques</label>
+              <textarea className="form-control" rows={3} style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={newCpnForm.desc} onChange={(e) => setNewCpnForm({ ...newCpnForm, desc: e.target.value })} placeholder="Ex: Hauteur utérine, BCF, VAT, TPI-SP..." />
+            </div>
+            <div className="row g-2 mb-2">
+              <div className="col-6">
+                <label className="form-label small fw-bold">Date</label>
+                <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={newCpnForm.date} onChange={(e) => setNewCpnForm({ ...newCpnForm, date: e.target.value })} placeholder="JJ/MM/AAAA" />
+              </div>
+              <div className="col-6">
+                <label className="form-label small fw-bold">Statut</label>
+                <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={newCpnForm.status} onChange={(e) => setNewCpnForm({ ...newCpnForm, status: e.target.value })} placeholder="Ex: CPN 3 - À VENIR" />
+              </div>
+            </div>
+            <div className="mb-3">
+              <label className="form-label small fw-bold">Praticien</label>
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={newCpnForm.doctor} onChange={(e) => setNewCpnForm({ ...newCpnForm, doctor: e.target.value })} placeholder="Ex: Dr. Mariama Ba" />
+            </div>
+            <div className="d-flex justify-content-end gap-2">
+              <button type="button" className="btn btn-secondary" onClick={() => setShowAddCpnModal(false)}>Annuler</button>
+              <button type="submit" className="btn btn-success fw-bold text-white">➕ Ajouter la CPN</button>
+            </div>
+          </form>
+        </div>,
+        document.body
+      )}
+
+      {/* MODALE ÉDITION FICHE CONSEIL (médecin / sage-femme / superadmin) */}
+      {editingAdviceId && editAdviceForm && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
+          <form onSubmit={handleSaveEditAdvice} style={{ maxWidth: '560px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '20px', padding: '2rem', border: '1px solid var(--border-color)', margin: 'auto' }}>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h5 className="fw-bold text-success mb-0">✏️ Modifier la fiche conseil</h5>
+              <button type="button" className="btn-close" onClick={() => { setEditingAdviceId(null); setEditAdviceForm(null); }}></button>
+            </div>
+            <div className="mb-2">
+              <label className="form-label small fw-bold">Titre *</label>
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={editAdviceForm.title} onChange={(e) => setEditAdviceForm({ ...editAdviceForm, title: e.target.value })} required />
+            </div>
+            <div className="mb-2">
+              <label className="form-label small fw-bold">Sous-titre</label>
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={editAdviceForm.subtitle || ''} onChange={(e) => setEditAdviceForm({ ...editAdviceForm, subtitle: e.target.value })} />
+            </div>
+            <div className="mb-2">
+              <label className="form-label small fw-bold">Contenu (une ligne par conseil)</label>
+              <textarea className="form-control" rows={5} style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={editAdviceForm.content} onChange={(e) => setEditAdviceForm({ ...editAdviceForm, content: e.target.value })} />
+            </div>
+            <div className="mb-2">
+              <label className="form-label small fw-bold">Astuces ({'{'}'{'}'}conseil sage-femme)</label>
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={editAdviceForm.tips || ''} onChange={(e) => setEditAdviceForm({ ...editAdviceForm, tips: e.target.value })} />
+            </div>
+            <div className="d-flex justify-content-end gap-2">
+              <button type="button" className="btn btn-secondary" onClick={() => { setEditingAdviceId(null); setEditAdviceForm(null); }}>Annuler</button>
+              <button type="submit" className="btn btn-success fw-bold text-white">💾 Enregistrer</button>
+            </div>
+          </form>
         </div>,
         document.body
       )}

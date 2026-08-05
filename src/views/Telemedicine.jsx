@@ -5,15 +5,38 @@ import { initiatePayment, getProviderInfo, validatePhoneForProvider } from '../s
 
 // Design Premium Haut de Gamme — Télémédecine Visioconférence Bidirectionnelle & Vu-mètre Micro Réel
 export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, partnerUser = null, setView = null }) {
-  const isDoctorOrPartner = (userRole === 'doctor' || userRole === 'partner' || userRole === 'prestataire' || userRole === 'agent' || !!partnerUser || !!agentUser);
+  // ═══════════════════════════════════════════════════════
+  // RBAC — Définition granulaire des rôles (cohérent avec MedicalProfile)
+  // ═══════════════════════════════════════════════════════
+  const isSuperAdmin = userRole === 'superadmin' || agentUser?.role === 'SuperAdmin' || agentUser?.role === 'Super Admin';
+  const isDoctor     = userRole === 'doctor' || (userRole === 'partner' && partnerUser?.role?.toLowerCase().includes('médecin'));
+  const isMidwife    = userRole === 'midwife' || (userRole === 'partner' && partnerUser?.role?.toLowerCase().includes('sage'));
+  const isAgent      = (userRole === 'agent' || (!!agentUser && !isSuperAdmin)) && !isSuperAdmin;
+  const isPharmacist = userRole === 'pharmacist';
+  const isCitizen    = !isAgent && !isDoctor && !isMidwife && !isPharmacist && !isSuperAdmin && (!!citizenUser && (userRole === 'citizen' || userRole === 'citizen_suspended'));
+  // Alias rétro-compatibilité
+  const isDoctorOrPartner = isDoctor || isMidwife;
+  // Peut démarrer une consultation / émettre ordonnance numérique
+  const canConsult = isDoctor || isMidwife || isSuperAdmin;
+  // Peut gérer la file d'attente / planning (administratif)
+  const canManageQueue = isAgent || isSuperAdmin;
+  // Vérification cotisation payée pour le citoyen (salle d'attente)
+  const isSuspended = (
+    userRole === 'citizen_suspended' ||
+    citizenUser?.status === 'suspended' ||
+    citizenUser?.status === 'inactif' ||
+    citizenUser?.status === 'suspendu' ||
+    localStorage.getItem('cmu-portal-mode') === 'citizen_suspended' ||
+    localStorage.getItem('cmu-cotisation-suspended') === 'true'
+  );
 
   // Assuré actif
   const activeCmuNumber = citizenUser?.cmu_number || citizenUser?.cmuNumber || 'CMU-DKR-2026-8812';
   const activeFirstName = citizenUser?.first_name || citizenUser?.firstName || 'Awa';
   const activeLastName = citizenUser?.last_name || citizenUser?.lastName || 'Ndiaye';
 
-  // Mode de rôle (Assuré ou Médecin de Garde)
-  const [roleMode, setRoleMode] = useState(isDoctorOrPartner ? 'doctor' : 'citizen');
+  // Mode de rôle (Assuré, Médecin/Sage-femme de garde). L'agent reste en vue administrative.
+  const [roleMode, setRoleMode] = useState((isDoctor || isMidwife) ? 'doctor' : (isSuperAdmin ? 'doctor' : 'citizen'));
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
 
@@ -508,7 +531,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           {/* Header Banner */}
           <div className="p-5 rounded-4 text-center text-white mb-4" style={{
-            background: 'linear-gradient(135deg, #065f46 0%, #047857 50%, #059669 100%)',
+            background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.82) 0%, rgba(4, 120, 87, 0.88) 100%), url("/csu_digital_health_real.jpg") center/cover no-repeat',
             borderRadius: '24px',
             boxShadow: 'var(--shadow-lg)',
             border: '1px solid rgba(255, 255, 255, 0.2)'
@@ -583,15 +606,26 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
     );
   }
 
-  const isCitizen = (!isDoctorOrPartner && (!!citizenUser || userRole === 'citizen' || userRole === 'citizen_suspended'));
-  const isSuspended = (
-    userRole === 'citizen_suspended' || 
-    citizenUser?.status === 'suspended' || 
-    citizenUser?.status === 'inactif' || 
-    citizenUser?.status === 'suspendu' || 
-    localStorage.getItem('cmu-portal-mode') === 'citizen_suspended' ||
-    localStorage.getItem('cmu-cotisation-suspended') === 'true'
-  );
+  // ── PHARMACIEN : non concerné par la télémédecine ──
+  if (isPharmacist) {
+    return (
+      <div className="telemed-view fade-in-up" style={{ minHeight: '80vh', padding: '2rem 1rem' }}>
+        <div style={{ maxWidth: '700px', margin: '0 auto' }}>
+          <div className="p-5 rounded-4 text-center text-white" style={{ background: 'linear-gradient(135deg, #047857 0%, #059669 100%)', borderRadius: '24px', boxShadow: 'var(--shadow-lg)' }}>
+            <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>💊</div>
+            <span className="badge mb-3 d-inline-block" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.82rem', fontWeight: 'bold' }}>Pharmacien Agréé UNAMUSC</span>
+            <h2 className="fw-bold mb-3" style={{ color: '#fff', fontSize: '1.8rem' }}>Télémédecine — Non concerné</h2>
+            <p className="mb-4" style={{ color: '#d1fae5', lineHeight: '1.6', maxWidth: '500px', margin: '0 auto 1.5rem' }}>
+              La télémédecine est réservée aux assurés et aux médecins/sage-femmes agréés. Votre espace pharmacien est dédié à la validation des bons de commande médicaments.
+            </p>
+            <button className="btn btn-light fw-bold px-4 py-3" style={{ borderRadius: '12px', color: '#047857' }} onClick={() => (window.location.hash = '#/purchase-orders')}>
+              💊 Accéder à mes Bons de Commande
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (isCitizen && isSuspended) {
     return (
@@ -656,26 +690,46 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
             </span>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            {!isDoctorOrPartner ? (
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            {/* Badge / toggle selon le rôle */}
+            {isCitizen && (
               <span className="badge bg-success-subtle text-success border border-success px-3 py-1.5 fw-bold" style={{ borderRadius: '8px', fontSize: '0.8rem' }}>
                 🟢 Espace assuré (connecté)
               </span>
-            ) : (
+            )}
+            {isPharmacist && (
+              <span className="badge bg-success-subtle text-success border border-success px-3 py-1.5 fw-bold" style={{ borderRadius: '8px', fontSize: '0.8rem' }}>
+                💊 Pharmacien — Accès limité
+              </span>
+            )}
+            {isSuperAdmin && (
+              <span className="badge px-3 py-1.5 fw-bold" style={{ borderRadius: '8px', fontSize: '0.8rem', background: 'rgba(234,179,8,0.2)', color: '#92400e', border: '1px solid rgba(234,179,8,0.4)' }}>
+                👑 SuperAdmin
+              </span>
+            )}
+            {canManageQueue && !isSuperAdmin && (
+              <span className="badge px-3 py-1.5 fw-bold" style={{ borderRadius: '8px', fontSize: '0.8rem', background: 'rgba(30,58,95,0.15)', color: '#1e3a5f', border: '1px solid rgba(30,58,95,0.3)' }}>
+                🛡️ Agent — Gestion file d'attente
+              </span>
+            )}
+            {/* Toggle disponible seulement si l'utilisateur peut réellement consulter (médecin/sage-femme/superadmin) */}
+            {canConsult && (
               <>
-                <button 
-                  type="button" 
-                  style={{ background: roleMode === 'citizen' ? '#10b981' : 'var(--bg-card)', color: roleMode === 'citizen' ? '#ffffff' : 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.85rem', fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer' }}
-                  onClick={() => setRoleMode('citizen')}
-                >
-                  Espace assuré
-                </button>
-                <button 
-                  type="button" 
+                {isSuperAdmin && (
+                  <button
+                    type="button"
+                    style={{ background: roleMode === 'citizen' ? '#10b981' : 'var(--bg-card)', color: roleMode === 'citizen' ? '#ffffff' : 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.85rem', fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer' }}
+                    onClick={() => setRoleMode('citizen')}
+                  >
+                    Vue assuré
+                  </button>
+                )}
+                <button
+                  type="button"
                   style={{ background: roleMode === 'doctor' ? '#10b981' : 'var(--bg-card)', color: roleMode === 'doctor' ? '#ffffff' : 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.85rem', fontSize: '0.8rem', fontWeight: '700', cursor: 'pointer' }}
                   onClick={() => setRoleMode('doctor')}
                 >
-                  Espace médecin de garde
+                  Espace {isMidwife ? 'sage-femme' : 'médecin'} de garde
                 </button>
               </>
             )}
@@ -686,7 +740,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
       <div style={{ maxWidth: '1320px', margin: '1.75rem auto 0 auto', padding: '0 1.5rem' }}>
         
         {/* Top Hero Card Banner */}
-        <div className="p-5 rounded-4 mb-5 text-white" style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.38) 0%, rgba(16, 185, 129, 0.18) 100%), url("/csu_digital_health_real.jpg") center/cover no-repeat', padding: '3.75rem 2.5rem', minHeight: '240px', borderRadius: '24px', border: '1px solid rgba(255, 255, 255, 0.45)', boxShadow: '0 14px 40px rgba(0, 0, 0, 0.25)' }}>
+        <div className="p-4 p-md-5 rounded-4 mb-5 text-white" style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.38) 0%, rgba(16, 185, 129, 0.18) 100%), url("/csu_digital_health_real.jpg") center/cover no-repeat', padding: '3.75rem 2.5rem', minHeight: '240px', borderRadius: '24px', border: '1px solid rgba(255, 255, 255, 0.45)', boxShadow: '0 14px 40px rgba(0, 0, 0, 0.25)' }}>
           <div className="row align-items-center g-4">
             <div className="col-lg-8">
               <span style={{ background: 'rgba(255, 255, 255, 0.25)', color: '#ffffff', padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '700', display: 'inline-block', marginBottom: '0.85rem', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.4)' }}>
@@ -697,10 +751,10 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                 Accédez à un réseau de médecins agréés en moins de 10 minutes. Vidéoconférence HD WebRTC sécurisée et cryptée.
               </p>
               
-              <div className="d-flex gap-3 flex-wrap">
-                <button 
+              <div className="d-flex gap-3 flex-wrap mt-3">
+                <button
                   type="button"
-                  style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.8rem 1.75rem', fontWeight: '800', fontSize: '0.95rem', boxShadow: '0 4px 20px rgba(16,185,129,0.45)', cursor: 'pointer' }}
+                  style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '14px', padding: '0.9rem 1.85rem', fontWeight: '800', fontSize: '0.98rem', boxShadow: '0 4px 20px rgba(16,185,129,0.45)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.6rem' }}
                   onClick={() => setActiveModal('join_queue')}
                 >
                   ⚡ Entrer en salle d'attente
@@ -709,17 +763,19 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
             </div>
 
             <div className="col-lg-4">
-              <div className="p-4 rounded-4" style={{ background: 'rgba(255, 255, 255, 0.22)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255, 255, 255, 0.45)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)' }}>
-                <div className="d-flex align-items-center justify-content-between mb-2">
-                  <span 
-                    className="fw-bold text-white" 
-                    style={{ fontSize: '0.88rem', letterSpacing: '0.5px', cursor: 'pointer' }}
+              <div className="p-4 rounded-4" style={{ background: 'rgba(255, 255, 255, 0.22)', border: '1px solid rgba(255, 255, 255, 0.45)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)', backdropFilter: 'blur(10px)' }}>
+                <div className="d-flex align-items-center justify-content-between gap-2 mb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: '0.6rem' }}>
+                  <span
+                    className="fw-bold text-white d-inline-flex align-items-center gap-1.5"
+                    style={{ fontSize: '0.92rem', letterSpacing: '0.3px', cursor: 'pointer' }}
                     onClick={() => setActiveModal('all_doctors')}
                     title="Cliquer pour voir la liste complète des 15 médecins"
                   >
-                    🟢 15 MÉDECINS EN LIGNE 🔍
+                    🟢 15 médecins en ligne
                   </span>
-                  <span className="badge" style={{ background: '#10b981', color: '#ffffff', fontSize: '0.72rem', fontWeight: '800' }}>Disponible 24/7</span>
+                  <span style={{ background: '#10b981', color: '#ffffff', fontSize: '0.75rem', fontWeight: '700', padding: '0.35rem 0.75rem', borderRadius: '20px', whiteSpace: 'nowrap', display: 'inline-block' }}>
+                    Disponible 24/7
+                  </span>
                 </div>
 
                 <div className="d-flex align-items-center gap-2 my-2">
@@ -749,21 +805,21 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                 </div>
 
                 <div className="mt-2 pt-2 border-top border-white border-opacity-25">
-                  <small className="text-white d-block fw-semibold" style={{ fontSize: '0.82rem', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
+                  <div className="text-white fw-semibold" style={{ fontSize: '0.88rem', lineHeight: '1.7', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
                     {doctorsList.map((d, idx) => (
-                      <span 
-                        key={d.id || idx} 
-                        style={{ cursor: 'pointer', textDecoration: 'underline text-decoration-color: rgba(255,255,255,0.4)', marginRight: '6px' }}
+                      <span
+                        key={d.id || idx}
+                        style={{ cursor: 'pointer', marginRight: '0.5rem', marginBottom: '0.35rem', display: 'inline-block', padding: '0.2rem 0.55rem', background: 'rgba(255,255,255,0.12)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.2)' }}
                         onClick={() => {
                           setSelectedDoctor(d);
                           setActiveModal('join_queue');
                         }}
                       >
-                        {d.name}{idx < doctorsList.length - 1 ? ' • ' : ''}
+                        {d.name}
                       </span>
                     ))}
-                  </small>
-                  <small className="text-white-50 d-block mt-1" style={{ fontSize: '0.78rem' }}>Temps d'attente estimé : <span className="fw-bold text-warning" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.4)' }}>⚡ 4 min</span></small>
+                  </div>
+                  <small className="text-white-50 d-block mt-2" style={{ fontSize: '0.82rem', lineHeight: '1.5' }}>Temps d'attente estimé : <span className="fw-bold text-warning" style={{ textShadow: '0 1px 2px rgba(0,0,0,0.4)' }}>⚡ 4 min</span></small>
                 </div>
               </div>
             </div>
@@ -900,18 +956,73 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
           );
         })()}
 
+        {/* SECTION GESTION ADMINISTRATIVE — Agent / SuperAdmin (file d'attente + planning) */}
+        {canManageQueue && roleMode !== 'doctor' && (
+          <div className="p-4 rounded-4 mb-5" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
+            <div className="d-flex align-items-center gap-2 mb-4">
+              <span style={{ fontSize: '1.4rem' }}>🛡️</span>
+              <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>
+                Gestion administrative — File d'attente & planning Télémédecine
+              </h5>
+            </div>
+
+            {/* KPIs administratifs */}
+            <div className="row g-3 mb-4">
+              <div className="col-md-3 col-6">
+                <div className="p-3 rounded-4 text-center" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+                  <div style={{ fontSize: '1.6rem' }}>⏳</div>
+                  <strong className="d-block fs-4 text-warning" style={{ color: '#f59e0b' }}>7</strong>
+                  <small style={{ color: 'var(--text-sub)' }}>Patients en attente</small>
+                </div>
+              </div>
+              <div className="col-md-3 col-6">
+                <div className="p-3 rounded-4 text-center" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+                  <div style={{ fontSize: '1.6rem' }}>🩺</div>
+                  <strong className="d-block fs-4 text-success">12</strong>
+                  <small style={{ color: 'var(--text-sub)' }}>Consultations aujourd'hui</small>
+                </div>
+              </div>
+              <div className="col-md-3 col-6">
+                <div className="p-3 rounded-4 text-center" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+                  <div style={{ fontSize: '1.6rem' }}>👨‍⚕️</div>
+                  <strong className="d-block fs-4" style={{ color: 'var(--text-main)' }}>5</strong>
+                  <small style={{ color: 'var(--text-sub)' }}>Médecins de garde</small>
+                </div>
+              </div>
+              <div className="col-md-3 col-6">
+                <div className="p-3 rounded-4 text-center" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+                  <div style={{ fontSize: '1.6rem' }}>📅</div>
+                  <strong className="d-block fs-4" style={{ color: 'var(--text-main)' }}>23</strong>
+                  <small style={{ color: 'var(--text-sub)' }}>RDV planifiés (semaine)</small>
+                </div>
+              </div>
+            </div>
+
+            {/* Note administrative */}
+            <div className="p-3 rounded-3" style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', borderLeft: '4px solid #3b82f6' }}>
+              <strong className="d-block small text-primary">📋 Vue administrative UNAMUSC</strong>
+              <small style={{ color: 'var(--text-sub)' }}>
+                Vous gérez le planning, l'historique et la supervision de la file d'attente. Les consultations cliniques sont réservées aux médecins et sage-femmes agréés.
+              </small>
+            </div>
+          </div>
+        )}
+
         {/* SECTION MÉDECINS DE GARDE / FILE D'ATTENTE */}
         {roleMode === 'doctor' && (
           <div className="p-4 rounded-4 mb-5" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
             <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
               <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>📋 File d'attente Télémédecine (Ordre d'arrivée des patients)</h5>
-              <button 
-                type="button" 
-                style={{ background: '#059669', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontWeight: '800', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(5,150,105,0.3)' }}
-                onClick={() => setActiveModal('add_doctor')}
-              >
-                ➕ Ajouter un Médecin (Union Départementale)
-              </button>
+              {canManageQueue && (
+                <button
+                  type="button"
+                  style={{ background: '#059669', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontWeight: '800', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(5,150,105,0.3)' }}
+                  onClick={() => setActiveModal('add_doctor')}
+                  title="Réservé à l'agent UDMS et au SuperAdmin — gestion du réseau de praticiens agréés"
+                >
+                  ➕ Ajouter un Médecin (Union Départementale)
+                </button>
+              )}
             </div>
             <div className="table-responsive">
               <table className="table align-middle mb-0" style={{ background: 'transparent' }}>

@@ -4,7 +4,25 @@ import { generateOfficialPdf } from '../utils/pdfGenerator';
 
 // Design Premium Haut de Gamme — Dossier Médical & Radiographies Certifiées
 export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, partnerUser = null }) {
-  const isDoctorOrAgent = (userRole === 'agent' || userRole === 'partner' || userRole === 'doctor' || !!agentUser || !!partnerUser);
+  // ═══════════════════════════════════════════════════════
+  // RBAC — Définition granulaire des rôles
+  // ═══════════════════════════════════════════════════════
+  const isSuperAdmin = userRole === 'superadmin' || agentUser?.role === 'SuperAdmin' || agentUser?.role === 'Super Admin';
+  const isAgent      = (userRole === 'agent' || !!agentUser) && !isSuperAdmin;
+  const isDoctor     = userRole === 'doctor' || (userRole === 'partner' && partnerUser?.role?.toLowerCase().includes('médecin'));
+  const isMidwife    = userRole === 'midwife' || (userRole === 'partner' && partnerUser?.role?.toLowerCase().includes('sage'));
+  const isPharmacist = userRole === 'pharmacist';
+  const isCitizen    = !isAgent && !isDoctor && !isMidwife && !isPharmacist && !isSuperAdmin && !!citizenUser;
+
+  // Droits d'édition clinique : uniquement médecin, sage-femme et superadmin
+  const canEditMedical  = isDoctor || isMidwife || isSuperAdmin;
+  // Vue administrative (sans accès au contenu médical détaillé)
+  const isAdminView     = isAgent && !isSuperAdmin;
+  // Accès total
+  const hasFullAccess   = canEditMedical || isSuperAdmin;
+  // Ancien alias pour rétro-compatibilité des blocs existants
+  const isDoctorOrAgent = canEditMedical || isSuperAdmin;
+
   const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'history', 'lab'
   const [searchTerm, setSearchTerm] = useState('');
   
@@ -352,14 +370,102 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
     });
   };
 
-  // Guard de confidentialité : si l'utilisateur n'est pas connecté, masquer les données médicales privées
-  if (!citizenUser && !agentUser && !partnerUser && userRole !== 'agent' && userRole !== 'partner' && userRole !== 'doctor') {
+  // ── PHARMACIEN : accès refusé au dossier médical ──
+  if (isPharmacist) {
+    return (
+      <div className="medical-profile-view fade-in-up" style={{ minHeight: '80vh', padding: '2rem 1rem' }}>
+        <div style={{ maxWidth: '700px', margin: '0 auto' }}>
+          <div className="p-5 rounded-4 text-center text-white" style={{ background: 'linear-gradient(135deg, #1e3a5f 0%, #1e40af 100%)', borderRadius: '24px', boxShadow: 'var(--shadow-lg)' }}>
+            <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>💊</div>
+            <span className="badge mb-3 d-inline-block" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.82rem', fontWeight: 'bold' }}>Pharmacien Agréé UNAMUSC</span>
+            <h2 className="fw-bold mb-3" style={{ color: '#fff', fontSize: '1.8rem' }}>Dossier Médical — Accès Non Autorisé</h2>
+            <p className="mb-4" style={{ color: '#bfdbfe', lineHeight: '1.6', maxWidth: '500px', margin: '0 auto 1.5rem' }}>
+              En tant que pharmacien, vous n'avez pas accès au dossier médical de l'assuré. Votre espace est dédié à la validation et la délivrance des bons de commande médicaments.
+            </p>
+            <button className="btn btn-light fw-bold px-4 py-3" style={{ borderRadius: '12px', color: '#1e40af' }} onClick={() => (window.location.hash = '#/purchase-orders')}>
+              💊 Accéder à mes Bons de Commande
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── AGENT (non superadmin) : vue administrative uniquement ──
+  if (isAdminView) {
+    return (
+      <div className="medical-profile-view fade-in-up" style={{ minHeight: '80vh', padding: '2rem 1rem' }}>
+        <div style={{ maxWidth: '960px', margin: '0 auto' }}>
+          {/* Bannière agent */}
+          <div className="p-4 rounded-4 mb-4 d-flex align-items-center gap-3" style={{ background: 'linear-gradient(90deg, #1e3a5f 0%, #1d4ed8 100%)', borderRadius: '18px', color: '#fff' }}>
+            <span style={{ fontSize: '2.2rem' }}>🛡️</span>
+            <div>
+              <strong className="d-block" style={{ fontSize: '1.1rem' }}>Mode Agent Administratif — UNAMUSC</strong>
+              <small style={{ opacity: 0.8 }}>Accès restreint : contrôle administratif uniquement. Le contenu médical détaillé est protégé par le secret médical.</small>
+            </div>
+          </div>
+
+          {/* Statistiques administratives */}
+          <div className="row g-4 mb-4">
+            <div className="col-md-4">
+              <div className="p-4 rounded-4 text-center" style={{ background: 'var(--bg-card)', border: '2px solid #1d4ed8', borderRadius: '18px' }}>
+                <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📂</div>
+                <h3 className="fw-bold mb-1" style={{ color: 'var(--text-main)' }}>Dossier</h3>
+                <span className="badge bg-success px-3 py-2">CSU ACTIF</span>
+                <div className="mt-2 small" style={{ color: 'var(--text-sub)' }}>Ref: {activeCmuNumber}</div>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="p-4 rounded-4 text-center" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '18px' }}>
+                <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🏥</div>
+                <h3 className="fw-bold mb-1" style={{ color: 'var(--text-main)' }}>Examens</h3>
+                <span className="fw-bold text-success" style={{ fontSize: '1.8rem' }}>{exams.length}</span>
+                <div className="small" style={{ color: 'var(--text-sub)' }}>Certifiés CNOM/UNAMUSC</div>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="p-4 rounded-4 text-center" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '18px' }}>
+                <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📊</div>
+                <h3 className="fw-bold mb-1" style={{ color: 'var(--text-main)' }}>Historique</h3>
+                <span className="fw-bold text-success" style={{ fontSize: '1.8rem' }}>{historyEntries.length}</span>
+                <div className="small" style={{ color: 'var(--text-sub)' }}>Consultations enregistrées</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Infos administratives assuré */}
+          <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '18px' }}>
+            <h5 className="fw-bold mb-3" style={{ color: 'var(--text-main)' }}>📄 Informations administratives assuré</h5>
+            <div className="row g-3">
+              <div className="col-md-6">
+                <small className="text-muted d-block">Assuré</small>
+                <strong style={{ color: 'var(--text-main)' }}>{activeFirstName} {activeLastName}</strong>
+              </div>
+              <div className="col-md-6">
+                <small className="text-muted d-block">N° Carte CSU</small>
+                <code className="text-success fw-bold">{activeCmuNumber}</code>
+              </div>
+              <div className="col-12">
+                <div className="p-3 rounded-3" style={{ background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.2)', borderLeft: '4px solid #3b82f6' }}>
+                  <strong className="d-block small text-primary">🔒 Contenu médical protégé</strong>
+                  <small style={{ color: 'var(--text-sub)' }}>Le groupe sanguin, les allergies, les radiographies DICOM et résultats de laboratoire sont protégés par le secret médical. Seuls les professionnels de santé habilités peuvent y accéder.</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── NON CONNECTÉ : écran d'accès sécurisé ──
+  if (!citizenUser && !agentUser && !partnerUser && userRole !== 'agent' && userRole !== 'partner' && userRole !== 'doctor' && userRole !== 'midwife' && userRole !== 'superadmin') {
     return (
       <div className="medical-profile-view fade-in-up" style={{ minHeight: '80vh', padding: '2rem 1rem' }}>
         <div style={{ maxWidth: '900px', margin: '0 auto' }}>
           {/* Header Banner */}
           <div className="p-5 rounded-4 text-center text-white mb-4" style={{
-            background: 'linear-gradient(135deg, #064e3b 0%, #047857 50%, #059669 100%)',
+            background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.82) 0%, rgba(4, 120, 87, 0.88) 100%), url("/csu_profile_hero_real.png") center/cover no-repeat',
             borderRadius: '24px',
             boxShadow: 'var(--shadow-lg)',
             border: '1px solid rgba(255, 255, 255, 0.2)'
@@ -440,7 +546,6 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
     );
   }
 
-  const isCitizen = (userRole === 'citizen' || userRole === 'citizen_suspended' || (!isDoctorOrAgent && !!citizenUser));
   const isSuspended = (
     userRole === 'citizen_suspended' || 
     citizenUser?.status === 'suspended' || 
@@ -577,42 +682,73 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
       <div style={{ maxWidth: '1320px', margin: '1.75rem auto 0 auto', padding: '0 1.5rem' }}>
         
         {/* Top Hero Card Banner */}
-        <div className="p-5 rounded-4 mb-5 text-white" style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.38) 0%, rgba(16, 185, 129, 0.18) 100%), url("/csu_profile_hero_real.png") center/cover no-repeat', padding: '3.75rem 2.5rem', minHeight: '240px', borderRadius: '24px', border: '1px solid rgba(255, 255, 255, 0.45)', boxShadow: '0 14px 40px rgba(0, 0, 0, 0.25)' }}>
-          <div className="d-flex justify-content-between align-items-center flex-wrap gap-4">
-            <div>
-              <span style={{ background: 'rgba(255, 255, 255, 0.25)', color: '#ffffff', padding: '0.35rem 0.9rem', borderRadius: '20px', fontSize: '0.82rem', fontWeight: '700', display: 'inline-block', marginBottom: '0.75rem', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.4)' }}>
-                🇸🇳 CERTIFIÉ CNOM & UNAMUSC SÉNÉGAL
+        <div className="p-5 rounded-4 mb-5 text-white" style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.35) 0%, rgba(16, 185, 129, 0.18) 100%), url("/csu_profile_hero_real.png") center/cover no-repeat', padding: '3rem 2.5rem', minHeight: '220px', borderRadius: '24px', border: '1px solid rgba(255, 255, 255, 0.25)', boxShadow: '0 14px 40px rgba(0, 0, 0, 0.18)', overflow: 'hidden' }}>
+          <div className="d-flex flex-wrap gap-4" style={{ alignItems: 'flex-start' }}>
+            <div style={{ flex: '1 1 320px' }}>
+              <span style={{ background: 'rgba(255, 255, 255, 0.2)', color: '#ffffff', padding: '0.4rem 0.95rem', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '700', display: 'inline-block', marginBottom: '0.85rem', border: '1px solid rgba(255,255,255,0.3)' }}>
+                🇸🇳 Certifié CNOM & UNAMUSC Sénégal
               </span>
-              <h1 className="fw-extrabold text-white mb-2" style={{ fontSize: '2.35rem', letterSpacing: '-0.02em', textShadow: '0 3px 8px rgba(0,0,0,0.4)' }}>Dossier médical & radiographies certifiées</h1>
-              <p className="text-white mb-0" style={{ fontSize: '1.05rem', maxWidth: '720px', lineHeight: '1.6', textShadow: '0 2px 4px rgba(0,0,0,0.3)', opacity: 0.95 }}>
-                Accédez en toute sécurité à vos antécédents, vos résultats de radiologie et téléchargez votre carnet de santé numérique certifié.
+              <h1 className="fw-extrabold text-white mb-2" style={{ fontSize: '2.1rem', letterSpacing: '-0.015em' }}>Dossier médical & radiographies certifiées</h1>
+              <p className="text-white mb-0" style={{ fontSize: '1.02rem', maxWidth: '720px', lineHeight: '1.7', opacity: 0.95 }}>
+                {isCitizen && 'Accédez en toute sécurité à vos antécédents, vos résultats de radiologie et téléchargez votre carnet de santé numérique certifié.'}
+                {(isDoctor || isMidwife) && `Mode ${isDoctor ? 'médecin prescripteur' : 'sage-femme'} — Vous pouvez consulter, annoter et enrichir le dossier de votre patient.`}
+                {isSuperAdmin && 'SuperAdmin — Accès total et contrôle complet du dossier médical partagé UNAMUSC.'}
               </p>
             </div>
 
-            <div className="d-flex gap-2 flex-wrap">
-              <button 
-                type="button"
-                style={{ background: '#ffffff', color: '#047857', border: 'none', borderRadius: '12px', padding: '0.7rem 1.25rem', fontWeight: '800', fontSize: '0.88rem', cursor: 'pointer', boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)' }} 
-                onClick={handleDownloadFullBooklet}
-              >
-                📥 Télécharger le carnet PDF (🇸🇳)
-              </button>
+            {/* Boutons d'action selon le rôle */}
+            <div className="d-flex flex-column gap-3 w-100 mt-3" style={{ flex: '1 1 100%' }}>
+              <div className="d-flex flex-wrap align-items-center" style={{ gap: '1rem', rowGap: '0.85rem' }}>
+                {/* Télécharger PDF — disponible à tous les profils autorisés */}
+                <button
+                  type="button"
+                  style={{ background: '#ffffff', color: '#047857', border: 'none', borderRadius: '12px', padding: '0.85rem 1.4rem', fontWeight: '800', fontSize: '0.9rem', cursor: 'pointer', boxShadow: '0 4px 15px rgba(0, 0, 0, 0.15)', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+                  onClick={handleDownloadFullBooklet}
+                >
+                  📥 Télécharger le carnet PDF
+                </button>
 
-              <button 
-                type="button"
-                style={{ background: 'rgba(255,255,255,0.25)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.5)', borderRadius: '12px', padding: '0.7rem 1.25rem', fontWeight: '700', fontSize: '0.88rem', cursor: 'pointer', backdropFilter: 'blur(6px)' }} 
-                onClick={() => setShowShareModal(true)}
-              >
-                🔗 Partager avec mon médecin
-              </button>
+                {/* Partager avec médecin — citoyen et médecin seulement */}
+                {(isCitizen || isDoctor || isMidwife || isSuperAdmin) && (
+                  <button
+                    type="button"
+                    style={{ background: 'rgba(255,255,255,0.22)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.5)', borderRadius: '12px', padding: '0.85rem 1.4rem', fontWeight: '700', fontSize: '0.9rem', cursor: 'pointer', backdropFilter: 'blur(6px)', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+                    onClick={() => setShowShareModal(true)}
+                  >
+                    🔗 Partager avec mon médecin
+                  </button>
+                )}
 
-              <button 
-                type="button"
-                style={{ background: 'rgba(16, 185, 129, 0.9)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '12px', padding: '0.7rem 1.25rem', fontWeight: '800', fontSize: '0.88rem', cursor: 'pointer' }} 
-                onClick={() => setShowAddExamModal(true)}
-              >
-                ➕ Ajouter un examen
-              </button>
+                {/* Ajouter un examen — médecin, sage-femme, superadmin uniquement (l'assuré est en lecture seule) */}
+                {canEditMedical && (
+                  <button
+                    type="button"
+                    style={{ background: 'rgba(255,255,255,0.22)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.5)', borderRadius: '12px', padding: '0.85rem 1.4rem', fontWeight: '800', fontSize: '0.9rem', cursor: 'pointer', backdropFilter: 'blur(6px)', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+                    onClick={() => setShowAddExamModal(true)}
+                  >
+                    ➕ Ajouter un examen DICOM
+                  </button>
+                )}
+
+                {/* Badge de rôle (lecture seule / mode médecin / superadmin) */}
+                {isCitizen && (
+                  <span style={{ background: 'rgba(0,0,0,0.3)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.35)', borderRadius: '12px', padding: '0.65rem 1.1rem', fontSize: '0.82rem', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                    🔒 Lecture seule — modifications par votre médecin
+                  </span>
+                )}
+
+                {(isDoctor || isMidwife) && (
+                  <span style={{ background: 'rgba(0,0,0,0.3)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.35)', borderRadius: '12px', padding: '0.65rem 1.1rem', fontSize: '0.82rem', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                    📝 Mode {isDoctor ? 'médecin prescripteur' : 'sage-femme'} — édition autorisée
+                  </span>
+                )}
+
+                {isSuperAdmin && (
+                  <span style={{ background: 'rgba(234,179,8,0.35)', color: '#fef08a', border: '1px solid rgba(234,179,8,0.5)', borderRadius: '12px', padding: '0.65rem 1.1rem', fontSize: '0.82rem', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                    👑 SuperAdmin — accès total
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -635,14 +771,20 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                     <span style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.72rem', fontWeight: '700' }}>Urgent</span>
                   </div>
 
-                  <div className="d-flex align-items-baseline gap-2 my-2">
-                    <h1 className="fw-black text-success mb-0" style={{ fontSize: '3.2rem', letterSpacing: '-0.03em' }}>{antecedents.bloodGroup}</h1>
-                    <span className="fw-bold" style={{ color: 'var(--text-sub)', fontSize: '1.1rem' }}>Rhésus {antecedents.rhesus}</span>
+                  <div className="d-flex align-items-center justify-content-center gap-3 my-3 p-3 rounded-3" style={{ background: 'rgba(239, 68, 68, 0.06)' }}>
+                    <h1 className="fw-black text-danger mb-0" style={{ fontSize: '3rem', letterSpacing: '-0.03em', lineHeight: 1 }}>{antecedents.bloodGroup}</h1>
+                    <div>
+                      <div className="fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>Rhésus {antecedents.rhesus}</div>
+                      <small style={{ color: 'var(--text-sub)', fontSize: '0.75rem' }}>Groupe sanguin certifié</small>
+                    </div>
                   </div>
 
-                  <small className="d-block pt-2 border-top" style={{ color: 'var(--text-sub)', borderColor: 'var(--border-color)', fontSize: '0.75rem' }}>
-                    Certifié par : <strong style={{ color: 'var(--text-main)' }}>Laboratoire Bio24, Dakar</strong>
-                  </small>
+                  <div className="d-flex align-items-center gap-2 pt-2 border-top" style={{ borderColor: 'var(--border-color)' }}>
+                    <span style={{ fontSize: '0.85rem' }}>🏥</span>
+                    <small style={{ color: 'var(--text-sub)', fontSize: '0.78rem' }}>
+                      Certifié par : <strong style={{ color: 'var(--text-main)' }}>Laboratoire Bio24, Dakar</strong>
+                    </small>
+                  </div>
                 </div>
 
                 {/* Allergies & alertes Card */}
@@ -669,32 +811,73 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
 
                   {editingAntecedents ? (
                     <form onSubmit={handleSaveAntecedents} className="d-flex flex-column gap-2">
-                      <label className="small" style={{ color: 'var(--text-sub)' }}>Allergies :</label>
-                      <input 
-                        type="text" 
-                        className="form-control small" 
-                        style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }} 
-                        value={antecedents.allergies} 
-                        onChange={(e) => setAntecedents({ ...antecedents, allergies: e.target.value })} 
-                      />
-                      <label className="small mt-1" style={{ color: 'var(--text-sub)' }}>Affections / ALD :</label>
-                      <input 
-                        type="text" 
-                        className="form-control small" 
-                        style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }} 
-                        value={antecedents.chronicConditions} 
-                        onChange={(e) => setAntecedents({ ...antecedents, chronicConditions: e.target.value })} 
-                      />
-                      <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.4rem', fontWeight: '700', marginTop: '0.5rem' }}>Sauvegarder</button>
+                      <div>
+                        <label className="small fw-bold d-block mb-1" style={{ color: 'var(--text-sub)' }}>⚠️ Allergies (médicaments, aliments, environnement) :</label>
+                        <textarea className="form-control small" rows={2} style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '8px' }} value={antecedents.allergies} onChange={(e) => setAntecedents({ ...antecedents, allergies: e.target.value })} placeholder="Ex: Pénicilline (sévère), Pollen, Arachide..." />
+                      </div>
+                      <div>
+                        <label className="small fw-bold d-block mb-1" style={{ color: 'var(--text-sub)' }}>🏥 Affections longue durée (ALD) :</label>
+                        <textarea className="form-control small" rows={2} style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '8px' }} value={antecedents.chronicConditions} onChange={(e) => setAntecedents({ ...antecedents, chronicConditions: e.target.value })} placeholder="Ex: HTA, Diabète type 2, Drépanocytose..." />
+                      </div>
+                      <div>
+                        <label className="small fw-bold d-block mb-1" style={{ color: 'var(--text-sub)' }}>🔧 Interventions chirurgicales :</label>
+                        <textarea className="form-control small" rows={2} style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '8px' }} value={antecedents.surgeries || ''} onChange={(e) => setAntecedents({ ...antecedents, surgeries: e.target.value })} placeholder="Ex: Appendicectomie (2021), Césarienne (2018)..." />
+                      </div>
+                      <div>
+                        <label className="small fw-bold d-block mb-1" style={{ color: 'var(--text-sub)' }}>💊 Traitement en cours :</label>
+                        <textarea className="form-control small" rows={2} style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '8px' }} value={antecedents.currentTreatment || ''} onChange={(e) => setAntecedents({ ...antecedents, currentTreatment: e.target.value })} placeholder="Ex: Amlodipine 5mg (HTA), Metformine 500mg..." />
+                      </div>
+                      <div>
+                        <label className="small fw-bold d-block mb-1" style={{ color: 'var(--text-sub)' }}>💉 Vaccinations à jour :</label>
+                        <input type="text" className="form-control small" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '8px' }} value={antecedents.vaccinations || ''} onChange={(e) => setAntecedents({ ...antecedents, vaccinations: e.target.value })} placeholder="Ex: VAT à jour, Grippe 2025, COVID-3 doses" />
+                      </div>
+                      <div>
+                        <label className="small fw-bold d-block mb-1" style={{ color: 'var(--text-sub)' }}>📞 Contact d'urgence :</label>
+                        <input type="text" className="form-control small" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '8px' }} value={antecedents.emergencyContact || ''} onChange={(e) => setAntecedents({ ...antecedents, emergencyContact: e.target.value })} placeholder="Ex: Sokhna Diop (Épouse) — +221 77 987 65 43" />
+                      </div>
+                      <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem', fontWeight: '700', marginTop: '0.5rem' }}>💾 Sauvegarder et certifier</button>
                     </form>
                   ) : (
                     <div className="d-flex flex-column gap-2">
                       {antecedents.allergies.split(',').map((alg, idx) => (
-                        <div key={idx} className="p-3 rounded-3 d-flex align-items-center gap-2.5" style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
+                        <div key={`alg-${idx}`} className="p-3 rounded-3 d-flex align-items-center gap-2.5" style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.25)' }}>
                           <span className="text-warning font-monospace" style={{ fontSize: '1.2rem' }}>●</span>
                           <span className="fw-bold small" style={{ color: 'var(--text-main)' }}>{alg.trim()}</span>
                         </div>
                       ))}
+                      {antecedents.chronicConditions && (
+                        <div className="p-3 rounded-3" style={{ background: 'rgba(220, 38, 38, 0.06)', border: '1px solid rgba(220, 38, 38, 0.2)' }}>
+                          <small className="fw-bold d-block text-danger mb-0.5" style={{ fontSize: '0.72rem' }}>🏥 ALD</small>
+                          <span className="small" style={{ color: 'var(--text-main)' }}>{antecedents.chronicConditions}</span>
+                        </div>
+                      )}
+                      {antecedents.surgeries && (
+                        <div className="p-3 rounded-3" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+                          <small className="fw-bold d-block text-secondary mb-0.5" style={{ fontSize: '0.72rem' }}>🔧 Chirurgies</small>
+                          <span className="small" style={{ color: 'var(--text-main)' }}>{antecedents.surgeries}</span>
+                        </div>
+                      )}
+                      {antecedents.currentTreatment && (
+                        <div className="p-3 rounded-3" style={{ background: 'rgba(59, 130, 246, 0.06)', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+                          <small className="fw-bold d-block text-primary mb-0.5" style={{ fontSize: '0.72rem' }}>💊 Traitement en cours</small>
+                          <span className="small" style={{ color: 'var(--text-main)' }}>{antecedents.currentTreatment}</span>
+                        </div>
+                      )}
+                      {antecedents.vaccinations && (
+                        <div className="p-3 rounded-3" style={{ background: 'rgba(16, 185, 129, 0.06)', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                          <small className="fw-bold d-block text-success mb-0.5" style={{ fontSize: '0.72rem' }}>💉 Vaccinations</small>
+                          <span className="small" style={{ color: 'var(--text-main)' }}>{antecedents.vaccinations}</span>
+                        </div>
+                      )}
+                      {antecedents.emergencyContact && (
+                        <div className="p-3 rounded-3 d-flex align-items-center gap-2" style={{ background: 'rgba(239, 68, 68, 0.06)', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                          <span style={{ fontSize: '1.1rem' }}>📞</span>
+                          <div>
+                            <small className="fw-bold d-block text-danger" style={{ fontSize: '0.72rem' }}>Contact d'urgence</small>
+                            <span className="small fw-semibold" style={{ color: 'var(--text-main)' }}>{antecedents.emergencyContact}</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -709,24 +892,24 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                   <div className="d-flex flex-column gap-2.5">
                     <div className="p-3 rounded-3 d-flex align-items-center justify-content-between" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
                       <div className="d-flex align-items-center gap-2.5">
-                        <div style={{ width: '32px', height: '32px', background: '#059669', color: '#ffffff', fontWeight: '700', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>F</div>
+                        <div style={{ width: '36px', height: '36px', background: '#059669', color: '#ffffff', fontWeight: '700', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem' }}>F</div>
                         <div>
-                          <strong className="d-block small" style={{ color: 'var(--text-main)' }}>Hôpital Fann</strong>
-                          <small style={{ color: 'var(--text-sub)', fontSize: '0.72rem' }}>ID: FANN-77291</small>
+                          <strong className="d-block" style={{ color: 'var(--text-main)', fontSize: '0.9rem' }}>Hôpital Fann</strong>
+                          <small style={{ color: 'var(--text-sub)', fontSize: '0.75rem' }}>ID : FANN-77291</small>
                         </div>
                       </div>
-                      <span style={{ background: '#10b981', color: '#ffffff', borderRadius: '50%', padding: '0.1rem 0.4rem', fontSize: '0.7rem' }}>✓</span>
+                      <span style={{ background: 'rgba(16,185,129,0.15)', color: '#10b981', borderRadius: '8px', padding: '0.25rem 0.6rem', fontSize: '0.72rem', fontWeight: '700' }}>✓ Synchronisé</span>
                     </div>
 
                     <div className="p-3 rounded-3 d-flex align-items-center justify-content-between" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
                       <div className="d-flex align-items-center gap-2.5">
-                        <div style={{ width: '32px', height: '32px', background: '#dc2626', color: '#ffffff', fontWeight: '700', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>LD</div>
+                        <div style={{ width: '36px', height: '36px', background: '#dc2626', color: '#ffffff', fontWeight: '700', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem' }}>LD</div>
                         <div>
-                          <strong className="d-block small" style={{ color: 'var(--text-main)' }}>Le Dantec</strong>
-                          <small style={{ color: 'var(--text-sub)', fontSize: '0.72rem' }}>ID: LD-091823</small>
+                          <strong className="d-block" style={{ color: 'var(--text-main)', fontSize: '0.9rem' }}>Le Dantec</strong>
+                          <small style={{ color: 'var(--text-sub)', fontSize: '0.75rem' }}>ID : LD-091823</small>
                         </div>
                       </div>
-                      <span style={{ background: '#10b981', color: '#ffffff', borderRadius: '50%', padding: '0.1rem 0.4rem', fontSize: '0.7rem' }}>✓</span>
+                      <span style={{ background: 'rgba(16,185,129,0.15)', color: '#10b981', borderRadius: '8px', padding: '0.25rem 0.6rem', fontSize: '0.72rem', fontWeight: '700' }}>✓ Synchronisé</span>
                     </div>
                   </div>
                 </div>

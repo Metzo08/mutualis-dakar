@@ -86,7 +86,7 @@ class ErrorBoundary extends Component {
 
 export default function App() {
   // Liste des vues valides (pour valider le hash URL)
-  const validViews = ['home','login','beneficiaries','services','map','directory','depts','programmes','about','medicaments','audit-logs','galerie','infos-csu','blog-experts','parrainage-solidaire','partnership','complaints','profile','verify','dashboard','claims','notifications','cotisations','partner','regional-stats','loyalty','payments','guarantees','purchase-orders','telemedicine','medical-profile','maternity','superadmin-governance'];
+  const validViews = ['home','login','beneficiaries','services','map','directory','depts','programmes','about','medicaments','audit-logs','galerie','infos-csu','blog-experts','parrainage-solidaire','partnership','complaints','profile','verify','dashboard','claims','notifications','cotisations','partner','regional-stats','loyalty','payments','guarantees','purchase-orders','telemedicine','medical-profile','maternity','superadmin-governance','rse','institution-coud'];
 
   // Initialise la vue depuis le hash URL (#/beneficiaries) pour le deep-linking
   const initialViewFromHash = () => {
@@ -161,6 +161,8 @@ export default function App() {
   };
 
   // Enforce session mutual exclusivity & profile initialization V6 RBAC
+  // IMPORTANT : le mode 'citizen' SANS citizenUser préexistant = visiteur non connecté.
+  // On ne crée JAMAIS de citizenUser fictif ici (sinon un visiteur apparaît « connecté »).
   useEffect(() => {
     const activeMode = localStorage.getItem('cmu-portal-mode') || portalMode || 'citizen';
     if (activeMode === 'doctor' || activeMode === 'partner') {
@@ -189,13 +191,12 @@ export default function App() {
       rawSetCitizenUser(null);
       rawSetPartnerUser(null);
     } else if (activeMode === 'citizen_suspended') {
-      const citizenRecord = { firstName: 'Awa', lastName: 'Ndiaye', cmuNumber: 'CMU-DKR-2026-8812', packageType: 'maternité 100%', status: 'suspended' };
-      rawSetCitizenUser(citizenRecord);
+      // Assuré suspendu : on garde le citizenUser existant (défini au login), on marque juste le statut
       rawSetAgentUser(null);
       rawSetPartnerUser(null);
     } else {
-      const citizenRecord = { firstName: 'Awa', lastName: 'Ndiaye', cmuNumber: 'CMU-DKR-2026-8812', packageType: 'maternité 100%', status: 'active' };
-      rawSetCitizenUser(citizenRecord);
+      // Mode 'citizen' : visiteur non connecté OU assuré déjà authentifié.
+      // On NE crée pas de citizenUser fictif — le visiteur reste invité.
       rawSetAgentUser(null);
       rawSetPartnerUser(null);
     }
@@ -486,10 +487,11 @@ export default function App() {
           return <InfosCSU lang={lang} />;
         case 'blog-experts':
           return (
-            <BlogExperts 
-              lang={lang} 
-              portalMode={portalMode} 
-              agentUser={agentUser} 
+            <BlogExperts
+              lang={lang}
+              portalMode={portalMode}
+              agentUser={agentUser}
+              partnerUser={partnerUser}
             />
           );
         case 'parrainage-solidaire':
@@ -661,7 +663,7 @@ export default function App() {
         case 'maternity':
           return <MaternalHealth lang={lang} userRole={portalMode} citizenUser={citizenUser} agentUser={agentUser} partnerUser={partnerUser} setView={setView} />;
         case 'institution-coud':
-          return <InstitutionPortal lang={lang} />;
+          return <InstitutionPortal lang={lang} portalMode={portalMode} agentUser={agentUser} setView={setView} />;
         default:
           return (
             <Home 
@@ -861,7 +863,10 @@ export default function App() {
                           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-card-subtle)'}
                           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                           onClick={() => {
+                            // Redirection selon le type de notification
                             if (notif.type === 'complaint') setView('complaints');
+                            else if (notif.type === 'system') setView(portalMode === 'agent' || portalMode === 'superadmin' ? 'dashboard' : 'profile');
+                            else if (notif.type === 'alert') setView('medicaments');
                             setShowNotifications(false);
                           }}
                         >
@@ -879,8 +884,8 @@ export default function App() {
                       ))
                     )}
                   </div>
-                  {agentUser && agentUser.role === 'Super Admin' && (
-                    <div 
+                  {(portalMode === 'superadmin' || (agentUser && (agentUser.role === 'SuperAdmin' || agentUser.role === 'Super Admin'))) && (
+                    <div
                       style={{ padding: '0.75rem', textAlign: 'center', backgroundColor: 'var(--bg-card-subtle)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--primary)' }}
                       onClick={() => {
                         setView('audit-logs');

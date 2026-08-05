@@ -26,18 +26,7 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Modale de demande d'ouverture de compte (entamée par l'assuré)
-  const [showRequestModal, setShowRequestModal] = useState(false);
-  const [requestForm, setRequestForm] = useState({
-    firstName: '',
-    lastName: '',
-    phone: '',
-    email: '',
-    password: '',
-    udmsName: 'UDMS Dakar Plateau',
-    profileType: 'Assuré individuel / famille',
-    notes: ''
-  });
+  // (la demande d'ouverture de compte a été supprimée — réservée au SuperAdmin/Agent en back-office)
 
   const handleSelectPreset = (code) => {
     setSelectedAccCode(code);
@@ -130,41 +119,7 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
     }, 400);
   };
 
-  // Envoi de la demande d'ouverture de compte par un assuré
-  const handleRequestSubmit = (e) => {
-    e.preventDefault();
-    if (!requestForm.firstName || !requestForm.lastName || !requestForm.phone || !requestForm.email) {
-      setError('Veuillez compléter tous les champs requis pour la demande.');
-      return;
-    }
-
-    const newRequest = {
-      id: `REQ-${Date.now()}`,
-      firstName: requestForm.firstName,
-      lastName: requestForm.lastName,
-      phone: requestForm.phone,
-      email: requestForm.email,
-      password: requestForm.password || 'Csu2026!',
-      udmsName: requestForm.udmsName,
-      profileType: requestForm.profileType,
-      notes: requestForm.notes,
-      status: 'pending',
-      createdAt: new Date().toISOString()
-    };
-
-    try {
-      const existing = JSON.parse(localStorage.getItem('cmu-pending-account-requests') || '[]');
-      existing.push(newRequest);
-      localStorage.setItem('cmu-pending-account-requests', JSON.stringify(existing));
-    } catch (e) {
-      console.warn('Storage error:', e);
-    }
-
-    setShowRequestModal(false);
-    setSuccessMsg(` Demande transmise avec succès ! Votre dossier a été envoyé à l'UDMS « ${requestForm.udmsName} ». Un Agent ou le Super Admin va accorder l'ouverture de votre compte.`);
-    setTimeout(() => setSuccessMsg(''), 5000);
-    setRequestForm({ firstName: '', lastName: '', phone: '', email: '', password: '', udmsName: 'UDMS Dakar Plateau', profileType: 'Assuré individuel / famille', notes: '' });
-  };
+  // (handler de demande d'ouverture supprimé — fonctionnalité retirée de la page login)
 
   return (
     <div className="login-view fade-in-up" style={{ minHeight: '85vh', paddingBottom: '3rem' }}>
@@ -217,13 +172,6 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
               Cliquez sur n'importe quel profil pour pré-remplir ses identifiants uniques e-mail & mot de passe
             </span>
           </div>
-          <button 
-            className="btn btn-outline" 
-            style={{ borderRadius: '12px', padding: '0.6rem 1.25rem', fontWeight: '700', fontSize: '0.85rem' }}
-            onClick={() => setShowRequestModal(true)}
-          >
-            📝 Demander l'ouverture d'un compte CSU
-          </button>
         </div>
 
         <div style={{
@@ -360,144 +308,6 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
         </div>
       </div>
 
-      {/* Modal Demande d'ouverture de compte entamée par l'assuré */}
-      {showRequestModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.65)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 9999,
-          padding: '1rem'
-        }}>
-          <div className="card fade-in-up" style={{
-            maxWidth: '520px',
-            width: '100%',
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-color)',
-            borderRadius: '24px',
-            padding: '2rem',
-            boxShadow: 'var(--shadow-lg)'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-              <h3 style={{ fontSize: '1.15rem', fontWeight: '800', color: 'var(--primary)', margin: 0 }}>
-                📝 Demande d'ouverture de compte CSU
-              </h3>
-              <button className="btn btn-outline btn-sm" onClick={() => setShowRequestModal(false)} style={{ borderRadius: '8px' }}>
-                ✖️
-              </button>
-            </div>
-
-            <form onSubmit={handleRequestSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                <div>
-                  <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: '700' }}>Prénom *</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="ex: Seydou"
-                    value={requestForm.firstName}
-                    onChange={(e) => setRequestForm({ ...requestForm, firstName: e.target.value })}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: '700' }}>Nom *</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="ex: Kane"
-                    value={requestForm.lastName}
-                    onChange={(e) => setRequestForm({ ...requestForm, lastName: e.target.value })}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
-                <div>
-                  <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: '700' }}>N° Téléphone *</label>
-                  <input
-                    type="tel"
-                    className="form-control"
-                    placeholder="ex: 775554433"
-                    value={requestForm.phone}
-                    onChange={(e) => setRequestForm({ ...requestForm, phone: e.target.value })}
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: '700' }}>Adresse e-mail *</label>
-                  <input
-                    type="email"
-                    className="form-control"
-                    placeholder="ex: seydou.kane@example.com"
-                    value={requestForm.email}
-                    onChange={(e) => setRequestForm({ ...requestForm, email: e.target.value })}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: '700' }}>Union Départementale (UDMS) / Région *</label>
-                <select
-                  className="form-control"
-                  value={requestForm.udmsName}
-                  onChange={(e) => setRequestForm({ ...requestForm, udmsName: e.target.value })}
-                >
-                  <option value="UDMS Dakar Plateau">UDMS Dakar Plateau</option>
-                  <option value="UDMS Pikine Ouest">UDMS Pikine Ouest</option>
-                  <option value="UDMS Guédiawaye">UDMS Guédiawaye</option>
-                  <option value="UDMS Rufisque">UDMS Rufisque</option>
-                  <option value="URMSCD Région de Dakar">URMSCD Région de Dakar</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: '700' }}>Type de profil demandé *</label>
-                <select
-                  className="form-control"
-                  value={requestForm.profileType}
-                  onChange={(e) => setRequestForm({ ...requestForm, profileType: e.target.value })}
-                >
-                  <option value="Assuré individuel / famille">Assuré individuel / famille</option>
-                  <option value="Élève / étudiant (CSU jeunes)">Élève / étudiant (CSU jeunes)</option>
-                  <option value="Bénéficiaire BSF (filet social)">Bénéficiaire BSF (filet social)</option>
-                  <option value="Médecin / praticien traitant">Médecin / praticien traitant</option>
-                  <option value="Pharmacien d'officine">Pharmacien d'officine</option>
-                  <option value="Entreprise / employeur">Entreprise / employeur</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: '700' }}>Mot de passe souhaité</label>
-                <input
-                  type="password"
-                  className="form-control"
-                  placeholder="ex: Csu2026!"
-                  value={requestForm.password}
-                  onChange={(e) => setRequestForm({ ...requestForm, password: e.target.value })}
-                />
-              </div>
-
-              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
-                <button type="button" className="btn btn-outline" style={{ flex: 1 }} onClick={() => setShowRequestModal(false)}>
-                  Annuler
-                </button>
-                <button type="submit" className="btn btn-primary" style={{ flex: 1, fontWeight: '700' }}>
-                  🚀 Soumettre la demande
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

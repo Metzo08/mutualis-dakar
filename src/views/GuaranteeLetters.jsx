@@ -41,11 +41,21 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
     }
   ];
 
-  const isDoctor = (userRole === 'doctor' || userRole === 'partner' || userRole === 'prestataire' || !!partnerUser);
-  const isAgent = (userRole === 'agent' || !!agentUser || userRole === 'superadmin');
-  const isStaff = (isDoctor || isAgent);
-  const isCitizen = (!isStaff && (!!citizenUser || userRole === 'citizen' || userRole === 'citizen_suspended'));
-  const isPublic = (!isStaff && !isCitizen);
+  // ═══════════════════════════════════════════════════════
+  // RBAC — Définition granulaire des rôles (cohérent avec MedicalProfile)
+  // ═══════════════════════════════════════════════════════
+  const isSuperAdmin = userRole === 'superadmin' || agentUser?.role === 'SuperAdmin' || agentUser?.role === 'Super Admin';
+  const isDoctor     = userRole === 'doctor' || (userRole === 'partner' && partnerUser?.role?.toLowerCase().includes('médecin'));
+  const isMidwife    = userRole === 'midwife' || (userRole === 'partner' && partnerUser?.role?.toLowerCase().includes('sage'));
+  const isPharmacist = userRole === 'pharmacist';
+  const isAgent      = (userRole === 'agent' || (!!agentUser && !isSuperAdmin)) && !isSuperAdmin;
+  const isCitizen    = !isAgent && !isDoctor && !isMidwife && !isPharmacist && !isSuperAdmin && (!!citizenUser && (userRole === 'citizen' || userRole === 'citizen_suspended'));
+  const isPublic     = !isAgent && !isDoctor && !isMidwife && !isPharmacist && !isSuperAdmin && !isCitizen;
+  const isStaff      = isDoctor || isMidwife || isAgent || isPharmacist || isSuperAdmin;
+  // Droits d'instruction : agent gérant ou superadmin
+  const canInstruire = isAgent || isSuperAdmin;
+  // Peut consulter les dossiers liés à ses patients (médecin/sage-femme) ou tous (agent/superadmin)
+  const canViewAllLetters = isAgent || isSuperAdmin || isDoctor || isMidwife;
 
   const isSuspended = (
     userRole === 'citizen_suspended' || 
@@ -324,11 +334,14 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
   // Filtrage strict selon le rôle (RBAC) & Confidentialité des données de santé
   const visibleLetters = letters.filter((item) => {
-    if (isAgent) return true; // L'agent UNAMUSC ou médecin habilité a accès à l'ensemble des dossiers
+    // SuperAdmin, agent (instruction), médecin/sage-femme (consultation patients) : voient tous les dossiers
+    if (isSuperAdmin || isAgent) return true;
+    if (isDoctor || isMidwife) return true; // Consultation des dossiers liés aux patients
+    if (isPharmacist) return false; // Pharmacien : non concerné par les lettres de garantie
     if (isCitizen) {
       // L'assuré connecté ne voit STRICTEMENT QUE SES PROPRES DEMANDES
       const cmuMatch = (item.cmu_number || '').trim().toLowerCase() === activeCmuNumber.trim().toLowerCase();
-      const nameMatch = (item.first_name || '').trim().toLowerCase() === activeFirstName.trim().toLowerCase() && 
+      const nameMatch = (item.first_name || '').trim().toLowerCase() === activeFirstName.trim().toLowerCase() &&
                         (item.last_name || '').trim().toLowerCase() === activeLastName.trim().toLowerCase();
       return cmuMatch || nameMatch;
     }
@@ -484,6 +497,27 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
   const totalApproved = letters.filter(l => l.status === 'approved').length;
   const totalGuaranteedSum = letters.filter(l => l.status === 'approved').reduce((acc, l) => acc + (l.max_amount || 0), 0);
 
+  // ── PHARMACIEN : non concerné par les lettres de garantie ──
+  if (isPharmacist) {
+    return (
+      <div className="container py-5 fade-in-up">
+        <div style={{ maxWidth: '700px', margin: '0 auto' }}>
+          <div className="p-5 rounded-4 text-center text-white" style={{ background: 'linear-gradient(135deg, #047857 0%, #059669 100%)', borderRadius: '24px', boxShadow: 'var(--shadow-lg)' }}>
+            <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>💊</div>
+            <span className="badge mb-3 d-inline-block" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.82rem', fontWeight: 'bold' }}>Pharmacien Agréé UNAMUSC</span>
+            <h2 className="fw-bold mb-3" style={{ color: '#fff', fontSize: '1.8rem' }}>Lettres de Garantie — Non concerné</h2>
+            <p className="mb-4" style={{ color: '#d1fae5', lineHeight: '1.6', maxWidth: '500px', margin: '0 auto 1.5rem' }}>
+              Les lettres de garantie concernent les hospitalisations et actes médicaux lourds. En tant que pharmacien, votre espace est dédié à la validation des bons de commande médicaments.
+            </p>
+            <button className="btn btn-light fw-bold px-4 py-3" style={{ borderRadius: '12px', color: '#047857' }} onClick={() => (window.location.hash = '#/purchase-orders')}>
+              💊 Accéder à mes Bons de Commande
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (isCitizen && isSuspended) {
     return (
       <div className="container py-5 fade-in-up">
@@ -570,48 +604,68 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               : 'Demandez votre lettre de garantie hospitalière (80%) ou bon de commande pharmacie (50%) en ligne sous le Tiers-Payant UNAMUSC.'}
           </p>
 
-          <div className="d-flex justify-content-center align-items-center flex-wrap gap-4 mt-4 w-100">
-            <button 
+          <div className="d-flex justify-content-center align-items-center flex-wrap mt-4.5 w-100" style={{ gap: '1.5rem', rowGap: '1rem', padding: '0.5rem 0' }}>
+            <button
               type="button"
-              className="btn fw-bold text-white shadow-md px-4 py-3"
               style={{
                 background: activeTab === 'list' ? '#059669' : 'rgba(255, 255, 255, 0.22)',
                 color: '#ffffff',
-                border: activeTab === 'list' ? '2px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.45)',
-                borderRadius: '14px',
+                border: activeTab === 'list' ? '2.5px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.45)',
+                borderRadius: '16px',
                 fontSize: '0.98rem',
-                boxShadow: activeTab === 'list' ? '0 6px 18px rgba(5, 150, 105, 0.6)' : '0 2px 8px rgba(0,0,0,0.2)',
-                transition: 'all 0.2s',
-                minHeight: '52px'
+                fontWeight: '800',
+                lineHeight: '1.4',
+                padding: '1rem 1.85rem',
+                boxShadow: activeTab === 'list' ? '0 6px 20px rgba(5, 150, 105, 0.65)' : '0 3px 10px rgba(0,0,0,0.2)',
+                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                cursor: 'pointer',
+                flex: '1 1 280px',
+                maxWidth: '420px',
+                minHeight: '54px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.6rem'
               }}
               onClick={() => setActiveTab('list')}
             >
-              📋 {isAgent ? `Instructions Agent (${letters.length})` : `Mes dossiers & attestations (${visibleLetters.length})`}
+              <span>📋</span> {canInstruire ? `Instructions agent (${letters.length})` : (isDoctor || isMidwife) ? `Dossiers patients (${visibleLetters.length})` : `Mes dossiers & attestations (${visibleLetters.length})`}
             </button>
 
-            <button 
-              type="button"
-              className="btn fw-bold text-white shadow-md px-4 py-3"
-              style={{
-                background: activeTab === 'new' ? '#059669' : 'rgba(255, 255, 255, 0.22)',
-                color: '#ffffff',
-                border: activeTab === 'new' ? '2px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.45)',
-                borderRadius: '14px',
-                fontSize: '0.98rem',
-                boxShadow: activeTab === 'new' ? '0 6px 18px rgba(5, 150, 105, 0.6)' : '0 2px 8px rgba(0,0,0,0.2)',
-                transition: 'all 0.2s',
-                minHeight: '52px'
-              }}
-              onClick={() => setActiveTab('new')}
-            >
-              ➕ {lang === 'wo' ? 'Demande bu bees' : 'Nouvelle demande (garantie / bon)'}
-            </button>
+            {(isCitizen || isSuperAdmin) && (
+              <button
+                type="button"
+                style={{
+                  background: activeTab === 'new' ? '#059669' : 'rgba(255, 255, 255, 0.22)',
+                  color: '#ffffff',
+                  border: activeTab === 'new' ? '2.5px solid #ffffff' : '1px solid rgba(255, 255, 255, 0.45)',
+                  borderRadius: '16px',
+                  fontSize: '0.98rem',
+                  fontWeight: '800',
+                  lineHeight: '1.4',
+                  padding: '1rem 1.85rem',
+                  boxShadow: activeTab === 'new' ? '0 6px 20px rgba(5, 150, 105, 0.65)' : '0 3px 10px rgba(0,0,0,0.2)',
+                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  cursor: 'pointer',
+                  flex: '1 1 280px',
+                  maxWidth: '420px',
+                  minHeight: '54px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.6rem'
+                }}
+                onClick={() => setActiveTab('new')}
+              >
+                <span>➕</span> {lang === 'wo' ? 'Demande bu bees' : 'Nouvelle demande (garantie / bon)'}
+              </button>
+            )}
           </div>
         </div>
       </section>
 
-      {/* RANGÉE KPIS EXÉCUTIF GARANTIES (Rôle Agent) */}
-      {isAgent && (
+      {/* RANGÉE KPIS EXÉCUTIF GARANTIES (Rôle Agent / SuperAdmin) */}
+      {canInstruire && (
         <div className="row g-3 mb-4">
           <div className="col-md-3 col-6">
             <div className="card shadow-sm border-0 p-3 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>
@@ -1136,11 +1190,39 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
       )}
 
       {/* LISTE DES DEMANDES DE GARANTIE ACCESSIBLES SELON LE RÔLE */}
-      {activeTab === 'list' && (isAgent || isCitizen || (isPublic && publicSearchCmu)) && (
+      {activeTab === 'list' && (isStaff || isCitizen || (isPublic && publicSearchCmu)) && (
         <div className="card shadow-sm border-0 p-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+          {/* Bannière de rôle distincte */}
+          {isStaff && (
+            <div className="mb-3 p-3 rounded-4 d-flex align-items-center gap-3" style={{
+              borderRadius: '14px',
+              background: isSuperAdmin ? 'linear-gradient(90deg, rgba(234,179,8,0.15) 0%, rgba(234,179,8,0.05) 100%)'
+                       : isAgent   ? 'linear-gradient(90deg, #1e3a5f 0%, #1d4ed8 100%)'
+                       : 'linear-gradient(90deg, #0f766e 0%, #0d9488 100%)',
+              color: isSuperAdmin ? '#92400e' : '#ffffff',
+              border: isSuperAdmin ? '1px solid rgba(234,179,8,0.4)' : 'none'
+            }}>
+              <span style={{ fontSize: '1.6rem' }}>
+                {isSuperAdmin ? '👑' : isAgent ? '🛡️' : '🩺'}
+              </span>
+              <div>
+                <strong className="d-block" style={{ fontSize: '0.98rem' }}>
+                  {isSuperAdmin && 'Mode SuperAdmin — Accès total'}
+                  {isAgent && 'Mode Agent UNAMUSC — Instruction & homologation des demandes'}
+                  {(isDoctor || isMidwife) && `Mode ${isDoctor ? 'Médecin' : 'Sage-Femme'} — Consultation des dossiers patients`}
+                </strong>
+                <small style={{ opacity: 0.85 }}>
+                  {isSuperAdmin && 'Tous les dossiers et toutes les actions disponibles.'}
+                  {isAgent && 'Validez, définissez le taux et le plafond, rejetez avec note.'}
+                  {(isDoctor || isMidwife) && 'Consultez les garanties liées à vos patients (lecture + PDF).'}
+                </small>
+              </div>
+            </div>
+          )}
+
           <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
             <h4 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-              <span>📋</span> {isAgent ? 'Gestion & instruction des lettres de garantie UNAMUSC' : 'Mes lettres de garantie & attestations habilitées'}
+              <span>📋</span> {canInstruire ? 'Gestion & instruction des lettres de garantie UNAMUSC' : (isDoctor || isMidwife) ? 'Dossiers patients — lettres de garantie' : 'Mes lettres de garantie & attestations habilitées'}
             </h4>
 
             {isCitizen && (
@@ -1247,26 +1329,27 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                         </code>
                       </td>
                       <td style={{ textAlign: 'right', padding: '0.85rem' }}>
-                        {isAgent ? (
-                          <button 
+                        {canInstruire ? (
+                          <button
                             type="button"
                             className="btn btn-sm text-white fw-bold px-3 py-1.5 shadow-sm"
                             onClick={() => openInstructionModal(item)}
-                            style={{ background: '#059669', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+                            style={{ background: isSuperAdmin ? '#92400e' : '#059669', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
                           >
-                            {item.status === 'approved' ? '📄 Certificat PDF / Garanties' : '⚙️ Instruire & Homologuer (Agent)'}
+                            {isSuperAdmin ? '👑' : '🛡️'} {item.status === 'approved' ? '📄 Certificat PDF / Garanties' : '⚙️ Instruire & Homologuer'}
                           </button>
-                        ) : isDoctor ? (
+                        ) : isDoctor || isMidwife ? (
                           <div className="d-flex justify-content-end gap-1.5">
-                            <button 
+                            <button
                               type="button"
                               className="btn btn-sm btn-outline-success fw-bold px-2.5 py-1.5"
                               onClick={() => openInstructionModal(item)}
+                              title="Consultation du dossier patient (lecture)"
                               style={{ borderRadius: '8px', fontSize: '0.8rem' }}
                             >
-                              🩺 Éditer prescription
+                              🩺 Voir dossier patient
                             </button>
-                            <button 
+                            <button
                               type="button"
                               className="btn btn-sm text-white fw-bold px-2.5 py-1.5"
                               onClick={() => generateAndPrintPDFWindow(item)}
@@ -1276,7 +1359,8 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                             </button>
                           </div>
                         ) : (
-                          <button 
+                          /* Citoyen : impression de SES lettres uniquement (pas d'instruction) */
+                          <button
                             type="button"
                             className="btn btn-sm text-white fw-bold px-3 py-1.5 shadow-sm"
                             onClick={() => generateAndPrintPDFWindow(item)}

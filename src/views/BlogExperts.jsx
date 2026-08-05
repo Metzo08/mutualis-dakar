@@ -1,7 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
-export default function BlogExperts({ lang, portalMode, agentUser }) {
+export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }) {
+  // Peut rédiger : agent (modération), médecin, sage-femme (rédaction clinique), superadmin
+  // On se base sur portalMode (toujours synchronisé) + objets user si disponibles (fallback nominal)
+  const canPublishArticle = portalMode === 'agent' || portalMode === 'doctor' || portalMode === 'midwife' || portalMode === 'superadmin';
+  // Nom + rôle de l'auteur selon le profil connecté
+  const authorName = portalMode === 'agent'
+    ? (agentUser ? `${agentUser.firstName} ${agentUser.lastName}` : 'Agent UDMS')
+    : portalMode === 'doctor'
+      ? (partnerUser?.name || 'Dr. Cheikh Anta Diop')
+      : portalMode === 'midwife'
+        ? (partnerUser?.name || 'Dr. Fatou Diome')
+        : portalMode === 'superadmin' ? 'DSI UNAMUSC' : '';
+  const authorRole = portalMode === 'agent'
+    ? (agentUser?.role || 'Agent UDMS')
+    : portalMode === 'doctor'
+      ? (partnerUser?.role || 'Médecin Prescripteur')
+      : portalMode === 'midwife'
+        ? (partnerUser?.role || 'Sage-Femme')
+        : portalMode === 'superadmin' ? 'SuperAdmin' : '';
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [comments, setComments] = useState({});
   const [newComment, setNewComment] = useState({ author: '', text: '' });
@@ -159,16 +177,16 @@ export default function BlogExperts({ lang, portalMode, agentUser }) {
     }
   }, [selectedArticle, articleComments]);
 
-  // Autofill author details if connected as agent/admin
+  // Autofill author details if connected as agent/admin/professionnel de santé
   useEffect(() => {
-    if (portalMode === 'agent' && agentUser) {
+    if (canPublishArticle && authorName) {
       setNewArticle(prev => ({
         ...prev,
-        author: `${agentUser.firstName} ${agentUser.lastName}`,
-        role: agentUser.role || (lang === 'fr' ? 'Administrateur régional' : 'Njiit gobal')
+        author: authorName,
+        role: authorRole || (lang === 'fr' ? 'Expert santé UNAMUSC' : 'Pakat bu UNAMUSC')
       }));
     }
-  }, [portalMode, agentUser, lang]);
+  }, [canPublishArticle, authorName, authorRole, lang]);
 
 
 
@@ -331,8 +349,8 @@ export default function BlogExperts({ lang, portalMode, agentUser }) {
         setEditorSuccess(lang === 'fr' ? 'Article publié avec succès !' : 'Article soti na !');
         setNewArticle({
           title: '',
-          author: portalMode === 'agent' && agentUser ? `${agentUser.firstName} ${agentUser.lastName}` : '',
-          role: portalMode === 'agent' && agentUser ? agentUser.role || 'Administrateur' : '',
+          author: canPublishArticle ? authorName : '',
+          role: canPublishArticle ? authorRole : '',
           avatar: '🩺',
           readTime: '5 min',
           content: ''
@@ -399,7 +417,7 @@ export default function BlogExperts({ lang, portalMode, agentUser }) {
         </div>
       </section>
 
-      {(showEditor && portalMode === 'agent' && agentUser) && (
+      {(showEditor && canPublishArticle) && (
         <div className="card text-left fade-in-up" style={{ padding: '2rem', marginBottom: '2rem', borderLeft: '5px solid var(--primary)', borderRadius: '16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
             <h3 style={{ margin: 0, fontSize: '1.35rem', fontWeight: '850', color: 'var(--primary)' }}>
@@ -536,7 +554,7 @@ export default function BlogExperts({ lang, portalMode, agentUser }) {
               <button type="submit" className="btn btn-primary">
                 {lang === 'fr' ? 'Publier sur la plateforme' : 'Publier sur la plateforme'}
               </button>
-              {!(portalMode === 'agent' && agentUser) && (
+              {!canPublishArticle && (
                 <button type="button" className="btn btn-outline" onClick={() => setShowEditor(false)}>
                   {lang === 'fr' ? 'Annuler' : 'Annuler'}
                 </button>
@@ -836,15 +854,15 @@ export default function BlogExperts({ lang, portalMode, agentUser }) {
               </div>
             </div>
 
-            {/* General Blog Note / Contribution trigger (Agent/Admin only) */}
-            {(portalMode === 'agent' && agentUser) && (
+            {/* General Blog Note / Contribution trigger (Agent / Médecin / Sage-femme / SuperAdmin) */}
+            {canPublishArticle && (
               <div className="card text-left" style={{ padding: '1.5rem', background: 'var(--bg-card-subtle)', border: '1px dashed var(--border-color)', borderRadius: '16px' }}>
                 <span style={{ fontWeight: 'bold', color: 'var(--text-main)', fontSize: '0.85rem', display: 'block', marginBottom: '0.5rem' }}>
-                  ✍️ {lang === 'fr' ? 'Rédiger un article' : 'Bind sa article'}
+                  ✍️ {lang === 'fr' ? 'Rédiger un article expert' : 'Bind sa article'}
                 </span>
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-sub)', lineHeight: '1.4', marginBottom: '1rem' }}>
-                  {lang === 'fr' 
-                    ? 'Ajoutez un nouvel article d\'analyse ou conseil d\'expert pour informer les assurés.' 
+                  {lang === 'fr'
+                    ? `Ajoutez un nouvel article d'analyse ou conseil d'expert pour informer les assurés. Vous publiez en tant que ${authorRole || 'expert santé'}.`
                     : 'Bindal article bu bees ngir leral askan wi.'}
                 </p>
                 <button 

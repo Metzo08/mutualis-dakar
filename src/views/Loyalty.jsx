@@ -163,7 +163,7 @@ export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
         )}
 
       {/* Carte solde de points + niveau */}
-      <div className="card" style={{ padding: '2rem', marginBottom: '1.5rem', background: 'linear-gradient(135deg, #059669 0%, #047857 100%)', color: '#fff', textAlign: 'center' }}>
+      <div className="card" style={{ padding: '2rem', marginBottom: '1.5rem', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.82) 0%, rgba(4, 120, 87, 0.88) 100%), url("/bg_health_heart.png") center/cover no-repeat', color: '#fff', textAlign: 'center', borderRadius: '16px', overflow: 'hidden', position: 'relative', border: '1px solid rgba(255,255,255,0.2)' }}>
         <div style={{ fontSize: '0.9rem', opacity: 0.9, marginBottom: '0.5rem' }}>{t.points}</div>
         <div style={{ fontSize: '3rem', fontWeight: '900', marginBottom: '0.5rem' }}>{data.totalPoints}</div>
         <div style={{ display: 'inline-block', background: 'rgba(255,255,255,0.2)', padding: '0.4rem 1.5rem', borderRadius: '20px', fontWeight: '700' }}>

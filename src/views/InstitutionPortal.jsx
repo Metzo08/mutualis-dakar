@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 
-export default function InstitutionPortal({ lang = 'fr' }) {
+export default function InstitutionPortal({ lang = 'fr', portalMode = 'citizen', agentUser = null, setView = null }) {
+  // ═══════════════════════════════════════════════════════
+  // RBAC — Réservé au SuperAdmin DSI UNAMUSC (gouvernance nationale des prestataires)
+  // L'agent UDMS n'a PAS accès : il gère son union mais n'agrée pas les prestataires.
+  // ═══════════════════════════════════════════════════════
+  const isSuperAdmin = portalMode === 'superadmin' || agentUser?.role === 'SuperAdmin' || agentUser?.role === 'Super Admin';
+  const canAccess = isSuperAdmin;
+
   const [coudData, setCoudData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [fileImported, setFileImported] = useState(false);
@@ -21,8 +28,8 @@ export default function InstitutionPortal({ lang = 'fr' }) {
   };
 
   useEffect(() => {
-    fetchCoudSummary();
-  }, []);
+    if (canAccess) fetchCoudSummary();
+  }, [canAccess]);
 
   const handleSimulateImport = (e) => {
     e.preventDefault();
@@ -32,6 +39,29 @@ export default function InstitutionPortal({ lang = 'fr' }) {
       alert('Importation en masse réussie : 1 450 nouveaux étudiants inscrits et cartes numériques générées avec succès !');
     }, 1500);
   };
+
+  // ── Accès refusé pour les profils non autorisés ──
+  if (!canAccess) {
+    return (
+      <div className="container py-5 fade-in-up">
+        <div style={{ maxWidth: '700px', margin: '0 auto' }}>
+          <div className="p-5 rounded-4 text-center text-white" style={{ background: 'linear-gradient(135deg, #312e81 0%, #4338ca 100%)', borderRadius: '24px', boxShadow: 'var(--shadow-lg)' }}>
+            <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>🔐</div>
+            <span className="badge mb-3 d-inline-block" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.82rem', fontWeight: 'bold' }}>
+              {portalMode === 'agent' ? 'Agent UDMS' : 'Espace Réservé'}
+            </span>
+            <h2 className="fw-bold mb-3" style={{ color: '#fff', fontSize: '1.8rem' }}>Espace Prestataire & COUD — Accès Restreint</h2>
+            <p className="mb-4" style={{ color: '#c7d2fe', lineHeight: '1.6', maxWidth: '500px', margin: '0 auto 1.5rem' }}>
+              Cet espace de gouvernance institutionnelle (agrément des prestataires, importation en masse COUD, gestion des conventions) est réservé exclusivement au <strong>SuperAdmin DSI UNAMUSC</strong>. Les agents UDMS gèrent leur union mais n'agrèent pas les prestataires au niveau national.
+            </p>
+            <button className="btn btn-light fw-bold px-4 py-3" style={{ borderRadius: '12px', color: '#312e81' }} onClick={() => { if (setView) setView('home'); else window.location.hash = '#/home'; }}>
+              ← Retour à l'accueil
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container py-4">

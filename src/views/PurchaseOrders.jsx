@@ -40,13 +40,21 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
     }
   ];
 
-  // Identification méticuleuse du rôle et privilèges RBAC V6
-  const isPharmacist = (userRole === 'pharmacist' || agentUser?.role?.includes('Pharmacien'));
-  const isDoctor = (userRole === 'doctor' || userRole === 'partner' || userRole === 'prestataire' || partnerUser?.role?.includes('Médecin') || !!partnerUser);
-  const isAgent = (userRole === 'agent' || (!!agentUser && !isPharmacist) || userRole === 'superadmin');
-  const isStaff = (isDoctor || isAgent || isPharmacist);
-  const isCitizen = (!isStaff && (!!citizenUser || userRole === 'citizen' || userRole === 'citizen_suspended'));
-  const isPublic = (!isStaff && !isCitizen);
+  // ═══════════════════════════════════════════════════════
+  // RBAC — Définition granulaire des rôles (cohérent avec MedicalProfile)
+  // ═══════════════════════════════════════════════════════
+  const isSuperAdmin = userRole === 'superadmin' || agentUser?.role === 'SuperAdmin' || agentUser?.role === 'Super Admin';
+  const isPharmacist = userRole === 'pharmacist' || agentUser?.role?.includes('Pharmacien');
+  const isDoctor     = userRole === 'doctor' || (userRole === 'partner' && partnerUser?.role?.toLowerCase().includes('médecin'));
+  const isMidwife    = userRole === 'midwife' || (userRole === 'partner' && partnerUser?.role?.toLowerCase().includes('sage'));
+  const isAgent      = (userRole === 'agent' || (!!agentUser && !isPharmacist && !isSuperAdmin)) && !isSuperAdmin;
+  const isCitizen    = !isAgent && !isDoctor && !isMidwife && !isPharmacist && !isSuperAdmin && (!!citizenUser && (userRole === 'citizen' || userRole === 'citizen_suspended'));
+  const isPublic     = !isAgent && !isDoctor && !isMidwife && !isPharmacist && !isSuperAdmin && !isCitizen;
+  const isStaff      = isDoctor || isMidwife || isAgent || isPharmacist || isSuperAdmin;
+  // Peut valider les ordonnances en attente (agent gérant ou superadmin)
+  const canValidateOrders = isAgent || isSuperAdmin;
+  // Peut valider la délivrance en pharmacie
+  const canRedeemAtPharmacy = isPharmacist || isSuperAdmin;
 
   const [publicSearchCmu, setPublicSearchCmu] = useState('');
 
@@ -63,6 +71,41 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
   const [selectedVoucher, setSelectedVoucher] = useState(null);
   const [editingVoucher, setEditingVoucher] = useState(null);
   const [editedPharmacyPrice, setEditedPharmacyPrice] = useState('');
+  const [redeemSuccess, setRedeemSuccess] = useState('');
+  const [creating, setCreating] = useState(false);
+
+  // ── État de validation agent (ordonnances pending_review) ──
+  const [validatingOrder, setValidatingOrder] = useState(null); // bon en cours de validation
+  const [agentRejectNote, setAgentRejectNote] = useState('');   // note de refus
+  const [agentValidationMsg, setAgentValidationMsg] = useState(''); // message de confirmation
+
+  // Approuver une ordonnance pending_review → statut active
+  const handleApproveOrder = (orderId) => {
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'active', agentNote: 'Ordonnance validée par le gérant UNAMUSC' } : o));
+    try {
+      const stored = JSON.parse(localStorage.getItem('cmu-purchase-orders') || '[]');
+      const updated = stored.map(o => o.id === orderId ? { ...o, status: 'active', agentNote: 'Ordonnance validée par le gérant UNAMUSC' } : o);
+      localStorage.setItem('cmu-purchase-orders', JSON.stringify(updated));
+    } catch(e) {}
+    setValidatingOrder(null);
+    setAgentValidationMsg('✅ Bon activé avec succès ! L\'assuré peut maintenant le présenter en pharmacie.');
+    setTimeout(() => setAgentValidationMsg(''), 4000);
+  };
+
+  // Rejeter une ordonnance pending_review → statut rejected
+  const handleRejectOrder = (orderId, note) => {
+    if (!note?.trim()) { alert('Veuillez saisir une note de refus pour informer l\'assuré.'); return; }
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'rejected', agentNote: note } : o));
+    try {
+      const stored = JSON.parse(localStorage.getItem('cmu-purchase-orders') || '[]');
+      const updated = stored.map(o => o.id === orderId ? { ...o, status: 'rejected', agentNote: note } : o);
+      localStorage.setItem('cmu-purchase-orders', JSON.stringify(updated));
+    } catch(e) {}
+    setValidatingOrder(null);
+    setAgentRejectNote('');
+    setAgentValidationMsg('❌ Bon rejeté. L\'assuré sera notifié pour corriger son ordonnance.');
+    setTimeout(() => setAgentValidationMsg(''), 4000);
+  };
 
   // Générateur PDF / Fenêtre d'Impression A4 pour les Bons de Commande Pharmacie
   const generateAndPrintPurchaseOrderPDF = (voucher) => {
@@ -470,6 +513,44 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
         </div>
       )}
 
+      {agentValidationMsg && (
+        <div className="alert alert-info d-flex align-items-center mb-4 rounded-3 shadow-sm border-0">
+          <span className="fs-4 me-2">🛡️</span>
+          <div style={{ color: 'var(--text-main)' }}>{agentValidationMsg}</div>
+        </div>
+      )}
+
+      {/* BANNIÈRE DE RÔLE — distincte selon le profil */}
+      {isStaff && (
+        <div className="mb-4 p-3 rounded-4 d-flex align-items-center gap-3" style={{
+          borderRadius: '14px',
+          background: isSuperAdmin ? 'linear-gradient(90deg, rgba(234,179,8,0.15) 0%, rgba(234,179,8,0.05) 100%)'
+                   : isAgent   ? 'linear-gradient(90deg, #1e3a5f 0%, #1d4ed8 100%)'
+                   : isPharmacist ? 'linear-gradient(90deg, #047857 0%, #059669 100%)'
+                   : 'linear-gradient(90deg, #0f766e 0%, #0d9488 100%)',
+          color: isSuperAdmin ? '#92400e' : '#ffffff',
+          border: isSuperAdmin ? '1px solid rgba(234,179,8,0.4)' : 'none'
+        }}>
+          <span style={{ fontSize: '1.6rem' }}>
+            {isSuperAdmin ? '👑' : isAgent ? '🛡️' : isPharmacist ? '💊' : '🩺'}
+          </span>
+          <div>
+            <strong className="d-block" style={{ fontSize: '0.98rem' }}>
+              {isSuperAdmin && 'Mode SuperAdmin — Accès total & contrôle complet'}
+              {isAgent && 'Mode Agent UNAMUSC — Validation des ordonnances pending_review'}
+              {isPharmacist && 'Mode Pharmacien Agréé — Validation de la délivrance'}
+              {(isDoctor || isMidwife) && `Mode ${isDoctor ? 'Médecin' : 'Sage-Femme'} Prescripteur — Suivi de vos ordonnances`}
+            </strong>
+            <small style={{ opacity: 0.85 }}>
+              {isSuperAdmin && 'Toutes les actions sont disponibles sur tous les bons.'}
+              {isAgent && 'Validez ou rejetez les ordonnances soumises par les assurés pour activation en pharmacie.'}
+              {isPharmacist && 'Certifiez le montant réel d\'officine et délivrez les médicaments (Tiers-Payant 80%).'}
+              {(isDoctor || isMidwife) && 'Consultez le statut de délivrance des ordonnances que vous avez prescrites.'}
+            </small>
+          </div>
+        </div>
+      )}
+
       {/* Formulaire de création de bon de commande */}
       <div className="card shadow-sm border-0 p-4 mb-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
         <h4 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
@@ -578,16 +659,16 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
 
       {/* BANNIÈRE SÉCURITÉ S'IL S'AGIT D'UN VISITEUR NON CONNECTÉ SANS RECHERCHE */}
       {isPublic && !publicSearchCmu && (
-        <div className="card shadow-sm border-0 p-4 mb-4 text-center rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', borderLeft: '6px solid #059669' }}>
+        <div className="card shadow-sm border-0 p-4 mb-4 text-center rounded-4" style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.85) 0%, rgba(4, 120, 87, 0.9) 100%), url("/csu_bsf_real.png") center/cover no-repeat', color: '#ffffff', border: 'none' }}>
           <div className="fs-1 mb-2">🔒</div>
-          <h4 className="fw-bold text-success">Accès Sécurisé aux Bons de Commande Pharmacie</h4>
-          <p className="text-muted mx-auto" style={{ maxWidth: '650px', lineHeight: '1.6' }}>
+          <h4 className="fw-bold text-white">Accès sécurisé aux bons de commande pharmacie</h4>
+          <p className="mx-auto" style={{ maxWidth: '650px', lineHeight: '1.6', color: 'rgba(255,255,255,0.9)' }}>
             Par mesure de protection des données de santé, la consultation des bons de commande est strictement réservée aux assurés identifiés ou aux pharmaciens agréés UNAMUSC.
           </p>
 
           <div className="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-2">
             {setView && (
-              <button className="btn btn-success fw-bold px-4 py-2.5" onClick={() => setView('login')} style={{ borderRadius: '12px', background: '#059669' }}>
+              <button className="btn fw-bold px-4 py-2.5" onClick={() => setView('login')} style={{ borderRadius: '12px', background: '#ffffff', color: '#047857' }}>
                 🔐 Se connecter à mon espace assuré / pharmacie
               </button>
             )}
@@ -727,8 +808,8 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                           {ord.status === 'pending_review' && <span className="badge px-3 py-1.5" style={{ borderRadius: '12px', background: '#f59e0b', color: '#0f172a' }}>⏳ En attente validation ordonnance</span>}
                         </td>
                         <td style={{ textAlign: 'right', padding: '0.85rem' }}>
-                          <div className="d-flex justify-content-end gap-2">
-                            <button 
+                          <div className="d-flex justify-content-end flex-wrap gap-2">
+                            <button
                               type="button"
                               className="btn btn-sm btn-outline-success fw-bold"
                               onClick={() => generateAndPrintPurchaseOrderPDF(ord)}
@@ -737,15 +818,45 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                               📄 Imprimer Bon PDF
                             </button>
 
-                            {(isAgent || isPharmacist) && ord.status === 'active' && (
-                              <button 
+                            {/* Validation délivrance — Pharmacien / SuperAdmin uniquement sur bons actifs */}
+                            {canRedeemAtPharmacy && ord.status === 'active' && (
+                              <button
                                 type="button"
                                 className="btn btn-sm text-white fw-bold px-3 py-1.5"
                                 onClick={() => openPharmacistEditModal(ord)}
                                 style={{ background: '#059669', border: 'none', borderRadius: '8px' }}
                               >
-                                💊 Valider délivrance en pharmacie (50%)
+                                💊 Valider délivrance pharmacie
                               </button>
+                            )}
+
+                            {/* Validation ordonnance pending_review — Agent / SuperAdmin uniquement */}
+                            {canValidateOrders && ord.status === 'pending_review' && (
+                              <>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm text-white fw-bold px-3 py-1.5"
+                                  onClick={() => handleApproveOrder(ord.id)}
+                                  style={{ background: '#10b981', border: 'none', borderRadius: '8px' }}
+                                >
+                                  ✅ Valider l'ordonnance
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm fw-bold px-3 py-1.5"
+                                  onClick={() => { setValidatingOrder(ord); setAgentRejectNote(''); }}
+                                  style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px' }}
+                                >
+                                  ❌ Rejeter
+                                </button>
+                              </>
+                            )}
+
+                            {/* Note agent si bon rejeté */}
+                            {ord.status === 'rejected' && ord.agentNote && (
+                              <span className="badge bg-danger-subtle text-danger border border-danger px-2 py-1" style={{ borderRadius: '6px', fontSize: '0.72rem' }} title={ord.agentNote}>
+                                ❌ Rejeté
+                              </span>
                             )}
                           </div>
                         </td>
@@ -757,6 +868,50 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
             </div>
           )}
         </div>
+      )}
+
+      {/* MODALE DE REJET AGENT — ordonnance pending_review (React Portal) */}
+      {validatingOrder && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
+          <div className="modal-content shadow-lg border-0" style={{ maxWidth: '560px', width: '100%', borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)', margin: 'auto' }}>
+            <div className="modal-header border-bottom p-3" style={{ borderColor: 'var(--border-color)', background: '#dc2626', color: '#ffffff' }}>
+              <h5 className="modal-title fw-bold">
+                ❌ Rejet d'ordonnance — #{validatingOrder.order_code}
+              </h5>
+              <button type="button" className="btn-close btn-close-white" onClick={() => setValidatingOrder(null)}></button>
+            </div>
+            <div className="modal-body p-4">
+              <p className="small text-muted mb-3">
+                Vous êtes sur le point de <strong>rejeter</strong> le bon de commande de
+                <strong> {validatingOrder.first_name} {validatingOrder.last_name}</strong> ({validatingOrder.cmu_number}).
+                L'assuré sera notifié et devra corriger son ordonnance.
+              </p>
+              <label className="form-label small fw-bold text-danger">Note de refus (visible par l'assuré) *</label>
+              <textarea
+                className="form-control input"
+                rows={3}
+                placeholder="Ex : Ordonnance illisible, médicament non couvert, prescription manquante..."
+                value={agentRejectNote}
+                onChange={(e) => setAgentRejectNote(e.target.value)}
+                style={{ borderRadius: '10px' }}
+              />
+              <div className="d-flex justify-content-end gap-2 mt-4">
+                <button type="button" className="btn btn-secondary fw-bold" onClick={() => setValidatingOrder(null)}>
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  className="btn fw-bold px-4 text-white"
+                  style={{ background: '#dc2626', borderColor: '#dc2626', borderRadius: '10px' }}
+                  onClick={() => handleRejectOrder(validatingOrder.id, agentRejectNote)}
+                >
+                  ❌ Confirmer le rejet
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
 
       {/* MODALE DE REVISION DES PRIX RÉELS ET VALIDATION PHARMACIEN (React Portal — Centered on Screen) */}

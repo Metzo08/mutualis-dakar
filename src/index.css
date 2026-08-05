@@ -90,9 +90,18 @@ html, body {
   color: var(--text-main);
   scroll-behavior: smooth;
   font-size: 16px;
+  line-height: 1.6; /* Aération globale des textes (était 1.2 par défaut → trop serré) */
+  letter-spacing: 0.01em; /* Légère respiration horizontale */
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   overflow: hidden; /* App takes entire viewport with sidebar scrolling */
 }
+
+/* Aération des paragraphes et labels (hérite du line-height global) */
+p { line-height: 1.65; }
+small { line-height: 1.5; }
+label, .form-label { line-height: 1.45; }
+h1, h2, h3, h4, h5, h6 { line-height: 1.25; }
 
 #root {
   min-height: 100vh;
@@ -482,11 +491,13 @@ html, body {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  min-height: 48px;
+  padding: 0.85rem 1.6rem; /* Légèrement plus aéré (était 0.75rem 1.5rem) */
+  min-height: 50px;
   border-radius: 12px;
   font-weight: 700;
   font-size: 0.95rem;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
   font-family: var(--font-body);
   text-decoration: none;
   cursor: pointer;
@@ -582,19 +593,21 @@ button, input, select, textarea {
   display: block;
   font-weight: 600;
   font-size: 0.88rem;
-  margin-bottom: 0.45rem;
+  margin-bottom: 0.55rem; /* Plus d'air sous le label (était 0.45rem) */
+  line-height: 1.45;
   color: var(--text-main);
 }
 
 .form-control, .input {
   width: 100%;
-  min-height: 48px;
-  padding: 0.75rem 1rem;
+  min-height: 50px;
+  padding: 0.85rem 1.1rem; /* Plus aéré verticalement (était 0.75rem 1rem) */
   border: 1px solid var(--border-color);
   background-color: var(--bg-card-subtle);
   color: var(--text-main);
   border-radius: 12px;
   font-size: 0.95rem;
+  line-height: 1.4;
   font-family: var(--font-body);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   outline: none;
@@ -634,10 +647,14 @@ button, input, select, textarea {
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 0.2rem 0.6rem;
+  gap: 0.25rem;
+  padding: 0.3rem 0.75rem; /* Plus lisible (était 0.2rem 0.6rem) */
   border-radius: 50px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
 }
 
 .badge-success { background-color: rgba(16, 185, 129, 0.15); color: var(--success); }
@@ -649,13 +666,14 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-title);
   color: var(--text-main);
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.3; /* Plus aéré (était 1.2) */
+  letter-spacing: -0.015em;
 }
 
 p {
   color: var(--text-sub);
   font-size: 0.95rem;
-  line-height: 1.5;
+  line-height: 1.7; /* Plus lisible (était 1.5) */
 }
 
 /* Utility Classes */
@@ -1076,6 +1094,55 @@ p, span:not(.badge):not(.tag), label, input, button, td, th {
   font-size: clamp(0.875rem, 1vw + 0.5rem, 1rem);
 }
 
+/* ═══════════════════════════════════════════════════════
+   AÉRATION GLOBALE — corrige les textes/boutons trop serrés
+   (les styles inline trop denses dans les vues sont compensés ici)
+   ═══════════════════════════════════════════════════════ */
+
+/* Tables : plus d'air vertical entre les lignes */
+.table td, .table th {
+  padding: 0.9rem 0.85rem !important;
+  line-height: 1.45;
+}
+
+/* Listes de cartes (list-group) : plus d'air entre éléments */
+.list-group-item {
+  padding: 0.9rem 1rem !important;
+  line-height: 1.5;
+}
+
+/* Alertes : padding vertical plus généreux */
+.alert {
+  padding: 0.9rem 1.1rem !important;
+  border-radius: 12px !important;
+  line-height: 1.55;
+}
+
+/* Sélecteurs de rôle (portal-switch-btn) : moins serrés */
+.portal-switch-btn {
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+}
+
+/* Petites étiquettes et codes : aération */
+code {
+  padding: 0.25rem 0.55rem !important;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+}
+
+/* Textarea : confort de saisie */
+textarea.form-control, textarea.input {
+  padding: 0.85rem 1.1rem !important;
+  line-height: 1.55 !important;
+}
+
+/* Select : aligné avec input */
+select.form-control, select.form-select, select.input {
+  min-height: 50px;
+  padding: 0.7rem 1.1rem !important;
+}
+
 /* Continuous Scrolling Sponsor Marquee */
 @keyframes marqueeScroll {
   0% { transform: translateX(0%); }
@@ -1100,3 +1167,196 @@ p, span:not(.badge):not(.tag), label, input, button, td, th {
 .marquee-content:hover {
   animation-play-state: paused;
 }
+
+/* ═════════════════════════════════════════════════════════════════════
+   COUCHE DE RELÈVEMENT GLOBAL — Aération uniforme de toute la plateforme
+   Surcharge les styles inline trop serrés (padding/fontSize/gap) via !important.
+   Objectif : plancher d'aération confortable sur boutons, badges, tables, petits textes.
+   IMPORTANT : on EXCLUT les boutons/badges situés dans les bannières hero
+   (qui ont leurs propres styles et sinon se superposent à cause du min-height).
+   ═════════════════════════════════════════════════════════════════════ */
+
+/* 1. BOUTONS — minimum d'aération, SAUF dans les heroes/bannières */
+button:not([style*="backdrop"]):not([style*="linear-gradient"]):not(.portal-switch-btn):not(.btn-close):not(.top-navbar-icon-btn),
+.btn:not(.btn-sm):not([style*="backdrop"]) {
+  padding-top: 0.55rem !important;
+  padding-bottom: 0.55rem !important;
+  min-height: 40px !important;
+  line-height: 1.35 !important;
+}
+.btn:not(.btn-sm) {
+  min-height: 46px !important;
+}
+
+/* 2. PETITS TEXTES — relèvement du plancher de lisibilité (pas sous 0.8rem) */
+small, .small {
+  font-size: 0.82rem !important;
+  line-height: 1.5 !important;
+}
+.text-muted {
+  line-height: 1.5 !important;
+}
+
+/* 3. BADGES — aération confortable, SANS forcer min-height (évite superposition) */
+.badge, span[class*="badge"] {
+  font-size: 0.78rem !important;
+  line-height: 1.3 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+/* 4. TABLEAUX — lignes bien aérées pour la lisibilité des données */
+.table td, .table th, table tbody td, table thead th {
+  padding: 0.9rem 0.9rem !important;
+  line-height: 1.5 !important;
+  vertical-align: middle !important;
+}
+.table thead th, table thead th {
+  font-size: 0.8rem !important;
+  letter-spacing: 0.02em !important;
+  text-transform: uppercase;
+}
+
+/* 5. CHAMPS DE FORMULAIRES — confort de saisie uniforme */
+input[type="text"], input[type="email"], input[type="password"],
+input[type="tel"], input[type="number"], input[type="search"],
+input[type="date"], select, textarea {
+  padding-top: 0.7rem !important;
+  padding-bottom: 0.7rem !important;
+  line-height: 1.45 !important;
+}
+textarea {
+  padding: 0.8rem 1rem !important;
+  line-height: 1.55 !important;
+}
+
+/* 6. CARTES — aération interne minimum */
+.card, [class*="rounded-3"], [class*="rounded-4"] {
+  line-height: 1.55 !important;
+}
+
+/* 7. ALERTES — padding confortable */
+.alert {
+  padding: 0.95rem 1.15rem !important;
+  border-radius: 12px !important;
+  line-height: 1.55 !important;
+  margin-bottom: 1.1rem !important;
+}
+
+/* 8. LIST-GROUP — air entre éléments */
+.list-group-item {
+  padding: 0.95rem 1.05rem !important;
+  line-height: 1.5 !important;
+}
+
+/* 9. CODE / KBD — aération des références */
+code, kbd {
+  padding: 0.3rem 0.6rem !important;
+  line-height: 1.4 !important;
+  letter-spacing: 0.02em !important;
+}
+
+/* 10. NAV / MENU ITEMS — espacement des éléments cliquables de navigation */
+.nav-item, .sidebar-nav button, .portal-switch-btn {
+  line-height: 1.35 !important;
+  letter-spacing: 0.01em !important;
+}
+
+/* 11. TITRES DE CARTES & SECTIONS — air au-dessus */
+h1, h2, h3, h4, h5, h6 {
+  margin-bottom: 0.6rem !important;
+}
+
+/* 12. PARAGRAPHES & SPANS — respiration verticale */
+p {
+  margin-bottom: 0.7rem !important;
+}
+
+/* ═════════════════════════════════════════════════════════════════════
+   13. BANNIÈRES HERO — image thématique conservée + overlay VERT CLAIR LÉGER
+   L'image de fond reste visible (une par page). Un overlay vert clair et
+   TRÈS transparent garantit la lisibilité du texte blanc sans foncer l'image.
+   ═════════════════════════════════════════════════════════════════════ */
+
+/* 13a. Pour les bannières SANS image (dégradé vert pur) : vert clair aéré */
+.hero-banner:not([style*="url"]),
+.p-5.rounded-4.mb-5[class*="text-white"][style*="linear-gradient"]:not([style*="url"]) {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+}
+
+/* 13b. Pour les bannières AVEC image : overlay vert CLAIR très léger.
+   On cible TOUS les conteneurs hero (banner-mini, hero-banner, sections, etc.)
+   qui ont une image de fond (style*="url"). */
+section[class][style*="url"],
+div[class][style*="url"][style*="linear-gradient"],
+.hero-banner[style*="url"],
+.banner-mini[style*="url"],
+[class*="banner"][style*="url"] {
+  position: relative !important;
+  isolation: isolate;
+}
+section[class][style*="url"]::before,
+div[class][style*="url"][style*="linear-gradient"]::before,
+.hero-banner[style*="url"]::before,
+.banner-mini[style*="url"]::before,
+[class*="banner"][style*="url"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  /* Overlay vert CLAIR très transparent : l'image reste bien visible,
+     le texte blanc reste lisible. Opacité faible (35-45%). */
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.42) 0%, rgba(5, 150, 105, 0.48) 100%);
+  z-index: 0;
+  pointer-events: none;
+}
+/* Le contenu de la bannière passe au-dessus du overlay */
+section[class][style*="url"] > *,
+div[class][style*="url"][style*="linear-gradient"] > *,
+.hero-banner[style*="url"] > *,
+.banner-mini[style*="url"] > *,
+[class*="banner"][style*="url"] > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Suppression des backdrop-filter (verre dépoli) qui masquaient les textes */
+[style*="backdrop-filter"], [style*="backdropFilter"] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* 14. CASSE DES TITRES — respect de la règle 'Première lettre majuscule, reste minuscule'
+   Annule les text-transform: uppercase abusifs sur les titres et boutons */
+h1, h2, h3, h4, h5, h6,
+.btn, button,
+.badge,
+span[style*="text-transform"][style*="uppercase"],
+div[style*="text-transform"][style*="uppercase"] {
+  text-transform: none !important;
+}
+
+/* Les badges/labels administratifs peuvent garder uppercase (codes, statuts) */
+code, kbd, .font-monospace,
+th, table thead th,
+.badge[style*="uppercase"], .badge.bg-success, .badge.bg-warning, .badge.bg-danger {
+  text-transform: none;
+}
+
+/* 15. Aération des conteneurs flex-wrap dans les heroes */
+.d-flex.flex-wrap[style*="gap-3"],
+.d-flex.gap-3.flex-wrap,
+.d-flex.gap-2.flex-wrap {
+  gap: 0.75rem !important;
+}
+
+/* 16. Suppression des traits verticaux décoratifs (border-left) sur les
+   formulaires et cartes de contenu — ces traits créent un effet déséquilibré.
+   On les garde UNIQUEMENT sur les alertes (danger/warning/success) et nav active. */
+.card[style*="borderLeft"]:not(.alert),
+.card[style*="border-left"]:not(.alert),
+div[style*="borderLeft"][style*="padding"]:not(.alert):not([role="alert"]) {
+  border-left: none !important;
+}
+

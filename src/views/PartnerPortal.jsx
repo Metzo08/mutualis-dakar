@@ -29,8 +29,11 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
 
   // Stats
   const [stats, setStats] = useState(null);
-  const isAuthenticated = !!partner || (portalMode === 'agent' && !!agentUser);
-  const isAgent = (portalMode === 'agent' && !!agentUser) || (partner && partner.isAgent);
+  const isAuthenticated = !!partner || (portalMode === 'superadmin') || (portalMode === 'agent' && !!agentUser);
+  // Le SuperAdmin gère les prestataires (agrément, modification, suppression)
+  const isSuperAdmin = portalMode === 'superadmin' || agentUser?.role === 'SuperAdmin' || agentUser?.role === 'Super Admin';
+  // Le prestataire accède à son espace propre (outils métier)
+  const isPartner = !isSuperAdmin && (!!partner || portalMode === 'doctor' || portalMode === 'midwife' || portalMode === 'pharmacist');
 
   // ============================================================================
   // PRESTATAIRES & PROFESSIONNELS CRÉÉS PAR L'UNION DÉPARTEMENTALE (UDMS)
@@ -213,12 +216,15 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
     setLoginError('');
     setTimeout(() => {
       setLoginLoading(false);
-      const user = { 
-        username: loginForm.username || 'partenaire@unamusc.sn', 
-        structureName: 'UDMS Dakar — Centre de Santé & Tiers-Payant', 
-        contactName: 'Admin UDMS Dakar', 
-        coverageRate: 85,
-        isAgent: true
+      // Le prestataire est un PRESTATAIRE (pas un agent) — son espace lui est propre.
+      const user = {
+        username: loginForm.username || 'partenaire@unamusc.sn',
+        structureName: 'Centre de Santé Conventionné UNAMUSC',
+        contactName: loginForm.username || 'Praticien agréé',
+        coverageRate: 80,
+        isPartner: true,      // prestataire de soins
+        role: 'Prestataire de santé',
+        grantedBy: 'SuperAdmin DSI UNAMUSC'
       };
       setPartner(user);
       localStorage.setItem('cmu-partner-user', JSON.stringify(user));

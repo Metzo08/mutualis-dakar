@@ -41,7 +41,7 @@ export default function CmuCard({ citizen }) {
           position: 'relative',
           width: '100%',
           maxWidth: '380px',
-          height: '220px',
+          height: '250px',
           margin: '0 auto',
           transformStyle: 'preserve-3d',
           transition: 'transform 0.6s',
@@ -138,30 +138,38 @@ export default function CmuCard({ citizen }) {
             backfaceVisibility: 'hidden',
             transform: 'rotateY(180deg)',
             borderRadius: '16px',
-            background: '#fff',
-            padding: '1rem',
+            background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)',
+            padding: '1.25rem',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: '0.3rem',
+            gap: '0.6rem',
             border: '2px solid var(--primary)'
           }}
         >
+          <div style={{ fontSize: '0.7rem', fontWeight: '800', color: 'var(--primary)', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            📲 QR code CSU assuré
+          </div>
           {qrUrl ? (
-            <img src={qrUrl} alt="QR code CSU" style={{ width: '110px', height: '110px' }} />
+            <div style={{ padding: '0.5rem', background: '#fff', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+              <img src={qrUrl} alt="QR code CSU" style={{ width: '110px', height: '110px', display: 'block' }} />
+            </div>
           ) : (
-            <div style={{ width: '110px', height: '110px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f3f4f6', borderRadius: '8px', fontSize: '0.7rem', color: '#999' }}>
+            <div style={{ width: '110px', height: '110px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f3f4f6', borderRadius: '12px', fontSize: '0.72rem', color: '#999' }}>
               Génération...
             </div>
           )}
           <div style={{ textAlign: 'center', color: 'var(--text-color)' }}>
-            <div style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--primary)' }}>
-              🔒 QR Code Tri-Layer Sécurisé
+            <div style={{ fontSize: '0.72rem', fontWeight: '700', color: 'var(--primary)', lineHeight: 1.4 }}>
+              🔒 QR code Tri-Layer sécurisé
             </div>
-            <div style={{ fontSize: '0.6rem', color: '#64748b' }}>
-              Scanner pour Statut CSU, Urgence SOS & Imagerie
+            <div style={{ fontSize: '0.65rem', color: '#64748b', marginTop: '0.2rem', lineHeight: 1.4 }}>
+              Scanner pour statut CSU, urgence SOS & imagerie
             </div>
+          </div>
+          <div style={{ marginTop: '0.3rem', padding: '0.35rem 0.75rem', background: 'var(--primary)', color: '#fff', borderRadius: '8px', fontSize: '0.68rem', fontWeight: '700', fontFamily: 'monospace' }}>
+            N° CSU : {citizen.cmuNumber?.replace('CMU-', 'CSU-') || 'CSU-DKR-2026-8812'}
           </div>
         </div>
       </div>
