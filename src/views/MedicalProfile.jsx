@@ -847,26 +847,26 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                       ))}
                       {antecedents.chronicConditions && (
                         <div className="p-3.5 rounded-3" style={{ background: 'rgba(220, 38, 38, 0.06)', border: '1px solid rgba(220, 38, 38, 0.2)' }}>
-                          <small className="fw-bold d-block text-danger mb-1" style={{ fontSize: '0.75rem' }}>🩺 Affection Longue Durée (ALD) :</small>
-                          <span className="small fw-semibold d-block" style={{ color: 'var(--text-main)', lineHeight: '1.4' }}>{antecedents.chronicConditions}</span>
+                          <span className="fw-bold text-danger d-inline-block me-1" style={{ fontSize: '0.82rem' }}>🩺 Affection Longue Durée (ALD) : </span>
+                          <span className="small fw-semibold" style={{ color: 'var(--text-main)', fontSize: '0.88rem' }}>{antecedents.chronicConditions}</span>
                         </div>
                       )}
                       {antecedents.surgeries && (
                         <div className="p-3.5 rounded-3" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
-                          <small className="fw-bold d-block text-secondary mb-1" style={{ fontSize: '0.75rem' }}>🔧 Interventions chirurgicales :</small>
-                          <span className="small fw-semibold d-block" style={{ color: 'var(--text-main)', lineHeight: '1.4' }}>{antecedents.surgeries}</span>
+                          <span className="fw-bold text-secondary d-inline-block me-1" style={{ fontSize: '0.82rem' }}>🔧 Interventions chirurgicales : </span>
+                          <span className="small fw-semibold" style={{ color: 'var(--text-main)', fontSize: '0.88rem' }}>{antecedents.surgeries}</span>
                         </div>
                       )}
                       {antecedents.currentTreatment && (
                         <div className="p-3.5 rounded-3" style={{ background: 'rgba(59, 130, 246, 0.06)', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
-                          <small className="fw-bold d-block text-primary mb-1" style={{ fontSize: '0.75rem' }}>💊 Traitements en cours :</small>
-                          <span className="small fw-semibold d-block" style={{ color: 'var(--text-main)', lineHeight: '1.4' }}>{antecedents.currentTreatment}</span>
+                          <span className="fw-bold text-primary d-inline-block me-1" style={{ fontSize: '0.82rem' }}>💊 Traitements en cours : </span>
+                          <span className="small fw-semibold" style={{ color: 'var(--text-main)', fontSize: '0.88rem' }}>{antecedents.currentTreatment}</span>
                         </div>
                       )}
                       {antecedents.vaccinations && (
                         <div className="p-3.5 rounded-3" style={{ background: 'rgba(16, 185, 129, 0.06)', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
-                          <small className="fw-bold d-block text-success mb-1" style={{ fontSize: '0.75rem' }}>💉 Statut vaccinal :</small>
-                          <span className="small fw-semibold d-block" style={{ color: 'var(--text-main)', lineHeight: '1.4' }}>{antecedents.vaccinations}</span>
+                          <span className="fw-bold text-success d-inline-block me-1" style={{ fontSize: '0.82rem' }}>💉 Statut vaccinal : </span>
+                          <span className="small fw-semibold" style={{ color: 'var(--text-main)', fontSize: '0.88rem' }}>{antecedents.vaccinations}</span>
                         </div>
                       )}
                       {antecedents.emergencyContact && (
@@ -997,11 +997,11 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                       <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: '700' }}>
                         ➕
                       </div>
-                      <div className="d-flex flex-column align-items-center gap-1">
+                      <div className="d-flex flex-column align-items-center gap-1 text-center">
                         <strong className="fw-extrabold d-block mb-1" style={{ color: 'var(--text-main)', fontSize: '1.05rem' }}>
-                          Ajouter un examen
+                          Ajouter un examen :
                         </strong>
-                        <span className="small text-muted d-block fw-semibold" style={{ fontSize: '0.85rem' }}>
+                        <span className="small text-muted d-block fw-semibold" style={{ fontSize: '0.88rem' }}>
                           (Fichier PDF ou DICOM)
                         </span>
                       </div>
