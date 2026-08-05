@@ -74,9 +74,9 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
         bloodGroup: 'O+',
         rhesus: 'positif',
         allergies: 'Aucune allergie connue (Bilan médical UCAD 2026)',
-        chronicConditions: 'Aucune affection de longue durée — Aptitude sportive UCAD validée',
+        chronicConditions: 'Aucune affection de longue durée : Aptitude sportive UCAD validée',
         surgeries: 'Aucune chirurgie antérieure',
-        emergencyContact: 'Papa Sarr (Père) — +221 77 654 32 10'
+        emergencyContact: 'Papa Sarr (Père) : +221 77 654 32 10'
       };
     }
     if (isBsfUser || (fName || '').toLowerCase().includes('fatou')) {
@@ -86,7 +86,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
         allergies: 'Pénicilline (Modérée)',
         chronicConditions: 'Hypertension artérielle (Suivi programme gratuité BSF)',
         surgeries: 'Césarienne (2018)',
-        emergencyContact: 'Mamadou Diallo (Époux) — +221 77 123 99 88'
+        emergencyContact: 'Mamadou Diallo (Époux) : +221 77 123 99 88'
       };
     }
     return {
@@ -95,7 +95,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
       allergies: 'Pollen de graminées (Médina)',
       chronicConditions: 'Bilan de santé annuel régulier à la Médina',
       surgeries: 'Appendicectomie (2021)',
-      emergencyContact: 'Sokhna Diop (Épouse) — +221 77 987 65 43'
+      emergencyContact: 'Sokhna Diop (Épouse) : +221 77 987 65 43'
     };
   };
 
@@ -108,7 +108,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
           exam_type: 'Radiographie',
           badge: 'BILAN UCAD',
           facility: 'Centre médical universitaire (Fann)',
-          doctor: 'Dr. Ousmane Sow — Pavillon santé UCAD',
+          doctor: 'Dr. Ousmane Sow | Pavillon santé UCAD',
           date: '02 Fév 2026',
           conclusion: 'Cliché pulmonaire normal. Absence d\'anomalie parenchymateuse. Aptitude physique universitaire validée.',
           cliches: 2,
@@ -136,7 +136,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
           exam_type: 'Échographie',
           badge: 'GRATUITÉ BSF',
           facility: 'Hôpital Aristide Le Dantec (Dakar)',
-          doctor: 'Dr. Mariama Ba — Service maternité Le Dantec',
+          doctor: 'Dr. Mariama Ba | Service maternité Le Dantec',
           date: '14 Avril 2026',
           conclusion: 'Examen gynécologique et pelvien satisfaisant. Bilan de gratuité 100% BSF validé.',
           cliches: 3,
@@ -151,7 +151,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
         exam_type: 'Scanner',
         badge: 'HD DICOM',
         facility: 'Polyclinique de la Médina',
-        doctor: 'Dr. Cheikh Anta Diop — Abass Ndao',
+        doctor: 'Dr. Cheikh Anta Diop | Abass Ndao',
         date: '12 Mars 2026',
         conclusion: 'Examen de contrôle pulmonaire satisfaisant sans anomalie évolutive. Recommandation : suivi annuel.',
         cliches: 4,
@@ -163,7 +163,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
         exam_type: 'Échographie',
         badge: 'CARDIOLOGIE',
         facility: 'Centre médical SOS Médina',
-        doctor: 'Dr. Sy — Cardiologue',
+        doctor: 'Dr. Sy | Cardiologue',
         date: '15 Janv 2026',
         conclusion: 'Fonction ventriculaire droite et gauche conservées. Bilan tensionnel satisfaisant.',
         cliches: 3,
@@ -378,7 +378,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
           <div className="p-5 rounded-4 text-center text-white" style={{ background: 'linear-gradient(135deg, #1e3a5f 0%, #1e40af 100%)', borderRadius: '24px', boxShadow: 'var(--shadow-lg)' }}>
             <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>💊</div>
             <span className="badge mb-3 d-inline-block" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.82rem', fontWeight: 'bold' }}>Pharmacien Agréé UNAMUSC</span>
-            <h2 className="fw-bold mb-3" style={{ color: '#fff', fontSize: '1.8rem' }}>Dossier Médical — Accès Non Autorisé</h2>
+            <h2 className="fw-bold mb-3" style={{ color: '#fff', fontSize: '1.8rem' }}>Dossier Médical : Accès Non Autorisé</h2>
             <p className="mb-4" style={{ color: '#bfdbfe', lineHeight: '1.6', maxWidth: '500px', margin: '0 auto 1.5rem' }}>
               En tant que pharmacien, vous n'avez pas accès au dossier médical de l'assuré. Votre espace est dédié à la validation et la délivrance des bons de commande médicaments.
             </p>
@@ -400,7 +400,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
           <div className="p-4 rounded-4 mb-4 d-flex align-items-center gap-3" style={{ background: 'linear-gradient(90deg, #1e3a5f 0%, #1d4ed8 100%)', borderRadius: '18px', color: '#fff' }}>
             <span style={{ fontSize: '2.2rem' }}>🛡️</span>
             <div>
-              <strong className="d-block" style={{ fontSize: '1.1rem' }}>Mode Agent Administratif — UNAMUSC</strong>
+              <strong className="d-block" style={{ fontSize: '1.1rem' }}>Mode Agent Administratif : UNAMUSC</strong>
               <small style={{ opacity: 0.8 }}>Accès restreint : contrôle administratif uniquement. Le contenu médical détaillé est protégé par le secret médical.</small>
             </div>
           </div>
@@ -564,7 +564,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
               <span style={{ fontSize: '2.2rem' }}>⚠️</span>
             </div>
             
-            <h3 className="fw-bold mb-2 text-danger" style={{ fontSize: '1.4rem' }}>⚠️ Accès au dossier restreint — Couverture CSU suspendue</h3>
+            <h3 className="fw-bold mb-2 text-danger" style={{ fontSize: '1.4rem' }}>⚠️ Accès au dossier restreint : Couverture CSU suspendue</h3>
             
             <div className="mb-3">
               <code className="px-3 py-1.5 bg-dark text-warning border border-warning rounded-3 fw-bold d-inline-block" style={{ fontSize: '1.05rem', color: '#f59e0b' }}>
@@ -691,8 +691,8 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
               <h1 className="fw-extrabold text-white mb-2" style={{ fontSize: '2.1rem', letterSpacing: '-0.015em' }}>Dossier médical & radiographies certifiées</h1>
               <p className="text-white mb-0" style={{ fontSize: '1.02rem', maxWidth: '720px', lineHeight: '1.7', opacity: 0.95 }}>
                 {isCitizen && 'Accédez en toute sécurité à vos antécédents, vos résultats de radiologie et téléchargez votre carnet de santé numérique certifié.'}
-                {(isDoctor || isMidwife) && `Mode ${isDoctor ? 'médecin prescripteur' : 'sage-femme'} — Vous pouvez consulter, annoter et enrichir le dossier de votre patient.`}
-                {isSuperAdmin && 'SuperAdmin — Accès total et contrôle complet du dossier médical partagé UNAMUSC.'}
+                {(isDoctor || isMidwife) && `Mode ${isDoctor ? 'médecin prescripteur' : 'sage-femme'} : Vous pouvez consulter, annoter et enrichir le dossier de votre patient.`}
+                {isSuperAdmin && 'SuperAdmin : Accès total et contrôle complet du dossier médical partagé UNAMUSC.'}
               </p>
             </div>
 
@@ -733,19 +733,19 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                 {/* Badge de rôle (lecture seule / mode médecin / superadmin) */}
                 {isCitizen && (
                   <span style={{ background: 'rgba(0,0,0,0.3)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.35)', borderRadius: '12px', padding: '0.65rem 1.1rem', fontSize: '0.82rem', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
-                    🔒 Lecture seule — modifications par votre médecin
+                    🔒 Lecture seule : modifications par votre médecin
                   </span>
                 )}
 
                 {(isDoctor || isMidwife) && (
                   <span style={{ background: 'rgba(0,0,0,0.3)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.35)', borderRadius: '12px', padding: '0.65rem 1.1rem', fontSize: '0.82rem', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
-                    📝 Mode {isDoctor ? 'médecin prescripteur' : 'sage-femme'} — édition autorisée
+                    📝 Mode {isDoctor ? 'médecin prescripteur' : 'sage-femme'} : édition autorisée
                   </span>
                 )}
 
                 {isSuperAdmin && (
                   <span style={{ background: 'rgba(234,179,8,0.35)', color: '#fef08a', border: '1px solid rgba(234,179,8,0.5)', borderRadius: '12px', padding: '0.65rem 1.1rem', fontSize: '0.82rem', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
-                    👑 SuperAdmin — accès total
+                    👑 SuperAdmin : accès total
                   </span>
                 )}
               </div>
@@ -833,7 +833,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                       </div>
                       <div>
                         <label className="small fw-bold d-block mb-1" style={{ color: 'var(--text-sub)' }}>📞 Contact d'urgence :</label>
-                        <input type="text" className="form-control small" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '8px' }} value={antecedents.emergencyContact || ''} onChange={(e) => setAntecedents({ ...antecedents, emergencyContact: e.target.value })} placeholder="Ex: Sokhna Diop (Épouse) — +221 77 987 65 43" />
+                        <input type="text" className="form-control small" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '8px' }} value={antecedents.emergencyContact || ''} onChange={(e) => setAntecedents({ ...antecedents, emergencyContact: e.target.value })} placeholder="Ex: Sokhna Diop (Épouse) : +221 77 987 65 43" />
                       </div>
                       <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem', fontWeight: '700', marginTop: '0.5rem' }}>💾 Sauvegarder et certifier</button>
                     </form>

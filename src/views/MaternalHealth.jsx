@@ -202,7 +202,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
               Programme national de santé maternelle & infantile
             </span>
             <h2 className="fw-bold mb-2" style={{ color: '#fff', fontSize: '2rem' }}>
-              Carnet de maternité — 100% gratuit UNAMUSC
+              Carnet de maternité : 100% gratuit UNAMUSC
             </h2>
             <p className="small mb-4" style={{ color: '#fce7f3', maxWidth: '680px', margin: '0 auto', lineHeight: '1.6', fontSize: '0.95rem' }}>
               Afin de protéger le suivi prénatal, les rendez-vous CPN et le calendrier vaccinal des mères et des enfants, le carnet numérique est accessible exclusivement après authentification sécurisée.

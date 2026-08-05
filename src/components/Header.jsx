@@ -194,7 +194,7 @@ export default function Header({
           RÉPUBLIQUE DU SÉNÉGAL
         </span>
         <small className="text-success fw-semibold d-block" style={{ fontSize: '0.62rem', marginTop: '0.15rem' }}>
-          Un Peuple — Un But — Une Foi
+          Un Peuple - Un But - Une Foi
         </small>
       </div>
 

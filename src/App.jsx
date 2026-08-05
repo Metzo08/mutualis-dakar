@@ -522,7 +522,7 @@ export default function App() {
               <div className="container py-5 text-center">
                 <div className="card shadow-lg border-0 p-5 mx-auto" style={{ maxWidth: '500px', borderRadius: '24px', background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
                   <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🛡️</div>
-                  <h4 className="fw-bold mb-2">Accès Restreint — Espace Agent & Administration</h4>
+                  <h4 className="fw-bold mb-2">Accès Restreint : Espace Agent & Administration</h4>
                   <p className="small text-muted mb-4">Cette section est réservée aux agents mutualistes et administrateurs d'Unions Régionales (URMSCD).</p>
                   <button 
                     className="btn btn-primary fw-bold py-2 px-4 text-white" 
