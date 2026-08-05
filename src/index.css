@@ -1327,21 +1327,25 @@ div[class][style*="url"][style*="linear-gradient"] > *,
   -webkit-backdrop-filter: none !important;
 }
 
-/* 14. CASSE DES TITRES — respect de la règle 'Première lettre majuscule, reste minuscule'
-   Annule les text-transform: uppercase abusifs sur les titres et boutons */
+/* 14. CASSE UNIVERSELLE DES TEXTES — Règle : Première lettre en majuscule, reste en minuscule
+   Neutralise les text-transform: uppercase sur toute la plateforme (titres, boutons, badges, labels, formulaires) */
 h1, h2, h3, h4, h5, h6,
 .btn, button,
 .badge,
-span[style*="text-transform"][style*="uppercase"],
-div[style*="text-transform"][style*="uppercase"] {
+.card-title,
+.form-label,
+label,
+.text-uppercase,
+span[style*="uppercase"],
+div[style*="uppercase"],
+strong[style*="uppercase"],
+small[style*="uppercase"] {
   text-transform: none !important;
 }
 
-/* Les badges/labels administratifs peuvent garder uppercase (codes, statuts) */
-code, kbd, .font-monospace,
-th, table thead th,
-.badge[style*="uppercase"], .badge.bg-success, .badge.bg-warning, .badge.bg-danger {
-  text-transform: none;
+/* Exception : Seuls les identifiants techniques et sigles officiels conservent la casse majuscule (ex: CSU, IPP, DICOM, CNOM) */
+code, kbd, .font-monospace, .code-id, .cmu-number, .csu-code {
+  text-transform: uppercase !important;
 }
 
 /* 15. Aération des conteneurs flex-wrap dans les heroes */

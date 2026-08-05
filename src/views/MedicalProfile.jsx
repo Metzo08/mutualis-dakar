@@ -997,9 +997,13 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                       <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: '700' }}>
                         ➕
                       </div>
-                      <div>
-                        <strong className="d-block mb-1" style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>Ajouter un examen</strong>
-                        <small style={{ color: 'var(--text-sub)', fontSize: '0.8rem' }}>(Fichier PDF ou DICOM)</small>
+                      <div className="d-flex flex-column align-items-center gap-1">
+                        <strong className="fw-extrabold d-block mb-1" style={{ color: 'var(--text-main)', fontSize: '1.05rem' }}>
+                          Ajouter un examen
+                        </strong>
+                        <span className="small text-muted d-block fw-semibold" style={{ fontSize: '0.85rem' }}>
+                          (Fichier PDF ou DICOM)
+                        </span>
                       </div>
                     </div>
                   </div>
