@@ -38,10 +38,44 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
   const [showShareModal, setShowShareModal] = useState(false);
   const [showAddExamModal, setShowAddExamModal] = useState(false);
   const [editingAntecedents, setEditingAntecedents] = useState(false);
-  const [copiedLink, setCopiedLink] = useState(false);
+  // OTP dynamique 24h persistant par assuré
+  const [otpData, setOtpData] = useState(() => {
+    try {
+      const stored = localStorage.getItem(`unamusc_otp_${activeCmuNumber}`);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.expiresAt && Date.now() < parsed.expiresAt) {
+          return parsed;
+        }
+      }
+    } catch (e) {}
+    const newCode = `${Math.floor(100 + Math.random() * 900)}-${Math.floor(100 + Math.random() * 900)}`;
+    const newExpiresAt = Date.now() + 24 * 60 * 60 * 1000;
+    const newData = { code: newCode, expiresAt: newExpiresAt, createdAt: Date.now() };
+    try { localStorage.setItem(`unamusc_otp_${activeCmuNumber}`, JSON.stringify(newData)); } catch (e) {}
+    return newData;
+  });
+
+  const generateNewOtp = () => {
+    const newCode = `${Math.floor(100 + Math.random() * 900)}-${Math.floor(100 + Math.random() * 900)}`;
+    const newExpiresAt = Date.now() + 24 * 60 * 60 * 1000;
+    const newData = { code: newCode, expiresAt: newExpiresAt, createdAt: Date.now() };
+    setOtpData(newData);
+    try { localStorage.setItem(`unamusc_otp_${activeCmuNumber}`, JSON.stringify(newData)); } catch (e) {}
+  };
+
+  const isOtpExpired = Date.now() >= otpData.expiresAt;
+
+  const getRemainingTime = () => {
+    const diffMs = otpData.expiresAt - Date.now();
+    if (diffMs <= 0) return 'Expiré';
+    const hours = Math.floor(diffMs / (1000 * 60 * 60));
+    const mins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    return `${hours}h ${mins}m`;
+  };
 
   const handleCopyShareLink = () => {
-    const shareUrl = `https://mutualis.sn/dossier-partage/${activeCmuNumber.slice(-4)}`;
+    const shareUrl = `https://mutualis.sn/dossier-partage/${activeCmuNumber}?otp=${otpData.code}`;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(shareUrl);
     }
@@ -51,14 +85,14 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
 
   const handleShareWhatsApp = (e) => {
     if (e) e.preventDefault();
-    const shareText = `Bonjour Docteur, voici l'accès sécurisé au dossier médical certifié UNAMUSC de ${activeFirstName} ${activeLastName} (${activeCmuNumber}) : https://mutualis.sn/dossier-partage/${activeCmuNumber.slice(-4)}`;
+    const shareText = `Bonjour Docteur, voici l'accès sécurisé temporaire (24h) au dossier médical certifié UNAMUSC de ${activeFirstName} ${activeLastName} (${activeCmuNumber}) :\n\n🔑 Code OTP : ${otpData.code}\n🔗 Lien : https://mutualis.sn/dossier-partage/${activeCmuNumber}?otp=${otpData.code}`;
     const waUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
     
     if (navigator.share) {
       navigator.share({
         title: 'Dossier Médical UNAMUSC',
         text: shareText,
-        url: `https://mutualis.sn/dossier-partage/${activeCmuNumber.slice(-4)}`
+        url: `https://mutualis.sn/dossier-partage/${activeCmuNumber}?otp=${otpData.code}`
       }).catch(() => {
         window.open(waUrl, '_blank', 'noopener,noreferrer');
       });
@@ -1224,23 +1258,39 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
             </p>
 
             {/* Code OTP Card */}
-            <div className="p-4 rounded-4 mb-4 text-center border" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(5, 150, 105, 0.15) 100%)', borderColor: 'rgba(16, 185, 129, 0.3)' }}>
+            <div className="p-4 rounded-4 mb-4 text-center border" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(5, 150, 105, 0.15) 100%)', borderColor: isOtpExpired ? '#ef4444' : 'rgba(16, 185, 129, 0.3)' }}>
               <span className="small text-muted fw-bold text-uppercase d-block mb-1" style={{ fontSize: '0.72rem', letterSpacing: '0.05em' }}>Code d'accès temporaire sécurisé (OTP 24h) :</span>
-              <div className="fw-black text-warning my-2" style={{ fontSize: '2.4rem', letterSpacing: '0.12em', textShadow: '0 2px 8px rgba(245, 158, 11, 0.25)' }}>849-201</div>
-              <span className="badge bg-success bg-opacity-20 text-success fw-bold px-3 py-1.5 rounded-pill" style={{ fontSize: '0.75rem' }}>
-                🔒 Chiffrement de bout en bout DHIS2 & UNAMUSC
-              </span>
+              <div className="fw-black text-warning my-2" style={{ fontSize: '2.4rem', letterSpacing: '0.12em', textShadow: '0 2px 8px rgba(245, 158, 11, 0.25)' }}>{otpData.code}</div>
+              
+              <div className="d-flex align-items-center justify-content-center gap-2 flex-wrap mt-2">
+                <span className={`badge ${isOtpExpired ? 'bg-danger' : 'bg-success'} bg-opacity-20 ${isOtpExpired ? 'text-danger' : 'text-success'} fw-bold px-3 py-1.5 rounded-pill`} style={{ fontSize: '0.75rem' }}>
+                  {isOtpExpired ? '🔴 Code OTP expiré' : `⏳ Valable encore ${getRemainingTime()}`}
+                </span>
+                <span className="badge bg-secondary bg-opacity-20 text-white fw-bold px-3 py-1.5 rounded-pill" style={{ fontSize: '0.75rem' }}>
+                  🔒 Chiffrement de bout en bout DHIS2 & UNAMUSC
+                </span>
+              </div>
+
+              {isOtpExpired && (
+                <button 
+                  type="button" 
+                  className="btn btn-sm btn-warning fw-bold mt-3 px-3 py-2 rounded-3 text-dark"
+                  onClick={generateNewOtp}
+                >
+                  🔄 Générer un nouveau code OTP (Valable 24h)
+                </button>
+              )}
             </div>
 
             {/* QR Code Card */}
             <div className="d-flex align-items-center gap-3 p-3.5 rounded-4 mb-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
               <div className="p-2 bg-white rounded-3 border flex-shrink-0" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https://mutualis.sn/dossier-partage/849-201" alt="QR Code Partage" style={{ width: '84px', height: '84px', display: 'block' }} />
+                <img src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(`https://mutualis.sn/dossier-partage/${activeCmuNumber}?otp=${otpData.code}`)}`} alt="QR Code Partage" style={{ width: '84px', height: '84px', display: 'block' }} />
               </div>
               <div>
                 <strong className="d-block text-success small fw-bold mb-1" style={{ fontSize: '0.88rem' }}>Scan QR code en consultation :</strong>
                 <p className="small mb-0" style={{ color: 'var(--text-sub)', fontSize: '0.78rem', lineHeight: '1.45' }}>
-                  Votre médecin peut scanner ce code directement avec son smartphone pour ouvrir instantanément votre dossier médical certifié.
+                  Votre médecin peut scanner ce code directement avec son smartphone pour ouvrir instantanément votre dossier médical certifié (OTP: {otpData.code}).
                 </p>
               </div>
             </div>
@@ -1259,7 +1309,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                 style={{ background: '#059669', color: '#ffffff', border: 'none', borderRadius: '14px', fontSize: '0.9rem', boxShadow: '0 4px 15px rgba(5,150,105,0.3)' }} 
                 onClick={handleCopyShareLink}
               >
-                📋 Copier le lien sécurisé (https://mutualis.sn/dossier/849-201)
+                📋 Copier le lien sécurisé (OTP: {otpData.code})
               </button>
 
               <button 
