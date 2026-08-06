@@ -1022,31 +1022,33 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                     </div>
                   ))}
 
-                  {/* Add New Exam Card */}
-                  <div className="col-md-6">
-                    <div 
-                      className="rounded-4 p-4 h-100 d-flex flex-column align-items-center justify-content-center gap-3 text-center"
-                      style={{ 
-                        background: 'var(--bg-card-subtle)', 
-                        border: '2px dashed var(--primary)', 
-                        cursor: 'pointer',
-                        minHeight: '230px'
-                      }}
-                      onClick={() => setShowAddExamModal(true)}
-                    >
-                      <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: '700' }}>
-                        ➕
-                      </div>
-                      <div className="d-flex flex-column align-items-center gap-1 text-center">
-                        <strong className="fw-extrabold d-block mb-1" style={{ color: 'var(--text-main)', fontSize: '1.05rem' }}>
-                          Ajouter un examen :
-                        </strong>
-                        <span className="small text-muted d-block fw-semibold" style={{ fontSize: '0.88rem' }}>
-                          (Fichier PDF ou DICOM)
-                        </span>
+                  {/* Add New Exam Card — Médecin, Sage-femme, SuperAdmin uniquement (citoyen en lecture seule) */}
+                  {canEditMedical && (
+                    <div className="col-md-6">
+                      <div 
+                        className="rounded-4 p-4 h-100 d-flex flex-column align-items-center justify-content-center gap-3 text-center"
+                        style={{ 
+                          background: 'var(--bg-card-subtle)', 
+                          border: '2px dashed var(--primary)', 
+                          cursor: 'pointer',
+                          minHeight: '230px'
+                        }}
+                        onClick={() => setShowAddExamModal(true)}
+                      >
+                        <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: '700' }}>
+                          ➕
+                        </div>
+                        <div className="d-flex flex-column align-items-center gap-1 text-center">
+                          <strong className="fw-extrabold d-block mb-1" style={{ color: 'var(--text-main)', fontSize: '1.05rem' }}>
+                            Ajouter un examen :
+                          </strong>
+                          <span className="small text-muted d-block fw-semibold" style={{ fontSize: '0.88rem' }}>
+                            (Fichier PDF ou DICOM)
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
 
                 </div>
 
@@ -1061,13 +1063,15 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
           <div className="p-4 rounded-4 mb-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
               <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>📜 Historique Médical Complet</h5>
-              <button 
-                type="button" 
-                style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontWeight: '800', fontSize: '0.82rem', cursor: 'pointer' }}
-                onClick={() => setShowAddHistoryModal(true)}
-              >
-                ➕ Ajouter une entrée
-              </button>
+              {canEditMedical && (
+                <button 
+                  type="button" 
+                  style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontWeight: '800', fontSize: '0.82rem', cursor: 'pointer' }}
+                  onClick={() => setShowAddHistoryModal(true)}
+                >
+                  ➕ Ajouter une entrée
+                </button>
+              )}
             </div>
             <div className="table-responsive">
               <table className="table align-middle mb-0" style={{ background: 'transparent' }}>
@@ -1077,7 +1081,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                     <th>ACTE / CONSULTATION</th>
                     <th>PRATICIEN / STRUCTURE</th>
                     <th>CONCLUSION</th>
-                    <th className="text-end">ACTION</th>
+                    {canEditMedical && <th className="text-end">ACTION</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -1087,25 +1091,27 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                       <td className="fw-bold" style={{ color: 'var(--text-main)' }}>{h.acte}</td>
                       <td style={{ color: 'var(--text-sub)' }}>{h.praticien}</td>
                       <td style={{ color: 'var(--text-sub)' }}>{h.conclusion}</td>
-                      <td className="text-end">
-                        <button 
-                          type="button" 
-                          style={{ background: '#dc2626', color: '#ffffff', border: '1px solid #b91c1c', borderRadius: '8px', padding: '0.35rem 0.65rem', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer', boxShadow: '0 2px 6px rgba(220, 38, 38, 0.3)' }}
-                          onClick={() => {
-                            setDeleteConfirmTarget({
-                              title: h.acte,
-                              itemType: 'Historique Médical',
-                              onConfirm: () => setHistoryEntries(historyEntries.filter(item => item.id !== h.id))
-                            });
-                          }}
-                        >
-                          🗑️ Supprimer
-                        </button>
-                      </td>
+                      {canEditMedical && (
+                        <td className="text-end">
+                          <button 
+                            type="button" 
+                            style={{ background: '#dc2626', color: '#ffffff', border: '1px solid #b91c1c', borderRadius: '8px', padding: '0.35rem 0.65rem', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer', boxShadow: '0 2px 6px rgba(220, 38, 38, 0.3)' }}
+                            onClick={() => {
+                              setDeleteConfirmTarget({
+                                title: h.acte,
+                                itemType: 'Historique Médical',
+                                onConfirm: () => setHistoryEntries(historyEntries.filter(item => item.id !== h.id))
+                              });
+                            }}
+                          >
+                            🗑️ Supprimer
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                   {historyEntries.length === 0 && (
-                    <tr><td colSpan={5} className="text-center py-4" style={{ color: 'var(--text-sub)' }}>Aucune entrée dans l'historique médical.</td></tr>
+                    <tr><td colSpan={canEditMedical ? 5 : 4} className="text-center py-4" style={{ color: 'var(--text-sub)' }}>Aucune entrée dans l'historique médical.</td></tr>
                   )}
                 </tbody>
               </table>
@@ -1118,13 +1124,15 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
           <div className="p-4 rounded-4 mb-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
             <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
               <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>🧪 Résultats d'Analyses Biologiques</h5>
-              <button 
-                type="button" 
-                style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontWeight: '800', fontSize: '0.82rem', cursor: 'pointer' }}
-                onClick={() => setShowAddLabModal(true)}
-              >
-                ➕ Ajouter un résultat
-              </button>
+              {canEditMedical && (
+                <button 
+                  type="button" 
+                  style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontWeight: '800', fontSize: '0.82rem', cursor: 'pointer' }}
+                  onClick={() => setShowAddLabModal(true)}
+                >
+                  ➕ Ajouter un résultat
+                </button>
+              )}
             </div>
             <div className="table-responsive">
               <table className="table align-middle mb-0" style={{ background: 'transparent' }}>
@@ -1134,7 +1142,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                     <th>RÉSULTAT</th>
                     <th>VALEURS DE RÉFÉRENCE</th>
                     <th>STATUT</th>
-                    <th className="text-end">ACTION</th>
+                    {canEditMedical && <th className="text-end">ACTION</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -1152,25 +1160,27 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                           {lr.statut}
                         </span>
                       </td>
-                      <td className="text-end">
-                        <button 
-                          type="button" 
-                          style={{ background: '#dc2626', color: '#ffffff', border: '1px solid #b91c1c', borderRadius: '8px', padding: '0.35rem 0.65rem', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer', boxShadow: '0 2px 6px rgba(220, 38, 38, 0.3)' }}
-                          onClick={() => {
-                            setDeleteConfirmTarget({
-                              title: lr.examen,
-                              itemType: 'Résultat d\'analyse laboratoire',
-                              onConfirm: () => setLabResults(labResults.filter(item => item.id !== lr.id))
-                            });
-                          }}
-                        >
-                          🗑️ Supprimer
-                        </button>
-                      </td>
+                      {canEditMedical && (
+                        <td className="text-end">
+                          <button 
+                            type="button" 
+                            style={{ background: '#dc2626', color: '#ffffff', border: '1px solid #b91c1c', borderRadius: '8px', padding: '0.35rem 0.65rem', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer', boxShadow: '0 2px 6px rgba(220, 38, 38, 0.3)' }}
+                            onClick={() => {
+                              setDeleteConfirmTarget({
+                                title: lr.examen,
+                                itemType: 'Résultat d\'analyse laboratoire',
+                                onConfirm: () => setLabResults(labResults.filter(item => item.id !== lr.id))
+                              });
+                            }}
+                          >
+                            🗑️ Supprimer
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                   {labResults.length === 0 && (
-                    <tr><td colSpan={5} className="text-center py-4" style={{ color: 'var(--text-sub)' }}>Aucun résultat d'analyse enregistré.</td></tr>
+                    <tr><td colSpan={canEditMedical ? 5 : 4} className="text-center py-4" style={{ color: 'var(--text-sub)' }}>Aucun résultat d'analyse enregistré.</td></tr>
                   )}
                 </tbody>
               </table>

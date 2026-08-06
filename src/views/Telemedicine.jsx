@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
 import { initiatePayment, getProviderInfo, validatePhoneForProvider } from '../services/paymentService';
+import { speakCleanText } from '../services/voiceAudioService';
 
 // Design Premium Haut de Gamme — Télémédecine Visioconférence Bidirectionnelle & Vu-mètre Micro Réel
 export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, partnerUser = null, setView = null }) {
@@ -167,20 +168,8 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     toastTimerRef.current = setTimeout(() => setNotifToast(null), 5000);
 
-    // Voix française via Web Speech API
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const utter = new SpeechSynthesisUtterance(toast.speech || toast.message);
-      utter.lang = 'fr-FR';
-      utter.rate = 0.95;
-      utter.pitch = 1.1;
-      utter.volume = 1;
-      // Sélectionner une voix française si disponible
-      const voices = window.speechSynthesis.getVoices();
-      const frVoice = voices.find(v => v.lang.startsWith('fr'));
-      if (frVoice) utter.voice = frVoice;
-      window.speechSynthesis.speak(utter);
-    }
+    // Voix naturelle via backend TTS (ElevenLabs/Open-Source) avec repli speechSynthesis
+    speakCleanText(toast.speech || toast.message, 'fr');
   };
 
   // Modale Inscription

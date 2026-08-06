@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
 import { getBeneficiaryInfo, getAdherentCode, getBeneficiaryCode } from '../utils/csuFormatter';
+import { speakCleanText } from '../services/voiceAudioService';
 
 // Vue publique et médicale de vérification d'une carte CSU.
 // Accessible via #/verify ou #/verify/:cmuNumber — utilisée par les structures de soins,
@@ -54,20 +55,9 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
       }
     } catch (e) {}
 
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const spokenMsg = `Nanga def ${firstName}! Carte physique scannée et vérifiée avec succès. Rappel UNAMUSC : La consultation prénatale et la vaccination PEV de votre bébé Moussa Ndiaye sont programmées. Prise en charge cent pour cent gratuite.`;
-      const utterance = new SpeechSynthesisUtterance(spokenMsg);
-      utterance.lang = 'fr-FR';
-      utterance.rate = 0.92;
-      utterance.pitch = 1.0;
-
-      const voices = window.speechSynthesis.getVoices();
-      const frVoice = voices.find(v => v.lang.includes('fr'));
-      if (frVoice) utterance.voice = frVoice;
-
-      window.speechSynthesis.speak(utterance);
-    }
+    // Voix naturelle via backend TTS (ElevenLabs/Open-Source) avec repli speechSynthesis
+    const spokenMsg = `Nanga def ${firstName}! Carte physique scannée et vérifiée avec succès. Rappel UNAMUSC : La consultation prénatale et la vaccination PEV de votre bébé Moussa Ndiaye sont programmées. Prise en charge cent pour cent gratuite.`;
+    speakCleanText(spokenMsg, 'wolof');
   };
 
   // Bloque le défilement de la page lorsque la modale vidéo publicitaire est ouverte

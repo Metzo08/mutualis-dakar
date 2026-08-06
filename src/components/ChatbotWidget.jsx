@@ -13,7 +13,7 @@ export default function ChatbotWidget({ lang, setView }) {
   const [hasNewMessage, setHasNewMessage] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
-  const [voiceProvider, setVoiceProvider] = useState(() => localStorage.getItem('cmu-voice-provider') || 'local');
+  const [voiceProvider, setVoiceProvider] = useState(() => localStorage.getItem('cmu-voice-provider') || 'opensource');
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const chatEndRef = useRef(null);

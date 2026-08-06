@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
 import DeleteModal from '../components/DeleteModal';
-import { playHybridVoiceReminder, playEmergencyVoiceInstruction } from '../services/voiceAudioService';
+import { playHybridVoiceReminder, playEmergencyVoiceInstruction, speakCleanText } from '../services/voiceAudioService';
 
 // Design Premium Haut de Gamme — Carnet Maternité & Santé Enfant
 export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentUser = null, partnerUser = null, userRole = 'citizen', setView = null }) {
@@ -204,20 +204,8 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
       }
     } catch (e) {}
 
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const cleaned = cleanSpeechText(textToSpeak);
-      const utterance = new SpeechSynthesisUtterance(cleaned);
-      utterance.lang = 'fr-FR';
-      utterance.rate = 0.92;
-      utterance.pitch = 1.0;
-
-      const voices = window.speechSynthesis.getVoices();
-      const frVoice = voices.find(v => v.lang.includes('fr'));
-      if (frVoice) utterance.voice = frVoice;
-
-      window.speechSynthesis.speak(utterance);
-    }
+    // Voix naturelle via backend TTS (ElevenLabs/Open-Source) avec repli speechSynthesis
+    speakCleanText(textToSpeak, audioLang || 'fr');
   };
 
   const triggerInstantReminder = (type = 'sms', langChoice = audioLang) => {

@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { isWolofText, convertWolofToFrenchPhonetics, cleanTextForTTS } from '../utils/phonetics';
+import { speakCleanText, stopAllVoicePlayback } from '../services/voiceAudioService';
 
 export default function AudioReader({ lang }) {
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const synth = window.speechSynthesis;
   const audioRef = useRef(null);
 
   const dict = {
@@ -26,48 +26,13 @@ export default function AudioReader({ lang }) {
   // Stop speaking on view changes or unmount
   useEffect(() => {
     return () => {
-      if (synth) {
-        synth.cancel();
-      }
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
+      stopAllVoicePlayback();
     };
   }, [lang]);
 
-  const speakLocal = (textToSpeak, isWolof) => {
-    if (!synth) return;
-    const utterance = new SpeechSynthesisUtterance(textToSpeak);
-    utterance.lang = 'fr-FR';
-    utterance.rate = isWolof ? 0.85 : 1.0;
-
-    const voices = synth.getVoices();
-    const frenchVoice = voices.find(v => v.lang.startsWith('fr') && v.name.toLowerCase().includes('female')) 
-      || voices.find(v => v.lang.startsWith('fr'));
-    if (frenchVoice) {
-      utterance.voice = frenchVoice;
-    }
-
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
-
-    synth.speak(utterance);
-  };
-
   const handleToggleSpeak = () => {
-    if (!synth) {
-      alert("Votre navigateur ne supporte pas la synthèse vocale.");
-      return;
-    }
-
     if (isSpeaking) {
-      synth.cancel();
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
+      stopAllVoicePlayback();
       setIsSpeaking(false);
       return;
     }
@@ -75,13 +40,13 @@ export default function AudioReader({ lang }) {
     // Find all readable texts on the current page
     const readableElements = document.querySelectorAll('h1, h2, h3, p:not(.tagline)');
     let textToRead = '';
-    
+
     readableElements.forEach(el => {
       // Avoid reading hidden elements, header, sidebar, or chatbot
       if (
-        el.offsetWidth > 0 && 
-        el.offsetHeight > 0 && 
-        !el.closest('.chatbot-container') && 
+        el.offsetWidth > 0 &&
+        el.offsetHeight > 0 &&
+        !el.closest('.chatbot-container') &&
         !el.closest('.site-header') &&
         !el.closest('.top-navbar') &&
         !el.closest('.sidebar-nav') &&
@@ -101,9 +66,8 @@ export default function AudioReader({ lang }) {
     const isWolof = isWolofText(cleanText) || lang === 'wo';
     const textToSpeak = isWolof ? convertWolofToFrenchPhonetics(cleanText) : cleanText;
 
-    // Synthèse vocale native du navigateur (API Web Speech).
-    // Remplace l'ancien proxy backend /api/tts qui piratait Google Translate (ToS).
-    speakLocal(textToSpeak, isWolof);
+    setIsSpeaking(true);
+    speakCleanText(textToSpeak, isWolof ? 'wolof' : 'fr', null, () => setIsSpeaking(false));
   };
 
   // Connect background trigger for programmatic TTS if needed
