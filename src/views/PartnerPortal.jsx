@@ -110,7 +110,14 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
   const [prestataires, setPrestataires] = useState(() => {
     try {
       const saved = localStorage.getItem('cmu_udms_prestataires');
-      return saved ? JSON.parse(saved) : defaultUdmsPrestataires;
+      let list = saved ? JSON.parse(saved) : defaultUdmsPrestataires;
+      // Garantit que la structure Abass Ndao, son médecin et sa sage-femme soient TOUJOURS présents même en cas de vieux cache localStorage
+      const hasAbassHospital = list.some(p => p.id === 100 || p.name.includes('Abass Ndao'));
+      if (!hasAbassHospital) {
+        list = [...defaultUdmsPrestataires];
+        localStorage.setItem('cmu_udms_prestataires', JSON.stringify(list));
+      }
+      return list;
     } catch (e) {
       return defaultUdmsPrestataires;
     }
@@ -180,8 +187,8 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
     if (!isUdmsAgentOrAdmin) {
       // Mode lecteur (ex: Centre Hospitalier Abass Ndao) :
       // On n'affiche que la structure conventionnée ET le personnel/médecins rattachés à cette structure
-      const isStructureSelf = p.name === targetStructure || p.structureName === targetStructure;
-      const isAttachedStaff = p.structureName === targetStructure || (p.role && p.role.includes('Abass Ndao')) || p.name.includes('Abass Ndao');
+      const isStructureSelf = p.id === 100 || p.name.toLowerCase().includes('abass ndao') || p.name === targetStructure || p.structureName === targetStructure;
+      const isAttachedStaff = p.id === 101 || p.id === 105 || p.structureName === targetStructure || (p.role && p.role.toLowerCase().includes('abass ndao')) || p.name.toLowerCase().includes('abass ndao');
       return isStructureSelf || isAttachedStaff;
     }
 
