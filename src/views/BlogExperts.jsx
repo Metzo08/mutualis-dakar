@@ -310,6 +310,23 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
       .catch(err => console.error('Error liking:', err));
   };
 
+  // Clear and open modal for creating a brand new article
+  const handleOpenNewArticleModal = () => {
+    setEditingArticle(null);
+    setNewArticle({
+      title: '',
+      author: authorName || '',
+      role: authorRole || '',
+      avatar: '🩺',
+      readTime: '5 min',
+      content: ''
+    });
+    setNewArticleImage(null);
+    setEditorError('');
+    setEditorSuccess('');
+    setShowEditor(true);
+  };
+
   // Start editing an existing article
   const handleStartEdit = (article) => {
     setEditingArticle(article);
@@ -461,21 +478,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
             <button
               type="button"
               style={{ background: '#059669', color: '#ffffff', border: '2px solid #ffffff', borderRadius: '14px', padding: '0.7rem 1.6rem', fontWeight: '800', fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
-              onClick={() => {
-                setEditingArticle(null);
-                setNewArticle({
-                  title: '',
-                  author: authorName,
-                  role: authorRole,
-                  avatar: '🩺',
-                  readTime: '5 min',
-                  content: ''
-                });
-                setNewArticleImage(null);
-                setEditorError('');
-                setEditorSuccess('');
-                setShowEditor(true);
-              }}
+              onClick={handleOpenNewArticleModal}
             >
               ✍️ Rédiger un article d'expert
             </button>
@@ -1011,13 +1014,11 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
                     : 'Bindal article bu bees ngir leral askan wi.'}
                 </p>
                 <button 
-                  className="btn btn-outline btn-sm" 
+                  className="btn btn-primary btn-sm" 
                   style={{ width: '100%' }}
-                  onClick={() => setShowEditor(!showEditor)}
+                  onClick={handleOpenNewArticleModal}
                 >
-                  {showEditor 
-                    ? (lang === 'fr' ? 'Masquer l\'éditeur' : 'Dindi éditeur') 
-                    : (lang === 'fr' ? 'Rédiger un article' : 'Bind article')}
+                  {lang === 'fr' ? '✍️ Rédiger un nouvel article' : '✍️ Bind article bu bees'}
                 </button>
               </div>
             )}
