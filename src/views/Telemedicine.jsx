@@ -1050,63 +1050,109 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
         {/* SECTION MÉDECINS DE GARDE / FILE D'ATTENTE */}
         {roleMode === 'doctor' && (
-          <div className="p-4 rounded-4 mb-5" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
-            <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-              <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>📋 File d'attente Télémédecine (Ordre d'arrivée des patients)</h5>
+          <div className="p-4 rounded-4 mb-5" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)', borderRadius: '20px' }}>
+            <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+              <div>
+                <h5 className="fw-bold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>
+                  📋 File d'attente télémédecine (Ordre d'arrivée des patients)
+                </h5>
+                <small className="text-muted d-block" style={{ fontSize: '0.85rem' }}>
+                  Ordre d'arrivée en temps réel des patients ayant réglé leur ticket modérateur
+                </small>
+              </div>
+
               {canManageQueue && (
                 <button
                   type="button"
-                  style={{ background: '#059669', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontWeight: '800', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(5,150,105,0.3)' }}
+                  style={{ background: '#059669', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.6rem 1.1rem', fontWeight: '800', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(5,150,105,0.3)', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
                   onClick={() => setActiveModal('add_doctor')}
                   title="Réservé à l'agent UDMS et au SuperAdmin — gestion du réseau de praticiens agréés"
                 >
-                  ➕ Ajouter un Médecin (Union Départementale)
+                  ➕ Ajouter un médecin (Union Départementale)
                 </button>
               )}
             </div>
+
             <div className="table-responsive">
               <table className="table align-middle mb-0" style={{ background: 'transparent' }}>
                 <thead>
-                  <tr className="small border-bottom" style={{ color: 'var(--text-sub)', borderColor: 'var(--border-color)' }}>
-                    <th>POSITION</th>
-                    <th>ASSURÉ</th>
-                    <th>N° CMU</th>
-                    <th>MOTIF & SYMPTÔMES</th>
-                    <th>ARRIVÉE</th>
-                    <th>RÈGLEMENT</th>
-                    <th>STATUT</th>
-                    <th className="text-end">ACTIONS MÉDECIN</th>
+                  <tr className="small border-bottom" style={{ color: 'var(--text-sub)', borderColor: 'var(--border-color)', fontSize: '0.8rem', letterSpacing: '0.3px' }}>
+                    <th style={{ padding: '0.85rem 0.5rem', textAlign: 'center' }}>Position</th>
+                    <th style={{ padding: '0.85rem' }}>Assuré</th>
+                    <th style={{ padding: '0.85rem' }}>N° CSU</th>
+                    <th style={{ padding: '0.85rem' }}>Motif & symptômes</th>
+                    <th style={{ padding: '0.85rem' }}>Heure d'arrivée</th>
+                    <th style={{ padding: '0.85rem' }}>Règlement</th>
+                    <th style={{ padding: '0.85rem' }}>Statut</th>
+                    <th style={{ padding: '0.85rem', textAlign: 'right' }}>Actions médecin</th>
                   </tr>
                 </thead>
                 <tbody>
                   {queue.map((p, idx) => (
                     <tr key={p.id} className="border-bottom" style={{ borderColor: 'var(--border-color)' }}>
-                      <td className="fw-bold text-center" style={{ color: 'var(--text-main)' }}>
-                        <span className="badge rounded-circle bg-secondary p-2" style={{ width: '28px', height: '28px' }}>#{idx + 1}</span>
-                      </td>
-                      <td className="fw-bold" style={{ color: 'var(--text-main)' }}>{p.patient_name}</td>
-                      <td className="text-success small fw-mono">{p.cmu_number}</td>
-                      <td className="small" style={{ color: 'var(--text-sub)' }}>{p.reason}</td>
-                      <td className="small" style={{ color: 'var(--text-sub)' }}>{p.joined_at}</td>
-                      <td>
-                        <span style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.72rem', fontWeight: '700' }}>
-                          ✅ Reglé ({p.payment_method || 'Wave'})
+                      <td style={{ padding: '1rem 0.5rem', textAlign: 'center' }}>
+                        <span style={{ 
+                          background: idx === 0 ? 'linear-gradient(135deg, #059669, #10b981)' : 'var(--bg-card-subtle)', 
+                          color: idx === 0 ? '#ffffff' : 'var(--text-main)', 
+                          border: idx === 0 ? 'none' : '1px solid var(--border-color)',
+                          width: '34px', 
+                          height: '34px', 
+                          borderRadius: '50%', 
+                          display: 'inline-flex', 
+                          alignItems: 'center', 
+                          justifyContent: 'center', 
+                          fontWeight: '800', 
+                          fontSize: '0.85rem',
+                          boxShadow: idx === 0 ? '0 3px 10px rgba(16,185,129,0.35)' : 'none'
+                        }}>
+                          #{idx + 1}
                         </span>
                       </td>
-                      <td>
+
+                      <td style={{ padding: '1rem 0.85rem' }}>
+                        <strong className="d-block" style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>{p.patient_name}</strong>
+                        <small className="text-muted" style={{ fontSize: '0.76rem' }}>Bénéficiaire certifié CSU</small>
+                      </td>
+
+                      <td style={{ padding: '1rem 0.85rem' }}>
+                        <code className="px-2.5 py-1 bg-dark text-success border border-success rounded-3 fw-bold" style={{ fontSize: '0.8rem' }}>
+                          {p.cmu_number}
+                        </code>
+                      </td>
+
+                      <td style={{ padding: '1rem 0.85rem', maxWidth: '240px' }}>
+                        <div style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', padding: '0.4rem 0.75rem', borderRadius: '8px', border: '1px solid var(--border-color)', fontSize: '0.84rem', lineHeight: '1.4' }}>
+                          🩺 {p.reason}
+                        </div>
+                      </td>
+
+                      <td style={{ padding: '1rem 0.85rem' }}>
+                        <span className="fw-semibold" style={{ color: 'var(--text-sub)', fontSize: '0.85rem' }}>
+                          🕒 {p.joined_at}
+                        </span>
+                      </td>
+
+                      <td style={{ padding: '1rem 0.85rem' }}>
+                        <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '0.35rem 0.75rem', borderRadius: '12px', fontSize: '0.78rem', fontWeight: '700', display: 'inline-block' }}>
+                          ✅ Réglé ({p.payment_method || 'Wave'})
+                        </span>
+                      </td>
+
+                      <td style={{ padding: '1rem 0.85rem' }}>
                         {p.status === 'called' ? (
-                          <span className="badge bg-success text-white">🟢 Appel en cours / Reçu</span>
+                          <span className="badge bg-success text-white px-3 py-1.5" style={{ borderRadius: '12px', fontSize: '0.78rem' }}>🟢 En consultation</span>
                         ) : p.status === 'next' ? (
-                          <span className="badge bg-warning text-dark">🔔 Prochain notifié</span>
+                          <span className="badge bg-warning text-dark px-3 py-1.5" style={{ borderRadius: '12px', fontSize: '0.78rem' }}>🔔 Prochain notifié</span>
                         ) : (
-                          <span className="badge bg-secondary text-white">⏳ En attente (#{idx + 1})</span>
+                          <span className="badge bg-secondary text-white px-3 py-1.5" style={{ borderRadius: '12px', fontSize: '0.78rem' }}>⏳ En attente (n°{idx + 1})</span>
                         )}
                       </td>
-                      <td className="text-end">
+
+                      <td className="text-end" style={{ padding: '1rem 0.85rem' }}>
                         <div className="d-flex flex-column align-items-end justify-content-center" style={{ gap: '0.65rem' }}>
                           <button 
                             type="button" 
-                            style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.5)', borderRadius: '8px', padding: '0.35rem 0.75rem', fontWeight: '700', fontSize: '0.78rem', cursor: 'pointer', marginBottom: '0.4rem', width: '100%', maxWidth: '110px' }}
+                            style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.5)', borderRadius: '10px', padding: '0.45rem 0.9rem', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer', marginBottom: '0.4rem', width: '100%', maxWidth: '140px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}
                             onClick={() => {
                               setQueue(queue.map(item => item.id === p.id ? { ...item, status: 'next' } : item));
                               speakAndToast({
@@ -1124,7 +1170,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                           
                           <button 
                             type="button" 
-                            style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.35rem 0.75rem', fontWeight: '700', fontSize: '0.78rem', cursor: 'pointer', width: '100%', maxWidth: '110px' }}
+                            style={{ background: '#059669', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.45rem 0.9rem', fontWeight: '800', fontSize: '0.8rem', cursor: 'pointer', width: '100%', maxWidth: '140px', boxShadow: '0 3px 10px rgba(5,150,105,0.3)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}
                             onClick={() => {
                               setQueue(queue.map(item => item.id === p.id ? { ...item, status: 'called' } : item));
                               handleStartCall(doctorsList.find(d => d.name === p.requested_doctor) || doctorsList[0]);
