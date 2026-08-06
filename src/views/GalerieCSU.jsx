@@ -229,57 +229,71 @@ export default function GalerieCSU({ lang }) {
 
       {/* Interactive Zoom Modal Centré */}
       {selectedItem && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(15, 23, 42, 0.85)',
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 9999,
-          padding: '1.25rem',
-          overflowY: 'auto'
-        }} onClick={() => setSelectedItem(null)}>
-          <div className="card scale-in" style={{
-            maxWidth: '920px',
-            width: '100%',
-            maxHeight: '90vh',
-            padding: 0,
-            overflow: 'hidden',
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border-color)',
-            borderRadius: '24px',
-            boxShadow: '0 25px 60px rgba(0, 0, 0, 0.5)',
-            textAlign: 'left',
-            position: 'relative'
-          }} onClick={(e) => e.stopPropagation()}>
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(15, 23, 42, 0.88)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 999999,
+            padding: '1.5rem',
+            overflowY: 'auto'
+          }} 
+          onClick={() => setSelectedItem(null)}
+        >
+          <div 
+            className="card scale-in shadow-lg" 
+            style={{
+              maxWidth: '960px',
+              width: '100%',
+              maxHeight: '90vh',
+              padding: 0,
+              overflow: 'hidden',
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '24px',
+              boxShadow: '0 25px 70px rgba(0, 0, 0, 0.6)',
+              textAlign: 'left',
+              position: 'relative',
+              margin: 'auto'
+            }} 
+            onClick={(e) => e.stopPropagation()}
+          >
             
             {/* Bouton de fermeture supérieur */}
             <button 
+              type="button"
               onClick={() => setSelectedItem(null)}
               style={{
                 position: 'absolute',
-                top: '12px',
-                right: '12px',
-                zIndex: 10,
-                background: 'rgba(0, 0, 0, 0.6)',
+                top: '16px',
+                right: '16px',
+                zIndex: 20,
+                background: 'rgba(0, 0, 0, 0.75)',
                 color: '#ffffff',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
+                border: '1px solid rgba(255, 255, 255, 0.4)',
                 borderRadius: '50%',
-                width: '36px',
-                height: '36px',
+                width: '40px',
+                height: '40px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
-                fontSize: '1.1rem',
-                fontWeight: 'bold'
+                fontSize: '1.2rem',
+                fontWeight: 'bold',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+                transition: 'transform 0.2s ease'
               }}
+              title="Fermer la vue plein écran"
             >
               ✖
             </button>
@@ -291,15 +305,16 @@ export default function GalerieCSU({ lang }) {
               maxHeight: '90vh',
               overflowY: 'auto'
             }}>
-              {/* Modal Left: Photo centrée */}
+              {/* Modal Left: Photo HD intégrale centrée (sans rogner) */}
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: '#0f172a',
+                background: '#090d16',
                 position: 'relative',
-                minHeight: '260px',
-                maxHeight: '520px',
+                minHeight: '320px',
+                maxHeight: '560px',
+                padding: '1rem',
                 overflow: 'hidden'
               }}>
                 <img 
@@ -307,63 +322,66 @@ export default function GalerieCSU({ lang }) {
                   alt={selectedItem.title}
                   onError={(e) => { e.target.onerror = null; e.target.src = '/csu_gallery_hero_real.png'; }}
                   style={{
-                    width: '100%',
-                    height: '100%',
+                    maxWidth: '100%',
                     maxHeight: '520px',
-                    objectFit: 'cover',
+                    objectFit: 'contain',
+                    borderRadius: '12px',
+                    boxShadow: '0 8px 30px rgba(0,0,0,0.5)',
                     display: 'block'
                   }}
                 />
               </div>
 
-              {/* Modal Right: Informations centrées & détaillées */}
+              {/* Modal Right: Informations détaillées et texte lisible */}
               <div style={{
-                padding: '2rem 1.75rem',
+                padding: '2.25rem 2rem',
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 background: 'var(--bg-card)',
-                maxHeight: '520px',
+                maxHeight: '560px',
                 overflowY: 'auto'
               }}>
                 <div>
-                  <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.85rem' }}>
                     {selectedItem.tags.map((tag, idx) => (
-                      <span key={idx} className="badge badge-success" style={{ fontSize: '0.72rem', padding: '0.25rem 0.6rem' }}>#{tag}</span>
+                      <span key={idx} className="badge bg-success-subtle text-success border border-success px-2.5 py-1" style={{ fontSize: '0.75rem', borderRadius: '8px', fontWeight: '700' }}>
+                        #{tag}
+                      </span>
                     ))}
                   </div>
                   
-                  <h2 style={{ fontSize: '1.35rem', fontWeight: '850', color: 'var(--primary)', marginBottom: '0.85rem', lineHeight: '1.3' }}>
+                  <h2 style={{ fontSize: '1.4rem', fontWeight: '850', color: 'var(--text-main)', marginBottom: '1rem', lineHeight: '1.35' }}>
                     {selectedItem.title}
                   </h2>
 
-                  <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', lineHeight: '1.6', marginBottom: '1.25rem' }}>
+                  <p style={{ fontSize: '0.96rem', color: 'var(--text-main)', lineHeight: '1.65', marginBottom: '1.5rem', opacity: 0.95 }}>
                     {selectedItem.description}
                   </p>
                   
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem', borderTop: '1px solid var(--border-color)', paddingTop: '1rem', fontSize: '0.85rem' }}>
-                    <div>
-                      <strong style={{ color: 'var(--text-muted)' }}>📍 {t.location} : </strong>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', borderTop: '1px solid var(--border-color)', paddingTop: '1.1rem', fontSize: '0.88rem' }}>
+                    <div className="d-flex align-items-center gap-2">
+                      <strong style={{ color: 'var(--text-sub)' }}>📍 {t.location} : </strong>
                       <span style={{ fontWeight: '700', color: 'var(--text-main)' }}>{selectedItem.location}</span>
                     </div>
-                    <div>
-                      <strong style={{ color: 'var(--text-muted)' }}>📅 {t.date} : </strong>
+                    <div className="d-flex align-items-center gap-2">
+                      <strong style={{ color: 'var(--text-sub)' }}>📅 {t.date} : </strong>
                       <span style={{ fontWeight: '700', color: 'var(--text-main)' }}>{selectedItem.date}</span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', background: 'var(--bg-card-subtle)', padding: '0.65rem 0.85rem', borderRadius: '12px', marginTop: '0.5rem', border: '1px solid var(--border-color)' }}>
-                      <span style={{ fontSize: '1.3rem' }}>📈</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'var(--bg-card-subtle)', padding: '0.75rem 1rem', borderRadius: '14px', marginTop: '0.5rem', border: '1px solid var(--border-color)' }}>
+                      <span style={{ fontSize: '1.4rem' }}>📈</span>
                       <div>
-                        <div style={{ fontSize: '0.68rem', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: '700' }}>{t.impact}</div>
-                        <div style={{ fontWeight: '850', color: 'var(--secondary)', fontSize: '0.95rem' }}>{selectedItem.impact}</div>
+                        <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-sub)', fontWeight: '700', letterSpacing: '0.5px' }}>{t.impact}</div>
+                        <div style={{ fontWeight: '850', color: '#10b981', fontSize: '1rem' }}>{selectedItem.impact}</div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.75rem' }}>
                   <button 
-                    className="btn btn-primary btn-sm" 
-                    style={{ borderRadius: '10px', padding: '0.5rem 1.25rem', fontWeight: '700' }}
+                    type="button"
+                    style={{ background: '#059669', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.6rem 1.4rem', fontWeight: '800', fontSize: '0.9rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(5,150,105,0.3)' }}
                     onClick={() => setSelectedItem(null)}
                   >
                     {t.btnClose}
