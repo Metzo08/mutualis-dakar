@@ -135,6 +135,53 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
   // Toast de notification
   const [notifToast, setNotifToast] = useState(null); // { type, title, message, icon }
   const toastTimerRef = useRef(null);
+  const lastQueueStatusRef = useRef(null);
+
+  // Carillon sonore Web Audio API
+  const playAlertChime = () => {
+    try {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(587.33, audioCtx.currentTime); // Ré (D5)
+      osc.frequency.setValueAtTime(880.00, audioCtx.currentTime + 0.15); // La (A5)
+      gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.5);
+    } catch (e) {
+      console.warn("Chime audio non disponible:", e);
+    }
+  };
+
+  // Annonce vocale + Carillon sonore + Toast (Web Speech API + Web Audio API)
+  const speakAndToast = (toast) => {
+    // Jouer le carillon sonore
+    playAlertChime();
+
+    // Afficher le beau toast
+    setNotifToast(toast);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setNotifToast(null), 5000);
+
+    // Voix française via Web Speech API
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(toast.speech || toast.message);
+      utter.lang = 'fr-FR';
+      utter.rate = 0.95;
+      utter.pitch = 1.1;
+      utter.volume = 1;
+      // Sélectionner une voix française si disponible
+      const voices = window.speechSynthesis.getVoices();
+      const frVoice = voices.find(v => v.lang.startsWith('fr'));
+      if (frVoice) utter.voice = frVoice;
+      window.speechSynthesis.speak(utter);
+    }
+  };
 
   // Modale Inscription
   const [consultReason, setConsultReason] = useState('');
@@ -265,6 +312,33 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
       setMicVolume(0);
     }
   }, [activeModal, cameraActive, isMuted]);
+
+  // Suivi dynamique automatique de la file d'attente pour tous les assurés
+  useEffect(() => {
+    if (!activeCmuNumber && !activeFirstName) return;
+    const myQueueEntry = queue.find(p => p.cmu_number === activeCmuNumber || (p.patient_name && p.patient_name.includes(activeFirstName)));
+    if (!myQueueEntry) return;
+
+    if (myQueueEntry.status === 'next' && lastQueueStatusRef.current !== 'next') {
+      speakAndToast({
+        type: 'warning',
+        icon: '🔔',
+        title: 'Alerte préalable salle d\'attente',
+        message: 'Vous êtes le prochain patient. Préparez votre casque, votre micro et votre caméra.',
+        speech: `Attention ${activeFirstName} ${activeLastName}. Vous êtes le prochain patient dans la salle d'attente virtuelle. Veuillez préparer votre casque, votre micro et votre caméra. Le médecin va vous recevoir dans un instant.`
+      });
+      lastQueueStatusRef.current = 'next';
+    } else if (myQueueEntry.status === 'called' && lastQueueStatusRef.current !== 'called') {
+      speakAndToast({
+        type: 'success',
+        icon: '🏥',
+        title: "C'est votre tour !",
+        message: 'Le médecin vous appelle en visioconférence HD.',
+        speech: `${activeFirstName}, c'est votre tour. Le médecin est prêt à vous recevoir. La consultation de télémédecine commence maintenant. Bienvenue.`
+      });
+      lastQueueStatusRef.current = 'called';
+    }
+  }, [queue, activeCmuNumber, activeFirstName, activeLastName]);
 
   // Canvas Rendu Vidéo Médical HD (60fps) quand la webcam physique est absente
   useEffect(() => {
@@ -409,29 +483,6 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
     setPhoneError('');
     setActiveModal(null);
     setConsultReason('');
-  };
-
-  // Annonce vocale + Toast de notification (Web Speech API — aucun fichier audio requis)
-  const speakAndToast = (toast) => {
-    // Afficher le beau toast
-    setNotifToast(toast);
-    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = setTimeout(() => setNotifToast(null), 5000);
-
-    // Voix française via Web Speech API
-    if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel();
-      const utter = new SpeechSynthesisUtterance(toast.speech || toast.message);
-      utter.lang = 'fr-FR';
-      utter.rate = 0.95;
-      utter.pitch = 1.1;
-      utter.volume = 1;
-      // Sélectionner une voix française si disponible
-      const voices = window.speechSynthesis.getVoices();
-      const frVoice = voices.find(v => v.lang.startsWith('fr'));
-      if (frVoice) utter.voice = frVoice;
-      window.speechSynthesis.speak(utter);
-    }
   };
 
   // Simulation d'avancement de la file d'attente pour test rapide
