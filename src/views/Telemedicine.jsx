@@ -1110,8 +1110,12 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                       </td>
 
                       <td style={{ padding: '1rem 0.85rem' }}>
-                        <strong className="d-block" style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>{p.patient_name}</strong>
-                        <small className="text-muted" style={{ fontSize: '0.76rem' }}>Bénéficiaire certifié CSU</small>
+                        <div className="fw-extrabold" style={{ color: 'var(--text-main)', fontSize: '0.96rem', marginBottom: '0.2rem' }}>
+                          {p.patient_name}
+                        </div>
+                        <div style={{ color: 'var(--text-sub)', fontSize: '0.78rem', lineHeight: '1.3' }}>
+                          Bénéficiaire certifié CSU
+                        </div>
                       </td>
 
                       <td style={{ padding: '1rem 0.85rem' }}>
@@ -1148,11 +1152,11 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                         )}
                       </td>
 
-                      <td className="text-end" style={{ padding: '1rem 0.85rem' }}>
-                        <div className="d-flex flex-column align-items-end justify-content-center" style={{ gap: '0.65rem' }}>
+                      <td className="text-end" style={{ padding: '1rem 0.85rem', whiteSpace: 'nowrap' }}>
+                        <div className="d-flex align-items-center justify-content-end" style={{ gap: '0.75rem', whiteSpace: 'nowrap' }}>
                           <button 
                             type="button" 
-                            style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.5)', borderRadius: '10px', padding: '0.45rem 0.9rem', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer', marginBottom: '0.4rem', width: '100%', maxWidth: '140px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}
+                            style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.5)', borderRadius: '10px', padding: '0.45rem 0.85rem', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', whiteSpace: 'nowrap' }}
                             onClick={() => {
                               setQueue(queue.map(item => item.id === p.id ? { ...item, status: 'next' } : item));
                               speakAndToast({
@@ -1170,7 +1174,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                           
                           <button 
                             type="button" 
-                            style={{ background: '#059669', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.45rem 0.9rem', fontWeight: '800', fontSize: '0.8rem', cursor: 'pointer', width: '100%', maxWidth: '140px', boxShadow: '0 3px 10px rgba(5,150,105,0.3)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}
+                            style={{ background: '#059669', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.45rem 0.85rem', fontWeight: '800', fontSize: '0.8rem', cursor: 'pointer', boxShadow: '0 3px 10px rgba(5,150,105,0.3)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', whiteSpace: 'nowrap' }}
                             onClick={() => {
                               setQueue(queue.map(item => item.id === p.id ? { ...item, status: 'called' } : item));
                               handleStartCall(doctorsList.find(d => d.name === p.requested_doctor) || doctorsList[0]);
