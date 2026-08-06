@@ -14,6 +14,84 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
   // Modale universelle de suppression
   const [deleteConfirmTarget, setDeleteConfirmTarget] = useState(null); // { title, itemType, onConfirm }
 
+  // Profil Bébé & Calcul Automatique d'Âge & Rappels SMS/WhatsApp
+  const [babyProfile, setBabyProfile] = useState(() => {
+    const saved = localStorage.getItem('maternity_baby_profile');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return {
+      name: 'Moussa Ndiaye',
+      birthDate: '2026-05-14',
+      motherPhone: '+221 77 450 88 99',
+      motherName: 'Fatou Diallo',
+      reminderChannel: 'SMS & WhatsApp 💬',
+      autoReminders: true,
+      lastReminderSent: 'Il y a 2 jours'
+    };
+  });
+
+  const [showBabyModal, setShowBabyModal] = useState(false);
+  const [babyForm, setBabyForm] = useState(babyProfile);
+
+  // Moteur de calcul dynamique de l'âge exact du bébé
+  const calculateBabyAge = (birthDateStr) => {
+    if (!birthDateStr) return 'Âge non renseigné';
+    const birth = new Date(birthDateStr);
+    const now = new Date();
+    const diffMs = now - birth;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (isNaN(diffDays)) return 'Date invalide';
+    if (diffDays < 0) return 'Naissance à venir';
+    if (diffDays < 30) {
+      const weeks = Math.floor(diffDays / 7);
+      return weeks > 0 ? `${diffDays} jours (${weeks} sem.)` : `${diffDays} jours`;
+    }
+    
+    const diffMonths = Math.floor(diffDays / 30.4375);
+    const remainingWeeks = Math.floor((diffDays % 30.4375) / 7);
+    if (diffMonths < 12) {
+      return `${diffMonths} mois` + (remainingWeeks > 0 ? ` (${remainingWeeks} sem.)` : '');
+    }
+    
+    const years = Math.floor(diffMonths / 12);
+    const remMonths = diffMonths % 12;
+    return `${years} an${years > 1 ? 's' : ''}` + (remMonths > 0 ? ` ${remMonths} mois` : '');
+  };
+
+  const handleSaveBabyProfile = (e) => {
+    e.preventDefault();
+    setBabyProfile(babyForm);
+    localStorage.setItem('maternity_baby_profile', JSON.stringify(babyForm));
+    setShowBabyModal(false);
+  };
+
+  // Traitement d'envoi de relance/rappel immédiat
+  const [reminderSending, setReminderSending] = useState(false);
+  const [reminderToast, setReminderToast] = useState(null);
+
+  const triggerInstantReminder = (type = 'sms') => {
+    setReminderSending(true);
+    setTimeout(() => {
+      setReminderSending(false);
+      const nextPendingVaccine = vaccinations.find(v => !v.completed);
+      const nextPendingCpn = cpnVisits.find(c => !c.completed);
+      const targetPrestation = nextPendingVaccine ? `Vaccination PEV (${nextPendingVaccine.vaccines})` : (nextPendingCpn ? nextPendingCpn.title : 'Consultation de suivi post-natal');
+      
+      let msg = '';
+      if (type === 'sms' || type === 'whatsapp') {
+        msg = `📲 Notification SMS & WhatsApp délivrée à ${babyProfile.motherName} (${babyProfile.motherPhone}) : "Bonjour ${babyProfile.motherName}, rappel UNAMUSC : La prestation ${targetPrestation} pour votre bébé ${babyProfile.name} est programmée. Prise en charge 100% gratuite."`;
+      } else {
+        msg = `🔊 Relance vocale (Wolof & Français) transmise au ${babyProfile.motherPhone} : "Dakar UNAMUSC mookoy digal, dindeel sa doom ${babyProfile.name} ngir mu am wér-gi-yaram..."`;
+      }
+      
+      setReminderToast(msg);
+      setBabyProfile(prev => ({ ...prev, lastReminderSent: "À l'instant" }));
+      setTimeout(() => setReminderToast(null), 7000);
+    }, 1000);
+  };
+
   // État Vaccinations PEV (Tab 2)
   const [vaccinations, setVaccinations] = useState([
     {
@@ -1066,17 +1144,33 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
         {activeTab === 'pev' && (
           <div className="d-flex flex-column gap-4 mb-5">
             {/* KPI Summary Cards Header (100% DYNAMIQUE & CALCULÉ) */}
-            <div className="row g-3">
+            <div className="row g-3 mb-2">
               <div className="col-md-4">
-                <div className="p-3.5 rounded-4 d-flex align-items-center gap-3 h-100" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
-                  <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>
-                    👶
+                <div className="p-3.5 rounded-4 d-flex align-items-center justify-content-between h-100" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
+                  <div className="d-flex align-items-center gap-3">
+                    <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>
+                      👶
+                    </div>
+                    <div>
+                      <small className="d-block text-muted fw-bold" style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Bébé rattaché</small>
+                      <strong style={{ color: 'var(--text-main)', fontSize: '1rem' }}>{babyProfile.name}</strong>
+                      <small className="d-block text-success fw-bold" style={{ fontSize: '0.78rem' }}>
+                        Né le {new Date(babyProfile.birthDate).toLocaleDateString('fr-FR')} • <span className="badge bg-success-subtle text-success border border-success">{calculateBabyAge(babyProfile.birthDate)}</span>
+                      </small>
+                    </div>
                   </div>
-                  <div>
-                    <small className="d-block text-muted fw-bold" style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Bébé rattaché</small>
-                    <strong style={{ color: 'var(--text-main)', fontSize: '1rem' }}>Moussa Ndiaye</strong>
-                    <small className="d-block text-success fw-semibold" style={{ fontSize: '0.78rem' }}>Né le 14/05/2026 • 2 mois</small>
-                  </div>
+                  <button 
+                    type="button" 
+                    className="btn btn-sm btn-outline-success fw-bold ms-2"
+                    style={{ borderRadius: '8px', fontSize: '0.75rem' }}
+                    onClick={() => {
+                      setBabyForm(babyProfile);
+                      setShowBabyModal(true);
+                    }}
+                    title="Modifier le profil du bébé & contact assurée"
+                  >
+                    ✏️
+                  </button>
                 </div>
               </div>
 
@@ -1120,6 +1214,74 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                       );
                     })()}
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* CARD CENTRE DE RAPPELS AUTOMATIQUES SMS / WHATSAPP / VOCAL */}
+            <div className="p-3.5 rounded-4 text-white" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', border: '1px solid rgba(16, 185, 129, 0.35)', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
+              <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2.5">
+                <div className="d-flex align-items-center gap-2">
+                  <span className="fs-4">🔔</span>
+                  <div>
+                    <h6 className="fw-extrabold mb-0 text-white" style={{ fontSize: '1rem' }}>
+                      Centre de Rappels & Relances Automatiques (Suivi Mère & Bébé)
+                    </h6>
+                    <small className="text-emerald-300" style={{ fontSize: '0.78rem' }}>
+                      Assurée : <strong>{babyProfile.motherName}</strong> ({babyProfile.motherPhone}) • Canal : <strong>{babyProfile.reminderChannel}</strong>
+                    </small>
+                  </div>
+                </div>
+
+                <span className="badge bg-success text-white px-3 py-1.5 rounded-pill fw-bold" style={{ fontSize: '0.75rem' }}>
+                  🟢 Relances automatiques H-48 actives
+                </span>
+              </div>
+
+              {reminderToast && (
+                <div className="alert alert-success d-flex align-items-center p-3 mb-2 rounded-3 border-0 fade-in" style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#6ee7b7', border: '1px solid rgba(16, 185, 129, 0.4)' }}>
+                  <span className="me-2 fs-5">✅</span>
+                  <div className="small fw-semibold" style={{ lineHeight: '1.4' }}>{reminderToast}</div>
+                </div>
+              )}
+
+              <div className="d-flex gap-2 flex-wrap align-items-center justify-content-between pt-1">
+                <div className="small text-slate-300">
+                  Dernier rappel envoyé : <strong>{babyProfile.lastReminderSent}</strong>
+                </div>
+
+                <div className="d-flex gap-2 flex-wrap">
+                  <button 
+                    type="button"
+                    className="btn btn-sm btn-success fw-bold text-white d-inline-flex align-items-center gap-1.5 shadow-sm"
+                    style={{ borderRadius: '10px', background: '#059669', borderColor: '#059669', fontSize: '0.82rem', padding: '0.45rem 0.9rem' }}
+                    disabled={reminderSending}
+                    onClick={() => triggerInstantReminder('sms')}
+                  >
+                    <span>💬</span> {reminderSending ? 'Envoi...' : 'Envoyer rappel SMS / WhatsApp immédiat'}
+                  </button>
+
+                  <button 
+                    type="button"
+                    className="btn btn-sm btn-outline-light fw-bold d-inline-flex align-items-center gap-1.5"
+                    style={{ borderRadius: '10px', fontSize: '0.82rem', padding: '0.45rem 0.9rem' }}
+                    disabled={reminderSending}
+                    onClick={() => triggerInstantReminder('voice')}
+                  >
+                    <span>🔊</span> Relance vocale (Wolof / FR)
+                  </button>
+
+                  <button 
+                    type="button"
+                    className="btn btn-sm btn-dark text-slate-300 fw-bold border border-secondary"
+                    style={{ borderRadius: '10px', fontSize: '0.82rem', padding: '0.45rem 0.8rem' }}
+                    onClick={() => {
+                      setBabyForm(babyProfile);
+                      setShowBabyModal(true);
+                    }}
+                  >
+                    ⚙️ Configurer contact
+                  </button>
                 </div>
               </div>
             </div>
@@ -2087,6 +2249,74 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
         onConfirm={deleteConfirmTarget?.onConfirm}
         onClose={() => setDeleteConfirmTarget(null)}
       />
+
+      {/* MODALE ÉDITION PROFIL BÉBÉ & CONFIGURATION CONTACT RAPPELS */}
+      {showBabyModal && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(12px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+          <form onSubmit={handleSaveBabyProfile} style={{ maxWidth: '620px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2.25rem', border: '1px solid var(--border-color)', boxShadow: '0 20px 50px rgba(0,0,0,0.4)', margin: 'auto', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div className="d-flex justify-content-between align-items-center mb-3.5 pb-2 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+              <div className="d-flex align-items-center gap-2">
+                <span className="fs-4">👶</span>
+                <div>
+                  <h5 className="fw-extrabold text-success mb-0" style={{ fontSize: '1.2rem' }}>Profil Bébé & Contact Assurée</h5>
+                  <small className="text-muted" style={{ fontSize: '0.8rem' }}>Calcul automatique d'âge et système de rappels automatiques</small>
+                </div>
+              </div>
+              <button type="button" className="btn-close" onClick={() => setShowBabyModal(false)}></button>
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label small fw-bold">Nom complet du bébé *</label>
+              <input type="text" className="form-control fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={babyForm.name} onChange={e => setBabyForm({ ...babyForm, name: e.target.value })} required />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label small fw-bold">Date de naissance du bébé *</label>
+              <input type="date" className="form-control fw-semibold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={babyForm.birthDate} onChange={e => setBabyForm({ ...babyForm, birthDate: e.target.value })} required />
+              
+              <div className="mt-2 p-2.5 rounded-3 d-flex align-items-center justify-content-between" style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                <span className="small text-success fw-bold">⚡ Calcul automatique d'âge en temps réel :</span>
+                <span className="badge bg-success text-white fw-bold px-3 py-1.5 fs-6">{calculateBabyAge(babyForm.birthDate)}</span>
+              </div>
+            </div>
+
+            <div className="row g-3 mb-3">
+              <div className="col-md-6">
+                <label className="form-label small fw-bold">Nom de la mère / assurée *</label>
+                <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={babyForm.motherName} onChange={e => setBabyForm({ ...babyForm, motherName: e.target.value })} required />
+              </div>
+
+              <div className="col-md-6">
+                <label className="form-label small fw-bold">N° Téléphone Rappels (SMS & WhatsApp) *</label>
+                <input type="text" className="form-control fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={babyForm.motherPhone} onChange={e => setBabyForm({ ...babyForm, motherPhone: e.target.value })} required placeholder="+221 77 450 88 99" />
+              </div>
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label small fw-bold">Canal de relance privilégié</label>
+              <select className="form-select fw-semibold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={babyForm.reminderChannel} onChange={e => setBabyForm({ ...babyForm, reminderChannel: e.target.value })}>
+                <option value="SMS & WhatsApp 💬">💬 SMS & WhatsApp (Recommandé)</option>
+                <option value="SMS uniquement 📱">📱 SMS uniquement</option>
+                <option value="Relance vocale Wolof 🔊">🔊 Relance vocale automatique (Wolof)</option>
+                <option value="Relance vocale Français 🔊">🔊 Relance vocale automatique (Français)</option>
+              </select>
+            </div>
+
+            <div className="form-check form-switch mb-4">
+              <input className="form-check-input" type="checkbox" id="autoRemindersCheck" checked={babyForm.autoReminders} onChange={e => setBabyForm({ ...babyForm, autoReminders: e.target.checked })} style={{ width: '2.5rem', height: '1.25rem', cursor: 'pointer' }} />
+              <label className="form-check-label ms-2 small fw-bold" htmlFor="autoRemindersCheck" style={{ color: 'var(--text-main)', cursor: 'pointer' }}>
+                Activer les relances automatiques H-48 avant chaque RDV (Vaccins PEV & CPN)
+              </label>
+            </div>
+
+            <div className="d-flex justify-content-end gap-2.5 pt-2 border-top" style={{ borderColor: 'var(--border-color)' }}>
+              <button type="button" className="btn px-4 py-2.5 fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.88rem' }} onClick={() => setShowBabyModal(false)}>Annuler</button>
+              <button type="submit" className="btn px-4 py-2.5 fw-bold text-white shadow-sm" style={{ background: '#059669', borderColor: '#059669', borderRadius: '12px', fontSize: '0.9rem' }}>💾 Enregistrer le profil & rappels</button>
+            </div>
+          </form>
+        </div>,
+        document.body
+      )}
 
     </div>
   );
