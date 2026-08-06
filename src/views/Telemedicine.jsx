@@ -1103,10 +1103,10 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                         )}
                       </td>
                       <td className="text-end">
-                        <div className="d-flex gap-1 justify-content-end">
+                        <div className="d-flex flex-column align-items-end justify-content-center" style={{ gap: '0.65rem' }}>
                           <button 
                             type="button" 
-                            style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.5)', borderRadius: '6px', padding: '0.3rem 0.65rem', fontWeight: '700', fontSize: '0.72rem', cursor: 'pointer' }}
+                            style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.5)', borderRadius: '8px', padding: '0.35rem 0.75rem', fontWeight: '700', fontSize: '0.78rem', cursor: 'pointer', marginBottom: '0.4rem', width: '100%', maxWidth: '110px' }}
                             onClick={() => {
                               setQueue(queue.map(item => item.id === p.id ? { ...item, status: 'next' } : item));
                               speakAndToast({
@@ -1124,7 +1124,7 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                           
                           <button 
                             type="button" 
-                            style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '6px', padding: '0.3rem 0.65rem', fontWeight: '700', fontSize: '0.75rem', cursor: 'pointer' }}
+                            style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.35rem 0.75rem', fontWeight: '700', fontSize: '0.78rem', cursor: 'pointer', width: '100%', maxWidth: '110px' }}
                             onClick={() => {
                               setQueue(queue.map(item => item.id === p.id ? { ...item, status: 'called' } : item));
                               handleStartCall(doctorsList.find(d => d.name === p.requested_doctor) || doctorsList[0]);
@@ -1263,10 +1263,10 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                   Retrouvez vos prescriptions certifiées. Scannez le QR Code directement en pharmacie agréée (50% Tiers-Payant).
                 </p>
 
-                <div className="d-flex flex-column gap-2">
+                <div className="d-flex flex-column" style={{ gap: '0.75rem' }}>
                   <button 
                     type="button"
-                    style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.65rem 1rem', fontWeight: '700', width: '100%', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}
+                    style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.65rem 1rem', fontWeight: '700', width: '100%', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)', marginBottom: '0.4rem' }}
                     onClick={() => setActiveModal('prescription')}
                   >
                     💊 Consulter mon ordonnance digitale (PDF & QR)
