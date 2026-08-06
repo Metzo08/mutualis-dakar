@@ -1505,15 +1505,18 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                         {item.q}
                       </strong>
 
-                      <div className="p-3.5 rounded-3 border-start border-4 border-success" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderLeftColor: '#10b981 !important' }}>
-                        <div className="d-flex align-items-center gap-2 mb-2">
-                          <img src="/dr_fatou_diop.png" onError={(e) => { e.target.src = '/mariama_avatar.png'; }} alt="" style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }} />
+                      <div className="p-4 rounded-3 border-start border-4 border-success shadow-sm" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderLeftColor: '#059669 !important', borderRadius: '16px' }}>
+                        <div className="d-flex align-items-center gap-3 mb-3">
+                          <img src="/dr_fatou_diop.png" onError={(e) => { e.target.src = '/mariama_avatar.png'; }} alt="Dr. Fatou Diome" style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #059669' }} />
                           <div>
-                            <strong className="d-block text-success" style={{ fontSize: '0.85rem' }}>{item.doctor}</strong>
-                            <small className="text-muted" style={{ fontSize: '0.7rem' }}>Sage-femme d'État • CHU de Fann</small>
+                            <div className="d-flex align-items-center gap-2 mb-0.5">
+                              <strong className="d-block text-success fw-extrabold" style={{ fontSize: '0.94rem' }}>{item.doctor || 'Sage-femme Fatou Diome'}</strong>
+                              <span className="badge bg-success-subtle text-success px-2 py-0.5 fw-bold" style={{ borderRadius: '6px', fontSize: '0.68rem' }}>🟢 Réponse certifiée</span>
+                            </div>
+                            <small className="text-muted d-block" style={{ fontSize: '0.76rem' }}>Sage-femme d'État • CHU de Fann</small>
                           </div>
                         </div>
-                        <p className="small mb-0" style={{ color: 'var(--text-sub)', lineHeight: '1.6', fontSize: '0.88rem' }}>
+                        <p className="small mb-0 text-secondary" style={{ lineHeight: '1.65', fontSize: '0.9rem' }}>
                           {item.a}
                         </p>
                       </div>
@@ -1613,45 +1616,81 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                     )}
                   </div>
                   
-                  <div className="d-flex flex-column gap-2.5">
+                  <div className="d-flex flex-column gap-3.5">
                     {adviceArticles.map((art) => (
                       <div 
                         key={art.id} 
-                        className="p-3.5 rounded-3 d-flex align-items-center gap-3" 
+                        className="p-4 rounded-4 d-flex flex-column gap-3 shadow-sm" 
                         style={{ 
                           background: 'var(--bg-card-subtle)', 
                           border: '1px solid var(--border-color)', 
+                          borderRadius: '20px',
                           cursor: 'pointer',
-                          transition: 'all 0.2s ease',
-                          borderRadius: '14px'
+                          transition: 'all 0.25 ease'
                         }} 
                         onClick={() => setSelectedAdviceArticle(art)}
-                        onMouseEnter={(e) => e.currentTarget.style.borderColor = '#10b981'}
+                        onMouseEnter={(e) => e.currentTarget.style.borderColor = '#059669'}
                         onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
                       >
-                        <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.12)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', flexShrink: 0 }}>
-                          {art.icon}
+                        <div className="d-flex align-items-start justify-content-between gap-3 flex-wrap">
+                          <div className="d-flex align-items-center gap-3">
+                            <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(5, 150, 105, 0.14)', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem', flexShrink: 0, border: '1px solid rgba(5, 150, 105, 0.25)' }}>
+                              {art.icon}
+                            </div>
+                            <div>
+                              <div className="d-flex align-items-center gap-2 mb-1">
+                                <span className="badge bg-success-subtle text-success fw-bold px-2.5 py-1" style={{ borderRadius: '8px', fontSize: '0.72rem', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981' }}>
+                                  {art.badge}
+                                </span>
+                                <small className="text-muted fw-semibold" style={{ fontSize: '0.75rem' }}>⏱️ {art.readTime}</small>
+                              </div>
+                              <h6 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.02rem', lineHeight: '1.35' }}>
+                                {art.title}
+                              </h6>
+                            </div>
+                          </div>
+
+                          {/* Boutons d'action pour médecin / sage-femme / superadmin */}
+                          {canEditMaternity && (
+                            <div className="d-flex align-items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                              <button 
+                                type="button" 
+                                className="btn btn-sm btn-outline-primary fw-bold d-inline-flex align-items-center gap-1" 
+                                style={{ borderRadius: '10px', padding: '0.35rem 0.75rem', fontSize: '0.78rem' }} 
+                                onClick={() => openEditAdvice(art)}
+                              >
+                                ✏️ Modifier
+                              </button>
+                              <button 
+                                type="button" 
+                                className="btn btn-sm btn-outline-danger fw-bold d-inline-flex align-items-center gap-1" 
+                                style={{ borderRadius: '10px', padding: '0.35rem 0.75rem', fontSize: '0.78rem' }} 
+                                onClick={() => handleDeleteAdvice(art.id)}
+                              >
+                                🗑️ Supprimer
+                              </button>
+                            </div>
+                          )}
                         </div>
 
-                        <div className="flex-grow-1">
-                          <div className="d-flex align-items-center gap-2 mb-0.5">
-                            <span style={{ background: 'rgba(16,185,129,0.15)', color: '#10b981', padding: '0.15rem 0.5rem', borderRadius: '6px', fontSize: '0.68rem', fontWeight: '700' }}>
-                              {art.badge}
-                            </span>
-                            <small className="text-muted" style={{ fontSize: '0.7rem' }}>• {art.readTime}</small>
-                          </div>
-                          <strong className="d-block" style={{ color: 'var(--text-main)', fontSize: '0.88rem', lineHeight: '1.3' }}>{art.title}</strong>
-                          <small style={{ color: 'var(--text-sub)', fontSize: '0.75rem', lineHeight: '1.4' }}>{art.subtitle}</small>
+                        <p className="mb-0 text-muted small" style={{ fontSize: '0.86rem', lineHeight: '1.55' }}>
+                          {art.subtitle}
+                        </p>
+
+                        <div className="pt-2.5 border-top d-flex align-items-center justify-content-between flex-wrap gap-2" style={{ borderColor: 'var(--border-color)' }}>
+                          <small className="text-success fw-bold d-inline-flex align-items-center gap-1.5" style={{ fontSize: '0.78rem' }}>
+                            <span>🛡️</span> Recommandation médicale certifiée UNAMUSC
+                          </small>
+
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-success text-white fw-bold d-inline-flex align-items-center gap-1.5 shadow-sm"
+                            style={{ borderRadius: '12px', background: '#059669', borderColor: '#059669', padding: '0.45rem 1rem', fontSize: '0.82rem' }}
+                            onClick={() => setSelectedAdviceArticle(art)}
+                          >
+                            <span>👉</span> Lire la fiche conseil <span style={{ fontSize: '1rem' }}>›</span>
+                          </button>
                         </div>
-
-                        {canEditMaternity && (
-                          <div className="d-flex gap-1" onClick={(e) => e.stopPropagation()}>
-                            <button type="button" title="Modifier la fiche" style={{ background: 'rgba(59,130,246,0.15)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '8px', padding: '0.3rem 0.5rem', fontSize: '0.75rem', cursor: 'pointer' }} onClick={() => openEditAdvice(art)}>✏️</button>
-                            <button type="button" title="Supprimer la fiche" style={{ background: 'rgba(220,38,38,0.1)', color: '#dc2626', border: '1px solid rgba(220,38,38,0.3)', borderRadius: '8px', padding: '0.3rem 0.5rem', fontSize: '0.75rem', cursor: 'pointer' }} onClick={() => handleDeleteAdvice(art.id)}>🗑</button>
-                          </div>
-                        )}
-
-                        <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '1.1rem' }}>›</span>
                       </div>
                     ))}
                   </div>
