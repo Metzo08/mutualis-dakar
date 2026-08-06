@@ -722,17 +722,17 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               </p>
             </div>
           ) : (
-            <div className="table-responsive">
-              <table className="table table-hover align-middle" style={{ color: 'var(--text-main)' }}>
+            <div className="table-responsive rounded-4 overflow-hidden border" style={{ borderColor: 'var(--border-color)', boxShadow: '0 8px 30px rgba(0,0,0,0.1)' }}>
+              <table className="table align-middle mb-0" style={{ color: 'var(--text-main)', borderCollapse: 'separate', borderSpacing: 0 }}>
                 <thead>
-                  <tr style={{ borderBottom: '2px solid var(--border-color)' }}>
-                    <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Code & Date</th>
-                    <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Assuré</th>
-                    <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Médicaments prescrits</th>
-                    <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Prise en charge CSU</th>
-                    <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Chrono Validité</th>
-                    <th style={{ color: 'var(--text-main)', padding: '0.85rem' }}>Statut</th>
-                    <th style={{ color: 'var(--text-main)', padding: '0.85rem', textAlign: 'right' }}>Actions</th>
+                  <tr style={{ background: 'var(--card-bg)', borderBottom: '2px solid var(--border-color)' }}>
+                    <th style={{ color: 'var(--text-main)', padding: '1rem 0.85rem', borderRight: '1px solid var(--border-color)', fontSize: '0.82rem', fontWeight: '800' }}>Code & date</th>
+                    <th style={{ color: 'var(--text-main)', padding: '1rem 0.85rem', borderRight: '1px solid var(--border-color)', fontSize: '0.82rem', fontWeight: '800' }}>Assuré / bénéficiaire</th>
+                    <th style={{ color: 'var(--text-main)', padding: '1rem 0.85rem', borderRight: '1px solid var(--border-color)', fontSize: '0.82rem', fontWeight: '800' }}>Médicaments prescrits</th>
+                    <th style={{ color: 'var(--text-main)', padding: '1rem 0.85rem', borderRight: '1px solid var(--border-color)', fontSize: '0.82rem', fontWeight: '800' }}>Prise en charge CSU</th>
+                    <th style={{ color: 'var(--text-main)', padding: '1rem 0.85rem', borderRight: '1px solid var(--border-color)', fontSize: '0.82rem', fontWeight: '800' }}>Chrono validité</th>
+                    <th style={{ color: 'var(--text-main)', padding: '1rem 0.85rem', borderRight: '1px solid var(--border-color)', fontSize: '0.82rem', fontWeight: '800' }}>Statut & homologation</th>
+                    <th style={{ color: 'var(--text-main)', padding: '1rem 0.85rem', textAlign: 'right', fontSize: '0.82rem', fontWeight: '800' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -742,82 +742,101 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                       itemsList = typeof ord.items_json === 'string' ? JSON.parse(ord.items_json) : (ord.items_json || []);
                     } catch (e) {}
 
+                    const bInfo = getBeneficiaryInfo(`${ord.first_name} ${ord.last_name}`, ord.cmu_number || activeCmuNumber);
+
                     return (
                       <tr key={ord.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                        <td style={{ padding: '0.85rem' }}>
-                          <code className="px-2 py-1 bg-dark text-success border border-success rounded-3 fw-bold d-inline-block mb-1">
+                        {/* 1. Code & date */}
+                        <td style={{ padding: '1rem 0.85rem', borderRight: '1px solid var(--border-color)', verticalAlign: 'top' }}>
+                          <code className="px-2.5 py-1 bg-dark text-success border border-success rounded-3 fw-bold d-inline-block mb-1" style={{ fontSize: '0.82rem', letterSpacing: '0.5px' }}>
                             {ord.order_code || `ORD-2026-${ord.id}`}
                           </code>
-                          <small className="text-muted d-block">{new Date(ord.created_at).toLocaleDateString('fr-FR')}</small>
+                          <small className="text-muted d-block mt-0.5" style={{ fontSize: '0.78rem' }}>
+                            📅 {new Date(ord.created_at).toLocaleDateString('fr-FR')}
+                          </small>
                         </td>
-                        <td style={{ padding: '1rem 0.85rem', minWidth: '230px', verticalAlign: 'top' }}>
-                          {(() => {
-                            const bInfo = getBeneficiaryInfo(`${ord.first_name} ${ord.last_name}`, ord.cmu_number || activeCmuNumber);
-                            return (
-                              <div className="d-flex flex-column gap-1.5">
-                                <div className="d-flex align-items-center gap-2 flex-wrap">
-                                  <strong style={{ color: 'var(--text-main)', fontSize: '0.95rem', fontWeight: '700' }}>
-                                    {ord.first_name} {ord.last_name}
-                                  </strong>
-                                  {bInfo.index === 1 ? (
-                                    <span className="badge bg-success-subtle text-success border border-success px-2 py-0.5" style={{ fontSize: '0.68rem', borderRadius: '6px' }}>
-                                      Titulaire .1
-                                    </span>
-                                  ) : (
-                                    <span className="badge bg-warning-subtle text-warning border border-warning px-2 py-0.5" style={{ fontSize: '0.68rem', borderRadius: '6px' }}>
-                                      Ayant droit .{bInfo.index}
-                                    </span>
-                                  )}
-                                </div>
 
-                                <div className="d-flex flex-column gap-1 mt-0.5">
-                                  <div className="d-flex align-items-center gap-1.5 flex-wrap">
-                                    <span style={{ color: 'var(--text-sub)', fontSize: '0.76rem', fontWeight: '500' }}>N° CSU :</span>
-                                    <code className="px-2 py-0.5 bg-dark text-success border border-success rounded-2 fw-bold" style={{ fontSize: '0.78rem' }}>
-                                      {bInfo.beneficiaryCode}
-                                    </code>
-                                  </div>
+                        {/* 2. Assuré / bénéficiaire */}
+                        <td style={{ padding: '1rem 0.85rem', borderRight: '1px solid var(--border-color)', verticalAlign: 'top', minWidth: '230px' }}>
+                          <div className="d-flex flex-column" style={{ gap: '0.35rem' }}>
+                            <div className="d-flex align-items-center gap-2 flex-wrap">
+                              <strong style={{ color: 'var(--text-main)', fontSize: '0.96rem', fontWeight: '800' }}>
+                                {ord.first_name} {ord.last_name}
+                              </strong>
+                              {bInfo.index === 1 ? (
+                                <span className="badge bg-success-subtle text-success border border-success px-2 py-0.5" style={{ fontSize: '0.7rem', borderRadius: '6px' }}>
+                                  Titulaire .1
+                                </span>
+                              ) : (
+                                <span className="badge bg-warning-subtle text-warning border border-warning px-2 py-0.5" style={{ fontSize: '0.7rem', borderRadius: '6px' }}>
+                                  Ayant droit .{bInfo.index}
+                                </span>
+                              )}
+                            </div>
 
-                                  <div className="d-flex align-items-center gap-1.5 flex-wrap" style={{ fontSize: '0.74rem' }}>
-                                    <span style={{ color: 'var(--text-sub)' }}>Code adhérent :</span>
-                                    <span className="fw-semibold" style={{ color: 'var(--text-main)' }}>{bInfo.adherentCode}</span>
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })()}
+                            <div className="text-muted" style={{ fontSize: '0.8rem' }}>
+                              <span className="fw-semibold">N° CSU : </span>
+                              <code className="px-2 py-0.5 bg-dark text-success border border-success rounded-2 fw-bold" style={{ fontSize: '0.78rem' }}>
+                                {bInfo.beneficiaryCode}
+                              </code>
+                            </div>
+
+                            <div className="text-muted" style={{ fontSize: '0.78rem' }}>
+                              <span className="fw-semibold">Code adhérent : </span>
+                              <span className="fw-bold" style={{ color: 'var(--text-main)' }}>{bInfo.adherentCode}</span>
+                            </div>
+                          </div>
                         </td>
-                        <td style={{ padding: '0.85rem', maxWidth: '240px' }}>
-                          {itemsList.map((i, idx) => (
-                            <span key={idx} className="badge bg-dark-subtle text-body border me-1 my-1 p-2" style={{ borderRadius: '6px' }}>
-                              💊 {i.name} (x{i.qty})
-                            </span>
-                          ))}
+
+                        {/* 3. Médicaments prescrits */}
+                        <td style={{ padding: '1rem 0.85rem', borderRight: '1px solid var(--border-color)', verticalAlign: 'top', maxWidth: '240px' }}>
+                          <div className="d-flex flex-wrap gap-1">
+                            {itemsList.map((i, idx) => (
+                              <span key={idx} className="badge bg-dark-subtle text-body border me-1 my-1 p-2" style={{ borderRadius: '6px', fontSize: '0.78rem' }}>
+                                💊 {i.name} (x{i.qty})
+                              </span>
+                            ))}
+                          </div>
                         </td>
-                        <td style={{ padding: '0.85rem' }}>
-                          <span className="fw-bold text-success d-block">{Number(ord.total_amount * 0.8).toLocaleString()} FCFA (80%)</span>
-                          <small className="text-muted">Total: {Number(ord.total_amount).toLocaleString()} FCFA</small>
+
+                        {/* 4. Prise en charge CSU */}
+                        <td style={{ padding: '1rem 0.85rem', borderRight: '1px solid var(--border-color)', verticalAlign: 'top' }}>
+                          <div className="d-flex flex-column gap-1">
+                            <span className="text-muted fw-bold" style={{ fontSize: '0.72rem' }}>Accord CSU :</span>
+                            <strong className="text-success fw-extrabold" style={{ fontSize: '0.98rem' }}>
+                              {Number(ord.total_amount * 0.8).toLocaleString()} FCFA (80%)
+                            </strong>
+                            <small className="text-muted" style={{ fontSize: '0.75rem' }}>
+                              Total public : {Number(ord.total_amount).toLocaleString()} FCFA
+                            </small>
+                          </div>
                         </td>
-                        <td style={{ padding: '0.85rem' }}>
-                          <span className="badge bg-warning text-dark px-2.5 py-1 fw-bold" style={{ borderRadius: '6px' }}>
-                            ⏳ Validité 48 heures
+
+                        {/* 5. Chrono validité */}
+                        <td style={{ padding: '1rem 0.85rem', borderRight: '1px solid var(--border-color)', verticalAlign: 'top' }}>
+                          <span className="badge bg-warning text-dark px-2.5 py-1.5 fw-bold d-inline-block" style={{ borderRadius: '8px', fontSize: '0.76rem' }}>
+                            ⏳ Validité 48h
                           </span>
                         </td>
-                        <td style={{ padding: '0.85rem' }}>
-                          {ord.status === 'active' && <span className="badge bg-success px-3 py-1.5" style={{ borderRadius: '12px' }}>✅ Actif (Prêt)</span>}
-                          {ord.status === 'used' && <span className="badge bg-secondary px-3 py-1.5" style={{ borderRadius: '12px' }}>🔒 Délivré en pharmacie</span>}
-                          {ord.status === 'expired' && <span className="badge bg-danger px-3 py-1.5" style={{ borderRadius: '12px' }}>⚠️ Expiré</span>}
-                          {ord.status === 'pending_review' && <span className="badge px-3 py-1.5" style={{ borderRadius: '12px', background: '#f59e0b', color: '#0f172a' }}>⏳ En attente validation ordonnance</span>}
+
+                        {/* 6. Statut & homologation */}
+                        <td style={{ padding: '1rem 0.85rem', borderRight: '1px solid var(--border-color)', verticalAlign: 'top' }}>
+                          {ord.status === 'active' && <span className="badge bg-success px-3 py-1.5 text-white fw-bold d-inline-block" style={{ borderRadius: '12px', fontSize: '0.78rem' }}>✅ Actif (Prêt)</span>}
+                          {ord.status === 'used' && <span className="badge bg-secondary px-3 py-1.5 text-white fw-bold d-inline-block" style={{ borderRadius: '12px', fontSize: '0.78rem' }}>🔒 Délivré en pharmacie</span>}
+                          {ord.status === 'expired' && <span className="badge bg-danger px-3 py-1.5 text-white fw-bold d-inline-block" style={{ borderRadius: '12px', fontSize: '0.78rem' }}>⚠️ Expiré</span>}
+                          {ord.status === 'pending_review' && <span className="badge px-3 py-1.5 fw-bold d-inline-block" style={{ borderRadius: '12px', background: '#f59e0b', color: '#0f172a', fontSize: '0.78rem' }}>⏳ En attente validation ordonnance</span>}
                         </td>
-                        <td style={{ textAlign: 'right', padding: '0.85rem' }}>
-                          <div className="d-flex flex-column align-items-end justify-content-center" style={{ gap: '0.65rem' }}>
+
+                        {/* 7. Actions */}
+                        <td style={{ textAlign: 'right', padding: '1rem 0.85rem', verticalAlign: 'top', whiteSpace: 'nowrap' }}>
+                          <div className="d-flex flex-column align-items-end justify-content-center gap-2" style={{ whiteSpace: 'nowrap' }}>
                             <button
                               type="button"
-                              className="btn btn-sm btn-outline-success fw-bold"
+                              className="btn btn-sm btn-outline-success fw-bold px-3 py-1.5"
                               onClick={() => generateAndPrintPurchaseOrderPDF(ord)}
-                              style={{ borderRadius: '8px', marginBottom: '0.4rem' }}
+                              style={{ borderRadius: '8px', fontSize: '0.8rem' }}
                             >
-                              📄 Imprimer Bon PDF
+                              📄 Imprimer bon PDF
                             </button>
 
                             {/* Validation délivrance — Pharmacien / SuperAdmin uniquement sur bons actifs */}
@@ -826,7 +845,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                                 type="button"
                                 className="btn btn-sm text-white fw-bold px-3 py-1.5"
                                 onClick={() => openPharmacistEditModal(ord)}
-                                style={{ background: '#059669', border: 'none', borderRadius: '8px', marginBottom: '0.4rem' }}
+                                style={{ background: '#059669', border: 'none', borderRadius: '8px', fontSize: '0.8rem' }}
                               >
                                 💊 Valider délivrance pharmacie
                               </button>
@@ -839,7 +858,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                                   type="button"
                                   className="btn btn-sm text-white fw-bold px-3 py-1.5"
                                   onClick={() => handleApproveOrder(ord.id)}
-                                  style={{ background: '#10b981', border: 'none', borderRadius: '8px', marginRight: '0.5rem' }}
+                                  style={{ background: '#10b981', border: 'none', borderRadius: '8px', fontSize: '0.8rem' }}
                                 >
                                   ✅ Valider l'ordonnance
                                 </button>
@@ -847,7 +866,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                                   type="button"
                                   className="btn btn-sm fw-bold px-3 py-1.5"
                                   onClick={() => { setValidatingOrder(ord); setAgentRejectNote(''); }}
-                                  style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px' }}
+                                  style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '0.8rem' }}
                                 >
                                   ❌ Rejeter
                                 </button>
