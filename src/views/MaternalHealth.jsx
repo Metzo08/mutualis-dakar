@@ -2269,18 +2269,54 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
               <button type="button" className="btn-close" onClick={() => setShowAddVaccineModal(false)}></button>
             </div>
 
-            {/* BANNIÈRE PROFIL BÉBÉ & CALCUL D'ÂGE AUTOMATIQUE (AUCUNE SAISIE DATE NAISSANCE REQUISE) */}
-            <div className="p-3 rounded-3 mb-3.5 d-flex align-items-center justify-content-between flex-wrap gap-2" style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.35)' }}>
-              <div className="d-flex align-items-center gap-2.5">
-                <span className="fs-4">👶</span>
+            {/* BANNIÈRE PROFIL BÉBÉ & CALCUL D'ÂGE AUTOMATIQUE (DESIGN ÉMERAUD & GLASSMORPHISM) */}
+            <div className="p-3.5 rounded-4 mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3" 
+                 style={{ 
+                   background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.12) 0%, rgba(15, 23, 42, 0.55) 100%)', 
+                   border: '1.5px solid rgba(16, 185, 129, 0.4)', 
+                   borderRadius: '20px',
+                   boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
+                 }}>
+              <div className="d-flex align-items-center gap-3">
+                <div style={{
+                  width: '46px',
+                  height: '46px',
+                  borderRadius: '14px',
+                  background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                  color: '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1.5rem',
+                  flexShrink: 0,
+                  boxShadow: '0 4px 14px rgba(5, 150, 105, 0.35)'
+                }}>
+                  👶
+                </div>
                 <div>
-                  <strong className="d-block" style={{ fontSize: '0.92rem', color: 'var(--text-main)' }}>Bébé : {babyProfile.name}</strong>
-                  <small className="text-success fw-bold" style={{ fontSize: '0.78rem' }}>Né le {new Date(babyProfile.birthDate).toLocaleDateString('fr-FR')} (Enregistré)</small>
+                  <div className="d-flex align-items-center gap-2 mb-0.5">
+                    <span className="small text-muted fw-bold" style={{ fontSize: '0.76rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Bébé rattaché</span>
+                    <span className="badge bg-success-subtle text-success px-2 py-0.5 fw-bold" style={{ borderRadius: '6px', fontSize: '0.7rem' }}>🟢 Profil certifié</span>
+                  </div>
+                  <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.05rem', color: 'var(--text-main)' }}>
+                    {babyProfile.name}
+                  </h6>
+                  <small className="text-muted" style={{ fontSize: '0.82rem' }}>
+                    🗓️ Né le <strong className="text-success">{new Date(babyProfile.birthDate).toLocaleDateString('fr-FR')}</strong> (Date de naissance enregistrée)
+                  </small>
                 </div>
               </div>
-              <span className="badge bg-success text-white fw-bold px-3 py-2 shadow-sm" style={{ borderRadius: '10px', fontSize: '0.82rem' }}>
-                ⚡ Âge calculé automatique : {calculateBabyAge(babyProfile.birthDate)}
-              </span>
+
+              <div className="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-3 text-white fw-bold shadow-sm"
+                   style={{ 
+                     background: 'linear-gradient(135deg, #059669 0%, #047857 100%)', 
+                     borderRadius: '14px', 
+                     fontSize: '0.85rem',
+                     border: '1px solid rgba(255,255,255,0.2)'
+                   }}>
+                <span>⚡</span>
+                <span>Âge calculé automatique : <strong>{calculateBabyAge(babyProfile.birthDate)}</strong></span>
+              </div>
             </div>
 
             <div className="row g-3 mb-3">
@@ -2343,18 +2379,54 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
               <button type="button" className="btn-close" onClick={() => { setEditingVaccineId(null); setEditVaccineForm(null); }}></button>
             </div>
 
-            {/* BANNIÈRE PROFIL BÉBÉ & CALCUL D'ÂGE AUTOMATIQUE */}
-            <div className="p-3 rounded-3 mb-3.5 d-flex align-items-center justify-content-between flex-wrap gap-2" style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.35)' }}>
-              <div className="d-flex align-items-center gap-2.5">
-                <span className="fs-4">👶</span>
+            {/* BANNIÈRE PROFIL BÉBÉ & CALCUL D'ÂGE AUTOMATIQUE (DESIGN ÉMERAUD & GLASSMORPHISM) */}
+            <div className="p-3.5 rounded-4 mb-4 d-flex align-items-center justify-content-between flex-wrap gap-3" 
+                 style={{ 
+                   background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.12) 0%, rgba(15, 23, 42, 0.55) 100%)', 
+                   border: '1.5px solid rgba(16, 185, 129, 0.4)', 
+                   borderRadius: '20px',
+                   boxShadow: '0 8px 24px rgba(0,0,0,0.12)'
+                 }}>
+              <div className="d-flex align-items-center gap-3">
+                <div style={{
+                  width: '46px',
+                  height: '46px',
+                  borderRadius: '14px',
+                  background: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
+                  color: '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1.5rem',
+                  flexShrink: 0,
+                  boxShadow: '0 4px 14px rgba(5, 150, 105, 0.35)'
+                }}>
+                  👶
+                </div>
                 <div>
-                  <strong className="d-block" style={{ fontSize: '0.92rem', color: 'var(--text-main)' }}>Bébé : {babyProfile.name}</strong>
-                  <small className="text-success fw-bold" style={{ fontSize: '0.78rem' }}>Né le {new Date(babyProfile.birthDate).toLocaleDateString('fr-FR')}</small>
+                  <div className="d-flex align-items-center gap-2 mb-0.5">
+                    <span className="small text-muted fw-bold" style={{ fontSize: '0.76rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Bébé rattaché</span>
+                    <span className="badge bg-success-subtle text-success px-2 py-0.5 fw-bold" style={{ borderRadius: '6px', fontSize: '0.7rem' }}>🟢 Profil certifié</span>
+                  </div>
+                  <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.05rem', color: 'var(--text-main)' }}>
+                    {babyProfile.name}
+                  </h6>
+                  <small className="text-muted" style={{ fontSize: '0.82rem' }}>
+                    🗓️ Né le <strong className="text-success">{new Date(babyProfile.birthDate).toLocaleDateString('fr-FR')}</strong> (Date de naissance enregistrée)
+                  </small>
                 </div>
               </div>
-              <span className="badge bg-success text-white fw-bold px-3 py-2 shadow-sm" style={{ borderRadius: '10px', fontSize: '0.82rem' }}>
-                ⚡ Âge calculé : {calculateBabyAge(babyProfile.birthDate)}
-              </span>
+
+              <div className="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-3 text-white fw-bold shadow-sm"
+                   style={{ 
+                     background: 'linear-gradient(135deg, #059669 0%, #047857 100%)', 
+                     borderRadius: '14px', 
+                     fontSize: '0.85rem',
+                     border: '1px solid rgba(255,255,255,0.2)'
+                   }}>
+                <span>⚡</span>
+                <span>Âge calculé automatique : <strong>{calculateBabyAge(babyProfile.birthDate)}</strong></span>
+              </div>
             </div>
 
             <div className="row g-3 mb-3">
