@@ -508,10 +508,10 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
             <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 border-bottom pb-3" style={{ borderColor: 'var(--border-color)' }}>
               <div>
                 <h4 className="fw-bold mb-1 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-                  <span>🏛️</span> Module d'Administration de l'Union Départementale (UDMS)
+                  <span>🏛️</span> Module d'administration de l'union départementale (UDMS)
                 </h4>
                 <p className="small text-muted mb-0">
-                  Chaque administrateur d'Union Départementale peut agréer et créer des médecins, pharmacies, labos et centres de radiologie avec leurs rôles.
+                  Chaque administrateur d'union départementale peut agréer et créer des médecins, pharmacies, labos et centres de radiologie avec leurs rôles.
                 </p>
               </div>
 
@@ -548,12 +548,12 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
                 <div className="col-lg-5">
                   <div className="p-4 rounded-4 border" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
                     <h5 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--primary)' }}>
-                      <span>✍️</span> Enregistrer un Prestataire / Médecin
+                      <span>✍️</span> Enregistrer un prestataire / médecin
                     </h5>
 
                     <form onSubmit={handleCreatePrestataireByUdms}>
                       <div className="mb-3">
-                        <label className="form-label small fw-semibold">Union Départementale (UDMS)</label>
+                        <label className="form-label small fw-semibold">Union départementale (UDMS)</label>
                         <select 
                           className="form-select input fw-bold"
                           value={newPrestataire.udms}
@@ -569,7 +569,7 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
                       </div>
 
                       <div className="mb-3">
-                        <label className="form-label small fw-semibold">Nom du Praticien ou de la Structure *</label>
+                        <label className="form-label small fw-semibold">Nom du praticien ou de la structure *</label>
                         <input 
                           type="text" 
                           className="form-control input fw-bold"
@@ -582,7 +582,7 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
                       </div>
 
                       <div className="mb-3">
-                        <label className="form-label small fw-semibold">Rôle & Spécialité attribués *</label>
+                        <label className="form-label small fw-semibold">Rôle & spécialité attribués *</label>
                         <select 
                           className="form-select input fw-bold"
                           value={newPrestataire.role}
@@ -600,7 +600,7 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
 
                       <div className="row g-2 mb-3">
                         <div className="col-6">
-                          <label className="form-label small fw-semibold">N° Agrément UNAMUSC *</label>
+                          <label className="form-label small fw-semibold">N° agrément UNAMUSC *</label>
                           <input 
                             type="text" 
                             className="form-control input"
@@ -612,7 +612,7 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
                           />
                         </div>
                         <div className="col-6">
-                          <label className="form-label small fw-semibold">Taux de Prise en charge</label>
+                          <label className="form-label small fw-semibold">Taux de prise en charge</label>
                           <select 
                             className="form-select input"
                             value={newPrestataire.rate}
@@ -654,7 +654,7 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
                       </div>
 
                       <div className="mb-4">
-                        <label className="form-label small fw-semibold">Adresse Email de connexion</label>
+                        <label className="form-label small fw-semibold">Adresse email de connexion</label>
                         <input 
                           type="email" 
                           className="form-control input"
@@ -670,7 +670,7 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
                         className="btn text-white fw-bold w-100 py-2.5 shadow-sm"
                         style={{ background: 'var(--primary)', borderColor: 'var(--primary)', borderRadius: '12px', fontSize: '0.95rem' }}
                       >
-                        ➕ Enregistrer & Agréer le Prestataire
+                        ➕ Enregistrer & agréer le prestataire
                       </button>
                     </form>
                   </div>
@@ -687,7 +687,7 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
                           Convention & agrément UNAMUSC — {partner?.structureName || 'Centre Hospitalier Abass Ndao'}
                         </h4>
                         <p className="small text-muted mb-0">
-                          Renseignements officiels de conventionnement de votre structure avec l'Union Départementale (UDMS Dakar).
+                          Renseignements officiels de conventionnement de votre structure avec l'union départementale (UDMS Dakar).
                         </p>
                       </div>
                       <span className="badge bg-success text-white px-3 py-2 fw-bold" style={{ borderRadius: '12px', fontSize: '0.85rem' }}>
@@ -698,28 +698,28 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
                     <div className="row g-3 my-1">
                       <div className="col-md-3 col-6">
                         <div className="p-3.5 rounded-3 border h-100" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', padding: '1rem 1.15rem' }}>
-                          <small className="text-muted fw-semibold d-block mb-1" style={{ fontSize: '0.78rem' }}>Structure sanitaire :</small>
+                          <small className="text-muted fw-semibold d-block mb-1.5" style={{ fontSize: '0.78rem' }}>Structure sanitaire :</small>
                           <strong className="text-primary d-block mb-1" style={{ fontSize: '0.95rem' }}>{partner?.structureName || 'Centre Hospitalier Abass Ndao'}</strong>
                           <small className="text-muted d-block" style={{ fontSize: '0.8rem' }}>{partner?.name || 'Dr. Cheikh Anta Diop'}</small>
                         </div>
                       </div>
                       <div className="col-md-3 col-6">
                         <div className="p-3.5 rounded-3 border h-100" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', padding: '1rem 1.15rem' }}>
-                          <small className="text-muted fw-semibold d-block mb-1" style={{ fontSize: '0.78rem' }}>Code agrément officiel :</small>
+                          <small className="text-muted fw-semibold d-block mb-1.5" style={{ fontSize: '0.78rem' }}>Code agrément officiel :</small>
                           <code className="text-success fw-bold d-block mb-1 fs-6" style={{ letterSpacing: '0.5px' }}>{partner?.cnom || 'AGR-2026-DKR-101'}</code>
                           <small className="text-muted d-block" style={{ fontSize: '0.8rem' }}>UDMS : UDMS Dakar</small>
                         </div>
                       </div>
                       <div className="col-md-3 col-6">
                         <div className="p-3.5 rounded-3 border h-100" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', padding: '1rem 1.15rem' }}>
-                          <small className="text-muted fw-semibold d-block mb-1" style={{ fontSize: '0.78rem' }}>Taux tiers-payant accordé :</small>
+                          <small className="text-muted fw-semibold d-block mb-1.5" style={{ fontSize: '0.78rem' }}>Taux tiers-payant accordé :</small>
                           <strong className="text-success d-block mb-1 fs-5">80% à 100%</strong>
                           <small className="text-muted d-block" style={{ fontSize: '0.8rem' }}>Remboursement direct 72h</small>
                         </div>
                       </div>
                       <div className="col-md-3 col-6">
                         <div className="p-3.5 rounded-3 border h-100" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', padding: '1rem 1.15rem' }}>
-                          <small className="text-muted fw-semibold d-block mb-1" style={{ fontSize: '0.78rem' }}>Rôle d'accès système :</small>
+                          <small className="text-muted fw-semibold d-block mb-1.5" style={{ fontSize: '0.78rem' }}>Rôle d'accès système :</small>
                           <span className="badge bg-secondary-subtle text-secondary fw-bold mb-1 d-inline-block px-2.5 py-1" style={{ borderRadius: '6px', fontSize: '0.78rem' }}>
                             👁️ Lecteur seul (praticien)
                           </span>
@@ -736,7 +736,7 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
                 <div className="p-4 rounded-4 border h-100 d-flex flex-column" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
                   <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                     <h5 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-                      <span>📋</span> Prestataires Agréés ({filteredPrestataires.length})
+                      <span>📋</span> Prestataires agréés ({filteredPrestataires.length})
                     </h5>
 
                     <div className="d-flex gap-2">
@@ -760,9 +760,9 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
                     <table className="table table-hover align-middle mb-0" style={{ color: 'var(--text-main)' }}>
                       <thead>
                         <tr style={{ background: 'var(--card-bg)', borderBottom: '2px solid var(--border-color)' }}>
-                          <th style={{ padding: '0.75rem' }}>Praticien / Structure</th>
-                          <th style={{ padding: '0.75rem' }}>Rôle & Spécialité</th>
-                          <th style={{ padding: '0.75rem' }}>Union & Agrément</th>
+                          <th style={{ padding: '0.75rem' }}>Praticien / structure</th>
+                          <th style={{ padding: '0.75rem' }}>Rôle & spécialité</th>
+                          <th style={{ padding: '0.75rem' }}>Union & agrément</th>
                           <th style={{ padding: '0.75rem' }}>Taux</th>
                           <th style={{ padding: '0.75rem', textAlign: 'right' }}>Statut</th>
                         </tr>
