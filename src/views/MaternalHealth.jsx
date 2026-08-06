@@ -157,6 +157,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
   const [showAskMidwifeModal, setShowAskMidwifeModal] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [selectedCpnForBooking, setSelectedCpnForBooking] = useState(null);
+  const [bookingDate, setBookingDate] = useState('2026-08-15');
 
   // Dynamic Vitals State (Poids & Tension)
   const [vitals, setVitals] = useState(() => {
@@ -944,14 +945,32 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
             <div className="col-lg-8">
               <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
                 
-                <div className="d-flex justify-content-between align-items-center mb-4">
-                  <div>
-                    <h5 className="fw-bold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.2rem' }}>Calendrier des consultations prénatales</h5>
-                    <small style={{ color: 'var(--text-sub)' }}>Progression actuelle : <span className="text-success fw-bold">75% complété</span></small>
-                  </div>
-                  <span style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', border: '1px solid #10b981', borderRadius: '20px', padding: '0.35rem 0.85rem', fontSize: '0.78rem', fontWeight: '700' }}>
-                    ✔ À jour
-                  </span>
+                <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                  {(() => {
+                    const completedCount = cpnVisits.filter(c => c.completed).length;
+                    const totalCount = cpnVisits.length;
+                    const percentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+                    return (
+                      <div className="w-100">
+                        <div className="d-flex justify-content-between align-items-center mb-1">
+                          <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.2rem' }}>Calendrier des consultations prénatales & post-natales</h5>
+                          <span style={{ background: percentage === 100 ? 'rgba(16, 185, 129, 0.2)' : 'rgba(59, 130, 246, 0.2)', color: percentage === 100 ? '#10b981' : '#3b82f6', border: `1px solid ${percentage === 100 ? '#10b981' : '#3b82f6'}`, borderRadius: '20px', padding: '0.35rem 0.85rem', fontSize: '0.78rem', fontWeight: '700' }}>
+                            {percentage === 100 ? '✔ Toutes effectuées' : `⌛ En cours (${completedCount}/${totalCount})`}
+                          </span>
+                        </div>
+
+                        <div className="d-flex align-items-center justify-content-between mt-1">
+                          <small style={{ color: 'var(--text-sub)' }}>
+                            Progression actuelle : <span className="text-success fw-extrabold" style={{ fontSize: '0.95rem' }}>{percentage}% complété</span> ({completedCount} sur {totalCount} consultations validées)
+                          </small>
+                        </div>
+
+                        <div className="progress mt-2" style={{ height: '8px', background: 'var(--bg-card-subtle)', borderRadius: '10px' }}>
+                          <div className="progress-bar bg-success" style={{ width: `${percentage}%`, borderRadius: '10px', transition: 'width 0.4s ease' }}></div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Timeline Items */}
@@ -967,7 +986,32 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                           <input type="text" className="form-control form-control-sm" placeholder="Titre CPN" value={editCpnForm.title} onChange={(e) => setEditCpnForm({ ...editCpnForm, title: e.target.value })} required />
                           <textarea className="form-control form-control-sm" rows={2} placeholder="Description / observations cliniques" value={editCpnForm.desc} onChange={(e) => setEditCpnForm({ ...editCpnForm, desc: e.target.value })} />
                           <div className="d-flex gap-2">
-                            <input type="text" className="form-control form-control-sm" placeholder="Date (JJ/MM/AAAA)" value={editCpnForm.date} onChange={(e) => setEditCpnForm({ ...editCpnForm, date: e.target.value })} style={{ maxWidth: '140px' }} />
+                            <div className="input-group input-group-sm" style={{ maxWidth: '210px' }}>
+                              <input type="text" className="form-control form-control-sm fw-bold" placeholder="Date (ex: 12/08/2026)" value={editCpnForm.date} onChange={(e) => setEditCpnForm({ ...editCpnForm, date: e.target.value })} />
+                              <input 
+                                type="date" 
+                                id={`cpn-date-inline-${item.id}`} 
+                                style={{ display: 'none' }} 
+                                onChange={(e) => {
+                                  if (e.target.value) {
+                                    const parts = e.target.value.split('-');
+                                    const formatted = `${parts[2]}/${parts[1]}/${parts[0]}`;
+                                    setEditCpnForm({ ...editCpnForm, date: formatted });
+                                  }
+                                }} 
+                              />
+                              <button 
+                                type="button" 
+                                className="btn btn-sm btn-outline-success fw-bold"
+                                onClick={() => {
+                                  const picker = document.getElementById(`cpn-date-inline-${item.id}`);
+                                  if (picker && picker.showPicker) picker.showPicker();
+                                }}
+                                title="Sélectionner sur le calendrier"
+                              >
+                                📅
+                              </button>
+                            </div>
                             <input type="text" className="form-control form-control-sm" placeholder="Praticien" value={editCpnForm.doctor} onChange={(e) => setEditCpnForm({ ...editCpnForm, doctor: e.target.value })} />
                           </div>
                           <div className="d-flex gap-2">
@@ -1825,13 +1869,39 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
               Sélectionnez la structure de santé agréée pour la consultation prénatale.
             </p>
             
-            <div className="mb-4">
+            <div className="mb-3">
               <label className="form-label fw-bold mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.9rem' }}>Structure de santé *</label>
-              <select className="form-select" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.7rem 1rem', fontSize: '0.9rem' }}>
+              <select className="form-select fw-semibold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.7rem 1rem', fontSize: '0.9rem' }}>
                 <option value="1">Centre de Santé Gaspard Camara (Dakar)</option>
                 <option value="2">Centre de Santé de Pikine</option>
                 <option value="3">Hôpital Universitaire Fann</option>
+                <option value="4">Centre Hospitalier Abass Ndao</option>
               </select>
+            </div>
+
+            <div className="mb-4">
+              <label className="form-label fw-bold mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.9rem' }}>Date souhaitée pour la consultation *</label>
+              <div className="input-group">
+                <input 
+                  type="date" 
+                  className="form-control fw-bold" 
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px 0 0 12px', padding: '0.7rem 1rem', fontSize: '0.95rem' }} 
+                  value={bookingDate} 
+                  onChange={(e) => setBookingDate(e.target.value)} 
+                  required 
+                />
+                <button 
+                  type="button" 
+                  className="btn btn-outline-success fw-bold d-flex align-items-center gap-1.5 px-3"
+                  style={{ borderRadius: '0 12px 12px 0' }}
+                  onClick={(e) => {
+                    const input = e.currentTarget.previousElementSibling;
+                    if (input && input.showPicker) input.showPicker();
+                  }}
+                >
+                  <span>📅</span> Calendrier
+                </button>
+              </div>
             </div>
 
             <div className="d-flex justify-content-end gap-3">
@@ -1999,8 +2069,34 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
             </div>
             <div className="row g-2 mb-2">
               <div className="col-6">
-                <label className="form-label small fw-bold">Date</label>
-                <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={newCpnForm.date} onChange={(e) => setNewCpnForm({ ...newCpnForm, date: e.target.value })} placeholder="JJ/MM/AAAA" />
+                <label className="form-label small fw-bold">Date de consultation *</label>
+                <div className="input-group input-group-sm">
+                  <input type="text" className="form-control fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px 0 0 10px' }} value={newCpnForm.date} onChange={(e) => setNewCpnForm({ ...newCpnForm, date: e.target.value })} placeholder="ex: 15/09/2026" required />
+                  <input 
+                    type="date" 
+                    id="add-cpn-native-picker" 
+                    style={{ display: 'none' }} 
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        const parts = e.target.value.split('-');
+                        const formatted = `${parts[2]}/${parts[1]}/${parts[0]}`;
+                        setNewCpnForm({ ...newCpnForm, date: formatted });
+                      }
+                    }} 
+                  />
+                  <button 
+                    type="button" 
+                    className="btn btn-outline-success fw-bold"
+                    style={{ borderRadius: '0 10px 10px 0' }}
+                    onClick={() => {
+                      const picker = document.getElementById('add-cpn-native-picker');
+                      if (picker && picker.showPicker) picker.showPicker();
+                    }}
+                    title="Ouvrir le calendrier"
+                  >
+                    📅
+                  </button>
+                </div>
               </div>
               <div className="col-6">
                 <label className="form-label small fw-bold">Statut</label>
