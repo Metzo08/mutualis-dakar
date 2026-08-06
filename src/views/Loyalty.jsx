@@ -62,13 +62,21 @@ export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
   };
 
   const defaultLoyaltyData = {
+    totalPoints: 450,
     points: 450,
     level: 'Argent 🥈',
-    nextBadge: 'Citoyen Solidaire Or 🥇',
+    nextBadge: {
+      id: 4,
+      name: 'Champion Régional Or',
+      icon: '👑',
+      description: 'Cumuler 1000 points de fidélité pour débloquer le niveau Or',
+      threshold: 1000,
+      progress: 45
+    },
     unlockedCount: 3,
-    totalBadges: 5,
+    totalBadges: 4,
     badges: [
-      { id: 1, name: 'Assuré Fidéle 2026', icon: '🏆', unlocked: true, description: 'Cotisation 2026 intégralement à jour' },
+      { id: 1, name: 'Assuré Fidèle 2026', icon: '🏆', unlocked: true, description: 'Cotisation 2026 intégralement à jour' },
       { id: 2, name: 'Prévention Santé', icon: '🩺', unlocked: true, description: 'Bilan de santé annuel effectué' },
       { id: 3, name: 'Parrain Solidaire', icon: '🤝', unlocked: true, description: '1 famille parrainée dans le département' },
       { id: 4, name: 'Champion Régional Or', icon: '👑', unlocked: false, description: 'Cumuler 1000 points de fidélité' }
@@ -97,9 +105,19 @@ export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
         return res.json();
       })
       .then((d) => {
-        if (d && !d.error && (d.points !== undefined || (d.history && d.history.length > 0))) {
-          d.badges = d.badges || [];
-          d.history = d.history || [];
+        if (d && !d.error && (d.points !== undefined || d.totalPoints !== undefined || (d.history && d.history.length > 0))) {
+          d.totalPoints = d.totalPoints ?? d.points ?? 450;
+          d.badges = d.badges || defaultLoyaltyData.badges;
+          d.history = d.history || defaultLoyaltyData.history;
+          if (typeof d.nextBadge === 'string') {
+            d.nextBadge = {
+              name: d.nextBadge,
+              icon: '👑',
+              description: 'Cumuler 1000 points de fidélité',
+              threshold: 1000,
+              progress: Math.min(100, Math.round((d.totalPoints / 1000) * 100))
+            };
+          }
           setData(d);
         } else {
           setData(defaultLoyaltyData);
@@ -134,6 +152,17 @@ export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
     return <div className="card text-center" style={{ padding: '3rem' }}>{t.noData}</div>;
   }
 
+  const currentPoints = data.totalPoints ?? data.points ?? 450;
+  const currentLevel = data.level || 'Argent 🥈';
+  const nextBadgeObj = typeof data.nextBadge === 'object' && data.nextBadge !== null ? data.nextBadge : {
+    name: typeof data.nextBadge === 'string' ? data.nextBadge : 'Champion Régional Or',
+    icon: '👑',
+    description: 'Cumuler 1000 points de fidélité',
+    threshold: 1000,
+    progress: Math.min(100, Math.round((currentPoints / 1000) * 100))
+  };
+  const progressPercent = nextBadgeObj.progress ?? Math.min(100, Math.round((currentPoints / (nextBadgeObj.threshold || 1000)) * 100));
+
   return (
     <div className="loyalty-view fade-in-up">
       {/* Banner */}
@@ -165,25 +194,25 @@ export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
       {/* Carte solde de points + niveau */}
       <div className="card" style={{ padding: '2rem', marginBottom: '1.5rem', background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.82) 0%, rgba(4, 120, 87, 0.88) 100%), url("/bg_health_heart.png") center/cover no-repeat', color: '#fff', textAlign: 'center', borderRadius: '16px', overflow: 'hidden', position: 'relative', border: '1px solid rgba(255,255,255,0.2)' }}>
         <div style={{ fontSize: '0.9rem', opacity: 0.9, marginBottom: '0.5rem' }}>{t.points}</div>
-        <div style={{ fontSize: '3rem', fontWeight: '900', marginBottom: '0.5rem' }}>{data.totalPoints}</div>
+        <div style={{ fontSize: '3rem', fontWeight: '900', marginBottom: '0.5rem' }}>{currentPoints}</div>
         <div style={{ display: 'inline-block', background: 'rgba(255,255,255,0.2)', padding: '0.4rem 1.5rem', borderRadius: '20px', fontWeight: '700' }}>
-          {t.levels[data.level] || data.level}
+          {t.levels[currentLevel] || currentLevel}
         </div>
       </div>
 
       {/* Prochain badge */}
-      {data.nextBadge && (
+      {nextBadgeObj && (
         <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem', borderLeft: '4px solid #f59e0b' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{ fontSize: '2.5rem', opacity: 0.5 }}>{data.nextBadge.icon}</div>
+            <div style={{ fontSize: '2.5rem', opacity: 0.8 }}>{nextBadgeObj.icon || '👑'}</div>
             <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: '700', fontSize: '1rem' }}>{formatBadgeName(data.nextBadge.name)}</div>
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>{data.nextBadge.description}</div>
-              <div style={{ background: 'var(--bg-secondary)', borderRadius: '10px', height: '8px', overflow: 'hidden' }}>
-                <div style={{ background: '#f59e0b', height: '100%', width: `${data.nextBadge.progress}%`, transition: 'width 0.5s' }} />
+              <div style={{ fontWeight: '700', fontSize: '1rem' }}>{formatBadgeName(nextBadgeObj.name)}</div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>{nextBadgeObj.description || 'Cumuler des points de fidélité'}</div>
+              <div style={{ background: 'var(--bg-secondary)', borderRadius: '10px', height: '10px', overflow: 'hidden' }}>
+                <div style={{ background: '#f59e0b', height: '100%', width: `${progressPercent}%`, transition: 'width 0.5s' }} />
               </div>
-              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                {data.totalPoints} / {data.nextBadge.threshold} points ({data.nextBadge.progress}%)
+              <div style={{ fontSize: '0.85rem', fontWeight: '700', color: 'var(--text-main)', marginTop: '0.4rem' }}>
+                {currentPoints} / {nextBadgeObj.threshold || 1000} points ({progressPercent}%)
               </div>
             </div>
           </div>
