@@ -989,11 +989,11 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               {/* Suggestions rapides */}
               <div className="d-flex align-items-center flex-wrap gap-3 mt-3 pt-1">
                 <span className="small text-muted fw-bold me-2" style={{ fontSize: '0.85rem' }}>Exemples de démonstration :</span>
-                <div className="d-flex flex-wrap gap-2.5">
+                <div className="d-flex flex-wrap gap-3">
                   <button 
                     type="button" 
                     className="btn btn-outline-secondary py-2 px-3.5 fw-bold"
-                    style={{ fontSize: '0.82rem', borderRadius: '10px', margin: '0.15rem' }}
+                    style={{ fontSize: '0.82rem', borderRadius: '10px' }}
                     onClick={() => setPublicSearchCmu('CMU-DKR-2026-8812')}
                   >
                     CMU-DKR-2026-8812 (Amadou Sow)
@@ -1001,7 +1001,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   <button 
                     type="button" 
                     className="btn btn-outline-secondary py-2 px-3.5 fw-bold"
-                    style={{ fontSize: '0.82rem', borderRadius: '10px', margin: '0.15rem' }}
+                    style={{ fontSize: '0.82rem', borderRadius: '10px' }}
                     onClick={() => setPublicSearchCmu('CMU-DKR-2026-4401')}
                   >
                     CMU-DKR-2026-4401 (Fatou Diop)
@@ -1010,8 +1010,8 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               </div>
             </div>
 
-            {/* Boutons d'action rapide */}
-            <div className="d-flex gap-4 flex-wrap pt-3" style={{ marginTop: '0.75rem' }}>
+            {/* Boutons d'action rapide avec espacement propre */}
+            <div className="d-flex flex-column flex-sm-row gap-3 pt-3" style={{ marginTop: '0.75rem', rowGap: '1rem' }}>
               {setView && (
                 <button 
                   className="btn btn-success fw-bold px-4 py-3" 
