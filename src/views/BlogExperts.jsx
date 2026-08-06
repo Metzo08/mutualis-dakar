@@ -24,6 +24,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
   const [comments, setComments] = useState({});
   const [newComment, setNewComment] = useState({ author: '', text: '' });
   const [showEditor, setShowEditor] = useState(false);
+  const [editingArticle, setEditingArticle] = useState(null);
   const [likes, setLikes] = useState({});
   const [likedArticles, setLikedArticles] = useState(() => {
     try {
@@ -309,7 +310,25 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
       .catch(err => console.error('Error liking:', err));
   };
 
-  // Create article handler
+  // Start editing an existing article
+  const handleStartEdit = (article) => {
+    setEditingArticle(article);
+    setNewArticle({
+      title: article.title,
+      author: article.author,
+      role: article.role,
+      avatar: article.avatar || '🩺',
+      readTime: article.readTime || '5 min',
+      content: article.content
+    });
+    setNewArticleImage(article.imageUrl || null);
+    setShowEditor(true);
+    setEditorError('');
+    setEditorSuccess('');
+    window.scrollTo({ top: 320, behavior: 'smooth' });
+  };
+
+  // Create or Update article handler
   const handleCreateArticle = (e) => {
     e.preventDefault();
     if (!newArticle.title || !newArticle.content) {
@@ -317,6 +336,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
       return;
     }
 
+    const isEdit = !!editingArticle;
     const payload = {
       titleFr: newArticle.title,
       titleWo: newArticle.title,
@@ -333,8 +353,11 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
       imageUrl: newArticleImage
     };
 
-    fetch('http://localhost:5000/api/blog/articles', {
-      method: 'POST',
+    const url = isEdit ? `http://localhost:5000/api/blog/articles/${editingArticle.id}` : 'http://localhost:5000/api/blog/articles';
+    const method = isEdit ? 'PUT' : 'POST';
+
+    fetch(url, {
+      method: method,
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('cmu-token') || ''}`
@@ -346,7 +369,25 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
         return res.json();
       })
       .then(() => {
-        setEditorSuccess(lang === 'fr' ? 'Article publié avec succès !' : 'Article soti na !');
+        const successMsg = isEdit 
+          ? (lang === 'fr' ? 'Article modifié avec succès !' : 'Article soppi na !')
+          : (lang === 'fr' ? 'Article publié avec succès !' : 'Article soti na !');
+        setEditorSuccess(successMsg);
+        triggerToast(successMsg);
+
+        if (isEdit && selectedArticle && selectedArticle.id === editingArticle.id) {
+          setSelectedArticle({
+            ...selectedArticle,
+            title: newArticle.title,
+            author: newArticle.author,
+            role: newArticle.role,
+            avatar: newArticle.avatar,
+            readTime: newArticle.readTime,
+            content: newArticle.content,
+            imageUrl: newArticleImage
+          });
+        }
+
         setNewArticle({
           title: '',
           author: canPublishArticle ? authorName : '',
@@ -356,15 +397,16 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
           content: ''
         });
         setNewArticleImage(null);
+        setEditingArticle(null);
         queryClient.invalidateQueries(['blogArticlesList']);
         setTimeout(() => {
           setEditorSuccess('');
           setShowEditor(false);
-        }, 2000);
+        }, 1500);
       })
       .catch(err => {
         console.error('Error saving article:', err);
-        setEditorError('Erreur lors de la publication.');
+        setEditorError(isEdit ? 'Erreur lors de la modification.' : 'Erreur lors de la publication.');
       });
   };
 
@@ -420,13 +462,18 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
       {(showEditor && canPublishArticle) && (
         <div className="card text-left fade-in-up" style={{ padding: '2rem', marginBottom: '2rem', borderLeft: '5px solid var(--primary)', borderRadius: '16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <h3 style={{ margin: 0, fontSize: '1.35rem', fontWeight: '850', color: 'var(--primary)' }}>
-              ✍️ {lang === 'fr' ? 'Rédiger et publier un article d\'expert' : 'Bind sa article expert'}
+            <h3 style={{ margin: 0, fontSize: '1.35rem', fontWeight: '850', color: editingArticle ? '#f59e0b' : 'var(--primary)' }}>
+              {editingArticle 
+                ? (lang === 'fr' ? `✏️ Modifier l'article d'expert : "${editingArticle.title.substring(0, 35)}..."` : '✏️ Soppi article expert')
+                : (lang === 'fr' ? '✍️ Rédiger et publier un article d\'expert' : 'Bind sa article expert')}
             </h3>
             <button 
               className="btn-text" 
               style={{ color: 'var(--text-sub)', fontWeight: 'bold' }} 
-              onClick={() => setShowEditor(false)}
+              onClick={() => {
+                setShowEditor(false);
+                setEditingArticle(null);
+              }}
             >
               {lang === 'fr' ? 'Masquer' : 'Dindi'}
             </button>
@@ -551,14 +598,25 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
             {editorSuccess && <div style={{ color: 'var(--success)', fontWeight: 'bold', marginTop: '1rem', fontSize: '0.88rem' }}>{editorSuccess}</div>}
 
             <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
-              <button type="submit" className="btn btn-primary">
-                {lang === 'fr' ? 'Publier sur la plateforme' : 'Publier sur la plateforme'}
+              <button 
+                type="submit" 
+                className="btn text-white fw-bold"
+                style={{ background: editingArticle ? '#f59e0b' : '#059669', border: 'none', borderRadius: '10px', padding: '0.6rem 1.4rem' }}
+              >
+                {editingArticle 
+                  ? (lang === 'fr' ? '💾 Enregistrer les modifications' : '💾 Aar soppi yi') 
+                  : (lang === 'fr' ? 'Publier sur la plateforme' : 'Publier sur la plateforme')}
               </button>
-              {!canPublishArticle && (
-                <button type="button" className="btn btn-outline" onClick={() => setShowEditor(false)}>
-                  {lang === 'fr' ? 'Annuler' : 'Annuler'}
-                </button>
-              )}
+              <button 
+                type="button" 
+                className="btn btn-outline" 
+                onClick={() => {
+                  setShowEditor(false);
+                  setEditingArticle(null);
+                }}
+              >
+                {lang === 'fr' ? 'Annuler' : 'Annuler'}
+              </button>
             </div>
           </form>
         </div>
@@ -567,13 +625,25 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
       {selectedArticle ? (
         // Full Article Detail View
         <div className="fade-in-up">
-          <button 
-            className="btn btn-outline btn-sm" 
-            style={{ marginBottom: '2rem' }}
-            onClick={() => setSelectedArticle(null)}
-          >
-            {t.backToList}
-          </button>
+          <div className="d-flex align-items-center justify-content-between flex-wrap gap-2" style={{ marginBottom: '2rem' }}>
+            <button 
+              className="btn btn-outline btn-sm" 
+              onClick={() => setSelectedArticle(null)}
+            >
+              {t.backToList}
+            </button>
+
+            {canPublishArticle && (
+              <button
+                type="button"
+                style={{ background: '#f59e0b', color: '#1e293b', border: 'none', borderRadius: '10px', padding: '0.45rem 0.9rem', fontWeight: '800', fontSize: '0.85rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', boxShadow: '0 4px 12px rgba(245,158,11,0.3)' }}
+                onClick={() => handleStartEdit(selectedArticle)}
+                title="Modifier le contenu de cet article"
+              >
+                ✏️ Éditer cet article
+              </button>
+            )}
+          </div>
 
           <div className="grid grid-3" style={{ gap: '2rem', alignItems: 'flex-start' }}>
             {/* Article Content Left (Span 2) */}
@@ -810,7 +880,21 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
                       {article.preview}
                     </p>
                     
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.25rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.25rem' }}>
+                      {canPublishArticle ? (
+                        <button 
+                          type="button"
+                          style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.5)', borderRadius: '8px', padding: '0.35rem 0.75rem', fontWeight: '700', fontSize: '0.78rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleStartEdit(article);
+                          }}
+                          title="Modifier cet article de blog"
+                        >
+                          ✏️ Éditer
+                        </button>
+                      ) : <div />}
+                      
                       <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--secondary)' }}>
                         {lang === 'fr' ? 'Lire l\'article →' : 'Lire article bi →'}
                       </span>

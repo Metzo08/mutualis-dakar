@@ -166,6 +166,38 @@ router.post('/api/blog/articles', authenticateToken, requireRole('agent', 'admin
   }
 });
 
+// PUT /api/blog/articles/:id (Modifier un article de blog)
+router.put('/api/blog/articles/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { titleFr, titleWo, author, roleFr, roleWo, avatar, readTimeFr, readTimeWo, previewFr, previewWo, contentFr, contentWo, imageUrl } = req.body;
+
+    const result = await query(
+      `UPDATE blog_articles 
+       SET title_fr = COALESCE($1, title_fr),
+           title_wo = COALESCE($2, title_wo),
+           author = COALESCE($3, author),
+           role_fr = COALESCE($4, role_fr),
+           role_wo = COALESCE($5, role_wo),
+           avatar = COALESCE($6, avatar),
+           read_time_fr = COALESCE($7, read_time_fr),
+           read_time_wo = COALESCE($8, read_time_wo),
+           preview_fr = COALESCE($9, preview_fr),
+           preview_wo = COALESCE($10, preview_wo),
+           content_fr = COALESCE($11, content_fr),
+           content_wo = COALESCE($12, content_wo),
+           image_url = COALESCE($13, image_url)
+       WHERE id = $14 RETURNING *`,
+      [titleFr, titleWo || titleFr, author, roleFr, roleWo || roleFr, avatar, readTimeFr, readTimeWo || readTimeFr, previewFr, previewWo || previewFr, contentFr, contentWo || contentFr, imageUrl, id]
+    );
+
+    res.json({ success: true, article: result.rows ? result.rows[0] : null });
+  } catch (err) {
+    console.error('Erreur lors de la modification de l\'article :', err);
+    res.status(500).json({ error: 'Erreur interne lors de la modification.' });
+  }
+});
+
 // POST /api/blog/articles/:id/like (Increment like count)
 router.post('/api/blog/articles/:id/like', async (req, res) => {
   try {
