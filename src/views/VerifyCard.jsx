@@ -34,10 +34,41 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
   const [examType, setExamType] = useState('Scanner');
   const [examNotes, setExamNotes] = useState('Bilan satisfaisant. Pas de lésion évolutive.');
 
-  // Formulaire Antécédents Rapide
-  const [bloodGroup, setBloodGroup] = useState('O Rhésus positif (O+)');
-  const [allergies, setAllergies] = useState('Pénicilline, Aspirine');
-  const [chronicCond, setChronicCond] = useState('Hypertension artérielle (HTA)');
+  // Moteur de synthèse vocale Web Speech & Web Audio chime déclenché au scan du QR code
+  const playAudioReminder = (firstName = 'Fatou', cmuNum = '') => {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) {
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.18, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.35);
+      }
+    } catch (e) {}
+
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const spokenMsg = `Nanga def ${firstName}! Carte physique scannée et vérifiée avec succès. Rappel UNAMUSC : La consultation prénatale et la vaccination PEV de votre bébé Moussa Ndiaye sont programmées. Prise en charge cent pour cent gratuite.`;
+      const utterance = new SpeechSynthesisUtterance(spokenMsg);
+      utterance.lang = 'fr-FR';
+      utterance.rate = 0.92;
+      utterance.pitch = 1.0;
+
+      const voices = window.speechSynthesis.getVoices();
+      const frVoice = voices.find(v => v.lang.includes('fr'));
+      if (frVoice) utterance.voice = frVoice;
+
+      window.speechSynthesis.speak(utterance);
+    }
+  };
 
   // Bloque le défilement de la page lorsque la modale vidéo publicitaire est ouverte
   useEffect(() => {
@@ -909,6 +940,47 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
             </div>
           ) : (
             <div className="verified-cards-wrapper">
+              {/* 🔊 RAPPEL VOCAL AUTOMATIQUE DÉCLENCHÉ AU SCAN DU QR CODE CARTE PHYSIQUE / NUMÉRIQUE */}
+              <div className="card shadow-sm border-0 p-4 mb-4 text-white" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', border: '1px solid rgba(16, 185, 129, 0.45)', borderRadius: '24px', boxShadow: '0 12px 35px rgba(0,0,0,0.35)' }}>
+                <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                  <div className="d-flex align-items-center gap-3">
+                    <div style={{ width: '46px', height: '46px', borderRadius: '14px', background: 'rgba(16, 185, 129, 0.22)', color: '#34d399', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>
+                      🔊
+                    </div>
+                    <div>
+                      <h6 className="fw-extrabold mb-0 text-white" style={{ fontSize: '1.08rem' }}>
+                        Rappel vocal maternité & vaccins bébé (scan du QR code)
+                      </h6>
+                      <small style={{ color: '#94a3b8', fontSize: '0.82rem' }}>
+                        Assurée : <strong className="text-white">{result.firstName} {result.lastName}</strong> • Bébé : <strong className="text-emerald-400">Moussa Ndiaye (2 mois)</strong>
+                      </small>
+                    </div>
+                  </div>
+
+                  <span className="badge px-3 py-2 rounded-pill fw-bold" style={{ background: 'rgba(16, 185, 129, 0.25)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.5)', fontSize: '0.78rem' }}>
+                    🟢 Notification vocale déclenchée au scan
+                  </span>
+                </div>
+
+                <div className="p-3 rounded-3 mb-3" style={{ background: 'rgba(5, 150, 105, 0.2)', border: '1px solid #059669', color: '#a7f3d0', fontSize: '0.88rem', lineHeight: '1.5' }}>
+                  <span className="fw-bold">🔊 Message vocal lu à voix haute :</span> &quot;Nanga def {result.firstName}! Carte physique scannée et certifiée. Rappel UNAMUSC : la consultation de suivi prénatal et la vaccination PEV (Penta 2 + Rota 2) de votre bébé Moussa Ndiaye sont programmées. Prise en charge 100% gratuite.&quot;
+                </div>
+
+                <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 pt-2 border-top" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+                  <small style={{ color: '#cbd5e1', fontSize: '0.82rem' }}>
+                    Prochaine échéance : <strong className="text-warning">10 Semaines (Juillet 2026) • Centre de santé Pikine</strong>
+                  </small>
+
+                  <button 
+                    type="button"
+                    style={{ background: '#059669', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.55rem 1.1rem', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 4px 14px rgba(5, 150, 105, 0.4)' }}
+                    onClick={() => playAudioReminder(result.firstName || 'Fatou', result.cmuNumber)}
+                  >
+                    <span>🔊</span> Réécouter la notification vocale (Wolof / FR)
+                  </button>
+                </div>
+              </div>
+
               {/* ⚡ HUB D'ACTIONS MÉDICALES INSTANTANÉES (DEMANDE GARANTIE, ORDONNANCE, TÉLÉMÉDECINE, RADIOS) */}
               <div className="card shadow-sm border-0 p-4 mb-4" style={{ borderRadius: '24px', background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
                 <div className="d-flex align-items-center justify-content-between mb-3 pb-3 border-bottom flex-wrap gap-2" style={{ borderColor: 'var(--border-color)' }}>
