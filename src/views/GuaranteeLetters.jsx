@@ -1701,7 +1701,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     </div>
                   </div>
 
-                  <div className="d-flex justify-content-center gap-3">
+                  <div className="d-flex justify-content-center gap-3 flex-wrap">
                     <button 
                       type="button" 
                       className="btn btn-success fw-bold text-white px-4 py-2.5 shadow-sm"
@@ -1709,6 +1709,19 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                       style={{ borderRadius: '12px', background: '#059669', borderColor: '#059669' }}
                     >
                       📥 Télécharger le Certificat PDF officiel
+                    </button>
+
+                    <button 
+                      type="button" 
+                      className="btn btn-outline-success fw-bold px-4 py-2.5 shadow-sm"
+                      onClick={() => {
+                        setSelectedLetter(null);
+                        if (setView) setView('verify');
+                        window.location.hash = `#/verify/${selectedLetter.validation_code}`;
+                      }}
+                      style={{ borderRadius: '12px' }}
+                    >
+                      🔍 Tester la vérification instantanée (#/verify)
                     </button>
 
                     <button 
