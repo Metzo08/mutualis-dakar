@@ -67,7 +67,106 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
     setShowBabyModal(false);
   };
 
-  // Traitement d'envoi de relance/rappel immédiat avec synthèse vocale audible
+  // 🗣️ Moteur de choix de langue vocale ('fr', 'wolof', 'pulaar')
+  const [audioLang, setAudioLang] = useState('fr');
+
+  // 🚨 Modale d'Urgence Maternité & Signes de Danger (SAMU 1515)
+  const [showDangerSOSModal, setShowDangerSOSModal] = useState(false);
+  const [selectedDangerSign, setSelectedDangerSign] = useState('Saignements vaginaux');
+
+  // 💊 État Supplémentation Maternelle & TPI-SP Paludisme (PNLP Sénégal / UNAMUSC)
+  const [maternalSupplements, setMaternalSupplements] = useState(() => {
+    const saved = localStorage.getItem('maternity_supplements');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return {
+      ferFolateDaysTaken: 45,
+      ferFolateTotalDays: 90,
+      tpiDoses: [
+        { id: 1, cpn: 'CPN 2 (16-20 sem)', date: '14/06/2026', given: true, status: 'Administré (Dose 1)' },
+        { id: 2, cpn: 'CPN 3 (28-32 sem)', date: '12/08/2026', given: true, status: 'Administré (Dose 2)' },
+        { id: 3, cpn: 'CPN 4 (36-38 sem)', date: 'À venir', given: false, status: 'Programmé (Dose 3)' }
+      ],
+      mildaNetDistributed: true,
+      mildaDate: '15/05/2026'
+    };
+  });
+
+  const [showSupplementsModal, setShowSupplementsModal] = useState(false);
+  const [editSupplementsForm, setEditSupplementsForm] = useState(maternalSupplements);
+
+  const handleSaveSupplements = (e) => {
+    e.preventDefault();
+    setMaternalSupplements(editSupplementsForm);
+    localStorage.setItem('maternity_supplements', JSON.stringify(editSupplementsForm));
+    setShowSupplementsModal(false);
+  };
+
+  // 📊 État Suivi de Croissance Bébé OMS (Percentiles 0-24 mois)
+  const [babyGrowth, setBabyGrowth] = useState(() => {
+    const saved = localStorage.getItem('maternity_baby_growth');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return [
+      { id: 1, month: 'Naissance (M0)', date: '14/05/2026', weight: 3.4, height: 50, head: 35, status: 'Harmonieuse (Percentile 50)' },
+      { id: 2, month: '1er Mois (M1)', date: '14/06/2026', weight: 4.3, height: 54, head: 37, status: 'Harmonieuse (Percentile 50)' },
+      { id: 3, month: '2ème Mois (M2)', date: '14/07/2026', weight: 5.2, height: 58, head: 39, status: 'Harmonieuse (Percentile 50)' }
+    ];
+  });
+
+  const [showAddGrowthModal, setShowAddGrowthModal] = useState(false);
+  const [newGrowthForm, setNewGrowthForm] = useState({
+    month: '3ème Mois (M3)',
+    date: '14/08/2026',
+    weight: '6.0',
+    height: '61',
+    head: '40.5',
+    status: 'Harmonieuse (Percentile 50)'
+  });
+
+  const handleAddGrowthEntry = (e) => {
+    e.preventDefault();
+    const entry = {
+      id: Date.now(),
+      month: newGrowthForm.month,
+      date: newGrowthForm.date,
+      weight: parseFloat(newGrowthForm.weight) || 5.5,
+      height: parseFloat(newGrowthForm.height) || 59,
+      head: parseFloat(newGrowthForm.head) || 39.5,
+      status: newGrowthForm.status || 'Harmonieuse (Percentile 50)'
+    };
+    const updated = [...babyGrowth, entry];
+    setBabyGrowth(updated);
+    localStorage.setItem('maternity_baby_growth', JSON.stringify(updated));
+    setShowAddGrowthModal(false);
+  };
+
+  // 📄 Générateur Officiel de Certificat d'Accouchement & Naissance 100% UNAMUSC
+  const handleGenerateDeliveryCertificate = () => {
+    generateOfficialPdf({
+      filename: `certificat_accouchement_${babyProfile.name.replace(/\s+/g, '_')}.pdf`,
+      docType: 'CERTIFICAT D\'ACCOUCHEMENT ET DE NAISSANCE',
+      title: 'Attestation Officielle d\'Accouchement & Gratuité Maternité (100% UNAMUSC)',
+      referenceNo: `ACC-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+      beneficiaryName: babyProfile.motherName,
+      cmuNumber: 'SN-DK-BSF-9901',
+      structureName: agentUser?.structure_name || 'Centre Hospitalier Abass Ndao (Dakar)',
+      details: [
+        { label: 'Accouchée (Mère)', value: `${babyProfile.motherName} (${babyProfile.motherPhone})` },
+        { label: 'Nouveau-né (Bébé)', value: `${babyProfile.name} (Sexe masculin)` },
+        { label: 'Date & Heure d\'Accouchement', value: '14/05/2026 à 04:15 AM' },
+        { label: 'Type d\'Accouchement', value: 'Accouchement Eutocique Simple (Voie basse)' },
+        { label: 'Poids & Taille à la naissance', value: '3.400 kg • 50 cm' },
+        { label: 'Prise en charge UNAMUSC', value: '100% Gratuit (Accouchement + Soins néonataux)' },
+        { label: 'Déclaration État Civil Mairie', value: 'CERTIFIÉ CONFORME POUR ACTE DE NAISSANCE' }
+      ],
+      notes: 'Certificat officiel délivré conformément au programme national de gratuité des soins de santé maternelle et néonatale (UNAMUSC). Dispense de toute avance de frais.'
+    });
+  };
+
+  // Traitement d'envoi de relance/rappel immédiat avec synthèse vocale audible trilingue
   const [reminderSending, setReminderSending] = useState(false);
   const [reminderToast, setReminderToast] = useState(null);
 
@@ -106,7 +205,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
     }
   };
 
-  const triggerInstantReminder = (type = 'sms') => {
+  const triggerInstantReminder = (type = 'sms', langChoice = audioLang) => {
     setReminderSending(true);
     const nextPendingVaccine = vaccinations.find(v => !v.completed);
     const nextPendingCpn = cpnVisits.find(c => !c.completed);
@@ -115,12 +214,21 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
     setTimeout(() => {
       setReminderSending(false);
       let msg = '';
+      let spokenMsg = '';
+
+      if (langChoice === 'wolof') {
+        spokenMsg = `Nanga def ${babyProfile.motherName}! Nguir suñu waah UNAMUSC : Consultation ak vaccins bu bébé ${babyProfile.name} fajj na ci centre de santé. Fajj gi payewul dara, 100% gratuit la.`;
+      } else if (langChoice === 'pulaar') {
+        spokenMsg = `Jam waali ${babyProfile.motherName}! Degindagol UNAMUSC : Cellal mamin e bimbintagol fayɓe ${babyProfile.name} ina jogii miijo e nokkuur cellal. Ko ɗum yoɓetaake, gratuit 100%.`;
+      } else {
+        spokenMsg = `Bonjour ${babyProfile.motherName}! Rappel UNAMUSC : la consultation de suivi et la vaccination de votre bébé ${babyProfile.name} sont programmées au centre de santé. Prise en charge cent pour cent gratuite.`;
+      }
+
       if (type === 'sms' || type === 'whatsapp') {
-        msg = `📲 Notification SMS & WhatsApp délivrée à ${babyProfile.motherName} (${babyProfile.motherPhone}) : "Bonjour ${babyProfile.motherName}, rappel UNAMUSC : la prestation ${targetPrestation} pour votre bébé ${babyProfile.name} est programmée. Prise en charge 100% gratuite."`;
+        msg = `📲 Notification SMS & WhatsApp délivrée à ${babyProfile.motherName} (${babyProfile.motherPhone}) : "${spokenMsg}"`;
         playSpeechAudio(`Notification envoyée avec succès à ${babyProfile.motherName}`);
       } else {
-        const spokenMsg = `Nanga def ${babyProfile.motherName}! Rappel UNAMUSC : la consultation de suivi et la vaccination de votre bébé ${babyProfile.name} sont programmées au centre de santé. Prise en charge cent pour cent gratuite.`;
-        msg = `🔊 Relance vocale (Wolof & Français) en cours de lecture pour ${babyProfile.motherPhone} : "${spokenMsg}"`;
+        msg = `🔊 Relance vocale (${langChoice.toUpperCase()}) en cours de lecture pour ${babyProfile.motherPhone} : "${spokenMsg}"`;
         playSpeechAudio(spokenMsg);
       }
       
@@ -903,10 +1011,18 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
               <div className="d-flex gap-3 flex-wrap">
                 <button 
                   type="button"
-                  style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.75rem 1.25rem', fontWeight: '700', fontSize: '0.88rem', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.4)', cursor: 'pointer' }} 
-                  onClick={() => setShowGuaranteeModal(true)}
+                  style={{ background: '#dc2626', color: '#ffffff', border: '1px solid #b91c1c', borderRadius: '12px', padding: '0.75rem 1.25rem', fontWeight: '800', fontSize: '0.88rem', boxShadow: '0 4px 15px rgba(220, 38, 38, 0.45)', cursor: 'pointer' }} 
+                  onClick={() => setShowDangerSOSModal(true)}
                 >
-                  📜 Générer lettre de garantie (100% UNAMUSC)
+                  🚨 Signes de danger & Urgence Maternité (SAMU 1515)
+                </button>
+
+                <button 
+                  type="button"
+                  style={{ background: '#059669', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.75rem 1.25rem', fontWeight: '700', fontSize: '0.88rem', boxShadow: '0 4px 15px rgba(5, 150, 105, 0.4)', cursor: 'pointer' }} 
+                  onClick={handleGenerateDeliveryCertificate}
+                >
+                  📜 Certificat d'accouchement PDF (100% UNAMUSC)
                 </button>
                 
                 <button 
@@ -914,7 +1030,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                   style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.75rem 1.25rem', fontWeight: '700', fontSize: '0.88rem', cursor: 'pointer' }} 
                   onClick={handleDownloadCarnet}
                 >
-                  📥 Télécharger carnet officiel PDF (🇸🇳)
+                  📥 Carnet officiel PDF (🇸🇳)
                 </button>
               </div>
             </div>
@@ -1121,6 +1237,77 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
             <div className="col-lg-4">
               <div className="d-flex flex-column gap-4">
                 
+                {/* Card 💊 Supplémentation Maternelle & TPI Paludisme (PNLP Sénégal / UNAMUSC) */}
+                <div className="p-4 rounded-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '20px' }}>
+                  <div className="d-flex align-items-center justify-content-between mb-3">
+                    <div className="d-flex align-items-center gap-2">
+                      <span className="fs-5">💊</span>
+                      <div>
+                        <h6 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '0.98rem' }}>Supplémentation & TPI Paludisme</h6>
+                        <small className="text-muted" style={{ fontSize: '0.75rem' }}>Directives PNLP Sénégal & UNAMUSC</small>
+                      </div>
+                    </div>
+                    {canEditMaternity && (
+                      <button 
+                        type="button" 
+                        className="btn btn-sm btn-outline-success fw-bold"
+                        style={{ borderRadius: '8px', fontSize: '0.74rem', padding: '0.25rem 0.6rem' }}
+                        onClick={() => {
+                          setEditSupplementsForm(maternalSupplements);
+                          setShowSupplementsModal(true);
+                        }}
+                      >
+                        ✏️ Modifier
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Fer & Acide Folique */}
+                  <div className="p-3 rounded-3 mb-3" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+                    <div className="d-flex justify-content-between align-items-center mb-1.5">
+                      <small className="fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.82rem' }}>💊 Fer & Acide Folique (Anti-anémie)</small>
+                      <span className="badge bg-success-subtle text-success fw-bold" style={{ fontSize: '0.72rem' }}>
+                        {maternalSupplements.ferFolateDaysTaken} / {maternalSupplements.ferFolateTotalDays} jours
+                      </span>
+                    </div>
+                    <div className="progress" style={{ height: '7px', background: 'rgba(255,255,255,0.1)', borderRadius: '6px' }}>
+                      <div className="progress-bar bg-success" style={{ width: `${Math.round((maternalSupplements.ferFolateDaysTaken / maternalSupplements.ferFolateTotalDays) * 100)}%`, borderRadius: '6px' }}></div>
+                    </div>
+                    <small className="d-block text-muted mt-1" style={{ fontSize: '0.72rem' }}>
+                      1 comprimé par jour prescrit pendant toute la grossesse
+                    </small>
+                  </div>
+
+                  {/* TPI Paludisme (SP) */}
+                  <div className="mb-3">
+                    <small className="d-block text-muted fw-bold mb-2" style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                      🦟 TPI Paludisme (Sulfadoxine-Pyriméthamine)
+                    </small>
+                    <div className="d-flex flex-column gap-1.5">
+                      {maternalSupplements.tpiDoses.map(dose => (
+                        <div key={dose.id} className="d-flex align-items-center justify-content-between p-2 rounded-2" style={{ background: 'var(--bg-card-subtle)', fontSize: '0.78rem' }}>
+                          <span className="fw-semibold" style={{ color: 'var(--text-main)' }}>{dose.cpn}</span>
+                          <span className={`badge ${dose.given ? 'bg-success text-white' : 'bg-warning text-dark'} fw-bold`} style={{ borderRadius: '6px', fontSize: '0.7rem' }}>
+                            {dose.given ? `✅ ${dose.status}` : `⏳ ${dose.status}`}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* MILDA Moustiquaire */}
+                  <div className="p-2.5 rounded-3 d-flex align-items-center justify-content-between" style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                    <div className="d-flex align-items-center gap-2">
+                      <span>🛖</span>
+                      <div>
+                        <strong className="d-block" style={{ fontSize: '0.78rem', color: 'var(--text-main)' }}>Moustiquaire MILDA offerte</strong>
+                        <small className="text-success fw-bold" style={{ fontSize: '0.7rem' }}>Remise certifiée CPN 1</small>
+                      </div>
+                    </div>
+                    <span className="badge bg-success text-white fw-bold" style={{ borderRadius: '6px', fontSize: '0.7rem' }}>100% Gratuit</span>
+                  </div>
+                </div>
+
                 {/* Card Constantes Vitales */}
                 <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
                   <div className="d-flex align-items-center justify-content-between mb-3">
@@ -1330,8 +1517,13 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
               )}
 
               <div className="d-flex gap-3 flex-wrap align-items-center justify-content-between pt-2 border-top" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-                <div className="small text-white-50" style={{ fontSize: '0.83rem' }}>
-                  Dernier rappel envoyé : <strong className="text-white">{babyProfile.lastReminderSent}</strong>
+                <div className="d-flex align-items-center gap-2">
+                  <span className="small text-white-50" style={{ fontSize: '0.83rem' }}>Choix de la langue vocale :</span>
+                  <div className="btn-group btn-group-sm" role="group">
+                    <button type="button" className={`btn btn-sm ${audioLang === 'fr' ? 'btn-success fw-bold' : 'btn-outline-light text-white'}`} style={{ fontSize: '0.74rem' }} onClick={() => setAudioLang('fr')}>🗣️ FR</button>
+                    <button type="button" className={`btn btn-sm ${audioLang === 'wolof' ? 'btn-success fw-bold' : 'btn-outline-light text-white'}`} style={{ fontSize: '0.74rem' }} onClick={() => setAudioLang('wolof')}>🗣️ Wolof</button>
+                    <button type="button" className={`btn btn-sm ${audioLang === 'pulaar' ? 'btn-success fw-bold' : 'btn-outline-light text-white'}`} style={{ fontSize: '0.74rem' }} onClick={() => setAudioLang('pulaar')}>🗣️ Pulaar</button>
+                  </div>
                 </div>
 
                 <div className="d-flex gap-2.5 flex-wrap">
@@ -1339,7 +1531,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                     type="button"
                     style={{ background: '#059669', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.55rem 1.1rem', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 4px 14px rgba(5, 150, 105, 0.4)' }}
                     disabled={reminderSending}
-                    onClick={() => triggerInstantReminder('sms')}
+                    onClick={() => triggerInstantReminder('sms', audioLang)}
                   >
                     <span>💬</span> {reminderSending ? 'Envoi...' : 'Envoyer un rappel SMS / WhatsApp immédiat'}
                   </button>
@@ -1348,9 +1540,9 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                     type="button"
                     style={{ background: '#1e3a8a', color: '#ffffff', border: '1px solid #3b82f6', borderRadius: '12px', padding: '0.55rem 1.1rem', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 4px 14px rgba(59, 130, 246, 0.35)' }}
                     disabled={reminderSending}
-                    onClick={() => triggerInstantReminder('voice')}
+                    onClick={() => triggerInstantReminder('voice', audioLang)}
                   >
-                    <span>🔊</span> Relance vocale (Wolof / Français)
+                    <span>🔊</span> Relance vocale ({audioLang.toUpperCase()})
                   </button>
 
                   <button 
@@ -1364,6 +1556,111 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                     ⚙️ Configurer le contact
                   </button>
                 </div>
+              </div>
+            </div>
+
+            {/* 📊 CARD SUIVI & COURBE DE CROISSANCE OMS DU BÉBÉ (0-24 MOIS) */}
+            <div className="p-4 rounded-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '24px' }}>
+              <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+                <div className="d-flex align-items-center gap-3">
+                  <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem', flexShrink: 0 }}>
+                    📊
+                  </div>
+                  <div>
+                    <h5 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>Courbe de croissance & périmètre crânien OMS (0-24 mois)</h5>
+                    <small className="text-muted" style={{ fontSize: '0.82rem' }}>Suivi pédiatrique certifié par les normes OMS de santé infantile</small>
+                  </div>
+                </div>
+
+                <div className="d-flex align-items-center gap-2">
+                  <span className="badge bg-success-subtle text-success px-3 py-2 fw-bold" style={{ borderRadius: '10px', fontSize: '0.8rem' }}>
+                    🟢 Trajectoire OMS : Harmonieuse (P50)
+                  </span>
+                  {canEditMaternity && (
+                    <button 
+                      type="button" 
+                      className="btn btn-sm btn-success fw-bold text-white shadow-sm"
+                      style={{ borderRadius: '10px', padding: '0.45rem 0.9rem', fontSize: '0.82rem', background: '#059669', borderColor: '#059669' }}
+                      onClick={() => setShowAddGrowthModal(true)}
+                    >
+                      ➕ Consigner une pesée (Pédiatre / Médecin)
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* GRAPHIQUE VISUEL INTERACTIF SVG DE LA COURBE OMS */}
+              <div className="p-3.5 rounded-4 mb-4 text-white position-relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', border: '1px solid rgba(16, 185, 129, 0.35)' }}>
+                <div className="d-flex justify-content-between align-items-center mb-3">
+                  <small className="fw-bold text-emerald-400" style={{ fontSize: '0.82rem' }}>📈 TRAJECTOIRE DE POIDS (KG) VS COULOIR VERT OMS (PERCENTILE 3 À 97)</small>
+                  <small className="text-slate-400" style={{ fontSize: '0.78rem' }}>Dernière pesée : {babyGrowth[babyGrowth.length - 1]?.date} ({babyGrowth[babyGrowth.length - 1]?.weight} kg)</small>
+                </div>
+
+                <div style={{ width: '100%', height: '140px', position: 'relative' }}>
+                  <svg width="100%" height="100%" viewBox="0 0 500 120" preserveAspectRatio="none">
+                    {/* Zone verte OMS corridor */}
+                    <path d="M 30 90 Q 250 55 470 20 L 470 45 Q 250 80 30 110 Z" fill="rgba(16, 185, 129, 0.18)" />
+                    
+                    {/* Ligne médiane OMS P50 */}
+                    <path d="M 30 100 Q 250 67 470 32" fill="none" stroke="rgba(16, 185, 129, 0.4)" strokeWidth="2" strokeDasharray="4 4" />
+
+                    {/* Ligne pesée réelle bébé */}
+                    <path 
+                      d={`M ${babyGrowth.map((g, idx) => {
+                        const x = 30 + (idx * 210);
+                        const y = 100 - ((g.weight - 3) * 22);
+                        return `${x} ${y}`;
+                      }).join(' L ')}`} 
+                      fill="none" 
+                      stroke="#34d399" 
+                      strokeWidth="3.5" 
+                    />
+
+                    {/* Points pesées */}
+                    {babyGrowth.map((g, idx) => {
+                      const x = 30 + (idx * 210);
+                      const y = 100 - ((g.weight - 3) * 22);
+                      return (
+                        <g key={g.id}>
+                          <circle cx={x} cy={y} r="6" fill="#059669" stroke="#ffffff" strokeWidth="2" />
+                          <text x={x} y={y - 10} fill="#a7f3d0" fontSize="10" fontWeight="bold" textAnchor="middle">{g.weight} kg</text>
+                        </g>
+                      );
+                    })}
+                  </svg>
+                </div>
+              </div>
+
+              {/* TABLEAU DES RELEVÉS MENSUELS BÉBÉ */}
+              <div className="table-responsive" style={{ borderRadius: '14px', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
+                <table className="table align-middle mb-0" style={{ background: 'transparent' }}>
+                  <thead style={{ background: 'var(--bg-card-subtle)' }}>
+                    <tr className="small" style={{ fontSize: '0.78rem', color: 'var(--text-sub)' }}>
+                      <th>ÉCHÉANCE MENSUELLE</th>
+                      <th>DATE PESÉE</th>
+                      <th>POIDS (KG)</th>
+                      <th>TAILLE (CM)</th>
+                      <th>PÉRIMÈTRE CRÂNIEN</th>
+                      <th className="text-end">STATUT OMS</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {babyGrowth.map((g) => (
+                      <tr key={g.id} className="border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+                        <td className="fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.88rem' }}>{g.month}</td>
+                        <td style={{ color: 'var(--text-sub)', fontSize: '0.85rem' }}>📅 {g.date}</td>
+                        <td className="fw-extrabold text-success" style={{ fontSize: '0.95rem' }}>⚖️ {g.weight} kg</td>
+                        <td className="fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.88rem' }}>📏 {g.height} cm</td>
+                        <td style={{ color: 'var(--text-sub)', fontSize: '0.85rem' }}>🧠 {g.head} cm</td>
+                        <td className="text-end">
+                          <span className="badge bg-success-subtle text-success border border-success fw-bold px-2.5 py-1" style={{ borderRadius: '8px', fontSize: '0.75rem' }}>
+                            🟢 {g.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
 
@@ -2507,6 +2804,233 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
             <div className="d-flex justify-content-end gap-2.5 pt-2 border-top" style={{ borderColor: 'var(--border-color)' }}>
               <button type="button" className="btn px-4 py-2.5 fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.88rem' }} onClick={() => { setEditingVaccineId(null); setEditVaccineForm(null); }}>Annuler</button>
               <button type="submit" className="btn px-4 py-2.5 fw-bold text-white shadow-sm" style={{ background: '#059669', borderColor: '#059669', borderRadius: '12px', fontSize: '0.9rem' }}>💾 Enregistrer les modifications</button>
+            </div>
+          </form>
+        </div>,
+        document.body
+      )}
+
+      {/* MODALE 1: 🚨 URGENCE OBSTÉTRIQUALE & SIGNES DE DANGER (SAMU 1515) */}
+      {showDangerSOSModal && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.92)', backdropFilter: 'blur(14px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+          <div style={{ maxWidth: '640px', width: '100%', background: '#0f172a', color: '#ffffff', borderRadius: '24px', padding: '2.25rem', border: '2px solid #ef4444', boxShadow: '0 25px 60px rgba(239, 68, 68, 0.45)', margin: 'auto', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom" style={{ borderColor: 'rgba(255,255,255,0.15)' }}>
+              <div className="d-flex align-items-center gap-3">
+                <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(239,68,68,0.25)', color: '#f87171', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.8rem', flexShrink: 0 }}>
+                  🚨
+                </div>
+                <div>
+                  <h5 className="fw-extrabold text-white mb-0" style={{ fontSize: '1.25rem' }}>Protocole d'urgence & signes de danger</h5>
+                  <small style={{ color: '#fca5a5', fontSize: '0.82rem' }}>Service d'Aide Médicale Urgente du Sénégal (SAMU 1515)</small>
+                </div>
+              </div>
+              <button type="button" className="btn-close btn-close-white" onClick={() => setShowDangerSOSModal(false)}></button>
+            </div>
+
+            <div className="p-3.5 rounded-3 mb-4" style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid #ef4444', color: '#fca5a5', fontSize: '0.88rem', lineHeight: '1.55' }}>
+              <span className="fw-bold d-block text-white mb-1">⚠️ AVERTISSEMENT MÉDICAL URGENT :</span>
+              Si la femme enceinte présente l'un des symptômes ci-dessous, elle doit se rendre immédiatement dans la maternité la plus proche. La prise en charge d'urgence est couverte à 100% par l'UNAMUSC.
+            </div>
+
+            <div className="mb-4">
+              <label className="form-label small fw-bold text-white">Sélectionnez le signe de danger constaté :</label>
+              <div className="d-flex flex-column gap-2">
+                {[
+                  '🔴 Saignements vaginaux pendant la grossesse',
+                  '🔥 Fièvre élevée (> 38.5°C) ou frissons',
+                  '🧠 Maux de tête intenses / Bourdonnements d\'oreilles / Mouches volantes',
+                  '🌊 Rupture de la poche des eaux (Perte de liquide)',
+                  '👶 Absence ou diminution des mouvements du bébé',
+                  '⚡ Douleurs abdominales intenses ou contractions fréquentes'
+                ].map((sign, idx) => (
+                  <button 
+                    key={idx} 
+                    type="button" 
+                    className="btn text-start p-3 rounded-3 d-flex align-items-center justify-content-between"
+                    style={{ 
+                      background: selectedDangerSign === sign ? 'rgba(239, 68, 68, 0.3)' : 'rgba(255,255,255,0.06)', 
+                      color: '#ffffff', 
+                      border: selectedDangerSign === sign ? '1.5px solid #ef4444' : '1px solid rgba(255,255,255,0.12)',
+                      fontSize: '0.88rem'
+                    }}
+                    onClick={() => setSelectedDangerSign(sign)}
+                  >
+                    <span>{sign}</span>
+                    <span className="badge bg-danger text-white">{selectedDangerSign === sign ? 'Sélectionné' : 'Signaler'}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="d-flex flex-column gap-2.5 pt-3 border-top" style={{ borderColor: 'rgba(255,255,255,0.15)' }}>
+              <a 
+                href="tel:1515" 
+                className="btn btn-lg fw-extrabold text-white d-flex align-items-center justify-content-center gap-2 shadow"
+                style={{ background: '#dc2626', borderColor: '#b91c1c', borderRadius: '14px', fontSize: '1.05rem', padding: '0.85rem' }}
+              >
+                <span>📞</span> APPLER LE SAMU SÉNÉGAL (1515) — APPEL GRATUIT
+              </a>
+
+              <div className="d-flex gap-2">
+                <button 
+                  type="button" 
+                  className="btn btn-outline-light w-50 fw-bold d-flex align-items-center justify-content-center gap-1.5"
+                  style={{ borderRadius: '12px', fontSize: '0.84rem' }}
+                  onClick={() => {
+                    const spokenMsg = `Alerte Urgence Maternité ! Signe constaté : ${selectedDangerSign}. VEUILLEZ VOUS RENDRE IMMÉDIATEMENT À LA MATERNITÉ DE L'HÔPITAL ABASS NDAO OU DU CHU DE FANN. Prise en charge cent pour cent gratuite UNAMUSC.`;
+                    playSpeechAudio(spokenMsg);
+                  }}
+                >
+                  <span>🔊</span> Consignes audio (Wolof / FR)
+                </button>
+                <button 
+                  type="button" 
+                  className="btn btn-secondary w-50"
+                  style={{ borderRadius: '12px', fontSize: '0.84rem' }}
+                  onClick={() => setShowDangerSOSModal(false)}
+                >
+                  Fermer
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* MODALE 2: 💊 MODIFIER SUPPLÉMENTATION MATERNELLE & TPI-SP PALUDISME */}
+      {showSupplementsModal && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(12px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+          <form onSubmit={handleSaveSupplements} style={{ maxWidth: '580px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2.25rem', border: '1px solid var(--border-color)', boxShadow: '0 20px 50px rgba(0,0,0,0.4)', margin: 'auto', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div className="d-flex justify-content-between align-items-center mb-3.5 pb-2 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+              <div className="d-flex align-items-center gap-2">
+                <span className="fs-4">💊</span>
+                <div>
+                  <h5 className="fw-extrabold text-success mb-0" style={{ fontSize: '1.2rem' }}>Mettre à jour la supplémentation & TPI</h5>
+                  <small className="text-muted" style={{ fontSize: '0.8rem' }}>Directives PNLP Sénégal & UNAMUSC</small>
+                </div>
+              </div>
+              <button type="button" className="btn-close" onClick={() => setShowSupplementsModal(false)}></button>
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label small fw-bold">Jours de Fer & Acide Folique pris *</label>
+              <div className="input-group">
+                <input 
+                  type="number" 
+                  className="form-control fw-bold" 
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px 0 0 12px', padding: '0.65rem 0.9rem' }} 
+                  value={editSupplementsForm.ferFolateDaysTaken} 
+                  onChange={e => setEditSupplementsForm({ ...editSupplementsForm, ferFolateDaysTaken: parseInt(e.target.value) || 0 })} 
+                  required 
+                />
+                <span className="input-group-text" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '0 12px 12px 0' }}>sur 90 jours requis</span>
+              </div>
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label small fw-bold mb-2">Statut des Doses TPI-SP Paludisme (Sulfadoxine-Pyriméthamine) :</label>
+              {editSupplementsForm.tpiDoses.map((dose, idx) => (
+                <div key={dose.id} className="p-2.5 rounded-3 mb-2 d-flex align-items-center justify-content-between" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+                  <span className="small fw-bold" style={{ color: 'var(--text-main)' }}>{dose.cpn}</span>
+                  <label className="d-flex align-items-center gap-2 small cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={dose.given} 
+                      onChange={e => {
+                        const newTpi = [...editSupplementsForm.tpiDoses];
+                        newTpi[idx].given = e.target.checked;
+                        newTpi[idx].status = e.target.checked ? `Administré (Dose ${idx + 1})` : `Programmé (Dose ${idx + 1})`;
+                        setEditSupplementsForm({ ...editSupplementsForm, tpiDoses: newTpi });
+                      }} 
+                    />
+                    <span className={dose.given ? 'text-success fw-bold' : 'text-warning fw-bold'}>
+                      {dose.given ? '✅ Administré' : '⏳ Non administré'}
+                    </span>
+                  </label>
+                </div>
+              ))}
+            </div>
+
+            <div className="form-check form-switch mb-4">
+              <input 
+                className="form-check-input" 
+                type="checkbox" 
+                id="mildaCheck" 
+                checked={editSupplementsForm.mildaNetDistributed} 
+                onChange={e => setEditSupplementsForm({ ...editSupplementsForm, mildaNetDistributed: e.target.checked })} 
+                style={{ width: '2.5rem', height: '1.25rem', cursor: 'pointer' }} 
+              />
+              <label className="form-check-label ms-2 small fw-bold" htmlFor="mildaCheck" style={{ color: 'var(--text-main)', cursor: 'pointer' }}>
+                Moustiquaire MILDA remise à la mère au 1er trimestre (Gratuité 100% UNAMUSC)
+              </label>
+            </div>
+
+            <div className="d-flex justify-content-end gap-2.5 pt-2 border-top" style={{ borderColor: 'var(--border-color)' }}>
+              <button type="button" className="btn px-4 py-2.5 fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.88rem' }} onClick={() => setShowSupplementsModal(false)}>Annuler</button>
+              <button type="submit" className="btn px-4 py-2.5 fw-bold text-white shadow-sm" style={{ background: '#059669', borderColor: '#059669', borderRadius: '12px', fontSize: '0.9rem' }}>💾 Enregistrer la supplémentation</button>
+            </div>
+          </form>
+        </div>,
+        document.body
+      )}
+
+      {/* MODALE 3: 📊 CONSIGNER UNE PESÉE / TAILLE BÉBÉ (COURBE OMS) */}
+      {showAddGrowthModal && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(12px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+          <form onSubmit={handleAddGrowthEntry} style={{ maxWidth: '580px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2.25rem', border: '1px solid var(--border-color)', boxShadow: '0 20px 50px rgba(0,0,0,0.4)', margin: 'auto', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div className="d-flex justify-content-between align-items-center mb-3.5 pb-2 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+              <div className="d-flex align-items-center gap-2">
+                <span className="fs-4">📊</span>
+                <div>
+                  <h5 className="fw-extrabold text-success mb-0" style={{ fontSize: '1.2rem' }}>Consigner une pesée & taille (OMS)</h5>
+                  <small className="text-muted" style={{ fontSize: '0.8rem' }}>Suivi de la courbe de croissance du bébé {babyProfile.name}</small>
+                </div>
+              </div>
+              <button type="button" className="btn-close" onClick={() => setShowAddGrowthModal(false)}></button>
+            </div>
+
+            <div className="row g-3 mb-3">
+              <div className="col-md-6">
+                <label className="form-label small fw-bold">Échéance mensuelle *</label>
+                <input type="text" className="form-control fw-semibold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newGrowthForm.month} onChange={e => setNewGrowthForm({ ...newGrowthForm, month: e.target.value })} required placeholder="ex: 3ème Mois (M3)" />
+              </div>
+
+              <div className="col-md-6">
+                <label className="form-label small fw-bold">Date de la pesée *</label>
+                <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newGrowthForm.date} onChange={e => setNewGrowthForm({ ...newGrowthForm, date: e.target.value })} required />
+              </div>
+            </div>
+
+            <div className="row g-3 mb-3">
+              <div className="col-md-4">
+                <label className="form-label small fw-bold">Poids (kg) *</label>
+                <input type="number" step="0.1" className="form-control fw-bold text-success" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newGrowthForm.weight} onChange={e => setNewGrowthForm({ ...newGrowthForm, weight: e.target.value })} required placeholder="ex: 6.0" />
+              </div>
+
+              <div className="col-md-4">
+                <label className="form-label small fw-bold">Taille (cm) *</label>
+                <input type="number" step="0.5" className="form-control fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newGrowthForm.height} onChange={e => setNewGrowthForm({ ...newGrowthForm, height: e.target.value })} required placeholder="ex: 61" />
+              </div>
+
+              <div className="col-md-4">
+                <label className="form-label small fw-bold">Périmètre crânien *</label>
+                <input type="number" step="0.5" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newGrowthForm.head} onChange={e => setNewGrowthForm({ ...newGrowthForm, head: e.target.value })} required placeholder="ex: 40.5" />
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="form-label small fw-bold">Statut de croissance OMS *</label>
+              <select className="form-select fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newGrowthForm.status} onChange={e => setNewGrowthForm({ ...newGrowthForm, status: e.target.value })}>
+                <option value="Harmonieuse (Percentile 50)">🟢 Harmonieuse (Percentile 50)</option>
+                <option value="Excellente (Percentile 75)">🟢 Excellente (Percentile 75)</option>
+                <option value="À surveiller (Percentile 15)">⚠️ À surveiller (Percentile 15)</option>
+              </select>
+            </div>
+
+            <div className="d-flex justify-content-end gap-2.5 pt-2 border-top" style={{ borderColor: 'var(--border-color)' }}>
+              <button type="button" className="btn px-4 py-2.5 fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.88rem' }} onClick={() => setShowAddGrowthModal(false)}>Annuler</button>
+              <button type="submit" className="btn px-4 py-2.5 fw-bold text-white shadow-sm" style={{ background: '#059669', borderColor: '#059669', borderRadius: '12px', fontSize: '0.9rem' }}>💾 Enregistrer la pesée</button>
             </div>
           </form>
         </div>,
