@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }) {
@@ -452,173 +453,259 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
           <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
             {t.title}
           </h1>
-          <p style={{ color: '#f8fafc', fontSize: '1rem', fontWeight: '500', maxWidth: '700px', margin: '0 auto', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
+          <p style={{ color: '#f8fafc', fontSize: '1rem', fontWeight: '500', maxWidth: '700px', margin: '0 auto 1.5rem auto', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
             {t.subtitle}
           </p>
+
+          {canPublishArticle && (
+            <button
+              type="button"
+              style={{ background: '#059669', color: '#ffffff', border: '2px solid #ffffff', borderRadius: '14px', padding: '0.7rem 1.6rem', fontWeight: '800', fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+              onClick={() => {
+                setEditingArticle(null);
+                setNewArticle({
+                  title: '',
+                  author: authorName,
+                  role: authorRole,
+                  avatar: '🩺',
+                  readTime: '5 min',
+                  content: ''
+                });
+                setNewArticleImage(null);
+                setEditorError('');
+                setEditorSuccess('');
+                setShowEditor(true);
+              }}
+            >
+              ✍️ Rédiger un article d'expert
+            </button>
+          )}
         </div>
       </section>
 
-      {(showEditor && canPublishArticle) && (
-        <div className="card text-left fade-in-up" style={{ padding: '2rem', marginBottom: '2rem', borderLeft: '5px solid var(--primary)', borderRadius: '16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <h3 style={{ margin: 0, fontSize: '1.35rem', fontWeight: '850', color: editingArticle ? '#f59e0b' : 'var(--primary)' }}>
-              {editingArticle 
-                ? (lang === 'fr' ? `✏️ Modifier l'article d'expert : "${editingArticle.title.substring(0, 35)}..."` : '✏️ Soppi article expert')
-                : (lang === 'fr' ? '✍️ Rédiger et publier un article d\'expert' : 'Bind sa article expert')}
-            </h3>
+      {(showEditor && canPublishArticle) && createPortal(
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(15, 23, 42, 0.88)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 999999,
+            padding: '1.5rem',
+            overflowY: 'auto'
+          }}
+          onClick={() => {
+            setShowEditor(false);
+            setEditingArticle(null);
+          }}
+        >
+          <div 
+            className="card scale-in text-left shadow-lg" 
+            style={{ 
+              maxWidth: '850px', 
+              width: '100%', 
+              maxHeight: '90vh', 
+              overflowY: 'auto', 
+              padding: '2.25rem 2rem', 
+              background: 'var(--bg-card)', 
+              border: '1px solid var(--border-color)', 
+              borderRadius: '24px', 
+              boxShadow: '0 25px 70px rgba(0,0,0,0.6)',
+              position: 'relative',
+              margin: 'auto'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
             <button 
-              className="btn-text" 
-              style={{ color: 'var(--text-sub)', fontWeight: 'bold' }} 
+              type="button"
               onClick={() => {
                 setShowEditor(false);
                 setEditingArticle(null);
               }}
+              style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                zIndex: 10,
+                background: 'rgba(0, 0, 0, 0.6)',
+                color: '#ffffff',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                borderRadius: '50%',
+                width: '38px',
+                height: '38px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '1.1rem',
+                fontWeight: 'bold'
+              }}
+              title="Fermer la rédaction"
             >
-              {lang === 'fr' ? 'Masquer' : 'Dindi'}
+              ✖
             </button>
-          </div>
 
-          <form onSubmit={handleCreateArticle}>
-            <div className="form-row">
-              <div className="form-group">
-                <label className="form-label">{lang === 'fr' ? 'Titre de l\'article *' : 'Titre de l\'article *'}</label>
-                <input 
-                  type="text" 
-                  className="form-control" 
-                  placeholder={lang === 'fr' ? 'Ex: Les avancées de la CMU scolaire à Dakar' : 'Ex: CMU ecole ci Dakar'}
-                  value={newArticle.title}
-                  onChange={(e) => setNewArticle({ ...newArticle, title: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="form-group" style={{ maxWidth: '200px' }}>
-                <label className="form-label">{lang === 'fr' ? 'Temps de lecture' : 'Temps de lecture'}</label>
-                <select 
-                  className="form-control"
-                  value={newArticle.readTime}
-                  onChange={(e) => setNewArticle({ ...newArticle, readTime: e.target.value })}
-                >
-                  <option value="2 min">2 min</option>
-                  <option value="4 min">4 min</option>
-                  <option value="5 min">5 min</option>
-                  <option value="7 min">7 min</option>
-                  <option value="10 min">10 min</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="form-row" style={{ marginTop: '1rem' }}>
-              <div className="form-group">
-                <label className="form-label">{lang === 'fr' ? 'Auteur *' : 'Auteur *'}</label>
-                <input 
-                  type="text" 
-                  className="form-control" 
-                  placeholder="Ex: Dr. Moussa Diop"
-                  value={newArticle.author}
-                  onChange={(e) => setNewArticle({ ...newArticle, author: e.target.value })}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label className="form-label">{lang === 'fr' ? 'Titre professionnel' : 'Titre professionnel'}</label>
-                <input 
-                  type="text" 
-                  className="form-control" 
-                  placeholder="Ex: Directeur Médical, Chef de service"
-                  value={newArticle.role}
-                  onChange={(e) => setNewArticle({ ...newArticle, role: e.target.value })}
-                />
-              </div>
-              <div className="form-group" style={{ maxWidth: '120px' }}>
-                <label className="form-label">Avatar / Icône</label>
-                <select 
-                  className="form-control"
-                  value={newArticle.avatar}
-                  onChange={(e) => setNewArticle({ ...newArticle, avatar: e.target.value })}
-                >
-                  <option value="🩺">🩺 Stéthoscope</option>
-                  <option value="👩‍⚕️">👩‍⚕️ Médecin (F)</option>
-                  <option value="👨‍⚕️">👨‍⚕️ Médecin (H)</option>
-                  <option value="📝">📝 Note / Crayon</option>
-                  <option value="🏥">🏥 Hôpital</option>
-                  <option value="❤️">❤️ Cœur</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="form-group" style={{ marginTop: '1rem' }}>
-              <label className="form-label" style={{ fontWeight: 'bold' }}>
-                📷 {lang === 'fr' ? 'Photo d\'illustration (Image de couverture)' : 'Photo d\'illustration (Image de couverture)'}
-              </label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-                <input 
-                  id="blog-image-input"
-                  type="file" 
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  style={{ display: 'block', padding: '0.35rem 0', fontSize: '0.88rem' }}
-                />
-                {newArticleImage && (
-                  <div style={{ position: 'relative' }}>
-                    <img 
-                      src={newArticleImage} 
-                      alt="Aperçu" 
-                      style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border-color)' }} 
-                    />
-                    <button 
-                      type="button"
-                      className="btn-text" 
-                      style={{ position: 'absolute', top: '-5px', right: '-5px', backgroundColor: 'var(--danger)', color: '#fff', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', border: 'none', cursor: 'pointer' }}
-                      onClick={() => setNewArticleImage(null)}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                )}
-              </div>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-sub)' }}>
-                {lang === 'fr' ? 'Téléchargez une vraie photo depuis votre appareil (format JPEG/PNG, max 2 Mo).' : 'Duggalal photo bu réel ci sa appareil (max 2 Mo).'}
-              </span>
-            </div>
-
-            <div className="form-group" style={{ marginTop: '1.25rem' }}>
-              <label className="form-label">{lang === 'fr' ? 'Contenu de l\'article * (Supporte le saut de ligne)' : 'Contenu de l\'article *'}</label>
-              <textarea 
-                className="form-control" 
-                rows="8" 
-                placeholder={lang === 'fr' ? 'Rédigez le texte détaillé ici. Vous pouvez structurer vos paragraphes en sautant des lignes...' : 'Bindal sa article fii...'}
-                value={newArticle.content}
-                onChange={(e) => setNewArticle({ ...newArticle, content: e.target.value })}
-                required
-              />
-            </div>
-
-            {editorError && <div style={{ color: 'var(--danger)', fontWeight: 'bold', marginTop: '1rem', fontSize: '0.88rem' }}>{editorError}</div>}
-            {editorSuccess && <div style={{ color: 'var(--success)', fontWeight: 'bold', marginTop: '1rem', fontSize: '0.88rem' }}>{editorSuccess}</div>}
-
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
-              <button 
-                type="submit" 
-                className="btn text-white fw-bold"
-                style={{ background: editingArticle ? '#f59e0b' : '#059669', border: 'none', borderRadius: '10px', padding: '0.6rem 1.4rem' }}
-              >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingRight: '2rem' }}>
+              <h3 style={{ margin: 0, fontSize: '1.35rem', fontWeight: '850', color: editingArticle ? '#f59e0b' : 'var(--primary)' }}>
                 {editingArticle 
-                  ? (lang === 'fr' ? '💾 Enregistrer les modifications' : '💾 Aar soppi yi') 
-                  : (lang === 'fr' ? 'Publier sur la plateforme' : 'Publier sur la plateforme')}
-              </button>
-              <button 
-                type="button" 
-                className="btn btn-outline" 
-                onClick={() => {
-                  setShowEditor(false);
-                  setEditingArticle(null);
-                }}
-              >
-                {lang === 'fr' ? 'Annuler' : 'Annuler'}
-              </button>
+                  ? (lang === 'fr' ? `✏️ Modifier l'article d'expert : "${editingArticle.title.substring(0, 35)}..."` : '✏️ Soppi article expert')
+                  : (lang === 'fr' ? '✍️ Rédiger et publier un article d\'expert' : 'Bind sa article expert')}
+              </h3>
             </div>
-          </form>
-        </div>
+
+            <form onSubmit={handleCreateArticle}>
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">{lang === 'fr' ? 'Titre de l\'article *' : 'Titre de l\'article *'}</label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    placeholder={lang === 'fr' ? 'Ex: Les avancées de la CMU scolaire à Dakar' : 'Ex: CMU ecole ci Dakar'}
+                    value={newArticle.title}
+                    onChange={(e) => setNewArticle({ ...newArticle, title: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="form-group" style={{ maxWidth: '200px' }}>
+                  <label className="form-label">{lang === 'fr' ? 'Temps de lecture' : 'Temps de lecture'}</label>
+                  <select 
+                    className="form-control"
+                    value={newArticle.readTime}
+                    onChange={(e) => setNewArticle({ ...newArticle, readTime: e.target.value })}
+                  >
+                    <option value="2 min">2 min</option>
+                    <option value="4 min">4 min</option>
+                    <option value="5 min">5 min</option>
+                    <option value="7 min">7 min</option>
+                    <option value="10 min">10 min</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-row" style={{ marginTop: '1rem' }}>
+                <div className="form-group">
+                  <label className="form-label">{lang === 'fr' ? 'Auteur *' : 'Auteur *'}</label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    placeholder="Ex: Dr. Moussa Diop"
+                    value={newArticle.author}
+                    onChange={(e) => setNewArticle({ ...newArticle, author: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">{lang === 'fr' ? 'Titre professionnel' : 'Titre professionnel'}</label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    placeholder="Ex: Directeur Médical, Chef de service"
+                    value={newArticle.role}
+                    onChange={(e) => setNewArticle({ ...newArticle, role: e.target.value })}
+                  />
+                </div>
+                <div className="form-group" style={{ maxWidth: '120px' }}>
+                  <label className="form-label">Avatar / Icône</label>
+                  <select 
+                    className="form-control"
+                    value={newArticle.avatar}
+                    onChange={(e) => setNewArticle({ ...newArticle, avatar: e.target.value })}
+                  >
+                    <option value="🩺">🩺 Stéthoscope</option>
+                    <option value="👩‍⚕️">👩‍⚕️ Médecin (F)</option>
+                    <option value="👨‍⚕️">👨‍⚕️ Médecin (H)</option>
+                    <option value="📝">📝 Note / Crayon</option>
+                    <option value="🏥">🏥 Hôpital</option>
+                    <option value="❤️">❤️ Cœur</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-group" style={{ marginTop: '1rem' }}>
+                <label className="form-label" style={{ fontWeight: 'bold' }}>
+                  📷 {lang === 'fr' ? 'Photo d\'illustration (Image de couverture)' : 'Photo d\'illustration (Image de couverture)'}
+                </label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                  <input 
+                    id="blog-image-input"
+                    type="file" 
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    style={{ display: 'block', padding: '0.35rem 0', fontSize: '0.88rem' }}
+                  />
+                  {newArticleImage && (
+                    <div style={{ position: 'relative' }}>
+                      <img 
+                        src={newArticleImage} 
+                        alt="Aperçu" 
+                        style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border-color)' }} 
+                      />
+                      <button 
+                        type="button"
+                        className="btn-text" 
+                        style={{ position: 'absolute', top: '-5px', right: '-5px', backgroundColor: 'var(--danger)', color: '#fff', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', border: 'none', cursor: 'pointer' }}
+                        onClick={() => setNewArticleImage(null)}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-sub)' }}>
+                  {lang === 'fr' ? 'Téléchargez une vraie photo depuis votre appareil (format JPEG/PNG, max 2 Mo).' : 'Duggalal photo bu réel ci sa appareil (max 2 Mo).'}
+                </span>
+              </div>
+
+              <div className="form-group" style={{ marginTop: '1.25rem' }}>
+                <label className="form-label">{lang === 'fr' ? 'Contenu de l\'article * (Supporte le saut de ligne)' : 'Contenu de l\'article *'}</label>
+                <textarea 
+                  className="form-control" 
+                  rows="8" 
+                  placeholder={lang === 'fr' ? 'Rédigez le texte détaillé ici. Vous pouvez structurer vos paragraphes en sautant des lignes...' : 'Bindal sa article fii...'}
+                  value={newArticle.content}
+                  onChange={(e) => setNewArticle({ ...newArticle, content: e.target.value })}
+                  required
+                />
+              </div>
+
+              {editorError && <div style={{ color: 'var(--danger)', fontWeight: 'bold', marginTop: '1rem', fontSize: '0.88rem' }}>{editorError}</div>}
+              {editorSuccess && <div style={{ color: 'var(--success)', fontWeight: 'bold', marginTop: '1rem', fontSize: '0.88rem' }}>{editorSuccess}</div>}
+
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
+                <button 
+                  type="submit" 
+                  className="btn text-white fw-bold"
+                  style={{ background: editingArticle ? '#f59e0b' : '#059669', border: 'none', borderRadius: '10px', padding: '0.6rem 1.4rem' }}
+                >
+                  {editingArticle 
+                    ? (lang === 'fr' ? '💾 Enregistrer les modifications' : '💾 Aar soppi yi') 
+                    : (lang === 'fr' ? 'Publier sur la plateforme' : 'Publier sur la plateforme')}
+                </button>
+                <button 
+                  type="button" 
+                  className="btn btn-outline" 
+                  onClick={() => {
+                    setShowEditor(false);
+                    setEditingArticle(null);
+                  }}
+                >
+                  {lang === 'fr' ? 'Annuler' : 'Annuler'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
       )}
 
       {selectedArticle ? (
@@ -631,17 +718,6 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
             >
               {t.backToList}
             </button>
-
-            {canPublishArticle && (
-              <button
-                type="button"
-                style={{ background: '#f59e0b', color: '#1e293b', border: 'none', borderRadius: '10px', padding: '0.45rem 0.9rem', fontWeight: '800', fontSize: '0.85rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', boxShadow: '0 4px 12px rgba(245,158,11,0.3)' }}
-                onClick={() => handleStartEdit(selectedArticle)}
-                title="Modifier le contenu de cet article"
-              >
-                ✏️ Éditer cet article
-              </button>
-            )}
           </div>
 
           <div className="grid grid-3" style={{ gap: '2rem', alignItems: 'flex-start' }}>
@@ -664,27 +740,14 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
                   />
                 )}
 
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{ fontSize: '2.5rem', background: 'var(--bg-card-subtle)', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border-color)' }}>
-                      {selectedArticle.avatar}
-                    </div>
-                    <div>
-                      <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)' }}>{selectedArticle.author}</h4>
-                      <span style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{selectedArticle.role} — {getRelativeTime(selectedArticle)}</span>
-                    </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                  <div style={{ fontSize: '2.5rem', background: 'var(--bg-card-subtle)', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border-color)' }}>
+                    {selectedArticle.avatar}
                   </div>
-
-                  {canPublishArticle && (
-                    <button
-                      type="button"
-                      style={{ background: '#f59e0b', color: '#1e293b', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontWeight: '800', fontSize: '0.85rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', boxShadow: '0 4px 12px rgba(245,158,11,0.35)' }}
-                      onClick={() => handleStartEdit(selectedArticle)}
-                      title="Modifier le contenu de cet article"
-                    >
-                      ✏️ Éditer cet article
-                    </button>
-                  )}
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)' }}>{selectedArticle.author}</h4>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{selectedArticle.role} — {getRelativeTime(selectedArticle)}</span>
+                  </div>
                 </div>
 
                 <h2 style={{ fontSize: '1.75rem', fontWeight: '900', color: 'var(--primary)', marginBottom: '1.5rem', lineHeight: '1.3' }}>
@@ -892,21 +955,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
                       {article.preview}
                     </p>
                     
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.25rem' }}>
-                      {canPublishArticle ? (
-                        <button 
-                          type="button"
-                          style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.5)', borderRadius: '8px', padding: '0.35rem 0.75rem', fontWeight: '700', fontSize: '0.78rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleStartEdit(article);
-                          }}
-                          title="Modifier cet article de blog"
-                        >
-                          ✏️ Éditer
-                        </button>
-                      ) : <div />}
-                      
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.25rem' }}>
                       <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--secondary)' }}>
                         {lang === 'fr' ? 'Lire l\'article →' : 'Lire article bi →'}
                       </span>
