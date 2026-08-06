@@ -1415,8 +1415,8 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
       {/* DECK D'INSTRUCTION ET CERTIFICAT OFFICIEL (React Portal — Centered on Screen) */}
       {selectedLetter && createPortal(
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
-          <div className="modal-content shadow-lg border-0" style={{ maxWidth: '1140px', width: '100%', maxHeight: '90vh', overflowY: 'auto', borderRadius: '24px', background: 'var(--bg-card)', color: 'var(--text-main)', margin: 'auto', overflow: 'hidden' }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.2rem', overflow: 'hidden' }}>
+          <div className="modal-content border-0" style={{ maxWidth: '1080px', width: '100%', maxHeight: '90vh', display: 'flex', flexDirection: 'column', borderRadius: '24px', background: 'var(--bg-card)', color: 'var(--text-main)', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}>
             
             {/* Entête Modal Officielle UNAMUSC */}
             <div 
@@ -1425,14 +1425,15 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 background: selectedLetter.status === 'approved' 
                   ? 'linear-gradient(135deg, #059669 0%, #064e3b 100%)' 
                   : 'linear-gradient(135deg, #d97706 0%, #78350f 100%)',
-                borderBottom: '1px solid rgba(255,255,255,0.2)'
+                borderBottom: '1px solid rgba(255,255,255,0.2)',
+                flexShrink: 0
               }}
             >
               <div>
                 <span className="badge px-3 py-1 mb-2 fw-bold text-white d-inline-block" style={{ background: 'rgba(255,255,255,0.25)', borderRadius: '20px' }}>
-                  🇸🇳 UNAMUSC — DOSSIER DE PRISE EN CHARGE #{selectedLetter.validation_code}
+                  🇸🇳 UNAMUSC — Dossier de prise en charge #{selectedLetter.validation_code}
                 </span>
-                <h4 className="fw-bold mb-1 text-white">
+                <h4 className="fw-bold mb-1 text-white" style={{ textTransform: 'none' }}>
                   📄 Instruction & attestation de garantie : {selectedLetter.first_name} {selectedLetter.last_name}
                 </h4>
                 <small className="text-white-50">
@@ -1443,7 +1444,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
             </div>
 
             {/* Navigation Onglets Interne au Modal */}
-            <div className="d-flex border-bottom p-3 gap-2 flex-wrap" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)' }}>
+            <div className="d-flex border-bottom p-3 gap-2 flex-wrap" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)', flexShrink: 0 }}>
               <button 
                 type="button" 
                 className="btn fw-bold px-4 py-2.5"
@@ -1454,11 +1455,12 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   borderRadius: '10px',
                   fontSize: '0.9rem',
                   cursor: 'pointer',
-                  boxShadow: modalTab === 'instruction' ? '0 4px 12px rgba(5, 150, 105, 0.4)' : 'none'
+                  boxShadow: modalTab === 'instruction' ? '0 4px 12px rgba(5, 150, 105, 0.4)' : 'none',
+                  textTransform: 'none'
                 }}
                 onClick={() => setModalTab('instruction')}
               >
-                ⚙️ 1. Instruction & Décision Agent UNAMUSC
+                ⚙️ 1. Instruction & décision agent UNAMUSC
               </button>
               <button 
                 type="button" 
@@ -1470,15 +1472,16 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   borderRadius: '10px',
                   fontSize: '0.9rem',
                   cursor: 'pointer',
-                  boxShadow: modalTab === 'certificate' ? '0 4px 12px rgba(5, 150, 105, 0.4)' : 'none'
+                  boxShadow: modalTab === 'certificate' ? '0 4px 12px rgba(5, 150, 105, 0.4)' : 'none',
+                  textTransform: 'none'
                 }}
                 onClick={() => setModalTab('certificate')}
               >
-                📄 2. Certificat Officiel & Prise en Charge PDF
+                📄 2. Certificat officiel & prise en charge PDF
               </button>
             </div>
 
-            <div className="modal-body p-4">
+            <div className="modal-body p-4" style={{ flex: 1, overflowY: 'auto' }}>
               {/* ONGLET 1 : INSTRUCTION & CALCUL DE PRISE EN CHARGE */}
               {modalTab === 'instruction' && (
                 <div className="fade-in-up">
@@ -1493,7 +1496,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                             N° {selectedLetter.cmu_number}
                           </code>
                           <span className="badge bg-secondary">
-                            {selectedLetter.ipp_number || 'IPP-FANN-8812'}
+                            {selectedLetter.ipp_number || 'IPP-FANN-2026-8812'}
                           </span>
                         </div>
                       </div>
@@ -1502,7 +1505,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     {/* Carte Établissement & Acte */}
                     <div className="col-md-6">
                       <div className="p-3.5 rounded-4 border" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)' }}>
-                        <span className="small text-muted d-block mb-1">🏥 Acte & Établissement récepteur :</span>
+                        <span className="small text-muted d-block mb-1">🏥 Acte & établissement récepteur :</span>
                         <h6 className="fw-bold mb-1 text-success">{selectedLetter.medical_act}</h6>
                         <small className="text-muted d-block mt-1">Devis d'hospitalisation soumis : <strong>{Number(selectedLetter.estimated_amount).toLocaleString()} FCFA</strong></small>
                       </div>
@@ -1513,7 +1516,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   {selectedLetter.prescription_photo && selectedLetter.prescription_photo !== '/ordonnance_demo.jpg' && (
                     <div className="mb-4 p-3 rounded-3" style={{ background: 'rgba(5,150,105,0.07)', border: '2px dashed #059669', borderRadius: '14px' }}>
                       <strong className="d-block mb-2 fw-bold text-success" style={{ fontSize: '0.9rem' }}>
-                        📋 Ordonnance médicale téléversée par l'assuré : À vérifier avant accord :
+                        📋 Ordonnance médicale téléversée par l'assuré : à vérifier avant accord :
                       </strong>
                       <img
                         src={selectedLetter.prescription_photo}
@@ -1533,7 +1536,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
                   {/* CALCULATEUR EXÉCUTIF DE COUVERTURE & RESTES À CHARGE */}
                   <div className="card p-4 rounded-4 border-0 mb-4 shadow-sm" style={{ background: 'rgba(5, 150, 105, 0.06)', borderLeft: '5px solid var(--primary)' }}>
-                    <h5 className="fw-bold mb-3 text-success d-flex align-items-center gap-2">
+                    <h5 className="fw-bold mb-3 text-success d-flex align-items-center gap-2" style={{ textTransform: 'none' }}>
                       <span>⚙️</span> Calculateur UNAMUSC de prise en charge & plafond tiers-payant
                     </h5>
 
@@ -1585,7 +1588,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                               <h4 className="fw-bold mb-0 text-success">{Number(calcGuarantee).toLocaleString()} FCFA</h4>
                             </div>
                             <div className="col-md-4">
-                              <span className="text-warning small d-block mb-1">Reste à charge patient (Ticket)</span>
+                              <span className="text-warning small d-block mb-1">Reste à charge patient (ticket modérateur)</span>
                               <h5 className="fw-bold mb-0 text-warning">{Number(calcRest).toLocaleString()} FCFA</h5>
                             </div>
                           </div>
@@ -1653,57 +1656,57 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     </div>
 
                     <div className="text-center my-4 p-3 rounded-3" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
-                      <h4 className="fw-bold text-uppercase mb-1" style={{ color: '#047857', letterSpacing: '1px' }}>
-                        ATTESTATION OFFICIELLE DE PRISE EN CHARGE HOSPITALIÈRE
+                      <h4 className="fw-bold mb-1" style={{ color: '#047857', letterSpacing: '0.5px', textTransform: 'none' }}>
+                        Attestation officielle de prise en charge hospitalière
                       </h4>
-                      <small className="text-muted fw-semibold">Émise sous le système de Tiers-Payant UNAMUSC — Programme National de la Couverture Sanitaire du Sénégal</small><br />
+                      <small className="text-muted fw-semibold">Émise sous le système de tiers-payant UNAMUSC — Programme national de la couverture sanitaire du Sénégal</small><br />
                       <code className="mt-2 d-inline-block px-3 py-1 bg-white text-success border border-success rounded-3 fw-bold fs-6">
-                        Code Homologation : #{selectedLetter.validation_code}
+                        Code homologation : #{selectedLetter.validation_code}
                       </code>
                     </div>
 
                     {/* Grille des caractéristiques — Haute Lisibilité et Contraste Explicite */}
                     <div className="row g-4 mb-4 p-4 rounded-3" style={{ background: '#ffffff', border: '1.5px solid #cbd5e1', boxShadow: 'inset 0 0 0 1px #f1f5f9' }}>
                       <div className="col-md-6">
-                        <span className="small fw-bold d-block mb-1" style={{ color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                          👤 BÉNÉFICIAIRE ASSURÉ :
+                        <span className="small fw-bold d-block mb-1" style={{ color: '#475569', textTransform: 'none', letterSpacing: 'normal' }}>
+                          👤 Bénéficiaire assuré :
                         </span>
                         <h5 className="fw-bold mb-1" style={{ color: '#0f172a' }}>{selectedLetter.first_name} {selectedLetter.last_name}</h5>
                         <div className="small" style={{ color: '#334155' }}>
                           N° Carte CSU : <strong style={{ color: '#0f172a' }}>{selectedLetter.cmu_number}</strong> | IPP : <strong style={{ color: '#0f172a' }}>{selectedLetter.ipp_number || 'IPP-FANN-2026-8812'}</strong>
                         </div>
                         <small className="text-success fw-bold d-block mt-1">
-                          Organisme Émetteur : Tiers-Payant UNAMUSC Sénégal
+                          Organisme émetteur : Tiers-payant UNAMUSC Sénégal
                         </small>
                       </div>
 
                       <div className="col-md-6">
-                        <span className="small fw-bold d-block mb-1" style={{ color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                          🏥 STRUCTURE HOSPITALIÈRE D'ACCUEIL :
+                        <span className="small fw-bold d-block mb-1" style={{ color: '#475569', textTransform: 'none', letterSpacing: 'normal' }}>
+                          🏥 Structure hospitalière d'accueil :
                         </span>
                         <h6 className="fw-bold mb-1" style={{ color: '#047857', fontSize: '1rem' }}>
                           {selectedLetter.hospital_name || selectedLetter.medical_act}
                         </h6>
                         <div className="small" style={{ color: '#334155' }}>
-                          Conventionné Tiers-Payant UNAMUSC (Validation 100% Humaine)
+                          Conventionné tiers-payant UNAMUSC (validation 100% humaine)
                         </div>
                       </div>
 
                       <div className="col-md-6 border-top pt-3" style={{ borderColor: '#e2e8f0' }}>
-                        <span className="small fw-bold d-block mb-1" style={{ color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                          📋 ACTE MÉDICAL / HOSPITALISATION PRESCRITE :
+                        <span className="small fw-bold d-block mb-1" style={{ color: '#475569', textTransform: 'none', letterSpacing: 'normal' }}>
+                          📋 Acte médical / hospitalisation prescrite :
                         </span>
                         <strong className="d-block" style={{ color: '#0f172a', fontSize: '0.95rem' }}>{selectedLetter.medical_act}</strong>
                       </div>
 
                       <div className="col-md-6 border-top pt-3" style={{ borderColor: '#e2e8f0' }}>
-                        <span className="small fw-bold d-block mb-1" style={{ color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                          💰 MONTANT ESTIMÉ & ACCORD DE PRISE EN CHARGE :
+                        <span className="small fw-bold d-block mb-1" style={{ color: '#475569', textTransform: 'none', letterSpacing: 'normal' }}>
+                          💰 Montant estimé & accord de prise en charge :
                         </span>
                         <div className="small" style={{ color: '#334155' }}>
-                          Devis Soumis : <strong style={{ color: '#0f172a' }}>{Number(selectedLetter.estimated_amount).toLocaleString()} FCFA</strong><br />
+                          Devis soumis : <strong style={{ color: '#0f172a' }}>{Number(selectedLetter.estimated_amount).toLocaleString()} FCFA</strong><br />
                           Prise en charge UNAMUSC ({selectedLetter.guaranteed_percentage || 80}%) : <strong style={{ color: '#047857', fontSize: '1.05rem' }}>{Number(selectedLetter.guaranteed_amount || (selectedLetter.estimated_amount * 0.8)).toLocaleString()} FCFA</strong><br />
-                          <span style={{ color: '#b45309', fontWeight: 'bold' }}>Reste à charge patient (Ticket Modérateur) : {Number(selectedLetter.estimated_amount - (selectedLetter.guaranteed_amount || (selectedLetter.estimated_amount * 0.8))).toLocaleString()} FCFA</span>
+                          <span style={{ color: '#b45309', fontWeight: 'bold' }}>Reste à charge patient (ticket modérateur) : {Number(selectedLetter.estimated_amount - (selectedLetter.guaranteed_amount || (selectedLetter.estimated_amount * 0.8))).toLocaleString()} FCFA</span>
                         </div>
                       </div>
                     </div>
@@ -1727,8 +1730,8 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                             style={{ width: '80px', height: '80px' }} 
                           />
                         </div>
-                        <div className="small fw-bold text-success">Tampon Numérique Officiel UNAMUSC</div>
-                        <small className="text-muted d-block" style={{ fontSize: '0.72rem' }}>Homologué par l'UNAMUSC — Signature Agent Habilité</small>
+                        <div className="small fw-bold text-success">Tampon numérique officiel UNAMUSC</div>
+                        <small className="text-muted d-block" style={{ fontSize: '0.72rem' }}>Homologué par l'UNAMUSC — Signature agent habilité</small>
                       </div>
                     </div>
                   </div>
@@ -1738,9 +1741,9 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                       type="button" 
                       className="btn btn-success fw-bold text-white px-4 py-2.5 shadow-sm"
                       onClick={handleDownloadPDF}
-                      style={{ borderRadius: '12px', background: '#059669', borderColor: '#059669' }}
+                      style={{ borderRadius: '12px', background: '#059669', borderColor: '#059669', textTransform: 'none' }}
                     >
-                      📥 Télécharger le Certificat PDF officiel
+                      📥 Télécharger le certificat PDF officiel
                     </button>
 
                     <button 
