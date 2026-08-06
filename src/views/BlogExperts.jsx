@@ -2,24 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }) {
-  // Peut rédiger : agent (modération), médecin, sage-femme (rédaction clinique), superadmin
-  // On se base sur portalMode (toujours synchronisé) + objets user si disponibles (fallback nominal)
-  const canPublishArticle = portalMode === 'agent' || portalMode === 'doctor' || portalMode === 'midwife' || portalMode === 'superadmin';
+  // Modifiable par tout professionnel de santé (doctor, partner, midwife, agent, superadmin, pharmacist) ou utilisateur connecté
+  const canPublishArticle = portalMode === 'agent' || portalMode === 'doctor' || portalMode === 'partner' || portalMode === 'midwife' || portalMode === 'pharmacist' || portalMode === 'superadmin' || !!partnerUser || !!agentUser;
+
   // Nom + rôle de l'auteur selon le profil connecté
-  const authorName = portalMode === 'agent'
-    ? (agentUser ? `${agentUser.firstName} ${agentUser.lastName}` : 'Agent UDMS')
-    : portalMode === 'doctor'
-      ? (partnerUser?.name || 'Dr. Cheikh Anta Diop')
-      : portalMode === 'midwife'
-        ? (partnerUser?.name || 'Dr. Fatou Diome')
-        : portalMode === 'superadmin' ? 'DSI UNAMUSC' : '';
-  const authorRole = portalMode === 'agent'
-    ? (agentUser?.role || 'Agent UDMS')
-    : portalMode === 'doctor'
-      ? (partnerUser?.role || 'Médecin Prescripteur')
-      : portalMode === 'midwife'
-        ? (partnerUser?.role || 'Sage-Femme')
-        : portalMode === 'superadmin' ? 'SuperAdmin' : '';
+  const authorName = (partnerUser?.name) || (agentUser ? `${agentUser.firstName} ${agentUser.lastName}` : '') || (
+    portalMode === 'agent' ? 'Agent UDMS' :
+    (portalMode === 'doctor' || portalMode === 'partner') ? 'Dr. Cheikh Anta Diop' :
+    portalMode === 'midwife' ? 'Dr. Fatou Diome' :
+    portalMode === 'superadmin' ? 'DSI UNAMUSC' : 'Professionnel de santé'
+  );
+
+  const authorRole = (partnerUser?.role) || (agentUser?.role) || (
+    portalMode === 'agent' ? 'Agent Instructeur' :
+    (portalMode === 'doctor' || portalMode === 'partner') ? 'Médecin Prescripteur' :
+    portalMode === 'midwife' ? 'Sage-Femme d\'État' :
+    portalMode === 'superadmin' ? 'SuperAdmin' : 'Praticien Agréé'
+  );
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [comments, setComments] = useState({});
   const [newComment, setNewComment] = useState({ author: '', text: '' });
@@ -665,14 +664,27 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
                   />
                 )}
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-                  <div style={{ fontSize: '2.5rem', background: 'var(--bg-card-subtle)', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border-color)' }}>
-                    {selectedArticle.avatar}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{ fontSize: '2.5rem', background: 'var(--bg-card-subtle)', width: '60px', height: '60px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border-color)' }}>
+                      {selectedArticle.avatar}
+                    </div>
+                    <div>
+                      <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)' }}>{selectedArticle.author}</h4>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{selectedArticle.role} — {getRelativeTime(selectedArticle)}</span>
+                    </div>
                   </div>
-                  <div>
-                    <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)' }}>{selectedArticle.author}</h4>
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{selectedArticle.role} — {getRelativeTime(selectedArticle)}</span>
-                  </div>
+
+                  {canPublishArticle && (
+                    <button
+                      type="button"
+                      style={{ background: '#f59e0b', color: '#1e293b', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontWeight: '800', fontSize: '0.85rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', boxShadow: '0 4px 12px rgba(245,158,11,0.35)' }}
+                      onClick={() => handleStartEdit(selectedArticle)}
+                      title="Modifier le contenu de cet article"
+                    >
+                      ✏️ Éditer cet article
+                    </button>
+                  )}
                 </div>
 
                 <h2 style={{ fontSize: '1.75rem', fontWeight: '900', color: 'var(--primary)', marginBottom: '1.5rem', lineHeight: '1.3' }}>
