@@ -1090,7 +1090,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                       <td className="text-end">
                         <button 
                           type="button" 
-                          style={{ background: 'rgba(220,38,38,0.15)', color: '#dc2626', border: 'none', borderRadius: '6px', padding: '0.25rem 0.5rem', fontSize: '0.72rem', fontWeight: '700', cursor: 'pointer' }}
+                          style={{ background: '#dc2626', color: '#ffffff', border: '1px solid #b91c1c', borderRadius: '8px', padding: '0.35rem 0.65rem', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer', boxShadow: '0 2px 6px rgba(220, 38, 38, 0.3)' }}
                           onClick={() => {
                             setDeleteConfirmTarget({
                               title: h.acte,
@@ -1099,7 +1099,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                             });
                           }}
                         >
-                          🗑 Supprimer
+                          🗑️ Supprimer
                         </button>
                       </td>
                     </tr>
@@ -1155,7 +1155,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                       <td className="text-end">
                         <button 
                           type="button" 
-                          style={{ background: 'rgba(220,38,38,0.15)', color: '#dc2626', border: 'none', borderRadius: '6px', padding: '0.25rem 0.5rem', fontSize: '0.72rem', fontWeight: '700', cursor: 'pointer' }}
+                          style={{ background: '#dc2626', color: '#ffffff', border: '1px solid #b91c1c', borderRadius: '8px', padding: '0.35rem 0.65rem', fontSize: '0.75rem', fontWeight: '700', cursor: 'pointer', boxShadow: '0 2px 6px rgba(220, 38, 38, 0.3)' }}
                           onClick={() => {
                             setDeleteConfirmTarget({
                               title: lr.examen,
@@ -1164,7 +1164,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                             });
                           }}
                         >
-                          🗑 Supprimer
+                          🗑️ Supprimer
                         </button>
                       </td>
                     </tr>

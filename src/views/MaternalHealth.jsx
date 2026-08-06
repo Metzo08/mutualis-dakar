@@ -1097,7 +1097,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                             {canEditMaternity && (
                               <>
                                 <button type="button" style={{ background: 'rgba(59,130,246,0.15)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '10px', padding: '0.4rem 0.7rem', fontWeight: '700', fontSize: '0.75rem', cursor: 'pointer' }} onClick={() => openEditCpn(item)}>✏️ Modifier</button>
-                                <button type="button" style={{ background: 'rgba(220,38,38,0.1)', color: '#dc2626', border: '1px solid rgba(220,38,38,0.3)', borderRadius: '10px', padding: '0.4rem 0.7rem', fontWeight: '700', fontSize: '0.75rem', cursor: 'pointer' }} onClick={() => handleDeleteCpn(item.id)}>🗑 Supprimer</button>
+                                <button type="button" style={{ background: '#dc2626', color: '#ffffff', border: '1px solid #b91c1c', borderRadius: '10px', padding: '0.4rem 0.75rem', fontWeight: '700', fontSize: '0.75rem', cursor: 'pointer', boxShadow: '0 3px 10px rgba(220, 38, 38, 0.3)' }} onClick={() => handleDeleteCpn(item.id)}>🗑️ Supprimer</button>
                               </>
                             )}
                           </div>
@@ -1444,7 +1444,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                               </button>
                               <button 
                                 type="button" 
-                                style={{ background: 'rgba(220,38,38,0.1)', color: '#dc2626', border: '1px solid rgba(220,38,38,0.3)', borderRadius: '8px', padding: '0.35rem 0.65rem', fontWeight: '700', fontSize: '0.75rem', cursor: 'pointer' }}
+                                style={{ background: '#dc2626', color: '#ffffff', border: '1px solid #b91c1c', borderRadius: '10px', padding: '0.4rem 0.75rem', fontWeight: '700', fontSize: '0.75rem', cursor: 'pointer', boxShadow: '0 3px 10px rgba(220, 38, 38, 0.3)' }}
                                 onClick={() => handleDeleteVaccine(item)}
                               >
                                 🗑️ Supprimer
@@ -1663,8 +1663,8 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                               </button>
                               <button 
                                 type="button" 
-                                className="btn btn-sm btn-outline-danger fw-bold d-inline-flex align-items-center gap-1" 
-                                style={{ borderRadius: '10px', padding: '0.35rem 0.75rem', fontSize: '0.78rem' }} 
+                                className="btn btn-sm text-white fw-bold d-inline-flex align-items-center gap-1 shadow-sm" 
+                                style={{ background: '#dc2626', borderColor: '#b91c1c', borderRadius: '10px', padding: '0.4rem 0.8rem', fontSize: '0.78rem' }} 
                                 onClick={() => handleDeleteAdvice(art.id)}
                               >
                                 🗑️ Supprimer
