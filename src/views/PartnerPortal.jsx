@@ -677,53 +677,94 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
                 </div>
               ) : (
                 <div className="col-12 mb-4">
-                  <div className="card shadow-sm border-0 p-4" style={{ borderRadius: '24px', background: 'var(--card-bg)', color: 'var(--text-main)', borderLeft: '6px solid var(--primary)' }}>
-                    <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 border-bottom pb-3" style={{ borderColor: 'var(--border-color)' }}>
+                  <div className="card shadow-sm border-0 p-4 p-md-4" style={{ borderRadius: '24px', background: 'var(--card-bg)', color: 'var(--text-main)', borderLeft: '6px solid var(--primary)' }}>
+                    {/* Convention Header */}
+                    <div className="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3 border-bottom pb-3.5" style={{ borderColor: 'var(--border-color)' }}>
                       <div>
-                        <span className="badge bg-primary-subtle text-primary border border-primary px-3 py-1.5 fw-bold mb-2 d-inline-block" style={{ borderRadius: '20px', fontSize: '0.8rem' }}>
+                        <span className="badge px-3 py-1.5 fw-bold mb-2 d-inline-block" style={{ background: 'rgba(59, 130, 246, 0.12)', color: 'var(--primary)', border: '1px solid rgba(59, 130, 246, 0.3)', borderRadius: '20px', fontSize: '0.82rem' }}>
                           🔒 Accès praticien & structure santé (mode lecteur seul)
                         </span>
-                        <h4 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.35rem' }}>
-                          Convention & agrément UNAMUSC — {partner?.structureName || 'Centre Hospitalier Abass Ndao'}
+                        <h4 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.38rem', letterSpacing: '-0.01em' }}>
+                          Convention & agrément UNAMUSC : <span style={{ color: 'var(--primary)' }}>{partner?.structureName || 'Centre Hospitalier Abass Ndao'}</span>
                         </h4>
-                        <p className="small text-muted mb-0">
+                        <p className="small text-muted mb-0" style={{ fontSize: '0.88rem' }}>
                           Renseignements officiels de conventionnement de votre structure avec l'union départementale (UDMS Dakar).
                         </p>
                       </div>
-                      <span className="badge bg-success text-white px-3 py-2 fw-bold" style={{ borderRadius: '12px', fontSize: '0.85rem' }}>
-                        ✅ Structure agréée UNAMUSC
-                      </span>
+                      
+                      <div className="d-flex align-items-center gap-2 px-3 py-2 rounded-3" style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)', color: 'var(--success)' }}>
+                        <span style={{ fontSize: '1.1rem' }}>✅</span>
+                        <span className="fw-bold" style={{ fontSize: '0.85rem' }}>Structure agréée UNAMUSC</span>
+                      </div>
                     </div>
 
-                    <div className="row g-3 my-1">
-                      <div className="col-md-3 col-6">
-                        <div className="p-3.5 rounded-3 border h-100" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', padding: '1rem 1.15rem' }}>
-                          <small className="text-muted fw-semibold d-block mb-1.5" style={{ fontSize: '0.78rem' }}>Structure sanitaire :</small>
-                          <strong className="text-primary d-block mb-1" style={{ fontSize: '0.95rem' }}>{partner?.structureName || 'Centre Hospitalier Abass Ndao'}</strong>
-                          <small className="text-muted d-block" style={{ fontSize: '0.8rem' }}>{partner?.name || 'Dr. Cheikh Anta Diop'}</small>
-                        </div>
-                      </div>
-                      <div className="col-md-3 col-6">
-                        <div className="p-3.5 rounded-3 border h-100" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', padding: '1rem 1.15rem' }}>
-                          <small className="text-muted fw-semibold d-block mb-1.5" style={{ fontSize: '0.78rem' }}>Code agrément officiel :</small>
-                          <code className="text-success fw-bold d-block mb-1 fs-6" style={{ letterSpacing: '0.5px' }}>{partner?.cnom || 'AGR-2026-DKR-101'}</code>
-                          <small className="text-muted d-block" style={{ fontSize: '0.8rem' }}>UDMS : UDMS Dakar</small>
-                        </div>
-                      </div>
-                      <div className="col-md-3 col-6">
-                        <div className="p-3.5 rounded-3 border h-100" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', padding: '1rem 1.15rem' }}>
-                          <small className="text-muted fw-semibold d-block mb-1.5" style={{ fontSize: '0.78rem' }}>Taux tiers-payant accordé :</small>
-                          <strong className="text-success d-block mb-1 fs-5">80% à 100%</strong>
-                          <small className="text-muted d-block" style={{ fontSize: '0.8rem' }}>Remboursement direct 72h</small>
-                        </div>
-                      </div>
-                      <div className="col-md-3 col-6">
-                        <div className="p-3.5 rounded-3 border h-100" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', padding: '1rem 1.15rem' }}>
-                          <small className="text-muted fw-semibold d-block mb-1.5" style={{ fontSize: '0.78rem' }}>Rôle d'accès système :</small>
-                          <span className="badge bg-secondary-subtle text-secondary fw-bold mb-1 d-inline-block px-2.5 py-1" style={{ borderRadius: '6px', fontSize: '0.78rem' }}>
-                            👁️ Lecteur seul (praticien)
+                    {/* Grid 4 Columns with Clean Separations & Spaces after colons */}
+                    <div className="row g-3.5">
+                      {/* Structure Sanitaire */}
+                      <div className="col-lg-3 col-md-6">
+                        <div className="p-3.5 rounded-4 border h-100 d-flex flex-column justify-content-between" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', borderRadius: '16px', padding: '1.1rem' }}>
+                          <div>
+                            <span className="text-muted fw-bold d-block mb-1.5" style={{ fontSize: '0.78rem' }}>
+                              Structure sanitaire :
+                            </span>
+                            <strong className="text-primary d-block mb-1" style={{ fontSize: '0.96rem', lineHeight: '1.35' }}>
+                              {partner?.structureName || 'Centre Hospitalier Abass Ndao'}
+                            </strong>
+                          </div>
+                          <span className="text-muted fw-semibold d-block mt-2 pt-2 border-top" style={{ fontSize: '0.82rem', borderColor: 'var(--border-color)' }}>
+                            👨‍⚕️ {partner?.name || 'Dr. Cheikh Anta Diop'}
                           </span>
-                          <small className="text-muted d-block" style={{ fontSize: '0.78rem' }}>Modifications réservées à l'UDMS</small>
+                        </div>
+                      </div>
+
+                      {/* Code Agrément Officiel */}
+                      <div className="col-lg-3 col-md-6">
+                        <div className="p-3.5 rounded-4 border h-100 d-flex flex-column justify-content-between" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', borderRadius: '16px', padding: '1.1rem' }}>
+                          <div>
+                            <span className="text-muted fw-bold d-block mb-1.5" style={{ fontSize: '0.78rem' }}>
+                              Code agrément officiel :
+                            </span>
+                            <code className="text-success fw-extrabold d-block mb-1" style={{ fontSize: '1.05rem', letterSpacing: '0.5px' }}>
+                              {partner?.cnom || 'AGR-2026-DKR-101'}
+                            </code>
+                          </div>
+                          <span className="text-muted fw-semibold d-block mt-2 pt-2 border-top" style={{ fontSize: '0.82rem', borderColor: 'var(--border-color)' }}>
+                            🏛️ UDMS : UDMS Dakar
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Taux Tiers-Payant Accordé */}
+                      <div className="col-lg-3 col-md-6">
+                        <div className="p-3.5 rounded-4 border h-100 d-flex flex-column justify-content-between" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', borderRadius: '16px', padding: '1.1rem' }}>
+                          <div>
+                            <span className="text-muted fw-bold d-block mb-1.5" style={{ fontSize: '0.78rem' }}>
+                              Taux tiers-payant accordé :
+                            </span>
+                            <strong className="text-success fw-extrabold d-block mb-1" style={{ fontSize: '1.15rem' }}>
+                              80% à 100%
+                            </strong>
+                          </div>
+                          <span className="text-muted fw-semibold d-block mt-2 pt-2 border-top" style={{ fontSize: '0.82rem', borderColor: 'var(--border-color)' }}>
+                            ⚡ Remboursement direct 72h
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Rôle d'Accès Système */}
+                      <div className="col-lg-3 col-md-6">
+                        <div className="p-3.5 rounded-4 border h-100 d-flex flex-column justify-content-between" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)', borderRadius: '16px', padding: '1.1rem' }}>
+                          <div>
+                            <span className="text-muted fw-bold d-block mb-1.5" style={{ fontSize: '0.78rem' }}>
+                              Rôle d'accès système :
+                            </span>
+                            <span className="badge bg-secondary-subtle text-secondary fw-bold mb-1 d-inline-block px-2.5 py-1" style={{ borderRadius: '8px', fontSize: '0.8rem' }}>
+                              👁️ Lecteur seul (praticien)
+                            </span>
+                          </div>
+                          <span className="text-muted fw-semibold d-block mt-2 pt-2 border-top" style={{ fontSize: '0.78rem', borderColor: 'var(--border-color)' }}>
+                            🔒 Modifications réservées à l'UDMS
+                          </span>
                         </div>
                       </div>
                     </div>
