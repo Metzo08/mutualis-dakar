@@ -439,18 +439,22 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
   const handleValidateAgent = async (status) => {
     if (!selectedLetter) return;
-    const finalGuarantee = parseFloat(maxAmount) || (selectedLetter.estimated_amount * (guaranteedPct / 100));
+    const finalGuarantee = maxAmount !== '' ? (parseFloat(maxAmount) || 0) : (selectedLetter.estimated_amount * (guaranteedPct / 100));
+    const finalPct = selectedLetter.estimated_amount > 0 
+      ? Math.min(100, Math.max(0, Math.round((finalGuarantee / selectedLetter.estimated_amount) * 100))) 
+      : parseFloat(guaranteedPct);
     const finalRest = Math.max(0, selectedLetter.estimated_amount - finalGuarantee);
 
-    const updated = letters.map(l => l.id === selectedLetter.id ? {
-      ...l,
+    const updatedLetter = {
+      ...selectedLetter,
       status,
-      guaranteed_percentage: parseFloat(guaranteedPct),
+      guaranteed_percentage: finalPct,
       max_amount: finalGuarantee,
       patient_rest: finalRest,
       agent_note: agentNote || (status === 'approved' ? 'Prise en charge accordée par l\'UNAMUSC.' : 'Demande rejetée.')
-    } : l);
+    };
 
+    const updated = letters.map(l => l.id === selectedLetter.id ? updatedLetter : l);
     setLetters(updated);
 
     try {
@@ -459,7 +463,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           status,
-          guaranteed_percentage: parseFloat(guaranteedPct),
+          guaranteed_percentage: finalPct,
           max_amount: finalGuarantee,
           agent_note: agentNote
         })
@@ -470,24 +474,42 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
     // Basculer sur l'onglet certificat si approuvé
     if (status === 'approved') {
-      setSelectedLetter({
-        ...selectedLetter,
-        status: 'approved',
-        guaranteed_percentage: parseFloat(guaranteedPct),
-        max_amount: finalGuarantee,
-        patient_rest: finalRest,
-        agent_note: agentNote
-      });
+      setSelectedLetter(updatedLetter);
       setModalTab('certificate');
     } else {
       setSelectedLetter(null);
     }
   };
 
+  const handlePctChange = (val) => {
+    const pct = parseFloat(val) || 0;
+    setGuaranteedPct(pct);
+    if (selectedLetter && selectedLetter.estimated_amount > 0) {
+      const calculatedMax = Math.round(selectedLetter.estimated_amount * (pct / 100));
+      setMaxAmount(calculatedMax);
+    }
+  };
+
+  const handleMaxAmountChange = (val) => {
+    setMaxAmount(val);
+    if (selectedLetter && selectedLetter.estimated_amount > 0) {
+      const numericVal = parseFloat(val);
+      if (!isNaN(numericVal)) {
+        const calculatedPct = Math.min(100, Math.max(0, Math.round((numericVal / selectedLetter.estimated_amount) * 100)));
+        setGuaranteedPct(calculatedPct);
+      }
+    }
+  };
+
   const openInstructionModal = (item) => {
     setSelectedLetter(item);
-    setGuaranteedPct(item.guaranteed_percentage || 80);
-    setMaxAmount(item.max_amount || (item.estimated_amount * 0.8));
+    const initialMax = item.max_amount !== undefined ? item.max_amount : (item.estimated_amount * 0.8);
+    const initialPct = item.guaranteed_percentage !== undefined 
+      ? item.guaranteed_percentage 
+      : (item.estimated_amount > 0 ? Math.round((initialMax / item.estimated_amount) * 100) : 80);
+
+    setGuaranteedPct(initialPct);
+    setMaxAmount(initialMax);
     setAgentNote(item.agent_note || 'Devis et dossier médical vérifiés conformes par l\'UNAMUSC.');
     setModalTab('instruction');
   };
@@ -1547,11 +1569,11 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                           <input 
                             type="range" 
                             className="form-range flex-grow-1"
-                            min="50"
+                            min="10"
                             max="100"
                             step="5"
                             value={guaranteedPct}
-                            onChange={(e) => setGuaranteedPct(e.target.value)}
+                            onChange={(e) => handlePctChange(e.target.value)}
                           />
                           <span className="badge bg-success fs-6 px-3 py-2 fw-bold">{guaranteedPct}%</span>
                         </div>
@@ -1563,7 +1585,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                           type="number" 
                           className="form-control input fw-bold"
                           value={maxAmount}
-                          onChange={(e) => setMaxAmount(e.target.value)}
+                          onChange={(e) => handleMaxAmountChange(e.target.value)}
                           style={{ borderRadius: '10px' }}
                         />
                       </div>
@@ -1572,8 +1594,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     {/* Bilan financier dynamique */}
                     {(() => {
                       const estVal = parseFloat(selectedLetter.estimated_amount) || 0;
-                      const pctVal = parseFloat(guaranteedPct) || 80;
-                      const calcGuarantee = maxAmount !== '' ? (parseFloat(maxAmount) || 0) : (estVal * (pctVal / 100));
+                      const calcGuarantee = maxAmount !== '' ? (parseFloat(maxAmount) || 0) : (estVal * (parseFloat(guaranteedPct) / 100));
                       const calcRest = Math.max(0, estVal - calcGuarantee);
 
                       return (
@@ -1585,7 +1606,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                             </div>
                             <div className="col-md-4 border-start border-end" style={{ borderColor: 'var(--border-color)' }}>
                               <span className="text-success small d-block mb-1">Prise en charge UNAMUSC/CSU</span>
-                              <h4 className="fw-bold mb-0 text-success">{Number(calcGuarantee).toLocaleString()} FCFA</h4>
+                              <h4 className="fw-bold mb-0 text-success">{Number(calcGuarantee).toLocaleString()} FCFA ({guaranteedPct}%)</h4>
                             </div>
                             <div className="col-md-4">
                               <span className="text-warning small d-block mb-1">Reste à charge patient (ticket modérateur)</span>
@@ -1705,8 +1726,8 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                         </span>
                         <div className="small" style={{ color: '#334155' }}>
                           Devis soumis : <strong style={{ color: '#0f172a' }}>{Number(selectedLetter.estimated_amount).toLocaleString()} FCFA</strong><br />
-                          Prise en charge UNAMUSC ({selectedLetter.guaranteed_percentage || 80}%) : <strong style={{ color: '#047857', fontSize: '1.05rem' }}>{Number(selectedLetter.guaranteed_amount || (selectedLetter.estimated_amount * 0.8)).toLocaleString()} FCFA</strong><br />
-                          <span style={{ color: '#b45309', fontWeight: 'bold' }}>Reste à charge patient (ticket modérateur) : {Number(selectedLetter.estimated_amount - (selectedLetter.guaranteed_amount || (selectedLetter.estimated_amount * 0.8))).toLocaleString()} FCFA</span>
+                          Prise en charge UNAMUSC ({selectedLetter.guaranteed_percentage || 80}%) : <strong style={{ color: '#047857', fontSize: '1.05rem' }}>{Number(selectedLetter.guaranteed_amount || selectedLetter.max_amount || (selectedLetter.estimated_amount * 0.8)).toLocaleString()} FCFA</strong><br />
+                          <span style={{ color: '#b45309', fontWeight: 'bold' }}>Reste à charge patient (ticket modérateur) : {Number(selectedLetter.estimated_amount - (selectedLetter.guaranteed_amount || selectedLetter.max_amount || (selectedLetter.estimated_amount * 0.8))).toLocaleString()} FCFA</span>
                         </div>
                       </div>
                     </div>
@@ -1754,7 +1775,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                         if (setView) setView('verify');
                         window.location.hash = `#/verify/${selectedLetter.validation_code}`;
                       }}
-                      style={{ borderRadius: '12px' }}
+                      style={{ borderRadius: '12px', textTransform: 'none' }}
                     >
                       🔍 Tester la vérification instantanée (#/verify)
                     </button>
@@ -1763,7 +1784,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                       type="button" 
                       className="btn fw-bold px-4 py-2.5 shadow-sm"
                       onClick={handlePrintCertificate}
-                      style={{ borderRadius: '12px', background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', color: 'var(--text-main)' }}
+                      style={{ borderRadius: '12px', background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', color: 'var(--text-main)', textTransform: 'none' }}
                     >
                       🖨️ Imprimer la lettre de garantie
                     </button>
@@ -1778,7 +1799,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 type="button" 
                 className="btn text-white fw-bold px-4" 
                 onClick={() => setSelectedLetter(null)} 
-                style={{ background: '#334155', border: '1px solid #475569', borderRadius: '10px', color: '#ffffff' }}
+                style={{ background: '#334155', border: '1px solid #475569', borderRadius: '10px', color: '#ffffff', textTransform: 'none' }}
               >
                 Fermer
               </button>
@@ -1789,7 +1810,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     type="button" 
                     className="btn btn-danger fw-bold px-3 py-2 text-white" 
                     onClick={() => handleValidateAgent('rejected')}
-                    style={{ borderRadius: '10px' }}
+                    style={{ borderRadius: '10px', textTransform: 'none' }}
                   >
                     ❌ Rejeter la demande
                   </button>
