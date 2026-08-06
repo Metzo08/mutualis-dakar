@@ -92,18 +92,20 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
 
     const commCount = stats.coverageDetails?.communautaires?.count 
       ? stats.coverageDetails.communautaires.count.toLocaleString('fr-FR') 
-      : '1 720 480';
-    const commPct = stats.coverageDetails?.communautaires?.pct || '49.9';
+      : '1 725 981';
+    const commPct = stats.coverageDetails?.communautaires?.pct || '55.6';
 
     const ipmCount = stats.coverageDetails?.ipm?.count 
       ? stats.coverageDetails.ipm.count.toLocaleString('fr-FR') 
-      : '650 290';
-    const ipmPct = stats.coverageDetails?.ipm?.pct || '18.8';
+      : '654 354';
+    const ipmPct = stats.coverageDetails?.ipm?.pct || '21.4';
 
     const resteCount = stats.coverageDetails?.reste?.count 
       ? stats.coverageDetails.reste.count.toLocaleString('fr-FR') 
-      : '432 180';
-    const restePct = stats.coverageDetails?.reste?.pct || '12.5';
+      : '724 948';
+    const restePct = stats.coverageDetails?.reste?.pct || '23.0';
+
+    const origin = window.location.origin;
 
     printWin.document.write(`
       <!DOCTYPE html>
@@ -112,7 +114,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
           <title>Rapport_Couverture_Mutuelles_UNAMUSC_${new Date().toISOString().slice(0,10)}</title>
           <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
           <style>
-            @page { size: A4 portrait; margin: 15mm; }
+            @page { size: A4 portrait; margin: 12mm; }
             body { background: #ffffff !important; color: #0f172a !important; font-family: 'Inter', system-ui, Arial, sans-serif; padding: 2rem; }
             .report-card { border: 2px solid #059669; border-radius: 16px; padding: 2.5rem; background: #ffffff; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
             .no-print { margin-bottom: 2rem; text-align: center; }
@@ -134,18 +136,33 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
           </div>
 
           <div class="report-card">
-            <!-- Entête Sénégal & UNAMUSC -->
+            <!-- Entête Officiel : Drapeau Sénégal SVG & Logo UNAMUSC -->
             <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-4">
               <div class="d-flex align-items-center gap-3">
-                <div style="font-size: 2.5rem;">🇸🇳</div>
+                <!-- Drapeau Sénégal SVG Haute Résolution -->
+                <svg width="54" height="36" viewBox="0 0 900 600" style="border-radius: 6px; box-shadow: 0 3px 8px rgba(0,0,0,0.18); border: 1px solid rgba(0,0,0,0.15); flex-shrink: 0;">
+                  <rect width="300" height="600" fill="#00853f"/>
+                  <rect x="300" width="300" height="600" fill="#fdef42"/>
+                  <rect x="600" width="300" height="600" fill="#e31b23"/>
+                  <polygon points="450,210 479,300 574,300 497,355 526,445 450,390 374,445 403,355 326,300 421,300" fill="#00853f"/>
+                </svg>
+
                 <div>
-                  <h6 class="fw-bold mb-0 text-uppercase" style="color: #047857; letter-spacing: 0.5px;">RÉPUBLIQUE DU SÉNÉGAL</h6>
-                  <small class="text-muted fw-semibold" style="font-size: 0.8rem;">Un Peuple — Un But — Une Foi</small><br />
-                  <strong class="text-uppercase" style="color: #0f172a; font-size: 0.85rem;">Agence Nationale de la Couverture Maladie Universelle (SEN-CSU)</strong>
+                  <h6 class="fw-bold mb-0 text-uppercase" style="color: #047857; letter-spacing: 0.6px; font-size: 0.95rem;">RÉPUBLIQUE DU SÉNÉGAL</h6>
+                  <small class="text-muted fw-semibold d-block" style="font-size: 0.78rem;">Un Peuple — Un But — Une Foi</small>
+                  <strong class="text-uppercase d-block mt-0.5" style="color: #0f172a; font-size: 0.82rem; letter-spacing: 0.3px;">AGENCE NATIONALE DE LA COUVERTURE MALADIE UNIVERSELLE (SEN-CSU)</strong>
                 </div>
               </div>
-              <div class="text-end">
-                <span class="badge bg-success-subtle text-success border border-success px-3 py-2 fw-bold" style="font-size: 0.85rem;">
+
+              <div class="d-flex align-items-center gap-3 text-end">
+                <!-- Logo UNAMUSC -->
+                <img 
+                  src="${origin}/unamusc_logo.png" 
+                  onerror="this.onerror=null; this.src='${origin}/logo_partner_unamusc.png';" 
+                  alt="UNAMUSC Sénégal" 
+                  style="height: 55px; width: auto; object-fit: contain;" 
+                />
+                <span class="badge bg-success-subtle text-success border border-success px-3 py-2 fw-bold d-inline-block" style="font-size: 0.85rem; border-radius: 10px;">
                   🏛️ UDMS Dakar / UNAMUSC
                 </span>
               </div>
@@ -160,8 +177,8 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
                 Statistiques consolidées d'adhésion & répartition des bénéficiaires CSU
               </p>
               <div class="d-flex justify-content-center gap-3 mt-2">
-                <span class="badge bg-success text-white px-3 py-1.5 fw-bold">Date d'édition : ${new Date().toLocaleDateString('fr-FR')}</span>
-                <span class="badge bg-dark text-white px-3 py-1.5 fw-bold">Mois en cours : Août 2026</span>
+                <span class="badge bg-success text-white px-3 py-1.5 fw-bold" style="font-size: 0.82rem;">Date d'édition : ${new Date().toLocaleDateString('fr-FR')}</span>
+                <span class="badge bg-dark text-white px-3 py-1.5 fw-bold" style="font-size: 0.82rem;">Mois en cours : Août 2026</span>
               </div>
             </div>
 
@@ -169,31 +186,31 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
             <div class="table-responsive my-4">
               <table class="table align-middle" style="width: 100%; border-collapse: collapse;">
                 <thead>
-                  <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
-                    <th style="padding: 1rem; font-size: 0.9rem; font-weight: 800;">Type de Mutuelle / Organisme</th>
-                    <th style="padding: 1rem; font-size: 0.9rem; font-weight: 800; text-align: right;">Bénéficiaires Couverts</th>
-                    <th style="padding: 1rem; font-size: 0.9rem; font-weight: 800; text-align: right;">Part Relat. (%)</th>
-                    <th style="padding: 1rem; font-size: 0.9rem; font-weight: 800; text-align: center;">Taux d'Efficience</th>
+                  <tr style="background: #f8fafc; border-bottom: 2px solid #cbd5e1;">
+                    <th style="padding: 1.1rem 1rem; font-size: 0.9rem; font-weight: 800;">Type de Mutuelle / Organisme</th>
+                    <th style="padding: 1.1rem 1rem; font-size: 0.9rem; font-weight: 800; text-align: right;">Bénéficiaires Couverts</th>
+                    <th style="padding: 1.1rem 1rem; font-size: 0.9rem; font-weight: 800; text-align: right;">Part Relat. (%)</th>
+                    <th style="padding: 1.1rem 1rem; font-size: 0.9rem; font-weight: 800; text-align: center;">Taux d'Efficience</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr style="border-bottom: 1px solid #f1f5f9;">
-                    <td style="padding: 1rem; font-weight: 700;">🟢 Mutuelles communautaires (UDMS)</td>
-                    <td style="padding: 1rem; text-align: right; font-weight: 800; color: #047857; font-size: 1.05rem;">${commCount}</td>
-                    <td style="padding: 1rem; text-align: right; font-weight: 800; color: #047857;">${commPct}%</td>
-                    <td style="padding: 1rem; text-align: center;"><span class="badge bg-success px-3 py-1 text-white">Excellent (>80%)</span></td>
+                    <td style="padding: 1.1rem 1rem; font-weight: 700; font-size: 0.96rem;">🟢 Mutuelles communautaires (UDMS)</td>
+                    <td style="padding: 1.1rem 1rem; text-align: right; font-weight: 800; color: #047857; font-size: 1.1rem;">${commCount}</td>
+                    <td style="padding: 1.1rem 1rem; text-align: right; font-weight: 800; color: #047857; font-size: 1.05rem;">${commPct}%</td>
+                    <td style="padding: 1.1rem 1rem; text-align: center;"><span class="badge bg-success px-3 py-1.5 text-white fw-bold" style="font-size: 0.8rem; border-radius: 8px;">Excellent (>80%)</span></td>
                   </tr>
                   <tr style="border-bottom: 1px solid #f1f5f9;">
-                    <td style="padding: 1rem; font-weight: 700;">🔵 IPM-Tiers (Secteur privé & entreprises)</td>
-                    <td style="padding: 1rem; text-align: right; font-weight: 800; color: #2563eb; font-size: 1.05rem;">${ipmCount}</td>
-                    <td style="padding: 1rem; text-align: right; font-weight: 800; color: #2563eb;">${ipmPct}%</td>
-                    <td style="padding: 1rem; text-align: center;"><span class="badge bg-primary px-3 py-1 text-white">Bon (60%-80%)</span></td>
+                    <td style="padding: 1.1rem 1rem; font-weight: 700; font-size: 0.96rem;">🔵 IPM-Tiers (Secteur privé & entreprises)</td>
+                    <td style="padding: 1.1rem 1rem; text-align: right; font-weight: 800; color: #2563eb; font-size: 1.1rem;">${ipmCount}</td>
+                    <td style="padding: 1.1rem 1rem; text-align: right; font-weight: 800; color: #2563eb; font-size: 1.05rem;">${ipmPct}%</td>
+                    <td style="padding: 1.1rem 1rem; text-align: center;"><span class="badge bg-primary px-3 py-1.5 text-white fw-bold" style="font-size: 0.8rem; border-radius: 8px;">Bon (60%-80%)</span></td>
                   </tr>
                   <tr style="border-bottom: 1px solid #f1f5f9;">
-                    <td style="padding: 1rem; font-weight: 700;">🟠 Reste des mutuelles (scolaires, corporatives)</td>
-                    <td style="padding: 1rem; text-align: right; font-weight: 800; color: #d97706; font-size: 1.05rem;">${resteCount}</td>
-                    <td style="padding: 1rem; text-align: right; font-weight: 800; color: #d97706;">${restePct}%</td>
-                    <td style="padding: 1rem; text-align: center;"><span class="badge bg-warning text-dark px-3 py-1">Moyen (50%-60%)</span></td>
+                    <td style="padding: 1.1rem 1rem; font-weight: 700; font-size: 0.96rem;">🟠 Reste des mutuelles (scolaires, corporatives)</td>
+                    <td style="padding: 1.1rem 1rem; text-align: right; font-weight: 800; color: #d97706; font-size: 1.1rem;">${resteCount}</td>
+                    <td style="padding: 1.1rem 1rem; text-align: right; font-weight: 800; color: #d97706; font-size: 1.05rem;">${restePct}%</td>
+                    <td style="padding: 1.1rem 1rem; text-align: center;"><span class="badge bg-warning text-dark px-3 py-1.5 fw-bold" style="font-size: 0.8rem; border-radius: 8px;">Moyen (50%-60%)</span></td>
                   </tr>
                 </tbody>
               </table>
@@ -208,9 +225,9 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
                 </small>
               </div>
               <div class="col-4 text-end">
-                <div class="border border-success rounded-3 p-2 d-inline-block text-center" style="background: #f0fdf4;">
-                  <strong class="d-block text-uppercase" style="font-size: 0.75rem; color: #047857;">CACHET OFFICIEL UNAMUSC</strong>
-                  <span style="font-size: 0.7rem; color: #059669;">✔ Certifié Conforme</span>
+                <div class="border border-success rounded-3 p-3 d-inline-block text-center" style="background: #f0fdf4; border-width: 2px !important;">
+                  <strong class="d-block text-uppercase" style="font-size: 0.78rem; color: #047857; letter-spacing: 0.5px;">CACHET OFFICIEL UNAMUSC</strong>
+                  <span style="font-size: 0.72rem; color: #059669; font-weight: 700;">✔ Certifié Conforme</span>
                 </div>
               </div>
             </div>
@@ -227,9 +244,9 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
     mutuellesCount: 0,
     donationsSum: 0,
     coverageDetails: {
-      communautaires: { count: 1720480, pct: '49.9' },
-      ipm: { count: 650290, pct: '18.8' },
-      reste: { count: 432180, pct: '12.5' }
+      communautaires: { count: 1725981, pct: '55.6' },
+      ipm: { count: 654354, pct: '21.4' },
+      reste: { count: 724948, pct: '23.0' }
     }
   });
 
