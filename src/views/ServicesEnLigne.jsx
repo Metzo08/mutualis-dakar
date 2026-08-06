@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
-import { jsPDF } from 'jspdf';
+import { generateOfficialPdf } from '../utils/pdfGenerator';
 import { outboxAdd } from '../utils/offline';
 
 export default function ServicesEnLigne({ lang, initialTab = 'register', initialPackage = 'individuel', setView, setViewTab }) {
@@ -287,174 +287,24 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
 
   // Fonction de génération et téléchargement du reçu d'adhésion
   const handleDownloadReceipt = () => {
-    const now = new Date();
-    const doc = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4'
+    generateOfficialPdf({
+      filename: `recu_adhesion_${generatedCmuNumber || activeCmuNumber || 'CSU-2026-8812'}.pdf`,
+      docType: 'REÇU OFFICIEL D\'ADHÉSION CMU / UNAMUSC',
+      title: 'Reçu d\'Adhésion & Attestation de Droit CSU',
+      referenceNo: `REC-ADH-${Date.now().toString().slice(-6)}`,
+      beneficiaryName: `${formData.firstName || activeFirstName} ${formData.lastName || activeLastName}`,
+      cmuNumber: generatedCmuNumber || activeCmuNumber || 'CSU-DKR-2026-8812',
+      structureName: selectedMutuelle || 'Union Régionale des Mutuelles de Santé de Dakar',
+      details: [
+        { label: 'Adhérent', value: `${formData.firstName || activeFirstName} ${formData.lastName || activeLastName}` },
+        { label: 'Téléphone', value: formData.phone || '+221 77 000 00 00' },
+        { label: 'N° Adhérent / CMU', value: generatedCmuNumber || activeCmuNumber || 'CSU-DKR-2026-8812' },
+        { label: 'Statut Adhésion', value: 'Active (À jour de cotisation)' },
+        { label: 'Formule choisie', value: selectedPackage === 'individuel' ? 'Individuelle' : selectedPackage === 'familial' ? 'Familiale' : 'CSU Établissement' },
+        { label: 'Tiers-Payant', value: 'Ouvert dans tous les hôpitaux et pharmacies agréés' }
+      ],
+      notes: 'Ce reçu officiel atteste de l\'ouverture des droits à la couverture maladie universelle et sert de justificatif auprès des prestataires de santé.'
     });
-    
-    // Top bar green
-    doc.setFillColor(5, 150, 105);
-    doc.rect(0, 0, 210, 8, 'F');
-    
-    // Logo / Title
-    doc.setTextColor(5, 150, 105);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(22);
-    doc.text("MUTUALIS DAKAR", 20, 25);
-    
-    doc.setTextColor(100, 116, 139);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.text("Régime de Couverture Maladie Universelle (CMU) du Sénégal", 20, 30);
-    
-    // Header box
-    doc.setFillColor(248, 250, 252);
-    doc.rect(20, 38, 170, 18, 'F');
-    doc.setDrawColor(226, 232, 240);
-    doc.rect(20, 38, 170, 18, 'D');
-    
-    doc.setTextColor(30, 41, 59);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(13);
-    doc.text("REÇU NUMÉRIQUE D'ADHÉSION & COTISATION", 25, 45);
-    
-    doc.setTextColor(100, 116, 139);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.text(`Date de transaction : ${now.toLocaleDateString('fr-FR')} à ${now.toLocaleTimeString('fr-FR')}`, 25, 51);
-    doc.text(`N° Adhérent / CMU : ${generatedCmuNumber || 'MD-782410-DK'}`, 120, 51);
-    
-    let y = 68;
-    const drawSectionHeader = (title) => {
-      doc.setFillColor(241, 245, 249);
-      doc.rect(20, y, 170, 7, 'F');
-      doc.setTextColor(5, 150, 105);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(10);
-      doc.text(title, 23, y + 5);
-      y += 12;
-    };
-    
-    // Adhérent details
-    drawSectionHeader("INFORMATIONS DE L'ADHÉRENT");
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(100, 116, 139);
-    doc.text("Prénom & Nom :", 25, y);
-    doc.text("Téléphone :", 25, y + 6);
-    doc.text("Adresse :", 25, y + 12);
-    doc.text("E-mail :", 120, y);
-    
-    doc.setTextColor(30, 41, 59);
-    doc.setFont("helvetica", "bold");
-    doc.text(`${formData.firstName} ${formData.lastName}`, 55, y);
-    doc.text(`${formData.phone}`, 55, y + 6);
-    doc.text(`${formData.address || 'Dakar, Sénégal'}`, 55, y + 12);
-    doc.text(`${formData.email || 'Non renseigné'}`, 135, y);
-    
-    y += 22;
-    
-    // Cotisation details
-    drawSectionHeader("DÉTAILS DE LA COTISATION");
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(100, 116, 139);
-    doc.text("Mutuelle Cible :", 25, y);
-    doc.text("Formule choisie :", 25, y + 6);
-    doc.text("Moyen de règlement :", 25, y + 12);
-    doc.text("Validité :", 120, y);
-    if (schoolName) {
-      doc.text(selectedPackage === 'adhesion_masse' ? "Organisation :" : "Établissement :", 120, y + 6);
-    }
-    
-    doc.setTextColor(30, 41, 59);
-    doc.setFont("helvetica", "bold");
-    doc.text(`${selectedMutuelle}`, 65, y);
-    
-    const formulaLabel = selectedPackage === 'individuel' ? 'Individuelle' : 
-                         selectedPackage === 'familial' ? 'Familiale' : 
-                         selectedPackage === 'csu_eleves' ? 'CSU Élèves' : 
-                         selectedPackage === 'adhesion_masse' ? 'Adhésion groupe / masse' : 
-                         selectedPackage === 'csu_daara' ? 'CSU Daaras' : 'Parrainage';
-    doc.text(formulaLabel, 65, y + 6);
-    doc.text(paymentMethod === 'wave' ? 'Wave Pay' : paymentMethod === 'om' ? 'Orange Money' : 'Autre', 65, y + 12);
-    doc.text("12 / 2027", 155, y);
-    if (schoolName) {
-      doc.text(schoolName, 155, y + 6);
-    }
-    
-    y += 22;
-    
-    // Amount paid box
-    doc.setFillColor(254, 243, 199);
-    doc.rect(20, y, 170, 15, 'F');
-    doc.setDrawColor(245, 158, 11);
-    doc.rect(20, y, 170, 15, 'D');
-    
-    doc.setTextColor(217, 119, 6);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.text("MONTANT TOTAL PAYÉ :", 25, y + 9);
-    doc.setFontSize(16);
-    doc.text(`${String(calculateTotalCost()).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} FCFA`, 95, y + 10);
-    
-    y += 25;
-    
-    // Beneficiaries / members list if familial, csu_eleves, csu_daara, adhesion_masse
-    if (familyMembers && familyMembers.length > 0) {
-      const listTitle = (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara') ? 'Liste des élèves / talibés inscrits' : 
-                        selectedPackage === 'adhesion_masse' ? 'Liste des membres du groupe' : 'Liste des ayants droit (famille)';
-      drawSectionHeader(listTitle);
-      
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(8.5);
-      doc.setTextColor(30, 41, 59);
-      
-      let colWidth = 53;
-      let startX = 22;
-      let startY = y;
-      let currentY = startY;
-      
-      familyMembers.forEach((m, idx) => {
-        let col = idx % 3;
-        if (col === 0 && idx > 0) {
-          currentY += 4.5;
-        }
-        
-        if (currentY > 275) {
-          doc.addPage();
-          currentY = 20;
-        }
-        
-        let posX = startX + col * colWidth;
-        const roleLabel = (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara') ? `(Cl: ${m.relation})` :
-                          selectedPackage === 'adhesion_masse' ? `(${m.relation})` : `(${m.relation})`;
-        
-        let displayName = m.name;
-        if (displayName.length > 18) {
-          displayName = displayName.substring(0, 15) + '...';
-        }
-        doc.text(`${idx + 1}. ${displayName} ${roleLabel}`, posX, currentY);
-      });
-      y = currentY + 10;
-    }
-    
-    // Add page footer to all pages
-    const pageCount = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setDrawColor(226, 232, 240);
-      doc.line(20, 282, 190, 282);
-      doc.setFont("helvetica", "italic");
-      doc.setFontSize(8);
-      doc.setTextColor(148, 163, 184);
-      doc.text("Mutualis Dakar - Portail Régional CMU - support@mutualisdakar.sn", 20, 288);
-      doc.text(`Page ${i} sur ${pageCount}`, 175, 288);
-    }
-    
-    doc.save(`recu_adhesion_${generatedCmuNumber || 'MUTUALIS'}.pdf`);
   };
 
   // Helper: Next Step for Registration

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
-import { jsPDF } from 'jspdf';
+import { generateOfficialPdf } from '../utils/pdfGenerator';
 import { outboxAdd } from '../utils/offline';
 
 export default function ParrainageCSU({ lang, initialPackage = 'individuel', portalMode, agentUser, citizenUser }) {
@@ -25,207 +25,23 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
   }, [initialPackage]);
 
   const generateSponsorReceiptPDF = ({ sponsor, filleuls, dateStr }) => {
-    const doc = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4'
+    generateOfficialPdf({
+      filename: `recu_parrainage_${sponsor?.cmuNumber || 'SN-DK-SPN-1001'}.pdf`,
+      docType: 'REÇU OFFICIEL DE PARRAINAGE SOLIDAIRE',
+      title: 'Reçu de Cotisation & Parrainage CSU',
+      referenceNo: `REC-SPN-${Date.now().toString().slice(-6)}`,
+      beneficiaryName: `${sponsor?.firstName || 'Assuré'} ${sponsor?.lastName || 'Parrain'}`,
+      cmuNumber: sponsor?.cmuNumber || 'SN-DK-SPN-1001',
+      structureName: sponsor?.mutuelleName || 'Union Régionale des Mutuelles de Santé de Dakar',
+      details: [
+        { label: 'Sponsor / Parrain', value: `${sponsor?.firstName || 'Assuré'} ${sponsor?.lastName || 'Parrain'}` },
+        { label: 'Téléphone', value: sponsor?.phone || '+221 77 000 00 00' },
+        { label: 'Paiement', value: 'Wave Pay / Orange Money' },
+        { label: 'Nombre de bénéficiaires', value: `${(filleuls || []).length} personnes parrainées` },
+        { label: 'Statut', value: 'Cotisation validée 100% UNAMUSC' }
+      ],
+      notes: 'Le présent reçu certifie l\'adhésion et la prise en charge médicale officielle au nom de la République du Sénégal.'
     });
-    
-    const now = dateStr ? new Date(dateStr) : new Date();
-    
-    // Top bar green
-    doc.setFillColor(5, 150, 105);
-    doc.rect(0, 0, 210, 8, 'F');
-    
-    // Logo / Title
-    doc.setTextColor(5, 150, 105);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(22);
-    doc.text("MUTUALIS DAKAR", 20, 25);
-    
-    doc.setTextColor(100, 116, 139);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.text("Régime de Couverture Maladie Universelle (CMU) du Sénégal", 20, 30);
-    
-    // Header box
-    doc.setFillColor(248, 250, 252);
-    doc.rect(20, 38, 170, 18, 'F');
-    doc.setDrawColor(226, 232, 240);
-    doc.rect(20, 38, 170, 18, 'D');
-    
-    doc.setTextColor(30, 41, 59);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(13);
-    doc.text("Reçu numérique de parrainage solidaire", 25, 45);
-    
-    doc.setTextColor(100, 116, 139);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.text(`Date : ${now.toLocaleDateString('fr-FR')} à ${now.toLocaleTimeString('fr-FR')}`, 25, 51);
-    doc.text(`N° Membre / Dossier : ${sponsor.cmu_number || 'SN-DK-SPN-1001'}`, 115, 51);
-    
-    let y = 68;
-    const drawSectionHeader = (title) => {
-      doc.setFillColor(241, 245, 249);
-      doc.rect(20, y, 170, 7, 'F');
-      doc.setTextColor(5, 150, 105);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(10);
-      doc.text(title, 23, y + 5);
-      y += 12;
-    };
-    
-    // Parrain Details Section
-    drawSectionHeader("Informations du parrain / sponsor");
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(100, 116, 139);
-    doc.text("Prénom & Nom :", 25, y);
-    doc.setTextColor(30, 41, 59);
-    doc.setFont("helvetica", "bold");
-    doc.text(`${sponsor.first_name} ${sponsor.last_name}`, 60, y);
-    
-    y += 6;
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(100, 116, 139);
-    doc.text("Téléphone :", 25, y);
-    doc.setTextColor(30, 41, 59);
-    doc.text(`${sponsor.phone}`, 60, y);
-    
-    y += 6;
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(100, 116, 139);
-    doc.text("Email & Adresse :", 25, y);
-    doc.setTextColor(30, 41, 59);
-    doc.text(`${sponsor.email || '—'} / ${sponsor.address || '—'}`, 60, y);
-    
-    y += 12;
-    
-    // Parrainage Details Section
-    drawSectionHeader("Détails du parrainage solidaire");
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(100, 116, 139);
-    doc.text("Mutuelle d'attachement :", 25, y);
-    doc.setTextColor(30, 41, 59);
-    doc.setFont("helvetica", "bold");
-    doc.text(`${sponsor.mutuelle_name}`, 75, y);
-    
-    y += 6;
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(100, 116, 139);
-    doc.text("Nombre de Filleuls :", 25, y);
-    doc.setTextColor(30, 41, 59);
-    doc.text(`${filleuls.length} bénéficiaire(s)`, 75, y);
-    
-    y += 6;
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(100, 116, 139);
-    doc.text("Formule :", 25, y);
-    doc.setTextColor(30, 41, 59);
-    const typeMap = {
-      individuel: 'Individuel (4 500 FCFA / filleul)',
-      eleves: 'Scolaire / Daara (1 000 FCFA / élève)',
-      collectif: 'Collectif / Élèves (1 000 FCFA / élève)',
-      menages: 'Ménages vulnérables (1 000 FCFA enrôlement + 3 500 FCFA cotisation / personne)'
-    };
-    doc.text(typeMap[sponsor.parrainageType] || typeMap[sponsor.package_type] || sponsor.parrainageType || '—', 75, y);
-    
-    y += 6;
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(100, 116, 139);
-    doc.text("Méthode de paiement :", 25, y);
-    doc.setTextColor(30, 41, 59);
-    doc.text(`${(sponsor.payment_method || 'wave').toUpperCase()}`, 75, y);
-    
-    y += 12;
-    
-    // Filleuls Section
-    drawSectionHeader("Liste des bénéficiaires (filleuls) associés");
-    
-    // Table headers
-    doc.setFillColor(248, 250, 252);
-    doc.rect(20, y, 170, 6, 'F');
-    doc.setTextColor(100, 116, 139);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8.5);
-    doc.text("N°", 22, y + 4.5);
-    doc.text("Bénéficiaire (Prénom & Nom)", 32, y + 4.5);
-    doc.text("N° CMU", 95, y + 4.5);
-    doc.text("Mutuelle / Département", 130, y + 4.5);
-    y += 9;
-    
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(30, 41, 59);
-    doc.setFontSize(8.5);
-    
-    filleuls.forEach((f, idx) => {
-      // Page breaking check
-      if (y > 275) {
-        doc.addPage();
-        // Top bar green
-        doc.setFillColor(5, 150, 105);
-        doc.rect(0, 0, 210, 8, 'F');
-        y = 20;
-      }
-      
-      doc.text(`${idx + 1}`, 22, y);
-      doc.setFont("helvetica", "bold");
-      doc.text(`${f.first_name} ${f.last_name}`, 32, y);
-      doc.setFont("helvetica", "normal");
-      doc.text(`${f.cmu_number || '—'}`, 95, y);
-      doc.text(`${f.mutuelle_name || '—'} (${f.department || 'Dakar'})`, 130, y);
-      
-      // If household chef, display family members
-      if (f.familyMembers && f.familyMembers.length > 0) {
-        y += 4;
-        doc.setTextColor(100, 116, 139);
-        doc.setFont("helvetica", "italic");
-        doc.setFontSize(7.5);
-        const famStr = f.familyMembers.map(fm => `${fm.name} (${fm.relation})`).join(', ');
-        doc.text(`Ayants droit : ${famStr}`, 35, y);
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(30, 41, 59);
-        doc.setFontSize(8.5);
-      }
-      
-      y += 6.5;
-    });
-    
-    y += 5;
-    
-    // Total Cost Box
-    if (y > 255) {
-      doc.addPage();
-      // Top bar green
-      doc.setFillColor(5, 150, 105);
-      doc.rect(0, 0, 210, 8, 'F');
-      y = 20;
-    }
-    
-    doc.setFillColor(236, 253, 245);
-    doc.rect(120, y, 70, 15, 'F');
-    doc.setDrawColor(167, 243, 208);
-    doc.rect(120, y, 70, 15, 'D');
-    
-    doc.setTextColor(5, 150, 105);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
-    doc.text("MONTANT GLOBAL PAYÉ :", 124, y + 6);
-    doc.setFontSize(14);
-    doc.text(`${String(sponsor.totalAmount || sponsor.amount || 0).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} FCFA`, 124, y + 12);
-    
-    y += 25;
-    
-    // Signatures
-    doc.setTextColor(100, 116, 139);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
-    doc.text("Signature du parrain", 30, y);
-    doc.text("Cachet Mutuelle de Dakar", 130, y);
-    
-    // Save PDF
-    doc.save(`recu_parrainage_${sponsor.cmu_number || 'MUTUALIS'}.pdf`);
   };
 
   const fetchSponsors = () => {
