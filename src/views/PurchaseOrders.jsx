@@ -722,21 +722,21 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               </p>
             </div>
           ) : (
-            <div className="table-responsive rounded-4 overflow-hidden border" style={{ borderColor: 'var(--border-color)', boxShadow: '0 8px 30px rgba(0,0,0,0.1)' }}>
-              <table className="table align-middle mb-0" style={{ color: 'var(--text-main)', borderCollapse: 'separate', borderSpacing: 0 }}>
+            <div className="table-responsive rounded-4 overflow-hidden border" style={{ borderColor: 'var(--border-color)', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }}>
+              <table className="table table-bordered align-middle mb-0" style={{ color: 'var(--text-main)', borderColor: 'var(--border-color)' }}>
                 <thead>
                   <tr style={{ background: 'var(--card-bg)', borderBottom: '2px solid var(--border-color)' }}>
-                    <th style={{ color: 'var(--text-main)', padding: '1rem 0.85rem', borderRight: '1px solid var(--border-color)', fontSize: '0.82rem', fontWeight: '800' }}>Code & date</th>
-                    <th style={{ color: 'var(--text-main)', padding: '1rem 0.85rem', borderRight: '1px solid var(--border-color)', fontSize: '0.82rem', fontWeight: '800' }}>Assuré / bénéficiaire</th>
-                    <th style={{ color: 'var(--text-main)', padding: '1rem 0.85rem', borderRight: '1px solid var(--border-color)', fontSize: '0.82rem', fontWeight: '800' }}>Médicaments prescrits</th>
-                    <th style={{ color: 'var(--text-main)', padding: '1rem 0.85rem', borderRight: '1px solid var(--border-color)', fontSize: '0.82rem', fontWeight: '800' }}>Prise en charge CSU</th>
-                    <th style={{ color: 'var(--text-main)', padding: '1rem 0.85rem', borderRight: '1px solid var(--border-color)', fontSize: '0.82rem', fontWeight: '800' }}>Chrono validité</th>
-                    <th style={{ color: 'var(--text-main)', padding: '1rem 0.85rem', borderRight: '1px solid var(--border-color)', fontSize: '0.82rem', fontWeight: '800' }}>Statut & homologation</th>
-                    <th style={{ color: 'var(--text-main)', padding: '1rem 0.85rem', textAlign: 'right', fontSize: '0.82rem', fontWeight: '800' }}>Actions</th>
+                    <th style={{ color: 'var(--text-main)', padding: '1.1rem 0.9rem', fontSize: '0.82rem', fontWeight: '800', borderBottom: '2px solid var(--border-color)' }}>Code & date</th>
+                    <th style={{ color: 'var(--text-main)', padding: '1.1rem 0.9rem', fontSize: '0.82rem', fontWeight: '800', borderBottom: '2px solid var(--border-color)' }}>Assuré / bénéficiaire</th>
+                    <th style={{ color: 'var(--text-main)', padding: '1.1rem 0.9rem', fontSize: '0.82rem', fontWeight: '800', borderBottom: '2px solid var(--border-color)' }}>Médicaments prescrits</th>
+                    <th style={{ color: 'var(--text-main)', padding: '1.1rem 0.9rem', fontSize: '0.82rem', fontWeight: '800', borderBottom: '2px solid var(--border-color)' }}>Prise en charge CSU</th>
+                    <th style={{ color: 'var(--text-main)', padding: '1.1rem 0.9rem', fontSize: '0.82rem', fontWeight: '800', borderBottom: '2px solid var(--border-color)' }}>Chrono validité</th>
+                    <th style={{ color: 'var(--text-main)', padding: '1.1rem 0.9rem', fontSize: '0.82rem', fontWeight: '800', borderBottom: '2px solid var(--border-color)' }}>Statut & homologation</th>
+                    <th style={{ color: 'var(--text-main)', padding: '1.1rem 0.9rem', textAlign: 'right', fontSize: '0.82rem', fontWeight: '800', borderBottom: '2px solid var(--border-color)' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {visibleOrders.map((ord) => {
+                  {visibleOrders.map((ord, idx) => {
                     let itemsList = [];
                     try {
                       itemsList = typeof ord.items_json === 'string' ? JSON.parse(ord.items_json) : (ord.items_json || []);
@@ -745,13 +745,19 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                     const bInfo = getBeneficiaryInfo(`${ord.first_name} ${ord.last_name}`, ord.cmu_number || activeCmuNumber);
 
                     return (
-                      <tr key={ord.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                      <tr 
+                        key={ord.id} 
+                        style={{ 
+                          borderBottom: '1.5px solid var(--border-color)', 
+                          background: idx % 2 === 1 ? 'var(--bg-card-subtle)' : 'transparent' 
+                        }}
+                      >
                         {/* 1. Code & date */}
-                        <td style={{ padding: '1rem 0.85rem', borderRight: '1px solid var(--border-color)', verticalAlign: 'top' }}>
-                          <code className="px-2.5 py-1 bg-dark text-success border border-success rounded-3 fw-bold d-inline-block mb-1" style={{ fontSize: '0.82rem', letterSpacing: '0.5px' }}>
+                        <td style={{ padding: '1.1rem 0.9rem', verticalAlign: 'top' }}>
+                          <code className="px-3 py-1.5 bg-dark text-success border border-success rounded-3 fw-bold d-inline-block mb-1 shadow-sm" style={{ fontSize: '0.85rem', letterSpacing: '0.5px' }}>
                             {ord.order_code || `ORD-2026-${ord.id}`}
                           </code>
-                          <small className="text-muted d-block mt-0.5" style={{ fontSize: '0.78rem' }}>
+                          <small className="text-muted d-block mt-0.5" style={{ fontSize: '0.8rem' }}>
                             📅 {new Date(ord.created_at).toLocaleDateString('fr-FR')}
                           </small>
                         </td>
