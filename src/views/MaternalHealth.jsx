@@ -67,29 +67,67 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
     setShowBabyModal(false);
   };
 
-  // Traitement d'envoi de relance/rappel immédiat
+  // Traitement d'envoi de relance/rappel immédiat avec synthèse vocale audible
   const [reminderSending, setReminderSending] = useState(false);
   const [reminderToast, setReminderToast] = useState(null);
 
+  // Moteur de synthèse vocale Web Speech & Web Audio chime
+  const playSpeechAudio = (textToSpeak) => {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) {
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.18, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.35);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.35);
+      }
+    } catch (e) {}
+
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      utterance.lang = 'fr-FR';
+      utterance.rate = 0.92;
+      utterance.pitch = 1.0;
+
+      const voices = window.speechSynthesis.getVoices();
+      const frVoice = voices.find(v => v.lang.includes('fr'));
+      if (frVoice) utterance.voice = frVoice;
+
+      window.speechSynthesis.speak(utterance);
+    }
+  };
+
   const triggerInstantReminder = (type = 'sms') => {
     setReminderSending(true);
+    const nextPendingVaccine = vaccinations.find(v => !v.completed);
+    const nextPendingCpn = cpnVisits.find(c => !c.completed);
+    const targetPrestation = nextPendingVaccine ? `Vaccination PEV (${nextPendingVaccine.vaccines})` : (nextPendingCpn ? nextPendingCpn.title : 'Consultation de suivi post-natal');
+
     setTimeout(() => {
       setReminderSending(false);
-      const nextPendingVaccine = vaccinations.find(v => !v.completed);
-      const nextPendingCpn = cpnVisits.find(c => !c.completed);
-      const targetPrestation = nextPendingVaccine ? `Vaccination PEV (${nextPendingVaccine.vaccines})` : (nextPendingCpn ? nextPendingCpn.title : 'Consultation de suivi post-natal');
-      
       let msg = '';
       if (type === 'sms' || type === 'whatsapp') {
-        msg = `📲 Notification SMS & WhatsApp délivrée à ${babyProfile.motherName} (${babyProfile.motherPhone}) : "Bonjour ${babyProfile.motherName}, rappel UNAMUSC : La prestation ${targetPrestation} pour votre bébé ${babyProfile.name} est programmée. Prise en charge 100% gratuite."`;
+        msg = `📲 Notification SMS & WhatsApp délivrée à ${babyProfile.motherName} (${babyProfile.motherPhone}) : "Bonjour ${babyProfile.motherName}, rappel UNAMUSC : la prestation ${targetPrestation} pour votre bébé ${babyProfile.name} est programmée. Prise en charge 100% gratuite."`;
+        playSpeechAudio(`Notification envoyée avec succès à ${babyProfile.motherName}`);
       } else {
-        msg = `🔊 Relance vocale (Wolof & Français) transmise au ${babyProfile.motherPhone} : "Dakar UNAMUSC mookoy digal, dindeel sa doom ${babyProfile.name} ngir mu am wér-gi-yaram..."`;
+        const spokenMsg = `Nanga def ${babyProfile.motherName}! Rappel UNAMUSC : la consultation de suivi et la vaccination de votre bébé ${babyProfile.name} sont programmées au centre de santé. Prise en charge cent pour cent gratuite.`;
+        msg = `🔊 Relance vocale (Wolof & Français) en cours de lecture pour ${babyProfile.motherPhone} : "${spokenMsg}"`;
+        playSpeechAudio(spokenMsg);
       }
       
       setReminderToast(msg);
       setBabyProfile(prev => ({ ...prev, lastReminderSent: "À l'instant" }));
-      setTimeout(() => setReminderToast(null), 7000);
-    }, 1000);
+      setTimeout(() => setReminderToast(null), 9500);
+    }, 600);
   };
 
   // État Vaccinations PEV (Tab 2)
@@ -1262,69 +1300,68 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
               </div>
             </div>
 
-            {/* CARD CENTRE DE RAPPELS AUTOMATIQUES SMS / WHATSAPP / VOCAL */}
-            <div className="p-3.5 rounded-4 text-white" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', border: '1px solid rgba(16, 185, 129, 0.35)', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
-              <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2.5">
-                <div className="d-flex align-items-center gap-2">
-                  <span className="fs-4">🔔</span>
+            {/* CARD CENTRE DE RAPPELS AUTOMATIQUES SMS / WHATSAPP / VOCAL (SENTENCE CASE STRICT & CONTRASTE MAX) */}
+            <div className="p-4 rounded-4 text-white" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', border: '1px solid rgba(16, 185, 129, 0.4)', boxShadow: '0 12px 35px rgba(0,0,0,0.35)' }}>
+              <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                <div className="d-flex align-items-center gap-2.5">
+                  <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem' }}>
+                    🔔
+                  </div>
                   <div>
-                    <h6 className="fw-extrabold mb-0 text-white" style={{ fontSize: '1rem' }}>
-                      Centre de Rappels & Relances Automatiques (Suivi Mère & Bébé)
+                    <h6 className="fw-extrabold mb-0 text-white" style={{ fontSize: '1.05rem', letterSpacing: '-0.01em' }}>
+                      Centre de rappels & relances automatiques (suivi mère & bébé)
                     </h6>
-                    <small className="text-emerald-300" style={{ fontSize: '0.78rem' }}>
-                      Assurée : <strong>{babyProfile.motherName}</strong> ({babyProfile.motherPhone}) • Canal : <strong>{babyProfile.reminderChannel}</strong>
+                    <small style={{ color: '#94a3b8', fontSize: '0.82rem' }}>
+                      Assurée : <strong className="text-white">{babyProfile.motherName}</strong> ({babyProfile.motherPhone}) • Canal : <strong className="text-emerald-400">{babyProfile.reminderChannel}</strong>
                     </small>
                   </div>
                 </div>
 
-                <span className="badge bg-success text-white px-3 py-1.5 rounded-pill fw-bold" style={{ fontSize: '0.75rem' }}>
+                <span className="badge px-3 py-2 rounded-pill fw-bold" style={{ background: 'rgba(16, 185, 129, 0.25)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.5)', fontSize: '0.78rem' }}>
                   🟢 Relances automatiques H-48 actives
                 </span>
               </div>
 
               {reminderToast && (
-                <div className="alert alert-success d-flex align-items-center p-3 mb-2 rounded-3 border-0 fade-in" style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#6ee7b7', border: '1px solid rgba(16, 185, 129, 0.4)' }}>
-                  <span className="me-2 fs-5">✅</span>
-                  <div className="small fw-semibold" style={{ lineHeight: '1.4' }}>{reminderToast}</div>
+                <div className="alert d-flex align-items-center p-3 mb-3 rounded-3 border-0 fade-in" style={{ background: 'rgba(5, 150, 105, 0.25)', color: '#a7f3d0', border: '1px solid #059669', boxShadow: '0 4px 15px rgba(5, 150, 105, 0.3)' }}>
+                  <span className="me-2 fs-4">🔊</span>
+                  <div className="small fw-bold" style={{ lineHeight: '1.45', fontSize: '0.88rem' }}>{reminderToast}</div>
                 </div>
               )}
 
-              <div className="d-flex gap-2 flex-wrap align-items-center justify-content-between pt-1">
-                <div className="small text-slate-300">
-                  Dernier rappel envoyé : <strong>{babyProfile.lastReminderSent}</strong>
+              <div className="d-flex gap-3 flex-wrap align-items-center justify-content-between pt-2 border-top" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+                <div className="small text-white-50" style={{ fontSize: '0.83rem' }}>
+                  Dernier rappel envoyé : <strong className="text-white">{babyProfile.lastReminderSent}</strong>
                 </div>
 
-                <div className="d-flex gap-2 flex-wrap">
+                <div className="d-flex gap-2.5 flex-wrap">
                   <button 
                     type="button"
-                    className="btn btn-sm btn-success fw-bold text-white d-inline-flex align-items-center gap-1.5 shadow-sm"
-                    style={{ borderRadius: '10px', background: '#059669', borderColor: '#059669', fontSize: '0.82rem', padding: '0.45rem 0.9rem' }}
+                    style={{ background: '#059669', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.55rem 1.1rem', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 4px 14px rgba(5, 150, 105, 0.4)' }}
                     disabled={reminderSending}
                     onClick={() => triggerInstantReminder('sms')}
                   >
-                    <span>💬</span> {reminderSending ? 'Envoi...' : 'Envoyer rappel SMS / WhatsApp immédiat'}
+                    <span>💬</span> {reminderSending ? 'Envoi...' : 'Envoyer un rappel SMS / WhatsApp immédiat'}
                   </button>
 
                   <button 
                     type="button"
-                    className="btn btn-sm btn-outline-light fw-bold d-inline-flex align-items-center gap-1.5"
-                    style={{ borderRadius: '10px', fontSize: '0.82rem', padding: '0.45rem 0.9rem' }}
+                    style={{ background: '#1e3a8a', color: '#ffffff', border: '1px solid #3b82f6', borderRadius: '12px', padding: '0.55rem 1.1rem', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 4px 14px rgba(59, 130, 246, 0.35)' }}
                     disabled={reminderSending}
                     onClick={() => triggerInstantReminder('voice')}
                   >
-                    <span>🔊</span> Relance vocale (Wolof / FR)
+                    <span>🔊</span> Relance vocale (Wolof / Français)
                   </button>
 
                   <button 
                     type="button"
-                    className="btn btn-sm btn-dark text-slate-300 fw-bold border border-secondary"
-                    style={{ borderRadius: '10px', fontSize: '0.82rem', padding: '0.45rem 0.8rem' }}
+                    style={{ background: '#1e293b', color: '#fbbf24', border: '1px solid #f59e0b', borderRadius: '12px', padding: '0.55rem 0.95rem', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer' }}
                     onClick={() => {
                       setBabyForm(babyProfile);
                       setShowBabyModal(true);
                     }}
                   >
-                    ⚙️ Configurer contact
+                    ⚙️ Configurer le contact
                   </button>
                 </div>
               </div>
