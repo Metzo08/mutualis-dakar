@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { isWolofText, convertWolofToFrenchPhonetics, cleanTextForTTS } from '../utils/phonetics';
-import { sanitizeSpeechText, playMedicalChime } from '../services/voiceAudioService';
+import { sanitizeSpeechText, playMedicalChime, speakCleanText } from '../services/voiceAudioService';
 
 const mariamaAvatar = '/mariama_avatar.png';
 
@@ -127,34 +127,10 @@ export default function ChatbotWidget({ lang, setView }) {
   };
 
   const fallbackWebSpeech = useCallback((cleanText) => {
-    if (!synthRef.current) {
-      console.warn('SpeechSynthesis non supporté par ce navigateur.');
-      return;
-    }
-    playMedicalChime();
     const isWolof = isWolofText(cleanText);
     const textToSpeak = isWolof ? convertWolofToFrenchPhonetics(cleanText) : cleanText;
-    const sanitizedText = sanitizeSpeechText(textToSpeak);
-
-    const utterance = new SpeechSynthesisUtterance(sanitizedText);
-    utterance.rate = isWolof ? 0.88 : 0.92;
-    utterance.pitch = 1.05;
-    utterance.volume = 1;
-    utterance.lang = 'fr-FR';
-
-    const voices = synthRef.current.getVoices();
-    const frenchVoice = voices.find(v => v.lang.startsWith('fr') && v.name.toLowerCase().includes('female'))
-      || voices.find(v => v.lang.startsWith('fr'));
-    if (frenchVoice) {
-      utterance.voice = frenchVoice;
-    }
-
-    utterance.onstart = () => setIsSpeaking(true);
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
-
-    synthRef.current.speak(utterance);
-  }, []);
+    speakCleanText(textToSpeak, isWolof ? 'wolof' : chatLang, () => setIsSpeaking(true), () => setIsSpeaking(false));
+  }, [chatLang]);
 
   // Text-to-Speech function
   const speakText = useCallback((text) => {
