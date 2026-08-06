@@ -1364,3 +1364,35 @@ div[style*="borderLeft"][style*="padding"]:not(.alert):not([role="alert"]) {
   border-left: none !important;
 }
 
+/* 17. ESPACEMENT INTELLIGENT UNIVERSEL ENTRE BOUTONS ADJACENTS
+   Résout définitivement tout problème de boutons collés sur les formulaires,
+   les modales, les tableaux et toutes les vues de la plateforme. */
+button + button, 
+.btn + .btn, 
+.btn + button, 
+button + .btn,
+a.btn + a.btn,
+a.btn + button,
+button + a.btn {
+  margin-left: 0.65rem !important;
+}
+
+/* Espacement vertical et horizontal pour les conteneurs de boutons flex */
+.d-flex:has(> button + button),
+.d-flex:has(> .btn + .btn),
+.d-flex:has(> button + .btn),
+.d-flex:has(> .btn + button),
+.modal-footer,
+.form-actions {
+  gap: 0.75rem !important;
+}
+
+/* Espacement dans les colonnes d'action des tableaux */
+td button + button,
+td .btn + .btn,
+td button + .btn,
+td .btn + button {
+  margin-left: 0.65rem !important;
+}
+
+
