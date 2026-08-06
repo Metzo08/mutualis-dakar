@@ -534,14 +534,14 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
           <span style={{ fontSize: '1.6rem' }}>
             {isSuperAdmin ? '👑' : isAgent ? '🛡️' : isPharmacist ? '💊' : '🩺'}
           </span>
-          <div>
-            <strong className="d-block" style={{ fontSize: '0.98rem' }}>
-              {isSuperAdmin && 'Mode SuperAdmin — Accès total & contrôle complet'}
-              {isAgent && 'Mode Agent UNAMUSC — Validation des ordonnances pending_review'}
-              {isPharmacist && 'Mode Pharmacien Agréé — Validation de la délivrance'}
-              {(isDoctor || isMidwife) && `Mode ${isDoctor ? 'Médecin' : 'Sage-Femme'} Prescripteur — Suivi de vos ordonnances`}
+          <div className="d-flex flex-column gap-1">
+            <strong className="d-block fw-bold" style={{ fontSize: '0.98rem' }}>
+              {isSuperAdmin && 'Mode SuperAdmin : Accès total & contrôle complet'}
+              {isAgent && 'Mode Agent UNAMUSC : Validation des ordonnances pending_review'}
+              {isPharmacist && 'Mode Pharmacien Agréé : Validation de la délivrance'}
+              {(isDoctor || isMidwife) && `Mode ${isDoctor ? 'Médecin' : 'Sage-Femme'} Prescripteur : Suivi de vos ordonnances`}
             </strong>
-            <small style={{ opacity: 0.85 }}>
+            <small className="d-block" style={{ opacity: 0.85, fontSize: '0.85rem' }}>
               {isSuperAdmin && 'Toutes les actions sont disponibles sur tous les bons.'}
               {isAgent && 'Validez ou rejetez les ordonnances soumises par les assurés pour activation en pharmacie.'}
               {isPharmacist && 'Certifiez le montant réel d\'officine et délivrez les médicaments (Tiers-Payant 80%).'}

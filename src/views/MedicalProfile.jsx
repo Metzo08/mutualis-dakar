@@ -399,9 +399,9 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
           {/* Bannière agent */}
           <div className="p-4 rounded-4 mb-4 d-flex align-items-center gap-3" style={{ background: 'linear-gradient(90deg, #1e3a5f 0%, #1d4ed8 100%)', borderRadius: '18px', color: '#fff' }}>
             <span style={{ fontSize: '2.2rem' }}>🛡️</span>
-            <div>
-              <strong className="d-block" style={{ fontSize: '1.1rem' }}>Mode Agent Administratif : UNAMUSC</strong>
-              <small style={{ opacity: 0.8 }}>Accès restreint : contrôle administratif uniquement. Le contenu médical détaillé est protégé par le secret médical.</small>
+            <div className="d-flex flex-column gap-1">
+              <strong className="d-block fw-bold" style={{ fontSize: '1.1rem' }}>Mode Agent Administratif : UNAMUSC</strong>
+              <small className="d-block" style={{ opacity: 0.85, fontSize: '0.85rem' }}>Accès restreint : contrôle administratif uniquement. Le contenu médical détaillé est protégé par le secret médical.</small>
             </div>
           </div>
 

@@ -1205,13 +1205,13 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               <span style={{ fontSize: '1.6rem' }}>
                 {isSuperAdmin ? '👑' : isAgent ? '🛡️' : '🩺'}
               </span>
-              <div>
-                <strong className="d-block" style={{ fontSize: '0.98rem' }}>
-                  {isSuperAdmin && 'Mode SuperAdmin — Accès total'}
-                  {isAgent && 'Mode Agent UNAMUSC — Instruction & homologation des demandes'}
-                  {(isDoctor || isMidwife) && `Mode ${isDoctor ? 'Médecin' : 'Sage-Femme'} — Consultation des dossiers patients`}
+              <div className="d-flex flex-column gap-1">
+                <strong className="d-block fw-bold" style={{ fontSize: '0.98rem' }}>
+                  {isSuperAdmin && 'Mode SuperAdmin : Accès total'}
+                  {isAgent && 'Mode Agent UNAMUSC : Instruction & homologation des demandes'}
+                  {(isDoctor || isMidwife) && `Mode ${isDoctor ? 'Médecin' : 'Sage-Femme'} : Consultation des dossiers patients`}
                 </strong>
-                <small style={{ opacity: 0.85 }}>
+                <small className="d-block" style={{ opacity: 0.85, fontSize: '0.85rem' }}>
                   {isSuperAdmin && 'Tous les dossiers et toutes les actions disponibles.'}
                   {isAgent && 'Validez, définissez le taux et le plafond, rejetez avec note.'}
                   {(isDoctor || isMidwife) && 'Consultez les garanties liées à vos patients (lecture + PDF).'}

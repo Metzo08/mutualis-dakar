@@ -604,13 +604,13 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
             border: isSuperAdmin ? '1px solid rgba(234,179,8,0.4)' : 'none'
           }}>
             <span style={{ fontSize: '1.6rem' }}>{isSuperAdmin ? '👑' : isMidwife ? '🤱' : '🩺'}</span>
-            <div>
-              <strong className="d-block" style={{ fontSize: '0.98rem' }}>
-                {isSuperAdmin && 'Mode SuperAdmin — Accès total'}
-                {isMidwife && 'Mode Sage-femme — Édition complète du carnet'}
-                {isDoctor && 'Mode Médecin — Édition complète du carnet'}
+            <div className="d-flex flex-column gap-1">
+              <strong className="d-block fw-bold" style={{ fontSize: '0.98rem' }}>
+                {isSuperAdmin && 'Mode SuperAdmin : Accès total'}
+                {isMidwife && 'Mode Sage-femme : Édition complète du carnet'}
+                {isDoctor && 'Mode Médecin : Édition complète du carnet'}
               </strong>
-              <small style={{ opacity: 0.85 }}>
+              <small className="d-block" style={{ opacity: 0.85, fontSize: '0.85rem' }}>
                 {isSuperAdmin ? 'Toutes les actions disponibles.' : 'Vous pouvez remplir les consultations prénatales, ajouter des fiches conseils et modifier le carnet.'}
               </small>
             </div>
@@ -624,8 +624,8 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
             color: 'var(--text-main)'
           }}>
             <span style={{ fontSize: '1.6rem' }}>📖</span>
-            <div>
-              <strong className="d-block mb-1" style={{ fontSize: '0.98rem' }}>Mode lecture seule : Espace assuré</strong>
+            <div className="d-flex flex-column gap-1">
+              <strong className="d-block fw-bold" style={{ fontSize: '0.98rem', color: 'var(--text-main)' }}>Mode lecture seule : Espace assuré</strong>
               <small className="d-block" style={{ color: 'var(--text-sub)', fontSize: '0.85rem' }}>Consultez votre carnet de maternité, téléchargez le PDF et posez vos questions à la sage-femme.</small>
             </div>
           </div>
