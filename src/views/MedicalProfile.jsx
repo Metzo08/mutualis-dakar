@@ -401,7 +401,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
             <span style={{ fontSize: '2.2rem' }}>🛡️</span>
             <div className="d-flex flex-column gap-1">
               <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.08rem', color: '#ffffff', letterSpacing: '-0.01em' }}>
-                Mode Agent Administratif UNAMUSC
+                Mode agent administratif UNAMUSC
               </h6>
               <span className="small" style={{ opacity: 0.9, fontSize: '0.88rem', lineHeight: '1.45' }}>
                 Contrôle administratif : Accès restreint au suivi administratif. Le contenu médical détaillé est protégé par le secret médical.

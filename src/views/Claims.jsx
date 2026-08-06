@@ -99,7 +99,7 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
       details: [
         { label: 'Bénéficiaire d\'Ayant droit', value: claim.beneficiary_name },
         { label: 'Établissement / Pharmacie Agréée', value: claim.structure_name },
-        { label: 'Montant Devis Soumis', value: formatFCFA(claim.amount) },
+        { label: 'Montant devis soumis', value: formatFCFA(claim.amount) },
         { label: 'Prise en charge UNAMUSC', value: `${formatFCFA(claim.reimbursed_amount)} (${claim.coverage_rate}%)` },
         { label: 'Ticket Modérateur Assuré', value: formatFCFA(claim.amount - claim.reimbursed_amount) },
         { label: 'Date d\'émission officielle', value: claim.submitted_at }

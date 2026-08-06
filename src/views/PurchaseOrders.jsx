@@ -536,10 +536,10 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
           </span>
           <div className="d-flex flex-column gap-1">
             <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.05rem', color: 'inherit', letterSpacing: '-0.01em' }}>
-              {isSuperAdmin && 'Mode SuperAdmin'}
-              {isAgent && 'Mode Agent UNAMUSC'}
-              {isPharmacist && 'Mode Pharmacien Agréé'}
-              {(isDoctor || isMidwife) && `Mode ${isDoctor ? 'Médecin' : 'Sage-Femme'} Prescripteur`}
+              {isSuperAdmin && 'Mode superadmin'}
+              {isAgent && 'Mode agent UNAMUSC'}
+              {isPharmacist && 'Mode pharmacien agréé'}
+              {(isDoctor || isMidwife) && `Mode ${isDoctor ? 'médecin' : 'sage-femme'} prescripteur`}
               {isCitizen && 'Mode lecture seule'}
             </h6>
             <span className="small" style={{ opacity: 0.9, fontSize: '0.88rem', lineHeight: '1.45' }}>

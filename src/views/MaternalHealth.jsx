@@ -636,9 +636,9 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
             <span style={{ fontSize: '1.6rem' }}>{isSuperAdmin ? '👑' : isMidwife ? '🤱' : '🩺'}</span>
             <div className="d-flex flex-column gap-1">
               <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.05rem', color: 'inherit', letterSpacing: '-0.01em' }}>
-                {isSuperAdmin && 'Mode SuperAdmin'}
-                {isMidwife && 'Mode Sage-femme'}
-                {isDoctor && 'Mode Médecin'}
+                {isSuperAdmin && 'Mode superadmin'}
+                {isMidwife && 'Mode sage-femme'}
+                {isDoctor && 'Mode médecin'}
               </h6>
               <span className="small" style={{ opacity: 0.9, fontSize: '0.88rem', lineHeight: '1.45' }}>
                 {isSuperAdmin && 'Accès total : Toutes les actions et validations sont disponibles.'}

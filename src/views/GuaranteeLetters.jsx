@@ -1207,9 +1207,9 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               </span>
               <div className="d-flex flex-column gap-1">
                 <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.05rem', color: 'inherit', letterSpacing: '-0.01em' }}>
-                  {isSuperAdmin && 'Mode SuperAdmin'}
-                  {isAgent && 'Mode Agent UNAMUSC'}
-                  {(isDoctor || isMidwife) && `Mode ${isDoctor ? 'Médecin' : 'Sage-Femme'}`}
+                  {isSuperAdmin && 'Mode superadmin'}
+                  {isAgent && 'Mode agent UNAMUSC'}
+                  {(isDoctor || isMidwife) && `Mode ${isDoctor ? 'médecin' : 'sage-femme'}`}
                   {isCitizen && 'Mode lecture seule'}
                 </h6>
                 <span className="small" style={{ opacity: 0.9, fontSize: '0.88rem', lineHeight: '1.45' }}>
@@ -1401,7 +1401,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   🇸🇳 UNAMUSC — DOSSIER DE PRISE EN CHARGE #{selectedLetter.validation_code}
                 </span>
                 <h4 className="fw-bold mb-1 text-white">
-                  📄 Instruction & Attestation de Garantie : {selectedLetter.first_name} {selectedLetter.last_name}
+                  📄 Instruction & attestation de garantie : {selectedLetter.first_name} {selectedLetter.last_name}
                 </h4>
                 <small className="text-white-50">
                   Homologation 100% humaine par l'agent habilité de l'Union Nationale des Mutuelles de Santé Communautaires (UNAMUSC).
@@ -1454,7 +1454,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     {/* Carte Bénéficiaire */}
                     <div className="col-md-6">
                       <div className="p-3.5 rounded-4 border" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)' }}>
-                        <span className="small text-muted d-block mb-1">👤 Assuré Bénéficiaire :</span>
+                        <span className="small text-muted d-block mb-1">👤 Assuré bénéficiaire :</span>
                         <h5 className="fw-bold mb-1" style={{ color: 'var(--text-main)' }}>{selectedLetter.first_name} {selectedLetter.last_name}</h5>
                         <div className="d-flex flex-wrap gap-2 align-items-center mt-2">
                           <code className="px-2.5 py-1 bg-dark text-success border border-success rounded-3 fw-bold">
@@ -1502,7 +1502,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   {/* CALCULATEUR EXÉCUTIF DE COUVERTURE & RESTES À CHARGE */}
                   <div className="card p-4 rounded-4 border-0 mb-4 shadow-sm" style={{ background: 'rgba(5, 150, 105, 0.06)', borderLeft: '5px solid var(--primary)' }}>
                     <h5 className="fw-bold mb-3 text-success d-flex align-items-center gap-2">
-                      <span>⚙️</span> Calculateur UNAMUSC de Prise en Charge & Plafond Tiers-Payant
+                      <span>⚙️</span> Calculateur UNAMUSC de prise en charge & plafond tiers-payant
                     </h5>
 
                     <div className="row g-4 align-items-center mb-4">
@@ -1545,7 +1545,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                         <div className="p-3.5 rounded-3 border border-success" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)' }}>
                           <div className="row g-3 text-center">
                             <div className="col-md-4">
-                              <span className="small d-block mb-1" style={{ color: 'var(--text-sub)' }}>Montant Devis Soumis</span>
+                              <span className="small d-block mb-1" style={{ color: 'var(--text-sub)' }}>Montant devis soumis</span>
                               <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>{Number(estVal).toLocaleString()} FCFA</h5>
                             </div>
                             <div className="col-md-4 border-start border-end" style={{ borderColor: 'var(--border-color)' }}>
@@ -1562,7 +1562,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     })()}
 
                     <div className="mt-4">
-                      <label className="form-label fw-bold small">Note d'instruction & Observations de l'agent habilité UNAMUSC *</label>
+                      <label className="form-label fw-bold small">Note d'instruction & observations de l'agent habilité UNAMUSC *</label>
                       <textarea 
                         className="form-control input" 
                         rows="3"
