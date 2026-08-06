@@ -856,15 +856,17 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
                           filteredPrestataires.map((p) => (
                             <tr key={p.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                               <td style={{ padding: '0.85rem 0.75rem' }}>
-                                <strong className="d-block mb-1" style={{ color: 'var(--text-main)', fontSize: '0.95rem', fontWeight: '800' }}>
-                                  {p.name}
-                                </strong>
-                                <small className="text-muted d-block mb-0.5" style={{ fontSize: '0.82rem' }}>
-                                  📍 Adresse : {p.commune}
-                                </small>
-                                <small className="text-muted d-block" style={{ fontSize: '0.8rem' }}>
-                                  📞 Tél : {p.phone}
-                                </small>
+                                <div className="d-flex flex-column gap-1">
+                                  <div style={{ color: 'var(--text-main)', fontSize: '0.96rem', fontWeight: '800', lineHeight: '1.3' }}>
+                                    {p.name}
+                                  </div>
+                                  <div className="text-muted fw-normal" style={{ fontSize: '0.84rem', lineHeight: '1.3' }}>
+                                    📍 Adresse : {p.commune}
+                                  </div>
+                                  <div className="text-muted fw-normal" style={{ fontSize: '0.8rem', lineHeight: '1.3' }}>
+                                    📞 Tél : {p.phone}
+                                  </div>
+                                </div>
                               </td>
                               <td style={{ padding: '0.85rem 0.75rem' }}>
                                 <span className="badge bg-primary-subtle text-primary border border-primary px-2.5 py-1 fw-bold d-inline-block" style={{ borderRadius: '8px', fontSize: '0.78rem' }}>
