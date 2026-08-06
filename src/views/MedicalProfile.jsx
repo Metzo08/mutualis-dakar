@@ -938,24 +938,24 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                   <div className="d-flex flex-column gap-2.5">
                     <div className="p-3 rounded-3 d-flex align-items-center justify-content-between" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
                       <div className="d-flex align-items-center gap-2.5">
-                        <div style={{ width: '36px', height: '36px', background: '#059669', color: '#ffffff', fontWeight: '700', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem' }}>F</div>
+                        <div style={{ width: '38px', height: '38px', background: '#059669', color: '#ffffff', fontWeight: '700', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', flexShrink: 0 }}>F</div>
                         <div>
-                          <strong className="d-block mb-1" style={{ color: 'var(--text-main)', fontSize: '0.92rem' }}>Hôpital Fann</strong>
-                          <small className="fw-semibold" style={{ color: 'var(--text-sub)', fontSize: '0.78rem' }}>ID DHIS2 : FANN-77291</small>
+                          <strong className="d-block text-main fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.92rem', marginBottom: '0.15rem' }}>Hôpital Fann</strong>
+                          <span className="fw-semibold text-muted d-block" style={{ fontSize: '0.78rem' }}>ID DHIS2 : FANN-77291</span>
                         </div>
                       </div>
-                      <span style={{ background: 'rgba(16,185,129,0.15)', color: '#10b981', borderRadius: '8px', padding: '0.25rem 0.6rem', fontSize: '0.72rem', fontWeight: '700' }}>✓ Synchronisé</span>
+                      <span style={{ background: 'rgba(16,185,129,0.15)', color: '#10b981', borderRadius: '8px', padding: '0.3rem 0.65rem', fontSize: '0.75rem', fontWeight: '700' }}>✓ Synchronisé</span>
                     </div>
 
                     <div className="p-3 rounded-3 d-flex align-items-center justify-content-between" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
                       <div className="d-flex align-items-center gap-2.5">
-                        <div style={{ width: '36px', height: '36px', background: '#dc2626', color: '#ffffff', fontWeight: '700', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem' }}>LD</div>
+                        <div style={{ width: '38px', height: '38px', background: '#dc2626', color: '#ffffff', fontWeight: '700', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.85rem', flexShrink: 0 }}>LD</div>
                         <div>
-                          <strong className="d-block mb-1" style={{ color: 'var(--text-main)', fontSize: '0.92rem' }}>Le Dantec</strong>
-                          <small className="fw-semibold" style={{ color: 'var(--text-sub)', fontSize: '0.78rem' }}>ID DHIS2 : LD-091823</small>
+                          <strong className="d-block text-main fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.92rem', marginBottom: '0.15rem' }}>Le Dantec</strong>
+                          <span className="fw-semibold text-muted d-block" style={{ fontSize: '0.78rem' }}>ID DHIS2 : LD-091823</span>
                         </div>
                       </div>
-                      <span style={{ background: 'rgba(16,185,129,0.15)', color: '#10b981', borderRadius: '8px', padding: '0.25rem 0.6rem', fontSize: '0.72rem', fontWeight: '700' }}>✓ Synchronisé</span>
+                      <span style={{ background: 'rgba(16,185,129,0.15)', color: '#10b981', borderRadius: '8px', padding: '0.3rem 0.65rem', fontSize: '0.75rem', fontWeight: '700' }}>✓ Synchronisé</span>
                     </div>
                   </div>
                 </div>
