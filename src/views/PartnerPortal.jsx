@@ -29,11 +29,12 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
 
   // Stats
   const [stats, setStats] = useState(null);
-  const isAuthenticated = !!partner || (portalMode === 'superadmin') || (portalMode === 'agent' && !!agentUser);
-  // Le SuperAdmin gère les prestataires (agrément, modification, suppression)
+  const isAuthenticated = !!partner || (portalMode === 'superadmin') || (portalMode === 'agent' && !!agentUser) || portalMode === 'doctor' || portalMode === 'midwife' || portalMode === 'pharmacist' || portalMode === 'partner';
+  // Seuls les Agents UDMS et le SuperAdmin effectuent le conventionnement et l'agrément des prestataires
   const isSuperAdmin = portalMode === 'superadmin' || agentUser?.role === 'SuperAdmin' || agentUser?.role === 'Super Admin';
-  // Le prestataire accède à son espace propre (outils métier)
-  const isPartner = !isSuperAdmin && (!!partner || portalMode === 'doctor' || portalMode === 'midwife' || portalMode === 'pharmacist');
+  const isUdmsAgentOrAdmin = isSuperAdmin || (portalMode === 'agent' && !!agentUser) || agentUser?.role === 'Agent Instructeur';
+  // Le prestataire / médecin accède en lecteur aux données qui le concernent
+  const isPartner = !isUdmsAgentOrAdmin && (!!partner || portalMode === 'doctor' || portalMode === 'midwife' || portalMode === 'pharmacist' || portalMode === 'partner');
 
   // ============================================================================
   // PRESTATAIRES & PROFESSIONNELS CRÉÉS PAR L'UNION DÉPARTEMENTALE (UDMS)
@@ -538,140 +539,154 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
             )}
 
             <div className="row g-4">
-              {/* Formulaire de création de prestataire par rôle */}
-              <div className="col-lg-5">
-                <div className="p-4 rounded-4 border" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
-                  <h5 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--primary)' }}>
-                    <span>✍️</span> Enregistrer un Prestataire / Médecin
-                  </h5>
+              {/* Formulaire de création réservé EXCLUSIVEMENT aux AGENTS UDMS et SUPERADMIN */}
+              {isUdmsAgentOrAdmin ? (
+                <div className="col-lg-5">
+                  <div className="p-4 rounded-4 border" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
+                    <h5 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--primary)' }}>
+                      <span>✍️</span> Enregistrer un Prestataire / Médecin
+                    </h5>
 
-                  <form onSubmit={handleCreatePrestataireByUdms}>
-                    <div className="mb-3">
-                      <label className="form-label small fw-semibold">Union Départementale (UDMS)</label>
-                      <select 
-                        className="form-select input fw-bold"
-                        value={newPrestataire.udms}
-                        onChange={(e) => setNewPrestataire({ ...newPrestataire, udms: e.target.value })}
-                        style={{ borderRadius: '10px' }}
-                      >
-                        <option value="UDMS Dakar">UDMS Dakar</option>
-                        <option value="UDMS Pikine">UDMS Pikine</option>
-                        <option value="UDMS Guédiawaye">UDMS Guédiawaye</option>
-                        <option value="UDMS Rufisque">UDMS Rufisque</option>
-                        <option value="UDMS Keur Massar">UDMS Keur Massar</option>
-                      </select>
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="form-label small fw-semibold">Nom du Praticien ou de la Structure *</label>
-                      <input 
-                        type="text" 
-                        className="form-control input fw-bold"
-                        placeholder="Ex: Dr. Mamadou Ndiaye, Pharmacie Centrale..." 
-                        value={newPrestataire.name}
-                        onChange={(e) => setNewPrestataire({ ...newPrestataire, name: e.target.value })}
-                        style={{ borderRadius: '10px' }}
-                        required
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="form-label small fw-semibold">Rôle & Spécialité attribués *</label>
-                      <select 
-                        className="form-select input fw-bold"
-                        value={newPrestataire.role}
-                        onChange={(e) => setNewPrestataire({ ...newPrestataire, role: e.target.value })}
-                        style={{ borderRadius: '10px' }}
-                      >
-                        <option value="Médecin Généraliste / Spécialiste">Médecin Généraliste / Spécialiste</option>
-                        <option value="Pharmacie d'Officine (Bons 48h)">Pharmacie d'Officine (Bons 48h)</option>
-                        <option value="Centre d'Imagerie & Radiologie (DICOM)">Centre d'Imagerie & Radiologie (DICOM)</option>
-                        <option value="Laboratoire d'Analyses Médicales">Laboratoire d'Analyses Médicales</option>
-                        <option value="Hôpital / Structure Sanitaire">Hôpital / Structure Sanitaire</option>
-                        <option value="Sage-Femme / Infirmier (CPN Maternité)">Sage-Femme / Infirmier (CPN Maternité)</option>
-                      </select>
-                    </div>
-
-                    <div className="row g-2 mb-3">
-                      <div className="col-6">
-                        <label className="form-label small fw-semibold">N° Agrément UNAMUSC *</label>
-                        <input 
-                          type="text" 
-                          className="form-control input"
-                          placeholder="Ex: AGR-2026-DKR-901" 
-                          value={newPrestataire.agreement}
-                          onChange={(e) => setNewPrestataire({ ...newPrestataire, agreement: e.target.value })}
-                          style={{ borderRadius: '10px' }}
-                          required
-                        />
-                      </div>
-                      <div className="col-6">
-                        <label className="form-label small fw-semibold">Taux de Prise en charge</label>
+                    <form onSubmit={handleCreatePrestataireByUdms}>
+                      <div className="mb-3">
+                        <label className="form-label small fw-semibold">Union Départementale (UDMS)</label>
                         <select 
-                          className="form-select input"
-                          value={newPrestataire.rate}
-                          onChange={(e) => setNewPrestataire({ ...newPrestataire, rate: e.target.value })}
+                          className="form-select input fw-bold"
+                          value={newPrestataire.udms}
+                          onChange={(e) => setNewPrestataire({ ...newPrestataire, udms: e.target.value })}
                           style={{ borderRadius: '10px' }}
                         >
-                          <option value="80">80% (Général)</option>
-                          <option value="85">85% (Spécialités)</option>
-                          <option value="90">90% (Examens/Radios)</option>
-                          <option value="100">100% (Gratuité / Maternité)</option>
+                          <option value="UDMS Dakar">UDMS Dakar</option>
+                          <option value="UDMS Pikine">UDMS Pikine</option>
+                          <option value="UDMS Guédiawaye">UDMS Guédiawaye</option>
+                          <option value="UDMS Rufisque">UDMS Rufisque</option>
+                          <option value="UDMS Keur Massar">UDMS Keur Massar</option>
                         </select>
                       </div>
-                    </div>
 
-                    <div className="row g-2 mb-3">
-                      <div className="col-6">
-                        <label className="form-label small fw-semibold">Commune</label>
+                      <div className="mb-3">
+                        <label className="form-label small fw-semibold">Nom du Praticien ou de la Structure *</label>
                         <input 
                           type="text" 
-                          className="form-control input"
-                          placeholder="Ex: Dakar Plateau" 
-                          value={newPrestataire.commune}
-                          onChange={(e) => setNewPrestataire({ ...newPrestataire, commune: e.target.value })}
-                          style={{ borderRadius: '10px' }}
-                        />
-                      </div>
-                      <div className="col-6">
-                        <label className="form-label small fw-semibold">Téléphone de contact *</label>
-                        <input 
-                          type="text" 
-                          className="form-control input"
-                          placeholder="+221 77..." 
-                          value={newPrestataire.phone}
-                          onChange={(e) => setNewPrestataire({ ...newPrestataire, phone: e.target.value })}
+                          className="form-control input fw-bold"
+                          placeholder="Ex: Dr. Mamadou Ndiaye, Pharmacie Centrale..." 
+                          value={newPrestataire.name}
+                          onChange={(e) => setNewPrestataire({ ...newPrestataire, name: e.target.value })}
                           style={{ borderRadius: '10px' }}
                           required
                         />
                       </div>
-                    </div>
 
-                    <div className="mb-4">
-                      <label className="form-label small fw-semibold">Adresse Email de connexion</label>
-                      <input 
-                        type="email" 
-                        className="form-control input"
-                        placeholder="praticien@cmu.sn" 
-                        value={newPrestataire.email}
-                        onChange={(e) => setNewPrestataire({ ...newPrestataire, email: e.target.value })}
-                        style={{ borderRadius: '10px' }}
-                      />
-                    </div>
+                      <div className="mb-3">
+                        <label className="form-label small fw-semibold">Rôle & Spécialité attribués *</label>
+                        <select 
+                          className="form-select input fw-bold"
+                          value={newPrestataire.role}
+                          onChange={(e) => setNewPrestataire({ ...newPrestataire, role: e.target.value })}
+                          style={{ borderRadius: '10px' }}
+                        >
+                          <option value="Médecin Généraliste / Spécialiste">Médecin Généraliste / Spécialiste</option>
+                          <option value="Pharmacie d'Officine (Bons 48h)">Pharmacie d'Officine (Bons 48h)</option>
+                          <option value="Centre d'Imagerie & Radiologie (DICOM)">Centre d'Imagerie & Radiologie (DICOM)</option>
+                          <option value="Laboratoire d'Analyses Médicales">Laboratoire d'Analyses Médicales</option>
+                          <option value="Hôpital / Structure Sanitaire">Hôpital / Structure Sanitaire</option>
+                          <option value="Sage-Femme / Infirmier (CPN Maternité)">Sage-Femme / Infirmier (CPN Maternité)</option>
+                        </select>
+                      </div>
 
-                    <button 
-                      type="submit" 
-                      className="btn text-white fw-bold w-100 py-2.5 shadow-sm"
-                      style={{ background: 'var(--primary)', borderColor: 'var(--primary)', borderRadius: '12px', fontSize: '0.95rem' }}
-                    >
-                      ➕ Enregistrer & Agréer le Prestataire
-                    </button>
-                  </form>
+                      <div className="row g-2 mb-3">
+                        <div className="col-6">
+                          <label className="form-label small fw-semibold">N° Agrément UNAMUSC *</label>
+                          <input 
+                            type="text" 
+                            className="form-control input"
+                            placeholder="Ex: AGR-2026-DKR-901" 
+                            value={newPrestataire.agreement}
+                            onChange={(e) => setNewPrestataire({ ...newPrestataire, agreement: e.target.value })}
+                            style={{ borderRadius: '10px' }}
+                            required
+                          />
+                        </div>
+                        <div className="col-6">
+                          <label className="form-label small fw-semibold">Taux de Prise en charge</label>
+                          <select 
+                            className="form-select input"
+                            value={newPrestataire.rate}
+                            onChange={(e) => setNewPrestataire({ ...newPrestataire, rate: e.target.value })}
+                            style={{ borderRadius: '10px' }}
+                          >
+                            <option value="80">80% (Général)</option>
+                            <option value="85">85% (Spécialités)</option>
+                            <option value="90">90% (Examens/Radios)</option>
+                            <option value="100">100% (Gratuité / Maternité)</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="row g-2 mb-3">
+                        <div className="col-6">
+                          <label className="form-label small fw-semibold">Commune</label>
+                          <input 
+                            type="text" 
+                            className="form-control input"
+                            placeholder="Ex: Dakar Plateau" 
+                            value={newPrestataire.commune}
+                            onChange={(e) => setNewPrestataire({ ...newPrestataire, commune: e.target.value })}
+                            style={{ borderRadius: '10px' }}
+                          />
+                        </div>
+                        <div className="col-6">
+                          <label className="form-label small fw-semibold">Téléphone de contact *</label>
+                          <input 
+                            type="text" 
+                            className="form-control input"
+                            placeholder="+221 77..." 
+                            value={newPrestataire.phone}
+                            onChange={(e) => setNewPrestataire({ ...newPrestataire, phone: e.target.value })}
+                            style={{ borderRadius: '10px' }}
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mb-4">
+                        <label className="form-label small fw-semibold">Adresse Email de connexion</label>
+                        <input 
+                          type="email" 
+                          className="form-control input"
+                          placeholder="praticien@cmu.sn" 
+                          value={newPrestataire.email}
+                          onChange={(e) => setNewPrestataire({ ...newPrestataire, email: e.target.value })}
+                          style={{ borderRadius: '10px' }}
+                        />
+                      </div>
+
+                      <button 
+                        type="submit" 
+                        className="btn text-white fw-bold w-100 py-2.5 shadow-sm"
+                        style={{ background: 'var(--primary)', borderColor: 'var(--primary)', borderRadius: '12px', fontSize: '0.95rem' }}
+                      >
+                        ➕ Enregistrer & Agréer le Prestataire
+                      </button>
+                    </form>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="col-12 mb-2">
+                  <div className="p-3.5 rounded-4 border d-flex align-items-center gap-3" style={{ background: 'rgba(59, 130, 246, 0.08)', borderColor: 'rgba(59, 130, 246, 0.25)', color: 'var(--text-main)', borderRadius: '16px', padding: '1.25rem 1.5rem' }}>
+                    <span style={{ fontSize: '2rem' }}>ℹ️</span>
+                    <div>
+                      <strong className="d-block text-primary" style={{ fontSize: '1rem', fontWeight: '800' }}>🔒 Espace Lecteur & Consultation des Agréments UDMS</strong>
+                      <span className="small text-muted" style={{ fontSize: '0.88rem', lineHeight: '1.5' }}>
+                        Le conventionnement et l'agrément des structures sanitaires sont réservés aux <strong>Agents des Unions Départementales (UDMS)</strong> et à la Direction <strong>SuperAdmin UNAMUSC</strong>. Vous accédez ci-dessous à l'annuaire officiel des prestataires agréés de l'<strong>{selectedUdms}</strong> en lecture seule.
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Liste des Prestataires et Professionnels Agréés par l'UDMS */}
-              <div className="col-lg-7">
+              <div className={isUdmsAgentOrAdmin ? "col-lg-7" : "col-12"}>
                 <div className="p-4 rounded-4 border h-100 d-flex flex-column" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
                   <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                     <h5 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
