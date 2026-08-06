@@ -810,12 +810,12 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                           {ord.status === 'pending_review' && <span className="badge px-3 py-1.5" style={{ borderRadius: '12px', background: '#f59e0b', color: '#0f172a' }}>⏳ En attente validation ordonnance</span>}
                         </td>
                         <td style={{ textAlign: 'right', padding: '0.85rem' }}>
-                          <div className="d-flex justify-content-end flex-wrap gap-2">
+                          <div className="d-flex flex-column align-items-end justify-content-center" style={{ gap: '0.65rem' }}>
                             <button
                               type="button"
                               className="btn btn-sm btn-outline-success fw-bold"
                               onClick={() => generateAndPrintPurchaseOrderPDF(ord)}
-                              style={{ borderRadius: '8px' }}
+                              style={{ borderRadius: '8px', marginBottom: '0.4rem' }}
                             >
                               📄 Imprimer Bon PDF
                             </button>
@@ -826,7 +826,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                                 type="button"
                                 className="btn btn-sm text-white fw-bold px-3 py-1.5"
                                 onClick={() => openPharmacistEditModal(ord)}
-                                style={{ background: '#059669', border: 'none', borderRadius: '8px' }}
+                                style={{ background: '#059669', border: 'none', borderRadius: '8px', marginBottom: '0.4rem' }}
                               >
                                 💊 Valider délivrance pharmacie
                               </button>
@@ -834,12 +834,12 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
 
                             {/* Validation ordonnance pending_review — Agent / SuperAdmin uniquement */}
                             {canValidateOrders && ord.status === 'pending_review' && (
-                              <>
+                              <div className="d-flex align-items-center gap-2">
                                 <button
                                   type="button"
                                   className="btn btn-sm text-white fw-bold px-3 py-1.5"
                                   onClick={() => handleApproveOrder(ord.id)}
-                                  style={{ background: '#10b981', border: 'none', borderRadius: '8px' }}
+                                  style={{ background: '#10b981', border: 'none', borderRadius: '8px', marginRight: '0.5rem' }}
                                 >
                                   ✅ Valider l'ordonnance
                                 </button>
@@ -851,7 +851,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                                 >
                                   ❌ Rejeter
                                 </button>
-                              </>
+                              </div>
                             )}
 
                             {/* Note agent si bon rejeté */}
