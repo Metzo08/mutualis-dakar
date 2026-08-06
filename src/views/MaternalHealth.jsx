@@ -17,6 +17,36 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [selectedCpnForBooking, setSelectedCpnForBooking] = useState(null);
 
+  // Dynamic Vitals State (Poids & Tension)
+  const [vitals, setVitals] = useState(() => {
+    const saved = localStorage.getItem('maternity_vitals');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return {
+      weight: '64.5 kg',
+      weightGain: '+2.1kg / mois',
+      bloodPressure: '12/8',
+      bpStatus: 'Normal'
+    };
+  });
+
+  const [showVitalsModal, setShowVitalsModal] = useState(false);
+  const [vitalsForm, setVitalsForm] = useState({
+    weight: vitals.weight,
+    weightGain: vitals.weightGain,
+    bloodPressure: vitals.bloodPressure,
+    bpStatus: vitals.bpStatus
+  });
+
+  const handleSaveVitals = (e) => {
+    e.preventDefault();
+    setVitals(vitalsForm);
+    localStorage.setItem('maternity_vitals', JSON.stringify(vitalsForm));
+    setShowVitalsModal(false);
+    alert('✅ Constantes vitales mises à jour avec succès !');
+  };
+
   // Modales conseils dynamiques
   const [selectedAdviceArticle, setSelectedAdviceArticle] = useState(null);
   const [showAddAdviceModal, setShowAddAdviceModal] = useState(false);
@@ -839,24 +869,43 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                 
                 {/* Card Constantes Vitales */}
                 <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-                  <div className="d-flex align-items-center gap-2 mb-3 text-success">
-                    <span style={{ fontSize: '1.2rem' }}>📈</span>
-                    <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>Constantes vitales</h6>
+                  <div className="d-flex align-items-center justify-content-between mb-3">
+                    <div className="d-flex align-items-center gap-2 text-success">
+                      <span style={{ fontSize: '1.2rem' }}>📈</span>
+                      <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>Constantes vitales</h6>
+                    </div>
+
+                    {(canEditMaternity || isSuperAdmin) && (
+                      <button 
+                        type="button" 
+                        className="btn btn-sm btn-outline-primary fw-bold"
+                        style={{ borderRadius: '8px', fontSize: '0.75rem', padding: '0.25rem 0.6rem' }}
+                        onClick={() => {
+                          setVitalsForm(vitals);
+                          setShowVitalsModal(true);
+                        }}
+                        title="Éditer les constantes vitales du patient"
+                      >
+                        ✏️ Modifier
+                      </button>
+                    )}
                   </div>
 
                   <div className="row text-center g-2">
                     <div className="col-6">
                       <div className="p-3 rounded-3" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
                         <small className="d-block" style={{ color: 'var(--text-sub)', fontSize: '0.72rem' }}>Poids</small>
-                        <h4 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>64.5 kg</h4>
-                        <small className="text-success" style={{ fontSize: '0.68rem' }}>+2.1kg / mois</small>
+                        <h4 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>{vitals.weight}</h4>
+                        <small className="text-success" style={{ fontSize: '0.68rem' }}>{vitals.weightGain}</small>
                       </div>
                     </div>
                     <div className="col-6">
                       <div className="p-3 rounded-3" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
                         <small className="d-block" style={{ color: 'var(--text-sub)', fontSize: '0.72rem' }}>Tension art.</small>
-                        <h4 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>12/8</h4>
-                        <small className="text-success" style={{ fontSize: '0.68rem' }}>Normal</small>
+                        <h4 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>{vitals.bloodPressure}</h4>
+                        <small className={vitals.bpStatus.includes('Élevée') ? 'text-danger fw-bold' : 'text-success'} style={{ fontSize: '0.68rem' }}>
+                          {vitals.bpStatus}
+                        </small>
                       </div>
                     </div>
                   </div>
@@ -1767,6 +1816,74 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
             <div className="d-flex justify-content-end gap-2">
               <button type="button" className="btn btn-secondary" onClick={() => { setEditingAdviceId(null); setEditAdviceForm(null); }}>Annuler</button>
               <button type="submit" className="btn btn-success fw-bold text-white">💾 Enregistrer</button>
+            </div>
+          </form>
+        </div>,
+        document.body
+      )}
+
+      {/* MODALE ÉDITION CONSTANTES VITALES (médecin / sage-femme / superadmin) */}
+      {showVitalsModal && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+          <form onSubmit={handleSaveVitals} style={{ maxWidth: '520px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', margin: 'auto' }}>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h5 className="fw-bold text-success mb-0">📈 Mettre à jour les constantes vitales</h5>
+              <button type="button" className="btn-close" onClick={() => setShowVitalsModal(false)}></button>
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label small fw-bold">Poids (ex: 64.5 kg) *</label>
+              <input 
+                type="text" 
+                className="form-control" 
+                style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} 
+                value={vitalsForm.weight} 
+                onChange={e => setVitalsForm({ ...vitalsForm, weight: e.target.value })} 
+                required 
+              />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label small fw-bold">Évolution mensuelle (ex: +2.1kg / mois) *</label>
+              <input 
+                type="text" 
+                className="form-control" 
+                style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} 
+                value={vitalsForm.weightGain} 
+                onChange={e => setVitalsForm({ ...vitalsForm, weightGain: e.target.value })} 
+                required 
+              />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label small fw-bold">Tension artérielle (ex: 12/8) *</label>
+              <input 
+                type="text" 
+                className="form-control" 
+                style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} 
+                value={vitalsForm.bloodPressure} 
+                onChange={e => setVitalsForm({ ...vitalsForm, bloodPressure: e.target.value })} 
+                required 
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="form-label small fw-bold">Statut tensionnel *</label>
+              <select 
+                className="form-select" 
+                style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} 
+                value={vitalsForm.bpStatus} 
+                onChange={e => setVitalsForm({ ...vitalsForm, bpStatus: e.target.value })}
+              >
+                <option value="Normal">Normal</option>
+                <option value="À surveiller">À surveiller</option>
+                <option value="Élevée (Hypertension)">Élevée (Hypertension)</option>
+              </select>
+            </div>
+
+            <div className="d-flex justify-content-end gap-2">
+              <button type="button" className="btn btn-secondary" onClick={() => setShowVitalsModal(false)}>Annuler</button>
+              <button type="submit" className="btn btn-success fw-bold text-white">💾 Enregistrer les constantes</button>
             </div>
           </form>
         </div>,
