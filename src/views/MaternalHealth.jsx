@@ -2258,7 +2258,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
       {showAddVaccineModal && createPortal(
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(12px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
           <form onSubmit={handleAddVaccine} style={{ maxWidth: '620px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2.25rem', border: '1px solid var(--border-color)', boxShadow: '0 20px 50px rgba(0,0,0,0.4)', margin: 'auto', maxHeight: '90vh', overflowY: 'auto' }}>
-            <div className="d-flex justify-content-between align-items-center mb-3.5 pb-2 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+            <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
               <div className="d-flex align-items-center gap-2">
                 <span className="fs-4">💉</span>
                 <div>
@@ -2269,9 +2269,23 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
               <button type="button" className="btn-close" onClick={() => setShowAddVaccineModal(false)}></button>
             </div>
 
+            {/* BANNIÈRE PROFIL BÉBÉ & CALCUL D'ÂGE AUTOMATIQUE (AUCUNE SAISIE DATE NAISSANCE REQUISE) */}
+            <div className="p-3 rounded-3 mb-3.5 d-flex align-items-center justify-content-between flex-wrap gap-2" style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.35)' }}>
+              <div className="d-flex align-items-center gap-2.5">
+                <span className="fs-4">👶</span>
+                <div>
+                  <strong className="d-block" style={{ fontSize: '0.92rem', color: 'var(--text-main)' }}>Bébé : {babyProfile.name}</strong>
+                  <small className="text-success fw-bold" style={{ fontSize: '0.78rem' }}>Né le {new Date(babyProfile.birthDate).toLocaleDateString('fr-FR')} (Enregistré)</small>
+                </div>
+              </div>
+              <span className="badge bg-success text-white fw-bold px-3 py-2 shadow-sm" style={{ borderRadius: '10px', fontSize: '0.82rem' }}>
+                ⚡ Âge calculé automatique : {calculateBabyAge(babyProfile.birthDate)}
+              </span>
+            </div>
+
             <div className="row g-3 mb-3">
               <div className="col-md-6">
-                <label className="form-label small fw-bold">Échéance / Âge (ex: 10 Semaines) *</label>
+                <label className="form-label small fw-bold">Échéance vaccinale / Âge (calculé) *</label>
                 <input type="text" className="form-control fw-semibold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newVaccineForm.ageLabel} onChange={e => setNewVaccineForm({ ...newVaccineForm, ageLabel: e.target.value })} required placeholder="ex: 10 Semaines (2 mois & demi)" />
               </div>
 
@@ -2302,7 +2316,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
 
             <div className="mb-4">
               <label className="form-label small fw-bold">Structure de santé agréée *</label>
-              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newVaccineForm.structure} onChange={e => setNewVaccineForm({ ...newVaccineForm, structure: e.target.value })} required placeholder="ex: Centre Hospitalier Abass Ndao" />
+              <input type="text" className="form-control fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newVaccineForm.structure} onChange={e => setNewVaccineForm({ ...newVaccineForm, structure: e.target.value })} required placeholder="ex: Centre Hospitalier Abass Ndao" />
             </div>
 
             <div className="d-flex justify-content-end gap-2.5 pt-2 border-top" style={{ borderColor: 'var(--border-color)' }}>
@@ -2318,7 +2332,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
       {editingVaccineId && editVaccineForm && createPortal(
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(12px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
           <form onSubmit={handleSaveEditVaccine} style={{ maxWidth: '620px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2.25rem', border: '1px solid var(--border-color)', boxShadow: '0 20px 50px rgba(0,0,0,0.4)', margin: 'auto', maxHeight: '90vh', overflowY: 'auto' }}>
-            <div className="d-flex justify-content-between align-items-center mb-3.5 pb-2 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+            <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
               <div className="d-flex align-items-center gap-2">
                 <span className="fs-4">✏️</span>
                 <div>
@@ -2327,6 +2341,20 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                 </div>
               </div>
               <button type="button" className="btn-close" onClick={() => { setEditingVaccineId(null); setEditVaccineForm(null); }}></button>
+            </div>
+
+            {/* BANNIÈRE PROFIL BÉBÉ & CALCUL D'ÂGE AUTOMATIQUE */}
+            <div className="p-3 rounded-3 mb-3.5 d-flex align-items-center justify-content-between flex-wrap gap-2" style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.35)' }}>
+              <div className="d-flex align-items-center gap-2.5">
+                <span className="fs-4">👶</span>
+                <div>
+                  <strong className="d-block" style={{ fontSize: '0.92rem', color: 'var(--text-main)' }}>Bébé : {babyProfile.name}</strong>
+                  <small className="text-success fw-bold" style={{ fontSize: '0.78rem' }}>Né le {new Date(babyProfile.birthDate).toLocaleDateString('fr-FR')}</small>
+                </div>
+              </div>
+              <span className="badge bg-success text-white fw-bold px-3 py-2 shadow-sm" style={{ borderRadius: '10px', fontSize: '0.82rem' }}>
+                ⚡ Âge calculé : {calculateBabyAge(babyProfile.birthDate)}
+              </span>
             </div>
 
             <div className="row g-3 mb-3">
