@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
 import DeleteModal from '../components/DeleteModal';
+import { playHybridVoiceReminder, playEmergencyVoiceInstruction } from '../services/voiceAudioService';
 
 // Design Premium Haut de Gamme — Carnet Maternité & Santé Enfant
 export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentUser = null, partnerUser = null, userRole = 'citizen', setView = null }) {
@@ -228,22 +229,23 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
     setTimeout(() => {
       setReminderSending(false);
       let msg = '';
-      let spokenMsg = '';
-
-      if (langChoice === 'wolof') {
-        spokenMsg = `Nanga def ${babyProfile.motherName}! Nguir suñu waah UNAMUSC : Consultation ak vaccins bu bébé ${babyProfile.name} fajj na ci centre de santé. Fajj gi payewul dara, 100% gratuit la.`;
-      } else if (langChoice === 'pulaar') {
-        spokenMsg = `Jam waali ${babyProfile.motherName}! Degindagol UNAMUSC : Cellal mamin e bimbintagol fayɓe ${babyProfile.name} ina jogii miijo e nokkuur cellal. Ko ɗum yoɓetaake, gratuit 100%.`;
-      } else {
-        spokenMsg = `Bonjour ${babyProfile.motherName}! Rappel UNAMUSC : la consultation de suivi et la vaccination de votre bébé ${babyProfile.name} sont programmées au centre de santé. Prise en charge cent pour cent gratuite.`;
-      }
 
       if (type === 'sms' || type === 'whatsapp') {
-        msg = `📲 Notification SMS & WhatsApp délivrée à ${babyProfile.motherName} (${babyProfile.motherPhone}) : "${spokenMsg}"`;
-        playSpeechAudio(`Notification envoyée avec succès à ${babyProfile.motherName}`);
+        msg = `📲 Notification SMS & WhatsApp délivrée à ${babyProfile.motherName} (${babyProfile.motherPhone}) : "Bonjour ${babyProfile.motherName}, rappel UNAMUSC : la prestation ${targetPrestation} pour votre bébé ${babyProfile.name} est programmée. Prise en charge 100% gratuite."`;
+        playHybridVoiceReminder({
+          lang: langChoice,
+          motherName: babyProfile.motherName,
+          babyName: babyProfile.name,
+          customMessage: `Notification envoyée avec succès à ${babyProfile.motherName}`
+        });
       } else {
-        msg = `🔊 Relance vocale (${langChoice.toUpperCase()}) en cours de lecture pour ${babyProfile.motherPhone} : "${spokenMsg}"`;
-        playSpeechAudio(spokenMsg);
+        msg = `🔊 Relance vocale hybride (${langChoice.toUpperCase()}) en cours de lecture pour ${babyProfile.motherPhone}...`;
+        playHybridVoiceReminder({
+          lang: langChoice,
+          motherName: babyProfile.motherName,
+          babyName: babyProfile.name,
+          prestation: targetPrestation
+        });
       }
       
       setReminderToast(msg);
@@ -2935,8 +2937,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                   className="btn btn-outline-light w-50 fw-bold d-flex align-items-center justify-content-center gap-1.5"
                   style={{ borderRadius: '12px', fontSize: '0.84rem' }}
                   onClick={() => {
-                    const spokenMsg = `Alerte Urgence Maternité ! Signe constaté : ${selectedDangerSign}. VEUILLEZ VOUS RENDRE IMMÉDIATEMENT À LA MATERNITÉ DE L'HÔPITAL ABASS NDAO OU DU CHU DE FANN. Prise en charge cent pour cent gratuite UNAMUSC.`;
-                    playSpeechAudio(spokenMsg);
+                    playEmergencyVoiceInstruction(selectedDangerSign, audioLang);
                   }}
                 >
                   <span>🔊</span> Consignes audio (Wolof / FR)
