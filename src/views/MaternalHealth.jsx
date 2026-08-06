@@ -381,15 +381,15 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
 
   const handleDownloadCarnet = () => {
     generateOfficialPdf({
-      filename: 'carnet_sante_maternelle_awa_ndiaye.pdf',
+      filename: `carnet_sante_maternelle_${activeFirstName.toLowerCase()}_${activeLastName.toLowerCase()}.pdf`,
       docType: 'CARNET DE SANTÉ MATERNELLE ET PÉDIATRIQUE',
       title: 'Carnet Maternité & Suivi Enfant 100% Gratuit',
       referenceNo: 'CARNET-MAT-2026-8812',
-      beneficiaryName: 'Awa Ndiaye',
-      cmuNumber: 'SN-DK-MED-8472',
+      beneficiaryName: activeFullName,
+      cmuNumber: activeCmuNumber,
       structureName: 'Hôpital Universitaire de Fann (Dakar)',
       details: [
-        { label: 'Assurée', value: 'Awa Ndiaye' },
+        { label: 'Assurée', value: activeFullName },
         { label: 'Enfant rattaché', value: 'Moussa Ndiaye (Né le 14/05/2026)' },
         { label: 'Statut Consultations CPN', value: '75% complété (CPN 1 et CPN 2 validées)' },
         { label: 'Vaccinations PEV Enfant', value: 'BCG, VPO 0, VHB 0 et Penta 1 administrés' },
@@ -405,11 +405,11 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
       docType: 'LETTRE DE GARANTIE HOSPITALIÈRE INTEGRALE',
       title: 'Prise en Charge Accouchement 100% UNAMUSC',
       referenceNo: 'GAR-MAT-2026-9910',
-      beneficiaryName: 'Awa Ndiaye',
-      cmuNumber: 'SN-DK-MED-8472',
+      beneficiaryName: activeFullName,
+      cmuNumber: activeCmuNumber,
       structureName: 'Centre Hospitalier Universitaire de Fann (Dakar)',
       details: [
-        { label: 'Bénéficiaire', value: 'Awa Ndiaye (SN-DK-MED-8472)' },
+        { label: 'Bénéficiaire', value: `${activeFullName} (${activeCmuNumber})` },
         { label: 'Établissement Récepteur', value: 'CHU de Fann (Dakar)' },
         { label: 'Taux de Couverture UNAMUSC', value: '100% Prise en Charge Totale' },
         { label: 'Actes Couverts', value: 'Accouchement simple, Césarienne d\'urgence & Soins néonataux' },
@@ -418,6 +418,12 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
       notes: 'La présente lettre de garantie dispense l\'assurée de toute avance de frais d\'hospitalisation ou de bloc opératoire.'
     });
   };
+
+  // Nom et identifiants de l'assurée connectée
+  const activeFirstName = citizenUser?.firstName || citizenUser?.first_name || 'Fatou';
+  const activeLastName = citizenUser?.lastName || citizenUser?.last_name || 'Diallo';
+  const activeFullName = `${activeFirstName} ${activeLastName}`;
+  const activeCmuNumber = citizenUser?.cmuNumber || citizenUser?.cmu_number || 'CSU-DKR-2026-8812';
 
   // ═══════════════════════════════════════════════════════
   // RBAC — Définition granulaire des rôles (cohérent avec MedicalProfile)
@@ -571,8 +577,8 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.1rem' }}>UNAMUSC Sénégal 🇸🇳</h5>
             <span style={{ height: '14px', width: '1px', background: 'var(--border-color)' }} />
-            <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '600', padding: '0.25rem 0.75rem' }}>
-              Awa Ndiaye • Mère éligible CSU
+            <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '20px', fontSize: '0.78rem', fontWeight: '600', padding: '0.3rem 0.85rem' }}>
+              {activeFullName} : Mère éligible CSU
             </span>
           </div>
 
@@ -611,7 +617,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
           </div>
         )}
         {isCitizen && (
-          <div className="mb-4 p-3 rounded-4 d-flex align-items-center gap-3" style={{
+          <div className="mb-4 p-3.5 rounded-4 d-flex align-items-center gap-3" style={{
             borderRadius: '14px',
             background: 'rgba(16,185,129,0.1)',
             border: '1px solid rgba(16,185,129,0.25)',
@@ -619,8 +625,8 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
           }}>
             <span style={{ fontSize: '1.6rem' }}>📖</span>
             <div>
-              <strong className="d-block" style={{ fontSize: '0.98rem' }}>Mode lecture seule — Espace assuré</strong>
-              <small style={{ color: 'var(--text-sub)' }}>Consultez votre carnet de maternité, téléchargez le PDF et posez vos questions à la sage-femme.</small>
+              <strong className="d-block mb-1" style={{ fontSize: '0.98rem' }}>Mode lecture seule : Espace assuré</strong>
+              <small className="d-block" style={{ color: 'var(--text-sub)', fontSize: '0.85rem' }}>Consultez votre carnet de maternité, téléchargez le PDF et posez vos questions à la sage-femme.</small>
             </div>
           </div>
         )}
@@ -1470,7 +1476,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
               </div>
 
               <p className="mb-3" style={{ color: 'var(--text-sub)', fontSize: '0.9rem', lineHeight: '1.7' }}>
-                <strong>Assurée :</strong> Awa Ndiaye (SN-DK-MED-8472)
+                <strong>Assurée :</strong> {activeFullName} ({activeCmuNumber})
               </p>
               <p className="mb-3" style={{ color: 'var(--text-sub)', fontSize: '0.9rem', lineHeight: '1.7' }}>
                 <strong>Établissement récepteur :</strong> Centre hospitalier universitaire de Fann (Dakar)
