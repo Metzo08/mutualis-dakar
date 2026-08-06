@@ -1243,17 +1243,17 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 : 'Aucun dossier ne correspond à ce N° de Carte CSU.'}
             </div>
           ) : (
-            <div className="table-responsive rounded-4 overflow-hidden border" style={{ borderColor: 'var(--border-color)', boxShadow: '0 8px 30px rgba(0,0,0,0.12)' }}>
-              <table className="table table-bordered align-middle mb-0" style={{ color: 'var(--text-main)', borderColor: 'var(--border-color)' }}>
+            <div className="table-responsive rounded-4 border" style={{ borderColor: 'rgba(255, 255, 255, 0.25)', boxShadow: '0 8px 30px rgba(0,0,0,0.25)' }}>
+              <table className="table align-middle mb-0" style={{ color: 'var(--text-main)', borderCollapse: 'collapse', minWidth: '1180px' }}>
                 <thead>
-                  <tr style={{ background: 'var(--card-bg)', borderBottom: '2px solid var(--border-color)' }}>
-                    <th style={{ padding: '1.1rem 0.9rem', fontSize: '0.82rem', fontWeight: '800', borderBottom: '2px solid var(--border-color)' }}>Assuré / bénéficiaire</th>
-                    <th style={{ padding: '1.1rem 0.9rem', fontSize: '0.82rem', fontWeight: '800', borderBottom: '2px solid var(--border-color)' }}>Acte médical & établissement</th>
-                    <th style={{ padding: '1.1rem 0.9rem', fontSize: '0.82rem', fontWeight: '800', borderBottom: '2px solid var(--border-color)' }}>Devis soumis</th>
-                    <th style={{ padding: '1.1rem 0.9rem', fontSize: '0.82rem', fontWeight: '800', borderBottom: '2px solid var(--border-color)' }}>Prise en charge accordée</th>
-                    <th style={{ padding: '1.1rem 0.9rem', fontSize: '0.82rem', fontWeight: '800', borderBottom: '2px solid var(--border-color)' }}>Statut & homologation</th>
-                    <th style={{ padding: '1.1rem 0.9rem', fontSize: '0.82rem', fontWeight: '800', borderBottom: '2px solid var(--border-color)' }}>Code garantie</th>
-                    <th style={{ padding: '1.1rem 0.9rem', textAlign: 'right', fontSize: '0.82rem', fontWeight: '800', borderBottom: '2px solid var(--border-color)' }}>Actions</th>
+                  <tr style={{ background: 'var(--card-bg)' }}>
+                    <th style={{ padding: '1.1rem 1rem', fontSize: '0.85rem', fontWeight: '800', border: '1px solid rgba(255, 255, 255, 0.25)', textTransform: 'none', letterSpacing: 'normal' }}>Assuré / bénéficiaire</th>
+                    <th style={{ padding: '1.1rem 1rem', fontSize: '0.85rem', fontWeight: '800', border: '1px solid rgba(255, 255, 255, 0.25)', textTransform: 'none', letterSpacing: 'normal' }}>Acte médical & établissement</th>
+                    <th style={{ padding: '1.1rem 1rem', fontSize: '0.85rem', fontWeight: '800', border: '1px solid rgba(255, 255, 255, 0.25)', textTransform: 'none', letterSpacing: 'normal' }}>Devis soumis</th>
+                    <th style={{ padding: '1.1rem 1rem', fontSize: '0.85rem', fontWeight: '800', border: '1px solid rgba(255, 255, 255, 0.25)', textTransform: 'none', letterSpacing: 'normal' }}>Prise en charge accordée</th>
+                    <th style={{ padding: '1.1rem 1rem', fontSize: '0.85rem', fontWeight: '800', border: '1px solid rgba(255, 255, 255, 0.25)', textTransform: 'none', letterSpacing: 'normal' }}>Statut & homologation</th>
+                    <th style={{ padding: '1.1rem 1rem', fontSize: '0.85rem', fontWeight: '800', border: '1px solid rgba(255, 255, 255, 0.25)', textTransform: 'none', letterSpacing: 'normal' }}>Code garantie</th>
+                    <th style={{ padding: '1.1rem 1rem', textAlign: 'right', fontSize: '0.85rem', fontWeight: '800', border: '1px solid rgba(255, 255, 255, 0.25)', textTransform: 'none', letterSpacing: 'normal' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1263,13 +1263,12 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                       <tr 
                         key={item.id} 
                         style={{ 
-                          borderBottom: '1.5px solid var(--border-color)', 
-                          background: idx % 2 === 1 ? 'var(--bg-card-subtle)' : 'transparent' 
+                          background: idx % 2 === 1 ? 'rgba(255, 255, 255, 0.03)' : 'transparent' 
                         }}
                       >
                         {/* 1. Assuré / bénéficiaire */}
-                        <td style={{ padding: '1.1rem 0.9rem', verticalAlign: 'top' }}>
-                          <div className="d-flex flex-column" style={{ gap: '0.4rem' }}>
+                        <td style={{ padding: '1.1rem 1rem', border: '1px solid rgba(255, 255, 255, 0.2)', verticalAlign: 'top' }}>
+                          <div className="d-flex flex-column" style={{ gap: '0.45rem' }}>
                             <div className="d-flex align-items-center gap-2 flex-wrap">
                               <strong style={{ color: 'var(--text-main)', fontSize: '0.98rem', fontWeight: '800' }}>
                                 {item.first_name} {item.last_name}
@@ -1300,13 +1299,13 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                         </td>
 
                         {/* 2. Acte médical & établissement */}
-                        <td style={{ padding: '1.1rem 0.9rem', verticalAlign: 'top', maxWidth: '260px' }}>
+                        <td style={{ padding: '1.1rem 1rem', border: '1px solid rgba(255, 255, 255, 0.2)', verticalAlign: 'top', maxWidth: '280px' }}>
                           <div className="d-flex flex-column gap-1.5">
-                            <strong className="d-block" style={{ color: 'var(--text-main)', fontSize: '0.92rem', lineHeight: '1.4' }}>
+                            <strong className="d-block" style={{ color: 'var(--text-main)', fontSize: '0.94rem', lineHeight: '1.4' }}>
                               {item.medical_act}
                             </strong>
                             {item.hospital_name && (
-                              <small className="text-muted d-block" style={{ fontSize: '0.8rem' }}>
+                              <small className="text-muted d-block" style={{ fontSize: '0.82rem' }}>
                                 🏥 {item.hospital_name}
                               </small>
                             )}
@@ -1314,9 +1313,9 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                         </td>
 
                         {/* 3. Devis soumis */}
-                        <td style={{ padding: '1.1rem 0.9rem', verticalAlign: 'top' }}>
-                          <div className="d-flex flex-column gap-1">
-                            <span className="text-muted fw-bold text-uppercase" style={{ fontSize: '0.7rem', letterSpacing: '0.3px' }}>Devis estimé :</span>
+                        <td style={{ padding: '1.1rem 1rem', border: '1px solid rgba(255, 255, 255, 0.2)', verticalAlign: 'top' }}>
+                          <div className="p-2.5 rounded-3" style={{ background: 'var(--bg-body)', border: '1px solid rgba(255, 255, 255, 0.15)' }}>
+                            <span className="text-muted fw-bold d-block mb-1" style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Devis estimé</span>
                             <strong style={{ color: 'var(--text-main)', fontSize: '0.98rem', fontWeight: '800' }}>
                               {Number(item.estimated_amount).toLocaleString()} FCFA
                             </strong>
@@ -1324,14 +1323,14 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                         </td>
 
                         {/* 4. Prise en charge accordée */}
-                        <td style={{ padding: '1.1rem 0.9rem', verticalAlign: 'top' }}>
-                          <div className="d-flex flex-column gap-1">
-                            <span className="text-muted fw-bold text-uppercase" style={{ fontSize: '0.7rem', letterSpacing: '0.3px' }}>Accord UNAMUSC :</span>
-                            <strong className="text-success fw-extrabold" style={{ fontSize: '1.05rem' }}>
+                        <td style={{ padding: '1.1rem 1rem', border: '1px solid rgba(255, 255, 255, 0.2)', verticalAlign: 'top' }}>
+                          <div className="p-2.5 rounded-3" style={{ background: 'rgba(5, 150, 105, 0.12)', border: '1px solid #059669' }}>
+                            <span className="text-success fw-bold d-block mb-1" style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Accord UNAMUSC</span>
+                            <strong className="text-success fw-extrabold d-block mb-1" style={{ fontSize: '1.05rem' }}>
                               {Number(item.max_amount).toLocaleString()} FCFA
                             </strong>
                             <div>
-                              <span className="badge bg-success-subtle text-success border border-success px-2 py-0.5 fw-bold" style={{ fontSize: '0.74rem', borderRadius: '6px' }}>
+                              <span className="badge bg-success text-white px-2 py-0.5 fw-bold" style={{ fontSize: '0.72rem', borderRadius: '6px' }}>
                                 Taux : {item.guaranteed_percentage}%
                               </span>
                             </div>
@@ -1339,7 +1338,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                         </td>
 
                         {/* 5. Statut & homologation */}
-                        <td style={{ padding: '1.1rem 0.9rem', verticalAlign: 'top' }}>
+                        <td style={{ padding: '1.1rem 1rem', border: '1px solid rgba(255, 255, 255, 0.2)', verticalAlign: 'top' }}>
                           {item.status === 'approved' && (
                             <span className="badge bg-success px-3 py-2 text-white fw-bold d-inline-block shadow-sm" style={{ borderRadius: '12px', fontSize: '0.8rem' }}>
                               ✅ Validée UNAMUSC
@@ -1358,14 +1357,14 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                         </td>
 
                         {/* 6. Code garantie */}
-                        <td style={{ padding: '1.1rem 0.9rem', verticalAlign: 'top' }}>
+                        <td style={{ padding: '1.1rem 1rem', border: '1px solid rgba(255, 255, 255, 0.2)', verticalAlign: 'top' }}>
                           <code className="px-3 py-1.5 bg-dark text-success border border-success rounded-3 fw-bold d-inline-block shadow-sm" style={{ fontSize: '0.85rem', letterSpacing: '0.5px' }}>
                             {item.validation_code}
                           </code>
                         </td>
 
                         {/* 7. Actions */}
-                        <td className="text-end" style={{ padding: '1rem 0.85rem', verticalAlign: 'top', whiteSpace: 'nowrap' }}>
+                        <td className="text-end" style={{ padding: '1.1rem 1rem', border: '1px solid rgba(255, 255, 255, 0.2)', verticalAlign: 'top', whiteSpace: 'nowrap' }}>
                           {canInstruire ? (
                             <button
                               type="button"
@@ -1379,18 +1378,18 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                             <div className="d-flex align-items-center justify-content-end gap-2" style={{ whiteSpace: 'nowrap' }}>
                               <button
                                 type="button"
-                                className="btn btn-sm btn-outline-success fw-bold px-3 py-1.5"
+                                className="btn btn-sm btn-outline-success fw-bold px-3 py-2"
                                 onClick={() => openInstructionModal(item)}
                                 title="Consultation du dossier patient (lecture)"
-                                style={{ borderRadius: '10px', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                                style={{ borderRadius: '10px', fontSize: '0.82rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
                               >
                                 🩺 Voir dossier patient
                               </button>
                               <button
                                 type="button"
-                                className="btn btn-sm text-white fw-bold px-3 py-1.5"
+                                className="btn btn-sm text-white fw-bold px-3 py-2"
                                 onClick={() => generateAndPrintPDFWindow(item)}
-                                style={{ background: '#059669', border: 'none', borderRadius: '10px', fontSize: '0.8rem', boxShadow: '0 3px 10px rgba(5,150,105,0.3)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                                style={{ background: '#059669', border: 'none', borderRadius: '10px', fontSize: '0.82rem', boxShadow: '0 3px 10px rgba(5,150,105,0.3)', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
                               >
                                 🖨️ PDF
                               </button>
