@@ -30,10 +30,12 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
   // Stats
   const [stats, setStats] = useState(null);
   const isAuthenticated = !!partner || (portalMode === 'superadmin') || (portalMode === 'agent' && !!agentUser) || portalMode === 'doctor' || portalMode === 'midwife' || portalMode === 'pharmacist' || portalMode === 'partner';
-  // Seuls les Agents UDMS et le SuperAdmin effectuent le conventionnement et l'agrément des prestataires
+  
+  // Seuls les Agents UDMS et le SuperAdmin (non connectés comme médecins/hôpitaux partenaires) peuvent administrer
   const isSuperAdmin = portalMode === 'superadmin' || agentUser?.role === 'SuperAdmin' || agentUser?.role === 'Super Admin';
-  const isUdmsAgentOrAdmin = isSuperAdmin || (portalMode === 'agent' && !!agentUser) || agentUser?.role === 'Agent Instructeur';
-  // Le prestataire / médecin accède en lecteur aux données qui le concernent
+  const isUdmsAgentOrAdmin = (isSuperAdmin || (portalMode === 'agent' && !!agentUser) || agentUser?.role === 'Agent Instructeur') && !partner && portalMode !== 'doctor' && portalMode !== 'partner' && portalMode !== 'midwife' && portalMode !== 'pharmacist';
+  
+  // Le prestataire / médecin (ex: Centre Hospitalier Abass Ndao) accède EXCLUSIVEMENT en lecteur aux informations qui le concernent
   const isPartner = !isUdmsAgentOrAdmin && (!!partner || portalMode === 'doctor' || portalMode === 'midwife' || portalMode === 'pharmacist' || portalMode === 'partner');
 
   // ============================================================================
@@ -673,13 +675,55 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
                 </div>
               ) : (
                 <div className="col-12 mb-2">
-                  <div className="p-3.5 rounded-4 border d-flex align-items-center gap-3" style={{ background: 'rgba(59, 130, 246, 0.08)', borderColor: 'rgba(59, 130, 246, 0.25)', color: 'var(--text-main)', borderRadius: '16px', padding: '1.25rem 1.5rem' }}>
-                    <span style={{ fontSize: '2rem' }}>ℹ️</span>
-                    <div>
-                      <strong className="d-block text-primary" style={{ fontSize: '1rem', fontWeight: '800' }}>🔒 Espace Lecteur & Consultation des Agréments UDMS</strong>
-                      <span className="small text-muted" style={{ fontSize: '0.88rem', lineHeight: '1.5' }}>
-                        Le conventionnement et l'agrément des structures sanitaires sont réservés aux <strong>Agents des Unions Départementales (UDMS)</strong> et à la Direction <strong>SuperAdmin UNAMUSC</strong>. Vous accédez ci-dessous à l'annuaire officiel des prestataires agréés de l'<strong>{selectedUdms}</strong> en lecture seule.
+                  <div className="card shadow-sm border-0 p-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)', borderLeft: '6px solid var(--primary)' }}>
+                    <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 border-bottom pb-3" style={{ borderColor: 'var(--border-color)' }}>
+                      <div>
+                        <span className="badge bg-primary-subtle text-primary border border-primary px-3 py-1 fw-bold mb-2 d-inline-block" style={{ borderRadius: '20px', fontSize: '0.8rem' }}>
+                          🔒 ACCÈS PRATICIEN & STRUCTURE SANTÉ (MODE LECTEUR SEUL)
+                        </span>
+                        <h4 className="fw-bold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.35rem' }}>
+                          Convention & Agrément UNAMUSC — {partner?.structureName || 'Centre Hospitalier Abass Ndao'}
+                        </h4>
+                        <p className="small text-muted mb-0">
+                          Renseignements officiels de conventionnement de votre structure avec l'Union Départementale (UDMS Dakar). Seuls les Agents UDMS et le SuperAdmin modifient les agréments.
+                        </p>
+                      </div>
+                      <span className="badge bg-success text-white px-3 py-2 fw-bold" style={{ borderRadius: '12px', fontSize: '0.88rem' }}>
+                        ✅ Structure Agréée UNAMUSC
                       </span>
+                    </div>
+
+                    <div className="row g-3 my-1">
+                      <div className="col-md-3 col-6">
+                        <div className="p-3 rounded-3 border" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
+                          <small className="text-muted fw-semibold d-block">Structure Sanitaire</small>
+                          <strong className="text-primary d-block mt-1">{partner?.structureName || 'Centre Hospitalier Abass Ndao'}</strong>
+                          <small className="text-sub">{partner?.name || 'Dr. Cheikh Anta Diop'}</small>
+                        </div>
+                      </div>
+                      <div className="col-md-3 col-6">
+                        <div className="p-3 rounded-3 border" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
+                          <small className="text-muted fw-semibold d-block">Code Agrément Officiel</small>
+                          <code className="text-success fw-bold d-block mt-1 fs-6">{partner?.cnom || 'AGR-2026-DKR-101'}</code>
+                          <small className="text-sub">UDMS : UDMS Dakar</small>
+                        </div>
+                      </div>
+                      <div className="col-md-3 col-6">
+                        <div className="p-3 rounded-3 border" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
+                          <small className="text-muted fw-semibold d-block">Taux Tiers-Payant Accordé</small>
+                          <strong className="text-success d-block mt-1 fs-5">80% à 100%</strong>
+                          <small className="text-sub">Remboursement direct 72h</small>
+                        </div>
+                      </div>
+                      <div className="col-md-3 col-6">
+                        <div className="p-3 rounded-3 border" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
+                          <small className="text-muted fw-semibold d-block">Rôle d'Accès Système</small>
+                          <span className="badge bg-secondary-subtle text-secondary fw-bold mt-1 d-inline-block px-2.5 py-1" style={{ borderRadius: '6px' }}>
+                            👁️ Lecteur Seul (Praticien)
+                          </span>
+                          <small className="text-muted d-block mt-1">Modifications réservées à UDMS</small>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
