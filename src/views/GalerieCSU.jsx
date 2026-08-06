@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useQuery } from '@tanstack/react-query';
 
 export default function GalerieCSU({ lang }) {
@@ -227,8 +228,8 @@ export default function GalerieCSU({ lang }) {
       </div>
       )}
 
-      {/* Interactive Zoom Modal Centré */}
-      {selectedItem && (
+      {/* Interactive Zoom Modal Centré sur le Viewport (Portal document.body) */}
+      {selectedItem && createPortal(
         <div 
           style={{
             position: 'fixed',
@@ -391,7 +392,8 @@ export default function GalerieCSU({ lang }) {
             </div>
 
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
