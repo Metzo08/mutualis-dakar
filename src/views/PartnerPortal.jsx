@@ -184,17 +184,36 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
   const targetStructure = partner?.structureName || 'Centre Hospitalier Abass Ndao';
 
   const filteredPrestataires = prestataires.filter(p => {
+    // 1. Filtre par rôle (fonctionne en mode admin et en mode lecteur)
+    let matchRole = true;
+    if (roleFilter !== 'Tous') {
+      const rf = roleFilter.toLowerCase();
+      const pRole = (p.role || '').toLowerCase();
+      const pName = (p.name || '').toLowerCase();
+
+      if (rf.includes('médecin') || rf.includes('medecin')) {
+        matchRole = pRole.includes('médecin') || pRole.includes('medecin') || pName.includes('dr.');
+      } else if (rf.includes('sage-femme') || rf.includes('sagefemme') || rf.includes('sage')) {
+        matchRole = pRole.includes('sage-femme') || pRole.includes('sagefemme') || pRole.includes('sage') || pName.includes('mme');
+      } else if (rf.includes('hôpital') || rf.includes('hopital') || rf.includes('structure')) {
+        matchRole = pRole.includes('hôpital') || pRole.includes('hopital') || pRole.includes('structure') || pName.includes('centre hospitalier');
+      } else {
+        matchRole = pRole.includes(rf) || pName.includes(rf);
+      }
+    }
+
     if (!isUdmsAgentOrAdmin) {
       // Mode lecteur (ex: Centre Hospitalier Abass Ndao) :
       // On n'affiche que la structure conventionnée ET le personnel/médecins rattachés à cette structure
       const isStructureSelf = p.id === 100 || p.name.toLowerCase().includes('abass ndao') || p.name === targetStructure || p.structureName === targetStructure;
       const isAttachedStaff = p.id === 101 || p.id === 105 || p.structureName === targetStructure || (p.role && p.role.toLowerCase().includes('abass ndao')) || p.name.toLowerCase().includes('abass ndao');
-      return isStructureSelf || isAttachedStaff;
+      const isAbassAffiliated = isStructureSelf || isAttachedStaff;
+
+      return isAbassAffiliated && matchRole;
     }
 
-    // Mode Agent UDMS / SuperAdmin : accès global filtrable
+    // Mode Agent UDMS / SuperAdmin : accès global filtrable par UDMS et rôle
     const matchUdms = !selectedUdms || p.udms === selectedUdms || selectedUdms === 'Toutes';
-    const matchRole = roleFilter === 'Tous' || p.role.toLowerCase().includes(roleFilter.toLowerCase());
     return matchUdms && matchRole;
   });
 
@@ -821,17 +840,18 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
 
                     <div className="d-flex gap-2">
                       <select 
-                        className="form-select form-select-sm input"
+                        className="form-select form-select-sm input fw-bold"
                         value={roleFilter}
                         onChange={(e) => setRoleFilter(e.target.value)}
-                        style={{ width: '170px', borderRadius: '8px' }}
+                        style={{ width: '185px', borderRadius: '10px' }}
                       >
                         <option value="Tous">Tous les rôles</option>
+                        <option value="Hôpital">Hôpitaux & structures</option>
                         <option value="Médecin">Médecins</option>
+                        <option value="Sage-Femme">Sages-femmes</option>
                         <option value="Pharmacie">Pharmacies</option>
-                        <option value="Imagerie">Imagerie / Radios</option>
+                        <option value="Imagerie">Imagerie & radios</option>
                         <option value="Laboratoire">Laboratoires</option>
-                        <option value="Hôpital">Hôpitaux</option>
                       </select>
                     </div>
                   </div>
