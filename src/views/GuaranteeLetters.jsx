@@ -1206,16 +1206,18 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 {isSuperAdmin ? '👑' : isAgent ? '🛡️' : '🩺'}
               </span>
               <div className="d-flex flex-column gap-1">
-                <strong className="d-block fw-bold" style={{ fontSize: '0.98rem' }}>
-                  {isSuperAdmin && 'Mode SuperAdmin : Accès total'}
-                  {isAgent && 'Mode Agent UNAMUSC : Instruction & homologation des demandes'}
-                  {(isDoctor || isMidwife) && `Mode ${isDoctor ? 'Médecin' : 'Sage-Femme'} : Consultation des dossiers patients`}
-                </strong>
-                <small className="d-block" style={{ opacity: 0.85, fontSize: '0.85rem' }}>
-                  {isSuperAdmin && 'Tous les dossiers et toutes les actions disponibles.'}
-                  {isAgent && 'Validez, définissez le taux et le plafond, rejetez avec note.'}
-                  {(isDoctor || isMidwife) && 'Consultez les garanties liées à vos patients (lecture + PDF).'}
-                </small>
+                <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.05rem', color: 'inherit', letterSpacing: '-0.01em' }}>
+                  {isSuperAdmin && 'Mode SuperAdmin'}
+                  {isAgent && 'Mode Agent UNAMUSC'}
+                  {(isDoctor || isMidwife) && `Mode ${isDoctor ? 'Médecin' : 'Sage-Femme'}`}
+                  {isCitizen && 'Mode lecture seule'}
+                </h6>
+                <span className="small" style={{ opacity: 0.9, fontSize: '0.88rem', lineHeight: '1.45' }}>
+                  {isSuperAdmin && 'Accès total : Tous les dossiers et toutes les actions sont disponibles.'}
+                  {isAgent && 'Instruction & homologation : Validez, définissez le taux et le plafond, ou rejetez avec note.'}
+                  {(isDoctor || isMidwife) && 'Consultation des dossiers : Consultez les garanties liées à vos patients (lecture + PDF).'}
+                  {isCitizen && 'Espace assuré : Consultez vos lettres de garantie et téléchargez vos attestations certifiées.'}
+                </span>
               </div>
             </div>
           )}

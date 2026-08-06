@@ -535,18 +535,20 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
             {isSuperAdmin ? '👑' : isAgent ? '🛡️' : isPharmacist ? '💊' : '🩺'}
           </span>
           <div className="d-flex flex-column gap-1">
-            <strong className="d-block fw-bold" style={{ fontSize: '0.98rem' }}>
-              {isSuperAdmin && 'Mode SuperAdmin : Accès total & contrôle complet'}
-              {isAgent && 'Mode Agent UNAMUSC : Validation des ordonnances pending_review'}
-              {isPharmacist && 'Mode Pharmacien Agréé : Validation de la délivrance'}
-              {(isDoctor || isMidwife) && `Mode ${isDoctor ? 'Médecin' : 'Sage-Femme'} Prescripteur : Suivi de vos ordonnances`}
-            </strong>
-            <small className="d-block" style={{ opacity: 0.85, fontSize: '0.85rem' }}>
-              {isSuperAdmin && 'Toutes les actions sont disponibles sur tous les bons.'}
-              {isAgent && 'Validez ou rejetez les ordonnances soumises par les assurés pour activation en pharmacie.'}
-              {isPharmacist && 'Certifiez le montant réel d\'officine et délivrez les médicaments (Tiers-Payant 80%).'}
-              {(isDoctor || isMidwife) && 'Consultez le statut de délivrance des ordonnances que vous avez prescrites.'}
-            </small>
+            <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.05rem', color: 'inherit', letterSpacing: '-0.01em' }}>
+              {isSuperAdmin && 'Mode SuperAdmin'}
+              {isAgent && 'Mode Agent UNAMUSC'}
+              {isPharmacist && 'Mode Pharmacien Agréé'}
+              {(isDoctor || isMidwife) && `Mode ${isDoctor ? 'Médecin' : 'Sage-Femme'} Prescripteur`}
+              {isCitizen && 'Mode lecture seule'}
+            </h6>
+            <span className="small" style={{ opacity: 0.9, fontSize: '0.88rem', lineHeight: '1.45' }}>
+              {isSuperAdmin && 'Accès total : Toutes les actions sont disponibles sur tous les bons.'}
+              {isAgent && 'Validation des ordonnances : Validez ou rejetez les ordonnances soumises par les assurés.'}
+              {isPharmacist && 'Validation de la délivrance : Certifiez le montant réel d\'officine et délivrez les médicaments.'}
+              {(isDoctor || isMidwife) && 'Suivi des ordonnances : Consultez le statut de délivrance des ordonnances prescrites.'}
+              {isCitizen && 'Espace assuré : Consultez vos bons de commande pharmacie et téléchargez vos ordonnances.'}
+            </span>
           </div>
         </div>
       )}

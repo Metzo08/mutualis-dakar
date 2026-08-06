@@ -605,14 +605,16 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
           }}>
             <span style={{ fontSize: '1.6rem' }}>{isSuperAdmin ? '👑' : isMidwife ? '🤱' : '🩺'}</span>
             <div className="d-flex flex-column gap-1">
-              <strong className="d-block fw-bold" style={{ fontSize: '0.98rem' }}>
-                {isSuperAdmin && 'Mode SuperAdmin : Accès total'}
-                {isMidwife && 'Mode Sage-femme : Édition complète du carnet'}
-                {isDoctor && 'Mode Médecin : Édition complète du carnet'}
-              </strong>
-              <small className="d-block" style={{ opacity: 0.85, fontSize: '0.85rem' }}>
-                {isSuperAdmin ? 'Toutes les actions disponibles.' : 'Vous pouvez remplir les consultations prénatales, ajouter des fiches conseils et modifier le carnet.'}
-              </small>
+              <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.05rem', color: 'inherit', letterSpacing: '-0.01em' }}>
+                {isSuperAdmin && 'Mode SuperAdmin'}
+                {isMidwife && 'Mode Sage-femme'}
+                {isDoctor && 'Mode Médecin'}
+              </h6>
+              <span className="small" style={{ opacity: 0.9, fontSize: '0.88rem', lineHeight: '1.45' }}>
+                {isSuperAdmin && 'Accès total : Toutes les actions et validations sont disponibles.'}
+                {isMidwife && 'Édition complète : Vous pouvez remplir les consultations prénatales, ajouter des fiches conseils et modifier le carnet.'}
+                {isDoctor && 'Édition complète : Vous pouvez remplir les consultations prénatales, ajouter des fiches conseils et modifier le carnet.'}
+              </span>
             </div>
           </div>
         )}
@@ -625,8 +627,12 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
           }}>
             <span style={{ fontSize: '1.6rem' }}>📖</span>
             <div className="d-flex flex-column gap-1">
-              <strong className="d-block fw-bold" style={{ fontSize: '0.98rem', color: 'var(--text-main)' }}>Mode lecture seule : Espace assuré</strong>
-              <small className="d-block" style={{ color: 'var(--text-sub)', fontSize: '0.85rem' }}>Consultez votre carnet de maternité, téléchargez le PDF et posez vos questions à la sage-femme.</small>
+              <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.05rem', color: 'var(--text-main)', letterSpacing: '-0.01em' }}>
+                Mode lecture seule
+              </h6>
+              <span className="small" style={{ color: 'var(--text-sub)', fontSize: '0.88rem', lineHeight: '1.45' }}>
+                Espace assuré : Consultez votre carnet de maternité, téléchargez le PDF et posez vos questions à la sage-femme.
+              </span>
             </div>
           </div>
         )}
