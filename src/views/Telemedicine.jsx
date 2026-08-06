@@ -998,52 +998,91 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
         {/* SECTION GESTION ADMINISTRATIVE — Agent / SuperAdmin (file d'attente + planning) */}
         {canManageQueue && roleMode !== 'doctor' && (
-          <div className="p-4 rounded-4 mb-5" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
-            <div className="d-flex align-items-center gap-2 mb-4">
-              <span style={{ fontSize: '1.4rem' }}>🛡️</span>
-              <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>
-                Gestion administrative — File d'attente & planning Télémédecine
-              </h5>
+          <div className="p-4 p-md-4.5 rounded-4 mb-5 shadow-sm" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '24px' }}>
+            <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4 pb-2 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+              <div className="d-flex align-items-center gap-2.5">
+                <div className="d-flex align-items-center justify-content-center rounded-3 p-2" style={{ background: 'rgba(59, 130, 246, 0.12)', color: '#3b82f6' }}>
+                  <span style={{ fontSize: '1.4rem' }}>🛡️</span>
+                </div>
+                <div>
+                  <h5 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.18rem', letterSpacing: '-0.01em', textTransform: 'none' }}>
+                    Gestion administrative — File d'attente & planning télémédecine
+                  </h5>
+                  <small className="text-muted d-block" style={{ fontSize: '0.82rem' }}>
+                    Supervision en temps réel des praticiens et des rendez-vous des unions départementales
+                  </small>
+                </div>
+              </div>
+
+              <span className="badge bg-primary-subtle text-primary border border-primary px-3 py-1.5 fw-bold" style={{ borderRadius: '12px', fontSize: '0.78rem' }}>
+                Mode agent habilite UNAMUSC
+              </span>
             </div>
 
-            {/* KPIs administratifs */}
+            {/* KPIs administratifs structurés en grille premium */}
             <div className="row g-3 mb-4">
-              <div className="col-md-3 col-6">
-                <div className="p-3 rounded-4 text-center" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
-                  <div style={{ fontSize: '1.6rem' }}>⏳</div>
-                  <strong className="d-block fs-4 text-warning" style={{ color: '#f59e0b' }}>7</strong>
-                  <small style={{ color: 'var(--text-sub)' }}>Patients en attente</small>
+              <div className="col-lg-3 col-sm-6">
+                <div className="p-3.5 rounded-4 shadow-sm h-100 position-relative overflow-hidden" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', borderLeft: '5px solid #f59e0b' }}>
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <span className="small text-muted fw-bold" style={{ fontSize: '0.8rem', textTransform: 'none' }}>Patients en attente</span>
+                    <span style={{ fontSize: '1.3rem' }}>⏳</span>
+                  </div>
+                  <div className="d-flex align-items-baseline gap-2">
+                    <h2 className="fw-extrabold mb-0" style={{ color: '#f59e0b', fontSize: '1.95rem' }}>7</h2>
+                    <small className="badge bg-warning-subtle text-warning border border-warning" style={{ fontSize: '0.7rem' }}>En attente live</small>
+                  </div>
                 </div>
               </div>
-              <div className="col-md-3 col-6">
-                <div className="p-3 rounded-4 text-center" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
-                  <div style={{ fontSize: '1.6rem' }}>🩺</div>
-                  <strong className="d-block fs-4 text-success">12</strong>
-                  <small style={{ color: 'var(--text-sub)' }}>Consultations aujourd'hui</small>
+
+              <div className="col-lg-3 col-sm-6">
+                <div className="p-3.5 rounded-4 shadow-sm h-100 position-relative overflow-hidden" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', borderLeft: '5px solid #10b981' }}>
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <span className="small text-muted fw-bold" style={{ fontSize: '0.8rem', textTransform: 'none' }}>Consultations aujourd'hui</span>
+                    <span style={{ fontSize: '1.3rem' }}>🩺</span>
+                  </div>
+                  <div className="d-flex align-items-baseline gap-2">
+                    <h2 className="fw-extrabold mb-0 text-success" style={{ fontSize: '1.95rem' }}>12</h2>
+                    <small className="badge bg-success-subtle text-success border border-success" style={{ fontSize: '0.7rem' }}>Aujourd'hui</small>
+                  </div>
                 </div>
               </div>
-              <div className="col-md-3 col-6">
-                <div className="p-3 rounded-4 text-center" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
-                  <div style={{ fontSize: '1.6rem' }}>👨‍⚕️</div>
-                  <strong className="d-block fs-4" style={{ color: 'var(--text-main)' }}>5</strong>
-                  <small style={{ color: 'var(--text-sub)' }}>Médecins de garde</small>
+
+              <div className="col-lg-3 col-sm-6">
+                <div className="p-3.5 rounded-4 shadow-sm h-100 position-relative overflow-hidden" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', borderLeft: '5px solid #3b82f6' }}>
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <span className="small text-muted fw-bold" style={{ fontSize: '0.8rem', textTransform: 'none' }}>Médecins de garde</span>
+                    <span style={{ fontSize: '1.3rem' }}>👨‍⚕️</span>
+                  </div>
+                  <div className="d-flex align-items-baseline gap-2">
+                    <h2 className="fw-extrabold mb-0 text-primary" style={{ fontSize: '1.95rem' }}>5</h2>
+                    <small className="badge bg-info-subtle text-info border border-info" style={{ fontSize: '0.7rem' }}>En service</small>
+                  </div>
                 </div>
               </div>
-              <div className="col-md-3 col-6">
-                <div className="p-3 rounded-4 text-center" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
-                  <div style={{ fontSize: '1.6rem' }}>📅</div>
-                  <strong className="d-block fs-4" style={{ color: 'var(--text-main)' }}>23</strong>
-                  <small style={{ color: 'var(--text-sub)' }}>RDV planifiés (semaine)</small>
+
+              <div className="col-lg-3 col-sm-6">
+                <div className="p-3.5 rounded-4 shadow-sm h-100 position-relative overflow-hidden" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', borderLeft: '5px solid #8b5cf6' }}>
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <span className="small text-muted fw-bold" style={{ fontSize: '0.8rem', textTransform: 'none' }}>RDV planifiés (semaine)</span>
+                    <span style={{ fontSize: '1.3rem' }}>📅</span>
+                  </div>
+                  <div className="d-flex align-items-baseline gap-2">
+                    <h2 className="fw-extrabold mb-0" style={{ color: '#8b5cf6', fontSize: '1.95rem' }}>23</h2>
+                    <small className="badge bg-purple-subtle text-purple border" style={{ fontSize: '0.7rem', color: '#8b5cf6', borderColor: '#8b5cf6' }}>7 prochains jours</small>
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Note administrative */}
-            <div className="p-3 rounded-3" style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', borderLeft: '4px solid #3b82f6' }}>
-              <strong className="d-block small text-primary">📋 Vue administrative UNAMUSC</strong>
-              <small style={{ color: 'var(--text-sub)' }}>
-                Vous gérez le planning, l'historique et la supervision de la file d'attente. Les consultations cliniques sont réservées aux médecins et sage-femmes agréés.
-              </small>
+            <div className="p-3.5 rounded-3 border d-flex align-items-center gap-3" style={{ background: 'rgba(59, 130, 246, 0.08)', borderColor: 'rgba(59, 130, 246, 0.25)', borderRadius: '14px' }}>
+              <span style={{ fontSize: '1.5rem', color: '#3b82f6' }}>📋</span>
+              <div>
+                <strong className="d-block small text-primary fw-bold mb-0.5" style={{ fontSize: '0.88rem' }}>Supervision administrative UNAMUSC :</strong>
+                <small style={{ color: 'var(--text-sub)', fontSize: '0.84rem', lineHeight: '1.5' }}>
+                  Vous gérez le planning des gardes, la validation des praticiens et la supervision des files d'attente. Les téléconsultations cliniques directes sont réservées aux médecins et sage-femmes agréés.
+                </small>
+              </div>
             </div>
           </div>
         )}
@@ -1781,27 +1820,28 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
       {/* QR CODE MODAL (React Portal — Centered on Screen) */}
       {activeModal === 'qr' && createPortal(
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', overflowY: 'auto' }}>
-          <div style={{ maxWidth: '440px', width: '92%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '1.75rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', overflow: 'hidden' }}>
+          <div style={{ maxWidth: '440px', width: '92%', maxHeight: '88vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '1.75rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             <div className="d-flex justify-content-between align-items-center w-100 mb-3 border-bottom pb-2" style={{ borderColor: 'var(--border-color)' }}>
-              <h5 className="fw-bold text-success mb-0 d-flex align-items-center gap-2">
+              <h5 className="fw-bold text-success mb-0 d-flex align-items-center gap-2" style={{ textTransform: 'none' }}>
                 <span>📲</span> QR code CSU assuré
               </h5>
               <button type="button" className="btn-close" onClick={() => setActiveModal(null)}></button>
             </div>
             
-            <p className="small text-muted mb-2 text-center" style={{ fontSize: '0.82rem' }}>Présentez ce QR Code lors de votre prise en charge médicale ou en pharmacie agréée</p>
+            <p className="small text-muted mb-2 text-center" style={{ fontSize: '0.82rem' }}>Présentez ce QR code lors de votre prise en charge médicale ou en pharmacie agréée</p>
 
             <div className="p-3 bg-white rounded-4 border border-success d-flex align-items-center justify-content-center my-2 shadow-sm" style={{ width: '210px', height: '210px' }}>
-              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${activeCmuNumber}`} alt="QR code CSU" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${activeCmuNumber.replace('CMU-', 'CSU-')}`} alt="QR code CSU" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </div>
 
-            <div className="my-2 px-3 py-1.5 rounded-pill border border-success text-center" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981' }}>
-              <small className="d-block text-muted fw-bold" style={{ fontSize: '0.68rem' }}>N° CSU TITULAIRE</small>
-              <strong className="fs-6 fw-mono">{activeCmuNumber}</strong>
+            <div className="my-3 px-3.5 py-2 rounded-3 border border-success text-center w-100" style={{ background: 'rgba(16, 185, 129, 0.12)', color: '#047857' }}>
+              <span className="fw-bold d-block" style={{ fontSize: '0.88rem', letterSpacing: '0.3px', textTransform: 'none' }}>
+                N° CSU TITULAIRE : <span className="fw-mono fs-6 text-success ms-1">{activeCmuNumber.replace('CMU-', 'CSU-')}</span>
+              </span>
             </div>
 
-            <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 1.5rem', fontWeight: '700', width: '100%', marginTop: '0.75rem', cursor: 'pointer' }} onClick={() => setActiveModal(null)}>Fermer</button>
+            <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 1.5rem', fontWeight: '700', width: '100%', marginTop: '0.75rem', cursor: 'pointer', textTransform: 'none' }} onClick={() => setActiveModal(null)}>Fermer</button>
           </div>
         </div>,
         document.body
@@ -1809,12 +1849,12 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
 
       {/* PRESCRIPTION MODAL (React Portal — Centered on Screen) */}
       {activeModal === 'prescription' && createPortal(
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
-          <div style={{ maxWidth: '640px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflow: 'hidden' }}>
+          <div style={{ maxWidth: '640px', width: '100%', maxHeight: '88vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
             <div className="d-flex justify-content-between align-items-center mb-3">
               <div className="d-flex align-items-center gap-2">
                 <span style={{ fontSize: '1.4rem' }}>💊</span>
-                <h5 className="fw-bold text-success mb-0" style={{ fontSize: '1.15rem' }}>Ordonnance médicale certifiée UNAMUSC 🇸🇳</h5>
+                <h5 className="fw-bold text-success mb-0" style={{ fontSize: '1.15rem', textTransform: 'none' }}>Ordonnance médicale certifiée UNAMUSC 🇸🇳</h5>
               </div>
               <button type="button" className="btn-close" onClick={() => setActiveModal(null)}></button>
             </div>
@@ -1826,18 +1866,18 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                   <small style={{ color: 'var(--text-sub)', fontSize: '0.78rem' }}>Médecin généraliste — CNOM: 4522-SN</small>
                 </div>
                 <span className="badge bg-success-subtle text-success border border-success px-2.5 py-1.5 fw-bold" style={{ borderRadius: '10px', fontSize: '0.72rem' }}>
-                  ● BON PHARMACIE 50% VALIDE
+                  ● Bon pharmacie 50% valide
                 </span>
               </div>
 
               <div className="mb-3 p-3 rounded-3" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-                <small className="d-block text-muted fw-bold mb-1" style={{ fontSize: '0.72rem' }}>PATIENT(E) BÉNÉFICIAIRE :</small>
+                <small className="d-block text-muted fw-bold mb-1" style={{ fontSize: '0.72rem', textTransform: 'none' }}>Patient(e) bénéficiaire :</small>
                 <strong style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>{activeFirstName} {activeLastName}</strong>
-                <small className="d-block text-success fw-bold" style={{ fontSize: '0.78rem' }}>N° CSU : {activeCmuNumber}</small>
+                <small className="d-block text-success fw-bold" style={{ fontSize: '0.78rem' }}>N° CSU titulaire : {activeCmuNumber.replace('CMU-', 'CSU-')}</small>
               </div>
 
               <div className="mb-3">
-                <small className="d-block text-muted fw-bold mb-2" style={{ fontSize: '0.75rem' }}>MÉDICAMENTS PRESCRITS & POSOLOGIE :</small>
+                <small className="d-block text-muted fw-bold mb-2" style={{ fontSize: '0.75rem', textTransform: 'none' }}>Médicaments prescrits & posologie :</small>
                 <div className="d-flex flex-column gap-2">
                   <div className="p-2.5 rounded-3" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
                     <strong style={{ color: 'var(--text-main)', fontSize: '0.88rem' }}>1. Amoxicilline 500mg (2 boîtes)</strong>
@@ -1855,17 +1895,17 @@ export default function Telemedicine({ lang = 'fr', userRole = 'citizen', citize
                   <img src={`https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=${encodeURIComponent('ORD-TELEMED-2026-9912')}`} alt="QR Code Ordonnance" style={{ width: '70px', height: '70px' }} />
                 </div>
                 <div>
-                  <strong className="d-block text-success small fw-bold">QR Code Tiers-Payant Pharmacie (50%)</strong>
+                  <strong className="d-block text-success small fw-bold">QR code tiers-payant pharmacie (50%)</strong>
                   <small style={{ color: 'var(--text-sub)', fontSize: '0.74rem', lineHeight: '1.4' }}>
-                    Présentez ce QR Code dans n'importe quelle pharmacie partenaire agréée du Sénégal pour bénéficier de la prise en charge 50% UNAMUSC.
+                    Présentez ce QR code dans n'importe quelle pharmacie partenaire agréée du Sénégal pour bénéficier de la prise en charge 50% UNAMUSC.
                   </small>
                 </div>
               </div>
             </div>
 
             <div className="d-flex justify-content-end gap-2">
-              <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.6rem 1.25rem', fontWeight: '700', cursor: 'pointer' }} onClick={() => setActiveModal(null)}>Fermer</button>
-              <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.6rem 1.4rem', fontWeight: '700', cursor: 'pointer', boxShadow: '0 4px 14px rgba(16,185,129,0.3)' }} onClick={handleDownloadPrescription}>📥 Télécharger Ordonnance PDF Officielle (🇸🇳)</button>
+              <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.6rem 1.25rem', fontWeight: '700', cursor: 'pointer', textTransform: 'none' }} onClick={() => setActiveModal(null)}>Fermer</button>
+              <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.6rem 1.4rem', fontWeight: '700', cursor: 'pointer', boxShadow: '0 4px 14px rgba(16,185,129,0.3)', textTransform: 'none' }} onClick={handleDownloadPrescription}>📥 Télécharger l'ordonnance PDF officielle (🇸🇳)</button>
             </div>
           </div>
         </div>,
