@@ -69,7 +69,7 @@ export async function generateOfficialPdf({
     hashNum |= 0;
   }
   const cryptoHash = `SHA256-${Math.abs(hashNum).toString(16).toUpperCase()}-UNAMUSC`;
-  const verifyUrl = `https://mutualis.sn/verify-document?ref=${encodeURIComponent(cleanRef)}&cmu=${encodeURIComponent(cleanCmu)}&doc=${encodeURIComponent(cleanDoc)}&hash=${cryptoHash}`;
+  const verifyUrl = `https://mutualis.sn/#/verify/${encodeURIComponent(cleanRef)}`;
 
   // ---------------------------------------------------------------------------
   // 1. EN-TÊTE OFFICIEL : DRAPEAU DU SÉNÉGAL (GAUCHE) & LOGO UNAMUSC (DROITE)

@@ -232,7 +232,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               </div>
               <div class="col-4 text-center">
                 <div class="p-2 bg-white rounded-3 shadow-sm d-inline-block border mb-1">
-                  <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`${window.location.origin}${window.location.pathname}#/verify/${voucher.order_code || `ORD-${voucher.id}`}`)}" alt="QR Code" style="width: 75px; height: 75px;" />
+                  <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`https://mutualis.sn/#/verify/${voucher.order_code || `ORD-${voucher.id}`}`)}" alt="QR Code" style="width: 75px; height: 75px;" />
                 </div>
                 <div class="small fw-bold text-success" style="font-size: 0.75rem;">Tampon numérique pharmacie</div>
               </div>

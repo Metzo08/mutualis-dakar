@@ -284,7 +284,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
               <div class="col-4 text-center">
                 <div class="p-2 bg-white rounded-3 shadow-sm d-inline-block border mb-2">
-                  <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`${window.location.origin}${window.location.pathname}#/verify/${letter.validation_code}`)}" alt="QR Code Validation" style="width: 80px; height: 80px;" />
+                  <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`https://mutualis.sn/#/verify/${letter.validation_code}`)}" alt="QR Code Validation" style="width: 80px; height: 80px;" />
                 </div>
                 <div class="small fw-bold text-success">Tampon Numérique Officiel UNAMUSC</div>
                 <small class="text-muted d-block" style="font-size: 0.72rem;">Homologué par l'UNAMUSC : Signature Agent Habilité</small>
@@ -1690,7 +1690,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                       <div className="col-md-4 text-center">
                         <div className="p-2 bg-white rounded-3 shadow-sm d-inline-block border mb-2">
                           <img 
-                            src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`${window.location.origin}${window.location.pathname}#/verify/${selectedLetter.validation_code}`)}`} 
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`https://mutualis.sn/#/verify/${selectedLetter.validation_code}`)}`} 
                             alt="QR Code Validation" 
                             style={{ width: '80px', height: '80px' }} 
                           />
