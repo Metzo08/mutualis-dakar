@@ -166,6 +166,19 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
     });
   };
 
+  // Nettoyage strict du texte pour la synthèse vocale (évite la lecture de symboles, émojis et parenthèses)
+  const cleanSpeechText = (rawText) => {
+    if (!rawText) return '';
+    let str = String(rawText);
+    str = str.replace(/100%/g, 'cent pour cent')
+             .replace(/%/g, ' pour cent')
+             .replace(/[\(\)\[\]\{\}]/g, ' ')
+             .replace(/[!?,;:\-\—•]/g, ' ')
+             .replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '')
+             .replace(/[^\w\sàâäéèêëîïôöùûüçÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ']/gi, ' ');
+    return str.replace(/\s+/g, ' ').trim();
+  };
+
   // Traitement d'envoi de relance/rappel immédiat avec synthèse vocale audible trilingue
   const [reminderSending, setReminderSending] = useState(false);
   const [reminderToast, setReminderToast] = useState(null);
@@ -192,7 +205,8 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
 
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(textToSpeak);
+      const cleaned = cleanSpeechText(textToSpeak);
+      const utterance = new SpeechSynthesisUtterance(cleaned);
       utterance.lang = 'fr-FR';
       utterance.rate = 0.92;
       utterance.pitch = 1.0;
@@ -1027,7 +1041,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                 
                 <button 
                   type="button"
-                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.75rem 1.25rem', fontWeight: '700', fontSize: '0.88rem', cursor: 'pointer' }} 
+                  style={{ background: 'rgba(15, 23, 42, 0.85)', color: '#ffffff', border: '1px solid rgba(255, 255, 255, 0.35)', borderRadius: '12px', padding: '0.75rem 1.25rem', fontWeight: '700', fontSize: '0.88rem', cursor: 'pointer', backdropFilter: 'blur(8px)', boxShadow: '0 4px 15px rgba(0,0,0,0.3)' }} 
                   onClick={handleDownloadCarnet}
                 >
                   📥 Carnet officiel PDF (🇸🇳)
@@ -1240,11 +1254,11 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                 {/* Card 💊 Supplémentation Maternelle & TPI Paludisme (PNLP Sénégal / UNAMUSC) */}
                 <div className="p-4 rounded-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '20px' }}>
                   <div className="d-flex align-items-center justify-content-between mb-3">
-                    <div className="d-flex align-items-center gap-2">
-                      <span className="fs-5">💊</span>
+                    <div className="d-flex align-items-center gap-2.5">
+                      <span className="fs-4">💊</span>
                       <div>
-                        <h6 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '0.98rem' }}>Supplémentation & TPI Paludisme</h6>
-                        <small className="text-muted" style={{ fontSize: '0.75rem' }}>Directives PNLP Sénégal & UNAMUSC</small>
+                        <h6 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '0.98rem' }}>Supplémentation & TPI paludisme</h6>
+                        <small className="text-muted d-block" style={{ fontSize: '0.76rem' }}>Directives PNLP Sénégal & UNAMUSC</small>
                       </div>
                     </div>
                     {canEditMaternity && (
@@ -1265,30 +1279,30 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                   {/* Fer & Acide Folique */}
                   <div className="p-3 rounded-3 mb-3" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
                     <div className="d-flex justify-content-between align-items-center mb-1.5">
-                      <small className="fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.82rem' }}>💊 Fer & Acide Folique (Anti-anémie)</small>
-                      <span className="badge bg-success-subtle text-success fw-bold" style={{ fontSize: '0.72rem' }}>
+                      <small className="fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.82rem' }}>💊 Fer & acide folique (anti-anémie)</small>
+                      <span className="badge bg-success-subtle text-success fw-bold px-2 py-1" style={{ fontSize: '0.72rem', borderRadius: '6px' }}>
                         {maternalSupplements.ferFolateDaysTaken} / {maternalSupplements.ferFolateTotalDays} jours
                       </span>
                     </div>
-                    <div className="progress" style={{ height: '7px', background: 'rgba(255,255,255,0.1)', borderRadius: '6px' }}>
+                    <div className="progress mb-1" style={{ height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '6px' }}>
                       <div className="progress-bar bg-success" style={{ width: `${Math.round((maternalSupplements.ferFolateDaysTaken / maternalSupplements.ferFolateTotalDays) * 100)}%`, borderRadius: '6px' }}></div>
                     </div>
-                    <small className="d-block text-muted mt-1" style={{ fontSize: '0.72rem' }}>
+                    <small className="d-block text-muted" style={{ fontSize: '0.72rem', lineHeight: '1.35' }}>
                       1 comprimé par jour prescrit pendant toute la grossesse
                     </small>
                   </div>
 
                   {/* TPI Paludisme (SP) */}
                   <div className="mb-3">
-                    <small className="d-block text-muted fw-bold mb-2" style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                      🦟 TPI Paludisme (Sulfadoxine-Pyriméthamine)
+                    <small className="d-block text-muted fw-bold mb-2" style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      🦟 TPI paludisme (Sulfadoxine-pyriméthamine)
                     </small>
-                    <div className="d-flex flex-column gap-1.5">
+                    <div className="d-flex flex-column gap-2">
                       {maternalSupplements.tpiDoses.map(dose => (
-                        <div key={dose.id} className="d-flex align-items-center justify-content-between p-2 rounded-2" style={{ background: 'var(--bg-card-subtle)', fontSize: '0.78rem' }}>
+                        <div key={dose.id} className="d-flex align-items-center justify-content-between p-2.5 rounded-3" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', fontSize: '0.8rem' }}>
                           <span className="fw-semibold" style={{ color: 'var(--text-main)' }}>{dose.cpn}</span>
-                          <span className={`badge ${dose.given ? 'bg-success text-white' : 'bg-warning text-dark'} fw-bold`} style={{ borderRadius: '6px', fontSize: '0.7rem' }}>
-                            {dose.given ? `✅ ${dose.status}` : `⏳ ${dose.status}`}
+                          <span className={`badge ${dose.given ? 'bg-success text-white' : 'bg-warning text-dark'} fw-bold px-2.5 py-1`} style={{ borderRadius: '6px', fontSize: '0.72rem' }}>
+                            {dose.given ? `✅ Administré` : `⏳ Programmé`}
                           </span>
                         </div>
                       ))}
@@ -1296,15 +1310,15 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                   </div>
 
                   {/* MILDA Moustiquaire */}
-                  <div className="p-2.5 rounded-3 d-flex align-items-center justify-content-between" style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-                    <div className="d-flex align-items-center gap-2">
-                      <span>🛖</span>
+                  <div className="p-3 rounded-3 d-flex align-items-center justify-content-between" style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.35)' }}>
+                    <div className="d-flex align-items-center gap-2.5">
+                      <span className="fs-5">🛖</span>
                       <div>
-                        <strong className="d-block" style={{ fontSize: '0.78rem', color: 'var(--text-main)' }}>Moustiquaire MILDA offerte</strong>
-                        <small className="text-success fw-bold" style={{ fontSize: '0.7rem' }}>Remise certifiée CPN 1</small>
+                        <strong className="d-block" style={{ fontSize: '0.82rem', color: 'var(--text-main)' }}>Moustiquaire MILDA offerte</strong>
+                        <small className="text-success fw-bold" style={{ fontSize: '0.74rem' }}>Remise certifiée CPN 1</small>
                       </div>
                     </div>
-                    <span className="badge bg-success text-white fw-bold" style={{ borderRadius: '6px', fontSize: '0.7rem' }}>100% Gratuit</span>
+                    <span className="badge bg-success text-white fw-bold px-2.5 py-1" style={{ borderRadius: '6px', fontSize: '0.72rem' }}>100% Gratuit</span>
                   </div>
                 </div>
 
@@ -1518,11 +1532,55 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
 
               <div className="d-flex gap-3 flex-wrap align-items-center justify-content-between pt-2 border-top" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
                 <div className="d-flex align-items-center gap-2">
-                  <span className="small text-white-50" style={{ fontSize: '0.83rem' }}>Choix de la langue vocale :</span>
+                  <span className="small text-white-50 fw-bold" style={{ fontSize: '0.83rem' }}>Choix de la langue vocale :</span>
                   <div className="btn-group btn-group-sm" role="group">
-                    <button type="button" className={`btn btn-sm ${audioLang === 'fr' ? 'btn-success fw-bold' : 'btn-outline-light text-white'}`} style={{ fontSize: '0.74rem' }} onClick={() => setAudioLang('fr')}>🗣️ FR</button>
-                    <button type="button" className={`btn btn-sm ${audioLang === 'wolof' ? 'btn-success fw-bold' : 'btn-outline-light text-white'}`} style={{ fontSize: '0.74rem' }} onClick={() => setAudioLang('wolof')}>🗣️ Wolof</button>
-                    <button type="button" className={`btn btn-sm ${audioLang === 'pulaar' ? 'btn-success fw-bold' : 'btn-outline-light text-white'}`} style={{ fontSize: '0.74rem' }} onClick={() => setAudioLang('pulaar')}>🗣️ Pulaar</button>
+                    <button 
+                      type="button" 
+                      style={{ 
+                        background: audioLang === 'fr' ? '#059669' : 'rgba(30, 41, 59, 0.9)', 
+                        color: '#ffffff', 
+                        border: audioLang === 'fr' ? '1px solid #10b981' : '1px solid rgba(255,255,255,0.2)', 
+                        borderRadius: '8px 0 0 8px', 
+                        padding: '0.35rem 0.75rem', 
+                        fontSize: '0.78rem', 
+                        fontWeight: '700',
+                        cursor: 'pointer'
+                      }} 
+                      onClick={() => setAudioLang('fr')}
+                    >
+                      🗣️ Français
+                    </button>
+                    <button 
+                      type="button" 
+                      style={{ 
+                        background: audioLang === 'wolof' ? '#059669' : 'rgba(30, 41, 59, 0.9)', 
+                        color: '#ffffff', 
+                        border: audioLang === 'wolof' ? '1px solid #10b981' : '1px solid rgba(255,255,255,0.2)', 
+                        padding: '0.35rem 0.75rem', 
+                        fontSize: '0.78rem', 
+                        fontWeight: '700',
+                        cursor: 'pointer'
+                      }} 
+                      onClick={() => setAudioLang('wolof')}
+                    >
+                      🗣️ Wolof
+                    </button>
+                    <button 
+                      type="button" 
+                      style={{ 
+                        background: audioLang === 'pulaar' ? '#059669' : 'rgba(30, 41, 59, 0.9)', 
+                        color: '#ffffff', 
+                        border: audioLang === 'pulaar' ? '1px solid #10b981' : '1px solid rgba(255,255,255,0.2)', 
+                        borderRadius: '0 8px 8px 0', 
+                        padding: '0.35rem 0.75rem', 
+                        fontSize: '0.78rem', 
+                        fontWeight: '700',
+                        cursor: 'pointer'
+                      }} 
+                      onClick={() => setAudioLang('pulaar')}
+                    >
+                      🗣️ Pulaar
+                    </button>
                   </div>
                 </div>
 
@@ -1684,8 +1742,8 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                 </button>
               </div>
 
-              <div className="table-responsive" style={{ borderRadius: '14px', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
-                <table className="table align-middle mb-0" style={{ background: 'transparent' }}>
+              <div className="table-responsive" style={{ borderRadius: '14px', border: '1px solid var(--border-color)', overflowX: 'auto' }}>
+                <table className="table align-middle mb-0" style={{ background: 'transparent', minWidth: '940px' }}>
                   <thead style={{ background: 'var(--bg-card-subtle)' }}>
                     <tr className="small" style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>
                       <th scope="col" style={{ padding: '1rem 1.25rem' }}>ÉCHÉANCE / ÂGE</th>
