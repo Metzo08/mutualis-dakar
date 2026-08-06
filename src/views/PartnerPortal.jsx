@@ -43,40 +43,55 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
   // ============================================================================
   const defaultUdmsPrestataires = [
     {
-      id: 101,
-      name: 'Dr. Ousmane Ndiaye',
-      role: 'Médecin Généraliste / Spécialiste',
+      id: 100,
+      name: 'Centre Hospitalier Abass Ndao',
+      role: 'Hôpital / Structure sanitaire agréée',
       udms: 'UDMS Dakar',
-      commune: 'Dakar Plateau',
+      structureName: 'Centre Hospitalier Abass Ndao',
+      commune: 'Dakar - Gueule Tapée / Fass',
       agreement: 'AGR-2026-DKR-101',
       rate: 80,
+      phone: '+221 33 849 78 00',
+      email: 'contact@abassndao.sn',
+      status: 'Actif & agréé'
+    },
+    {
+      id: 101,
+      name: 'Dr. Cheikh Anta Diop',
+      role: 'Médecin prescripteur (Abass Ndao)',
+      udms: 'UDMS Dakar',
+      structureName: 'Centre Hospitalier Abass Ndao',
+      commune: 'Dakar - Gueule Tapée / Fass',
+      agreement: 'AGR-2026-DKR-101-M1',
+      rate: 80,
       phone: '+221 77 550 11 22',
-      email: 'dr.ndiaye@cmu-dakar.sn',
-      status: 'Actif & Agréé'
+      email: 'dr.cheikh.anta@abassndao.sn',
+      status: 'Actif & agréé'
+    },
+    {
+      id: 105,
+      name: 'Mme Fatou Kiné Diop',
+      role: 'Sage-femme d\'État (Abass Ndao Maternité)',
+      udms: 'UDMS Dakar',
+      structureName: 'Centre Hospitalier Abass Ndao',
+      commune: 'Dakar - Gueule Tapée / Fass',
+      agreement: 'AGR-2026-DKR-101-SF1',
+      rate: 100,
+      phone: '+221 77 412 00 99',
+      email: 'sagefemme.maternite@abassndao.sn',
+      status: 'Actif & agréé'
     },
     {
       id: 102,
       name: 'Pharmacie Centrale de la Médina',
-      role: 'Pharmacie d\'Officine (Bons 48h)',
+      role: 'Pharmacie d\'officine (Bons 48h)',
       udms: 'UDMS Dakar',
       commune: 'Médina',
       agreement: 'AGR-2026-DKR-404',
       rate: 80,
       phone: '+221 33 821 44 55',
       email: 'pharmacie.medina@cmu-dakar.sn',
-      status: 'Actif & Agréé'
-    },
-    {
-      id: 103,
-      name: 'Centre de Radiologie & Labo Point E',
-      role: 'Centre d\'Imagerie & Radiologie (DICOM)',
-      udms: 'UDMS Dakar',
-      commune: 'Fann - Point E',
-      agreement: 'AGR-2026-DKR-772',
-      rate: 85,
-      phone: '+221 33 825 99 00',
-      email: 'radiologie.pointe@cmu-dakar.sn',
-      status: 'Actif & Agréé'
+      status: 'Actif & agréé'
     },
     {
       id: 104,
@@ -88,7 +103,7 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
       rate: 80,
       phone: '+221 78 221 99 88',
       email: 'dr.sow@cmu-pikine.sn',
-      status: 'Actif & Agréé'
+      status: 'Actif & agréé'
     }
   ];
 
@@ -137,7 +152,7 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
       rate: parseInt(newPrestataire.rate) || 80,
       phone: newPrestataire.phone,
       email: newPrestataire.email || `${newPrestataire.name.toLowerCase().replace(/[^a-z0-9]/g, '')}@cmu.sn`,
-      status: 'Actif & Agréé UDMS'
+      status: 'Actif & agréé UDMS'
     };
 
     const updatedList = [created, ...prestataires];
@@ -159,7 +174,18 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
     });
   };
 
+  const targetStructure = partner?.structureName || 'Centre Hospitalier Abass Ndao';
+
   const filteredPrestataires = prestataires.filter(p => {
+    if (!isUdmsAgentOrAdmin) {
+      // Mode lecteur (ex: Centre Hospitalier Abass Ndao) :
+      // On n'affiche que la structure conventionnée ET le personnel/médecins rattachés à cette structure
+      const isStructureSelf = p.name === targetStructure || p.structureName === targetStructure;
+      const isAttachedStaff = p.structureName === targetStructure || (p.role && p.role.includes('Abass Ndao')) || p.name.includes('Abass Ndao');
+      return isStructureSelf || isAttachedStaff;
+    }
+
+    // Mode Agent UDMS / SuperAdmin : accès global filtrable
     const matchUdms = !selectedUdms || p.udms === selectedUdms || selectedUdms === 'Toutes';
     const matchRole = roleFilter === 'Tous' || p.role.toLowerCase().includes(roleFilter.toLowerCase());
     return matchUdms && matchRole;
@@ -516,22 +542,28 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
               </div>
 
               <div className="d-flex gap-2">
-                <select 
-                  className="form-select input fw-bold"
-                  value={selectedUdms}
-                  onChange={(e) => {
-                    setSelectedUdms(e.target.value);
-                    setNewPrestataire(prev => ({ ...prev, udms: e.target.value }));
-                  }}
-                  style={{ width: '220px', borderRadius: '10px' }}
-                >
-                  <option value="Toutes">Toutes les UDMS (Région)</option>
-                  <option value="UDMS Dakar">UDMS Dakar</option>
-                  <option value="UDMS Pikine">UDMS Pikine</option>
-                  <option value="UDMS Guédiawaye">UDMS Guédiawaye</option>
-                  <option value="UDMS Rufisque">UDMS Rufisque</option>
-                  <option value="UDMS Keur Massar">UDMS Keur Massar</option>
-                </select>
+                {isUdmsAgentOrAdmin ? (
+                  <select 
+                    className="form-select input fw-bold"
+                    value={selectedUdms}
+                    onChange={(e) => {
+                      setSelectedUdms(e.target.value);
+                      setNewPrestataire(prev => ({ ...prev, udms: e.target.value }));
+                    }}
+                    style={{ width: '220px', borderRadius: '10px' }}
+                  >
+                    <option value="Toutes">Toutes les UDMS (Région)</option>
+                    <option value="UDMS Dakar">UDMS Dakar</option>
+                    <option value="UDMS Pikine">UDMS Pikine</option>
+                    <option value="UDMS Guédiawaye">UDMS Guédiawaye</option>
+                    <option value="UDMS Rufisque">UDMS Rufisque</option>
+                    <option value="UDMS Keur Massar">UDMS Keur Massar</option>
+                  </select>
+                ) : (
+                  <span className="badge bg-primary-subtle text-primary border border-primary px-3 py-2 fw-bold d-flex align-items-center gap-1.5" style={{ borderRadius: '10px', fontSize: '0.88rem' }}>
+                    🏛️ UDMS Dakar
+                  </span>
+                )}
               </div>
             </div>
 
@@ -777,7 +809,7 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
                 <div className="p-4 rounded-4 border h-100 d-flex flex-column" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
                   <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                     <h5 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-                      <span>📋</span> Prestataires agréés ({filteredPrestataires.length})
+                      <span>📋</span> {isUdmsAgentOrAdmin ? `Prestataires agréés (${filteredPrestataires.length})` : `Structure & praticiens agréés de l'établissement (${filteredPrestataires.length})`}
                     </h5>
 
                     <div className="d-flex gap-2">
