@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import DeleteModal from '../components/DeleteModal';
 
 const PARTNERS = [
   { name: 'UNAMUSC SÉNÉGAL', logo: '/logo_partner_unamusc.png', isImage: true },
@@ -13,6 +14,7 @@ const PARTNERS = [
 ];
 
 export default function Partnership({ lang, portalMode, agentUser }) {
+  const [deleteConfirmTarget, setDeleteConfirmTarget] = useState(null);
   const doublePartners = [...PARTNERS, ...PARTNERS];
   const [page, setPage] = useState(1);
   const [formData, setFormData] = useState({
@@ -162,23 +164,26 @@ export default function Partnership({ lang, portalMode, agentUser }) {
       });
   };
 
-  const handleDeletePartnership = (id) => {
-    if (!window.confirm(lang === 'fr' ? 'Voulez-vous vraiment supprimer cette demande ?' : 'Dax nga beug dindi demande bi ?')) return;
-    fetch(`http://localhost:5000/api/partnerships/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('cmu-token') || ''}`
+  const handleDeletePartnership = (item) => {
+    const titleStr = typeof item === 'object' ? (item.structure_name || item.orgName || 'Demande de partenariat') : 'Demande de partenariat';
+    const id = typeof item === 'object' ? item.id : item;
+    setDeleteConfirmTarget({
+      title: titleStr,
+      itemType: 'Demande de partenariat',
+      onConfirm: () => {
+        fetch(`http://localhost:5000/api/partnerships/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('cmu-token') || ''}` }
+        })
+          .then(() => {
+            triggerToast(lang === 'fr' ? 'Demande de partenariat supprimée' : 'Dindi nanu demande bi');
+            queryClient.invalidateQueries(['partnershipsList']);
+          })
+          .catch(() => {
+            triggerToast('Erreur lors de la suppression.');
+          });
       }
-    })
-      .then(res => {
-        if (!res.ok) throw new Error();
-        return res.json();
-      })
-      .then(() => {
-        triggerToast(lang === 'fr' ? 'Demande de partenariat supprimée' : 'Dindi nanu demande bi');
-        queryClient.invalidateQueries(['partnershipsList']);
-      })
-      .catch(() => triggerToast('Erreur lors de la suppression.'));
+    });
   };
 
   const handleSaveEdit = (e) => {
@@ -705,6 +710,15 @@ export default function Partnership({ lang, portalMode, agentUser }) {
           <span>{toastMessage}</span>
         </div>
       )}
+      {/* MODALE UNIVERSELLE DE SUPPRESSION (RED GLASSMORPHISM) */}
+      <DeleteModal 
+        isOpen={!!deleteConfirmTarget}
+        title={deleteConfirmTarget?.title}
+        itemType={deleteConfirmTarget?.itemType}
+        onConfirm={deleteConfirmTarget?.onConfirm}
+        onClose={() => setDeleteConfirmTarget(null)}
+      />
+
     </div>
   );
 }

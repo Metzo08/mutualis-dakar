@@ -3,9 +3,11 @@ import {
   BarChart, Bar, PieChart, Pie, Cell, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
+import DeleteModal from '../components/DeleteModal';
 
 // Tableau de bord agent CSU : KPIs temps réel, graphiques (Recharts) et export CSV.
 export default function AgentDashboard({ lang, agentUser }) {
+  const [deleteConfirmTarget, setDeleteConfirmTarget] = useState(null);
   const isSuperAdmin = agentUser && (
     agentUser.role === 'Super Admin' || 
     agentUser.role === 'admin' || 
@@ -189,38 +191,42 @@ export default function AgentDashboard({ lang, agentUser }) {
       setCampaignError('Aucune campagne active à supprimer.');
       return;
     }
-    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette campagne ? Cette action est irréversible.')) {
-      return;
-    }
-    setCampaignSuccess('');
-    setCampaignError('');
-    const token = localStorage.getItem('cmu-token');
-    fetch(`http://localhost:5000/api/campaign/${activeCampaignId}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`
+    const campObj = activeCampaigns.find(c => c.id === activeCampaignId);
+    const campTitle = campObj ? campObj.title_fr : `Campagne #${activeCampaignId}`;
+    setDeleteConfirmTarget({
+      title: campTitle,
+      itemType: 'Campagne de Sensibilisation CSU',
+      onConfirm: () => {
+        setCampaignSuccess('');
+        setCampaignError('');
+        const token = localStorage.getItem('cmu-token');
+        fetch(`http://localhost:5000/api/campaign/${activeCampaignId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+          .then(res => {
+            if (!res.ok) throw new Error('Erreur lors de la suppression de la campagne.');
+            return res.json();
+          })
+          .then(data => {
+            setCampaignSuccess(data.message || 'Campagne supprimée avec succès.');
+            setActiveCampaigns(prev => prev.filter(c => c.id !== activeCampaignId));
+            setActiveCampaignId(0);
+            setCampaignForm({
+              titleFr: 'Soutenir la solidarité régionale',
+              titleWo: 'Dimbalél wa Dakar yi',
+              descriptionFr: 'Soutenez les familles les plus vulnérables de Dakar en finançant leur couverture santé annuelle (4 500 FCFA).',
+              descriptionWo: 'Dimbalél wa Dakar yi gënë néewal doole ngir ñu mënë am fajj wér-gi-yaram (4 500 FCFA).',
+              targetAmount: 1000000,
+              baselineAmount: 720000
+            });
+            setTimeout(() => setCampaignSuccess(''), 4000);
+          })
+          .catch(err => {
+            setCampaignError(err.message || 'Impossible de supprimer la campagne.');
+          });
       }
-    })
-      .then(res => {
-        if (!res.ok) throw new Error('Erreur lors de la suppression de la campagne.');
-        return res.json();
-      })
-      .then(() => {
-        setCampaignSuccess('Campagne supprimée avec succès !');
-        setActiveCampaignId(0);
-        setCampaignForm({
-          titleFr: 'Soutenir la solidarité régionale',
-          titleWo: 'Dimbalél wa Dakar yi',
-          descriptionFr: 'Soutenez les familles les plus vulnérables de Dakar en finançant leur couverture santé annuelle (4 500 FCFA).',
-          descriptionWo: 'Dimbalél wa Dakar yi gënë néewal doole ngir ñu mënë am fajj wér-gi-yaram (4 500 FCFA).',
-          targetAmount: 1000000,
-          baselineAmount: 720000
-        });
-        setTimeout(() => setCampaignSuccess(''), 4000);
-      })
-      .catch(err => {
-        setCampaignError(err.message);
-      });
+    });
   };
 
   const COLORS = ['#059669', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#6366f1'];
@@ -672,6 +678,15 @@ function SuperAdminDoctorManagement({ lang }) {
           </div>
         </div>
       </div>
+      {/* MODALE UNIVERSELLE DE SUPPRESSION (RED GLASSMORPHISM) */}
+      <DeleteModal 
+        isOpen={!!deleteConfirmTarget}
+        title={deleteConfirmTarget?.title}
+        itemType={deleteConfirmTarget?.itemType}
+        onConfirm={deleteConfirmTarget?.onConfirm}
+        onClose={() => setDeleteConfirmTarget(null)}
+      />
+
     </div>
   );
 }

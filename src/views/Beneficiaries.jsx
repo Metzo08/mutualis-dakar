@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
+import DeleteModal from '../components/DeleteModal';
 
 export default function Beneficiaries({ lang, agentUser }) {
+  const [deleteConfirmTarget, setDeleteConfirmTarget] = useState(null);
   const [beneficiaries, setBeneficiaries] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMutuelle, setSelectedMutuelle] = useState('all');
@@ -359,28 +361,33 @@ export default function Beneficiaries({ lang, agentUser }) {
   };
 
   // Delete beneficiary
-  const handleDelete = (id) => {
-    if (confirm(t.deleteConfirm)) {
-      const actor = agentUser ? agentUser.username : 'agent@cmu.sn';
-      fetch(`http://localhost:5000/api/beneficiaries/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${localStorage.getItem('cmu-token') || ''}` }
-      })
-        .then(res => res.json())
-        .then(() => {
-          setBeneficiaries(prev => prev.filter(b => b.id !== id));
-          if (selectedBeneficiary && selectedBeneficiary.id === id) {
-            setSelectedBeneficiary(null);
-          }
+  const handleDelete = (b) => {
+    const nameStr = `${b.first_name || b.firstName || ''} ${b.last_name || b.lastName || ''}`.trim() || 'Bénéficiaire';
+    const cmuStr = b.cmu_number || b.cmuNumber || 'CSU';
+    setDeleteConfirmTarget({
+      title: `${nameStr} (${cmuStr})`,
+      itemType: 'Bénéficiaire CSU',
+      onConfirm: () => {
+        const id = b.id;
+        fetch(`http://localhost:5000/api/beneficiaries/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('cmu-token') || ''}` }
         })
-        .catch(() => {
-          // Fallback offline deleter
-          setBeneficiaries(prev => prev.filter(b => b.id !== id));
-          if (selectedBeneficiary && selectedBeneficiary.id === id) {
-            setSelectedBeneficiary(null);
-          }
-        });
-    }
+          .then(res => res.json())
+          .then(() => {
+            setBeneficiaries(prev => prev.filter(item => item.id !== id));
+            if (selectedBeneficiary && selectedBeneficiary.id === id) {
+              setSelectedBeneficiary(null);
+            }
+          })
+          .catch(() => {
+            setBeneficiaries(prev => prev.filter(item => item.id !== id));
+            if (selectedBeneficiary && selectedBeneficiary.id === id) {
+              setSelectedBeneficiary(null);
+            }
+          });
+      }
+    });
   };
 
   return (
@@ -571,7 +578,7 @@ export default function Beneficiaries({ lang, agentUser }) {
                       )}
                       <button 
                         className="btn btn-outline btn-sm" 
-                        onClick={() => handleDelete(b.id)}
+                        onClick={() => handleDelete(b)}
                         style={{ padding: '0.3rem 0.75rem', borderRadius: '8px', color: 'var(--danger)', borderColor: 'var(--danger)' }}
                       >
                         🗑️
@@ -918,6 +925,15 @@ export default function Beneficiaries({ lang, agentUser }) {
           </div>
         </div>
       )}
+      {/* MODALE UNIVERSELLE DE SUPPRESSION (RED GLASSMORPHISM) */}
+      <DeleteModal 
+        isOpen={!!deleteConfirmTarget}
+        title={deleteConfirmTarget?.title}
+        itemType={deleteConfirmTarget?.itemType}
+        onConfirm={deleteConfirmTarget?.onConfirm}
+        onClose={() => setDeleteConfirmTarget(null)}
+      />
+
     </div>
   );
 }

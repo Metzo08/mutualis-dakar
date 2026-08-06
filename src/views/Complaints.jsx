@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import DeleteModal from '../components/DeleteModal';
 
 export default function Complaints({ lang, portalMode, citizenUser, agentUser, partnerUser }) {
+  const [deleteConfirmTarget, setDeleteConfirmTarget] = useState(null);
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -191,23 +193,27 @@ export default function Complaints({ lang, portalMode, citizenUser, agentUser, p
       .catch(() => alert('Erreur lors de la résolution.'));
   };
 
-  const handleDeleteComplaint = (id) => {
-    if (!window.confirm(lang === 'fr' ? 'Voulez-vous supprimer cette réclamation ?' : 'Dax nga beug dindi plainte bi ?')) return;
-    fetch(`http://localhost:5000/api/complaints/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('cmu-token') || ''}`
+  const handleDeleteComplaint = (comp) => {
+    const titleStr = typeof comp === 'object' ? (comp.title || comp.subject || 'Réclamation') : 'Réclamation';
+    const compId = typeof comp === 'object' ? comp.id : comp;
+    setDeleteConfirmTarget({
+      title: titleStr,
+      itemType: 'Réclamation / Requête',
+      onConfirm: () => {
+        fetch(`http://localhost:5000/api/complaints/${compId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('cmu-token') || ''}` }
+        })
+          .then(() => {
+            setComplaints(prev => prev.filter(c => c.id !== compId));
+            setSelectedComplaint(null);
+          })
+          .catch(() => {
+            setComplaints(prev => prev.filter(c => c.id !== compId));
+            setSelectedComplaint(null);
+          });
       }
-    })
-      .then(res => {
-        if (!res.ok) throw new Error();
-        return res.json();
-      })
-      .then(() => {
-        setComplaints(prev => prev.filter(c => c.id !== id));
-        setSelectedComplaint(null);
-      })
-      .catch(() => alert('Erreur lors de la suppression.'));
+    });
   };
 
   return (
@@ -505,6 +511,15 @@ export default function Complaints({ lang, portalMode, citizenUser, agentUser, p
           </div>
         </div>
       )}
+      {/* MODALE UNIVERSELLE DE SUPPRESSION (RED GLASSMORPHISM) */}
+      <DeleteModal 
+        isOpen={!!deleteConfirmTarget}
+        title={deleteConfirmTarget?.title}
+        itemType={deleteConfirmTarget?.itemType}
+        onConfirm={deleteConfirmTarget?.onConfirm}
+        onClose={() => setDeleteConfirmTarget(null)}
+      />
+
     </div>
   );
 }

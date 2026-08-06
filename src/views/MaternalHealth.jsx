@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
+import DeleteModal from '../components/DeleteModal';
 
 // Design Premium Haut de Gamme — Carnet Maternité & Santé Enfant
 export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentUser = null, partnerUser = null, userRole = 'citizen', setView = null }) {
@@ -9,6 +10,68 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
   // (règle des hooks React : ne jamais appeler useState/useEffect après un return)
   // ═══════════════════════════════════════════════════════
   const [activeTab, setActiveTab] = useState('cpn'); // 'cpn', 'pev', 'advice'
+
+  // Modale universelle de suppression
+  const [deleteConfirmTarget, setDeleteConfirmTarget] = useState(null); // { title, itemType, onConfirm }
+
+  // État Vaccinations PEV (Tab 2)
+  const [vaccinations, setVaccinations] = useState([
+    {
+      id: 1,
+      ageLabel: 'Naissance (J0 à J7)',
+      vaccines: 'BCG + VPO 0 + VHB 0',
+      subtext: 'Dose initiale de maternité',
+      diseases: 'Tuberculose, polio, hépatite B',
+      structure: 'Centre Gaspard Camara',
+      status: 'Administré (100% CSU)',
+      completed: true
+    },
+    {
+      id: 2,
+      ageLabel: '6 Semaines (1 mois & demi)',
+      vaccines: 'Penta 1 + VPO 1 + Rota 1 + Pneumo 1',
+      subtext: '4 vaccins combinés',
+      diseases: 'Diphtérie, tétanos, coqueluche, méningite',
+      structure: 'Dispensaire Point E',
+      status: 'Administré (100% CSU)',
+      completed: true
+    },
+    {
+      id: 3,
+      ageLabel: '10 Semaines (2 mois & demi)',
+      vaccines: 'Penta 2 + VPO 2 + Rota 2 + Pneumo 2',
+      subtext: 'Rappel de 2ème dose',
+      diseases: 'Rappel des immunisations premières',
+      structure: 'Centre de santé Pikine',
+      status: 'À venir (Juillet 2026)',
+      completed: false
+    },
+    {
+      id: 4,
+      ageLabel: '14 Semaines (3 mois & demi)',
+      vaccines: 'Penta 3 + VPO 3 + VPI 1 + Pneumo 3',
+      subtext: '3ème dose & injectables',
+      diseases: 'Immunisation complète 1er âge',
+      structure: 'CHU de Fann (Dakar)',
+      status: 'Programmé (Août 2026)',
+      completed: false
+    },
+    {
+      id: 5,
+      ageLabel: '9 Mois (Échéance finale 1er an)',
+      vaccines: 'RR 1 + VAA + Vitamine A',
+      subtext: 'Rougeole, rubéole & fièvre jaune',
+      diseases: 'Fièvre jaune, rougeole & carences',
+      structure: 'Centre Gaspard Camara',
+      status: 'Programmé (Février 2027)',
+      completed: false
+    }
+  ]);
+
+  const [showAddVaccineModal, setShowAddVaccineModal] = useState(false);
+  const [newVaccineForm, setNewVaccineForm] = useState({ ageLabel: '', vaccines: '', subtext: '', diseases: '', structure: 'Centre Hospitalier Abass Ndao', status: 'Administré (100% CSU)', completed: true });
+  const [editingVaccineId, setEditingVaccineId] = useState(null);
+  const [editVaccineForm, setEditVaccineForm] = useState(null);
 
   // Modales
   const [showGuaranteeModal, setShowGuaranteeModal] = useState(false);
@@ -341,11 +404,12 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
     alert("✅ Consultation CPN modifiée et certifiée.");
   };
 
-  const handleDeleteCpn = (cpnId) => {
-    if (window.confirm('Supprimer définitivement cette consultation CPN du carnet de maternité ?')) {
-      setCpnVisits(cpnVisits.filter(c => c.id !== cpnId));
-      alert("🗑 Consultation CPN supprimée.");
-    }
+  const handleDeleteCpn = (cpn) => {
+    setDeleteConfirmTarget({
+      title: cpn.title || 'Consultation CPN',
+      itemType: 'Consultation CPN Maternité',
+      onConfirm: () => setCpnVisits(cpnVisits.filter(c => c.id !== cpn.id))
+    });
   };
 
   const handleAddCpn = (e) => {
@@ -355,7 +419,37 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
     setCpnVisits([...cpnVisits, newCpn]);
     setShowAddCpnModal(false);
     setNewCpnForm({ title: '', desc: '', date: '', doctor: '', status: '', completed: false });
-    alert("✅ Nouvelle consultation CPN ajoutée au carnet de maternité.");
+  };
+
+  // ─── GESTION DES VACCINATIONS PEV (médecin / sage-femme / superadmin) ───
+
+  const handleAddVaccine = (e) => {
+    e.preventDefault();
+    if (!newVaccineForm.vaccines || !newVaccineForm.ageLabel) return;
+    const newV = { id: Date.now(), ...newVaccineForm };
+    setVaccinations([...vaccinations, newV]);
+    setShowAddVaccineModal(false);
+    setNewVaccineForm({ ageLabel: '', vaccines: '', subtext: '', diseases: '', structure: 'Centre Hospitalier Abass Ndao', status: 'Administré (100% CSU)', completed: true });
+  };
+
+  const openEditVaccine = (v) => {
+    setEditingVaccineId(v.id);
+    setEditVaccineForm({ ...v });
+  };
+
+  const handleSaveEditVaccine = (e) => {
+    e.preventDefault();
+    setVaccinations(vaccinations.map(v => v.id === editingVaccineId ? editVaccineForm : v));
+    setEditingVaccineId(null);
+    setEditVaccineForm(null);
+  };
+
+  const handleDeleteVaccine = (v) => {
+    setDeleteConfirmTarget({
+      title: v.vaccines,
+      itemType: 'Dose Vaccinale PEV',
+      onConfirm: () => setVaccinations(vaccinations.filter(x => x.id !== v.id))
+    });
   };
 
   // ─── ÉDITION FICHE CONSEIL (médecin / sage-femme / superadmin) ───
@@ -371,14 +465,14 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
     setAdviceArticles(adviceArticles.map(a => a.id === editingAdviceId ? updated : a));
     setEditingAdviceId(null);
     setEditAdviceForm(null);
-    alert("✅ Fiche conseil modifiée et publiée.");
   };
 
-  const handleDeleteAdvice = (artId) => {
-    if (window.confirm('Supprimer définitivement cette fiche conseil ?')) {
-      setAdviceArticles(adviceArticles.filter(a => a.id !== artId));
-      alert("🗑 Fiche conseil supprimée.");
-    }
+  const handleDeleteAdvice = (art) => {
+    setDeleteConfirmTarget({
+      title: art.title,
+      itemType: 'Fiche Conseil Médicale',
+      onConfirm: () => setAdviceArticles(adviceArticles.filter(a => a.id !== art.id))
+    });
   };
 
   // ─── RÉPONSE PROFESSIONNEL (médecin / sage-femme) ───
@@ -1042,121 +1136,79 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                       <th scope="col" style={{ padding: '1rem 1.25rem' }}>MALADIES PROTÉGÉES</th>
                       <th scope="col" style={{ padding: '1rem 1.25rem' }}>STRUCTURE AGRÉÉE</th>
                       <th scope="col" className="text-end" style={{ padding: '1rem 1.25rem' }}>STATUT PEV</th>
+                      {canEditMaternity && <th scope="col" className="text-end" style={{ padding: '1rem 1.25rem' }}>ACTIONS MÉDICALES</th>}
                     </tr>
                   </thead>
                   <tbody>
-                    <tr className="border-bottom" style={{ borderColor: 'var(--border-color)' }}>
-                      <td style={{ padding: '1.1rem 1.25rem' }}>
-                        <strong style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>Naissance</strong>
-                        <small className="d-block text-muted" style={{ fontSize: '0.75rem' }}>J0 à J7</small>
-                      </td>
-                      <td style={{ padding: '1.1rem 1.25rem' }}>
-                        <span className="text-success fw-bold" style={{ fontSize: '0.9rem' }}>BCG + VPO 0 + VHB 0</span>
-                        <small className="d-block text-muted" style={{ fontSize: '0.75rem' }}>Dose initiale de maternité</small>
-                      </td>
-                      <td style={{ padding: '1.1rem 1.25rem', color: 'var(--text-sub)', fontSize: '0.85rem' }}>
-                        Tuberculose, polio, hépatite B
-                      </td>
-                      <td style={{ padding: '1.1rem 1.25rem', color: 'var(--text-sub)', fontSize: '0.85rem' }}>
-                        🏥 Centre Gaspard Camara
-                      </td>
-                      <td className="text-end" style={{ padding: '1.1rem 1.25rem', whiteSpace: 'nowrap' }}>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(16, 185, 129, 0.12)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '0.45rem 0.9rem', borderRadius: '30px', fontSize: '0.78rem', fontWeight: '800', boxShadow: '0 2px 6px rgba(16,185,129,0.1)' }}>
-                          <span>✅</span> <span>Administré (100% CSU)</span>
-                        </span>
-                      </td>
-                    </tr>
-
-                    <tr className="border-bottom" style={{ borderColor: 'var(--border-color)' }}>
-                      <td style={{ padding: '1.1rem 1.25rem' }}>
-                        <strong style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>6 Semaines</strong>
-                        <small className="d-block text-muted" style={{ fontSize: '0.75rem' }}>1 mois & demi</small>
-                      </td>
-                      <td style={{ padding: '1.1rem 1.25rem' }}>
-                        <span className="text-success fw-bold" style={{ fontSize: '0.9rem' }}>Penta 1 + VPO 1 + Rota 1 + Pneumo 1</span>
-                        <small className="d-block text-muted" style={{ fontSize: '0.75rem' }}>4 vaccins combinés</small>
-                      </td>
-                      <td style={{ padding: '1.1rem 1.25rem', color: 'var(--text-sub)', fontSize: '0.85rem' }}>
-                        Diphtérie, tétanos, coqueluche, méningite...
-                      </td>
-                      <td style={{ padding: '1.1rem 1.25rem', color: 'var(--text-sub)', fontSize: '0.85rem' }}>
-                        🏥 Dispensaire Point E
-                      </td>
-                      <td className="text-end" style={{ padding: '1.1rem 1.25rem', whiteSpace: 'nowrap' }}>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(16, 185, 129, 0.12)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '0.45rem 0.9rem', borderRadius: '30px', fontSize: '0.78rem', fontWeight: '800', boxShadow: '0 2px 6px rgba(16,185,129,0.1)' }}>
-                          <span>✅</span> <span>Administré (100% CSU)</span>
-                        </span>
-                      </td>
-                    </tr>
-
-                    <tr className="border-bottom" style={{ borderColor: 'var(--border-color)' }}>
-                      <td style={{ padding: '1.1rem 1.25rem' }}>
-                        <strong style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>10 Semaines</strong>
-                        <small className="d-block text-muted" style={{ fontSize: '0.75rem' }}>2 mois & demi</small>
-                      </td>
-                      <td style={{ padding: '1.1rem 1.25rem' }}>
-                        <span className="text-warning fw-bold" style={{ fontSize: '0.9rem' }}>Penta 2 + VPO 2 + Rota 2 + Pneumo 2</span>
-                        <small className="d-block text-muted" style={{ fontSize: '0.75rem' }}>Rappel de 2ème dose</small>
-                      </td>
-                      <td style={{ padding: '1.1rem 1.25rem', color: 'var(--text-sub)', fontSize: '0.85rem' }}>
-                        Rappel des immunisations premières
-                      </td>
-                      <td style={{ padding: '1.1rem 1.25rem', color: 'var(--text-sub)', fontSize: '0.85rem' }}>
-                        🏥 Centre de santé Pikine
-                      </td>
-                      <td className="text-end" style={{ padding: '1.1rem 1.25rem', whiteSpace: 'nowrap' }}>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(245, 158, 11, 0.12)', color: '#d97706', border: '1px solid rgba(245,158,11,0.3)', padding: '0.45rem 0.9rem', borderRadius: '30px', fontSize: '0.78rem', fontWeight: '800' }}>
-                          <span>⏳</span> <span>À venir (Juillet 2026)</span>
-                        </span>
-                      </td>
-                    </tr>
-
-                    <tr className="border-bottom" style={{ borderColor: 'var(--border-color)' }}>
-                      <td style={{ padding: '1.1rem 1.25rem' }}>
-                        <strong style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>14 Semaines</strong>
-                        <small className="d-block text-muted" style={{ fontSize: '0.75rem' }}>3 mois & demi</small>
-                      </td>
-                      <td style={{ padding: '1.1rem 1.25rem' }}>
-                        <span style={{ color: 'var(--text-sub)', fontWeight: '700', fontSize: '0.9rem' }}>Penta 3 + VPO 3 + VPI 1 + Pneumo 3</span>
-                        <small className="d-block text-muted" style={{ fontSize: '0.75rem' }}>3ème dose & injectables</small>
-                      </td>
-                      <td style={{ padding: '1.1rem 1.25rem', color: 'var(--text-sub)', fontSize: '0.85rem' }}>
-                        Immunisation complète 1er âge
-                      </td>
-                      <td style={{ padding: '1.1rem 1.25rem', color: 'var(--text-sub)', fontSize: '0.85rem' }}>
-                        🏥 CHU de Fann (Dakar)
-                      </td>
-                      <td className="text-end" style={{ padding: '1.1rem 1.25rem', whiteSpace: 'nowrap' }}>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(59, 130, 246, 0.12)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.3)', padding: '0.45rem 0.9rem', borderRadius: '30px', fontSize: '0.78rem', fontWeight: '700' }}>
-                          <span>🗓️</span> <span>Programmé (Août 2026)</span>
-                        </span>
-                      </td>
-                    </tr>
-
-                    <tr>
-                      <td style={{ padding: '1.1rem 1.25rem' }}>
-                        <strong style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>9 Mois</strong>
-                        <small className="d-block text-muted" style={{ fontSize: '0.75rem' }}>Échéance finale 1er an</small>
-                      </td>
-                      <td style={{ padding: '1.1rem 1.25rem' }}>
-                        <span style={{ color: 'var(--text-sub)', fontWeight: '700', fontSize: '0.9rem' }}>RR 1 + VAA + Vitamine A</span>
-                        <small className="d-block text-muted" style={{ fontSize: '0.75rem' }}>Rougeole, rubéole & fièvre jaune</small>
-                      </td>
-                      <td style={{ padding: '1.1rem 1.25rem', color: 'var(--text-sub)', fontSize: '0.85rem' }}>
-                        Fièvre jaune, rougeole & carences
-                      </td>
-                      <td style={{ padding: '1.1rem 1.25rem', color: 'var(--text-sub)', fontSize: '0.85rem' }}>
-                        🏥 Centre Gaspard Camara
-                      </td>
-                      <td className="text-end" style={{ padding: '1.1rem 1.25rem', whiteSpace: 'nowrap' }}>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(59, 130, 246, 0.12)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.3)', padding: '0.45rem 0.9rem', borderRadius: '30px', fontSize: '0.78rem', fontWeight: '700' }}>
-                          <span>🗓️</span> <span>Programmé (Février 2027)</span>
-                        </span>
-                      </td>
-                    </tr>
+                    {vaccinations.map((item) => (
+                      <tr key={item.id} className="border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+                        <td style={{ padding: '1.1rem 1.25rem' }}>
+                          <strong style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>{item.ageLabel}</strong>
+                          <small className="d-block text-muted" style={{ fontSize: '0.75rem' }}>PEV Sénégal</small>
+                        </td>
+                        <td style={{ padding: '1.1rem 1.25rem' }}>
+                          <span className={item.completed ? 'text-success fw-bold' : 'text-primary fw-bold'} style={{ fontSize: '0.9rem' }}>{item.vaccines}</span>
+                          <small className="d-block text-muted" style={{ fontSize: '0.75rem' }}>{item.subtext}</small>
+                        </td>
+                        <td style={{ padding: '1.1rem 1.25rem', color: 'var(--text-sub)', fontSize: '0.85rem' }}>
+                          {item.diseases}
+                        </td>
+                        <td style={{ padding: '1.1rem 1.25rem', color: 'var(--text-sub)', fontSize: '0.85rem' }}>
+                          🏥 {item.structure}
+                        </td>
+                        <td className="text-end" style={{ padding: '1.1rem 1.25rem', whiteSpace: 'nowrap' }}>
+                          <span style={{ 
+                            display: 'inline-flex', 
+                            alignItems: 'center', 
+                            gap: '0.35rem', 
+                            background: item.completed ? 'rgba(16, 185, 129, 0.12)' : 'rgba(59, 130, 246, 0.12)', 
+                            color: item.completed ? '#10b981' : '#3b82f6', 
+                            border: item.completed ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(59, 130, 246, 0.3)', 
+                            padding: '0.45rem 0.9rem', 
+                            borderRadius: '30px', 
+                            fontSize: '0.78rem', 
+                            fontWeight: '800' 
+                          }}>
+                            <span>{item.completed ? '✅' : '🗓️'}</span> <span>{item.status}</span>
+                          </span>
+                        </td>
+                        {canEditMaternity && (
+                          <td className="text-end" style={{ padding: '1.1rem 1.25rem', whiteSpace: 'nowrap' }}>
+                            <div className="d-flex justify-content-end gap-1.5">
+                              <button 
+                                type="button" 
+                                style={{ background: 'rgba(59,130,246,0.15)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '8px', padding: '0.35rem 0.65rem', fontWeight: '700', fontSize: '0.75rem', cursor: 'pointer' }}
+                                onClick={() => openEditVaccine(item)}
+                              >
+                                ✏️ Modifier
+                              </button>
+                              <button 
+                                type="button" 
+                                style={{ background: 'rgba(220,38,38,0.1)', color: '#dc2626', border: '1px solid rgba(220,38,38,0.3)', borderRadius: '8px', padding: '0.35rem 0.65rem', fontWeight: '700', fontSize: '0.75rem', cursor: 'pointer' }}
+                                onClick={() => handleDeleteVaccine(item)}
+                              >
+                                🗑️ Supprimer
+                              </button>
+                            </div>
+                          </td>
+                        )}
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
+
+              {/* Bouton Ajouter une vaccination PEV — Médecin / Sage-femme / SuperAdmin */}
+              {canEditMaternity && (
+                <button 
+                  type="button" 
+                  className="mt-3" 
+                  style={{ background: 'rgba(16,185,129,0.12)', color: '#10b981', border: '2px dashed #10b981', borderRadius: '12px', padding: '0.85rem', fontWeight: '700', fontSize: '0.88rem', cursor: 'pointer', width: '100%' }} 
+                  onClick={() => setShowAddVaccineModal(true)}
+                >
+                  ➕ Enregistrer une nouvelle vaccination PEV ({isMidwife ? 'Sage-femme' : isSuperAdmin ? 'SuperAdmin' : 'Médecin'})
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -1889,6 +1941,104 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
         </div>,
         document.body
       )}
+
+      {/* MODALE ENREGISTRER VACCINATION PEV (médecin / sage-femme / superadmin) */}
+      {showAddVaccineModal && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+          <form onSubmit={handleAddVaccine} style={{ maxWidth: '540px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', margin: 'auto' }}>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h5 className="fw-bold text-success mb-0">💉 Enregistrer une vaccination PEV</h5>
+              <button type="button" className="btn-close" onClick={() => setShowAddVaccineModal(false)}></button>
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label small fw-bold">Échéance / Âge (ex: 6 Semaines) *</label>
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={newVaccineForm.ageLabel} onChange={e => setNewVaccineForm({ ...newVaccineForm, ageLabel: e.target.value })} required />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label small fw-bold">Vaccins administrés *</label>
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={newVaccineForm.vaccines} onChange={e => setNewVaccineForm({ ...newVaccineForm, vaccines: e.target.value })} required placeholder="Ex: Penta 1 + VPO 1 + Rota 1" />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label small fw-bold">Maladies protégées</label>
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={newVaccineForm.diseases} onChange={e => setNewVaccineForm({ ...newVaccineForm, diseases: e.target.value })} placeholder="Ex: Diphtérie, tétanos, polio..." />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label small fw-bold">Structure de santé agréée</label>
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={newVaccineForm.structure} onChange={e => setNewVaccineForm({ ...newVaccineForm, structure: e.target.value })} required />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label small fw-bold">Statut PEV</label>
+              <select className="form-select" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={newVaccineForm.status} onChange={e => setNewVaccineForm({ ...newVaccineForm, status: e.target.value, completed: e.target.value.includes('Administré') })}>
+                <option value="Administré (100% CSU)">Administré (100% CSU)</option>
+                <option value="À venir (Mois prochain)">À venir (Mois prochain)</option>
+                <option value="Programmé">Programmé</option>
+              </select>
+            </div>
+
+            <div className="d-flex justify-content-end gap-2">
+              <button type="button" className="btn btn-secondary" onClick={() => setShowAddVaccineModal(false)}>Annuler</button>
+              <button type="submit" className="btn btn-success fw-bold text-white">💾 Enregistrer la vaccination</button>
+            </div>
+          </form>
+        </div>,
+        document.body
+      )}
+
+      {/* MODALE MODIFIER VACCINATION PEV */}
+      {editingVaccineId && editVaccineForm && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+          <form onSubmit={handleSaveEditVaccine} style={{ maxWidth: '540px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', margin: 'auto' }}>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h5 className="fw-bold text-success mb-0">✏️ Modifier la dose de vaccination</h5>
+              <button type="button" className="btn-close" onClick={() => { setEditingVaccineId(null); setEditVaccineForm(null); }}></button>
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label small fw-bold">Échéance / Âge *</label>
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={editVaccineForm.ageLabel} onChange={e => setEditVaccineForm({ ...editVaccineForm, ageLabel: e.target.value })} required />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label small fw-bold">Vaccins *</label>
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={editVaccineForm.vaccines} onChange={e => setEditVaccineForm({ ...editVaccineForm, vaccines: e.target.value })} required />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label small fw-bold">Structure agréée</label>
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={editVaccineForm.structure} onChange={e => setEditVaccineForm({ ...editVaccineForm, structure: e.target.value })} required />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label small fw-bold">Statut PEV</label>
+              <select className="form-select" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={editVaccineForm.status} onChange={e => setEditVaccineForm({ ...editVaccineForm, status: e.target.value, completed: e.target.value.includes('Administré') })}>
+                <option value="Administré (100% CSU)">Administré (100% CSU)</option>
+                <option value="À venir (Mois prochain)">À venir (Mois prochain)</option>
+                <option value="Programmé">Programmé</option>
+              </select>
+            </div>
+
+            <div className="d-flex justify-content-end gap-2">
+              <button type="button" className="btn btn-secondary" onClick={() => { setEditingVaccineId(null); setEditVaccineForm(null); }}>Annuler</button>
+              <button type="submit" className="btn btn-success fw-bold text-white">💾 Enregistrer</button>
+            </div>
+          </form>
+        </div>,
+        document.body
+      )}
+
+      {/* MODALE UNIVERSELLE DE SUPPRESSION (RED GLASSMORPHISM) */}
+      <DeleteModal 
+        isOpen={!!deleteConfirmTarget}
+        title={deleteConfirmTarget?.title}
+        itemType={deleteConfirmTarget?.itemType}
+        onConfirm={deleteConfirmTarget?.onConfirm}
+        onClose={() => setDeleteConfirmTarget(null)}
+      />
 
     </div>
   );

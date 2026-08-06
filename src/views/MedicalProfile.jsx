@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
+import DeleteModal from '../components/DeleteModal';
 
 // Design Premium Haut de Gamme — Dossier Médical & Radiographies Certifiées
 export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, partnerUser = null }) {
+  const [deleteConfirmTarget, setDeleteConfirmTarget] = useState(null);
   // ═══════════════════════════════════════════════════════
   // RBAC — Définition granulaire des rôles
   // ═══════════════════════════════════════════════════════
@@ -1090,9 +1092,11 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                           type="button" 
                           style={{ background: 'rgba(220,38,38,0.15)', color: '#dc2626', border: 'none', borderRadius: '6px', padding: '0.25rem 0.5rem', fontSize: '0.72rem', fontWeight: '700', cursor: 'pointer' }}
                           onClick={() => {
-                            if (window.confirm('Supprimer cette entrée de l\'historique ?')) {
-                              setHistoryEntries(historyEntries.filter(item => item.id !== h.id));
-                            }
+                            setDeleteConfirmTarget({
+                              title: h.acte,
+                              itemType: 'Historique Médical',
+                              onConfirm: () => setHistoryEntries(historyEntries.filter(item => item.id !== h.id))
+                            });
                           }}
                         >
                           🗑 Supprimer
@@ -1153,9 +1157,11 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                           type="button" 
                           style={{ background: 'rgba(220,38,38,0.15)', color: '#dc2626', border: 'none', borderRadius: '6px', padding: '0.25rem 0.5rem', fontSize: '0.72rem', fontWeight: '700', cursor: 'pointer' }}
                           onClick={() => {
-                            if (window.confirm('Supprimer ce résultat ?')) {
-                              setLabResults(labResults.filter(item => item.id !== lr.id));
-                            }
+                            setDeleteConfirmTarget({
+                              title: lr.examen,
+                              itemType: 'Résultat d\'analyse laboratoire',
+                              onConfirm: () => setLabResults(labResults.filter(item => item.id !== lr.id))
+                            });
                           }}
                         >
                           🗑 Supprimer
@@ -1487,6 +1493,15 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
         </div>,
         document.body
       )}
+
+      {/* MODALE UNIVERSELLE DE SUPPRESSION (RED GLASSMORPHISM) */}
+      <DeleteModal 
+        isOpen={!!deleteConfirmTarget}
+        title={deleteConfirmTarget?.title}
+        itemType={deleteConfirmTarget?.itemType}
+        onConfirm={deleteConfirmTarget?.onConfirm}
+        onClose={() => setDeleteConfirmTarget(null)}
+      />
 
     </div>
   );
