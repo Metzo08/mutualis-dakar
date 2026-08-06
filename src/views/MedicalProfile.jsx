@@ -1199,50 +1199,64 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
 
       {/* SHARE MODAL (React Portal — Centered on Screen) */}
       {showShareModal && createPortal(
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
-          <div style={{ maxWidth: '540px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
+        <div 
+          style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.25rem', overflowY: 'auto' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowShareModal(false); }}
+        >
+          <div style={{ maxWidth: '500px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 60px rgba(0,0,0,0.35)', margin: 'auto' }}>
             
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <div className="d-flex align-items-center gap-2">
-                <span style={{ fontSize: '1.3rem' }}>🔗</span>
-                <h5 className="fw-bold text-success mb-0" style={{ fontSize: '1.15rem' }}>Partager mon Dossier Médical (UNAMUSC)</h5>
+            {/* Modal Header */}
+            <div className="d-flex justify-content-between align-items-start mb-3">
+              <div className="d-flex align-items-center gap-3">
+                <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(16, 185, 129, 0.12)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 'bold' }}>
+                  🔗
+                </div>
+                <div>
+                  <h5 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>Partager mon dossier médical</h5>
+                  <p className="small mb-0" style={{ color: 'var(--text-sub)', fontSize: '0.82rem' }}>UNAMUSC & DHIS2 — Accès temporaire sécurisé (24h)</p>
+                </div>
               </div>
               <button type="button" className="btn-close" onClick={() => setShowShareModal(false)}></button>
             </div>
 
-            <p className="small mb-3" style={{ color: 'var(--text-sub)' }}>
-              Générez un jeton d'accès sécurisé temporaire (Valable 24h) pour autoriser votre médecin ou établissement partenaire à consulter vos antécédents et radiographies.
+            <p className="small mb-4" style={{ color: 'var(--text-sub)', lineHeight: '1.5', fontSize: '0.86rem' }}>
+              Générez un jeton d'accès sécurisé temporaire pour autoriser votre médecin ou établissement partenaire à consulter vos antécédents et vos clichés d'imagerie.
             </p>
 
-            <div className="p-3.5 rounded-4 mb-3 text-center border border-success" style={{ background: 'var(--bg-card-subtle)' }}>
-              <small className="d-block mb-1 text-muted fw-bold" style={{ fontSize: '0.75rem' }}>CODE D'ACCÈS TEMPORAIRE SÉCURISÉ (OTP 24H) :</small>
-              <h2 className="fw-bold text-warning letter-spacing-2 my-1" style={{ fontSize: '2rem' }}>849-201</h2>
-              <small className="d-block text-success fw-bold" style={{ fontSize: '0.75rem' }}>● ACCÈS SÉCURISÉ CHIFFRÉ DHIS2 & UNAMUSC</small>
+            {/* Code OTP Card */}
+            <div className="p-4 rounded-4 mb-4 text-center border" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(5, 150, 105, 0.15) 100%)', borderColor: 'rgba(16, 185, 129, 0.3)' }}>
+              <span className="small text-muted fw-bold text-uppercase d-block mb-1" style={{ fontSize: '0.72rem', letterSpacing: '0.05em' }}>Code d'accès temporaire sécurisé (OTP 24h) :</span>
+              <div className="fw-black text-warning my-2" style={{ fontSize: '2.4rem', letterSpacing: '0.12em', textShadow: '0 2px 8px rgba(245, 158, 11, 0.25)' }}>849-201</div>
+              <span className="badge bg-success bg-opacity-20 text-success fw-bold px-3 py-1.5 rounded-pill" style={{ fontSize: '0.75rem' }}>
+                🔒 Chiffrement de bout en bout DHIS2 & UNAMUSC
+              </span>
             </div>
 
-            {/* QR CODE FOR DOCTOR SCAN */}
-            <div className="d-flex align-items-center gap-3 p-3 rounded-4 mb-3" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-              <div className="p-1.5 bg-white rounded-3 border border-success flex-shrink-0">
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://mutualis.sn/dossier-partage/849-201" alt="QR Code Partage" style={{ width: '80px', height: '80px' }} />
+            {/* QR Code Card */}
+            <div className="d-flex align-items-center gap-3 p-3.5 rounded-4 mb-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+              <div className="p-2 bg-white rounded-3 border flex-shrink-0" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=https://mutualis.sn/dossier-partage/849-201" alt="QR Code Partage" style={{ width: '84px', height: '84px', display: 'block' }} />
               </div>
               <div>
-                <strong className="d-block text-success small fw-bold">Scan QR Code en Consultation</strong>
-                <small style={{ color: 'var(--text-sub)', fontSize: '0.76rem', lineHeight: '1.4' }}>
-                  Votre médecin peut directement scanner ce QR Code avec son smartphone pour ouvrir votre dossier médical certifié.
-                </small>
+                <strong className="d-block text-success small fw-bold mb-1" style={{ fontSize: '0.88rem' }}>Scan QR code en consultation :</strong>
+                <p className="small mb-0" style={{ color: 'var(--text-sub)', fontSize: '0.78rem', lineHeight: '1.45' }}>
+                  Votre médecin peut scanner ce code directement avec son smartphone pour ouvrir instantanément votre dossier médical certifié.
+                </p>
               </div>
             </div>
 
             {copiedLink && (
-              <div className="alert alert-success py-2 px-3 small fw-bold mb-3 rounded-3 text-center">
+              <div className="alert alert-success py-2.5 px-3 small fw-bold mb-3 rounded-3 text-center d-flex align-items-center justify-content-center gap-2" style={{ fontSize: '0.85rem' }}>
                 ✅ Lien d'accès au dossier médical copié dans le presse-papier !
               </div>
             )}
 
-            <div className="d-flex flex-column gap-2">
+            {/* Actions Buttons */}
+            <div className="d-flex flex-column gap-2.5">
               <button 
                 type="button" 
-                style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.75rem 1.25rem', fontWeight: '800', fontSize: '0.88rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }} 
+                className="btn w-100 fw-bold py-3 px-4 d-flex align-items-center justify-content-center gap-2"
+                style={{ background: '#059669', color: '#ffffff', border: 'none', borderRadius: '14px', fontSize: '0.9rem', boxShadow: '0 4px 15px rgba(5,150,105,0.3)' }} 
                 onClick={handleCopyShareLink}
               >
                 📋 Copier le lien sécurisé (https://mutualis.sn/dossier/849-201)
@@ -1250,15 +1264,17 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
 
               <button 
                 type="button" 
-                style={{ background: '#25D366', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.75rem 1.25rem', fontWeight: '800', fontSize: '0.88rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(37,211,102,0.3)', width: '100%' }}
+                className="btn w-100 fw-bold py-3 px-4 d-flex align-items-center justify-content-center gap-2"
+                style={{ background: '#25D366', color: '#ffffff', border: 'none', borderRadius: '14px', fontSize: '0.9rem', boxShadow: '0 4px 15px rgba(37,211,102,0.3)' }}
                 onClick={handleShareWhatsApp}
               >
-                💬 Partager directement via WhatsApp au Médecin
+                💬 Partager directement via WhatsApp au médecin
               </button>
 
               <button 
                 type="button" 
-                style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 1rem', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer' }} 
+                className="btn w-100 fw-bold py-2.5 px-4 mt-1"
+                style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '14px', fontSize: '0.85rem' }} 
                 onClick={() => setShowShareModal(false)}
               >
                 Fermer
@@ -1272,21 +1288,32 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
 
       {/* ADD EXAM MODAL (React Portal — Centered on Screen) */}
       {showAddExamModal && createPortal(
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
-          <form onSubmit={handleAddExam} style={{ maxWidth: '520px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h5 className="fw-bold text-success mb-0">➕ Ajouter un Examen DICOM / PDF</h5>
+        <div 
+          style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.25rem', overflowY: 'auto' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowAddExamModal(false); }}
+        >
+          <form onSubmit={handleAddExam} style={{ maxWidth: '520px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 60px rgba(0,0,0,0.35)', margin: 'auto' }}>
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <div className="d-flex align-items-center gap-2.5">
+                <div style={{ width: '42px', height: '42px', borderRadius: '14px', background: 'rgba(16, 185, 129, 0.12)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', fontWeight: 'bold' }}>
+                  ➕
+                </div>
+                <div>
+                  <h5 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.1rem' }}>Ajouter un examen :</h5>
+                  <small className="text-muted" style={{ fontSize: '0.78rem' }}>(Fichier PDF ou DICOM)</small>
+                </div>
+              </div>
               <button type="button" className="btn-close" onClick={() => setShowAddExamModal(false)}></button>
             </div>
             
             <div className="mb-3">
-              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Titre de l'examen *</label>
-              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }} value={newExamTitle} onChange={(e) => setNewExamTitle(e.target.value)} placeholder="Ex: Scanner Abdominal HD" required />
+              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)', fontSize: '0.84rem' }}>Titre de l'examen *</label>
+              <input type="text" className="form-control py-2.5 px-3" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.9rem' }} value={newExamTitle} onChange={(e) => setNewExamTitle(e.target.value)} placeholder="Ex: Scanner abdominal HD" required />
             </div>
 
             <div className="mb-3">
-              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Type d'imagerie *</label>
-              <select className="form-select" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }} value={newExamType} onChange={(e) => setNewExamType(e.target.value)}>
+              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)', fontSize: '0.84rem' }}>Type d'imagerie *</label>
+              <select className="form-select py-2.5 px-3" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.9rem' }} value={newExamType} onChange={(e) => setNewExamType(e.target.value)}>
                 <option value="Scanner">Scanner</option>
                 <option value="IRM">IRM</option>
                 <option value="Radio">Radio</option>
@@ -1295,18 +1322,18 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
             </div>
 
             <div className="mb-3">
-              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Établissement / Structure de santé *</label>
-              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }} value={newExamFacility} onChange={(e) => setNewExamFacility(e.target.value)} placeholder="Ex: Hôpital Principal de Dakar" required />
+              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)', fontSize: '0.84rem' }}>Établissement / Structure de santé *</label>
+              <input type="text" className="form-control py-2.5 px-3" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.9rem' }} value={newExamFacility} onChange={(e) => setNewExamFacility(e.target.value)} placeholder="Ex: Hôpital Principal de Dakar" required />
             </div>
 
-            <div className="mb-3">
-              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Médecin Prescripteur</label>
-              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }} value={newExamDoctor} onChange={(e) => setNewExamDoctor(e.target.value)} placeholder="Ex: Dr. Aminata Ndiaye" />
+            <div className="mb-4">
+              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)', fontSize: '0.84rem' }}>Médecin prescripteur</label>
+              <input type="text" className="form-control py-2.5 px-3" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.9rem' }} value={newExamDoctor} onChange={(e) => setNewExamDoctor(e.target.value)} placeholder="Ex: Dr. Aminata Ndiaye" />
             </div>
 
-            <div className="d-flex justify-content-end gap-2 mt-4">
-              <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.6rem 1.25rem', fontWeight: '700' }} onClick={() => setShowAddExamModal(false)}>Annuler</button>
-              <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.6rem 1.4rem', fontWeight: '800', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}>Ajouter l'examen</button>
+            <div className="d-flex justify-content-end gap-2.5 pt-2 border-top" style={{ borderColor: 'var(--border-color)' }}>
+              <button type="button" className="btn px-4 py-2.5 fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.85rem' }} onClick={() => setShowAddExamModal(false)}>Annuler</button>
+              <button type="submit" className="btn px-4 py-2.5 fw-bold" style={{ background: '#059669', color: '#ffffff', border: 'none', borderRadius: '12px', fontSize: '0.88rem', boxShadow: '0 4px 12px rgba(5,150,105,0.25)' }}>Ajouter l'examen</button>
             </div>
           </form>
         </div>,
@@ -1315,31 +1342,39 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
 
       {/* ADD HISTORY MODAL (React Portal) */}
       {showAddHistoryModal && createPortal(
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
-          <form onSubmit={handleAddHistory} style={{ maxWidth: '520px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h5 className="fw-bold text-success mb-0">➕ Ajouter une entrée à l'Historique</h5>
+        <div 
+          style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.25rem', overflowY: 'auto' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowAddHistoryModal(false); }}
+        >
+          <form onSubmit={handleAddHistory} style={{ maxWidth: '520px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 60px rgba(0,0,0,0.35)', margin: 'auto' }}>
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <div className="d-flex align-items-center gap-2.5">
+                <div style={{ width: '42px', height: '42px', borderRadius: '14px', background: 'rgba(16, 185, 129, 0.12)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', fontWeight: 'bold' }}>
+                  🩺
+                </div>
+                <h5 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.1rem' }}>Ajouter une consultation</h5>
+              </div>
               <button type="button" className="btn-close" onClick={() => setShowAddHistoryModal(false)}></button>
             </div>
             
             <div className="mb-3">
-              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Acte / Consultation *</label>
-              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }} value={newHistoryActe} onChange={(e) => setNewHistoryActe(e.target.value)} placeholder="Ex: Consultation Généraliste" required />
+              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)', fontSize: '0.84rem' }}>Acte / Consultation *</label>
+              <input type="text" className="form-control py-2.5 px-3" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.9rem' }} value={newHistoryActe} onChange={(e) => setNewHistoryActe(e.target.value)} placeholder="Ex: Consultation généraliste" required />
             </div>
 
             <div className="mb-3">
-              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Praticien / Structure</label>
-              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }} value={newHistoryPraticien} onChange={(e) => setNewHistoryPraticien(e.target.value)} placeholder="Ex: Dr. Ousmane Sow" />
+              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)', fontSize: '0.84rem' }}>Praticien / Structure</label>
+              <input type="text" className="form-control py-2.5 px-3" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.9rem' }} value={newHistoryPraticien} onChange={(e) => setNewHistoryPraticien(e.target.value)} placeholder="Ex: Dr. Ousmane Sow" />
             </div>
 
-            <div className="mb-3">
-              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Conclusion</label>
-              <textarea className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }} rows={3} value={newHistoryConclusion} onChange={(e) => setNewHistoryConclusion(e.target.value)} placeholder="Ex: Bilan normal. Ordonnance émise." />
+            <div className="mb-4">
+              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)', fontSize: '0.84rem' }}>Conclusion diagnostique</label>
+              <textarea className="form-control py-2.5 px-3" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.9rem' }} rows={3} value={newHistoryConclusion} onChange={(e) => setNewHistoryConclusion(e.target.value)} placeholder="Ex: Bilan normal. Ordonnance émise." />
             </div>
 
-            <div className="d-flex justify-content-end gap-2 mt-4">
-              <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.6rem 1.25rem', fontWeight: '700' }} onClick={() => setShowAddHistoryModal(false)}>Annuler</button>
-              <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.6rem 1.4rem', fontWeight: '800', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}>Ajouter</button>
+            <div className="d-flex justify-content-end gap-2.5 pt-2 border-top" style={{ borderColor: 'var(--border-color)' }}>
+              <button type="button" className="btn px-4 py-2.5 fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.85rem' }} onClick={() => setShowAddHistoryModal(false)}>Annuler</button>
+              <button type="submit" className="btn px-4 py-2.5 fw-bold" style={{ background: '#059669', color: '#ffffff', border: 'none', borderRadius: '12px', fontSize: '0.88rem', boxShadow: '0 4px 12px rgba(5,150,105,0.25)' }}>Ajouter la consultation</button>
             </div>
           </form>
         </div>,
@@ -1348,7 +1383,10 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
 
       {/* ADD LAB RESULT MODAL (React Portal) */}
       {showAddLabModal && createPortal(
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
+        <div 
+          style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.25rem', overflowY: 'auto' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setShowAddLabModal(false); }}
+        >
           <form onSubmit={(e) => {
             e.preventDefault();
             if (!newLabExamen) return;
@@ -1356,39 +1394,44 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
             setShowAddLabModal(false);
             setNewLabExamen(''); setNewLabResultat(''); setNewLabReference(''); setNewLabStatut('Normal');
             alert('✅ Résultat d\'analyse ajouté avec succès !');
-          }} style={{ maxWidth: '520px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h5 className="fw-bold text-success mb-0">➕ Ajouter un Résultat d'Analyse</h5>
+          }} style={{ maxWidth: '520px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 60px rgba(0,0,0,0.35)', margin: 'auto' }}>
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <div className="d-flex align-items-center gap-2.5">
+                <div style={{ width: '42px', height: '42px', borderRadius: '14px', background: 'rgba(16, 185, 129, 0.12)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', fontWeight: 'bold' }}>
+                  🧪
+                </div>
+                <h5 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.1rem' }}>Ajouter un résultat d'analyse</h5>
+              </div>
               <button type="button" className="btn-close" onClick={() => setShowAddLabModal(false)}></button>
             </div>
             
             <div className="mb-3">
-              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Nom de l'examen *</label>
-              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }} value={newLabExamen} onChange={(e) => setNewLabExamen(e.target.value)} placeholder="Ex: Créatinine, Cholestérol..." required />
+              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)', fontSize: '0.84rem' }}>Nom de l'examen *</label>
+              <input type="text" className="form-control py-2.5 px-3" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.9rem' }} value={newLabExamen} onChange={(e) => setNewLabExamen(e.target.value)} placeholder="Ex: Créatinine, Cholestérol..." required />
             </div>
 
             <div className="mb-3">
-              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Résultat</label>
-              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }} value={newLabResultat} onChange={(e) => setNewLabResultat(e.target.value)} placeholder="Ex: 0.95 g/L" />
+              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)', fontSize: '0.84rem' }}>Résultat</label>
+              <input type="text" className="form-control py-2.5 px-3" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.9rem' }} value={newLabResultat} onChange={(e) => setNewLabResultat(e.target.value)} placeholder="Ex: 0.95 g/L" />
             </div>
 
             <div className="mb-3">
-              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Valeurs de référence</label>
-              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }} value={newLabReference} onChange={(e) => setNewLabReference(e.target.value)} placeholder="Ex: 0.70 - 1.10 g/L" />
+              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)', fontSize: '0.84rem' }}>Valeurs de référence</label>
+              <input type="text" className="form-control py-2.5 px-3" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.9rem' }} value={newLabReference} onChange={(e) => setNewLabReference(e.target.value)} placeholder="Ex: 0.70 - 1.10 g/L" />
             </div>
 
-            <div className="mb-3">
-              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)' }}>Statut</label>
-              <select className="form-select" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }} value={newLabStatut} onChange={(e) => setNewLabStatut(e.target.value)}>
+            <div className="mb-4">
+              <label className="form-label small fw-bold" style={{ color: 'var(--text-sub)', fontSize: '0.84rem' }}>Statut</label>
+              <select className="form-select py-2.5 px-3" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.9rem' }} value={newLabStatut} onChange={(e) => setNewLabStatut(e.target.value)}>
                 <option value="Normal">🟢 Normal</option>
                 <option value="Élevé">🔴 Élevé</option>
                 <option value="Bas">🟡 Bas</option>
               </select>
             </div>
 
-            <div className="d-flex justify-content-end gap-2 mt-4">
-              <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.6rem 1.25rem', fontWeight: '700' }} onClick={() => setShowAddLabModal(false)}>Annuler</button>
-              <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.6rem 1.4rem', fontWeight: '800', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}>Ajouter</button>
+            <div className="d-flex justify-content-end gap-2.5 pt-2 border-top" style={{ borderColor: 'var(--border-color)' }}>
+              <button type="button" className="btn px-4 py-2.5 fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.85rem' }} onClick={() => setShowAddLabModal(false)}>Annuler</button>
+              <button type="submit" className="btn px-4 py-2.5 fw-bold" style={{ background: '#059669', color: '#ffffff', border: 'none', borderRadius: '12px', fontSize: '0.88rem', boxShadow: '0 4px 12px rgba(5,150,105,0.25)' }}>Ajouter l'analyse</button>
             </div>
           </form>
         </div>,
