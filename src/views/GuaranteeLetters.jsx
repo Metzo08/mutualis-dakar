@@ -1314,23 +1314,21 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
                         {/* 3. Devis soumis */}
                         <td style={{ padding: '1.1rem 1rem', border: '1px solid rgba(255, 255, 255, 0.2)', verticalAlign: 'top' }}>
-                          <div className="p-2.5 rounded-3" style={{ background: 'var(--bg-body)', border: '1px solid rgba(255, 255, 255, 0.15)' }}>
-                            <span className="text-muted fw-bold d-block mb-1" style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Devis estimé</span>
-                            <strong style={{ color: 'var(--text-main)', fontSize: '0.98rem', fontWeight: '800' }}>
-                              {Number(item.estimated_amount).toLocaleString()} FCFA
-                            </strong>
+                          <div className="d-flex flex-column gap-1">
+                            <div style={{ color: 'var(--text-main)', fontSize: '0.92rem', fontWeight: '800' }}>
+                              Devis estimé: {Number(item.estimated_amount).toLocaleString('fr-FR')} FCFA
+                            </div>
                           </div>
                         </td>
 
                         {/* 4. Prise en charge accordée */}
                         <td style={{ padding: '1.1rem 1rem', border: '1px solid rgba(255, 255, 255, 0.2)', verticalAlign: 'top' }}>
-                          <div className="p-2.5 rounded-3" style={{ background: 'rgba(5, 150, 105, 0.12)', border: '1px solid #059669' }}>
-                            <span className="text-success fw-bold d-block mb-1" style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Accord UNAMUSC</span>
-                            <strong className="text-success fw-extrabold d-block mb-1" style={{ fontSize: '1.05rem' }}>
-                              {Number(item.max_amount).toLocaleString()} FCFA
-                            </strong>
+                          <div className="d-flex flex-column gap-1">
+                            <div className="text-success" style={{ fontSize: '0.94rem', fontWeight: '800' }}>
+                              Accord UNAMUSC: {Number(item.max_amount || (item.estimated_amount * (item.guaranteed_percentage / 100))).toLocaleString('fr-FR')} FCFA
+                            </div>
                             <div>
-                              <span className="badge bg-success text-white px-2 py-0.5 fw-bold" style={{ fontSize: '0.72rem', borderRadius: '6px' }}>
+                              <span className="badge bg-success-subtle text-success border border-success px-2 py-0.5 fw-bold" style={{ fontSize: '0.74rem', borderRadius: '6px' }}>
                                 Taux : {item.guaranteed_percentage}%
                               </span>
                             </div>

@@ -806,14 +806,18 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
 
                         {/* 4. Prise en charge CSU */}
                         <td style={{ padding: '1.1rem 1rem', border: '1px solid rgba(255, 255, 255, 0.2)', verticalAlign: 'top' }}>
-                          <div className="p-2.5 rounded-3" style={{ background: 'rgba(5, 150, 105, 0.12)', border: '1px solid #059669' }}>
-                            <span className="text-success fw-bold d-block mb-1" style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Accord CSU</span>
-                            <strong className="text-success fw-extrabold d-block mb-1" style={{ fontSize: '1rem' }}>
-                              {Number(ord.total_amount * 0.8).toLocaleString()} FCFA (80%)
-                            </strong>
-                            <small className="text-muted d-block" style={{ fontSize: '0.76rem' }}>
-                              Total : {Number(ord.total_amount).toLocaleString()} FCFA
-                            </small>
+                          <div className="d-flex flex-column gap-1">
+                            <div className="text-muted" style={{ fontSize: '0.88rem', fontWeight: '700' }}>
+                              Devis estimé: {Number(ord.total_amount).toLocaleString('fr-FR')} FCFA
+                            </div>
+                            <div className="text-success" style={{ fontSize: '0.94rem', fontWeight: '800' }}>
+                              Accord UNAMUSC: {Number(ord.cmu_covered || (ord.total_amount * 0.8)).toLocaleString('fr-FR')} FCFA
+                            </div>
+                            <div>
+                              <span className="badge bg-success-subtle text-success border border-success px-2 py-0.5 fw-bold" style={{ fontSize: '0.74rem', borderRadius: '6px' }}>
+                                Taux : 80%
+                              </span>
+                            </div>
                           </div>
                         </td>
 
