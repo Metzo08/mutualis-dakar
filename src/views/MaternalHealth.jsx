@@ -1065,7 +1065,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
         {/* TAB 2: CROISSANCE & VACCINS PEV */}
         {activeTab === 'pev' && (
           <div className="d-flex flex-column gap-4 mb-5">
-            {/* KPI Summary Cards Header */}
+            {/* KPI Summary Cards Header (100% DYNAMIQUE & CALCULÉ) */}
             <div className="row g-3">
               <div className="col-md-4">
                 <div className="p-3.5 rounded-4 d-flex align-items-center gap-3 h-100" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
@@ -1087,8 +1087,10 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                   </div>
                   <div>
                     <small className="d-block text-muted fw-bold" style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Progression vaccinale</small>
-                    <strong style={{ color: 'var(--text-main)', fontSize: '1rem' }}>2 / 3 doses administrées</strong>
-                    <small className="d-block text-primary fw-semibold" style={{ fontSize: '0.78rem' }}>66% du programme PEV accompli</small>
+                    <strong style={{ color: 'var(--text-main)', fontSize: '1rem' }}>{vaccinations.filter(v => v.completed).length} / {vaccinations.length} doses administrées</strong>
+                    <small className="d-block text-primary fw-semibold" style={{ fontSize: '0.78rem' }}>
+                      {vaccinations.length > 0 ? Math.round((vaccinations.filter(v => v.completed).length / vaccinations.length) * 100) : 0}% du programme PEV accompli
+                    </small>
                   </div>
                 </div>
               </div>
@@ -1100,8 +1102,23 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                   </div>
                   <div>
                     <small className="d-block text-muted fw-bold" style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Prochaine échéance</small>
-                    <strong style={{ color: 'var(--text-main)', fontSize: '1rem' }}>10 Semaines (Juillet 2026)</strong>
-                    <small className="d-block text-warning fw-semibold" style={{ fontSize: '0.78rem' }}>Centre de santé Pikine</small>
+                    {(() => {
+                      const nextPending = vaccinations.find(v => !v.completed);
+                      if (nextPending) {
+                        return (
+                          <>
+                            <strong style={{ color: 'var(--text-main)', fontSize: '1rem' }}>{nextPending.ageLabel}</strong>
+                            <small className="d-block text-warning fw-semibold" style={{ fontSize: '0.78rem' }}>🏥 {nextPending.structure}</small>
+                          </>
+                        );
+                      }
+                      return (
+                        <>
+                          <strong style={{ color: '#10b981', fontSize: '1rem' }}>Programme accompli 100%</strong>
+                          <small className="d-block text-success fw-semibold" style={{ fontSize: '0.78rem' }}>✅ Vaccins 0-12 mois à jour</small>
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>
@@ -1944,45 +1961,58 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
 
       {/* MODALE ENREGISTRER VACCINATION PEV (médecin / sage-femme / superadmin) */}
       {showAddVaccineModal && createPortal(
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
-          <form onSubmit={handleAddVaccine} style={{ maxWidth: '540px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', margin: 'auto' }}>
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h5 className="fw-bold text-success mb-0">💉 Enregistrer une vaccination PEV</h5>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(12px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+          <form onSubmit={handleAddVaccine} style={{ maxWidth: '620px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2.25rem', border: '1px solid var(--border-color)', boxShadow: '0 20px 50px rgba(0,0,0,0.4)', margin: 'auto', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div className="d-flex justify-content-between align-items-center mb-3.5 pb-2 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+              <div className="d-flex align-items-center gap-2">
+                <span className="fs-4">💉</span>
+                <div>
+                  <h5 className="fw-extrabold text-success mb-0" style={{ fontSize: '1.2rem' }}>Enregistrer une vaccination PEV</h5>
+                  <small className="text-muted" style={{ fontSize: '0.8rem' }}>Programme Élargi de Vaccination du Sénégal (0-12 mois)</small>
+                </div>
+              </div>
               <button type="button" className="btn-close" onClick={() => setShowAddVaccineModal(false)}></button>
             </div>
 
-            <div className="mb-3">
-              <label className="form-label small fw-bold">Échéance / Âge (ex: 6 Semaines) *</label>
-              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={newVaccineForm.ageLabel} onChange={e => setNewVaccineForm({ ...newVaccineForm, ageLabel: e.target.value })} required />
+            <div className="row g-3 mb-3">
+              <div className="col-md-6">
+                <label className="form-label small fw-bold">Échéance / Âge (ex: 10 Semaines) *</label>
+                <input type="text" className="form-control fw-semibold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newVaccineForm.ageLabel} onChange={e => setNewVaccineForm({ ...newVaccineForm, ageLabel: e.target.value })} required placeholder="ex: 10 Semaines (2 mois & demi)" />
+              </div>
+
+              <div className="col-md-6">
+                <label className="form-label small fw-bold">Statut PEV *</label>
+                <select className="form-select fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newVaccineForm.status} onChange={e => setNewVaccineForm({ ...newVaccineForm, status: e.target.value, completed: e.target.value.includes('Administré') })}>
+                  <option value="Administré (100% CSU)">✅ Administré (100% CSU)</option>
+                  <option value="À venir (Mois prochain)">⏳ À venir (Mois prochain)</option>
+                  <option value="Programmé">🗓️ Programmé</option>
+                </select>
+              </div>
             </div>
 
             <div className="mb-3">
               <label className="form-label small fw-bold">Vaccins administrés *</label>
-              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={newVaccineForm.vaccines} onChange={e => setNewVaccineForm({ ...newVaccineForm, vaccines: e.target.value })} required placeholder="Ex: Penta 1 + VPO 1 + Rota 1" />
+              <input type="text" className="form-control fw-bold text-success" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newVaccineForm.vaccines} onChange={e => setNewVaccineForm({ ...newVaccineForm, vaccines: e.target.value })} required placeholder="ex: Penta 2 + VPO 2 + Rota 2 + Pneumo 2" />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label small fw-bold">Sous-titre / Type de dose (ex: Rappel de 2ème dose)</label>
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newVaccineForm.subtext || ''} onChange={e => setNewVaccineForm({ ...newVaccineForm, subtext: e.target.value })} placeholder="ex: Rappel de 2ème dose / 4 vaccins combinés" />
             </div>
 
             <div className="mb-3">
               <label className="form-label small fw-bold">Maladies protégées</label>
-              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={newVaccineForm.diseases} onChange={e => setNewVaccineForm({ ...newVaccineForm, diseases: e.target.value })} placeholder="Ex: Diphtérie, tétanos, polio..." />
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newVaccineForm.diseases || ''} onChange={e => setNewVaccineForm({ ...newVaccineForm, diseases: e.target.value })} placeholder="ex: Diphtérie, tétanos, coqueluche, méningite..." />
             </div>
 
-            <div className="mb-3">
-              <label className="form-label small fw-bold">Structure de santé agréée</label>
-              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={newVaccineForm.structure} onChange={e => setNewVaccineForm({ ...newVaccineForm, structure: e.target.value })} required />
+            <div className="mb-4">
+              <label className="form-label small fw-bold">Structure de santé agréée *</label>
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newVaccineForm.structure} onChange={e => setNewVaccineForm({ ...newVaccineForm, structure: e.target.value })} required placeholder="ex: Centre Hospitalier Abass Ndao" />
             </div>
 
-            <div className="mb-3">
-              <label className="form-label small fw-bold">Statut PEV</label>
-              <select className="form-select" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={newVaccineForm.status} onChange={e => setNewVaccineForm({ ...newVaccineForm, status: e.target.value, completed: e.target.value.includes('Administré') })}>
-                <option value="Administré (100% CSU)">Administré (100% CSU)</option>
-                <option value="À venir (Mois prochain)">À venir (Mois prochain)</option>
-                <option value="Programmé">Programmé</option>
-              </select>
-            </div>
-
-            <div className="d-flex justify-content-end gap-2">
-              <button type="button" className="btn btn-secondary" onClick={() => setShowAddVaccineModal(false)}>Annuler</button>
-              <button type="submit" className="btn btn-success fw-bold text-white">💾 Enregistrer la vaccination</button>
+            <div className="d-flex justify-content-end gap-2.5 pt-2 border-top" style={{ borderColor: 'var(--border-color)' }}>
+              <button type="button" className="btn px-4 py-2.5 fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.88rem' }} onClick={() => setShowAddVaccineModal(false)}>Annuler</button>
+              <button type="submit" className="btn px-4 py-2.5 fw-bold text-white shadow-sm" style={{ background: '#059669', borderColor: '#059669', borderRadius: '12px', fontSize: '0.9rem' }}>💾 Enregistrer la vaccination</button>
             </div>
           </form>
         </div>,
@@ -1991,40 +2021,58 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
 
       {/* MODALE MODIFIER VACCINATION PEV */}
       {editingVaccineId && editVaccineForm && createPortal(
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
-          <form onSubmit={handleSaveEditVaccine} style={{ maxWidth: '540px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', margin: 'auto' }}>
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h5 className="fw-bold text-success mb-0">✏️ Modifier la dose de vaccination</h5>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(12px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+          <form onSubmit={handleSaveEditVaccine} style={{ maxWidth: '620px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2.25rem', border: '1px solid var(--border-color)', boxShadow: '0 20px 50px rgba(0,0,0,0.4)', margin: 'auto', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div className="d-flex justify-content-between align-items-center mb-3.5 pb-2 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+              <div className="d-flex align-items-center gap-2">
+                <span className="fs-4">✏️</span>
+                <div>
+                  <h5 className="fw-extrabold text-success mb-0" style={{ fontSize: '1.2rem' }}>Modifier la dose de vaccination</h5>
+                  <small className="text-muted" style={{ fontSize: '0.8rem' }}>Modification des informations de la fiche vaccinale PEV</small>
+                </div>
+              </div>
               <button type="button" className="btn-close" onClick={() => { setEditingVaccineId(null); setEditVaccineForm(null); }}></button>
             </div>
 
-            <div className="mb-3">
-              <label className="form-label small fw-bold">Échéance / Âge *</label>
-              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={editVaccineForm.ageLabel} onChange={e => setEditVaccineForm({ ...editVaccineForm, ageLabel: e.target.value })} required />
+            <div className="row g-3 mb-3">
+              <div className="col-md-6">
+                <label className="form-label small fw-bold">Échéance / Âge *</label>
+                <input type="text" className="form-control fw-semibold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={editVaccineForm.ageLabel} onChange={e => setEditVaccineForm({ ...editVaccineForm, ageLabel: e.target.value })} required />
+              </div>
+
+              <div className="col-md-6">
+                <label className="form-label small fw-bold">Statut PEV *</label>
+                <select className="form-select fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={editVaccineForm.status} onChange={e => setEditVaccineForm({ ...editVaccineForm, status: e.target.value, completed: e.target.value.includes('Administré') })}>
+                  <option value="Administré (100% CSU)">✅ Administré (100% CSU)</option>
+                  <option value="À venir (Mois prochain)">⏳ À venir (Mois prochain)</option>
+                  <option value="Programmé">🗓️ Programmé</option>
+                </select>
+              </div>
             </div>
 
             <div className="mb-3">
-              <label className="form-label small fw-bold">Vaccins *</label>
-              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={editVaccineForm.vaccines} onChange={e => setEditVaccineForm({ ...editVaccineForm, vaccines: e.target.value })} required />
+              <label className="form-label small fw-bold">Vaccins administrés *</label>
+              <input type="text" className="form-control fw-bold text-success" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={editVaccineForm.vaccines} onChange={e => setEditVaccineForm({ ...editVaccineForm, vaccines: e.target.value })} required />
             </div>
 
             <div className="mb-3">
-              <label className="form-label small fw-bold">Structure agréée</label>
-              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={editVaccineForm.structure} onChange={e => setEditVaccineForm({ ...editVaccineForm, structure: e.target.value })} required />
+              <label className="form-label small fw-bold">Sous-titre / Type de dose (ex: Rappel de 2ème dose)</label>
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={editVaccineForm.subtext || ''} onChange={e => setEditVaccineForm({ ...editVaccineForm, subtext: e.target.value })} placeholder="ex: Rappel de 2ème dose" />
             </div>
 
             <div className="mb-3">
-              <label className="form-label small fw-bold">Statut PEV</label>
-              <select className="form-select" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={editVaccineForm.status} onChange={e => setEditVaccineForm({ ...editVaccineForm, status: e.target.value, completed: e.target.value.includes('Administré') })}>
-                <option value="Administré (100% CSU)">Administré (100% CSU)</option>
-                <option value="À venir (Mois prochain)">À venir (Mois prochain)</option>
-                <option value="Programmé">Programmé</option>
-              </select>
+              <label className="form-label small fw-bold">Maladies protégées</label>
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={editVaccineForm.diseases || ''} onChange={e => setEditVaccineForm({ ...editVaccineForm, diseases: e.target.value })} placeholder="ex: Diphtérie, tétanos, coqueluche..." />
             </div>
 
-            <div className="d-flex justify-content-end gap-2">
-              <button type="button" className="btn btn-secondary" onClick={() => { setEditingVaccineId(null); setEditVaccineForm(null); }}>Annuler</button>
-              <button type="submit" className="btn btn-success fw-bold text-white">💾 Enregistrer</button>
+            <div className="mb-4">
+              <label className="form-label small fw-bold">Structure agréée *</label>
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={editVaccineForm.structure} onChange={e => setEditVaccineForm({ ...editVaccineForm, structure: e.target.value })} required />
+            </div>
+
+            <div className="d-flex justify-content-end gap-2.5 pt-2 border-top" style={{ borderColor: 'var(--border-color)' }}>
+              <button type="button" className="btn px-4 py-2.5 fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.88rem' }} onClick={() => { setEditingVaccineId(null); setEditVaccineForm(null); }}>Annuler</button>
+              <button type="submit" className="btn px-4 py-2.5 fw-bold text-white shadow-sm" style={{ background: '#059669', borderColor: '#059669', borderRadius: '12px', fontSize: '0.9rem' }}>💾 Enregistrer les modifications</button>
             </div>
           </form>
         </div>,
