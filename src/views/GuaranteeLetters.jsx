@@ -1246,26 +1246,26 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
             <div className="table-responsive">
               <table className="table table-hover align-middle mb-0" style={{ color: 'var(--text-main)' }}>
                 <thead>
-                  <tr style={{ background: 'var(--bg-secondary)', borderBottom: '2px solid var(--border-color)' }}>
-                    <th style={{ padding: '0.85rem' }}>Assuré / Bénéficiaire</th>
-                    <th style={{ padding: '0.85rem' }}>Acte médical & Établissement</th>
+                  <tr className="small border-bottom" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)', color: 'var(--text-sub)', fontSize: '0.8rem', letterSpacing: '0.3px' }}>
+                    <th style={{ padding: '0.85rem' }}>Assuré / bénéficiaire</th>
+                    <th style={{ padding: '0.85rem' }}>Acte médical & établissement</th>
                     <th style={{ padding: '0.85rem' }}>Devis soumis</th>
                     <th style={{ padding: '0.85rem' }}>Prise en charge accordée</th>
-                    <th style={{ padding: '0.85rem' }}>Statut & Homologation</th>
-                    <th style={{ padding: '0.85rem' }}>Code Garantie</th>
+                    <th style={{ padding: '0.85rem' }}>Statut & homologation</th>
+                    <th style={{ padding: '0.85rem' }}>Code garantie</th>
                     <th style={{ padding: '0.85rem', textAlign: 'right' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {visibleLetters.map((item) => (
                     <tr key={item.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                      <td style={{ padding: '1rem 0.85rem', minWidth: '230px', verticalAlign: 'top' }}>
+                      <td style={{ padding: '1rem 0.85rem', minWidth: '240px', verticalAlign: 'middle' }}>
                         {(() => {
                           const bInfo = getBeneficiaryInfo(`${item.first_name} ${item.last_name}`, item.cmu_number || activeCmuNumber);
                           return (
-                            <div className="d-flex flex-column gap-1.5">
+                            <div className="d-flex flex-column" style={{ gap: '0.3rem' }}>
                               <div className="d-flex align-items-center gap-2 flex-wrap">
-                                <strong style={{ color: 'var(--text-main)', fontSize: '0.95rem', fontWeight: '700' }}>
+                                <strong className="fw-extrabold" style={{ color: 'var(--text-main)', fontSize: '0.96rem' }}>
                                   {item.first_name} {item.last_name}
                                 </strong>
                                 {bInfo.index === 1 ? (
@@ -1279,16 +1279,16 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                                 )}
                               </div>
 
-                              <div className="d-flex flex-column gap-1 mt-0.5">
-                                <div className="d-flex align-items-center gap-1.5 flex-wrap">
-                                  <span style={{ color: 'var(--text-sub)', fontSize: '0.76rem', fontWeight: '500' }}>N° CSU :</span>
+                              <div className="d-flex flex-column" style={{ gap: '0.2rem', marginTop: '0.15rem' }}>
+                                <div className="d-flex align-items-center gap-1.5 flex-wrap" style={{ fontSize: '0.78rem' }}>
+                                  <span style={{ color: 'var(--text-sub)', fontWeight: '500' }}>N° CSU : </span>
                                   <code className="px-2 py-0.5 bg-dark text-success border border-success rounded-2 fw-bold" style={{ fontSize: '0.78rem' }}>
                                     {bInfo.beneficiaryCode}
                                   </code>
                                 </div>
 
-                                <div className="d-flex align-items-center gap-1.5 flex-wrap" style={{ fontSize: '0.74rem' }}>
-                                  <span style={{ color: 'var(--text-sub)' }}>Code adhérent :</span>
+                                <div className="d-flex align-items-center gap-1.5 flex-wrap" style={{ fontSize: '0.76rem' }}>
+                                  <span style={{ color: 'var(--text-sub)' }}>Code adhérent : </span>
                                   <span className="fw-semibold" style={{ color: 'var(--text-main)' }}>{bInfo.adherentCode}</span>
                                 </div>
                               </div>
@@ -1296,58 +1296,62 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                           );
                         })()}
                       </td>
-                      <td style={{ padding: '0.85rem', maxWidth: '260px' }}>
-                        <span className="d-block fw-semibold small" style={{ color: 'var(--text-main)' }}>{item.medical_act}</span>
+                      <td style={{ padding: '1rem 0.85rem', maxWidth: '260px' }}>
+                        <span className="d-block fw-semibold small" style={{ color: 'var(--text-main)', lineHeight: '1.4' }}>{item.medical_act}</span>
                       </td>
-                      <td style={{ padding: '0.85rem' }}>
-                        <span className="fw-bold" style={{ color: 'var(--text-main)' }}>{Number(item.estimated_amount).toLocaleString()} FCFA</span>
+                      <td style={{ padding: '1rem 0.85rem' }}>
+                        <span className="fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.92rem' }}>{Number(item.estimated_amount).toLocaleString()} FCFA</span>
                       </td>
-                      <td style={{ padding: '0.85rem' }}>
-                        <span className="fw-bold text-success d-block">{Number(item.max_amount).toLocaleString()} FCFA</span>
-                        <small className="badge bg-success-subtle text-success border border-success">
-                          Taux : {item.guaranteed_percentage}%
-                        </small>
+                      <td style={{ padding: '1rem 0.85rem' }}>
+                        <div className="fw-extrabold text-success" style={{ fontSize: '0.95rem' }}>
+                          {Number(item.max_amount).toLocaleString()} FCFA
+                        </div>
+                        <div style={{ marginTop: '0.25rem' }}>
+                          <span className="badge bg-success-subtle text-success border border-success" style={{ fontSize: '0.72rem', borderRadius: '6px' }}>
+                            Taux : {item.guaranteed_percentage}%
+                          </span>
+                        </div>
                       </td>
-                      <td style={{ padding: '0.85rem' }}>
+                      <td style={{ padding: '1rem 0.85rem' }}>
                         {item.status === 'approved' && (
-                          <span className="badge bg-success px-3 py-1.5" style={{ borderRadius: '12px' }}>
+                          <span className="badge bg-success px-3 py-1.5 text-white" style={{ borderRadius: '12px', fontSize: '0.78rem' }}>
                             ✅ Validée UNAMUSC
                           </span>
                         )}
                         {item.status === 'pending' && (
-                          <span className="badge bg-warning text-dark px-3 py-1.5" style={{ borderRadius: '12px' }}>
+                          <span className="badge bg-warning text-dark px-3 py-1.5" style={{ borderRadius: '12px', fontSize: '0.78rem' }}>
                             ⏳ En instruction agent
                           </span>
                         )}
                         {item.status === 'rejected' && (
-                          <span className="badge bg-danger px-3 py-1.5" style={{ borderRadius: '12px' }}>
+                          <span className="badge bg-danger text-white px-3 py-1.5" style={{ borderRadius: '12px', fontSize: '0.78rem' }}>
                             ❌ Rejetée
                           </span>
                         )}
                       </td>
-                      <td style={{ padding: '0.85rem' }}>
-                        <code className="px-2.5 py-1 bg-dark text-success border border-success rounded-3 fw-bold">
+                      <td style={{ padding: '1rem 0.85rem' }}>
+                        <code className="px-2.5 py-1 bg-dark text-success border border-success rounded-3 fw-bold" style={{ fontSize: '0.8rem' }}>
                           {item.validation_code}
                         </code>
                       </td>
-                      <td style={{ textAlign: 'right', padding: '0.85rem' }}>
+                      <td className="text-end" style={{ padding: '1rem 0.85rem', whiteSpace: 'nowrap' }}>
                         {canInstruire ? (
                           <button
                             type="button"
-                            className="btn btn-sm text-white fw-bold px-3 py-1.5 shadow-sm"
+                            className="btn btn-sm text-white fw-bold px-3 py-2 shadow-sm"
                             onClick={() => openInstructionModal(item)}
-                            style={{ background: isSuperAdmin ? '#92400e' : '#059669', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+                            style={{ background: isSuperAdmin ? '#92400e' : '#059669', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.82rem' }}
                           >
-                            {isSuperAdmin ? '👑' : '🛡️'} {item.status === 'approved' ? '📄 Certificat PDF / Garanties' : '⚙️ Instruire & Homologuer'}
+                            {isSuperAdmin ? '👑' : '🛡️'} {item.status === 'approved' ? '📄 Certificat PDF / garanties' : '⚙️ Instruire & homologuer'}
                           </button>
                         ) : isDoctor || isMidwife ? (
-                          <div className="d-flex flex-column align-items-end justify-content-center" style={{ gap: '0.65rem' }}>
+                          <div className="d-flex align-items-center justify-content-end" style={{ gap: '0.75rem', whiteSpace: 'nowrap' }}>
                             <button
                               type="button"
                               className="btn btn-sm btn-outline-success fw-bold px-3 py-1.5"
                               onClick={() => openInstructionModal(item)}
                               title="Consultation du dossier patient (lecture)"
-                              style={{ borderRadius: '8px', fontSize: '0.8rem', marginBottom: '0.4rem' }}
+                              style={{ borderRadius: '10px', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', whiteSpace: 'nowrap' }}
                             >
                               🩺 Voir dossier patient
                             </button>
@@ -1355,7 +1359,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                               type="button"
                               className="btn btn-sm text-white fw-bold px-3 py-1.5"
                               onClick={() => generateAndPrintPDFWindow(item)}
-                              style={{ background: '#059669', border: 'none', borderRadius: '8px', fontSize: '0.8rem' }}
+                              style={{ background: '#059669', border: 'none', borderRadius: '10px', fontSize: '0.8rem', boxShadow: '0 3px 10px rgba(5,150,105,0.3)', display: 'inline-flex', alignItems: 'center', gap: '0.35rem', whiteSpace: 'nowrap' }}
                             >
                               🖨️ PDF
                             </button>
@@ -1364,11 +1368,11 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                           /* Citoyen : impression de SES lettres uniquement (pas d'instruction) */
                           <button
                             type="button"
-                            className="btn btn-sm text-white fw-bold px-3 py-1.5 shadow-sm"
+                            className="btn btn-sm text-white fw-bold px-3 py-2 shadow-sm"
                             onClick={() => generateAndPrintPDFWindow(item)}
-                            style={{ background: '#059669', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+                            style={{ background: '#059669', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.82rem' }}
                           >
-                            🖨️ Imprimer Certificat PDF
+                            🖨️ Imprimer certificat PDF
                           </button>
                         )}
                       </td>
