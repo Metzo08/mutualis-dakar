@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { isWolofText, convertWolofToFrenchPhonetics, cleanTextForTTS } from '../utils/phonetics';
+import { sanitizeSpeechText, playMedicalChime } from '../services/voiceAudioService';
 
 const mariamaAvatar = '/mariama_avatar.png';
 
@@ -73,7 +74,7 @@ export default function ChatbotWidget({ lang, setView }) {
   // Initialize welcome message
   useEffect(() => {
     setMessages([
-      { sender: 'bot', text: t.welcome }
+      { sender: 'bot', text: t.welcomeMsg }
     ]);
     return () => {
       if (recognitionRef.current) {
@@ -130,12 +131,14 @@ export default function ChatbotWidget({ lang, setView }) {
       console.warn('SpeechSynthesis non supporté par ce navigateur.');
       return;
     }
+    playMedicalChime();
     const isWolof = isWolofText(cleanText);
     const textToSpeak = isWolof ? convertWolofToFrenchPhonetics(cleanText) : cleanText;
+    const sanitizedText = sanitizeSpeechText(textToSpeak);
 
-    const utterance = new SpeechSynthesisUtterance(textToSpeak);
-    utterance.rate = isWolof ? 0.9 : 0.95;
-    utterance.pitch = 1.1;
+    const utterance = new SpeechSynthesisUtterance(sanitizedText);
+    utterance.rate = isWolof ? 0.88 : 0.92;
+    utterance.pitch = 1.05;
     utterance.volume = 1;
     utterance.lang = 'fr-FR';
 
