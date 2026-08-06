@@ -1395,4 +1395,20 @@ td .btn + button {
   margin-left: 0.65rem !important;
 }
 
+/* Espacement vertical garanti pour les boutons empilés dans les tableaux et formulaires */
+td .d-flex.flex-column button,
+td .d-flex.flex-column .btn,
+.d-flex.flex-column > button,
+.d-flex.flex-column > .btn {
+  margin-bottom: 0.65rem !important;
+}
+
+td .d-flex.flex-column button:last-child,
+td .d-flex.flex-column .btn:last-child,
+.d-flex.flex-column > button:last-child,
+.d-flex.flex-column > .btn:last-child {
+  margin-bottom: 0 !important;
+}
+
+
 

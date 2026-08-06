@@ -1341,13 +1341,13 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                             {isSuperAdmin ? '👑' : '🛡️'} {item.status === 'approved' ? '📄 Certificat PDF / Garanties' : '⚙️ Instruire & Homologuer'}
                           </button>
                         ) : isDoctor || isMidwife ? (
-                          <div className="d-flex justify-content-end align-items-center gap-2.5">
+                          <div className="d-flex flex-column align-items-end justify-content-center" style={{ gap: '0.65rem' }}>
                             <button
                               type="button"
                               className="btn btn-sm btn-outline-success fw-bold px-3 py-1.5"
                               onClick={() => openInstructionModal(item)}
                               title="Consultation du dossier patient (lecture)"
-                              style={{ borderRadius: '8px', fontSize: '0.8rem', marginRight: '0.5rem' }}
+                              style={{ borderRadius: '8px', fontSize: '0.8rem', marginBottom: '0.4rem' }}
                             >
                               🩺 Voir dossier patient
                             </button>
