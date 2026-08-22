@@ -117,7 +117,7 @@ export default function InfosCSU({ lang }) {
   const { data: infosCsuData } = useQuery({
     queryKey: ['infosCsuContent'],
     queryFn: async () => {
-      const res = await fetch('http://localhost:5000/api/dynamic-content/infos_csu');
+      const res = await fetch(`${window.API_BASE_URL}/api/dynamic-content/infos_csu`);
       if (!res.ok) throw new Error('API Error');
       return res.json();
     }
@@ -126,7 +126,7 @@ export default function InfosCSU({ lang }) {
   const { data: statsData } = useQuery({
     queryKey: ['publicStats'],
     queryFn: async () => {
-      const res = await fetch('http://localhost:5000/api/stats');
+      const res = await fetch(`${window.API_BASE_URL}/api/stats`);
       if (!res.ok) throw new Error('API Error');
       return res.json();
     }

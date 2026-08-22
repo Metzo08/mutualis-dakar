@@ -94,7 +94,7 @@ export default function Partnership({ lang, portalMode, agentUser }) {
   const { data: partnershipsPayload = { data: [] } } = useQuery({
     queryKey: ['partnershipsList', page],
     queryFn: async () => {
-      const res = await fetch(`http://localhost:5000/api/partnerships?page=${page}`, {
+      const res = await fetch(`${window.API_BASE_URL}/api/partnerships?page=${page}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('cmu-token') || ''}` }
       });
       if (!res.ok) throw new Error('API Error');
@@ -112,7 +112,7 @@ export default function Partnership({ lang, portalMode, agentUser }) {
       return;
     }
 
-    fetch('http://localhost:5000/api/partnerships', {
+    fetch(`${window.API_BASE_URL}/api/partnerships`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData)
@@ -142,7 +142,7 @@ export default function Partnership({ lang, portalMode, agentUser }) {
   };
 
   const handleUpdateStatus = (id, newStatus) => {
-    fetch(`http://localhost:5000/api/partnerships/${id}/status`, {
+    fetch(`${window.API_BASE_URL}/api/partnerships/${id}/status`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -171,7 +171,7 @@ export default function Partnership({ lang, portalMode, agentUser }) {
       title: titleStr,
       itemType: 'Demande de partenariat',
       onConfirm: () => {
-        fetch(`http://localhost:5000/api/partnerships/${id}`, {
+        fetch(`${window.API_BASE_URL}/api/partnerships/${id}`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${localStorage.getItem('cmu-token') || ''}` }
         })
@@ -188,7 +188,7 @@ export default function Partnership({ lang, portalMode, agentUser }) {
 
   const handleSaveEdit = (e) => {
     e.preventDefault();
-    fetch(`http://localhost:5000/api/partnerships/${editingPartnership.id}`, {
+    fetch(`${window.API_BASE_URL}/api/partnerships/${editingPartnership.id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

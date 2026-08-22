@@ -20,9 +20,11 @@ export const isWolofText = (text) => {
     'seet', 'seetal', 'soxna', 'tëdd', 'wacc', 'wàññi', 'weer', 'wér', 'wuti',
     'xéwal', 'xévale', 'xéwalé', 'yakaar', 'yakk', 'yeugle', 'dimbali', 'faye',
     'ak', 'yi', 'gi', 'wi', 'ngi', 'lay', 'ngeen', 'nga', 'gnu', 'gu', 'bu', 'yu', 'ci',
-    'wax', 'waxal', 'waxe', 'di', 'na', 'da', 'dama', 'danga', 'dafa', 'dañu', 'laajal', 
+    'wax', 'waxal', 'waxe', 'di', 'na', 'da', 'dama', 'danga', 'dafa', 'dañu', 'laajal',
     'tontul', 'faj', 'paj', 'faju', 'fajjuku', 'mangi', 'yangi', 'mungi', 'nongi', 'ñoongi',
-    'la', 'ma', 'salam', 'salaam', 'salamalekoum', 'salamalékoum', 'def', 'defal', 'sama', 'samay'
+    'la', 'ma', 'salam', 'salaam', 'salamalekoum', 'salamalékoum', 'def', 'defal', 'sama', 'samay',
+    'garab', 'rekk', 'waaw', 'déedéet', 'fayal', 'lañuy', 'bokk', 'doom', 'xool', 'ñuy',
+    'yomb', 'laaj', 'dëgg', 'bëgg', 'diam', 'jëf'
   ];
 
   const frenchWords = [
@@ -861,4 +863,114 @@ export const cleanTextForTTS = (text) => {
     .replace(/\s+/g, ' ')
     .replace(/\.+/g, '.')
     .trim();
+};
+
+/**
+ * Corpus phonétique STT → Wolof.
+ * Le moteur de reconnaissance des navigateurs n'a pas de modèle Wolof : il
+ * transcrit phonétiquement en français ce qu'il entend (« nanga def » →
+ * « non pas de », « jërejëf » → « j'irai jef », « xaalis » → « calice »...).
+ * Chaque règle remplace UNIQUEMENT le segment reconnu et préserve le reste de
+ * la phrase, ce qui permet de reconstruire un Wolof fidèle à ce qui a été dit.
+ * Phrases d'abord (plus longues), puis mots isolés.
+ */
+const WOLOF_STT_RULES = [
+  // ── Salutations & politesses ──
+  [/\b(?:dalal ak jamm|dalal jamm|dalad jamm|diam ak jamm)\b/gi, 'dalal ak jamm'],
+  [/\b(?:naka nga def|naka nga defe|naka ngadef|nouka nga def|naka nga dit)\b/gi, 'naka nga def'],
+  [/\b(?:na nga def|na nga defe|na ngadef)\b/gi, 'na nga def'],
+  [/\b(?:non pas de|n[' ]?en ?a ?d(?:es|ev|oeufs?)?|nanga def|nanga d[eè]f|nanga dève|nan pas de|han ga def|hangadef)\b/gi, 'nanga def'],
+  [/\b(?:assalamou aleykoum|assalamu alaikum|salam aleykoum|salam alaykoum|salam aleikoum|salamalekoum|salamalékoum|salamaalekum|salamelekoum|salut malikoum|salaam aleekum|salaam|salam)\b/gi, 'salaam aleekum'],
+  [/\b(?:j'irai jef|j'irai jeff|jérè jéf|jerejef|jërejëf|dieuredieuf|dieureudieuf|diéré dieuf|diérédiouf|djaré djef|jère jef|jeredjef)\b/gi, 'jërejëf'],
+  [/\b(?:jamm rekk|diam rekk|diam rek|jam rekk|diamm rekk|jam rock)\b/gi, 'jamm rekk'],
+
+  // ── Formules courantes ──
+  [/\b(?:mangi fi|mangui fi|moun gui fi|mon guide fi|m'an gui fi|mungi fi)\b/gi, 'mangi fi'],
+  [/\b(?:mungui|moun gui|mon guide|mangui|m'an gui)\b/gi, 'mungi'],
+  [/\b(?:failles?|faille[sz]?|fayes?|faillé?s?|faye|payer?|payez|payé|paié)\s+(?:sa |la |ma |mes |les |notre )?(?:cotisations?|mutuelles?|participation)/gi, 'fayal cotisation bi'],
+  [/\b(?:ndax am nga|indax am nga)\b/gi, 'ndax am nga'],
+  [/\b(?:bouquet ci|bock ci|book ci|bokk ci)\b/gi, 'bokk ci'],
+  [/\b(?:wér-gi-yaram|wer gui yaram|wergui yaram|ouer gui yaram|wergi yaram)\b/gi, 'wér-gi-yaram'],
+  [/\b(?:fajukaay|fajucaie|fakukaie|fadjou\s?kay|fadiou\s?kay|fajjukaay|fakukai)\b/gi, 'fajukaay'],
+  [/\b(?:garde(?:\s|-)?bille?|garde bil|garabi|garabes?|garabas?|garap|kharab)\b/gi, 'garab'],
+
+  // ── Mots isolés ──
+  [/\b(?:xaalis|xalis|khalisse?|halisse?|calice|chalice|aliss(?:e)?|alice)\b/gi, 'xaalis'],
+  [/\b(?:ñaata|gnata|niata|hnata|ñata)\b/gi, 'ñaata'],
+  [/\b(?:ndax|indax|hendax|andax)\b/gi, 'ndax'],
+  [/\b(?:déedéet|dédet?|dé dé|des dettes?|des dé|day det)\b/gi, 'déedéet'],
+  [/\b(?:dimbali|dimbili|dimbily|ndimbal|ndimbali)\b/gi, 'dimbali'],
+  [/\b(?:nouillou|nooy|gnoy|nouy)\b/gi, 'ñuy'],
+  [/\b(?:waaw|waw|ouaou|waou|wao)\b/gi, 'waaw'],
+  [/\b(?:deuf|deufe|deuffe?|daife|dève)\b/gi, 'def'],
+  [/\b(?:reck|rèk|recques?)\b/gi, 'rekk'],
+  [/\b(?:diam|diamm|jam)\b/gi, 'jamm'],
+  [/\b(?:beug|beugue|beugué|bëgg)\b/gi, 'bëgg'],
+  [/\b(?:deug|deugg|deugué|dëgg)\b/gi, 'dëgg'],
+  [/\b(?:fajj|fage|fadge|faj)\b/gi, 'faj'],
+  [/\b(?:ouax|ouaks?|wakss?|wax)\b/gi, 'wax'],
+  [/\b(?:yeneen|yènènne|yeneune?)\b/gi, 'yeneen'],
+  [/\b(?:laaj|laage|la adj)\b/gi, 'laaj'],
+  [/\b(?:japp|djapp?e?|giap|jàpp)\b/gi, 'jàpp'],
+  [/\b(?:dom(?:e)?|daume|doom)\b/gi, 'doom'],
+  [/\b(?:khamm?|xam)\b/gi, 'xam'],
+  [/\b(?:khol|xool)\b/gi, 'xool'],
+  [/\b(?:keur|kheur|kër)\b/gi, 'kër'],
+  [/\b(?:meune?|mëna?)\b/gi, 'mën'],
+  [/\b(?:yomme?|yomb)\b/gi, 'yomb'],
+  [/\b(?:gnou|gnus?|ñu)\b/gi, 'ñu']
+];
+
+// Marqueurs « anti-écho » : segments que le STT français ne peut produire que
+// s'il a entendu du Wolof. Sert à décider si un transcript vocal est du Wolof
+// mal transcrit (sans ça, une vraie phrase française ne doit pas être décodée).
+const WOLOF_STT_TRIGGERS = [
+  /non pas de/, /n[' ]?en ?a ?d/, /nanga/, /han ga def/, /hangadef/,
+  /salaam|salam aleykoum|salamalekoum|salut malikoum|assalamou|salamelekoum/,
+  /j'irai jef|dieuredieuf|diéré|jerejef|jërejëf|djaré djef/,
+  /diam re|jamm re|diamm/,
+  /garde bille|garabi|garab|garap|kharab/,
+  /fajukaay|fajucaie|fakukaie|fadjou|fadiou/,
+  /xaalis|haliss|khaliss|calice|chalice/,
+  /gnata|niata|ñaata|ñata/,
+  /mungui|mangui|mon guide|moun gui/,
+  /\bndax\b|\bindax\b/,
+  /\bwaaw\b|\bouaou\b/,
+  /déedéet|dé dé|des dettes/,
+  /nouillou|\bgnoy\b/,
+  /faille[sz]?\s+cotisation|faye\s+cotisation|fay\s+cotisation/,
+  /bouquet ci|bock ci/,
+  /\bmeune?\b/,
+  /wer gui|wér-gi/,
+  /\bdeufe?\b|\bdeuffe?\b/,
+  /\bouax\b/
+];
+
+/**
+ * Détecte si un transcript vocal est vraisemblablement du Wolof mal entendu
+ * par le moteur de reconnaissance français.
+ */
+export const looksLikeMisheardWolof = (rawText) => {
+  if (!rawText || typeof rawText !== 'string') return false;
+  const str = rawText.normalize('NFC').toLowerCase();
+  if (isWolofText(str)) return true;
+  return WOLOF_STT_TRIGGERS.some((re) => re.test(str));
+};
+
+/**
+ * Décode et normalise la transcription vocale française approximative en vrai
+ * Wolof. Les segments reconnus sont remplacés par leur forme Wolof correcte,
+ * le reste de la phrase est préservé tel quel.
+ * `force = true` décode même sans marqueur détecté (mode Wolof explicite).
+ */
+export const decodeWolofSpeechInput = (rawText, force = false) => {
+  if (!rawText || typeof rawText !== 'string') return rawText || '';
+  if (!force && !looksLikeMisheardWolof(rawText)) return rawText;
+
+  let decoded = ' ' + rawText.normalize('NFC').toLowerCase() + ' ';
+  for (const [pattern, replacement] of WOLOF_STT_RULES) {
+    decoded = decoded.replace(pattern, replacement);
+  }
+  decoded = decoded.replace(/\s+/g, ' ').trim();
+  return decoded;
 };

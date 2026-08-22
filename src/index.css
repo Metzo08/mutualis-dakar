@@ -72,8 +72,7 @@ html, body, .sidebar, .card, .top-navbar, .nav-item, .directory-table, th, td, h
   transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), 
               border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), 
               color 0.25s cubic-bezier(0.4, 0, 0.2, 1), 
-              box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-              transform 0.15s ease;
+              box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Global Reset */
@@ -90,11 +89,13 @@ html, body {
   color: var(--text-main);
   scroll-behavior: smooth;
   font-size: 16px;
-  line-height: 1.6; /* Aération globale des textes (était 1.2 par défaut → trop serré) */
-  letter-spacing: 0.01em; /* Légère respiration horizontale */
+  line-height: 1.6;
+  letter-spacing: 0.01em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow: hidden; /* App takes entire viewport with sidebar scrolling */
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y manipulation;
 }
 
 /* Aération des paragraphes et labels (hérite du line-height global) */
@@ -505,6 +506,38 @@ h1, h2, h3, h4, h5, h6 { line-height: 1.25; }
   transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Support universel des classes d'espacement personnalisées */
+.gap-1-5, .gap-1\.5 { gap: 0.6rem; }
+.gap-2-5, .gap-2\.5 { gap: 1.25rem; }
+.gap-3-5, .gap-3\.5 { gap: 1.75rem; }
+
+/* Espacement fluide et harmonieux pour les formulaires et boutons */
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 1rem;
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 576px) {
+  .form-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .form-actions > * {
+    width: 100%;
+  }
 }
 
 .btn:active {
@@ -1085,7 +1118,7 @@ p {
     display: flex !important;
   }
   .view-container {
-    padding-bottom: 80px !important;
+    padding-bottom: 140px !important;
   }
 }
 
@@ -1364,51 +1397,762 @@ div[style*="borderLeft"][style*="padding"]:not(.alert):not([role="alert"]) {
   border-left: none !important;
 }
 
-/* 17. ESPACEMENT INTELLIGENT UNIVERSEL ENTRE BOUTONS ADJACENTS
-   Résout définitivement tout problème de boutons collés sur les formulaires,
-   les modales, les tableaux et toutes les vues de la plateforme. */
-button + button, 
-.btn + .btn, 
-.btn + button, 
-button + .btn,
-a.btn + a.btn,
-a.btn + button,
-button + a.btn {
-  margin-left: 0.65rem !important;
-}
+/* 17. ESPACEMENT UNIVERSEL HAUT DE GAMME — FORMULAIRES & BOUTONS AÉRÉS
+   Garantit que tous les boutons, champs de saisie, groupes d'action et modales
+   bénéficient d'une aération irréprochable et ne soient jamais collés. */
 
-/* Espacement vertical et horizontal pour les conteneurs de boutons flex */
-.d-flex:has(> button + button),
-.d-flex:has(> .btn + .btn),
-.d-flex:has(> button + .btn),
-.d-flex:has(> .btn + button),
+/* Espacement horizontal et vertical automatique dans tous les conteneurs de boutons */
+.btn-group,
 .modal-footer,
-.form-actions {
-  gap: 0.75rem !important;
+.form-actions,
+.d-flex.gap-1,
+.d-flex.gap-2,
+.d-flex.gap-3,
+.d-flex.gap-4,
+.d-flex.flex-wrap:has(> .btn),
+.d-flex.flex-wrap:has(> button) {
+  gap: 0.85rem !important;
+  row-gap: 0.85rem !important;
+  column-gap: 0.85rem !important;
 }
 
-/* Espacement dans les colonnes d'action des tableaux */
-td button + button,
-td .btn + .btn,
-td button + .btn,
-td .btn + button {
-  margin-left: 0.65rem !important;
+/* Espacement entre champs et labels dans les formulaires */
+.form-label, label {
+  display: inline-block;
+  margin-bottom: 0.55rem !important;
+  font-weight: 600;
 }
 
-/* Espacement vertical garanti pour les boutons empilés dans les tableaux et formulaires */
-td .d-flex.flex-column button,
-td .d-flex.flex-column .btn,
-.d-flex.flex-column > button,
-.d-flex.flex-column > .btn {
-  margin-bottom: 0.65rem !important;
+/* Marge de sécurité entre groupes de champs consécutifs */
+.form-group, form > .mb-2, form > .mb-3, form > .mb-4 {
+  margin-bottom: 1.35rem !important;
 }
 
-td .d-flex.flex-column button:last-child,
-td .d-flex.flex-column .btn:last-child,
-.d-flex.flex-column > button:last-child,
-.d-flex.flex-column > .btn:last-child {
-  margin-bottom: 0 !important;
+/* Aération confortable pour les boutons standards */
+.btn {
+  padding-left: 1.25rem !important;
+  padding-right: 1.25rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+}
+
+/* Colonnes d'actions dans les tableaux */
+td .d-flex {
+  gap: 0.65rem !important;
 }
 
 
 
+
+/* ═════════════════════════════════════════════════════════════════════
+   17. DARK MODE — HAUTE LISIBILITÉ & CONTRASTE PARFAIT (FORMULAIRES, BOUTONS, CARTES)
+   ═════════════════════════════════════════════════════════════════════ */
+.dark-theme span[style*="#ecfdf5"],
+.dark-theme span[style*="#f0fdf4"],
+.dark-theme span[style*="#d1fae5"],
+.dark-theme span[style*="#e0f2fe"],
+.dark-theme span[style*="#fef3c7"],
+.dark-theme span[style*="#f8fafc"],
+.dark-theme span[style*="#fdf2f8"],
+.dark-theme span[style*="#fce7f3"],
+.dark-theme span[style*="#fff1f2"],
+.dark-theme div[style*="#f8fafc"],
+.dark-theme div[style*="#ecfdf5"],
+.dark-theme div[style*="#f0fdf4"],
+.dark-theme div[style*="#fdf2f8"],
+.dark-theme div[style*="#fce7f3"],
+.dark-theme div[style*="#fff1f2"],
+.dark-theme div[style*="#e0f2fe"],
+.dark-theme div[style*="#fef3c7"] {
+  background: var(--bg-card-subtle) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* Remplacement universel des fonds blancs hardcodés dans les conteneurs */
+.dark-theme div[style*="background: #ffffff"],
+.dark-theme div[style*="background:#ffffff"],
+.dark-theme div[style*="background-color: #ffffff"],
+.dark-theme div[style*="background-color:#ffffff"],
+.dark-theme div[style*="background: rgb(255, 255, 255)"],
+.dark-theme div[style*="linear-gradient(135deg, #ffffff"] {
+  background: var(--bg-card) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* Boutons d'appel et numéros de téléphone en mode sombre */
+.dark-theme a[href^="tel:"] {
+  background: var(--bg-card) !important;
+  color: #60a5fa !important;
+  border: 2px solid rgba(59, 130, 246, 0.4) !important;
+}
+
+.dark-theme a[href^="tel:"]:hover {
+  background: rgba(59, 130, 246, 0.2) !important;
+  color: #93c5fd !important;
+}
+
+/* Neutralisation des textes sombres illisibles en mode sombre */
+.dark-theme [style*="color: #047857"],
+.dark-theme [style*="color: #065f46"],
+.dark-theme [style*="color:#047857"],
+.dark-theme [style*="color:#065f46"] {
+  color: #10b981 !important;
+}
+
+.dark-theme [style*="color: #0369a1"],
+.dark-theme [style*="color: #1e40af"],
+.dark-theme [style*="color:#0369a1"],
+.dark-theme [style*="color:#1e40af"] {
+  color: #38bdf8 !important;
+}
+
+.dark-theme [style*="color: #9d174d"],
+.dark-theme [style*="color: #831843"],
+.dark-theme [style*="color:#9d174d"],
+.dark-theme [style*="color:#831843"] {
+  color: #f472b6 !important;
+}
+
+.dark-theme [style*="color: #991b1b"],
+.dark-theme [style*="color: #7f1d1d"],
+.dark-theme [style*="color:#991b1b"],
+.dark-theme [style*="color:#7f1d1d"] {
+  color: #f87171 !important;
+}
+
+.dark-theme [style*="color: #92400e"],
+.dark-theme [style*="color: #78350f"],
+.dark-theme [style*="color:#92400e"],
+.dark-theme [style*="color:#78350f"] {
+  color: #fbbf24 !important;
+}
+
+/* 18. BADGES — ne jamais tronquer le texte (QR code, lecture seule) */
+.badge,
+span[class*="badge"] {
+  white-space: normal !important;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+/* 19. BOUTONS HUB — empêcher le débordement sur mobile */
+button[style*="fontSize"],
+.btn {
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+
+/* 20. MARQUEE — logo sponsors bien visible */
+.marquee-content img {
+  min-height: 26px;
+  object-fit: contain;
+}
+
+/* 21. CASSE — première lettre majuscule partout (annule uppercase résiduel) */
+h1, h2, h3, h4, h5, h6,
+button, .btn, .badge,
+span, div, p, small, strong {
+  text-transform: none !important;
+}
+
+/* Exception : codes et identifiants techniques restent lisibles */
+code, kbd, .font-monospace,
+th, table thead th {
+  text-transform: none;
+}
+
+/* 22. FOOTER MOBILE — aération et lisibilité sur petit écran */
+@media (max-width: 768px) {
+  .site-footer {
+    padding: 2.5rem 0 1.5rem 0 !important;
+  }
+  .footer-grid {
+    gap: 1.75rem !important;
+    grid-template-columns: 1fr !important;
+  }
+  .footer-col h3 {
+    font-size: 1.05rem !important;
+    margin-bottom: 1rem !important;
+  }
+  .footer-links li button,
+  .footer-contact-info li {
+    font-size: 0.85rem !important;
+    padding: 0.35rem 0 !important;
+  }
+}
+
+/* ═════════════════════════════════════════════════════════════════════
+   23. APERÇU CARTE PHYSIQUE CNI / PVC (RECTO & VERSO) — FOND BLANC PERMANENT
+   Le recto et le verso de la carte d'identité physique UNAMUSC doivent
+   conserver un fond blanc pur (#ffffff) et des textes sombres nets
+   en mode clair ET en mode sombre (fidélité d'impression PVC 100%).
+   ═════════════════════════════════════════════════════════════════════ */
+.cni-physical-card-preview,
+.dark-theme .cni-physical-card-preview,
+html.dark-theme .cni-physical-card-preview,
+body.dark-theme .cni-physical-card-preview {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 2.5px solid #059669 !important;
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.25) !important;
+}
+
+.cni-physical-card-preview div,
+.dark-theme .cni-physical-card-preview div {
+  color: inherit;
+}
+
+.cni-physical-card-preview strong,
+.dark-theme .cni-physical-card-preview strong {
+  color: #0f172a !important;
+}
+
+.cni-physical-card-preview strong[style*="#064e3b"],
+.dark-theme .cni-physical-card-preview strong[style*="#064e3b"],
+.cni-physical-card-preview div[style*="#064e3b"],
+.dark-theme .cni-physical-card-preview div[style*="#064e3b"] {
+  color: #064e3b !important;
+}
+
+.cni-physical-card-preview strong[style*="#047857"],
+.dark-theme .cni-physical-card-preview strong[style*="#047857"],
+.cni-physical-card-preview div[style*="#047857"],
+.dark-theme .cni-physical-card-preview div[style*="#047857"] {
+  color: #047857 !important;
+}
+
+.cni-physical-card-preview strong[style*="#0284c7"],
+.dark-theme .cni-physical-card-preview strong[style*="#0284c7"] {
+  color: #0284c7 !important;
+}
+
+.cni-physical-card-preview strong[style*="#334155"],
+.dark-theme .cni-physical-card-preview strong[style*="#334155"] {
+  color: #334155 !important;
+}
+
+.cni-physical-card-preview span[style*="#64748b"],
+.dark-theme .cni-physical-card-preview span[style*="#64748b"] {
+  color: #64748b !important;
+}
+
+.cni-physical-card-preview span[style*="#047857"],
+.dark-theme .cni-physical-card-preview span[style*="#047857"] {
+  color: #047857 !important;
+}
+
+.cni-physical-card-preview div[style*="#f0fdf4"],
+.dark-theme .cni-physical-card-preview div[style*="#f0fdf4"] {
+  background: #f0fdf4 !important;
+  color: #0f172a !important;
+}
+
+.cni-physical-card-preview div[style*="background: #ffffff"],
+.dark-theme .cni-physical-card-preview div[style*="background: #ffffff"],
+.cni-physical-card-preview span[style*="background: #f0fdf4"],
+.dark-theme .cni-physical-card-preview span[style*="background: #f0fdf4"],
+.cni-physical-card-preview span[style*="background: #ecfdf5"],
+.dark-theme .cni-physical-card-preview span[style*="background: #ecfdf5"] {
+  background: #f0fdf4 !important;
+  color: #065f46 !important;
+}
+
+/* ============================================================================
+   SECTION 24: CARD STUDIO DEDICATED SPACIOUS LAYOUT SYSTEM (VANILLA CSS)
+   ============================================================================ */
+.studio-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2.5rem;
+  width: 100%;
+}
+
+@media (max-width: 1080px) {
+  .studio-grid-2 {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
+.studio-form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+.studio-form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .studio-form-grid-2,
+  .studio-form-grid-3 {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+}
+
+.studio-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-bottom: 1.25rem;
+  width: 100%;
+}
+
+.studio-form-group label {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--text-main);
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.studio-form-group .form-control,
+.studio-form-group .form-select,
+.studio-form-group input,
+.studio-form-group select {
+  min-height: 52px;
+  padding: 0.85rem 1.2rem;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.studio-form-group textarea {
+  padding: 1rem 1.2rem;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  width: 100%;
+  box-sizing: border-box;
+  line-height: 1.55;
+}
+
+.studio-btn-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.studio-btn-pills button {
+  min-height: 46px;
+  padding: 0.75rem 1.4rem;
+  border-radius: 14px;
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   25. RECHARTS HOVER & DARK THEME FIXES (SUPPRESSION DU FOND BLANC AU SURVOL)
+   ========================================================================== */
+.recharts-tooltip-cursor,
+.recharts-rectangle.recharts-tooltip-cursor,
+.recharts-cross.recharts-tooltip-cursor,
+svg .recharts-tooltip-cursor {
+  fill: rgba(16, 185, 129, 0.06) !important;
+  stroke: rgba(16, 185, 129, 0.25) !important;
+  stroke-dasharray: 4 4 !important;
+  opacity: 0.9 !important;
+}
+
+.recharts-default-tooltip {
+  background-color: var(--bg-card) !important;
+  border: 1.5px solid var(--border-color) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45) !important;
+  color: var(--text-main) !important;
+}
+
+
+
+
+/* ═══ Hub d'actions médicales (page Vérification) — responsive mobile ═══ */
+@media (max-width: 576px) {
+  .verify-hub-tile {
+    min-height: 0 !important;
+    padding: 1.15rem 1rem !important;
+    border-radius: 18px !important;
+    border-width: 2px !important;
+    overflow: hidden;
+  }
+  /* Le titre (« Télémédecine », « Pathologies ALD »…) doit rester DANS la case :
+     retour à la ligne autorisé + largeur minimale pour permettre le wrap */
+  .verify-hub-tile span.fw-extrabold {
+    font-size: 0.98rem !important;
+    line-height: 1.25 !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+    min-width: 0 !important;
+    flex: 0 1 auto !important;
+  }
+  .verify-hub-tile > div > div > div > span:first-child {
+    width: 40px !important;
+    height: 40px !important;
+    font-size: 1.25rem !important;
+    border-radius: 12px !important;
+  }
+  .verify-hub-tile p {
+    font-size: 0.84rem !important;
+    line-height: 1.45 !important;
+  }
+  .verify-hub-tile .badge {
+    font-size: 0.72rem !important;
+    padding: 0.3rem 0.6rem !important;
+    white-space: nowrap !important;
+  }
+  .verify-hub-tile > div:last-child span:first-child {
+    font-size: 0.8rem !important;
+  }
+}
+
+/* Rangée d'action du bas des tuiles du hub : autoriser le wrap mobile */
+@media (max-width: 576px) {
+  .verify-hub-tile > div:last-child {
+    flex-wrap: wrap !important;
+    row-gap: 4px !important;
+  }
+  .verify-hub-tile > div:last-child span:first-child {
+    font-size: 0.76rem !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+    min-width: 0 !important;
+    flex: 0 1 auto !important;
+  }
+}
+
+/* ═══ Fluidité & Déblocage du défilement Mobile & Tablette (Anti-Staquage Touch) ═══ */
+@media (max-width: 1024px) {
+  html, body {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    height: auto !important;
+    min-height: 100% !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y manipulation !important;
+  }
+  #root {
+    height: auto !important;
+    min-height: 100vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .app-layout {
+    height: auto !important;
+    width: 100% !important;
+    min-height: 100vh !important;
+    overflow: visible !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  .main-content {
+    height: auto !important;
+    width: 100% !important;
+    overflow: visible !important;
+    min-height: 100vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto !important;
+  }
+  .view-container {
+    height: auto !important;
+    width: 100% !important;
+    overflow: visible !important;
+    padding: 1.1rem 0.85rem 130px 0.85rem !important;
+    -webkit-overflow-scrolling: touch !important;
+    flex: 1 1 auto !important;
+  }
+  .sidebar {
+    position: fixed !important;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1050 !important;
+    transform: translateX(-100%);
+    box-shadow: var(--shadow-lg);
+  }
+  .sidebar.open {
+    transform: translateX(0) !important;
+  }
+}
+
+/* ==========================================================================
+   26. HARMONISATION & FIDÉLITÉ DES FORMULAIRES (MOBILE <-> DESKTOP 100%)
+   ========================================================================== */
+
+/* Structure unifiée des formulaires */
+form, .form-container, .card-form {
+  width: 100%;
+}
+
+.form-group, .mb-3, .mb-4 {
+  width: 100%;
+}
+
+/* Grilles de formulaires responsive */
+.form-row,
+.form-grid-2,
+.form-grid-3,
+.row.g-3,
+.row.g-4,
+.row.g-2 {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .form-row,
+  .form-grid-2,
+  .form-grid-3,
+  .studio-form-grid-2,
+  .studio-form-grid-3 {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.95rem !important;
+    margin-bottom: 1rem !important;
+  }
+  
+  .form-row > *,
+  .form-grid-2 > *,
+  .form-grid-3 > * {
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: 1 1 100% !important;
+  }
+  
+  /* Inputs optimisés pour mobile (taille tactile, pas de zoom iOS) */
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="password"],
+  input[type="date"],
+  input[type="datetime-local"],
+  select,
+  textarea,
+  .form-control,
+  .form-select,
+  .input {
+    font-size: 16px !important;
+    min-height: 48px !important;
+    border-radius: 12px !important;
+    padding: 0.75rem 1rem !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  /* Input Groups (ex: indicatif +221 + champ téléphone) */
+  .input-group {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch !important;
+    width: 100% !important;
+  }
+  
+  .input-group > .input-group-text,
+  .input-group > .btn {
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 0.85rem !important;
+    font-size: 0.88rem !important;
+    font-weight: 700 !important;
+  }
+  
+  .input-group > input,
+  .input-group > .form-control {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+  
+  /* Boutons d'action de formulaire sur mobile */
+  .form-actions,
+  .card-footer-actions,
+  .modal-footer {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.65rem !important;
+    width: 100% !important;
+  }
+  
+  .form-actions .btn,
+  .card-footer-actions .btn,
+  .modal-footer .btn {
+    width: 100% !important;
+    min-height: 48px !important;
+    font-size: 0.95rem !important;
+    border-radius: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  /* Indicateurs d'étapes (Wizards Adhésion / Paiements) */
+  .step-wizard,
+  .steps-indicator,
+  .stepper-nav {
+    display: flex !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding-bottom: 0.5rem !important;
+    gap: 0.5rem !important;
+    scrollbar-width: none !important;
+  }
+  .step-wizard::-webkit-scrollbar,
+  .steps-indicator::-webkit-scrollbar,
+  .stepper-nav::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  /* Modales et Dialogues sur mobile */
+  .modal-dialog {
+    margin: 0.5rem !important;
+    max-width: calc(100vw - 1rem) !important;
+    width: auto !important;
+  }
+
+  .modal-content {
+    border-radius: 20px !important;
+    padding: 0 !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   POLISH UI — Aération des pages métier (Gouvernance, Lettres de garantie,
+   Bons de commande, Télémédecine, Dossier médical, Maternité, Prestataires)
+   Harmonise l'espacement des boutons, champs, tableaux et cartes compacts.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* Groupes de boutons d'action dans les tableaux : les actions respirent */
+.table-responsive .d-flex {
+  gap: 0.6rem;
+}
+
+/* Lignes de tableaux denses : lecture plus confortable */
+.table-responsive th,
+.table-responsive td {
+  padding: 0.72rem 0.8rem;
+}
+.table-responsive td + td,
+.table-responsive th + th {
+  padding-left: 0.9rem;
+}
+
+/* Boutons compacts des tableaux et barres d'outils : zone tactile confortable */
+.table-responsive .btn,
+.toolbar .btn,
+.btn-group .btn {
+  min-height: 40px;
+}
+
+/* Champs de filtre / recherche : hauteur homogène et respirable */
+.input-group .form-control,
+.table-responsive .form-control {
+  min-height: 44px;
+}
+
+/* Étiquettes de formulaires : respiration sous le libellé */
+.form-label {
+  margin-bottom: 0.45rem;
+}
+
+/* ════════════════════════════════════════════════════════════════════════
+   COUCHE DESIGN QUALITÉ — finition professionnelle des pages métier
+   (Bons de commande & garanties, Prestataires, Télémédecine, Maternité,
+   Gouvernance, Dossier médical). Les !important surchargent volontairement
+   les styles inline compacts (boutons serrés, cellules denses, badges).
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* ── 1. TABLEAUX : lignes aérées, en-têtes professionnels ── */
+.app-layout table th,
+.app-layout table td {
+  padding: 0.78rem 0.85rem !important;
+  vertical-align: middle !important;
+}
+.app-layout table thead th {
+  font-size: 0.75rem !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: var(--text-sub) !important;
+  background: var(--bg-card-subtle) !important;
+}
+.app-layout table tbody tr + tr td {
+  border-top: 1px solid var(--border-color) !important;
+}
+
+/* ── 2. BOUTONS COMPACTS : les petits boutons inline (padding 0.25–0.35rem
+       ou 4–8px) deviennent des pilules confortables et cohérentes ── */
+.app-layout button[style*="padding: 0.3rem"],
+.app-layout button[style*="padding: 0.35rem"],
+.app-layout button[style*="padding: 0.25rem"],
+.app-layout button[style*="padding: 6px"],
+.app-layout button[style*="padding: 8px"],
+.app-layout button[style*="padding: 5px"],
+.app-layout button[style*="padding: 4px"] {
+  padding: 0.55rem 1rem !important;
+  min-height: 40px !important;
+  border-radius: 10px !important;
+}
+
+/* ── 3. BOUTONS DANS LES TABLEAUX : zone tactile minimale ── */
+.app-layout table td button {
+  min-height: 38px !important;
+}
+
+/* ── 4. BADGES : pastilles uniformes, lisibles, sans tassement ── */
+.app-layout .badge {
+  padding: 0.42rem 0.8rem !important;
+  border-radius: 999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+}
+
+/* ── 5. CHAMPS DE FORMULAIRES : hauteur confortable, coins doux ── */
+.app-layout .form-control:not(.chatbot-input),
+.app-layout select,
+.app-layout textarea {
+  min-height: 44px !important;
+  border-radius: 12px !important;
+}
+.app-layout .form-label {
+  margin-bottom: 0.5rem !important;
+  font-weight: 700 !important;
+}
+
+/* ── 6. CARTES : arrondis cohérents ── */
+.app-layout .card {
+  border-radius: 16px !important;
+}
+
+/* ── 7. GROUPES D'ONGLETS / FILTRES : espacement homogène ── */
+.app-layout .nav-tabs,
+.app-layout .nav-pills {
+  gap: 0.5rem !important;
+}
+.app-layout .nav-tabs .nav-link,
+.app-layout .nav-pills .nav-link {
+  padding: 0.6rem 1.1rem !important;
+  border-radius: 10px !important;
+}

@@ -110,7 +110,7 @@ export default function Header({
     const refreshToken = localStorage.getItem('cmu-refresh-token');
     const accessToken = localStorage.getItem('cmu-token');
     // Appel best-effort : on ne bloque pas la déconnexion locale en cas d'échec réseau
-    fetch('http://localhost:5000/api/auth/logout', {
+    fetch(`${window.API_BASE_URL}/api/auth/logout`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refreshToken })
@@ -191,7 +191,7 @@ export default function Header({
           style={{ width: '42px', height: '28px', objectFit: 'cover', borderRadius: '4px', border: '1.5px solid #d97706', boxShadow: '0 2px 5px rgba(0,0,0,0.25)', marginBottom: '0.35rem' }} 
         />
         <span className="fw-bold text-white d-block" style={{ fontSize: '0.74rem', letterSpacing: '0.5px', lineHeight: '1.2' }}>
-          RÉPUBLIQUE DU SÉNÉGAL
+          République du Sénégal
         </span>
         <small className="text-success fw-semibold d-block" style={{ fontSize: '0.62rem', marginTop: '0.15rem' }}>
           Un Peuple - Un But - Une Foi
@@ -206,7 +206,7 @@ export default function Header({
           style={{ width: '120px', height: 'auto', maxHeight: '115px', objectFit: 'contain', margin: '0 auto', display: 'block' }} 
         />
         <span className="fw-bold text-success d-block mt-2" style={{ fontSize: '0.85rem', letterSpacing: '0.5px', lineHeight: '1.2' }}>
-          UNAMUSC SÉNÉGAL
+          UNAMUSC Sénégal
         </span>
         <small className="text-white-50 d-block" style={{ fontSize: '0.66rem', marginTop: '0.15rem' }}>
           Union Nationale des Mutuelles de Santé
@@ -315,16 +315,14 @@ export default function Header({
           {lang === 'fr' ? 'Dossier & radios' : 'Tére fajj'}
         </button>
 
-        {/* Carnet de Santé Maternelle (Uniquement si ce n'est pas un homme) */}
-        {!isMaleUser() && (
-          <button 
-            className={`nav-item ${currentView === 'maternity' ? 'active' : ''}`}
-            onClick={() => navigateTo('maternity')}
-          >
-            <span className="nav-icon">🤱</span>
-            {lang === 'fr' ? 'Carnet maternité' : 'Tére wéru jégen'}
-          </button>
-        )}
+        {/* Pôle Spécialités Médicales & Pathologies */}
+        <button 
+          className={`nav-item ${currentView === 'maternity' ? 'active' : ''}`}
+          onClick={() => navigateTo('maternity')}
+        >
+          <span className="nav-icon">🩺</span>
+          {lang === 'fr' ? 'Spécialités & Pathologies' : 'Fajj ak wérug yaram'}
+        </button>
 
         {/* Parrainage solidaire (Public Dedicated Page) */}
         <button 
@@ -475,15 +473,25 @@ export default function Header({
           </button>
         )}
 
-        {/* Option 9: Journal d'Audit (Super Admin only) */}
+        {/* Option 9: Journal d'Audit & Studio Cartes (Super Admin only) */}
         {portalMode === 'agent' && agentUser && agentUser.role === 'Super Admin' && (
-          <button 
-            className={`nav-item ${currentView === 'audit-logs' ? 'active' : ''}`}
-            onClick={() => setView('audit-logs')}
-          >
-            <span className="nav-icon">🔒</span>
-            {t.auditLogs}
-          </button>
+          <>
+            <button 
+              className={`nav-item ${currentView === 'audit-logs' ? 'active' : ''}`}
+              onClick={() => setView('audit-logs')}
+            >
+              <span className="nav-icon">🔒</span>
+              {t.auditLogs}
+            </button>
+
+            <button 
+              className={`nav-item ${currentView === 'card-studio' ? 'active' : ''}`}
+              onClick={() => setView('card-studio')}
+            >
+              <span className="nav-icon">🪪</span>
+              {lang === 'fr' ? 'Studio Cartes' : 'Kartu CSU'}
+            </button>
+          </>
         )}
 
         {/* Option 10: Tableau de bord CSU (Agent mode only) */}
@@ -573,8 +581,8 @@ export default function Header({
             {t.loyalty}
           </button>
         )}
-        {/* Option 18: Super Admin Governance View */}
-        {(portalMode === 'superadmin' || (agentUser && agentUser.role === 'Super Admin')) && (
+        {/* Option 18: Super Admin Governance View — réservée au Super Admin AUTHENTIFIÉ */}
+        {agentUser && (agentUser.role === 'Super Admin' || agentUser.role === 'SuperAdmin') && (
           <button
             className={`nav-item ${currentView === 'superadmin-governance' ? 'active' : ''}`}
             onClick={() => setView('superadmin-governance')}
@@ -710,8 +718,36 @@ export default function Header({
           </button>
           <button 
             className="portal-switch-btn"
-            onClick={() => { setPortalMode('superadmin'); setView('superadmin-governance'); }}
-            title="Super Administrateur DSI UNAMUSC"
+            onClick={() => { setPortalMode('lab'); setView('medical-profile'); }}
+            title="Laboratoire & Biologie Agréé (Dr. Ousmane Kane - Pasteur Dakar)"
+            style={{
+              padding: '0.45rem 0.2rem',
+              fontSize: '0.72rem',
+              fontWeight: 'bold',
+              borderRadius: '8px',
+              border: '1px solid #0284c7',
+              background: portalMode === 'lab' || portalMode === 'biologist' ? '#0284c7' : 'transparent',
+              color: portalMode === 'lab' || portalMode === 'biologist' ? '#fff' : 'var(--text-sub)',
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+          >
+            Labo / Imagerie 🧪
+          </button>
+          <button
+            className="portal-switch-btn"
+            onClick={() => {
+              // 🔒 Le portail Super Admin exige une authentification réelle :
+              // sans session Super Admin, on redirige vers la connexion.
+              if (agentUser && (agentUser.role === 'Super Admin' || agentUser.role === 'SuperAdmin')) {
+                setPortalMode('superadmin');
+                setView('superadmin-governance');
+              } else {
+                setPortalMode('agent');
+                setView('login');
+              }
+            }}
+            title="Super Administrateur DSI UNAMUSC (connexion requise)"
             style={{
               padding: '0.45rem 0.2rem',
               fontSize: '0.72rem',

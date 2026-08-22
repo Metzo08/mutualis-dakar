@@ -4,7 +4,7 @@
 //  - la rotation transparente du refresh token en cas de 401
 //  - la déconnexion automatique si le refresh échoue
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE = (typeof window !== 'undefined' && window.API_BASE_URL) || import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export const TOKEN_KEY = 'cmu-token';
 export const REFRESH_TOKEN_KEY = 'cmu-refresh-token';
@@ -72,9 +72,32 @@ export async function refreshAccessToken() {
 //  - attache le header Authorization si un access token est présent
 //  - en cas de 401, tente un refresh puis rejoue la requête initiale
 //  - si le refresh échoue, déclenche un événement de déconnexion
+//  - en mode démo portal, utilise les données factices de l'utilisateur connecté
 export async function apiFetch(path, options = {}) {
   const accessToken = getAccessToken();
   const headers = { ...(options.headers || {}) };
+
+  // NOUVEAU : Support pour le mode démo portal
+  // Si pas de token réel mais qu'on a un agent user en localStorage (mode démo portail)
+  if (!accessToken && typeof window !== 'undefined') {
+    try {
+      const agentUserJSON = localStorage.getItem('cmu-agent-user');
+      if (agentUserJSON) {
+        const agentUser = JSON.parse(agentUserJSON);
+        // Si on est en mode Super Admin démo, créer un token factice
+        if (agentUser && agentUser.role === 'SuperAdmin') {
+          // Créer un header d'autorisation factice que notre mock backend pourra reconnaître
+          // Ou simplement permettre la requête de poursuivre (le mock backend dans les routes vérifiera le rôle)
+          headers['Authorization'] = `Bearer demo-superadmin-token-${agentUser.id || 'demo'}`;
+          headers['x-demo-mode'] = 'true'; // Header additionnel pour indiquer le mode démo
+        }
+      }
+    } catch (e) {
+      // Ignorer les erreurs de parsing JSON
+      console.warn('Could not parse agentUser from localStorage for demo mode:', e);
+    }
+  }
+
   if (accessToken) {
     headers['Authorization'] = `Bearer ${accessToken}`;
   }

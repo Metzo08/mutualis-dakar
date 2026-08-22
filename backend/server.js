@@ -890,143 +890,276 @@ app.post('/api/chatbot', validate(chatbotSchema), async (req, res) => {
       const genAI = new GoogleGenerativeAI(apiKey);
       let userMessageToProcess = message;
 
-      // Décodage STT Wolof si langue = Wolof et qu'il s'agit d'une entrée vocale
-      if (lang === 'wo' && isVoiceInput) {
+      // Marqueurs phonétiques : le STT navigateur (modèle français) produit ces
+      // segments uniquement quand il a entendu du Wolof. Permet de réparer la
+      // phrase Wolof même si l'interface était en mode Français.
+      const WOLOF_STT_HINT = /(nanga|non pas de|n'en a de|jërejëf|jerejef|dieuredieuf|j'irai jef|salaam|salam ale|salamalekoum|salut malikoum|garab|garap|garde bille|fajukaay|fajucaie|fadjou|fadiou|xaalis|haliss|khaliss|calice|chalice|ñaata|gnata|niata|mungui|mangui|mon guide|moun gui|\bndax\b|\bwaaw\b|ouaou|déedéet|dé dé|des dettes|diam re|jamm re|diamm|nouillou|gnoy|faille[sz]?\s+cotisation|faye\s+cotisation|fay\s+cotisation|bouquet ci|bock ci|meune|wer gui|wér-gi|deufe|deuffe|\bouax\b|naka nga|na nga)/i;
+
+      // ── Réparation STT pour TOUTE entrée vocale ──
+      // Le STT du navigateur transcrit avec le modèle acoustique FRANÇAIS :
+      // le Wolof parlé devient du français phonétique (« nanga def » → « non
+      // pas de », « ñaata » → « gnata »). Gemini détecte la langue réelle et
+      // reconstruit la phrase originale — l'usager VOIT alors ses mots en
+      // Wolof dans le chat et reçoit une réponse en Wolof.
+      // Plafonné à 4 s : la réponse globale doit rester rapide pour l'usager.
+      const geminiStartedAt = Date.now();
+      let speaksWolof = false;
+      if (isVoiceInput) {
         try {
-          console.log("Tentative de décodage STT Wolof...");
-          const decodeModel = genAI.getGenerativeModel({
-            model: 'gemini-flash-latest',
-            systemInstruction: "L'utilisateur t'envoie un texte qui est la transcription d'une phrase parlée en Wolof mais très mal comprise par le moteur vocal français/anglais (ex: 'am I booking go'). Reconstruis la phrase Wolof originale qui a été prononcée. Ne retourne QUE la phrase en Wolof, sans explication ni guillemets."
+          console.log("Tentative de réparation STT (wolof/français)...");
+          const repairSystemInstruction = `Tu es un correcteur de transcription vocale pour une application de santé au Sénégal (chatbot Zahara). Le texte fourni a été transcrit par un moteur de reconnaissance vocale FRANÇAIS. Deux cas possibles :
+1) L'utilisateur a parlé WOLOF : le moteur a produit une phonétique française approximative (exemples réels : « nanga def » → « non pas de », « jërejëf » → « j'irai jef », « ñaata la cotisation » → « gnata la cotisation », « garab » → « garde bille », « fajukaay » → « facture kay », « waaw » → « ouaou »). Reconstruis alors la phrase Wolof originale correcte et complète (orthographe wolof standard : ë, ñ).
+2) L'utilisateur a parlé FRANÇAIS : le texte est déjà correct, renvoie-le strictement inchangé.
+Réponds STRICTEMENT avec un objet JSON seul, sans texte autour : {"lang":"wo","text":"phrase wolof reconstruite"} ou {"lang":"fr","text":"texte français inchangé"}`;
+          // Marqueurs wolof sûrs dans un texte déjà réparé
+          const WOLOF_REPAIRED_HINT = /(nanga|naka|jërejëf|jerejef|salaam|salam ale|garab|fajukaay|ndax|waaw|déedéet|ñaata|xaalis|dimbali|fajj|jamm|rekk|mungi|mangi|wér-gi-yaram|fayal|bokk ci|laaj)/i;
+          let repaired = null;
+          for (const repairModelName of ['gemini-3.6-flash', 'gemini-2.5-flash', 'gemini-2.0-flash']) {
+            // Budget de réparation : 4 s max AU TOTAL (pas par modèle)
+            const repairLeft = 4000 - (Date.now() - geminiStartedAt);
+            if (repairLeft < 800) break;
+            try {
+              const repairModel = genAI.getGenerativeModel({
+                model: repairModelName,
+                systemInstruction: repairSystemInstruction
+              });
+              const repairTimeout = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Repair Timeout')), repairLeft)
+              );
+              const repairResult = await Promise.race([
+                repairModel.generateContent(message),
+                repairTimeout
+              ]);
+              const raw = (repairResult.response.text() || '').trim();
+              // Nettoie les balises de code éventuelles autour du JSON
+              const jsonStr = raw.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
+              let parsedOk = false;
+              try {
+                const parsed = JSON.parse(jsonStr);
+                if (parsed && typeof parsed.text === 'string' && parsed.text.trim()) {
+                  repaired = { lang: parsed.lang === 'wo' ? 'wo' : 'fr', text: parsed.text.trim() };
+                  parsedOk = true;
+                }
+              } catch (e) { /* réponse non-JSON */ }
+              if (!parsedOk && raw && WOLOF_REPAIRED_HINT.test(raw)) {
+                // Réponse en texte libre contenant du Wolof : on la garde
+                repaired = { lang: 'wo', text: raw };
+              }
+              if (repaired) break;
+            } catch (e) { /* essai du modèle suivant */ }
+          }
+          if (repaired) {
+            speaksWolof = repaired.lang === 'wo' || WOLOF_REPAIRED_HINT.test(repaired.text);
+            userMessageToProcess = repaired.text;
+            console.log(`[STT Repair] (${repaired.lang}) "${message}" -> "${repaired.text}"`);
+          } else if (WOLOF_STT_HINT.test(message)) {
+            // Réparation indisponible : on se rabat sur les marqueurs statiques
+            speaksWolof = true;
+          }
+        } catch (repairErr) {
+          console.warn("Erreur réparation STT:", repairErr.message);
+          if (WOLOF_STT_HINT.test(message)) speaksWolof = true;
+        }
+      } else if (lang === 'wo') {
+        // Saisie clavier en mode Wolof : pas de réparation nécessaire
+        speaksWolof = true;
+      }
+
+      // Candidate models for Gemini API (du plus récent au plus ancien —
+      // gemini-2.0-flash / 1.5-flash sont officiellement retirés par Google : 404)
+      const modelCandidates = ['gemini-3.6-flash', 'gemini-2.5-flash', 'gemini-2.0-flash'];
+      
+      const knowledgeBaseContext = `
+DOCUMENTS ET SPÉCIFICATIONS OFFICIELLES MUTUALIS SÉNÉGAL — CSU UNAMUSC 2026:
+1. VISION & RÔLE : MUTUALIS SÉNÉGAL est le portail numérique régional du Tiers-Payant pour la Couverture Santé Universelle (CSU) de l'Union Nationale des Mutuelles de Santé Communautaires (UNAMUSC). Zahara agit en tant qu'Agent Personnel dédié à l'assuré à jour de cotisations.
+2. TARIFS ET FORMULES D'ADHÉSION :
+   - Formule Individuelle : 4 500 FCFA par an (comprenant 1 000 FCFA pour la carte Pass CSU + 3 500 FCFA de cotisation annuelle).
+   - Formule Familiale : 1 000 FCFA pour la carte du chef de famille + 3 500 FCFA de cotisation par membre inscrit.
+   - Parrainage Solidaire CSU : 4 500 FCFA par bénéficiaire (permet de parrainer et d'offrir la mutuelle aux familles vulnérables).
+   - CSU Élèves / Daaras : Tarif subventionné de 1 000 FCFA par élève / talibé par an.
+   - Réactivation de carte suspendue : 10 500 FCFA (pour régulariser les arriérés et réactiver les droits tiers-payant immédiatement).
+3. RÈGLES STRICTES DE PRISE EN CHARGE ET TAUX OFFICIELS :
+   - 🧾 BONS DE COMMANDE PHARMACIE (48h) : Prise en charge à 50% par l'UNAMUSC, et 50% restant à la charge de l'assuré (ticket modérateur) sur les médicaments génériques et ordonnances en officines agréées.
+   - 🏥 LETTRES DE GARANTIE HOSPITALIÈRES : Prise en charge à 80% par l'UNAMUSC, et 20% à la charge de l'assuré pour les hospitalisations, chirurgies et examens lourds dans les hôpitaux conventionnés (Hôpital Principal de Dakar, CHU Fann, Hôpital Aristide Le Dantec, CHU Abass Ndao, Dalal Jamm, Roi Baudouin, HOGIP Grand Yoff...).
+   - 👶 GRATUITÉ MATERNITÉ & PÉDIATRIQUE BSF : 100% de prise en charge intégrale (0 FCFA pour la patiente) sur consultations prénatales (CPN 1 à CPN 4+), accouchement, kit d'accouchement, fer/acide folique et vaccins PEV du nourrisson.
+   - 🧓 PLAN SESAME (Séniors ≥ 60 ans) : 100% pris en charge (80% UNAMUSC + 20% Plan Sésame État du Sénégal).
+4. MÉDICAMENTS COUVERTS (OUI / NON) :
+   - OUI (Pris en charge à 50%) : Paracétamol, Amoxicilline, Ibuprofène, Insuline, Métformine, Amlodipine, Ciprofloxacine, Oméprazole, Azithromycine, etc.
+   - OUI (Pris en charge à 100%) : ACT antipaludiques, Fer + Acide Folique grossesse, vaccins PEV.
+   - NON (Non pris en charge / 0%) : Compléments alimentaires sans ordonnance, vitamines de confort, cosmétiques, chirurgie esthétique de confort.
+5. CARTOGRAPHIE SANITAIRE & STRUCTURES CONVENTIONNÉES DAKAR :
+   - Hôpitaux conventionnés : Hôpital Principal, CHU Fann, Le Dantec, Abass Ndao, Dalal Jamm, Albert Royer, HOGIP, Ouakam.
+   - Centres & Postes de santé : Médina, Philippe Senghor (Yoff), Pikine, Fass, Grand Yoff, Keur Massar, Mbao, Hann Bel-Air.
+   - Pharmacies agréées : Pharmacie du Plateau, Guigon, Nation (Colobane), Atlantique, Pikine, Guédiawaye...
+   - Bureaux MSD (Mutuelle de Santé Départementale) : Dakar Plateau, Pikine Ouest, Guédiawaye Golf Sud, Keur Massar Nord, Rufisque Nord.
+`;
+
+      // L'usager a parlé Wolof au micro → répondre en Wolof même si l'UI était en FR
+      const systemInstructionText = (lang === 'wo' || speaksWolof)
+        ? `Vous êtes "Zahara", l'assistante virtuelle officielle de MUTUALIS DAKAR (UNAMUSC Sénégal).
+
+Votre personnalité :
+- Vous êtes une femme sénégalaise chaleureuse, bienveillante, accueillante et très professionnelle. Vous vous exprimez avec respect (Teranga).
+- Vous répondez de manière concise, précise et naturelle en WOLOF (Sénégal).
+
+Consignes strictes :
+- Répondez UNIQUEMENT en WOLOF officiel standardisé (utilisez: laaj, tontu, ngir, bëgg, dimbali, faj, fajukaay, fay, mutuelle, cotisation, etc.).
+- Ne répétez jamais un texte générique. Répondez exactement à la question posée en vous basant sur la base de connaissances ci-dessous.
+- Si l'usager parle de paiement ou cotisation, rappelez les tarifs (4 500 FCFA individuel, 1 000 FCFA + 3 500 FCFA familial, Orange Money / Wave).
+- Si l'usager parle de maternité ou d'accouchement, rappelez la gratuité à 100% UNAMUSC.
+- Si l'usager parle de chirurgie ou d'hôpital, rappelez la prise en charge de 80% à 100% par Lettre de Garantie.
+- ANTI-RÉPÉTITION STRICTE : ne répétez jamais mot pour mot une formulation déjà utilisée dans l'historique. Variez vocabulaire et structure à chaque réponse.
+- Ne vous représentez pas à nouveau si le dialogue est entamé : poursuivez naturellement.
+- Variez la clôture à chaque réponse (la même formule de politesse ne doit jamais revenir deux fois de suite).
+
+BASE DE CONNAISSANCES OFFICIELLE :
+${knowledgeBaseContext}`
+        : `Vous êtes "Zahara", l'assistante virtuelle officielle de MUTUALIS DAKAR, le portail régional de l'Union Nationale des Mutuelles de Santé Communautaires du Sénégal (UNAMUSC).
+
+Votre personnalité :
+- Vous êtes une femme sénégalaise chaleureuse, accueillante et très professionnelle.
+- Vous répondez de manière fluide, claire et concise (3 à 5 phrases max) en FRANÇAIS.
+
+Consignes strictes :
+- Répondre PRÉCISÉMENT à la question spécifique posée par l'usager en exploitant la base de connaissances ci-dessous.
+- Ne donnez jamais de réponse générique vague.
+- Si l'usager pose des questions sur l'adhésion ou tarifs, donnez les prix exacts (4 500 FCFA individuel, 1 000 FCFA + 3 500 FCFA familial, Wave/Orange Money).
+- Si la question concerne la maternité, rappelez la gratuité à 100% (CPN 1-4+, accouchement, vaccins PEV).
+- Si la question concerne l'hôpital ou les chirurgies, expliquez les Lettres de Garantie (80% à 100%).
+- ANTI-RÉPÉTITION STRICTE : ne répétez JAMAIS mot pour mot une formulation déjà présente dans l'historique. Variez le vocabulaire, la structure des phrases et les exemples à chaque réponse.
+- Ne vous représentez pas à nouveau ("Je suis Zahara...") si la conversation est déjà entamée : poursuivez naturellement le dialogue.
+- Variez la formule de clôture (question ouverte courte, proposition d'aide ciblée, ou simple politesse) et ne clôturez pas systématiquement — jamais deux fois la même clôture de suite.
+
+BASE DE CONNAISSANCES OFFICIELLE :
+${knowledgeBaseContext}`;
+
+      for (const modelName of modelCandidates) {
+        // Délai global plafonné (~9 s) : au-delà, on bascule immédiatement sur
+        // le moteur local — une réponse lente est perçue comme un silence.
+        if (Date.now() - geminiStartedAt > 9000) break;
+        try {
+          const model = genAI.getGenerativeModel({
+            model: modelName,
+            systemInstruction: systemInstructionText
           });
-          const decodeResult = await decodeModel.generateContent(message);
-          const decodedText = decodeResult.response.text().trim();
-          if (decodedText && decodedText.length > 0 && !decodedText.toLowerCase().includes('erreur')) {
-            console.log(`[Wolof STT] Original: "${message}" -> Décodé: "${decodedText}"`);
-            userMessageToProcess = decodedText;
+
+          let chatHistory = [];
+          let expectedRole = 'user';
+          for (const h of (history || [])) {
+            const role = h.sender === 'user' ? 'user' : 'model';
+            if (role === expectedRole) {
+              chatHistory.push({
+                role,
+                parts: [{ text: h.text || '' }]
+              });
+              expectedRole = expectedRole === 'user' ? 'model' : 'user';
+            }
           }
-        } catch (decodeErr) {
-          console.warn("Erreur décodage STT Wolof:", decodeErr.message);
+          if (chatHistory.length > 0 && chatHistory[chatHistory.length - 1].role === 'user') {
+            chatHistory.pop();
+          }
+
+          const chat = model.startChat({ history: chatHistory });
+          
+          // Budget global ~9,5 s : la réponse doit TOUJOURS partir avant le
+          // timeout de 12 s du frontend, sinon l'usager reçoit le texte local
+          // générique alors que Gemini finit par répondre trop tard.
+          const chatBudget = Math.max(1500, 9500 - (Date.now() - geminiStartedAt));
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Gemini Timeout')), chatBudget)
+          );
+          
+          const result = await Promise.race([
+            chat.sendMessage(userMessageToProcess),
+            timeoutPromise
+          ]);
+          
+          const responseText = result.response.text();
+          console.log(`Succès avec le modèle ${modelName}`);
+          return res.json({ response: responseText, decodedText: (userMessageToProcess !== message) ? userMessageToProcess : undefined });
+        } catch (geminiErr) {
+          // Continue to next model candidate
         }
       }
-
-      // Try only the main model with a fast timeout (1500ms) to ensure instantaneous response
-      const modelName = 'gemini-1.5-flash';
-      try {
-        console.log(`Tentative de réponse avec le modèle ${modelName}...`);
-
-        const systemInstructionText = lang === 'wo' 
-          ? `Vous êtes "Zahara", l'assistante virtuelle officielle de MUTUALIS DAKAR, le portail numérique régional de l'union régionale des mutuelles de santé communautaires de Dakar (URMSCD).
-
-Votre personnalité :
-- Vous êtes une femme sénégalaise chaleureuse, bienveillante et professionnelle. Vous vous exprimez avec empathie et respect.
-- Vous utilisez des emojis de façon modérée.
-
-Vos règles linguistiques de réponse (OBLIGATOIRE WOLOF) :
-- Vous devez répondre UNIQUEMENT en WOLOF (Sénégal). Ne répondez pas en français ni en anglais.
-- Utilisez un Wolof naturel, fluide et poli.
-- Respectez l'orthographe officielle standardisée du Wolof (ex: écrivez "laaj" pour questionner, "tontu" pour répondre, "ngir" pour dans le but de, "bëgg" pour vouloir/aimer, "dimbali" ou "ndimbal" pour aider/aide, "faj" ou "faju" pour soigner, "fajukaay" pour établissement de santé, "fay" pour payer).
-- Évitez les orthographes phonétiques francisées (ne pas écrire "faye", "ouakh", "n'ga").
-- Utilisez des salutations sénégalaises polies et chaleureuses (ex: "Salamaalekum !", "Mingi lay nuyu !", "Nanga def !").
-- Répondez de façon concise (3-4 phrases maximum).
-- Ne mélangez pas le français avec le Wolof, sauf pour les termes techniques ou marques inévitables (ex: "carte CMU", "Wave", "Orange Money").
-- Terminez toujours en demandant si l'usager a d'autres questions : "Ndax am nga yeneen laaj yoo bëgg ma tontu ?" (Avez-vous d'autres questions auxquelles vous souhaitez que je réponde ?).
-
-Contenu informatif à intégrer :
-- Les tarifs : Formule Individuelle (4 500 FCFA / an, comprenant 1 000 FCFA pour la carte et 3 500 FCFA de cotisation) et Formule Familiale (1 000 FCFA pour la carte de l'adhérent principal + 3 500 FCFA de cotisation par membre). Parrainage Solidaire (4 500 FCFA / bénéficiaire) et CSU Élèves/Daaras (1 000 FCFA / élève).
-- Les paiements mobiles acceptés sont Orange Money et Wave.
-- Les structures conventionnées incluent : Hôpital Principal, Hôpital de Fann, Dalal Jamm, centres de santé et pharmacies agréées.
-- Le taux de prise en charge varie de 50% à 80% selon la formule choisie.`
-          : `Vous êtes "Zahara", l'assistante virtuelle officielle de MUTUALIS DAKAR, le portail numérique régional de l'union régionale des mutuelles de santé communautaires de Dakar (URMSCD).
-
-Votre personnalité :
-- Vous êtes une femme sénégalaise chaleureuse, bienveillante et professionnelle.
-- Vous vous exprimez avec empathie et respect.
-- Vous utilisez des emojis modérément.
-
-Vos règles de réponse (FRANÇAIS) :
-- Répondre de manière concise (max 3-4 phrases), bienveillante et professionnelle. Vous devez répondre uniquement en Français.
-- Aider les usagers à comprendre l'adhésion, le renouvellement de cotisation et la cartographie.
-- Expliquer les tarifs : Formule Individuelle (4 500 FCFA / an, comprenant 1 000 FCFA pour la carte et 3 500 FCFA de cotisation) et Formule Familiale (1 000 FCFA pour la carte de l'adhérent principal + 3 500 FCFA de cotisation par membre). Expliquer aussi le Parrainage Solidaire (4 500 FCFA / bénéficiaire parrainé) et le tarif subventionné CSU Élèves / Daaras (1 000 FCFA / élève).
-- Les paiements mobiles acceptés sont Orange Money et Wave.
-- Les structures conventionnées incluent : Hôpital Principal, Hôpital de Fann, Dalal Jamm, centres de santé départementaux et pharmacies agréées.
-- Le taux de prise en charge varie de 50% à 80% selon la formule choisie.
-- La CMU (Couverture Maladie Universelle) est le programme national du Sénégal pour l'accès aux soins.
-- Le portail MUTUALIS DAKAR couvre les 14 départements de la région de Dakar.
-- Les mutuelles sont des organisations communautaires d'assurance santé.
-- Toujours terminer en demandant si l'usager a d'autres questions.`;
-
-        const model = genAI.getGenerativeModel({
-          model: modelName,
-          systemInstruction: systemInstructionText
-        });
-
-        let chatHistory = [];
-        let expectedRole = 'user';
-        for (const h of (history || [])) {
-          const role = h.sender === 'user' ? 'user' : 'model';
-          if (role === expectedRole) {
-            chatHistory.push({
-              role,
-              parts: [{ text: h.text || '' }]
-            });
-            expectedRole = expectedRole === 'user' ? 'model' : 'user';
-          }
-        }
-        if (chatHistory.length > 0 && chatHistory[chatHistory.length - 1].role === 'user') {
-          chatHistory.pop();
-        }
-
-        const chat = model.startChat({ history: chatHistory });
-        
-        // Fast timeout promise (1500ms)
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Gemini Timeout')), 1500)
-        );
-        
-        const result = await Promise.race([
-          chat.sendMessage(userMessageToProcess),
-          timeoutPromise
-        ]);
-        
-        const responseText = result.response.text();
-        console.log(`Succès avec le modèle ${modelName}`);
-        return res.json({ response: responseText, decodedText: (userMessageToProcess !== message) ? userMessageToProcess : undefined });
-      } catch (geminiErr) {
-        console.warn(`Échec ou timeout avec le modèle ${modelName}:`, geminiErr.message);
-      }
-      console.warn('Utilisation instantanée du fallback local.');
+      console.warn('Utilisation instantanée du moteur de connaissances expert local.');
     }
 
-    // Fallback Local Simulation
+    // ── MOTEUR DE CONNAISSANCES EXPERT LOCAL INTELlIGENT (RAG / NLP) ──
     const msg = (typeof userMessageToProcess !== 'undefined' ? userMessageToProcess : message).toLowerCase();
     let reply = '';
+    // Variations aléatoires pour les réponses les plus sollicitées (anti-répétition)
+    const pickVariant = (variants) => variants[Math.floor(Math.random() * variants.length)];
 
     if (lang === 'wo') {
-      if (msg.includes('naka') || msg.includes('salaam') || msg.includes('mën') || msg.includes('bonjour') || msg.includes('def')) {
-        reply = "Salamaalekum ! Nanga def ! Man la Zahara, assistante virtuelle bu MUTUALIS DAKAR. Naka la la mënee dimbali tey ? 😊";
-      } else if (msg.includes('fay') || msg.includes('cotisation') || msg.includes('xaalis') || msg.includes('bopp') || msg.includes('ñata') || msg.includes('combien')) {
-        reply = "Waaw, mën nga fay sa cotisation ci portal bi. Demal ci tab 'Bokk bu bees / Nouvelle adhésion' walla 'Fayal sa yeneen / Renouvellement'. Fay bi mën na am ci Orange Money walla Wave. 💳";
-      } else if (msg.includes('mutuelle') || msg.includes('jege') || msg.includes('fan') || msg.includes('proche')) {
-        reply = "Am na mutuelle yu bari ci Ndakaaru (Médina, Pikine, Golf Sud...). Xoolal kàrt bi ci portal bi ngir xam bi la gëna jege. 📍";
-      } else if (msg.includes('fajj') || msg.includes('hôpital') || msg.includes('dispensaire') || msg.includes('clinique')) {
-        reply = "Hôpital Principal, Fann ak Dalal Jamm bokk nañu ci fajukaay yi nu agréer. Tiers-payant bi mën na la dimbali ba 80% ci say frais. 🏥";
+      // WOLOF KNOWLEDGE ENGINE — intentions métier d'abord, salutation en
+      // dernier : « nanga def, ñaata la cotisation ? » doit répondre le tarif.
+      if (msg.includes('maternité') || msg.includes('jur') || msg.includes('bir') || msg.includes('enceinte') || msg.includes('cpn') || msg.includes('pév') || msg.includes('vaccin')) {
+        reply = "Programme Gratuité Maternité & BSF bi dafa gratuit 100% ci UNAMUSC ! Lépp lu jëm ci consultation prénatale (CPN 1 ba CPN 4+), kit d'accouchement, fer, acide folique ak vaccins tiit yépp mën nga ko am ci 0 FCFA. 👶 maternal 100%";
+      } else if (msg.includes('garantie') || msg.includes('hôpital') || msg.includes('chirurgie') || msg.includes('fann') || msg.includes('dantec') || msg.includes('opération') || msg.includes('devis')) {
+        reply = "Lettre de garantie hospitalière bi day fay 80% ba 100% ci say frais d'hospitalisation ak opération ci hôpitaux agréés (Fann, Le Dantec, Abass Ndao, Hôpital Principal). Demal ci tab 'Lettres de garantie' ngir am sa certificat homologué. 🏥";
+      } else if (msg.includes('pharmacie') || msg.includes('garab') || msg.includes('ordonnance') || msg.includes('bon de commande') || msg.includes('officine')) {
+        reply = "Bons de commande pharmacie (48h) yi dañuy fay 50% ba 80% ci prix garab yi ci ordonnance bi. Pharmacien agréé bi day scanner sa QR Code te nàntu 50% bi ngir nga fay reste bi rekk. 💊";
+      } else if (msg.includes('fay') || msg.includes('cotisation') || msg.includes('tarif') || msg.includes('prix') || msg.includes('ñata') || msg.includes('combien') || msg.includes('xaalis')) {
+        reply = "Tarif d'adhésion UNAMUSC : Formule Individuelle mooy 4 500 FCFA ci at mi (1 000 FCFA carte + 3 500 FCFA cotisation). Formule Familiale mooy 1 000 FCFA carte njiitu kër bi + 3 500 FCFA par membre. Mën nga fay ci Orange Money walla Wave ! 💰";
+      } else if (msg.includes('parrainage') || msg.includes('dimbali') || msg.includes('démuni') || msg.includes('solidaire')) {
+        reply = "Parrainage Solidaire CSU (4 500 FCFA / nit) day tax nga mënë fayal mutuelle nit bu néewal doole ci regiou Ndakaaru. Demal ci tab 'Parrainage CSU' ngir dimbali sa mbokk. 🤝";
+      } else if (msg.includes('élève') || msg.includes('eleve') || msg.includes('daara') || msg.includes('talibé') || msg.includes('ecole')) {
+        reply = "CSU Élèves & Daaras dafa am subvention : 1 000 FCFA rekk par élève/talibé ci at mi ngir ñu am couverture maladie complète. 📚";
+      } else if (msg.includes('suspendre') || msg.includes('bloqué') || msg.includes('débloquer') || msg.includes('régulariser') || msg.includes('10 500') || msg.includes('10500')) {
+        reply = "Boo amee carte bu suspendre, mën nga ko régulariser ci 10 500 FCFA ci Orange Money walla Wave ngir dëppatal say droits tiers-payant sur-le-champ ! ⚡";
+      } else if (msg.includes('télémédecine') || msg.includes('telemedecine') || msg.includes('vidéo') || msg.includes('docteur') || msg.includes('médecin') || msg.includes('visio')) {
+        reply = "Télémédecine WebRTC bi day la jokkoo ak docteur agréé ci vidéo HD. Dokter bi mën na la bindal ordonnance électronique te yónnee ko ci guichet pharmacie direct ! 💻";
+      } else if (msg.includes('bokk') || msg.includes('adhérer') || msg.includes('inscrire') || msg.includes('nouvelle adhésion')) {
+        reply = "Ngir bokk ci mutuelle bi, demal ci tab 'Services en ligne' -> 'Nouvelle adhésion'. Bindal sa tur, sa sant, dugal sa photo ak sa carte CNI, te fay ci Wave walla Orange Money ci 2 minutes ! 📝";
+      } else if (msg.includes('mutuelle') || msg.includes('fan') || msg.includes('ou') || msg.includes('adresse') || msg.includes('cartographie') || msg.includes('dakar')) {
+        reply = "UNAMUSC dafa am mutuelles ci 14 départements du Ndakaaru (Médina, Pikine, Guédiawaye, Keur Massar, Rufisque, Thiaroye...). Xoolal carte interactive bi ci tab 'Cartographie'. 📍";
+      } else if (msg.includes('salaam') || msg.includes('naka') || msg.includes('bonjour') || msg.includes('salamaalekum') || msg.includes('nanga def')) {
+        reply = pickVariant([
+          "Salamaalekum ! Nanga def ! Man la Zahara, assistante virtuelle bu MUTUALIS DAKAR (UNAMUSC). Naka la la mënee dimbali tey ci wallu wér-gi-yaram ak mutuelle ? 😊",
+          "Asalaa maalekum ! Dalal ak jàmm ! Zahara laa, ci sa service. Lan laay mënë defal tey : mutuelle, garab, walla fajukaay ? 😊",
+          "Jàmm rekk ! Bésub jàmm bu neex ! Man Zahara, dimbalante bu UNAMUSC. Naka nga defee ? Lan nga bëggàm ci sa santé tey ? 😊"
+        ]);
       } else {
-        reply = "Jërëjëf ci sa mesaas. Mën nga ma laaj ci wallu cotisation, adhésion walla mutuelle yi nekk ci Ndakaaru. 🙏";
+        reply = pickVariant([
+          "Jërëjëf ci sa laaj ! Man la Zahara, assistante virtuelle bu MUTUALIS DAKAR. Mën nga ma laaj ci wallu adhésion, tarifs (4 500 FCFA), gratuité maternité 100%, lettres de garantie hospitalières (80-100%) walla télémédecine. Ndax am nga yeneen laaj ? 😊",
+          "Sama kanam laa! Bu nga bëgg xam lépp ci mutuelles UNAMUSC — tarifs yi, garab yi, walla fajukaay yi — laajal ma, ma tontu la ci lu yomb. 😊",
+          "Jàmmanga ! Sa laaj bi ngi féete ci yoon bu wóor. Mën nga laaj ci adhésion (4 500 FCFA), maternité gratuité 100%, pharmacie 50% walla télémédecine vidéo. 😊"
+        ]);
       }
     } else {
-      // French
-      if (msg.includes('bonjour') || msg.includes('salut') || msg.includes('aide') || msg.includes('comment')) {
-        reply = "Bonjour ! Je suis Zahara, l'assistante virtuelle de MUTUALIS DAKAR. Comment puis-je vous aider aujourd'hui ? 😊";
-      } else if (msg.includes('adhérer') || msg.includes('inscription') || msg.includes('comment adhérer') || msg.includes('etape')) {
-        reply = "Pour adhérer, rendez-vous sur l'onglet 'Nouvelle Adhésion'. Le processus se fait en 8 étapes simples : choix de la mutuelle, choix de la formule, saisie de vos données, et paiement sécurisé via Orange Money ou Wave. 📝";
-      } else if (msg.includes('payer') || msg.includes('cotisation') || msg.includes('tarif') || msg.includes('prix')) {
-        reply = "Les tarifs annuels sont : Formule Individuelle (4 500 FCFA/an) et Formule Familiale (1 000 FCFA pour la carte + 3 500 FCFA par membre). Le paiement s'effectue en ligne via Orange Money ou Wave. 💰";
-      } else if (msg.includes('mutuelle') || msg.includes('trouver') || msg.includes('adresse') || msg.includes('carte')) {
-        reply = "Vous pouvez localiser la mutuelle de votre commune en consultant notre 'Cartographie'. Nous sommes présents à la Médina, Pikine, Guédiawaye, Keur Massar et Rufisque. 📍";
-      } else if (msg.includes('hôpital') || msg.includes('clinique') || msg.includes('pharmacie') || msg.includes('conventionné')) {
-        reply = "Nous sommes conventionnés avec l'Hôpital principal de Dakar, l'Hôpital de Fann, Dalal Jamm et de nombreuses pharmacies de quartier. 🏥";
+      // FRENCH KNOWLEDGE ENGINE — intentions métier d'abord, salutation en dernier
+      if (msg.includes('maternité') || msg.includes('enceinte') || msg.includes('accouchement') || msg.includes('cpn') || msg.includes('pev') || msg.includes('vaccin') || msg.includes('bébé')) {
+        reply = "Le Programme Gratuité Maternité & BSF offre une prise en charge à 100% CSU ! Cela comprend l'ensemble des consultations prénatales (CPN 1 à CPN 4+), l'accouchement, le kit d'accouchement, les suppléments en fer/acide folique et le calendrier vaccinal PEV du nourrisson. 👶";
+      } else if (msg.includes('garantie') || msg.includes('hôpital') || msg.includes('chirurgie') || msg.includes('opération') || msg.includes('fann') || msg.includes('dantec') || msg.includes('devis')) {
+        reply = "Les Lettres de Garantie Hospitalières UNAMUSC prennent en charge de 80% à 100% du montant des devis pour hospitalisations et chirurgies dans les établissements conventionnés (Fann, Le Dantec, Abass Ndao, Hôpital Principal...). Demandez votre certificat certifié PDF via l'onglet dédié. 🏥";
+      } else if (msg.includes('pharmacie') || msg.includes('médicament') || msg.includes('ordonnance') || msg.includes('bon de commande') || msg.includes('50%')) {
+        reply = "Les Bons de Commande Pharmacie (valables 48h) garantissent un Tiers-Payant de 50% à 80% sur vos ordonnances. Le pharmacien agréé scanne votre QR Code Pass CSU et applique immédiatement la réduction UNAMUSC. 💊";
+      } else if (msg.includes('tarif') || msg.includes('prix') || msg.includes('combien') || msg.includes('cotisation') || msg.includes('frais') || msg.includes('coût')) {
+        reply = "Les tarifs officiels UNAMUSC sont : Formule Individuelle à 4 500 FCFA/an (1 000 FCFA la carte + 3 500 FCFA de cotisation). Formule Familiale à 1 000 FCFA pour le chef de famille + 3 500 FCFA par membre inscrit. Paiement sécurisé via Orange Money ou Wave ! 💰";
+      } else if (msg.includes('parrainage') || msg.includes('démuni') || msg.includes('solidaire') || msg.includes('offrir')) {
+        reply = "Le Parrainage Solidaire CSU (4 500 FCFA / bénéficiaire) vous permet d'offrir une couverture santé universelle annuelle complète aux familles vulnérables de la région de Dakar. 🤝";
+      } else if (msg.includes('élève') || msg.includes('eleve') || msg.includes('daara') || msg.includes('école') || msg.includes('talibé')) {
+        reply = "Le programme CSU Élèves & Daaras propose un tarif préférentiel subventionné de 1 000 FCFA par élève / talibé par an pour une prise en charge médicale complète. 📚";
+      } else if (msg.includes('suspendu') || msg.includes('bloqué') || msg.includes('débloquer') || msg.includes('régulariser') || msg.includes('10 500') || msg.includes('10500')) {
+        reply = "En cas de suspension de carte, la régularisation forfaitaire de 10 500 FCFA par Orange Money ou Wave réactive instantanément l'intégralité de vos droits Tiers-Payant en pharmacie et hôpital. ⚡";
+      } else if (msg.includes('télémédecine') || msg.includes('telemedecine') || msg.includes('vidéo') || msg.includes('médecin') || msg.includes('docteur') || msg.includes('visio')) {
+        reply = "La Télémédecine WebRTC vous met en relation directe en visioconférence HD avec nos médecins agréés. Le médecin peut rédiger et vous envoyer votre ordonnance numérisée immédiatement après la consultation. 💻";
+      } else if (msg.includes('adhérer') || msg.includes('inscrire') || msg.includes('comment faire') || msg.includes('adhésion') || msg.includes('étapes')) {
+        reply = "Pour adhérer, rendez-vous sur 'Services en ligne' -> 'Nouvelle adhésion'. Le formulaire s'exécute en quelques clics : choix de la mutuelle, saisie des informations, photo d'identité et paiement mobile sécurisé. 📝";
+      } else if (msg.includes('mutuelle') || msg.includes('adresse') || msg.includes('où') || msg.includes('localisation') || msg.includes('département') || msg.includes('dakar')) {
+        reply = "L'UNAMUSC couvre les 14 départements et communes de la région de Dakar (Dakar Plateau, Médina, Pikine, Guédiawaye, Keur Massar, Rufisque...). Retrouvez leur adresse sur l'onglet 'Cartographie'. 📍";
+      } else if (msg.includes('bonjour') || msg.includes('salut') || msg.includes('qui es-tu') || msg.includes('présente')) {
+        reply = pickVariant([
+          "Bonjour ! Je suis Zahara, l'assistante virtuelle officielle de MUTUALIS DAKAR (UNAMUSC Sénégal). Comment puis-je vous aider aujourd'hui concernant vos droits CSU et prestations de santé ? 😊",
+          "Bonjour et bienvenue ! Zahara à votre écoute pour tout ce qui touche à votre couverture santé UNAMUSC : adhésion, remboursements, téléconsultation... Que souhaitez-vous savoir ? 😊",
+          "Salut ! Ravi de vous entendre. Je peux vous guider sur les tarifs, la maternité gratuite, les lettres de garantie ou la télémédecine — dites-moi tout ! 😊"
+        ]);
       } else {
-        reply = "Merci pour votre message ! Je suis Zahara, à votre disposition pour vous aider avec l'adhésion, le renouvellement, ou la localisation d'une mutuelle partenaire. 😊";
+        reply = pickVariant([
+          "Merci pour votre question ! Je suis Zahara, votre assistante MUTUALIS DAKAR. Je peux vous renseigner précisément sur les tarifs (4 500 FCFA), la gratuité Maternité (100%), les Lettres de Garantie Hospitalières (80-100%), les bons pharmacie (50%), ou la Télémédecine WebRTC. Avez-vous d'autres questions ? 😊",
+          "Très bonne question ! Pour vous répondre au mieux, je peux détailler : l'adhésion (à partir de 4 500 FCFA/an), la maternité 100% gratuite, l'hospitalisation (80-100% couverts) ou la vidéo-consultation. Quel sujet vous intéresse ? 😊",
+          "Je volontiers ! Précisez-moi votre besoin — paiement Wave/Orange Money, ordonnance en pharmacie, ou rendez-vous médical — et je vous donne la marche à suivre. 😊"
+        ]);
       }
     }
 
@@ -1045,14 +1178,9 @@ app.get('/api/tts', async (req, res) => {
       return res.status(400).json({ error: 'Le paramètre text est requis.' });
     }
 
-    if (!provider) {
-      return res.status(410).json({
-        error: 'Endpoint TTS déprécié.',
-        message: 'Spécifiez un provider (elevenlabs ou opensource) pour utiliser les voix neuronales.'
-      });
-    }
+    const effectiveProvider = provider || (process.env.ELEVENLABS_API_KEY ? 'elevenlabs' : 'opensource');
 
-    if (provider === 'elevenlabs') {
+    if (effectiveProvider === 'elevenlabs') {
       const apiKey = process.env.ELEVENLABS_API_KEY;
       const voiceId = process.env.ELEVENLABS_VOICE_ID || 'EXAVITQu4vr4xnSDxMaL'; // Rachel/Bella
       if (!apiKey) {
@@ -1086,17 +1214,19 @@ app.get('/api/tts', async (req, res) => {
       return res.send(Buffer.from(buffer));
     }
 
-    if (provider === 'opensource') {
-      const ttsUrl = process.env.OPEN_SOURCE_TTS_URL;
-      if (!ttsUrl) {
-        return res.status(400).json({ error: 'OPEN_SOURCE_TTS_URL non configuré.' });
-      }
+    if (effectiveProvider === 'opensource') {
+      // Serveur vocal neural Piper local (backend/piperServer.js — voix humaine
+      // fr_FR-siwis-medium). Valeur par défaut câblée : si Piper n'est pas
+      // lancé, le fetch échoue vite (timeout 8 s) et le frontend bascule sur
+      // la voix du navigateur.
+      const ttsUrl = process.env.OPEN_SOURCE_TTS_URL || 'http://127.0.0.1:5001/api/tts';
 
       console.log(`[OpenSource TTS] Envoi à ${ttsUrl} pour: "${text.substring(0, 30)}..."`);
       const response = await fetch(ttsUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, language: lang || 'wo' })
+        body: JSON.stringify({ text, language: lang || 'fr' }),
+        signal: AbortSignal.timeout(8000)
       });
 
       if (!response.ok) {
@@ -1751,6 +1881,54 @@ app.get('/api/pharmacies/regions', (req, res) => {
     res.status(500).json({ error: 'Données non disponibles' });
   }
 });
+// IP locale (LAN) du serveur — utilisée par les QR codes des cartes CSU pour
+// que les smartphones du réseau Wi-Fi atteignent la page de vérification.
+app.get('/api/lan-ip', (req, res) => {
+  const os = require('os');
+  const nets = os.networkInterfaces();
+  let lanIp = null;
+  
+  for (const name of Object.keys(nets)) {
+    const lower = name.toLowerCase();
+    if (lower.includes('vethernet') || lower.includes('wsl') || lower.includes('hyper-v') || lower.includes('virtual') || lower.includes('bluetooth') || lower.includes('loopback')) {
+      continue;
+    }
+    for (const net of nets[name] || []) {
+      if (net.family === 'IPv4' && !net.internal && net.address.startsWith('192.168.')) {
+        lanIp = net.address;
+        break;
+      }
+    }
+    if (lanIp) break;
+  }
+
+  if (!lanIp) {
+    for (const name of Object.keys(nets)) {
+      const lower = name.toLowerCase();
+      if (lower.includes('vethernet') || lower.includes('wsl') || lower.includes('hyper-v') || lower.includes('virtual') || lower.includes('bluetooth')) continue;
+      for (const net of nets[name] || []) {
+        if (net.family === 'IPv4' && !net.internal && (net.address.startsWith('192.168.') || net.address.startsWith('10.'))) {
+          lanIp = net.address;
+          break;
+        }
+      }
+      if (lanIp) break;
+    }
+  }
+
+  res.json({ ip: lanIp || '192.168.1.42' });
+});
+
+// Gestionnaire 404 pour les routes non définies
+app.use((req, res, next) => {
+  res.status(404).json({ error: "Route non trouvée" });
+});
+
+// Gestionnaire d'erreurs global
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Internal Server Error' });
+});
 
 
 // Ensure indexes exist for better query performance under concurrency
@@ -1766,6 +1944,43 @@ app.get('/api/pharmacies/regions', (req, res) => {
     console.log('Indexation PostgreSQL et schéma vérifiés avec succès.');
   } catch (err) {
     console.warn('Vérification du schéma PostgreSQL reportée (les tables ne sont peut-être pas encore initialisées) :', err.message);
+  }
+})();
+
+
+// ── Démarrage automatique du serveur vocal Piper (voix humaine neuronale) ──
+// Si le port 5001 ne répond pas déjà, on lance backend/piperServer.js en
+// processus enfant. Le modèle ONNX met ~10 s à charger en RAM : pendant ce
+// temps la voix du navigateur prend le relais, puis les réponses basculent
+// automatiquement sur la voix neurale. Si Python/piper n'est pas installé,
+// l'échec est silencieux et l'application continue avec la voix navigateur.
+(async () => {
+  if (process.env.DISABLE_AUTO_PIPER === '1') return;
+  const piperOrigin = new URL(process.env.OPEN_SOURCE_TTS_URL || 'http://127.0.0.1:5001/api/tts').origin;
+  try {
+    const ping = await fetch(`${piperOrigin}/health`, { signal: AbortSignal.timeout(1200) });
+    if (ping.ok) {
+      console.log('[Voix] Serveur Piper déjà actif — voix neuronale disponible.');
+      return;
+    }
+  } catch (e) { /* pas encore lancé : on le démarre */ }
+  try {
+    const { spawn } = require('child_process');
+    const path = require('path');
+    const piperProc = spawn(process.execPath, [path.join(__dirname, 'piperServer.js')], {
+      stdio: ['ignore', 'pipe', 'pipe'],
+      env: process.env
+    });
+    piperProc.stdout.on('data', (d) => process.stdout.write('[piper] ' + d));
+    piperProc.stderr.on('data', (d) => process.stderr.write('[piper] ' + d));
+    piperProc.on('exit', (code) => {
+      if (code !== 0 && code !== null) {
+        console.warn(`[Voix] Serveur Piper arrêté (code ${code}) — repli sur la voix du navigateur.`);
+      }
+    });
+    console.log('[Voix] Démarrage automatique du serveur vocal Piper (voix humaine, chargement ~10 s)…');
+  } catch (e) {
+    console.warn('[Voix] Impossible de lancer Piper automatiquement :', e.message);
   }
 })();
 

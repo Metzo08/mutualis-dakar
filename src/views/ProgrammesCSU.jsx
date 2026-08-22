@@ -6,7 +6,7 @@ export default function ProgrammesCSU({ lang, setViewTab }) {
 
   // Récupère les programmes CSU dynamiques depuis l'API (avec fallback statique)
   useEffect(() => {
-    fetch('http://localhost:5000/api/csu/programs')
+    fetch(`${window.API_BASE_URL}/api/csu/programs`)
       .then((res) => (res.ok ? res.json() : []))
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) setDbPrograms(data);

@@ -39,6 +39,25 @@
     <script src="https://cdn.jsdelivr.net/npm/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
   </head>
   <body>
+    <script>
+      // Base URL de l'API backend — DÉRIVÉE du hostname courant pour que le mobile
+      // (qui charge la page via l'IP LAN, ex: http://192.168.1.5:5180) appelle bien
+      // le backend du PC (http://192.168.1.5:5000) et non son propre localhost.
+      window.API_BASE_URL = 'http://' + window.location.hostname + ':5000';
+    </script>
+    <script>
+      window.addEventListener('error', function(e) {
+        var errText = (e && e.error && e.error.stack) ? e.error.stack : (e ? e.message : 'Erreur inconnue');
+        var div = document.getElementById('root');
+        if (div) {
+          div.innerHTML = '<div style="padding:2rem;color:#b91c1c;background:#fff;font-family:sans-serif;z-index:999999;position:fixed;top:0;left:0;right:0;bottom:0;overflow:auto;">' +
+            '<h2 style="margin-top:0;">⚠️ Incident de Rendu JS Détecté :</h2>' +
+            '<pre style="white-space:pre-wrap;background:#fef2f2;padding:1rem;border-radius:8px;border:1px solid #fca5a5;color:#991b1b;">' + errText + '</pre>' +
+            '<button onclick="window.location.reload()" style="margin-top:1rem;padding:0.6rem 1.2rem;background:#059669;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:bold;">Actualiser la page</button>' +
+            '</div>';
+        }
+      });
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

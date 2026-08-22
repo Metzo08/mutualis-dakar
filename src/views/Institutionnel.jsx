@@ -73,7 +73,7 @@ export default function Institutionnel({ lang }) {
       '  document, veuillez contacter le secrétariat de l\'URMSCD :',
       '',
       '    📧 contact@urmscd-dakar.sn',
-      '    📞 +221 33 800 00 00',
+      '    📞 +221 76 845 54 99 / +221 77 742 90 73',
       '    📍 Siège régional, Dakar, Sénégal',
       '',
       '───────────────────────────────────────────────────────────────',
@@ -110,7 +110,7 @@ export default function Institutionnel({ lang }) {
   const { data: instData } = useQuery({
     queryKey: ['institutionnelContent'],
     queryFn: async () => {
-      const res = await fetch('http://localhost:5000/api/dynamic-content/institutionnel');
+      const res = await fetch(`${window.API_BASE_URL}/api/dynamic-content/institutionnel`);
       if (!res.ok) throw new Error('API Error');
       return res.json();
     }

@@ -109,7 +109,7 @@ export default function Cartographie({ lang }) {
   const { data: dbLocations = [] } = useQuery({
     queryKey: ['locations'],
     queryFn: async () => {
-      const res = await fetch('http://localhost:5000/api/locations');
+      const res = await fetch(`${window.API_BASE_URL}/api/locations`);
       if (!res.ok) throw new Error('Failed to fetch locations');
       return res.json();
     },
@@ -119,7 +119,7 @@ export default function Cartographie({ lang }) {
   const { data: dbPharmacies = [] } = useQuery({
     queryKey: ['pharmacies'],
     queryFn: async () => {
-      const res = await fetch('http://localhost:5000/api/pharmacies');
+      const res = await fetch(`${window.API_BASE_URL}/api/pharmacies`);
       if (!res.ok) throw new Error('Failed to fetch pharmacies');
       return res.json();
     },
@@ -602,7 +602,7 @@ export default function Cartographie({ lang }) {
       }
     } catch (err) {
       console.error("Erreur lors du rendu de la carte Leaflet :", err);
-      fetch('http://localhost:5000/api/log', {
+      fetch(`${window.API_BASE_URL}/api/log`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: err.message, stack: err.stack })

@@ -379,7 +379,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
     if (portalMode === 'citizen' && citizenUser) {
       setLoyaltyLoading(true);
       const token = localStorage.getItem('cmu-token') || '';
-      fetch(`http://localhost:5000/api/loyalty/${citizenUser.id}`, {
+      fetch(`${window.API_BASE_URL}/api/loyalty/${citizenUser.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then(res => {
@@ -403,14 +403,14 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
   useEffect(() => {
     if (portalMode === 'agent' && user) {
       if (user.role === 'Super Admin') {
-        fetch('http://localhost:5000/api/agents', {
+        fetch(`${window.API_BASE_URL}/api/agents`, {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('cmu-token')}` }
         })
           .then(res => res.json())
           .then(data => setAgentList(data))
           .catch(err => console.error(err));
       }
-      fetch(`http://localhost:5000/api/messages/${user.username}`, {
+      fetch(`${window.API_BASE_URL}/api/messages/${user.username}`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('cmu-token')}` }
       })
         .then(res => res.json())
@@ -422,7 +422,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
   const handleCreateAgent = () => {
     setAdminLoading(true);
     setAdminMsg('');
-    fetch('http://localhost:5000/api/agents', {
+    fetch(`${window.API_BASE_URL}/api/agents`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -450,7 +450,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
   const handleSendMessage = () => {
     if (!newMessage.receiver || !newMessage.body) return;
     setMsgLoading(true);
-    fetch('http://localhost:5000/api/messages', {
+    fetch(`${window.API_BASE_URL}/api/messages`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -474,7 +474,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64String = reader.result;
-        fetch(`http://localhost:5000/api/agents/${user.id}/photo`, {
+        fetch(`${window.API_BASE_URL}/api/agents/${user.id}/photo`, {
           method: 'PUT',
           headers: { 
             'Content-Type': 'application/json',
@@ -605,16 +605,16 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
           <div className="grid grid-3" style={{ alignItems: 'start', gap: '1.5rem', marginBottom: '2.5rem' }}>
             {/* Carte CSU numérique (citoyen uniquement) */}
             {portalMode === 'citizen' && citizenUser && (
-              <div className="card" style={{ padding: '1.5rem', gridColumn: 'span 3' }}>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: '700', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div className="card shadow-sm mb-4 text-center" style={{ padding: '2.2rem 2rem', gridColumn: 'span 3', borderRadius: '26px', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)' }}>
+                <h3 style={{ fontSize: '1.25rem', fontWeight: '850', marginBottom: '0.4rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', color: 'var(--text-main)' }}>
                   💳 Ma carte CSU numérique sécurisée
                 </h3>
-                <CmuCard citizen={citizenUser} />
-                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: '0.5rem' }}>
+                <p style={{ fontSize: '0.86rem', color: 'var(--text-sub)', maxWidth: '640px', margin: '0 auto 1.5rem auto' }}>
                   {lang === 'fr'
-                    ? 'Présentez cette carte dans les hôpitaux et pharmacies agréés. Le QR code sécurisé garantit votre prise en charge immédiate.'
+                    ? 'Présentez cette carte dans les hôpitaux, cliniques et pharmacies agréés. Le QR code sécurisé garantit votre prise en charge immédiate.'
                     : 'Wonal ci kàrt bi ci fajukaay yi nu agréer. QR code bi mën nañu ko saytu ngir xam sa couverture.'}
                 </p>
+                <CmuCard citizen={citizenUser} />
               </div>
             )}
             

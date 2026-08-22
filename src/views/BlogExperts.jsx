@@ -110,7 +110,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
   const { data: blogArticles = [] } = useQuery({
     queryKey: ['blogArticlesList'],
     queryFn: async () => {
-      const res = await fetch('http://localhost:5000/api/blog/articles');
+      const res = await fetch(`${window.API_BASE_URL}/api/blog/articles`);
       if (!res.ok) throw new Error('API Error');
       const data = await res.json();
       const toSentenceCase = (str) => {
@@ -134,14 +134,83 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
     }
   });
 
-  const allArticles = blogArticles;
+  // Articles de démonstration affichés si l'API backend ne répond pas
+  // (évite une page blog vide quand le serveur est éteint)
+  const demoArticles = [
+    {
+      id: 'demo_1',
+      title: lang === 'fr' ? 'Le paludisme en saison des pluies : prévention et prise en charge' : 'Sibir palu ci nawet : ndimbël ak faj gi',
+      author: 'Dr. Cheikh Anta Diop',
+      role: 'Médecin prescripteur',
+      avatar: '🩺',
+      date: Date.now() - 86400000 * 2,
+      readTime: lang === 'fr' ? '5 min de lecture' : 'Simili 5',
+      preview: lang === 'fr' ? "La saison des pluies au Sénégal s'accompagne d'une recrudescence des cas de paludisme. Voici les gestes essentiels de prévention." : "Ci samt mbënaale, sibir palu dafay yokku. Lii mooy yi ñu def ngir dar ñu sibirwu.",
+      content: lang === 'fr'
+        ? "Le paludisme reste une préoccupation majeure de santé publique au Sénégal, particulièrement pendant l'hivernage. La moustiquaire imprégnée d'insecticide à longue durée d'action (MILDA) est le moyen de prévention le plus efficace. En cas de fièvre, consultez immédiatement un centre de santé pour un test de diagnostic rapide (TDR). Le traitement gratuit est disponible dans tous les postes et cases de santé du pays grâce au programme CSU."
+        : "Sibir palu mooy benn jafe-jafe bu mag ci santewu Sénégal. Moustiquaire bu xeb bu gën a rëy mooy gën ci dar. Bu fekk nga tàng, demal légi légui ci benn kër sànkaar ngir def test TDR. Faj gi nutrients am na ci biir kër sànkaar yépp ngir programme CSU.",
+      imageUrl: '/bg_health_palu.png',
+      likes: 47,
+      comment_count: 3
+    },
+    {
+      id: 'demo_2',
+      title: lang === 'fr' ? "Plan sésame : la gratuité des soins pour les personnes âgées" : 'Plan sésame : faj bu baax ñi gën a màgg',
+      author: 'Dr. Fatou Diop',
+      role: 'Médecin généraliste',
+      avatar: '👩‍⚕️',
+      date: Date.now() - 86400000 * 5,
+      readTime: lang === 'fr' ? '4 min de lecture' : 'Simili 4',
+      preview: lang === 'fr' ? "Grâce au plan sésame, les personnes âgées de 60 ans et plus bénéficient d'une gratuité totale des soins de santé essentiels." : 'Ci plan sésame, ñi ëpp 60 at la am nañu faj bu baax bu feeñ.',
+      content: lang === 'fr'
+        ? "Le plan sésame est une initiative présidentielle qui garantit la gratuité des soins pour les personnes âgées de 60 ans et plus dans tous les établissements publics de santé du Sénégal. Cette mesure couvre les consultations, les examens médicaux, les médicaments essentiels et l'hospitalisation. Les bénéficiaires doivent se présenter dans une structure de santé publique avec leur carte d'identité ou tout autre document justifiant de leur âge."
+        : "Plan sésame mooy benn program bu Président def ngir ñi ëpp 60 at am faj bu baax ci kër sànkaar bu daw bi Sénégal. Lii mooy consulter, exam, garab ak dex. Ñu wër ci kër sànkaar bu daw ak seen kart bicëf.",
+      imageUrl: '/csu_family_health.png',
+      likes: 32,
+      comment_count: 1
+    },
+    {
+      id: 'demo_3',
+      title: lang === 'fr' ? 'Nutrition de la femme enceinte : les aliments clés' : 'Lekk bu jikkar: ngir yu am solo',
+      author: 'Sage-femme Fatou Diome',
+      role: 'Sage-femme',
+      avatar: '🤱',
+      date: Date.now() - 86400000 * 7,
+      readTime: lang === 'fr' ? '3 min de lecture' : 'Simili 3',
+      preview: lang === 'fr' ? "Une alimentation équilibrée pendant la grossesse est essentielle pour la santé de la mère et le développement du bébé." : 'Lekk bu baax bu jikkar mooy gën ci santewu yaay ak liir bi.',
+      content: lang === 'fr'
+        ? "Pendant la grossesse, les besoins nutritionnels augmentent significativement. Privilégiez les aliments riches en fer (lentilles, viande rouge maigre, épinards), en calcium (laitages, sardines) et en acide folique (légumes verts, agrumes). Évitez l'alcool, le tabac et limitez la caféine. Buvez au moins 2 litres d'eau par jour. Le fer en association avec la vitamine C améliore l'absorption et prévient l'anémie gravidique."
+        : "Ci jikkar, xéj ci iron (lentille, yapp wu xonq, épinard), calcium (lait, sardine) ak acide folique (ngóob yu weex, lime). Bul naan alcool, tabac, taxawal caféine. Naan na ndox yu bare. Iron ak vitamine C dimbëli nañu ngir bañ anémie.",
+      imageUrl: '/csu_family_health.png',
+      likes: 58,
+      comment_count: 5
+    },
+    {
+      id: 'demo_4',
+      title: lang === 'fr' ? "Couverture santé universelle : vos droits en tant qu'assuré" : 'Couverture santé universelle : sañ-sañu yu gën a wër ci programme bi',
+      author: 'Dr. Mamadou Ba',
+      role: 'SuperAdmin',
+      avatar: '🛡️',
+      date: Date.now() - 86400000 * 10,
+      readTime: lang === 'fr' ? '6 min de lecture' : 'Simili 6',
+      preview: lang === 'fr' ? "La couverture santé universelle garantit à chaque Sénégalais l'accès à des soins de qualité sans barrière financière." : 'Couverture santé universelle dimbëli na ñépp Sénégalais ngir am sànkaar bu baax te xaw.',
+      content: lang === 'fr'
+        ? "La couverture santé universelle (CSU) est un engagement national pour garantir l'accès aux soins de santé pour tous les Sénégalais. En tant qu'assuré UNAMUSC, vous bénéficiez d'une prise en charge de 80% pour les actes médicaux, 100% pour la maternité et la pédiatrie, et d'un réseau de structures de santé partenaires. Votre cotisation annuelle de 4 500 FCFA couvre toute votre famille. Présentez votre carte QR CSU dans toute structure agréée pour bénéficier du tiers-payant."
+        : "Couverture santé universelle (CSU) mooy benn program bu Sénégal def ngir ñépp am sànkaar. Ci UNAMUSC, am nga 80% ci faj yu médical, 100% ci maternité ak pédiatrie. Sa cotisation bu 4500 FCFA ngi wër sa waa kër gépp. Wër sa kart QR CSU ci benn kër sànkaar bu agréé ngir am tiers-payant.",
+      imageUrl: '/csu_hero_bg_real.png',
+      likes: 25,
+      comment_count: 2
+    }
+  ];
+
+  const allArticles = blogArticles && blogArticles.length > 0 ? blogArticles : demoArticles;
 
   // Load comments dynamically for selected article
   const { data: articleComments = [] } = useQuery({
     queryKey: ['articleComments', selectedArticle?.id],
     queryFn: async () => {
       if (!selectedArticle) return [];
-      const res = await fetch(`http://localhost:5000/api/blog/articles/${selectedArticle.id}/comments`);
+      const res = await fetch(`${window.API_BASE_URL}/api/blog/articles/${selectedArticle.id}/comments`);
       if (!res.ok) throw new Error('API Error');
       return res.json();
     },
@@ -285,7 +354,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
 
     const isLiked = likedArticles[articleId];
     
-    fetch(`http://localhost:5000/api/blog/articles/${articleId}/like`, {
+    fetch(`${window.API_BASE_URL}/api/blog/articles/${articleId}/like`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ decrement: !!isLiked })
@@ -370,7 +439,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
       imageUrl: newArticleImage
     };
 
-    const url = isEdit ? `http://localhost:5000/api/blog/articles/${editingArticle.id}` : 'http://localhost:5000/api/blog/articles';
+    const url = isEdit ? `${window.API_BASE_URL}/api/blog/articles/${editingArticle.id}` : `${window.API_BASE_URL}/api/blog/articles`;
     const method = isEdit ? 'PUT' : 'POST';
 
     fetch(url, {
@@ -432,7 +501,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
     e.preventDefault();
     if (!newComment.author || !newComment.text || !selectedArticle) return;
 
-    fetch(`http://localhost:5000/api/blog/articles/${selectedArticle.id}/comments`, {
+    fetch(`${window.API_BASE_URL}/api/blog/articles/${selectedArticle.id}/comments`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(newComment)

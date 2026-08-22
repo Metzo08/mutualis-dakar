@@ -1,10 +1,99 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
 import DeleteModal from '../components/DeleteModal';
 import { playHybridVoiceReminder, playEmergencyVoiceInstruction, speakCleanText } from '../services/voiceAudioService';
 
 // Design Premium Haut de Gamme — Carnet Maternité & Santé Enfant
+
+// 🧠 Moteur d'Intelligence Médicale : Sélection Dynamique d'Image de Fond selon la Pathologie de l'Assuré
+const getMedicalHeroStyle = (patient) => {
+  if (!patient) {
+    return {
+      bgImage: '/csu_digital_health_real.jpg',
+      heroBg: 'linear-gradient(135deg, rgba(5, 150, 105, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%), url("/csu_digital_health_real.jpg") center/cover no-repeat',
+      badgeColor: '#059669',
+      badgeText: '🇸🇳 Espace prise en charge 100% CSU',
+      imageTag: '🏥 Imagerie médicale - général',
+      icon: '🏥'
+    };
+  }
+
+  const path = (patient.pathology || '').toLowerCase();
+  const cat = (patient.category || '').toLowerCase();
+
+  // 🦴 1. Traumatologie, Fracture, Fémur, Orthopédie, Chirurgie, Os
+  if (path.includes('fracture') || path.includes('trauma') || path.includes('fémur') || path.includes('os') || path.includes('orthopéd') || cat === 'surgery') {
+    return {
+      bgImage: '/dicom_bone_fracture.jpg',
+      heroBg: 'linear-gradient(135deg, rgba(180, 83, 9, 0.88) 0%, rgba(15, 23, 42, 0.92) 100%), url("/dicom_bone_fracture.jpg") center/cover no-repeat',
+      badgeColor: '#d97706',
+      badgeText: '🇸🇳 Espace traumatologie & chirurgie orthopédique UNAMUSC',
+      imageTag: '🦴 Imagerie scanner / radiographie osseuse (traumatologie - fracture fémur)',
+      icon: '🩹'
+    };
+  }
+
+  // 🫁 2. Pneumologie, BPCO, Broncho-Pneumopathie, Poumon
+  if (path.includes('pneumo') || path.includes('bpco') || path.includes('broncho') || path.includes('poumon')) {
+    return {
+      bgImage: '/dicom_chest_xray.jpg',
+      heroBg: 'linear-gradient(135deg, rgba(14, 116, 144, 0.88) 0%, rgba(15, 23, 42, 0.92) 100%), url("/dicom_chest_xray.jpg") center/cover no-repeat',
+      badgeColor: '#0891b2',
+      badgeText: '🇸🇳 Espace pneumologie & affections respiratoires ALD',
+      imageTag: '🫁 Imagerie radiographie pulmonaire (pneumologie - BPCO)',
+      icon: '🫁'
+    };
+  }
+
+  // 🫀 3. HTA, Cardiologie, Tension, Cœur
+  if (path.includes('hta') && !path.includes('diabète')) {
+    return {
+      bgImage: '/bg_health_heart.png',
+      heroBg: 'linear-gradient(135deg, rgba(220, 38, 38, 0.88) 0%, rgba(15, 23, 42, 0.92) 100%), url("/bg_health_heart.png") center/cover no-repeat',
+      badgeColor: '#dc2626',
+      badgeText: '🇸🇳 Espace cardiologie & hypertension artérielle (ALD 100%)',
+      imageTag: '🫀 Bilan cardiovasculaire & électrocardiogramme ECG',
+      icon: '🫀'
+    };
+  }
+
+  // 🩸 4. Diabète, Glycémie, HbA1c (Seul ou combiné HTA)
+  if (path.includes('diabète') || path.includes('glycém') || path.includes('hba1c') || cat === 'chronic') {
+    return {
+      bgImage: '/dicom_blood_test.jpg',
+      heroBg: 'linear-gradient(135deg, rgba(185, 28, 28, 0.88) 0%, rgba(15, 23, 42, 0.92) 100%), url("/dicom_blood_test.jpg") center/cover no-repeat',
+      badgeColor: '#dc2626',
+      badgeText: '🇸🇳 Espace prise en charge 100% CSU — Affection de longue durée (ALD)',
+      imageTag: '🩸 Bilan biologique semestriel (HbA1c & glycémie à jeun)',
+      icon: '🩸'
+    };
+  }
+
+  // 👶 5. Pédiatrie, Enfant, PEV, Vaccination
+  if (cat === 'pediatric' || path.includes('pédiatr') || path.includes('enfant') || path.includes('pev')) {
+    return {
+      bgImage: '/csu_kids_real.png',
+      heroBg: 'linear-gradient(135deg, rgba(29, 78, 216, 0.88) 0%, rgba(16, 185, 129, 0.25) 100%), url("/csu_kids_real.png") center/cover no-repeat',
+      badgeColor: '#2563eb',
+      badgeText: '🇸🇳 Espace pédiatrique & programme élargi de vaccination (PEV)',
+      imageTag: '👶 Carnet de santé pédiatrique & vaccins 0-5 ans',
+      icon: '👶'
+    };
+  }
+
+  // 🤰 6. Maternité, Grossesse, CPN
+  return {
+    bgImage: '/maternal_nutrition_food.jpg',
+    heroBg: 'linear-gradient(135deg, rgba(5, 150, 105, 0.85) 0%, rgba(15, 23, 42, 0.9) 100%), url("/maternal_nutrition_food.jpg") center/cover no-repeat',
+    badgeColor: '#059669',
+    badgeText: '🇸🇳 Espace premium santé maternelle UNAMUSC',
+    imageTag: '🤰 Suivi prénatal CPN & échographie obstétrique',
+    icon: '🤰'
+  };
+};
+
+
 export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentUser = null, partnerUser = null, userRole = 'citizen', setView = null }) {
   // ═══════════════════════════════════════════════════════
   // TOUS LES HOOKS DOIVENT ÊTRE ICI — avant tout return conditionnel
@@ -104,6 +193,188 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
     setShowSupplementsModal(false);
   };
 
+  // 🛡️ État Surveillance ALD (Diabète/HTA) — CRUD complet (Créer / Modifier / Supprimer)
+  const [aldSurveillanceItems, setAldSurveillanceItems] = useState(() => {
+    const saved = localStorage.getItem('maternity_ald_surveillance');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return [
+      { id: 1, title: "👁️ Fond d'œil annuel (rétinopathie)", status: "✅ Normal", date: "10/04/2026" },
+      { id: 2, title: "👣 Examen pied diabétique (monofilament)", status: "✅ Pas de lésion", date: "10/04/2026" },
+      { id: 3, title: "🫀 ECG & fonction rénale (microalbuminurie)", status: "✅ Effectué", date: "12/05/2026" }
+    ];
+  });
+
+  const [showAldModal, setShowAldModal] = useState(false);
+  const [editingAldItem, setEditingAldItem] = useState(null);
+
+  const handleSaveAldItem = (e) => {
+    e.preventDefault();
+    if (!editingAldItem || !editingAldItem.title) return;
+    let updated;
+    if (editingAldItem.id) {
+      updated = aldSurveillanceItems.map(item => item.id === editingAldItem.id ? editingAldItem : item);
+    } else {
+      updated = [...aldSurveillanceItems, { ...editingAldItem, id: Date.now() }];
+    }
+    setAldSurveillanceItems(updated);
+    localStorage.setItem('maternity_ald_surveillance', JSON.stringify(updated));
+    setShowAldModal(false);
+    setEditingAldItem(null);
+  };
+
+  const handleDeleteAldItem = (id) => {
+    setConfirmDeleteObj({
+      title: "cet examen de surveillance ALD",
+      onConfirm: () => {
+        const updated = aldSurveillanceItems.filter(item => item.id !== id);
+        setAldSurveillanceItems(updated);
+        localStorage.setItem('maternity_ald_surveillance', JSON.stringify(updated));
+      }
+    });
+  };
+
+  // 🩹 État Protocole Post-Opératoire (Chirurgie/Orthopédie) — CRUD complet (Créer / Modifier / Supprimer)
+  const [postOpProtocolItems, setPostOpProtocolItems] = useState(() => {
+    const saved = localStorage.getItem('maternity_postop_protocol');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return [
+      { id: 1, title: "🩹 Pansements stériles J+3 à J+14", status: "✅ Fait", date: "25/05/2026" },
+      { id: 2, title: "🧵 Ablation des fils / agrafes J+14", status: "✅ Ablation faite", date: "03/06/2026" },
+      { id: 3, title: "🩼 Rééducation & Appui soulagé", status: "⏳ En cours (Session 3/10)", date: "15/06/2026" }
+    ];
+  });
+
+  const [showPostOpModal, setShowPostOpModal] = useState(false);
+  const [editingPostOpItem, setEditingPostOpItem] = useState(null);
+
+  const handleSavePostOpItem = (e) => {
+    e.preventDefault();
+    if (!editingPostOpItem || !editingPostOpItem.title) return;
+    let updated;
+    if (editingPostOpItem.id) {
+      updated = postOpProtocolItems.map(item => item.id === editingPostOpItem.id ? editingPostOpItem : item);
+    } else {
+      updated = [...postOpProtocolItems, { ...editingPostOpItem, id: Date.now() }];
+    }
+    setPostOpProtocolItems(updated);
+    localStorage.setItem('maternity_postop_protocol', JSON.stringify(updated));
+    setShowPostOpModal(false);
+    setEditingPostOpItem(null);
+  };
+
+  const handleDeletePostOpItem = (id) => {
+    setConfirmDeleteObj({
+      title: "cet élément du protocole post-opératoire",
+      onConfirm: () => {
+        const updated = postOpProtocolItems.filter(item => item.id !== id);
+        setPostOpProtocolItems(updated);
+        localStorage.setItem('maternity_postop_protocol', JSON.stringify(updated));
+      }
+    });
+  };
+
+  // 💊 État Ordonnances ALD (Diabète/HTA) — CRUD complet (Créer / Modifier / Supprimer)
+  const [aldPrescriptions, setAldPrescriptions] = useState(() => {
+    const saved = localStorage.getItem('maternity_ald_prescriptions');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return [
+      { id: 1, name: 'Metformine 1000 mg', form: 'Comprimés sécables', specialty: '🩸 Diabétologie', dosage: '1 comprimé matin et soir au milieu des repas', coverage: '✅ 100% CSU Gratuit' },
+      { id: 2, name: 'Amlodipine 10 mg', form: 'Gélules quotidiennes', specialty: '🫀 Cardiologie / HTA', dosage: '1 comprimé le matin au réveil', coverage: '✅ 100% CSU Gratuit' },
+      { id: 3, name: 'Glimepiride 2 mg', form: 'Sulfamide hypoglycémiant', specialty: '🩸 Diabétologie', dosage: '1 comprimé avant le petit-déjeuner', coverage: '✅ 100% CSU Gratuit' },
+      { id: 4, name: 'Lecteur & Bandelettes Glycémiques', form: 'Auto-surveillance à domicile', specialty: '🔬 Auto-Contrôle', dosage: '100 bandelettes + lancettes par mois', coverage: '✅ 100% CSU Gratuit' }
+    ];
+  });
+
+  const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
+  const [editingPrescription, setEditingPrescription] = useState(null);
+
+  const handleSavePrescription = (e) => {
+    e.preventDefault();
+    if (!editingPrescription || !editingPrescription.name) return;
+    let updated;
+    if (editingPrescription.id) {
+      updated = aldPrescriptions.map(p => p.id === editingPrescription.id ? editingPrescription : p);
+    } else {
+      updated = [...aldPrescriptions, { ...editingPrescription, id: Date.now() }];
+    }
+    setAldPrescriptions(updated);
+    localStorage.setItem('maternity_ald_prescriptions', JSON.stringify(updated));
+    setShowPrescriptionModal(false);
+    setEditingPrescription(null);
+  };
+
+  const handleDeletePrescription = (id) => {
+    setConfirmDeleteObj({
+      title: "cette prescription de traitement ALD",
+      onConfirm: () => {
+        const updated = aldPrescriptions.filter(p => p.id !== id);
+        setAldPrescriptions(updated);
+        localStorage.setItem('maternity_ald_prescriptions', JSON.stringify(updated));
+      }
+    });
+  };
+
+  // 📈 État Constantes Vitales & Régime ALD — CRUD complet (Créer / Modifier / Supprimer)
+  const [aldVitals, setAldVitals] = useState(() => {
+    const saved = localStorage.getItem('maternity_ald_vitals');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return [
+      { id: 1, type: 'Glycémie à jeun', value: '1.25 g/L', target: 'Objectif < 1.26 g/L', date: '10/06/2026', status: '🟢 Dans la cible' },
+      { id: 2, type: 'Tension Artérielle', value: '135 / 85 mmHg', target: 'Objectif < 140/90', date: '10/06/2026', status: '🟢 Contrôlée' },
+      { id: 3, type: 'Poids / IMC', value: '74 kg (IMC 25.1)', target: 'Poids stable', date: '10/06/2026', status: '🟢 Conforme' },
+      { id: 4, type: 'HbA1c Glyquée', value: '6.9%', target: 'Objectif < 7.0%', date: '12/05/2026', status: '🟢 Optimal' }
+    ];
+  });
+
+  const [aldDietDirectives, setAldDietDirectives] = useState(() => {
+    const saved = localStorage.getItem('maternity_ald_diet');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return [
+      { id: 1, title: '🥗 Régime Hyposodé (< 5g sel/jour)', desc: 'Réduction de l\'apport en sel pour la protection vasculaire et la tension artérielle.', status: '✅ Actif' },
+      { id: 2, title: '🍏 Régime Hypoglucidique ALD', desc: 'Gestion des sucres rapides et répartition des glucides complexes sur 3 repas.', status: '✅ Actif' },
+      { id: 3, title: '🚶 Marche Quotidienne 30 min', desc: 'Activité physique adaptée 5 jours par semaine pour la sensibilité à l\'insuline.', status: '✅ Actif' }
+    ];
+  });
+
+  const [showAldVitalModal, setShowAldVitalModal] = useState(false);
+  const [editingAldVital, setEditingAldVital] = useState(null);
+
+  const handleSaveAldVital = (e) => {
+    e.preventDefault();
+    if (!editingAldVital || !editingAldVital.type) return;
+    let updated;
+    if (editingAldVital.id) {
+      updated = aldVitals.map(v => v.id === editingAldVital.id ? editingAldVital : v);
+    } else {
+      updated = [...aldVitals, { ...editingAldVital, id: Date.now() }];
+    }
+    setAldVitals(updated);
+    localStorage.setItem('maternity_ald_vitals', JSON.stringify(updated));
+    setShowAldVitalModal(false);
+    setEditingAldVital(null);
+  };
+
+  const handleDeleteAldVital = (id) => {
+    setConfirmDeleteObj({
+      title: "cette constante vitale ALD",
+      onConfirm: () => {
+        const updated = aldVitals.filter(v => v.id !== id);
+        setAldVitals(updated);
+        localStorage.setItem('maternity_ald_vitals', JSON.stringify(updated));
+      }
+    });
+  };
+
   // 📊 État Suivi de Croissance Bébé OMS (Percentiles 0-24 mois)
   const [babyGrowth, setBabyGrowth] = useState(() => {
     const saved = localStorage.getItem('maternity_baby_growth');
@@ -149,7 +420,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
     generateOfficialPdf({
       filename: `certificat_accouchement_${babyProfile.name.replace(/\s+/g, '_')}.pdf`,
       docType: 'CERTIFICAT D\'ACCOUCHEMENT ET DE NAISSANCE',
-      title: 'Attestation Officielle d\'Accouchement & Gratuité Maternité (100% UNAMUSC)',
+      title: 'Attestation officielle d\'accouchement & gratuité maternité (100% UNAMUSC)',
       referenceNo: `ACC-2026-${Math.floor(1000 + Math.random() * 9000)}`,
       beneficiaryName: babyProfile.motherName,
       cmuNumber: 'SN-DK-BSF-9901',
@@ -426,7 +697,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
       desc: 'Grossesse intra-utérine évolutive 8 SA. Bilan biologique initial normal, groupe O+.',
       date: '10/04/2026',
       doctor: 'Sage-femme Fatou Kiné Diop',
-      status: 'CPN 1 - CONFIRMÉE',
+      status: 'CPN 1 - Confirmée',
       completed: true
     },
     {
@@ -435,7 +706,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
       desc: 'Hauteur utérine 21 cm. Bruit du cœur fœtal régulier (145 bpm). Injection VAT 1 réalisée.',
       date: '05/06/2026',
       doctor: 'Dr. Mariama Ba (Gynécologue)',
-      status: 'CPN 2 - CONFIRMÉE',
+      status: 'CPN 2 - Confirmée',
       completed: true
     },
     {
@@ -444,7 +715,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
       desc: 'Prévue : Contrôle hémoglobine, 1ère dose TPI-SP (Prévention Paludisme) & VAT 2.',
       date: '12/08/2026',
       doctor: 'Sage-femme Fatou Kiné Diop',
-      status: 'CPN 3 - À VENIR',
+      status: 'CPN 3 - À venir',
       completed: false
     },
     {
@@ -453,7 +724,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
       desc: 'Prévue : Présentation céphalique, vérification bassin maternel & fiche de liaison.',
       date: '25/09/2026',
       doctor: 'Dr. Mariama Ba (Gynécologue)',
-      status: 'CPN 4 - À VENIR',
+      status: 'CPN 4 - À venir',
       completed: false
     }
   ]);
@@ -472,40 +743,20 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
   // FIN DES HOOKS — les returns conditionnels peuvent maintenant suivre
   // ═══════════════════════════════════════════════════════
 
-  // Détection du sexe masculin pour l'assuré connecté
-  const isMale = () => {
-    if (userRole === 'citizen' && citizenUser) {
-      if (citizenUser.gender === 'M' || citizenUser.sexe === 'M') return true;
+  // Détection du sexe de l'assuré connecté (Femme vs Homme)
+  const isMaleUser = (() => {
+    if (citizenUser) {
+      const g = (citizenUser.gender || citizenUser.sexe || '').toUpperCase();
+      if (g === 'M' || g === 'HOMME' || g === 'MASCULIN') return true;
+      if (g === 'F' || g === 'FEMME' || g === 'FEMININ') return false;
       const firstName = (citizenUser.firstName || citizenUser.first_name || '').toLowerCase();
-      const maleNames = ['ibrahima', 'modou', 'amadou', 'moustapha', 'abdoulaye', 'cheikh', 'moussa', 'ousmane', 'mamadou', 'babacar', 'samba', 'aliou', 'boubacar', 'omar', 'pape'];
-      if (maleNames.some(n => firstName.includes(n))) return true;
+      const maleNames = ['ibrahima', 'modou', 'amadou', 'moustapha', 'abdoulaye', 'cheikh', 'moussa', 'ousmane', 'mamadou', 'babacar', 'samba', 'aliou', 'boubacar', 'omar', 'pape', 'saliou', 'papa', 'el hadji', 'lamine'];
+      return maleNames.some(n => firstName.includes(n));
     }
     return false;
-  };
+  })();
 
-  if (isMale()) {
-    return (
-      <div className="maternity-view fade-in-up" style={{ minHeight: '60vh', padding: '3rem 1rem' }}>
-        <div className="card text-center" style={{ maxWidth: '650px', margin: '0 auto', padding: '3rem 2rem', borderRadius: '24px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>ℹ️</div>
-          <h2 style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--primary)', marginBottom: '0.75rem' }}>
-            Accès au Carnet Maternité
-          </h2>
-          <p style={{ fontSize: '0.95rem', color: 'var(--text-sub)', lineHeight: '1.6', marginBottom: '1.5rem' }}>
-            Bonjour <strong>{citizenUser.firstName || citizenUser.first_name} {citizenUser.lastName || citizenUser.last_name}</strong>. Le Carnet Maternité est réservé au suivi de la santé maternelle et des ayants droit mères/enfants. Votre suivi médical personnel est disponible dans votre rubrique <strong>Dossier & radios</strong>.
-          </p>
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button className="btn btn-primary" onClick={() => setView ? setView('medical-profile') : (window.location.hash = '#/medical-profile')}>
-              🩺 Consulter mon Dossier & radios
-            </button>
-            <button className="btn btn-outline" onClick={() => setView ? setView('profile') : (window.location.hash = '#/profile')}>
-              👤 Mon compte
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const [citizenSpecialtyTab, setCitizenSpecialtyTab] = useState(isMaleUser ? 'chronic' : 'maternity');
 
   // Guard de confidentialité : si l'utilisateur n'est pas connecté, masquer les données de maternité
   if (!citizenUser && !agentUser && !partnerUser && userRole !== 'agent' && userRole !== 'partner') {
@@ -782,18 +1033,26 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
   // RBAC — Définition granulaire des rôles (cohérent avec MedicalProfile)
   // ═══════════════════════════════════════════════════════
   const isSuperAdmin = userRole === 'superadmin' || agentUser?.role === 'SuperAdmin' || agentUser?.role === 'Super Admin';
-  const isDoctor     = userRole === 'doctor' || (userRole === 'partner' && partnerUser?.role?.toLowerCase().includes('médecin'));
-  const isMidwife    = userRole === 'midwife' || (userRole === 'partner' && partnerUser?.role?.toLowerCase().includes('sage'));
+  const isLabUser    = userRole === 'lab' || userRole === 'biologist' || 
+                       (partnerUser?.role && (partnerUser.role.toLowerCase().includes('laboratoire') || partnerUser.role.toLowerCase().includes('biologiste') || partnerUser.role.toLowerCase().includes('imagerie'))) ||
+                       (partnerUser?.structureName && (partnerUser.structureName.toLowerCase().includes('pasteur') || partnerUser.structureName.toLowerCase().includes('laboratoire') || partnerUser.structureName.toLowerCase().includes('imagerie')));
+  const isDoctor     = !isLabUser && (userRole === 'doctor' || (userRole === 'partner' && partnerUser?.role?.toLowerCase().includes('médecin')));
+  const isMidwife    = !isLabUser && (userRole === 'midwife' || (userRole === 'partner' && partnerUser?.role?.toLowerCase().includes('sage')));
   const isAgent      = (userRole === 'agent' || (!!agentUser && !isSuperAdmin)) && !isSuperAdmin;
-  const isPharmacist = userRole === 'pharmacist';
-  const isCitizen    = !isAgent && !isDoctor && !isMidwife && !isPharmacist && !isSuperAdmin && (!!citizenUser && (userRole === 'citizen' || userRole === 'citizen_suspended'));
+  const isPharmacist = !isLabUser && userRole === 'pharmacist';
+  const isCitizen    = !isAgent && !isDoctor && !isMidwife && !isPharmacist && !isLabUser && !isSuperAdmin && (!!citizenUser && (userRole === 'citizen' || userRole === 'citizen_suspended'));
   // Peut remplir/modifier le carnet de maternité
-  const canEditMaternity = isDoctor || isMidwife || isSuperAdmin;
+  const canEditMaternity = (isDoctor || isMidwife || isSuperAdmin) && !isLabUser;
   // Vue administrative (statistiques)
   const isAdminStatsView = isAgent && !isSuperAdmin;
   // Alias rétro-compatibilité
   const isDoctorOrAgent = canEditMaternity || isAgent;
-  const isSuspended = (
+  const overrideActive = (
+    localStorage.getItem(`cmu-status-${citizenUser?.cmuNumber || citizenUser?.cmu_number}`) === 'active' ||
+    localStorage.getItem('cmu-portal-mode') === 'citizen'
+  );
+
+  const isSuspended = !overrideActive && (
     userRole === 'citizen_suspended' ||
     citizenUser?.status === 'suspended' ||
     citizenUser?.status === 'inactif' ||
@@ -802,21 +1061,1159 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
     localStorage.getItem('cmu-cotisation-suspended') === 'true'
   );
 
+  const [registryPage, setRegistryPage] = useState(1);
+
+  // Registre des Patients & Dossiers Médicaux de l'Établissement (Hôpital Principal / Établissement de Santé)
+  const [maternalRegistry, setMaternalRegistry] = useState([
+    {
+      id: 1,
+      name: 'Fatou Diallo',
+      gender: 'F',
+      age: 28,
+      phone: '+221 77 450 88 99',
+      cmuNumber: 'CMU-DKR-2026-9921',
+      category: 'maternity',
+      pathology: '🤰 Suivi Grossesse (32 SA - CPN 3)',
+      edd: '15/10/2026',
+      facility: partnerUser?.structureName || partnerUser?.name || 'Hôpital Principal de Dakar',
+      doctorRef: 'Sage-femme Mme Fatou Diop',
+      status: 'active',
+      lastConsultation: '14/06/2026'
+    },
+    {
+      id: 2,
+      name: 'Mamadou Ndiaye',
+      gender: 'M',
+      age: 54,
+      phone: '+221 77 612 88 11',
+      cmuNumber: 'CMU-DKR-2026-5541',
+      category: 'chronic',
+      pathology: '🩸 Diabète Type 2 & 🫀 HTA Sévère',
+      edd: 'ALD Prise en charge 100%',
+      facility: partnerUser?.structureName || partnerUser?.name || 'Hôpital Principal de Dakar',
+      doctorRef: 'Dr. Ousmane Sow (Cardiologie)',
+      status: 'active',
+      lastConsultation: '03/08/2026'
+    },
+    {
+      id: 3,
+      name: 'Aminata Sow',
+      gender: 'F',
+      age: 24,
+      phone: '+221 77 312 44 55',
+      cmuNumber: 'CMU-DKR-2026-4410',
+      category: 'maternity',
+      pathology: '🤰 Suivi Grossesse (14 SA - CPN 1)',
+      edd: '10/02/2027',
+      facility: partnerUser?.structureName || partnerUser?.name || 'Hôpital Principal de Dakar',
+      doctorRef: 'Sage-femme Mme Awa Ndiaye',
+      status: 'active',
+      lastConsultation: '02/07/2026'
+    },
+    {
+      id: 4,
+      name: 'Ibrahima Fall',
+      gender: 'M',
+      age: 62,
+      phone: '+221 78 440 99 22',
+      cmuNumber: 'CMU-DKR-2026-8822',
+      category: 'chronic',
+      pathology: '🫁 Broncho-Pneumopathie (BPCO) & HTA',
+      edd: 'Pneumologie / Suivi mensuel',
+      facility: partnerUser?.structureName || partnerUser?.name || 'Hôpital Principal de Dakar',
+      doctorRef: 'Dr. Cheikh Diop (Pneumologue)',
+      status: 'active',
+      lastConsultation: '28/07/2026'
+    },
+    {
+      id: 5,
+      name: 'Moussa Ndiaye (Enfant)',
+      gender: 'M',
+      age: 2,
+      phone: '+221 77 450 88 99',
+      cmuNumber: 'CMU-DKR-2026-9921-B1',
+      category: 'pediatric',
+      pathology: '👶 Suivi Pédiatrique & Vaccins PEV',
+      edd: 'Vaccin VPO3 + Pentavalent 3',
+      facility: partnerUser?.structureName || partnerUser?.name || 'Hôpital Principal de Dakar',
+      doctorRef: 'Dr. Mariama Seck (Pédiatre)',
+      status: 'active',
+      lastConsultation: '14/07/2026'
+    },
+    {
+      id: 6,
+      name: 'Coumba Ndiaye',
+      gender: 'F',
+      age: 31,
+      phone: '+221 78 991 22 33',
+      cmuNumber: 'CMU-DKR-2026-1188',
+      category: 'maternity',
+      pathology: '🤰 Grossesse (38 SA - Accouchement Imminent)',
+      edd: '20/08/2026',
+      facility: partnerUser?.structureName || partnerUser?.name || 'Hôpital Principal de Dakar',
+      doctorRef: 'Dr. Ousmane Sow (Gynécologue)',
+      status: 'imminent',
+      lastConsultation: '01/08/2026'
+    },
+    {
+      id: 7,
+      name: 'Ousmane Ba',
+      gender: 'M',
+      age: 45,
+      phone: '+221 76 543 21 09',
+      cmuNumber: 'CMU-DKR-2026-7734',
+      category: 'surgery',
+      pathology: '🩹 Traumatologie - Fracture Fémur Droite',
+      edd: 'Suivi Post-Opératoire / Plâtre',
+      facility: partnerUser?.structureName || partnerUser?.name || 'Hôpital Principal de Dakar',
+      doctorRef: 'Dr. Babacar Kane (Orthopédiste)',
+      status: 'active',
+      lastConsultation: '20/07/2026'
+    },
+    {
+      id: 8,
+      name: 'Awa Sylla',
+      gender: 'F',
+      age: 29,
+      phone: '+221 77 884 45 56',
+      cmuNumber: 'CMU-DKR-2026-8844',
+      category: 'maternity',
+      pathology: '🤰 Grossesse à Haut Risque (CPN 2 - Diabète Gestationnel)',
+      edd: '18/11/2026',
+      facility: partnerUser?.structureName || partnerUser?.name || 'Hôpital Principal de Dakar',
+      doctorRef: 'Dr. Mariama Ba (Gynécologue)',
+      status: 'active',
+      lastConsultation: '05/08/2026'
+    },
+    {
+      id: 9,
+      name: 'Cheikh Tidiane Diop',
+      gender: 'M',
+      age: 59,
+      phone: '+221 78 229 90 11',
+      cmuNumber: 'CMU-DKR-2026-2299',
+      category: 'chronic',
+      pathology: '🫀 Insuffisance Cardiaque & HTA Sévère (ALD 100%)',
+      edd: 'Cardiologie Fann / Contrôle mensuel',
+      facility: partnerUser?.structureName || partnerUser?.name || 'Hôpital Principal de Dakar',
+      doctorRef: 'Dr. Cheikh Tidiane Seck',
+      status: 'active',
+      lastConsultation: '02/08/2026'
+    },
+    {
+      id: 10,
+      name: 'Fatou Bintou Ndiaye (Enfant)',
+      gender: 'F',
+      age: 1,
+      phone: '+221 77 330 22 11',
+      cmuNumber: 'CMU-DKR-2026-3302-B1',
+      category: 'pediatric',
+      pathology: '👶 Suivi PEV - Vaccins BCG & Pentavalent 2',
+      edd: 'Rappel Vaccin PEV J+30',
+      facility: partnerUser?.structureName || partnerUser?.name || 'Hôpital Principal de Dakar',
+      doctorRef: 'Dr. Fatou Bintou Ndiaye (Pédiatre)',
+      status: 'active',
+      lastConsultation: '25/07/2026'
+    },
+    {
+      id: 11,
+      name: 'Babacar Diagne',
+      gender: 'M',
+      age: 67,
+      phone: '+221 77 554 00 11',
+      cmuNumber: 'CMU-DKR-2026-5540',
+      category: 'chronic',
+      pathology: '🩸 Diabète Type 2 Insulinodépendant (ALD 100%)',
+      edd: 'Centre Marc Sankalé / HbA1c 6.1%',
+      facility: partnerUser?.structureName || partnerUser?.name || 'Hôpital Principal de Dakar',
+      doctorRef: 'Dr. Papa Mamadou Kane',
+      status: 'active',
+      lastConsultation: '29/07/2026'
+    },
+    {
+      id: 12,
+      name: 'Mariama Cissé',
+      gender: 'F',
+      age: 22,
+      phone: '+221 76 990 44 33',
+      cmuNumber: 'CMU-DKR-2026-9904',
+      category: 'maternity',
+      pathology: '🤰 Suivi Prénatal Primipare (20 SA - CPN 2)',
+      edd: '04/01/2027',
+      facility: partnerUser?.structureName || partnerUser?.name || 'Hôpital Principal de Dakar',
+      doctorRef: 'Sage-femme Mme Awa Ndiaye',
+      status: 'active',
+      lastConsultation: '30/07/2026'
+    },
+    {
+      id: 13,
+      name: 'Papa Samba Kane',
+      gender: 'M',
+      age: 41,
+      phone: '+221 78 104 22 55',
+      cmuNumber: 'CMU-DKR-2026-1042',
+      category: 'surgery',
+      pathology: '🩹 Chirurgie Genou - Ligamentoplastie LCR',
+      edd: 'Revalidation & Kinésithérapie',
+      facility: partnerUser?.structureName || partnerUser?.name || 'Hôpital Principal de Dakar',
+      doctorRef: 'Dr. Ibrahima Faye (Orthopédiste)',
+      status: 'active',
+      lastConsultation: '22/07/2026'
+    },
+    {
+      id: 14,
+      name: 'Saliou Wade',
+      gender: 'M',
+      age: 38,
+      phone: '+221 76 339 00 11',
+      cmuNumber: 'CMU-DKR-2026-3390',
+      category: 'chronic',
+      pathology: '🫁 Asthme Sévère Persistant (Pneumologie Fann)',
+      edd: 'Traitement Fond Inhalé ALD',
+      facility: partnerUser?.structureName || partnerUser?.name || 'Hôpital Principal de Dakar',
+      doctorRef: 'Dr. Saliou Wade (Pneumologue)',
+      status: 'active',
+      lastConsultation: '19/07/2026'
+    },
+    {
+      id: 15,
+      name: 'Khadija Camara',
+      gender: 'F',
+      age: 33,
+      phone: '+221 77 448 00 99',
+      cmuNumber: 'CMU-DKR-2026-4480',
+      category: 'maternity',
+      pathology: '🤰 Suivi Grossesse Gemellaire (28 SA - CPN 3)',
+      edd: '12/10/2026',
+      facility: partnerUser?.structureName || partnerUser?.name || 'Hôpital Principal de Dakar',
+      doctorRef: 'Dr. Mariama Ba (Gynécologue)',
+      status: 'active',
+      lastConsultation: '04/08/2026'
+    },
+    {
+      id: 16,
+      name: 'Malick Sow (Enfant)',
+      gender: 'M',
+      age: 4,
+      phone: '+221 77 881 22 99',
+      cmuNumber: 'CMU-DKR-2026-8812-B2',
+      category: 'pediatric',
+      pathology: '👶 Pédiatrie - Vaccin Rougeole-Rubéole (RR2)',
+      edd: 'Vaccination Scolaire PEV',
+      facility: partnerUser?.structureName || partnerUser?.name || 'Hôpital Principal de Dakar',
+      doctorRef: 'Dr. Aminata Ndiaye (Pédiatre)',
+      status: 'active',
+      lastConsultation: '18/07/2026'
+    },
+    {
+      id: 17,
+      name: 'Ndèye Fatou Fall',
+      gender: 'F',
+      age: 50,
+      phone: '+221 78 778 88 11',
+      cmuNumber: 'CMU-DKR-2026-7788',
+      category: 'chronic',
+      pathology: '🧠 Suivi Post-AVC Ischémique & HTA Sévère',
+      edd: 'Neurologie CHU Fann / ALD 100%',
+      facility: partnerUser?.structureName || partnerUser?.name || 'Hôpital Principal de Dakar',
+      doctorRef: 'Dr. Babacar Diagne (Neurologue)',
+      status: 'active',
+      lastConsultation: '01/08/2026'
+    },
+    {
+      id: 18,
+      name: 'Abdoulaye Sy',
+      gender: 'M',
+      age: 29,
+      phone: '+221 76 655 44 22',
+      cmuNumber: 'CMU-DKR-2026-6655',
+      category: 'surgery',
+      pathology: '🩹 Traumatologie - Fracture Tibia-Péroné Gauche',
+      edd: 'Contrôle Plâtre J+45',
+      facility: partnerUser?.structureName || partnerUser?.name || 'Hôpital Principal de Dakar',
+      doctorRef: 'Dr. Ibrahima Faye (Orthopédiste)',
+      status: 'active',
+      lastConsultation: '27/07/2026'
+    },
+    {
+      id: 19,
+      name: 'Astou Gueye',
+      gender: 'F',
+      age: 26,
+      phone: '+221 77 332 11 00',
+      cmuNumber: 'CMU-DKR-2026-3321',
+      category: 'maternity',
+      pathology: '🤰 Suivi Grossesse (36 SA - CPN 4)',
+      edd: '05/09/2026',
+      facility: partnerUser?.structureName || partnerUser?.name || 'Hôpital Principal de Dakar',
+      doctorRef: 'Sage-femme Mme Fatou Diop',
+      status: 'active',
+      lastConsultation: '06/08/2026'
+    },
+    {
+      id: 20,
+      name: 'Omar Faye',
+      gender: 'M',
+      age: 72,
+      phone: '+221 78 991 11 00',
+      cmuNumber: 'CMU-DKR-2026-9911',
+      category: 'chronic',
+      pathology: '🩸 Diabète Type 2 & Rétinopathie Diabétique',
+      edd: 'Abass Ndao / Laser ophtalmo',
+      facility: partnerUser?.structureName || partnerUser?.name || 'Hôpital Principal de Dakar',
+      doctorRef: 'Dr. Ndèye Khady Cissé',
+      status: 'active',
+      lastConsultation: '03/08/2026'
+    }
+  ]);
+
+  const [selectedMotherId, setSelectedMotherId] = useState(1);
+  const dmpSectionRef = useRef(null);
+
+  const handleSelectMother = (motherId) => {
+    setSelectedMotherId(motherId);
+    setTimeout(() => {
+      if (dmpSectionRef.current) {
+        dmpSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 60);
+  };
+  const [searchMotherQuery, setSearchMotherQuery] = useState('');
+  const [registryCategoryFilter, setRegistryCategoryFilter] = useState('all'); // 'all', 'maternity', 'chronic', 'pediatric', 'surgery'
+  const [editingMother, setEditingMother] = useState(null);
+  const [isNewMother, setIsNewMother] = useState(false);
+
+  const activeMother = (isCitizen && citizenUser) ? {
+    id: 999,
+    name: activeFullName,
+    gender: isMaleUser ? 'M' : 'F',
+    age: isMaleUser ? 48 : 28,
+    phone: citizenUser?.phone || '+221 77 450 88 99',
+    cmuNumber: activeCmuNumber,
+    category: isMaleUser ? 'chronic' : citizenSpecialtyTab,
+    pathology: (isMaleUser || citizenSpecialtyTab === 'chronic') ? '🩸 Diabète Type 2 & 🫀 HTA d\'effort (ALD 100%)' : '🤰 Suivi Prénatal & Grossesse (28 SA - CPN 3)',
+    edd: (isMaleUser || citizenSpecialtyTab === 'chronic') ? 'Protocole ALD 100% — Contrôle semestriel' : '15/12/2026',
+    facility: citizenUser?.mutuelleName || 'Centre Hospitalier Universitaire de Dakar',
+    doctorRef: (isMaleUser || citizenSpecialtyTab === 'chronic') ? 'Dr. Ousmane Sow (Cardiologie & Médecine Interne)' : 'Sage-femme Mme Fatou Diop',
+    status: 'active',
+    lastConsultation: '03/08/2026'
+  } : (maternalRegistry.find(m => m.id === selectedMotherId) || maternalRegistry[0] || {
+    name: activeFullName,
+    cmuNumber: 'CMU-DKR-2026-9921',
+    gestationalAge: '32 SA (CPN 3)',
+    phone: '+221 77 450 88 99'
+  });
+
+  const handleSaveMother = (e) => {
+    e.preventDefault();
+    if (!editingMother) return;
+    if (!editingMother.name || !editingMother.cmuNumber) {
+      alert('Veuillez renseigner le nom de la maman et le N° carte CSU.');
+      return;
+    }
+
+    let updated;
+    if (isNewMother) {
+      const newObj = {
+        ...editingMother,
+        id: Date.now(),
+        facility: partnerUser?.structureName || partnerUser?.name || 'Hôpital Principal de Dakar',
+        status: editingMother.status || 'active',
+        lastConsultation: new Date().toLocaleDateString('fr-FR')
+      };
+      updated = [newObj, ...maternalRegistry];
+      setSelectedMotherId(newObj.id);
+    } else {
+      updated = maternalRegistry.map(m => m.id === editingMother.id ? editingMother : m);
+    }
+    setMaternalRegistry(updated);
+    setEditingMother(null);
+    setIsNewMother(false);
+  };
+
+  const handleDeleteMother = (mother) => {
+    setConfirmDeleteObj({
+      title: `la maman "${mother.name}" (${mother.cmuNumber}) du registre de l'établissement`,
+      onConfirm: () => {
+        const updated = maternalRegistry.filter(m => m.id !== mother.id);
+        setMaternalRegistry(updated);
+        if (selectedMotherId === mother.id && updated.length > 0) {
+          setSelectedMotherId(updated[0].id);
+        }
+      }
+    });
+  };
+
+  // States pour la section Laboratoire CPN (déclarés au niveau supérieur selon les règles des Hooks React)
+  const [cpnOrders, setCpnOrders] = useState([
+    {
+      id: 1,
+      period: 'CPN 1er trimestre',
+      periodDetail: 'Datation & Sérologies',
+      exams: 'Groupe sanguin, Rhesus, BW, Toxoplasmose, Rubéole',
+      examDetail: 'NFS complet + Glycémie à jeun',
+      midwife: 'Sage-femme Mme Fatou Diop',
+      coverage: '100% CSU Gratuit',
+      status: 'pending'
+    }
+  ]);
+
+  const [uploadCpnTarget, setUploadCpnTarget] = useState(null);
+  const [uploadCpnFileName, setUploadCpnFileName] = useState('');
+  const [uploadCpnNotes, setUploadCpnNotes] = useState('');
+
+  // States CRUD (Créer, Modifier, Supprimer)
+  const [editingCpnOrder, setEditingCpnOrder] = useState(null);
+  const [isNewCpnOrder, setIsNewCpnOrder] = useState(false);
+  const [confirmDeleteObj, setConfirmDeleteObj] = useState(null); // { title: string, onConfirm: function }
+
+  // ── LABORATOIRE & BIOLOGIE : non concerné par la consultation CPN clinique ──
+  if (isLabUser) {
+    const handleSaveCpnOrder = (e) => {
+      e.preventDefault();
+      if (!editingCpnOrder) return;
+      if (!editingCpnOrder.period || !editingCpnOrder.exams) {
+        alert('Veuillez renseigner la période CPN et les examens biologiques requis.');
+        return;
+      }
+
+      let updated;
+      if (isNewCpnOrder) {
+        const newObj = {
+          ...editingCpnOrder,
+          id: Date.now(),
+          status: editingCpnOrder.status || 'pending'
+        };
+        updated = [newObj, ...cpnOrders];
+      } else {
+        updated = cpnOrders.map(o => o.id === editingCpnOrder.id ? editingCpnOrder : o);
+      }
+      setCpnOrders(updated);
+      setEditingCpnOrder(null);
+      setIsNewCpnOrder(false);
+    };
+
+    const handleDeleteCpnOrder = (order) => {
+      setConfirmDeleteObj({
+        title: `le bilan prénatal "${order.period}" (${order.exams})`,
+        onConfirm: () => {
+          const updated = cpnOrders.filter(o => o.id !== order.id);
+          setCpnOrders(updated);
+        }
+      });
+    };
+
+    const handleConfirmCpnUpload = (e) => {
+      e.preventDefault();
+      if (!uploadCpnTarget) return;
+
+      const updated = cpnOrders.map(o => o.id === uploadCpnTarget.id ? { ...o, status: 'transmis' } : o);
+      setCpnOrders(updated);
+
+      // Add to DMP exams list in localStorage (Global & Patient-specific)
+      try {
+        const patientCmu = 'CMU-DKR-2026-4401'; // Fatou Diop
+        const existingExams = JSON.parse(localStorage.getItem('cmu-medical-exams') || '[]');
+        const patientExams = JSON.parse(localStorage.getItem(`cmu-exams-${patientCmu}`) || '[]');
+
+        const newExam = {
+          id: Date.now(),
+          title: `Bilan Biologique Prénatal (${uploadCpnTarget.period})`,
+          exam_type: 'Sérologies & Bilan Sanguin Maternité',
+          badge: 'GRATUITÉ MATERNITÉ 100%',
+          facility: partnerUser?.structureName || 'Laboratoire Pasteur Dakar',
+          doctor: uploadCpnTarget.midwife,
+          date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }),
+          conclusion: uploadCpnNotes || 'Bilan prénatal complet : Sérologies Toxoplasmose & Rubéole négatives. Groupe A+. Glycémie 0.88 g/L.',
+          cliches: 1,
+          preview: '/csu_bsf_real.png'
+        };
+
+        localStorage.setItem(`cmu-exams-${patientCmu}`, JSON.stringify([newExam, ...patientExams]));
+        localStorage.setItem('cmu-medical-exams', JSON.stringify([newExam, ...existingExams]));
+      } catch (err) {}
+
+      alert(`✅ Bilan prénatal certifié transmis avec succès au dossier maternité (${uploadCpnTarget.period}) !`);
+      setUploadCpnTarget(null);
+      setUploadCpnFileName('');
+      setUploadCpnNotes('');
+    };
+
+    return (
+      <div className="container-fluid px-4 py-4 fade-in-up">
+        {/* HERO BANNER - ESPACE LABORATOIRE & BIOLOGIE (VERT ÉMERAUDE) */}
+        <div className="position-relative overflow-hidden mb-4" style={{
+          borderRadius: '24px',
+          background: 'linear-gradient(135deg, #064e3b 0%, #047857 50%, #059669 100%)',
+          padding: '2.5rem 2.5rem',
+          color: '#ffffff',
+          boxShadow: '0 20px 45px -10px rgba(5, 150, 105, 0.45)',
+          border: '1.5px solid rgba(255, 255, 255, 0.2)'
+        }}>
+          <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '220px', height: '220px', background: 'rgba(255,255,255,0.08)', borderRadius: '50%', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', bottom: '-50px', left: '30%', width: '180px', height: '180px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', pointerEvents: 'none' }} />
+
+          <div className="row align-items-center position-relative" style={{ zIndex: 2 }}>
+            <div className="col-lg-8">
+              <div className="d-flex align-items-center gap-2 mb-3">
+                <span style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(10px)', color: '#ffffff', padding: '6px 16px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34d399', display: 'inline-block' }} />
+                  🧪 Structure de santé & laboratoire conventionné UNAMUSC 🇸🇳
+                </span>
+              </div>
+
+              <h1 className="fw-extrabold mb-2" style={{ color: '#ffffff', fontSize: '2.1rem', letterSpacing: '-0.02em', textTransform: 'none' }}>
+                Pôle Spécialités Médicales, Pathologies & Prévention
+              </h1>
+              <p style={{ color: 'rgba(209, 250, 229, 0.95)', fontSize: '1rem', maxWidth: '650px', lineHeight: 1.6 }}>
+                Les suivis CPN cliniques sont réservés aux sages-femmes et gynécologues. Votre laboratoire conventionné ({partnerUser?.structureName || 'Laboratoire / Établissement de santé conventionné'}) est configuré pour transmettre les bilans sanguins prénatals, sérologies et échographies.
+              </p>
+              <div className="d-flex align-items-center flex-wrap mt-4" style={{ gap: '28px', rowGap: '16px' }}>
+                <button className="btn fw-bold px-4 py-2.5 text-white" style={{ background: '#047857', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '14px', fontSize: '0.9rem', boxShadow: '0 6px 18px rgba(0,0,0,0.2)', marginRight: '16px', marginBottom: '8px' }} onClick={() => (window.location.hash = '#/medical-profile')}>
+                  🩻 Transmettre des résultats (DMP)
+                </button>
+                <button className="btn fw-bold px-4 py-2.5 text-white" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '14px', fontSize: '0.9rem', marginLeft: '4px', marginBottom: '8px' }} onClick={() => (window.location.hash = '#/verify')}>
+                  🔍 Vérifier la carte CSU d'une bénéficiaire
+                </button>
+              </div>
+            </div>
+
+            <div className="col-lg-4 d-none d-lg-block text-center">
+              <div style={{ borderRadius: '20px', overflow: 'hidden', border: '3px solid rgba(255,255,255,0.3)', boxShadow: '0 12px 30px rgba(0,0,0,0.3)' }}>
+                <img src="/csu_bsf_real.png" alt="Laboratoire Maternité" style={{ width: '100%', height: '190px', objectFit: 'cover' }} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* CONTENU HUB LABORATOIRE — Bilans Sanguins Maternité */}
+        <div className="card shadow-sm border-0 p-4 mb-4" style={{ borderRadius: '24px', background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
+          <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+            <div>
+              <h4 className="fw-extrabold mb-1 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)', fontSize: '1.25rem' }}>
+                <span>🧪</span> Bilans sanguins & sérologies prénatales (100% CSU UNAMUSC)
+              </h4>
+              <p className="text-muted small mb-0" style={{ fontSize: '0.88rem' }}>
+                Résultats de bilans biologiques prénatals prescrits lors des consultations CPN 1 à CPN 4+.
+              </p>
+            </div>
+            
+            <div className="d-flex align-items-center gap-2 flex-wrap">
+              <button 
+                type="button" 
+                className="btn btn-emerald fw-bold text-white px-3.5 py-2 d-inline-flex align-items-center gap-2 shadow-sm" 
+                style={{ background: '#059669', border: 'none', borderRadius: '12px', fontSize: '0.88rem' }}
+                onClick={() => {
+                  setIsNewCpnOrder(true);
+                  setEditingCpnOrder({
+                    period: 'CPN 1er trimestre',
+                    periodDetail: 'Datation & Sérologies',
+                    exams: 'Groupe sanguin, Rhésus, BW, Toxoplasmose, Rubéole',
+                    examDetail: 'NFS complet + glycémie à jeun',
+                    midwife: 'Sage-femme Mme Fatou Diop',
+                    coverage: '100% CSU Gratuit',
+                    status: 'pending'
+                  });
+                }}
+              >
+                <span>➕ Prescrire un nouvel examen CPN</span>
+              </button>
+
+              <span className="badge bg-success-subtle text-success border border-success px-3 py-2 fw-bold" style={{ borderRadius: '12px', fontSize: '0.82rem' }}>
+                💖 Program Gratuité Maternité
+              </span>
+            </div>
+          </div>
+
+          <div className="table-responsive">
+            <table className="table table-hover align-middle mb-0" style={{ color: 'var(--text-main)', minWidth: '1300px' }}>
+              <thead>
+                <tr style={{ background: 'var(--bg-card-subtle)', borderBottom: '2px solid var(--border-color)' }}>
+                  <th style={{ padding: '0.9rem 1rem', fontSize: '0.85rem', textTransform: 'none', letterSpacing: '0.02em' }}>Période CPN</th>
+                  <th style={{ padding: '0.9rem 1rem', fontSize: '0.85rem', textTransform: 'none', letterSpacing: '0.02em' }}>Examens biologiques requis</th>
+                  <th style={{ padding: '0.9rem 1rem', fontSize: '0.85rem', textTransform: 'none', letterSpacing: '0.02em' }}>Prescripteur / Sage-femme</th>
+                  <th style={{ padding: '0.9rem 1rem', fontSize: '0.85rem', textTransform: 'none', letterSpacing: '0.02em' }}>Prise en charge</th>
+                  <th style={{ padding: '0.9rem 1rem', fontSize: '0.85rem', textTransform: 'none', letterSpacing: '0.02em', textAlign: 'right', minWidth: '450px' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cpnOrders.map(cOrd => (
+                  <tr key={cOrd.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                    <td style={{ padding: '1rem' }}>
+                      <div className="d-block text-primary fw-bold mb-1" style={{ fontSize: '0.96rem' }}>
+                        {cOrd.period}
+                      </div>
+                      <div className="text-muted small d-block" style={{ fontSize: '0.82rem', lineHeight: '1.35' }}>
+                        {cOrd.periodDetail}
+                      </div>
+                    </td>
+                    <td style={{ padding: '1rem' }}>
+                      <div className="fw-bold text-main mb-1" style={{ fontSize: '0.92rem' }}>
+                        {cOrd.exams}
+                      </div>
+                      {cOrd.examDetail && (
+                        <div className="text-success small fw-semibold" style={{ fontSize: '0.82rem', lineHeight: '1.35' }}>
+                          {cOrd.examDetail}
+                        </div>
+                      )}
+                    </td>
+                    <td style={{ padding: '1rem' }}>
+                      <span className="fw-semibold d-block" style={{ fontSize: '0.9rem' }}>👩‍⚕️ {cOrd.midwife}</span>
+                    </td>
+                    <td style={{ padding: '1rem' }}>
+                      <span className="badge bg-success text-white px-3 py-1.5 fw-bold" style={{ borderRadius: '10px', fontSize: '0.8rem' }}>{cOrd.coverage}</span>
+                    </td>
+                    <td style={{ padding: '1rem', textAlign: 'right', whiteSpace: 'nowrap', minWidth: '450px' }}>
+                      <div className="d-flex align-items-center justify-content-end gap-2.5 flex-nowrap">
+                        {cOrd.status === 'transmis' ? (
+                          <span className="badge bg-success text-white px-3 py-2 fw-bold" style={{ borderRadius: '10px', fontSize: '0.8rem' }}>
+                            ✅ Certifié & transmis
+                          </span>
+                        ) : (
+                          <button 
+                            className="btn btn-sm btn-emerald fw-bold text-white px-3 py-2" 
+                            style={{ background: '#059669', border: 'none', borderRadius: '12px', fontSize: '0.88rem', boxShadow: '0 4px 14px rgba(5,150,105,0.3)' }} 
+                            onClick={() => setUploadCpnTarget(cOrd)}
+                          >
+                            📤 Téléverser le bilan PDF (CPN)
+                          </button>
+                        )}
+
+                        {/* Bouton MODIFIER */}
+                        <button
+                          type="button"
+                          className="btn btn-sm fw-bold px-3 py-2 d-inline-flex align-items-center gap-1.5"
+                          style={{
+                            background: 'rgba(59, 130, 246, 0.18)',
+                            color: '#60a5fa',
+                            border: '1.5px solid #3b82f6',
+                            borderRadius: '10px',
+                            fontSize: '0.84rem',
+                            boxShadow: '0 2px 8px rgba(59, 130, 246, 0.2)'
+                          }}
+                          title="Modifier l'examen prénatal CPN"
+                          onClick={() => {
+                            setEditingCpnOrder({ ...cOrd });
+                            setIsNewCpnOrder(false);
+                          }}
+                        >
+                          ✏️ Modifier
+                        </button>
+
+                        {/* Bouton SUPPRIMER */}
+                        <button
+                          type="button"
+                          className="btn btn-sm fw-bold px-3 py-2 d-inline-flex align-items-center gap-1.5"
+                          style={{
+                            background: 'rgba(239, 68, 68, 0.18)',
+                            color: '#f87171',
+                            border: '1.5px solid #ef4444',
+                            borderRadius: '10px',
+                            fontSize: '0.84rem',
+                            boxShadow: '0 2px 8px rgba(239, 68, 68, 0.2)'
+                          }}
+                          title="Supprimer la demande de bilan CPN"
+                          onClick={() => handleDeleteCpnOrder(cOrd)}
+                        >
+                          🗑️ Supprimer
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* MODAL TRANSMISSION CPN (React Portal) */}
+        {uploadCpnTarget && createPortal(
+          <div 
+            style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.25rem', overflowY: 'auto' }}
+            onClick={(e) => { if (e.target === e.currentTarget) setUploadCpnTarget(null); }}
+          >
+            <form onSubmit={handleConfirmCpnUpload} style={{ maxWidth: '580px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2.25rem', border: '1.5px solid #10b981', boxShadow: '0 25px 60px rgba(0,0,0,0.4)', margin: 'auto' }}>
+              
+              <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+                <div className="d-flex align-items-center gap-3">
+                  <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 'bold', boxShadow: '0 6px 16px rgba(16, 185, 129, 0.3)' }}>
+                    🧪
+                  </div>
+                  <div>
+                    <h5 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>
+                      Transmettre Bilan Prénatal PDF
+                    </h5>
+                    <span className="badge bg-success-subtle text-success border border-success mt-1 fw-bold" style={{ borderRadius: '6px', fontSize: '0.74rem' }}>
+                      UNAMUSC • {uploadCpnTarget.period}
+                    </span>
+                  </div>
+                </div>
+                <button type="button" className="btn-close" onClick={() => setUploadCpnTarget(null)}></button>
+              </div>
+
+              {/* Info Banner */}
+              <div className="p-3.5 rounded-4 mb-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+                <div className="d-flex align-items-start gap-3">
+                  <div className="fs-3">📑</div>
+                  <div>
+                    <strong style={{ color: 'var(--text-main)', fontSize: '0.98rem' }}>{uploadCpnTarget.exams}</strong>
+                    <p className="text-muted small mb-0 mt-1" style={{ fontSize: '0.85rem' }}>
+                      Prescrit par {uploadCpnTarget.midwife}. Prise en charge 100% CSU Gratuité Maternité.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Form Controls */}
+              <div className="mb-3">
+                <label className="form-label small fw-bold mb-1">Nom du fichier PDF *</label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={uploadCpnFileName}
+                  onChange={(e) => setUploadCpnFileName(e.target.value)}
+                  placeholder="Ex: Bilan_Prenatal_CPN1_Fatou_Diop.pdf"
+                  required
+                />
+              </div>
+
+              <div className="mb-4">
+                <label className="form-label small fw-bold mb-1">Résultats certifiés & conclusions biologiques</label>
+                <textarea 
+                  className="form-control" 
+                  rows={3}
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  placeholder="Résultats biologiques, sérologies toxoplasmose, rubéole, groupe sanguin..."
+                  value={uploadCpnNotes}
+                  onChange={(e) => setUploadCpnNotes(e.target.value)}
+                />
+              </div>
+
+              <div className="d-flex justify-content-end gap-2.5 pt-3 border-top" style={{ borderColor: 'var(--border-color)' }}>
+                <button type="button" className="btn px-4 py-2.5 fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.88rem' }} onClick={() => setUploadCpnTarget(null)}>
+                  Annuler
+                </button>
+                <button type="submit" className="btn px-4 py-2.5 fw-bold text-white" style={{ background: '#059669', border: 'none', borderRadius: '12px', fontSize: '0.9rem', boxShadow: '0 4px 14px rgba(5,150,105,0.3)' }}>
+                  ✅ Publier au Carnet Maternité (DMP)
+                </button>
+              </div>
+            </form>
+          </div>,
+          document.body
+        )}
+
+        {/* MODAL DE CRÉATION / ÉDITION DE BILAN CPN (React Portal) */}
+        {editingCpnOrder && createPortal(
+          <div 
+            style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.25rem', overflowY: 'auto' }}
+            onClick={(e) => { if (e.target === e.currentTarget) setEditingCpnOrder(null); }}
+          >
+            <form onSubmit={handleSaveCpnOrder} style={{ maxWidth: '720px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2.25rem', border: '1.5px solid #10b981', boxShadow: '0 25px 60px rgba(0,0,0,0.4)', margin: 'auto' }}>
+              
+              <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+                <div className="d-flex align-items-center gap-3">
+                  <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 'bold' }}>
+                    🤰
+                  </div>
+                  <div>
+                    <h5 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>
+                      {isNewCpnOrder ? 'Prescrire un nouvel examen CPN' : 'Modifier l\'examen prénatal CPN'}
+                    </h5>
+                    <span className="badge bg-success-subtle text-success border border-success fw-bold" style={{ borderRadius: '6px', fontSize: '0.74rem' }}>
+                      UNAMUSC • Carnet Maternité
+                    </span>
+                  </div>
+                </div>
+                <button type="button" className="btn-close" onClick={() => setEditingCpnOrder(null)}></button>
+              </div>
+
+              <div className="row g-3 mb-3">
+                <div className="col-md-6">
+                  <label className="form-label small fw-bold mb-1">Période CPN *</label>
+                  <select 
+                    className="form-select"
+                    style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                    value={editingCpnOrder.period || 'CPN 1er trimestre'}
+                    onChange={(e) => setEditingCpnOrder({ ...editingCpnOrder, period: e.target.value })}
+                  >
+                    <option value="CPN 1er trimestre">CPN 1er trimestre</option>
+                    <option value="CPN 2ème trimestre">CPN 2ème trimestre</option>
+                    <option value="CPN 3ème trimestre">CPN 3ème trimestre</option>
+                    <option value="CPN 4ème trimestre">CPN 4ème trimestre</option>
+                  </select>
+                </div>
+
+                <div className="col-md-6">
+                  <label className="form-label small fw-bold mb-1">Intitulé période</label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                    value={editingCpnOrder.periodDetail || ''}
+                    onChange={(e) => setEditingCpnOrder({ ...editingCpnOrder, periodDetail: e.target.value })}
+                    placeholder="Ex: Datation & Sérologies"
+                  />
+                </div>
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label small fw-bold mb-1">Examens biologiques requis *</label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingCpnOrder.exams || ''}
+                  onChange={(e) => setEditingCpnOrder({ ...editingCpnOrder, exams: e.target.value })}
+                  placeholder="Ex: Groupe sanguin, Rhésus, BW, Toxoplasmose, Rubéole"
+                  required
+                />
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label small fw-bold mb-1">Détail des analyses complémentaires</label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingCpnOrder.examDetail || ''}
+                  onChange={(e) => setEditingCpnOrder({ ...editingCpnOrder, examDetail: e.target.value })}
+                  placeholder="Ex: NFS complet + Glycémie à jeun"
+                />
+              </div>
+
+              <div className="row g-3 mb-4">
+                <div className="col-md-6">
+                  <label className="form-label small fw-bold mb-1">Prescripteur / Sage-femme</label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                    value={editingCpnOrder.midwife || ''}
+                    onChange={(e) => setEditingCpnOrder({ ...editingCpnOrder, midwife: e.target.value })}
+                    placeholder="Ex: Sage-femme Mme Fatou Diop"
+                  />
+                </div>
+
+                <div className="col-md-6">
+                  <label className="form-label small fw-bold mb-1">Prise en charge</label>
+                  <input 
+                    type="text" 
+                    className="form-control" 
+                    style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                    value={editingCpnOrder.coverage || '100% CSU Gratuit'}
+                    onChange={(e) => setEditingCpnOrder({ ...editingCpnOrder, coverage: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="d-flex justify-content-between align-items-center pt-3.5 border-top w-100" style={{ borderColor: 'var(--border-color)' }}>
+                <button 
+                  type="button" 
+                  className="btn px-4 py-2.5 fw-bold" 
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.88rem' }} 
+                  onClick={() => setEditingCpnOrder(null)}
+                >
+                  Annuler
+                </button>
+                <button 
+                  type="submit" 
+                  className="btn px-4.5 py-2.5 fw-bold text-white" 
+                  style={{ background: '#059669', border: 'none', borderRadius: '12px', fontSize: '0.9rem', boxShadow: '0 4px 14px rgba(5,150,105,0.3)' }}
+                >
+                  💾 Enregistrer le bilan CPN
+                </button>
+              </div>
+
+            </form>
+          </div>,
+          document.body
+        )}
+
+        {/* MODAL / POP-UP DE CONFIRMATION DE SUPPRESSION (React Portal) */}
+        {confirmDeleteObj && createPortal(
+          <div 
+            style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.82)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', zIndex: 9999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.25rem' }}
+            onClick={(e) => { if (e.target === e.currentTarget) setConfirmDeleteObj(null); }}
+          >
+            <div 
+              className="shadow-2xl text-center" 
+              style={{ maxWidth: '480px', width: '100%', background: 'var(--bg-card, #1e293b)', color: 'var(--text-main, #ffffff)', borderRadius: '24px', padding: '2.25rem 1.75rem', border: '1.5px solid rgba(239, 68, 68, 0.4)', boxShadow: '0 25px 70px rgba(239, 68, 68, 0.25), 0 10px 30px rgba(0, 0, 0, 0.5)', margin: 'auto' }}
+            >
+              <div 
+                style={{ width: '72px', height: '72px', borderRadius: '24px', background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.35) 100%)', border: '2px solid #ef4444', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.2rem', margin: '0 auto 1.25rem auto', boxShadow: '0 10px 25px rgba(239, 68, 68, 0.3)' }}
+              >
+                🗑️
+              </div>
+
+              <h4 className="fw-extrabold mb-2" style={{ color: 'var(--text-main)', fontSize: '1.25rem' }}>
+                Confirmer la suppression
+              </h4>
+
+              <p className="mb-4" style={{ color: 'var(--text-sub, #94a3b8)', fontSize: '0.92rem', lineHeight: '1.55' }}>
+                Voulez-vous vraiment supprimer définitivement <strong style={{ color: '#ef4444' }}>{confirmDeleteObj.title}</strong> ?
+                <br />
+                <small className="text-muted d-block mt-1">Cette action est irréversible dans le système UNAMUSC.</small>
+              </p>
+
+              <div className="d-flex justify-content-center gap-3 pt-2">
+                <button
+                  type="button"
+                  className="btn px-4 py-2.5 fw-bold"
+                  style={{ background: 'var(--bg-card-subtle, #334155)', color: 'var(--text-main, #ffffff)', border: '1px solid var(--border-color, #475569)', borderRadius: '12px', fontSize: '0.88rem' }}
+                  onClick={() => setConfirmDeleteObj(null)}
+                >
+                  Annuler
+                </button>
+
+                <button
+                  type="button"
+                  className="btn px-4 py-2.5 fw-bold text-white"
+                  style={{ background: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)', border: 'none', borderRadius: '12px', fontSize: '0.88rem', boxShadow: '0 4px 16px rgba(239, 68, 68, 0.4)' }}
+                  onClick={() => {
+                    confirmDeleteObj.onConfirm();
+                    setConfirmDeleteObj(null);
+                  }}
+                >
+                  🗑️ Supprimer définitivement
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+      </div>
+    );
+  }
+
   // ── PHARMACIEN : non concerné par le carnet de maternité ──
   if (isPharmacist) {
     return (
-      <div className="maternity-view fade-in-up" style={{ minHeight: '80vh', padding: '2rem 1rem' }}>
-        <div style={{ maxWidth: '700px', margin: '0 auto' }}>
-          <div className="p-5 rounded-4 text-center text-white" style={{ background: 'linear-gradient(135deg, #047857 0%, #059669 100%)', borderRadius: '24px', boxShadow: 'var(--shadow-lg)' }}>
-            <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>💊</div>
-            <span className="badge mb-3 d-inline-block" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.82rem', fontWeight: 'bold' }}>Pharmacien Agréé UNAMUSC</span>
-            <h2 className="fw-bold mb-3" style={{ color: '#fff', fontSize: '1.8rem' }}>Carnet de Maternité — Non concerné</h2>
-            <p className="mb-4" style={{ color: '#d1fae5', lineHeight: '1.6', maxWidth: '500px', margin: '0 auto 1.5rem' }}>
-              Le suivi de maternité est réservé aux assurées, médecins et sage-femmes. Votre espace pharmacien est dédié à la validation des bons de commande médicaments.
-            </p>
-            <button className="btn btn-light fw-bold px-4 py-3" style={{ borderRadius: '12px', color: '#047857' }} onClick={() => (window.location.hash = '#/purchase-orders')}>
-              💊 Accéder à mes Bons de Commande
-            </button>
+      <div className="container-fluid px-4 py-4 fade-in-up">
+        {/* HERO BANNER - ESPACE PHARMACIEN */}
+        <div className="position-relative overflow-hidden mb-4" style={{
+          borderRadius: '24px',
+          background: 'linear-gradient(135deg, #064e3b 0%, #047857 50%, #059669 100%)',
+          padding: '2.5rem 2.5rem',
+          color: '#ffffff',
+          boxShadow: '0 20px 45px -10px rgba(5, 150, 105, 0.45)',
+          border: '1.5px solid rgba(255, 255, 255, 0.2)'
+        }}>
+          <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '220px', height: '220px', background: 'rgba(255,255,255,0.08)', borderRadius: '50%', pointerEvents: 'none' }} />
+          <div style={{ position: 'absolute', bottom: '-50px', left: '30%', width: '180px', height: '180px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', pointerEvents: 'none' }} />
+
+          <div className="row align-items-center position-relative" style={{ zIndex: 2 }}>
+            <div className="col-lg-8">
+              <div className="d-flex align-items-center gap-2 mb-3">
+                <span style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(10px)', color: '#ffffff', padding: '6px 16px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34d399', display: 'inline-block' }} />
+                  Pharmacien agréé UNAMUSC 🇸🇳
+                </span>
+              </div>
+
+              <h1 className="fw-extrabold mb-2" style={{ color: '#ffffff', fontSize: '2.1rem', letterSpacing: '-0.02em', textTransform: 'none' }}>
+                Carnet de maternité : non concerné
+              </h1>
+              <p style={{ color: 'rgba(209, 250, 229, 0.95)', fontSize: '1rem', maxWidth: '650px', lineHeight: 1.6 }}>
+                Le suivi des consultations prénatales et néonatales est géré par les sage-femmes et gynécologues. Votre espace officine traite les bons de commande de produits et vitamines de maternité.
+              </p>
+              <div className="d-flex align-items-center flex-wrap mt-4" style={{ gap: '28px', rowGap: '16px' }}>
+                <button className="btn fw-bold px-4 py-2.5 text-white" style={{ background: '#047857', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '14px', fontSize: '0.9rem', boxShadow: '0 6px 18px rgba(0,0,0,0.2)', marginRight: '16px', marginBottom: '8px' }} onClick={() => (window.location.hash = '#/purchase-orders')}>
+                  💊 Accéder au guichet des bons de commande
+                </button>
+                <button className="btn fw-bold px-4 py-2.5 text-white" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '14px', fontSize: '0.9rem', marginLeft: '4px', marginBottom: '8px' }} onClick={() => (window.location.hash = '#/verify')}>
+                  🔍 Vérifier la carte CSU d'un assuré
+                </button>
+              </div>
+            </div>
+
+            <div className="col-lg-4 d-none d-lg-block text-center">
+              <div style={{ borderRadius: '20px', overflow: 'hidden', border: '3px solid rgba(255,255,255,0.3)', boxShadow: '0 12px 30px rgba(0,0,0,0.3)' }}>
+                <img src="/csu_bsf_real.png" alt="Maternité & Santé de la Mère UNAMUSC" style={{ width: '100%', height: '190px', objectFit: 'cover' }} />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 2. CONTENU DU HUB PHARMACIEN */}
+        <div className="row g-4 mb-4">
+          {/* Panneau d'information des droits RBAC */}
+          <div className="col-lg-5">
+            <div className="p-4 rounded-4 h-100 position-relative overflow-hidden" style={{
+              background: 'var(--bg-card)',
+              border: '1.5px solid rgba(16, 185, 129, 0.3)',
+              borderRadius: '24px',
+              boxShadow: '0 12px 32px rgba(0,0,0,0.12)'
+            }}>
+              <div style={{ position: 'absolute', top: 0, right: 0, width: '120px', height: '120px', background: 'radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%)', pointerEvents: 'none' }} />
+
+              <div className="d-flex align-items-center gap-3 mb-3">
+                <div style={{
+                  width: '50px',
+                  height: '50px',
+                  borderRadius: '16px',
+                  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.1) 100%)',
+                  color: '#10b981',
+                  border: '1px solid rgba(16, 185, 129, 0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justify: 'center',
+                  fontSize: '1.4rem',
+                  boxShadow: '0 6px 16px rgba(16, 185, 129, 0.15)'
+                }}>
+                  👶
+                </div>
+                <div>
+                  <h5 className="fw-bold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.08rem', letterSpacing: '-0.01em', textTransform: 'none' }}>
+                    Programme gratuité maternité & BSF
+                  </h5>
+                  <span style={{ color: 'var(--text-sub)', fontSize: '0.78rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
+                    Directives UNAMUSC & Agence CSU
+                  </span>
+                </div>
+              </div>
+
+              <p style={{ color: 'var(--text-sub)', fontSize: '0.88rem', lineHeight: 1.65, marginBottom: '1.5rem' }}>
+                Les kits et médicaments prescrits aux mères bénéficiaires (fer, acide folique, kits d'accouchement) s'exécutent au niveau des bons de commande avec prise en charge intégrale UNAMUSC.
+              </p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div className="p-3 rounded-3 d-flex align-items-center justify-content-between" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+                  <div className="d-flex align-items-center gap-2">
+                    <span style={{ fontSize: '1rem' }}>💊</span>
+                    <span style={{ color: 'var(--text-main)', fontSize: '0.85rem', fontWeight: 600 }}>Délivrance kit maternité en pharmacie</span>
+                  </div>
+                  <span className="badge bg-success-subtle text-success border border-success px-3 py-1.5 fw-bold" style={{ borderRadius: '8px', fontSize: '0.76rem' }}>
+                    🟢 Gratuité 100%
+                  </span>
+                </div>
+
+                <div className="p-3 rounded-3 d-flex align-items-center justify-content-between" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+                  <div className="d-flex align-items-center gap-2">
+                    <span style={{ fontSize: '1rem' }}>🩺</span>
+                    <span style={{ color: 'var(--text-main)', fontSize: '0.85rem', fontWeight: 600 }}>Saisie des consultations obstétriques</span>
+                  </div>
+                  <span className="badge bg-secondary-subtle text-secondary border border-secondary px-3 py-1.5 fw-bold" style={{ borderRadius: '8px', fontSize: '0.76rem' }}>
+                    🔴 Sage-femmes
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* RACCOURCIS PHARMACIE */}
+          <div className="col-lg-7">
+            <div className="row g-3">
+              <div className="col-md-6">
+                <div 
+                  className="p-4 rounded-4 h-100 cursor-pointer transition-all position-relative overflow-hidden" 
+                  style={{ 
+                    background: 'var(--bg-card)', 
+                    border: '1.5px solid rgba(16, 185, 129, 0.4)', 
+                    borderRadius: '22px', 
+                    boxShadow: '0 8px 24px rgba(5, 150, 105, 0.12)' 
+                  }} 
+                  onClick={() => (window.location.hash = '#/purchase-orders')}
+                >
+                  <div className="d-flex align-items-start justify-content-between mb-3">
+                    <div style={{ width: '48px', height: '48px', borderRadius: '15px', background: 'linear-gradient(135deg, #059669, #10b981)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', boxShadow: '0 6px 16px rgba(5,150,105,0.35)' }}>
+                      💊
+                    </div>
+                    <span style={{ background: 'rgba(16, 185, 129, 0.12)', color: '#10b981', fontSize: '0.72rem', fontWeight: 700, padding: '4px 10px', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                      Guichet principal
+                    </span>
+                  </div>
+                  <strong className="d-block mb-1" style={{ color: 'var(--text-main)', fontSize: '1.02rem', letterSpacing: '-0.01em', textTransform: 'none' }}>
+                    Bons de commande & ordonnances
+                  </strong>
+                  <p className="mb-0" style={{ color: 'var(--text-sub)', fontSize: '0.82rem', lineHeight: 1.5 }}>
+                    Valider les médicaments & facturer en tiers-payant UNAMUSC.
+                  </p>
+                </div>
+              </div>
+
+              <div className="col-md-6">
+                <div 
+                  className="p-4 rounded-4 h-100 cursor-pointer transition-all position-relative overflow-hidden" 
+                  style={{ 
+                    background: 'var(--bg-card)', 
+                    border: '1px solid var(--border-color)', 
+                    borderRadius: '22px' 
+                  }} 
+                  onClick={() => (window.location.hash = '#/verify')}
+                >
+                  <div className="d-flex align-items-start justify-content-between mb-3">
+                    <div style={{ width: '48px', height: '48px', borderRadius: '15px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                      🔍
+                    </div>
+                    <span className="text-muted" style={{ fontSize: '0.72rem', fontWeight: 600 }}>
+                      Contrôle CSU
+                    </span>
+                  </div>
+                  <strong className="d-block mb-1" style={{ color: 'var(--text-main)', fontSize: '1.02rem', letterSpacing: '-0.01em', textTransform: 'none' }}>
+                    Vérification des cartes CSU
+                  </strong>
+                  <p className="mb-0" style={{ color: 'var(--text-sub)', fontSize: '0.82rem', lineHeight: 1.5 }}>
+                    Scanner QR code & contrôler l'éligibilité tiers-payant.
+                  </p>
+                </div>
+              </div>
+
+              <div className="col-md-6">
+                <div 
+                  className="p-4 rounded-4 h-100 cursor-pointer transition-all position-relative overflow-hidden" 
+                  style={{ 
+                    background: 'var(--bg-card)', 
+                    border: '1px solid var(--border-color)', 
+                    borderRadius: '22px' 
+                  }} 
+                  onClick={() => (window.location.hash = '#/health-structures')}
+                >
+                  <div className="d-flex align-items-start justify-content-between mb-3">
+                    <div style={{ width: '48px', height: '48px', borderRadius: '15px', background: 'rgba(2, 132, 199, 0.15)', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', border: '1px solid rgba(2, 132, 199, 0.3)' }}>
+                      🏥
+                    </div>
+                    <span className="text-muted" style={{ fontSize: '0.72rem', fontWeight: 600 }}>
+                      Réseau officines
+                    </span>
+                  </div>
+                  <strong className="d-block mb-1" style={{ color: 'var(--text-main)', fontSize: '1.02rem', letterSpacing: '-0.01em', textTransform: 'none' }}>
+                    Structures de santé agréées
+                  </strong>
+                  <p className="mb-0" style={{ color: 'var(--text-sub)', fontSize: '0.82rem', lineHeight: 1.5 }}>
+                    Annuaire des officines et centres hospitaliers du Sénégal.
+                  </p>
+                </div>
+              </div>
+
+              <div className="col-md-6">
+                <div 
+                  className="p-4 rounded-4 h-100 cursor-pointer transition-all position-relative overflow-hidden" 
+                  style={{ 
+                    background: 'var(--bg-card)', 
+                    border: '1px solid var(--border-color)', 
+                    borderRadius: '22px' 
+                  }} 
+                  onClick={() => (window.location.hash = '#/statistics')}
+                >
+                  <div className="d-flex align-items-start justify-content-between mb-3">
+                    <div style={{ width: '48px', height: '48px', borderRadius: '15px', background: 'rgba(217, 119, 6, 0.15)', color: '#d97706', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', border: '1px solid rgba(217, 119, 6, 0.3)' }}>
+                      📊
+                    </div>
+                    <span className="text-muted" style={{ fontSize: '0.72rem', fontWeight: 600 }}>
+                      Facturation UNAMUSC
+                    </span>
+                  </div>
+                  <strong className="d-block mb-1" style={{ color: 'var(--text-main)', fontSize: '1.02rem', letterSpacing: '-0.01em', textTransform: 'none' }}>
+                    Rapports & statistiques
+                  </strong>
+                  <p className="mb-0" style={{ color: 'var(--text-sub)', fontSize: '0.82rem', lineHeight: 1.5 }}>
+                    Suivi des délivrances et états de remboursement officine.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -931,14 +2328,14 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
             <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.1rem' }}>UNAMUSC Sénégal 🇸🇳</h5>
             <span style={{ height: '14px', width: '1px', background: 'var(--border-color)' }} />
             <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '20px', fontSize: '0.78rem', fontWeight: '600', padding: '0.3rem 0.85rem' }}>
-              {activeFullName} : Mère éligible CSU
+              {isCitizen ? `${activeFullName} : Mère éligible CSU` : `🏥 ${partnerUser?.structureName || partnerUser?.name || 'Hôpital Principal de Dakar'} • Registre Maternité (${maternalRegistry.length} mères suivies)`}
             </span>
           </div>
 
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <input 
               type="text" 
-              placeholder="Rechercher..." 
+              placeholder="Rechercher maman..." 
               style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.8rem', width: '200px' }} 
             />
           </div>
@@ -947,153 +2344,630 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
 
       <div style={{ maxWidth: '1320px', margin: '1.75rem auto 0 auto', padding: '0 1.5rem' }}>
 
-        {/* BANNIÈRE DE RÔLE — distincte selon le profil */}
-        {(canEditMaternity || isSuperAdmin) && (
-          <div className="mb-4 p-3 rounded-4 d-flex align-items-center gap-3" style={{
-            borderRadius: '14px',
-            background: isSuperAdmin ? 'linear-gradient(90deg, rgba(234,179,8,0.15) 0%, rgba(234,179,8,0.05) 100%)'
-                     : 'linear-gradient(90deg, #0f766e 0%, #0d9488 100%)',
-            color: isSuperAdmin ? '#92400e' : '#ffffff',
-            border: isSuperAdmin ? '1px solid rgba(234,179,8,0.4)' : 'none'
-          }}>
-            <span style={{ fontSize: '1.6rem' }}>{isSuperAdmin ? '👑' : isMidwife ? '🤱' : '🩺'}</span>
-            <div className="d-flex flex-column gap-1">
-              <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.05rem', color: 'inherit', letterSpacing: '-0.01em' }}>
-                {isSuperAdmin && 'Mode superadmin'}
-                {isMidwife && 'Mode sage-femme'}
-                {isDoctor && 'Mode médecin'}
-              </h6>
-              <span className="small" style={{ opacity: 0.9, fontSize: '0.88rem', lineHeight: '1.45' }}>
-                {isSuperAdmin && 'Accès total : Toutes les actions et validations sont disponibles.'}
-                {isMidwife && 'Édition complète : Vous pouvez remplir les consultations prénatales, ajouter des fiches conseils et modifier le carnet.'}
-                {isDoctor && 'Édition complète : Vous pouvez remplir les consultations prénatales, ajouter des fiches conseils et modifier le carnet.'}
-              </span>
-            </div>
-          </div>
-        )}
-        {isCitizen && (
-          <div className="mb-4 p-3.5 rounded-4 d-flex align-items-center gap-3" style={{
-            borderRadius: '14px',
-            background: 'rgba(16,185,129,0.1)',
-            border: '1px solid rgba(16,185,129,0.25)',
-            color: 'var(--text-main)'
-          }}>
-            <span style={{ fontSize: '1.6rem' }}>📖</span>
-            <div className="d-flex flex-column gap-1">
-              <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.05rem', color: 'var(--text-main)', letterSpacing: '-0.01em' }}>
-                Mode lecture seule
-              </h6>
-              <span className="small" style={{ color: 'var(--text-sub)', fontSize: '0.88rem', lineHeight: '1.45' }}>
-                Espace assuré : Consultez votre carnet de maternité, téléchargez le PDF et posez vos questions à la sage-femme.
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* Top Hero Banner Card */}
-        <div 
-          className="p-5 rounded-4 mb-5 text-white" 
-          style={{ 
-            background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.38) 0%, rgba(16, 185, 129, 0.18) 100%), url("/csu_kids_real.png") center/cover no-repeat', 
-            padding: '3.75rem 2.5rem',
-            minHeight: '240px',
-            borderRadius: '24px',
-            border: '1px solid rgba(255, 255, 255, 0.45)', 
-            boxShadow: '0 14px 40px rgba(0, 0, 0, 0.25)' 
-          }}
-        >
-          <div className="row align-items-center g-4">
-            <div className="col-lg-8">
-              <span style={{ background: '#059669', color: '#ffffff', padding: '0.35rem 0.9rem', borderRadius: '20px', fontSize: '0.82rem', fontWeight: '700', display: 'inline-block', marginBottom: '0.75rem', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.3)' }}>
-                🇸🇳 Espace premium santé maternelle UNAMUSC
-              </span>
-              <h1 className="fw-extrabold text-white mb-2" style={{ fontSize: '2.35rem', letterSpacing: '-0.02em', textShadow: '0 3px 6px rgba(0,0,0,0.4)' }}>Carnet de santé maternelle & suivi de l'enfant</h1>
-              <p className="text-white-50 mb-4" style={{ fontSize: '1.05rem', maxWidth: '720px', lineHeight: '1.6', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
-                Accédez en toute sécurité au suivi prénatal et au calendrier vaccinal PEV de votre enfant. Bénéficiez des garanties de prise en charge 100% CSU.
-              </p>
-
-              <div className="d-flex gap-3 flex-wrap">
-                <button 
-                  type="button"
-                  style={{ background: '#dc2626', color: '#ffffff', border: '1px solid #b91c1c', borderRadius: '12px', padding: '0.75rem 1.25rem', fontWeight: '800', fontSize: '0.88rem', boxShadow: '0 4px 15px rgba(220, 38, 38, 0.45)', cursor: 'pointer' }} 
-                  onClick={() => setShowDangerSOSModal(true)}
-                >
-                  🚨 Signes de danger & Urgence Maternité (SAMU 1515)
-                </button>
-
-                <button 
-                  type="button"
-                  style={{ background: '#059669', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.75rem 1.25rem', fontWeight: '700', fontSize: '0.88rem', boxShadow: '0 4px 15px rgba(5, 150, 105, 0.4)', cursor: 'pointer' }} 
-                  onClick={handleGenerateDeliveryCertificate}
-                >
-                  📜 Certificat d'accouchement PDF (100% UNAMUSC)
-                </button>
+        {/* REGISTRE DES PATIENTS & DOSSIERS MÉDICAUX DE L'ÉTABLISSEMENT — Multi-Pathologies */}
+        {!isCitizen && (
+          <div className="card shadow-lg border-0 mb-4 overflow-hidden" style={{ borderRadius: '24px', background: 'var(--bg-card)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', boxShadow: '0 20px 45px rgba(0,0,0,0.25)' }}>
+            
+            {/* En-tête avec Titre, Statistique & Recherche — Spacieux & Aéré */}
+            <div className="card-header bg-transparent border-0" style={{ padding: '1.75rem 2rem 1.25rem 2rem', borderBottom: '1px solid var(--border-color)' }}>
+              <div className="d-flex flex-wrap justify-content-between align-items-center gap-4">
                 
-                <button 
-                  type="button"
-                  style={{ background: 'rgba(15, 23, 42, 0.85)', color: '#ffffff', border: '1px solid rgba(255, 255, 255, 0.35)', borderRadius: '12px', padding: '0.75rem 1.25rem', fontWeight: '700', fontSize: '0.88rem', cursor: 'pointer', backdropFilter: 'blur(8px)', boxShadow: '0 4px 15px rgba(0,0,0,0.3)' }} 
-                  onClick={handleDownloadCarnet}
-                >
-                  📥 Carnet officiel PDF (🇸🇳)
-                </button>
+                {/* Gauche: Titre et Statut Dossier Actif */}
+                <div className="d-flex align-items-start gap-3.5" style={{ flex: '1 1 500px' }}>
+                  <div style={{ width: '60px', height: '60px', borderRadius: '20px', background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.85rem', fontWeight: 'bold', boxShadow: '0 8px 22px rgba(16,185,129,0.38)', flexShrink: 0 }}>
+                    🏥
+                  </div>
+                  <div>
+                    <h4 className="fw-extrabold mb-2" style={{ color: 'var(--text-main)', fontSize: '1.35rem', letterSpacing: '-0.015em', lineHeight: '1.3' }}>
+                      Registre général des patients & dossiers médicaux — {partnerUser?.structureName || partnerUser?.name || 'Hôpital Principal de Dakar'}
+                    </h4>
+                    
+                    {/* Statistique Aérée */}
+                    <div className="d-flex align-items-center gap-2.5 flex-wrap mt-2" style={{ fontSize: '0.88rem' }}>
+                      <span className="d-inline-flex align-items-center gap-2 px-3 py-1.5 rounded-pill" style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.28)', color: '#10b981', fontWeight: '700' }}>
+                        <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
+                        {maternalRegistry.length} assurés suivis (Toutes pathologies)
+                      </span>
+                      
+                      <span className="text-muted">•</span>
+
+                      <span className="d-inline-flex align-items-center gap-2 px-3 py-1.5 rounded-pill" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', color: 'var(--text-main)', fontSize: '0.84rem' }}>
+                        <span>Dossier actif :</span>
+                        <strong className="text-success" style={{ letterSpacing: '0.01em' }}>👤 {activeMother.name} ({activeMother.cmuNumber})</strong>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Droite: Recherche & Bouton d'Inscription — Aéré Verticalement et Horizontalement */}
+                <div className="d-flex align-items-center flex-wrap" style={{ gap: '1rem', rowGap: '1.25rem', columnGap: '1rem' }}>
+                  <div className="position-relative" style={{ marginBottom: '0.4rem' }}>
+                    <input 
+                      type="text" 
+                      className="form-control"
+                      style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', width: '300px', padding: '0.7rem 1rem 0.7rem 2.6rem', fontSize: '0.88rem' }}
+                      placeholder="Rechercher patient, N° CSU, soin..."
+                      value={searchMotherQuery}
+                      onChange={(e) => setSearchMotherQuery(e.target.value)}
+                    />
+                    <span style={{ position: 'absolute', left: '0.95rem', top: '50%', transform: 'translateY(-50%)', opacity: 0.65, fontSize: '0.95rem' }}>🔍</span>
+                  </div>
+
+                  <button 
+                    type="button" 
+                    className="btn btn-emerald fw-bold text-white px-4 d-inline-flex align-items-center gap-2"
+                    style={{ background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', border: 'none', borderRadius: '14px', fontSize: '0.92rem', padding: '0.7rem 1.4rem', boxShadow: '0 6px 20px rgba(16,185,129,0.38)', marginBottom: '0.4rem', cursor: 'pointer' }}
+                    onClick={() => {
+                      setIsNewMother(true);
+                      setEditingMother({
+                        name: '',
+                        gender: 'F',
+                        age: '',
+                        phone: '',
+                        cmuNumber: `CMU-DKR-2026-${Math.floor(1000 + Math.random() * 9000)}`,
+                        category: 'maternity',
+                        pathology: '🤰 Suivi Grossesse',
+                        edd: '',
+                        doctorRef: 'Dr. Ousmane Sow'
+                      });
+                    }}
+                  >
+                    ➕ Inscrire un nouvel assuré
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+            {/* Panneau d'Organisation des Spécialités Médicales — Isolé avec Marge & Espacement Généreux */}
+            <div className="mx-4 my-4 p-4 rounded-4" style={{ border: '1.5px solid var(--border-color)', background: 'rgba(15, 23, 42, 0.45)', boxShadow: 'inset 0 2px 10px rgba(0,0,0,0.1)' }}>
+              
+              {/* En-tête du Panneau de Filtre */}
+              <div className="d-flex align-items-center justify-content-between mb-3.5 flex-wrap gap-3 pb-2 border-bottom" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+                <div className="d-flex align-items-center gap-2.5">
+                  <span style={{ fontSize: '1.25rem' }}>📂</span>
+                  <span className="fw-extrabold" style={{ fontSize: '0.85rem', color: 'var(--text-sub)', letterSpacing: '0.04em' }}>
+                    Filtrer le registre par spécialité & service médical :
+                  </span>
+                </div>
+                
+                {registryCategoryFilter !== 'all' && (
+                  <button 
+                    type="button" 
+                    className="btn btn-sm btn-link text-success fw-bold p-0 text-decoration-none d-inline-flex align-items-center gap-1.5"
+                    style={{ fontSize: '0.85rem' }}
+                    onClick={() => setRegistryCategoryFilter('all')}
+                  >
+                    🔄 Réinitialiser tous les filtres
+                  </button>
+                )}
+              </div>
+
+              {/* Grille des Boutons de Spécialités — Espacement Vertical & Horizontal Généreux */}
+              <div 
+                style={{ 
+                  display: 'flex',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  gap: '1rem', 
+                  rowGap: '1rem', 
+                  columnGap: '1rem',
+                  paddingTop: '0.4rem',
+                  paddingBottom: '0.2rem'
+                }}
+              >
+                {[
+                  { id: 'all', label: 'Tous les services', icon: '🌐', count: maternalRegistry.length, color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)' },
+                  { id: 'maternity', label: 'Gynécologie & maternité (CPN)', icon: '🤰', count: maternalRegistry.filter(m => m.category === 'maternity').length, color: '#ec4899', bg: 'rgba(236, 72, 153, 0.15)' },
+                  { id: 'chronic', label: 'Cardiologie & diabétologie (ALD)', icon: '🩸', count: maternalRegistry.filter(m => m.category === 'chronic').length, color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)' },
+                  { id: 'pediatric', label: 'Pédiatrie & PEV (0-5 ans)', icon: '👶', count: maternalRegistry.filter(m => m.category === 'pediatric').length, color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.15)' },
+                  { id: 'surgery', label: 'Chirurgie & traumatologie', icon: '🩹', count: maternalRegistry.filter(m => m.category === 'surgery').length, color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.15)' }
+                ].map(tab => {
+                  const isActive = registryCategoryFilter === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      className="btn btn-sm fw-bold d-inline-flex align-items-center gap-2.5 shadow-sm hover-lift"
+                      style={{
+                        background: isActive ? tab.color : 'var(--bg-card-subtle)',
+                        color: isActive ? '#ffffff' : 'var(--text-main)',
+                        border: isActive ? `2px solid ${tab.color}` : '1.5px solid var(--border-color)',
+                        borderRadius: '16px',
+                        fontSize: '0.88rem',
+                        padding: '0.75rem 1.25rem',
+                        boxShadow: isActive ? `0 8px 22px ${tab.color}45` : '0 2px 8px rgba(0,0,0,0.1)',
+                        transition: 'all 0.22s cubic-bezier(0.4, 0, 0.2, 1)',
+                        cursor: 'pointer'
+                      }}
+                      onClick={() => setRegistryCategoryFilter(tab.id)}
+                    >
+                      <span style={{ fontSize: '1.15rem' }}>{tab.icon}</span>
+                      <span className="me-1">{tab.label}</span>
+                      <span 
+                        className="badge rounded-pill"
+                        style={{ 
+                          background: isActive ? 'rgba(255,255,255,0.32)' : tab.bg, 
+                          color: isActive ? '#ffffff' : tab.color,
+                          fontSize: '0.8rem',
+                          padding: '5px 11px',
+                          border: isActive ? 'none' : `1px solid ${tab.color}40`
+                        }}
+                      >
+                        {tab.count} {tab.count > 1 ? 'patients' : 'patient'}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Tableau du Registre Médical Optimisé */}
+            <div className="card-body p-0">
+              <div className="table-responsive">
+                <table className="table table-hover align-middle mb-0" style={{ color: 'var(--text-main)', minWidth: '1280px' }}>
+                  <thead style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', fontSize: '0.78rem', textTransform: 'none', letterSpacing: 'normal', fontWeight: '800' }}>
+                    <tr>
+                      <th style={{ padding: '1.2rem 1.4rem', width: '280px' }}>Assuré bénéficiaire</th>
+                      <th style={{ padding: '1.2rem', width: '190px' }}>N° Carte CSU</th>
+                      <th style={{ padding: '1.2rem', width: '270px' }}>Pathologie & motif</th>
+                      <th style={{ padding: '1.2rem', width: '200px' }}>Suivi / échéance</th>
+                      <th style={{ padding: '1.2rem', width: '220px' }}>Médecin référent</th>
+                      <th style={{ padding: '1.2rem 1.4rem', textAlign: 'right', minWidth: '380px' }}>Actions dossier</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {maternalRegistry
+                      .filter(m => registryCategoryFilter === 'all' || m.category === registryCategoryFilter)
+                      .filter(m => !searchMotherQuery || m.name.toLowerCase().includes(searchMotherQuery.toLowerCase()) || m.cmuNumber.toLowerCase().includes(searchMotherQuery.toLowerCase()) || m.pathology.toLowerCase().includes(searchMotherQuery.toLowerCase()) || m.phone.includes(searchMotherQuery))
+                      .map((mother) => {
+                        const isSelected = mother.id === selectedMotherId;
+                        const icon = mother.category === 'maternity' ? '🤰' : mother.category === 'chronic' ? '🩸' : mother.category === 'pediatric' ? '👶' : mother.category === 'surgery' ? '🩹' : '👤';
+                        const categoryBadgeBg = mother.category === 'chronic' ? 'rgba(239, 68, 68, 0.18)' : mother.category === 'maternity' ? 'rgba(236, 72, 153, 0.18)' : mother.category === 'pediatric' ? 'rgba(59, 130, 246, 0.18)' : 'rgba(245, 158, 11, 0.18)';
+                        const categoryBadgeColor = mother.category === 'chronic' ? '#f87171' : mother.category === 'maternity' ? '#f472b6' : mother.category === 'pediatric' ? '#60a5fa' : '#fbbf24';
+                        const categoryBadgeBorder = mother.category === 'chronic' ? '#ef4444' : mother.category === 'maternity' ? '#ec4899' : mother.category === 'pediatric' ? '#3b82f6' : '#f59e0b';
+
+                        return (
+                          <tr key={mother.id} style={{ background: isSelected ? 'rgba(16, 185, 129, 0.09)' : 'transparent', borderLeft: isSelected ? '4px solid #10b981' : '4px solid transparent', transition: 'all 0.15s ease' }}>
+                            {/* Col 1: Patient Name & Contact */}
+                            <td style={{ padding: '1.15rem 1.4rem' }}>
+                              <div className="d-flex align-items-center gap-3">
+                                <div style={{ width: '44px', height: '44px', borderRadius: '14px', background: isSelected ? 'rgba(16, 185, 129, 0.22)' : 'var(--bg-card-subtle)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1.3rem', border: '1px solid var(--border-color)', flexShrink: 0 }}>
+                                  {icon}
+                                </div>
+                                <div>
+                                  <strong className="d-block" style={{ fontSize: '0.98rem', color: 'var(--text-main)', letterSpacing: '-0.01em' }}>
+                                    {mother.name}
+                                  </strong>
+                                  <div className="d-flex align-items-center gap-2 mt-0.5">
+                                    <span className="badge bg-secondary-subtle text-sub border border-secondary" style={{ fontSize: '0.72rem', padding: '2px 7px', borderRadius: '6px' }}>
+                                      {mother.gender === 'M' ? 'Homme' : 'Femme'}, {mother.age} ans
+                                    </span>
+                                    <span className="text-muted small" style={{ fontSize: '0.78rem' }}>📞 {mother.phone}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* Col 2: N° CSU */}
+                            <td style={{ padding: '1.15rem 1rem' }}>
+                              <code className="bg-success text-white px-2.5 py-1 rounded-3 fw-bold small d-inline-block" style={{ fontSize: '0.85rem' }}>{mother.cmuNumber}</code>
+                              <span className="d-block text-emerald small fw-semibold mt-1" style={{ color: '#10b981', fontSize: '0.76rem' }}>✓ 100% Prise en charge</span>
+                            </td>
+
+                            {/* Col 3: Pathologie */}
+                            <td style={{ padding: '1.15rem 1rem' }}>
+                              <span className="badge fw-bold px-3 py-1.8 d-inline-flex align-items-center gap-1.5" style={{ background: categoryBadgeBg, color: categoryBadgeColor, border: `1px solid ${categoryBadgeBorder}`, borderRadius: '10px', fontSize: '0.82rem', whiteSpace: 'normal', textAlign: 'left', lineHeight: '1.35' }}>
+                                {mother.pathology}
+                              </span>
+                            </td>
+
+                            {/* Col 4: Échéance */}
+                            <td style={{ padding: '1.15rem 1rem' }}>
+                              <span className="fw-bold d-block" style={{ color: 'var(--text-main)', fontSize: '0.88rem' }}>📅 {mother.edd}</span>
+                              <small className="text-muted d-block mt-0.5" style={{ fontSize: '0.76rem' }}>Dernier soin: {mother.lastConsultation}</small>
+                            </td>
+
+                            {/* Col 5: Praticien */}
+                            <td style={{ padding: '1.15rem 1rem' }}>
+                              <span className="text-muted small fw-semibold d-block" style={{ fontSize: '0.84rem' }}>👨‍⚕️ {mother.doctorRef}</span>
+                            </td>
+
+                            {/* Col 6: Actions */}
+                            <td style={{ padding: '1.15rem 1.4rem', textAlign: 'right', whiteSpace: 'nowrap' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.75rem', rowGap: '0.75rem', flexWrap: 'wrap' }}>
+                                {/* Bouton CONSULTER DMP */}
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-emerald fw-bold text-white px-3.5 py-2 d-inline-flex align-items-center gap-1.5 hover-lift"
+                                  style={{ background: isSelected ? '#059669' : '#10b981', border: 'none', borderRadius: '10px', fontSize: '0.84rem', boxShadow: '0 3px 10px rgba(16,185,129,0.3)' }}
+                                  onClick={() => {
+                                    handleSelectMother(mother.id);
+                                    dmpSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+                                  }}
+                                >
+                                  {isSelected ? '✓ Dossier ouvert' : '👁️ Consulter DMP'}
+                                </button>
+
+                                {/* Bouton MODIFIER */}
+                                <button
+                                  type="button"
+                                  className="btn btn-sm fw-bold px-3 py-2 d-inline-flex align-items-center gap-1.5 hover-lift"
+                                  style={{
+                                    background: 'rgba(59, 130, 246, 0.18)',
+                                    color: '#60a5fa',
+                                    border: '1.5px solid #3b82f6',
+                                    borderRadius: '10px',
+                                    fontSize: '0.84rem',
+                                    boxShadow: '0 2px 8px rgba(59, 130, 246, 0.2)'
+                                  }}
+                                  onClick={() => {
+                                    setEditingMother({ ...mother });
+                                    setIsNewMother(false);
+                                  }}
+                                >
+                                  ✏️ Modifier
+                                </button>
+
+                                {/* Bouton SUPPRIMER */}
+                                <button
+                                  type="button"
+                                  className="btn btn-sm fw-bold px-3 py-2 d-inline-flex align-items-center gap-1.5 hover-lift"
+                                  style={{
+                                    background: 'rgba(239, 68, 68, 0.18)',
+                                    color: '#f87171',
+                                    border: '1.5px solid #ef4444',
+                                    borderRadius: '10px',
+                                    fontSize: '0.84rem',
+                                    boxShadow: '0 2px 8px rgba(239, 68, 68, 0.2)'
+                                  }}
+                                  onClick={() => handleDeleteMother(mother)}
+                                >
+                                  🗑️ Supprimer
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination Registre Spécialités & Pathologies */}
+              <div className="d-flex align-items-center justify-content-between p-3.5 border-top" style={{ borderColor: 'var(--border-color)', flexWrap: 'wrap', gap: '1rem', background: 'var(--bg-card-subtle)' }}>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-sub)' }}>
+                  Affichage de <strong>1</strong> à <strong>10</strong> sur <strong>1 450</strong> dossiers médicaux suivis (Page {registryPage} sur 145)
+                </span>
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-secondary hover-lift"
+                    disabled={registryPage === 1}
+                    onClick={() => setRegistryPage(prev => Math.max(1, prev - 1))}
+                    style={{ borderRadius: '10px', padding: '0.35rem 0.85rem' }}
+                  >
+                    ◀ Précédent
+                  </button>
+                  {[1, 2, 3, 4, 5, '...', 145].map((p, pIdx) => (
+                    <button
+                      key={pIdx}
+                      type="button"
+                      className={`btn btn-sm hover-lift ${registryPage === p ? 'btn-success text-white' : 'btn-outline-secondary'}`}
+                      onClick={() => typeof p === 'number' && setRegistryPage(p)}
+                      style={{ borderRadius: '10px', minWidth: '36px', fontWeight: registryPage === p ? '800' : 'normal' }}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-secondary hover-lift"
+                    disabled={registryPage === 145}
+                    onClick={() => setRegistryPage(prev => Math.min(145, prev + 1))}
+                    style={{ borderRadius: '10px', padding: '0.35rem 0.85rem' }}
+                  >
+                    Suivant ▶
+                  </button>
+                </div>
               </div>
             </div>
           </div>
+        )}
+
+        {/* ANCRE DE DÉFILEMENT AUTOMATIQUE AU CLIC SUR "CONSULTER DMP" & BANNIÈRE DE RÔLE ADAPTATIVE */}
+        <div ref={dmpSectionRef} style={{ scrollMarginTop: '90px' }}>
+          {(canEditMaternity || isSuperAdmin) && (
+            <div className="mb-4 p-3.5 rounded-4 d-flex align-items-center gap-3" style={{
+              borderRadius: '14px',
+              background: isSuperAdmin ? 'linear-gradient(90deg, rgba(234,179,8,0.15) 0%, rgba(234,179,8,0.05) 100%)'
+                       : 'linear-gradient(90deg, #0f766e 0%, #0d9488 100%)',
+              color: isSuperAdmin ? '#92400e' : '#ffffff',
+              border: isSuperAdmin ? '1px solid rgba(234,179,8,0.4)' : 'none'
+            }}>
+              <span style={{ fontSize: '1.6rem' }}>{isSuperAdmin ? '👑' : isMidwife ? '🤱' : '🩺'}</span>
+              <div className="d-flex flex-column gap-1">
+                <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.05rem', color: 'inherit', letterSpacing: '-0.01em' }}>
+                  {isSuperAdmin && 'Mode superadmin'}
+                  {isMidwife && 'Mode sage-femme / soignant'}
+                  {isDoctor && 'Mode médecin'}
+                </h6>
+                <span className="small" style={{ opacity: 0.9, fontSize: '0.88rem', lineHeight: '1.45' }}>
+                  {(() => {
+                    const cat = activeMother.category || 'maternity';
+                    if (cat === 'chronic') {
+                      return isSuperAdmin 
+                        ? 'Accès total ALD : Validation des ordonnances renouvelables, bilans biologiques et gestion intégrale du DMP ALD.'
+                        : isMidwife
+                        ? 'Édition soignant / IDE : Consignation des constantes vitales, suivis de tension/glycémie et visites ALD.'
+                        : 'Édition complète Médecin : Vous pouvez ajouter les consultations ALD, valider les traitements renouvelables et contrôler le bilan glycémique/HTA.';
+                    } else if (cat === 'surgery') {
+                      return isSuperAdmin
+                        ? 'Accès total Chirurgie : Gestion du suivi post-opératoire, de l\'imagerie DICOM et de la traumatologie.'
+                        : isMidwife
+                        ? 'Édition soignant / IDE : Consignation des soins de pansements et suivi des séances de rééducation.'
+                        : 'Édition complète Médecin : Vous pouvez consigner les comptes-rendus opératoires, prescrire la kinésithérapie et joindre les radios DICOM.';
+                    } else {
+                      return isSuperAdmin
+                        ? 'Accès total Maternité : Validations prénatales (CPN), délivrance des certificats et suivi pédiatrique.'
+                        : isMidwife
+                        ? 'Édition complète Sage-Femme : Vous pouvez remplir les consultations prénatales (CPN 1-4+), ajouter des conseils et valider le carnet.'
+                        : 'Édition complète Médecin : Vous pouvez remplir les consultations prénatales, ajouter des fiches conseils et modifier le carnet.';
+                    }
+                  })()}
+                </span>
+              </div>
+            </div>
+          )}
+          {isCitizen && (
+            <div className="mb-4 p-3.5 rounded-4 d-flex align-items-center gap-3" style={{
+              borderRadius: '14px',
+              background: 'rgba(16,185,129,0.1)',
+              border: '1px solid rgba(16,185,129,0.25)',
+              color: 'var(--text-main)'
+            }}>
+              <span style={{ fontSize: '1.6rem' }}>📖</span>
+              <div className="d-flex flex-column gap-1">
+                <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.05rem', color: 'var(--text-main)', letterSpacing: '-0.01em' }}>
+                  Mode lecture seule
+                </h6>
+                <span className="small" style={{ color: 'var(--text-sub)', fontSize: '0.88rem', lineHeight: '1.45' }}>
+                  {(() => {
+                    const cat = activeMother.category || 'maternity';
+                    if (cat === 'chronic') {
+                      return 'Espace assuré ALD : Consultez votre dossier médical partagé, vos ordonnances 100% CSU et le bilan de vos constantes vitales.';
+                    } else if (cat === 'surgery') {
+                      return 'Espace assuré Chirurgie : Consultez vos examens radiologiques DICOM, vos séances de rééducation et vos soins post-opératoires.';
+                    } else {
+                      return 'Espace assuré Maternité & Pédiatrie : Consultez votre carnet de santé, téléchargez le PDF et suivez la vaccination PEV de votre enfant.';
+                    }
+                  })()}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Tab Navigation Pills */}
-        <div style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', padding: '0.4rem', borderRadius: '14px', display: 'inline-flex', gap: '0.5rem', marginBottom: '1.5rem' }}>
-          <button 
-            type="button"
-            style={{ 
-              background: activeTab === 'cpn' ? '#10b981' : 'var(--bg-card)', 
-              color: activeTab === 'cpn' ? '#ffffff' : 'var(--text-sub)', 
-              border: 'none', 
-              borderRadius: '10px', 
-              padding: '0.6rem 1.25rem', 
-              fontWeight: '700', 
-              fontSize: '0.85rem',
-              cursor: 'pointer'
-            }} 
-            onClick={() => setActiveTab('cpn')}
-          >
-            1. Suivi prénatal (CPN 1-4+)
-          </button>
+        {/* SÉLECTEUR DE PÔLE SELON LE SEXE DE L'ASSURÉ CONNECTÉ */}
+        {isCitizen && !isMaleUser && (
+          <div className="d-flex justify-content-center align-items-center flex-wrap mb-5 w-100" style={{ gap: '1.75rem', rowGap: '1.25rem', padding: '0.75rem 0' }}>
+            <button
+              type="button"
+              className="hover-lift"
+              style={{
+                background: citizenSpecialtyTab === 'maternity' ? 'linear-gradient(135deg, #db2777 0%, #ec4899 100%)' : 'var(--bg-card)',
+                color: citizenSpecialtyTab === 'maternity' ? '#ffffff' : 'var(--text-main)',
+                border: citizenSpecialtyTab === 'maternity' ? '2.5px solid #ffffff' : '1.5px solid var(--border-color)',
+                borderRadius: '20px',
+                padding: '1.2rem 2.4rem',
+                fontWeight: '800',
+                fontSize: '1.05rem',
+                boxShadow: citizenSpecialtyTab === 'maternity' ? '0 10px 30px rgba(219, 39, 119, 0.45)' : 'var(--shadow-sm)',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.85rem',
+                minWidth: '320px',
+                justifyContent: 'center',
+                transition: 'all 0.25s ease'
+              }}
+              onClick={() => { setCitizenSpecialtyTab('maternity'); setActiveTab('cpn'); }}
+            >
+              <span style={{ fontSize: '1.5rem' }}>🤰</span> 1. Carnet Maternité & Grossesse (100% CSU)
+            </button>
 
-          <button 
-            type="button"
-            style={{ 
-              background: activeTab === 'pev' ? '#10b981' : 'var(--bg-card)', 
-              color: activeTab === 'pev' ? '#ffffff' : 'var(--text-sub)', 
-              border: 'none', 
-              borderRadius: '10px', 
-              padding: '0.6rem 1.25rem', 
-              fontWeight: '700', 
-              fontSize: '0.85rem',
-              cursor: 'pointer'
-            }} 
-            onClick={() => setActiveTab('pev')}
-          >
-            2. Croissance & vaccins (0-12 mois)
-          </button>
+            <button
+              type="button"
+              className="hover-lift"
+              style={{
+                background: citizenSpecialtyTab === 'chronic' ? 'linear-gradient(135deg, #059669 0%, #10b981 100%)' : 'var(--bg-card)',
+                color: citizenSpecialtyTab === 'chronic' ? '#ffffff' : 'var(--text-main)',
+                border: citizenSpecialtyTab === 'chronic' ? '2.5px solid #ffffff' : '1.5px solid var(--border-color)',
+                borderRadius: '20px',
+                padding: '1.2rem 2.4rem',
+                fontWeight: '800',
+                fontSize: '1.05rem',
+                boxShadow: citizenSpecialtyTab === 'chronic' ? '0 10px 30px rgba(5, 150, 105, 0.45)' : 'var(--shadow-sm)',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.85rem',
+                minWidth: '320px',
+                justifyContent: 'center',
+                transition: 'all 0.25s ease'
+              }}
+              onClick={() => { setCitizenSpecialtyTab('chronic'); setActiveTab('cpn'); }}
+            >
+              <span style={{ fontSize: '1.5rem' }}>🩺</span> 2. Spécialités & Pathologies (ALD)
+            </button>
+          </div>
+        )}
 
-          <button 
-            type="button"
-            style={{ 
-              background: activeTab === 'advice' ? '#10b981' : 'var(--bg-card)', 
-              color: activeTab === 'advice' ? '#ffffff' : 'var(--text-sub)', 
-              border: 'none', 
-              borderRadius: '10px', 
-              padding: '0.6rem 1.25rem', 
-              fontWeight: '700', 
-              fontSize: '0.85rem',
-              cursor: 'pointer'
-            }} 
-            onClick={() => setActiveTab('advice')}
-          >
-            3. Conseils experts & échanges
-          </button>
-        </div>
+        {isCitizen && isMaleUser && (
+          <div className="d-flex justify-content-center align-items-center mb-5 w-100">
+            <div style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.12) 0%, rgba(16, 185, 129, 0.18) 100%)', border: '1.5px solid rgba(5, 150, 105, 0.4)', borderRadius: '22px', padding: '1.15rem 2.25rem', display: 'inline-flex', alignItems: 'center', gap: '0.85rem', boxShadow: '0 8px 25px rgba(5, 150, 105, 0.12)' }}>
+              <span style={{ fontSize: '1.5rem' }}>🩺</span>
+              <span style={{ color: 'var(--text-main)', fontWeight: '800', fontSize: '1.08rem' }}>
+                Pôle Spécialités Médicales & Suivi Pathologies Chroniques (ALD 100% / Tiers-Payant UNAMUSC)
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* DOSSIER MÉDICAL PARTAGÉ (DMP) DYNAMIQUE ADAPTÉ À LA PATHOLOGIE DU PATIENT */}
+        {/* ========================================================================= */}
+        {(() => {
+          const cat = activeMother.category || 'maternity';
+          const heroStyle = getMedicalHeroStyle(activeMother);
+
+          const heroTitle = cat === 'chronic'
+            ? `Dossier médical partagé (ALD) — ${activeMother.name}`
+            : cat === 'surgery'
+            ? `Dossier traumatologie & chirurgie — ${activeMother.name}`
+            : cat === 'pediatric'
+            ? `Carnet de santé pédiatrique & PEV — ${activeMother.name}`
+            : `Carnet de santé maternelle & suivi de l'enfant`;
+
+          const heroSubtitle = cat === 'chronic'
+            ? `Suivi thérapeutique & biologique pour ${activeMother.pathology}. Patient (${activeMother.gender === 'M' ? 'Homme' : 'Femme'}, ${activeMother.age} ans) • N° Carte CSU : ${activeMother.cmuNumber}.`
+            : cat === 'surgery'
+            ? `Suivi post-opératoire, rééducation & radiographies pour ${activeMother.pathology}. Patient (${activeMother.gender === 'M' ? 'Homme' : 'Femme'}, ${activeMother.age} ans) • N° Carte CSU : ${activeMother.cmuNumber}.`
+            : cat === 'pediatric'
+            ? `Suivi de croissance OMS & calendrier vaccinal 0-5 ans pour ${activeMother.name} (${activeMother.age} ans). Prise en charge 100% CSU.`
+            : `Accédez en toute sécurité au suivi prénatal et au calendrier vaccinal PEV de votre enfant. Bénéficiez des garanties de prise en charge 100% CSU.`;
+
+          return (
+            <div className="p-5 rounded-4 mb-5 text-white" style={{ background: heroStyle.heroBg, padding: '3.5rem 2.5rem', borderRadius: '24px', border: '1px solid rgba(255, 255, 255, 0.35)', boxShadow: '0 16px 45px rgba(0, 0, 0, 0.35)', transition: 'background 0.4s ease' }}>
+              <div className="row align-items-center g-4">
+                <div className="col-lg-9">
+                  <div className="d-flex align-items-center flex-wrap mb-3" style={{ gap: '0.85rem', rowGap: '0.85rem' }}>
+                    <span style={{ background: heroStyle.badgeColor, color: '#ffffff', padding: '0.45rem 1.15rem', borderRadius: '20px', fontSize: '0.86rem', fontWeight: '800', display: 'inline-block', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
+                      {heroStyle.badgeText}
+                    </span>
+                    <span style={{ background: 'rgba(15, 23, 42, 0.75)', color: '#60a5fa', border: '1px solid rgba(96, 165, 250, 0.4)', backdropFilter: 'blur(10px)', padding: '0.45rem 1.05rem', borderRadius: '20px', fontSize: '0.82rem', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      📸 {heroStyle.imageTag}
+                    </span>
+                  </div>
+
+                  <h1 className="fw-extrabold text-white mb-2" style={{ fontSize: '2.25rem', letterSpacing: '-0.02em', textShadow: '0 3px 8px rgba(0,0,0,0.5)' }}>{heroTitle}</h1>
+                  <p className="text-white-50 mb-4" style={{ fontSize: '1.05rem', maxWidth: '780px', lineHeight: '1.6', textShadow: '0 1px 4px rgba(0,0,0,0.4)' }}>
+                    {heroSubtitle}
+                  </p>
+
+                  <div className="d-flex gap-3 flex-wrap align-items-center" style={{ rowGap: '1.15rem', columnGap: '1.25rem', marginTop: '1.75rem' }}>
+                    <button 
+                      type="button"
+                      className="hover-lift"
+                      style={{ background: '#dc2626', color: '#ffffff', border: '1.5px solid rgba(255,255,255,0.4)', borderRadius: '16px', padding: '1rem 1.75rem', fontWeight: '800', fontSize: '0.94rem', boxShadow: '0 8px 24px rgba(220, 38, 38, 0.45)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.6rem' }} 
+                      onClick={() => setShowDangerSOSModal(true)}
+                    >
+                      {cat === 'chronic' ? '🚨 Protocole urgence ALD (SAMU 1515)' : cat === 'surgery' ? '🚨 Alerte complication / urgence (SAMU 1515)' : cat === 'pediatric' ? '🚨 SOS urgence pédiatrique (SAMU 1515)' : '🚨 Signes de danger & urgence maternité (SAMU 1515)'}
+                    </button>
+
+                    <button 
+                      type="button"
+                      className="hover-lift"
+                      style={{ background: '#059669', color: '#ffffff', border: '1.5px solid rgba(255,255,255,0.4)', borderRadius: '16px', padding: '1rem 1.75rem', fontWeight: '800', fontSize: '0.94rem', boxShadow: '0 8px 24px rgba(5, 150, 105, 0.45)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.6rem' }} 
+                      onClick={handleGenerateDeliveryCertificate}
+                    >
+                      {cat === 'chronic' ? '📜 Attestation ALD prise en charge 100% PDF' : cat === 'surgery' ? '📜 Compte-rendu opératoire PDF' : cat === 'pediatric' ? '📜 Attestation de vaccination PEV PDF' : '📜 Certificat d\'accouchement PDF (100% UNAMUSC)'}
+                    </button>
+                    
+                    <button 
+                      type="button"
+                      className="hover-lift"
+                      style={{ background: 'rgba(15, 23, 42, 0.9)', color: '#ffffff', border: '1.5px solid rgba(255, 255, 255, 0.35)', borderRadius: '16px', padding: '1rem 1.75rem', fontWeight: '800', fontSize: '0.94rem', cursor: 'pointer', backdropFilter: 'blur(10px)', boxShadow: '0 8px 24px rgba(0,0,0,0.35)', display: 'inline-flex', alignItems: 'center', gap: '0.6rem' }} 
+                      onClick={handleDownloadCarnet}
+                    >
+                      📥 Exporter DMP officiel PDF (🇸🇳)
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Tab Navigation Pills — Aéré, Espacé & Adaptatif au Patient */}
+        {(() => {
+          const cat = activeMother.category || 'maternity';
+          const tab1Label = cat === 'chronic' ? '1. 🩸 Consultations ALD & suivi diabète/HTA' : cat === 'surgery' ? '1. 🩹 Consultations post-opératoires & radio' : cat === 'pediatric' ? '1. 💉 Calendrier vaccinal PEV (0-5 ans)' : '1. 🤰 Suivi prénatal (CPN 1-4+)';
+          const tab2Label = cat === 'chronic' ? '2. 💊 Ordonnances ALD & traitements' : cat === 'surgery' ? '2. 🦴 Imagerie radiologique & antalgiques' : cat === 'pediatric' ? '2. ⚖️ Courbe de croissance OMS' : '2. 🍼 Croissance & vaccins (0-12 mois)';
+          const tab3Label = cat === 'chronic' ? '3. 📈 Constantes vitales & régime ALD' : cat === 'surgery' ? '3. ♿ Protocole rééducation kinésithérapie' : cat === 'pediatric' ? '3. 🩺 Consultations pédiatriques & vitamine A' : '3. 💡 Conseils experts & échanges';
+
+          const activeColor = cat === 'chronic' ? 'linear-gradient(135deg, #059669 0%, #10b981 100%)' : cat === 'surgery' ? 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)' : cat === 'pediatric' ? 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)' : 'linear-gradient(135deg, #db2777 0%, #ec4899 100%)';
+
+          return (
+            <div style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', padding: '0.85rem', borderRadius: '22px', display: 'flex', flexWrap: 'wrap', gap: '1.25rem', rowGap: '1rem', marginBottom: '2.5rem', boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}>
+              <button 
+                type="button"
+                className="hover-lift"
+                style={{ 
+                  background: activeTab === 'cpn' ? activeColor : 'var(--bg-card-subtle)', 
+                  color: activeTab === 'cpn' ? '#ffffff' : 'var(--text-main)', 
+                  border: activeTab === 'cpn' ? '1.5px solid rgba(255,255,255,0.4)' : '1.5px solid var(--border-color)', 
+                  borderRadius: '16px', 
+                  padding: '1rem 1.85rem', 
+                  fontWeight: '800', 
+                  fontSize: '0.95rem',
+                  cursor: 'pointer',
+                  boxShadow: activeTab === 'cpn' ? '0 6px 20px rgba(16, 185, 129, 0.35)' : 'none',
+                  transition: 'all 0.2s ease',
+                  flex: '1 1 auto',
+                  textAlign: 'center'
+                }} 
+                onClick={() => setActiveTab('cpn')}
+              >
+                {tab1Label}
+              </button>
+
+              <button 
+                type="button"
+                className="hover-lift"
+                style={{ 
+                  background: activeTab === 'pev' ? activeColor : 'var(--bg-card-subtle)', 
+                  color: activeTab === 'pev' ? '#ffffff' : 'var(--text-main)', 
+                  border: activeTab === 'pev' ? '1.5px solid rgba(255,255,255,0.4)' : '1.5px solid var(--border-color)', 
+                  borderRadius: '16px', 
+                  padding: '1rem 1.85rem', 
+                  fontWeight: '800', 
+                  fontSize: '0.95rem',
+                  cursor: 'pointer',
+                  boxShadow: activeTab === 'pev' ? '0 6px 20px rgba(16, 185, 129, 0.35)' : 'none',
+                  transition: 'all 0.2s ease',
+                  flex: '1 1 auto',
+                  textAlign: 'center'
+                }} 
+                onClick={() => setActiveTab('pev')}
+              >
+                {tab2Label}
+              </button>
+
+              <button 
+                type="button"
+                className="hover-lift"
+                style={{ 
+                  background: activeTab === 'advice' ? activeColor : 'var(--bg-card-subtle)', 
+                  color: activeTab === 'advice' ? '#ffffff' : 'var(--text-main)', 
+                  border: activeTab === 'advice' ? '1.5px solid rgba(255,255,255,0.4)' : '1.5px solid var(--border-color)', 
+                  borderRadius: '16px', 
+                  padding: '1rem 1.85rem', 
+                  fontWeight: '800', 
+                  fontSize: '0.95rem',
+                  cursor: 'pointer',
+                  boxShadow: activeTab === 'advice' ? '0 6px 20px rgba(16, 185, 129, 0.35)' : 'none',
+                  transition: 'all 0.2s ease',
+                  flex: '1 1 auto',
+                  textAlign: 'center'
+                }} 
+                onClick={() => setActiveTab('advice')}
+              >
+                {tab3Label}
+              </button>
+            </div>
+          );
+        })()}
 
         {/* TAB 1: CPN SUIVI PRÉNATAL */}
         {activeTab === 'cpn' && (
@@ -1105,13 +2979,32 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                 
                 <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                   {(() => {
-                    const completedCount = cpnVisits.filter(c => c.completed).length;
-                    const totalCount = cpnVisits.length;
+                    const cat = activeMother.category || 'maternity';
+                    const activeConsultationsList = cat === 'chronic' ? [
+                      { id: 101, title: 'Consultation cardiologie & évaluation HTA sévère', desc: 'Tension 15/9 mmHg. Fond d\'œil réalisé (stade 0). Ajustement Amlodipine 10mg & régime hyposodé.', date: '10/04/2026', doctor: activeMother.doctorRef || 'Dr. Ousmane Sow (Cardiologie)', status: 'Consultation ALD validée', completed: true },
+                      { id: 102, title: 'Bilan diabétologie & HbA1c semestriel', desc: 'HbA1c mesurée à 6.9%. Glycémie à jeun 1.25 g/L. Prescription Metformine 1000mg & contrôle podologique.', date: '05/06/2026', doctor: 'Dr. Cheikh Diop (Diabétologue)', status: 'Bilan biologique validé', completed: true },
+                      { id: 103, title: 'Bilan rénal, microalbuminurie & fond d\'œil', desc: 'Prévue : Bilan lipidique (Cholestérol/Triglycérides), créatininémie & électrocardiogramme ECG.', date: '12/08/2026', doctor: activeMother.doctorRef || 'Dr. Ousmane Sow (Cardiologie)', status: 'RDV ALD à venir', completed: false },
+                      { id: 104, title: 'Consultation étape semestrielle & adaptation traitement', desc: 'Prévue : Contrôle annuel 100% CSU, renouvellement ordonnance 6 mois & bilan cardiovasculaire.', date: '25/09/2026', doctor: 'Dr. Cheikh Diop (Diabétologue)', status: 'Programmé CSU 100%', completed: false }
+                    ] : cat === 'surgery' ? [
+                      { id: 201, title: 'Chirurgie orthopédique & réduction de fracture', desc: 'Intervention sous rachi-anesthésie. Réduction fracture fémur droite avec matériel d\'ostéosynthèse. Pose plâtre.', date: '20/05/2026', doctor: activeMother.doctorRef || 'Dr. Babacar Kane (Orthopédiste)', status: 'Intervention réalisée', completed: true },
+                      { id: 202, title: 'Radiographie de contrôle J+30 & ablation fils', desc: 'Alignement osseux satisfaisant. Cal osseux en formation. Ablation des agrafes & réfection résine.', date: '20/06/2026', doctor: activeMother.doctorRef || 'Dr. Babacar Kane (Orthopédiste)', status: 'Radio contrôle validée', completed: true },
+                      { id: 203, title: 'Ablation plâtre & début kinésithérapie', desc: 'Prévue : Ablation résine, examen mobilité genou/hanche & démarrage 10 séances de rééducation fonctionnelle.', date: '20/07/2026', doctor: activeMother.doctorRef || 'Dr. Babacar Kane (Orthopédiste)', status: 'Suivi post-op à venir', completed: false },
+                      { id: 204, title: 'Bilan d\'autonomie & décharge matériel', desc: 'Prévue : Évaluation de la marche sans appui, radio de consolidation définitive à 4 mois.', date: '20/09/2026', doctor: 'Dr. Babacar Kane (Orthopédiste)', status: 'Programmé CSU 100%', completed: false }
+                    ] : cat === 'pediatric' ? [
+                      { id: 301, title: 'Consultation 1er mois & pesée pédiatrique', desc: 'Développement psychomoteur normal. Poids 4.3 kg. Vaccination BCG + VPO 0 validée.', date: '14/06/2026', doctor: activeMother.doctorRef || 'Dr. Mariama Seck (Pédiatre)', status: 'Pédiatrie validée', completed: true },
+                      { id: 302, title: 'Visite 9ème mois & rappel PEV', desc: 'Vaccin RR 1 + Fièvre Jaune. Supplémentation en Vitamine A & Déparasitation à l\'Albendazole.', date: '14/07/2026', doctor: activeMother.doctorRef || 'Dr. Mariama Seck (Pédiatre)', status: 'Suivi PEV validé', completed: true },
+                      { id: 303, title: 'Contrôle croissance 2 ans & dépistage anémie', desc: 'Prévue : Évaluation du langage, courbe de croissance OMS & dépistage malnutrition aiguë.', date: '14/08/2026', doctor: activeMother.doctorRef || 'Dr. Mariama Seck (Pédiatre)', status: 'Pédiatrie à venir', completed: false }
+                    ] : cpnVisits;
+
+                    const completedCount = activeConsultationsList.filter(c => c.completed).length;
+                    const totalCount = activeConsultationsList.length;
                     const percentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+                    const titleText = cat === 'chronic' ? 'Calendrier des consultations ALD & bilans réguliers (diabète / HTA)' : cat === 'surgery' ? 'Calendrier du suivi post-opératoire & rééducation orthopédique' : cat === 'pediatric' ? 'Calendrier des consultations pédiatriques & PEV (0-5 ans)' : 'Calendrier des consultations prénatales & post-natales';
+
                     return (
                       <div className="w-100">
                         <div className="d-flex justify-content-between align-items-center mb-1">
-                          <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.2rem' }}>Calendrier des consultations prénatales & post-natales</h5>
+                          <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.2rem' }}>{titleText}</h5>
                           <span style={{ background: percentage === 100 ? 'rgba(16, 185, 129, 0.2)' : 'rgba(59, 130, 246, 0.2)', color: percentage === 100 ? '#10b981' : '#3b82f6', border: `1px solid ${percentage === 100 ? '#10b981' : '#3b82f6'}`, borderRadius: '20px', padding: '0.35rem 0.85rem', fontSize: '0.78rem', fontWeight: '700' }}>
                             {percentage === 100 ? '✔ Toutes effectuées' : `⌛ En cours (${completedCount}/${totalCount})`}
                           </span>
@@ -1119,7 +3012,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
 
                         <div className="d-flex align-items-center justify-content-between mt-1">
                           <small style={{ color: 'var(--text-sub)' }}>
-                            Progression actuelle : <span className="text-success fw-extrabold" style={{ fontSize: '0.95rem' }}>{percentage}% complété</span> ({completedCount} sur {totalCount} consultations validées)
+                            Progression globale du suivi : <span className="text-success fw-extrabold" style={{ fontSize: '0.95rem' }}>{percentage}% complété</span> ({completedCount} sur {totalCount} consultations validées)
                           </small>
                         </div>
 
@@ -1131,106 +3024,190 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                   })()}
                 </div>
 
-                {/* Timeline Items */}
-                <div className="d-flex flex-column gap-3">
-                  {cpnVisits.map((item) => (
-                    <div key={item.id} className="p-3.5 rounded-4 d-flex align-items-start gap-3" style={{ background: 'var(--bg-card-subtle)', border: editingCpnId === item.id ? '2px solid #10b981' : '1px solid var(--border-color)' }}>
-                      <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: item.completed ? '#10b981' : 'var(--bg-card)', color: item.completed ? '#ffffff' : 'var(--text-sub)', border: item.completed ? 'none' : '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', flexShrink: 0 }}>
-                        {item.completed ? '✓' : '⌛'}
+                {/* Timeline Items Dynamiques */}
+                <div className="d-flex flex-column gap-3.5">
+                  {(() => {
+                    const cat = activeMother.category || 'maternity';
+                    const list = cat === 'chronic' ? [
+                      { id: 101, title: 'Consultation cardiologie & évaluation HTA sévère', desc: 'Tension 15/9 mmHg. Fond d\'œil réalisé (stade 0). Ajustement Amlodipine 10mg & régime hyposodé.', date: '10/04/2026', doctor: activeMother.doctorRef || 'Dr. Ousmane Sow (Cardiologie)', status: 'Consultation ALD validée', completed: true },
+                      { id: 102, title: 'Bilan diabétologie & HbA1c semestriel', desc: 'HbA1c mesurée à 6.9%. Glycémie à jeun 1.25 g/L. Prescription Metformine 1000mg & contrôle podologique.', date: '05/06/2026', doctor: 'Dr. Cheikh Diop (Diabétologue)', status: 'Bilan biologique validé', completed: true },
+                      { id: 103, title: 'Bilan rénal, microalbuminurie & fond d\'œil', desc: 'Prévue : Bilan lipidique (Cholestérol/Triglycérides), créatininémie & électrocardiogramme ECG.', date: '12/08/2026', doctor: activeMother.doctorRef || 'Dr. Ousmane Sow (Cardiologie)', status: 'RDV ALD à venir', completed: false },
+                      { id: 104, title: 'Consultation étape semestrielle & adaptation traitement', desc: 'Prévue : Contrôle annuel 100% CSU, renouvellement ordonnance 6 mois & bilan cardiovasculaire.', date: '25/09/2026', doctor: 'Dr. Cheikh Diop (Diabétologue)', status: 'Programmé CSU 100%', completed: false }
+                    ] : cat === 'surgery' ? [
+                      { id: 201, title: 'Chirurgie orthopédique & réduction de fracture', desc: 'Intervention sous rachi-anesthésie. Réduction fracture fémur droite avec matériel d\'ostéosynthèse. Pose plâtre.', date: '20/05/2026', doctor: activeMother.doctorRef || 'Dr. Babacar Kane (Orthopédiste)', status: 'Intervention réalisée', completed: true },
+                      { id: 202, title: 'Radiographie de contrôle J+30 & ablation fils', desc: 'Alignement osseux satisfaisant. Cal osseux en formation. Ablation des agrafes & réfection résine.', date: '20/06/2026', doctor: activeMother.doctorRef || 'Dr. Babacar Kane (Orthopédiste)', status: 'Radio contrôle validée', completed: true },
+                      { id: 203, title: 'Ablation plâtre & début kinésithérapie', desc: 'Prévue : Ablation résine, examen mobilité genou/hanche & démarrage 10 séances de rééducation fonctionnelle.', date: '20/07/2026', doctor: activeMother.doctorRef || 'Dr. Babacar Kane (Orthopédiste)', status: 'Suivi post-op à venir', completed: false },
+                      { id: 204, title: 'Bilan d\'autonomie & décharge matériel', desc: 'Prévue : Évaluation de la marche sans appui, radio de consolidation définitive à 4 mois.', date: '20/09/2026', doctor: 'Dr. Babacar Kane (Orthopédiste)', status: 'Programmé CSU 100%', completed: false }
+                    ] : cat === 'pediatric' ? [
+                      { id: 301, title: 'Consultation 1er mois & pesée pédiatrique', desc: 'Développement psychomoteur normal. Poids 4.3 kg. Vaccination BCG + VPO 0 validée.', date: '14/06/2026', doctor: activeMother.doctorRef || 'Dr. Mariama Seck (Pédiatre)', status: 'Pédiatrie validée', completed: true },
+                      { id: 302, title: 'Visite 9ème mois & rappel PEV', desc: 'Vaccin RR 1 + Fièvre Jaune. Supplémentation en Vitamine A & Déparasitation à l\'Albendazole.', date: '14/07/2026', doctor: activeMother.doctorRef || 'Dr. Mariama Seck (Pédiatre)', status: 'Suivi PEV validé', completed: true },
+                      { id: 303, title: 'Contrôle croissance 2 ans & dépistage anémie', desc: 'Prévue : Évaluation du langage, courbe de croissance OMS & dépistage malnutrition aiguë.', date: '14/08/2026', doctor: activeMother.doctorRef || 'Dr. Mariama Seck (Pédiatre)', status: 'Pédiatrie à venir', completed: false }
+                    ] : cpnVisits;
+
+                    return list.map((item) => (
+                      <div 
+                        key={item.id} 
+                        className="p-4 rounded-4 shadow-sm" 
+                        style={{ 
+                          background: 'var(--bg-card-subtle)', 
+                          border: editingCpnId === item.id ? '2px solid #10b981' : '1px solid var(--border-color)',
+                          borderRadius: '18px',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        {editingCpnId === item.id ? (
+                          <form onSubmit={handleSaveEditCpn} className="d-flex flex-column gap-3">
+                            <div className="d-flex justify-content-between align-items-center pb-2 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+                              <strong className="text-success" style={{ fontSize: '0.95rem' }}>✏️ Modification de la consultation</strong>
+                              <button type="button" className="btn btn-sm btn-close" onClick={() => setEditingCpnId(null)} />
+                            </div>
+                            <div>
+                              <label className="form-label small fw-bold mb-1" style={{ color: 'var(--text-main)' }}>Titre de la consultation</label>
+                              <input type="text" className="form-control" placeholder="Titre consultation" value={editCpnForm.title} onChange={(e) => setEditCpnForm({ ...editCpnForm, title: e.target.value })} required style={{ borderRadius: '10px' }} />
+                            </div>
+                            <div>
+                              <label className="form-label small fw-bold mb-1" style={{ color: 'var(--text-main)' }}>Observations cliniques & actes</label>
+                              <textarea className="form-control" rows={3} placeholder="Description / observations cliniques" value={editCpnForm.desc} onChange={(e) => setEditCpnForm({ ...editCpnForm, desc: e.target.value })} style={{ borderRadius: '10px' }} />
+                            </div>
+                            <div className="row g-2">
+                              <div className="col-md-6">
+                                <label className="form-label small fw-bold mb-1" style={{ color: 'var(--text-main)' }}>Date</label>
+                                <input type="text" className="form-control fw-bold" placeholder="Date (ex: 12/08/2026)" value={editCpnForm.date} onChange={(e) => setEditCpnForm({ ...editCpnForm, date: e.target.value })} style={{ borderRadius: '10px' }} />
+                              </div>
+                              <div className="col-md-6">
+                                <label className="form-label small fw-bold mb-1" style={{ color: 'var(--text-main)' }}>Praticien référent</label>
+                                <input type="text" className="form-control" placeholder="Praticien" value={editCpnForm.doctor} onChange={(e) => setEditCpnForm({ ...editCpnForm, doctor: e.target.value })} style={{ borderRadius: '10px' }} />
+                              </div>
+                            </div>
+                            <div className="d-flex align-items-center gap-2.5 mt-2">
+                              <button type="submit" className="btn btn-success fw-bold px-4 py-2 hover-lift" style={{ borderRadius: '10px', background: '#059669', borderColor: '#059669' }}>💾 Enregistrer</button>
+                              <button type="button" className="btn btn-secondary px-3 py-2 hover-lift" style={{ borderRadius: '10px' }} onClick={() => setEditingCpnId(null)}>Annuler</button>
+                            </div>
+                          </form>
+                        ) : (
+                          <div className="d-flex flex-column gap-2.5">
+                            {/* Header: Icon, Badges & Actions */}
+                            <div 
+                              style={{ 
+                                display: 'flex', 
+                                justifyContent: 'space-between', 
+                                alignItems: 'center', 
+                                flexWrap: 'wrap', 
+                                gap: '1rem', 
+                                rowGap: '0.85rem', 
+                                paddingBottom: '0.85rem', 
+                                marginBottom: '0.5rem',
+                                borderBottom: '1px solid rgba(255,255,255,0.08)' 
+                              }}
+                            >
+                              {/* Groupe 1 (Gauche) : Indicateur + Statut CPN + Date */}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', rowGap: '0.65rem', flexWrap: 'wrap' }}>
+                                <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: item.completed ? '#10b981' : 'var(--bg-card)', color: item.completed ? '#ffffff' : 'var(--text-sub)', border: item.completed ? 'none' : '1.5px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', flexShrink: 0 }}>
+                                  {item.completed ? '✓' : '⌛'}
+                                </div>
+                                <span style={{ 
+                                  background: item.completed ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)', 
+                                  color: item.completed ? '#10b981' : '#fbbf24', 
+                                  border: `1.5px solid ${item.completed ? 'rgba(16, 185, 129, 0.35)' : 'rgba(245, 158, 11, 0.35)'}`,
+                                  padding: '0.45rem 0.95rem', 
+                                  borderRadius: '10px', 
+                                  fontSize: '0.82rem', 
+                                  fontWeight: '700',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  whiteSpace: 'nowrap'
+                                }}>
+                                  {item.status}
+                                </span>
+                                <span style={{ 
+                                  background: 'var(--bg-card)', 
+                                  color: 'var(--text-sub)', 
+                                  border: '1.5px solid var(--border-color)', 
+                                  padding: '0.45rem 0.95rem', 
+                                  borderRadius: '10px', 
+                                  fontSize: '0.82rem', 
+                                  fontWeight: '600',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.6rem',
+                                  whiteSpace: 'nowrap'
+                                }}>
+                                  📅 {item.date}
+                                </span>
+                              </div>
+
+                              {/* Groupe 2 (Droite) : Boutons Modifier & Supprimer */}
+                              {canEditMaternity && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', rowGap: '0.65rem', flexWrap: 'wrap' }}>
+                                  <button 
+                                    type="button" 
+                                    className="hover-lift" 
+                                    style={{ 
+                                      background: 'rgba(59,130,246,0.15)', 
+                                      color: '#60a5fa', 
+                                      border: '1.5px solid #3b82f6', 
+                                      borderRadius: '10px', 
+                                      padding: '0.45rem 1rem', 
+                                      fontWeight: '700', 
+                                      fontSize: '0.82rem', 
+                                      cursor: 'pointer', 
+                                      boxShadow: '0 2px 8px rgba(59, 130, 246, 0.2)',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '0.6rem',
+                                      whiteSpace: 'nowrap'
+                                    }} 
+                                    onClick={() => openEditCpn(item)}
+                                  >
+                                    ✏️ Modifier
+                                  </button>
+                                  <button 
+                                    type="button" 
+                                    className="hover-lift" 
+                                    style={{ 
+                                      background: 'rgba(239,68,68,0.15)', 
+                                      color: '#f87171', 
+                                      border: '1.5px solid #ef4444', 
+                                      borderRadius: '10px', 
+                                      padding: '0.45rem 1rem', 
+                                      fontWeight: '700', 
+                                      fontSize: '0.82rem', 
+                                      cursor: 'pointer', 
+                                      boxShadow: '0 2px 8px rgba(239, 68, 68, 0.2)',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: '0.6rem',
+                                      whiteSpace: 'nowrap'
+                                    }} 
+                                    onClick={() => handleDeleteCpn(item)}
+                                  >
+                                    🗑️ Supprimer
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Body: Title, Description, Doctor */}
+                            <div className="pt-1">
+                              <h6 className="fw-bold mb-1.5" style={{ color: 'var(--text-main)', fontSize: '1.02rem', lineHeight: '1.4' }}>{item.title}</h6>
+                              <p className="mb-2.5" style={{ color: 'var(--text-sub)', fontSize: '0.88rem', lineHeight: '1.55' }}>{item.desc}</p>
+                              <div className="d-flex align-items-center gap-2">
+                                <span className="badge bg-success-subtle text-success border border-success px-2.5 py-1" style={{ fontSize: '0.76rem', borderRadius: '8px' }}>
+                                  👨‍⚕️ {item.doctor}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
-
-                      {editingCpnId === item.id ? (
-                        <form onSubmit={handleSaveEditCpn} className="flex-grow-1 d-flex flex-column gap-2">
-                          <input type="text" className="form-control form-control-sm" placeholder="Titre CPN" value={editCpnForm.title} onChange={(e) => setEditCpnForm({ ...editCpnForm, title: e.target.value })} required />
-                          <textarea className="form-control form-control-sm" rows={2} placeholder="Description / observations cliniques" value={editCpnForm.desc} onChange={(e) => setEditCpnForm({ ...editCpnForm, desc: e.target.value })} />
-                          <div className="d-flex gap-2">
-                            <div className="input-group input-group-sm" style={{ maxWidth: '210px' }}>
-                              <input type="text" className="form-control form-control-sm fw-bold" placeholder="Date (ex: 12/08/2026)" value={editCpnForm.date} onChange={(e) => setEditCpnForm({ ...editCpnForm, date: e.target.value })} />
-                              <input 
-                                type="date" 
-                                id={`cpn-date-inline-${item.id}`} 
-                                style={{ display: 'none' }} 
-                                onChange={(e) => {
-                                  if (e.target.value) {
-                                    const parts = e.target.value.split('-');
-                                    const formatted = `${parts[2]}/${parts[1]}/${parts[0]}`;
-                                    setEditCpnForm({ ...editCpnForm, date: formatted });
-                                  }
-                                }} 
-                              />
-                              <button 
-                                type="button" 
-                                className="btn btn-sm btn-outline-success fw-bold"
-                                onClick={() => {
-                                  const picker = document.getElementById(`cpn-date-inline-${item.id}`);
-                                  if (picker && picker.showPicker) picker.showPicker();
-                                }}
-                                title="Sélectionner sur le calendrier"
-                              >
-                                📅
-                              </button>
-                            </div>
-                            <input type="text" className="form-control form-control-sm" placeholder="Praticien" value={editCpnForm.doctor} onChange={(e) => setEditCpnForm({ ...editCpnForm, doctor: e.target.value })} />
-                          </div>
-                          <div className="d-flex gap-2">
-                            <input type="text" className="form-control form-control-sm" placeholder="Statut" value={editCpnForm.status} onChange={(e) => setEditCpnForm({ ...editCpnForm, status: e.target.value })} />
-                            <label className="d-flex align-items-center gap-1 small" style={{ color: 'var(--text-sub)' }}>
-                              <input type="checkbox" checked={editCpnForm.completed} onChange={(e) => setEditCpnForm({ ...editCpnForm, completed: e.target.checked })} /> Terminée
-                            </label>
-                          </div>
-                          <div className="d-flex gap-2">
-                            <button type="submit" className="btn btn-sm btn-success fw-bold" style={{ borderRadius: '8px' }}>💾 Enregistrer</button>
-                            <button type="button" className="btn btn-sm btn-secondary" onClick={() => setEditingCpnId(null)}>Annuler</button>
-                          </div>
-                        </form>
-                      ) : (
-                        <>
-                          <div className="flex-grow-1">
-                            <div className="d-flex justify-content-between align-items-center mb-1">
-                              <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', padding: '0.2rem 0.6rem', borderRadius: '6px', fontSize: '0.72rem', fontWeight: '700' }}>
-                                {item.status}
-                              </span>
-                              <span style={{ background: 'var(--bg-card)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', padding: '0.2rem 0.6rem', borderRadius: '6px', fontSize: '0.72rem', fontWeight: '600' }}>
-                                📅 {item.date}
-                              </span>
-                            </div>
-                            <h6 className="fw-bold mb-1" style={{ color: 'var(--text-main)', fontSize: '0.98rem' }}>{item.title}</h6>
-                            <p className="small mb-1" style={{ color: 'var(--text-sub)', lineHeight: '1.5' }}>{item.desc}</p>
-                            <small className="text-success fw-semibold" style={{ fontSize: '0.75rem' }}>👩‍⚕️ {item.doctor}</small>
-                          </div>
-
-                          <div className="d-flex flex-column gap-1.5">
-                            {/* Assuré : réserver une CPN à venir */}
-                            {isCitizen && !item.completed && (
-                              <button
-                                type="button"
-                                style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontWeight: '700', fontSize: '0.8rem', cursor: 'pointer' }}
-                                onClick={() => {
-                                  setSelectedCpnForBooking(item);
-                                  setShowBookingModal(true);
-                                }}
-                              >
-                                Réserver CPN
-                              </button>
-                            )}
-                            {/* Médecin / Sage-femme / SuperAdmin : éditer / supprimer */}
-                            {canEditMaternity && (
-                              <>
-                                <button type="button" style={{ background: 'rgba(59,130,246,0.15)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '10px', padding: '0.4rem 0.7rem', fontWeight: '700', fontSize: '0.75rem', cursor: 'pointer' }} onClick={() => openEditCpn(item)}>✏️ Modifier</button>
-                                <button type="button" style={{ background: '#dc2626', color: '#ffffff', border: '1px solid #b91c1c', borderRadius: '10px', padding: '0.4rem 0.75rem', fontWeight: '700', fontSize: '0.75rem', cursor: 'pointer', boxShadow: '0 3px 10px rgba(220, 38, 38, 0.3)' }} onClick={() => handleDeleteCpn(item.id)}>🗑️ Supprimer</button>
-                              </>
-                            )}
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  ))}
+                    ));
+                  })()}
                 </div>
 
-                {/* Bouton ajouter CPN — médecin / sage-femme / superadmin */}
+                {/* Bouton ajouter consultation — médecin / sage-femme / superadmin */}
                 {canEditMaternity && (
-                  <button type="button" className="mt-3" style={{ background: 'rgba(16,185,129,0.12)', color: '#10b981', border: '2px dashed #10b981', borderRadius: '12px', padding: '0.75rem', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer', width: '100%' }} onClick={() => setShowAddCpnModal(true)}>
-                    ➕ Ajouter une consultation CPN ({isMidwife ? 'Sage-femme' : isSuperAdmin ? 'SuperAdmin' : 'Médecin'})
+                  <button type="button" className="mt-3.5 hover-lift" style={{ background: 'rgba(16,185,129,0.12)', color: '#10b981', border: '2px dashed #10b981', borderRadius: '14px', padding: '0.85rem', fontWeight: '700', fontSize: '0.9rem', cursor: 'pointer', width: '100%' }} onClick={() => setShowAddCpnModal(true)}>
+                    ➕ Ajouter une consultation de suivi ({activeMother.category === 'chronic' ? 'Cardiologie / ALD' : activeMother.category === 'surgery' ? 'Traumatologie' : 'Médecin / Praticien'})
                   </button>
                 )}
 
@@ -1240,170 +3217,425 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
             {/* Right Sidebar Column */}
             <div className="col-lg-4">
               <div className="d-flex flex-column gap-4">
-                
-                {/* Card 💊 Supplémentation Maternelle & TPI Paludisme (PNLP Sénégal / UNAMUSC) */}
-                <div className="p-4 rounded-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '20px' }}>
-                  <div className="d-flex align-items-center justify-content-between mb-3">
-                    <div className="d-flex align-items-center gap-2.5">
-                      <span className="fs-4">💊</span>
-                      <div>
-                        <h6 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '0.98rem' }}>Supplémentation & TPI paludisme</h6>
-                        <small className="text-muted d-block" style={{ fontSize: '0.76rem' }}>Directives PNLP Sénégal & UNAMUSC</small>
-                      </div>
-                    </div>
-                    {canEditMaternity && (
-                      <button 
-                        type="button" 
-                        className="btn btn-sm btn-outline-success fw-bold"
-                        style={{ borderRadius: '8px', fontSize: '0.74rem', padding: '0.25rem 0.6rem' }}
-                        onClick={() => {
-                          setEditSupplementsForm(maternalSupplements);
-                          setShowSupplementsModal(true);
-                        }}
-                      >
-                        ✏️ Modifier
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Fer & Acide Folique */}
-                  <div className="p-3 rounded-3 mb-3" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
-                    <div className="d-flex justify-content-between align-items-center mb-1.5">
-                      <small className="fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.82rem' }}>💊 Fer & acide folique (anti-anémie)</small>
-                      <span className="badge bg-success-subtle text-success fw-bold px-2 py-1" style={{ fontSize: '0.72rem', borderRadius: '6px' }}>
-                        {maternalSupplements.ferFolateDaysTaken} / {maternalSupplements.ferFolateTotalDays} jours
-                      </span>
-                    </div>
-                    <div className="progress mb-1" style={{ height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '6px' }}>
-                      <div className="progress-bar bg-success" style={{ width: `${Math.round((maternalSupplements.ferFolateDaysTaken / maternalSupplements.ferFolateTotalDays) * 100)}%`, borderRadius: '6px' }}></div>
-                    </div>
-                    <small className="d-block text-muted" style={{ fontSize: '0.72rem', lineHeight: '1.35' }}>
-                      1 comprimé par jour prescrit pendant toute la grossesse
-                    </small>
-                  </div>
-
-                  {/* TPI Paludisme (SP) */}
-                  <div className="mb-3">
-                    <small className="d-block text-muted fw-bold mb-2" style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                      🦟 TPI paludisme (Sulfadoxine-pyriméthamine)
-                    </small>
-                    <div className="d-flex flex-column gap-2">
-                      {maternalSupplements.tpiDoses.map(dose => (
-                        <div key={dose.id} className="d-flex align-items-center justify-content-between p-2.5 rounded-3" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', fontSize: '0.8rem' }}>
-                          <span className="fw-semibold" style={{ color: 'var(--text-main)' }}>{dose.cpn}</span>
-                          <span className={`badge ${dose.given ? 'bg-success text-white' : 'bg-warning text-dark'} fw-bold px-2.5 py-1`} style={{ borderRadius: '6px', fontSize: '0.72rem' }}>
-                            {dose.given ? `✅ Administré` : `⏳ Programmé`}
-                          </span>
+                {activeMother.category === 'chronic' ? (
+                  /* 🩸 SEMAINE / PROTOCOLE SURVEILLANCE ALD (PATIENT CHRONIQUE) */
+                  <div className="p-0 rounded-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}>
+                    {/* Header avec bande dégradée émeraude & accents */}
+                    <div style={{ background: 'linear-gradient(135deg, #065f46 0%, #047857 100%)', padding: '1.25rem 1.5rem' }}>
+                      <div className="d-flex align-items-center justify-content-between">
+                        <div className="d-flex align-items-center gap-2.5">
+                          <div style={{ width: '42px', height: '42px', borderRadius: '14px', background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem' }}>🛡️</div>
+                          <div>
+                            <h6 className="fw-extrabold mb-0" style={{ color: '#fff', fontSize: '1rem' }}>Surveillance & prévention ALD</h6>
+                            <small style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.78rem' }}>Protocoles diabète & HTA UNAMUSC</small>
+                          </div>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* MILDA Moustiquaire */}
-                  <div className="p-3 rounded-3 d-flex align-items-center justify-content-between" style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.35)' }}>
-                    <div className="d-flex align-items-center gap-2.5">
-                      <span className="fs-5">🛖</span>
-                      <div>
-                        <strong className="d-block" style={{ fontSize: '0.82rem', color: 'var(--text-main)' }}>Moustiquaire MILDA offerte</strong>
-                        <small className="text-success fw-bold" style={{ fontSize: '0.74rem' }}>Remise certifiée CPN 1</small>
+                        {canEditMaternity && (
+                          <button
+                            type="button"
+                            className="hover-lift"
+                            style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', color: '#fff', border: '1px solid rgba(255,255,255,0.35)', borderRadius: '12px', fontSize: '0.78rem', padding: '0.45rem 0.85rem', fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s ease' }}
+                            onClick={() => {
+                              setEditingAldItem({ title: '', status: '✅ Normal', date: new Date().toLocaleDateString('fr-FR') });
+                              setShowAldModal(true);
+                            }}
+                          >
+                            ➕ Ajouter
+                          </button>
+                        )}
                       </div>
                     </div>
-                    <span className="badge bg-success text-white fw-bold px-2.5 py-1" style={{ borderRadius: '6px', fontSize: '0.72rem' }}>100% Gratuit</span>
-                  </div>
-                </div>
 
-                {/* Card Constantes Vitales */}
-                <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-                  <div className="d-flex align-items-center justify-content-between mb-3">
-                    <div className="d-flex align-items-center gap-2 text-success">
-                      <span style={{ fontSize: '1.2rem' }}>📈</span>
-                      <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>Constantes vitales</h6>
-                    </div>
-
-                    {(canEditMaternity || isSuperAdmin) && (
-                      <button 
-                        type="button" 
-                        className="btn btn-sm btn-outline-primary fw-bold"
-                        style={{ borderRadius: '8px', fontSize: '0.75rem', padding: '0.25rem 0.6rem' }}
-                        onClick={() => {
-                          setVitalsForm(vitals);
-                          setShowVitalsModal(true);
-                        }}
-                        title="Éditer les constantes vitales du patient"
-                      >
-                        ✏️ Modifier
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="row text-center g-2">
-                    <div className="col-6">
-                      <div className="p-3 rounded-3" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
-                        <small className="d-block" style={{ color: 'var(--text-sub)', fontSize: '0.72rem' }}>Poids</small>
-                        <h4 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>{vitals.weight}</h4>
-                        <small className="text-success" style={{ fontSize: '0.68rem' }}>{vitals.weightGain}</small>
+                    <div style={{ padding: '1.5rem' }}>
+                      {/* Observance Traitement - redesigned */}
+                      <div className="p-3.5 rounded-4 mb-3" style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.12) 0%, rgba(16,185,129,0.04) 100%)', border: '1.5px solid rgba(16,185,129,0.25)', borderRadius: '18px' }}>
+                        <div className="d-flex justify-content-between align-items-start mb-2">
+                          <div className="d-flex align-items-center gap-2.5">
+                            <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.95rem', flexShrink: 0 }}>💊</div>
+                            <div>
+                              <span className="fw-extrabold d-block" style={{ color: 'var(--text-main)', fontSize: '0.88rem', lineHeight: 1.3 }}>Observance thérapeutique ALD</span>
+                              <small style={{ color: 'var(--text-muted)', fontSize: '0.76rem' }}>Traitement quotidien à vie pris régulièrement</small>
+                            </div>
+                          </div>
+                          <span style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', fontWeight: 800, fontSize: '0.75rem', padding: '0.35rem 0.75rem', borderRadius: '10px', whiteSpace: 'nowrap' }}>180 / 180 j</span>
+                        </div>
+                        <div style={{ height: '8px', background: 'rgba(16,185,129,0.2)', borderRadius: '6px', overflow: 'hidden' }}>
+                          <div style={{ width: '100%', height: '100%', background: 'linear-gradient(90deg, #10b981, #34d399)', borderRadius: '6px', boxShadow: '0 0 12px rgba(16,185,129,0.4)' }}></div>
+                        </div>
                       </div>
-                    </div>
-                    <div className="col-6">
-                      <div className="p-3 rounded-3" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
-                        <small className="d-block" style={{ color: 'var(--text-sub)', fontSize: '0.72rem' }}>Tension art.</small>
-                        <h4 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>{vitals.bloodPressure}</h4>
-                        <small className={vitals.bpStatus.includes('Élevée') ? 'text-danger fw-bold' : 'text-success'} style={{ fontSize: '0.68rem' }}>
-                          {vitals.bpStatus}
+
+                      {/* Section Title - Bilan */}
+                      <div className="d-flex align-items-center gap-2 mb-2.5" style={{ paddingBottom: '0.45rem', borderBottom: '1px solid var(--border-color)' }}>
+                        <span style={{ fontSize: '0.9rem' }}>🩺</span>
+                        <small className="fw-bold" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                          Bilan prévention complications ALD
                         </small>
                       </div>
+
+                      {/* Liste Dynamique des Examens ALD - redesigned */}
+                      <div className="d-flex flex-column gap-2.5 mb-3.5">
+                        {aldSurveillanceItems.map(item => {
+                          const iconMap = { '👁️': { bg: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', icon: '👁️' }, '👣': { bg: 'linear-gradient(135deg, #f59e0b, #d97706)', icon: '👣' }, '🫀': { bg: 'linear-gradient(135deg, #ef4444, #dc2626)', icon: '🫀' } };
+                          const firstEmoji = item.title.match(/^(\p{Emoji_Presentation}|\p{Extended_Pictographic})/u);
+                          const emojiKey = firstEmoji ? firstEmoji[0] : null;
+                          const iconStyle = iconMap[emojiKey] || { bg: 'linear-gradient(135deg, #6366f1, #4f46e5)', icon: '🩺' };
+                          const cleanTitle = item.title.replace(/^(\p{Emoji_Presentation}|\p{Extended_Pictographic})\s*/u, '');
+                          
+                          return (
+                            <div key={item.id} className="p-2.5 rounded-3" style={{ background: 'var(--bg-card-subtle)', border: '1.5px solid var(--border-color)', borderRadius: '16px', transition: 'all 0.2s ease' }}>
+                              <div className="d-flex align-items-center gap-2.5">
+                                {/* Icône circulaire colorée */}
+                                <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: iconStyle.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.95rem', flexShrink: 0, boxShadow: '0 4px 10px rgba(0,0,0,0.15)' }}>
+                                  {emojiKey || iconStyle.icon}
+                                </div>
+                                
+                                {/* Contenu principal */}
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                  <span className="fw-bold d-block" style={{ color: 'var(--text-main)', fontSize: '0.84rem', lineHeight: 1.35 }}>{cleanTitle}</span>
+                                  <div className="d-flex align-items-center gap-2 mt-1" style={{ flexWrap: 'wrap' }}>
+                                    <span style={{ background: 'rgba(99,102,241,0.15)', color: '#818cf8', fontSize: '0.72rem', fontWeight: 700, padding: '0.2rem 0.55rem', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>📅 {item.date}</span>
+                                    <span style={{ background: 'rgba(16,185,129,0.15)', color: '#10b981', fontSize: '0.72rem', fontWeight: 800, padding: '0.2rem 0.55rem', borderRadius: '8px' }}>{item.status}</span>
+                                  </div>
+                                </div>
+
+                                {/* Boutons CRUD */}
+                                {canEditMaternity && (
+                                  <div className="d-flex gap-1.5" style={{ flexShrink: 0 }}>
+                                    <button
+                                      type="button"
+                                      className="btn btn-sm fw-bold d-inline-flex align-items-center gap-1 hover-lift"
+                                      title="Modifier"
+                                      style={{
+                                        background: 'rgba(59, 130, 246, 0.18)',
+                                        color: '#60a5fa',
+                                        border: '1.5px solid #3b82f6',
+                                        borderRadius: '10px',
+                                        fontSize: '0.75rem',
+                                        padding: '0.35rem 0.6rem',
+                                        boxShadow: '0 2px 8px rgba(59, 130, 246, 0.2)',
+                                        cursor: 'pointer'
+                                      }}
+                                      onClick={() => { setEditingAldItem(item); setShowAldModal(true); }}
+                                    >✏️</button>
+                                    <button
+                                      type="button"
+                                      className="btn btn-sm fw-bold d-inline-flex align-items-center gap-1 hover-lift"
+                                      title="Supprimer"
+                                      style={{
+                                        background: 'rgba(239, 68, 68, 0.18)',
+                                        color: '#f87171',
+                                        border: '1.5px solid #ef4444',
+                                        borderRadius: '10px',
+                                        fontSize: '0.75rem',
+                                        padding: '0.35rem 0.6rem',
+                                        boxShadow: '0 2px 8px rgba(239, 68, 68, 0.2)',
+                                        cursor: 'pointer'
+                                      }}
+                                      onClick={() => handleDeleteAldItem(item.id)}
+                                    >🗑️</button>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Matériel Auto-surveillance - redesigned */}
+                      <div className="p-3.5 rounded-4" style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(5,150,105,0.08) 100%)', border: '1.5px solid rgba(16,185,129,0.3)', borderRadius: '18px' }}>
+                        <div className="d-flex align-items-center justify-content-between">
+                          <div className="d-flex align-items-center gap-2.5">
+                            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}>🔬</div>
+                            <div>
+                              <strong className="d-block" style={{ fontSize: '0.86rem', color: 'var(--text-main)' }}>Kit glycémique & bandelettes</strong>
+                              <small style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 700 }}>Renouvellement mensuel gratuit</small>
+                            </div>
+                          </div>
+                          <span style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', fontWeight: 800, fontSize: '0.72rem', padding: '0.4rem 0.8rem', borderRadius: '10px', boxShadow: '0 2px 8px rgba(16,185,129,0.3)' }}>100% Gratuit</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ) : activeMother.category === 'surgery' ? (
+                  /* 🦴 SEMAINE / PROTOCOLE POST-OPÉRATOIRE (PATIENT CHIRURGIE) */
+                  <div className="p-4 rounded-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '20px' }}>
+                    <div className="d-flex align-items-center justify-content-between mb-3">
+                      <div className="d-flex align-items-center gap-2.5">
+                        <span className="fs-4">🩹</span>
+                        <div>
+                          <h6 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '0.98rem' }}>Protocole Post-Opératoire</h6>
+                          <small className="text-muted d-block" style={{ fontSize: '0.76rem' }}>Chirurgie & Orthopédie UNAMUSC</small>
+                        </div>
+                      </div>
+                      {canEditMaternity && (
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-primary fw-bold hover-lift"
+                          style={{ borderRadius: '8px', fontSize: '0.74rem', padding: '0.25rem 0.6rem' }}
+                          onClick={() => {
+                            setEditingPostOpItem({ title: '', status: '✅ Fait', date: new Date().toLocaleDateString('fr-FR') });
+                            setShowPostOpModal(true);
+                          }}
+                        >
+                          ➕ Ajouter
+                        </button>
+                      )}
+                    </div>
 
-                {/* Card Vos Avantages CSU */}
-                <div className="p-4 rounded-4 text-white" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', boxShadow: '0 10px 25px rgba(16, 185, 129, 0.3)' }}>
+                    {/* Thromboprophylaxie Lovenox */}
+                    <div className="p-3 rounded-3 mb-3" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+                      <div className="d-flex justify-content-between align-items-center mb-1.5">
+                        <small className="fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.82rem' }}>💉 Anti-thrombotique (Lovenox 0.4ml)</small>
+                        <span className="badge bg-success-subtle text-success fw-bold px-2 py-1" style={{ fontSize: '0.72rem', borderRadius: '6px' }}>30 / 30 jours</span>
+                      </div>
+                      <div className="progress mb-1" style={{ height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '6px' }}>
+                        <div className="progress-bar bg-success" style={{ width: '100%', borderRadius: '6px' }}></div>
+                      </div>
+                      <small className="d-block text-muted" style={{ fontSize: '0.72rem', lineHeight: '1.35' }}>
+                        Injections sous-cutanées quotidiennes accomplies avec succès
+                      </small>
+                    </div>
+
+                    {/* Liste Dynamique Post-Op */}
+                    <div className="mb-3">
+                      <div className="d-flex align-items-center justify-content-between mb-2">
+                        <small className="text-muted fw-bold" style={{ fontSize: '0.75rem' }}>
+                          🩺 Soins de cicatrisation & pansements
+                        </small>
+                      </div>
+
+                      <div className="d-flex flex-column gap-2">
+                        {postOpProtocolItems.map(item => (
+                          <div key={item.id} className="p-2.5 rounded-3 d-flex align-items-center justify-content-between gap-2" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', fontSize: '0.8rem' }}>
+                            <div className="d-flex flex-column">
+                              <span className="fw-semibold" style={{ color: 'var(--text-main)' }}>{item.title}</span>
+                              <small className="text-muted" style={{ fontSize: '0.72rem' }}>📅 {item.date}</small>
+                            </div>
+
+                            <div className="d-flex align-items-center gap-1.5">
+                              <span className="badge bg-primary text-white fw-bold px-2 py-1" style={{ borderRadius: '6px', fontSize: '0.72rem' }}>{item.status}</span>
+                              {canEditMaternity && (
+                                <div className="d-flex gap-1.5">
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm fw-bold d-inline-flex align-items-center gap-1 hover-lift"
+                                    title="Modifier"
+                                    style={{
+                                      background: 'rgba(59, 130, 246, 0.18)',
+                                      color: '#60a5fa',
+                                      border: '1.5px solid #3b82f6',
+                                      borderRadius: '10px',
+                                      fontSize: '0.72rem',
+                                      padding: '0.3rem 0.55rem',
+                                      boxShadow: '0 2px 8px rgba(59, 130, 246, 0.2)',
+                                      cursor: 'pointer'
+                                    }}
+                                    onClick={() => { setEditingPostOpItem(item); setShowPostOpModal(true); }}
+                                  >✏️</button>
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm fw-bold d-inline-flex align-items-center gap-1 hover-lift"
+                                    title="Supprimer"
+                                    style={{
+                                      background: 'rgba(239, 68, 68, 0.18)',
+                                      color: '#f87171',
+                                      border: '1.5px solid #ef4444',
+                                      borderRadius: '10px',
+                                      fontSize: '0.72rem',
+                                      padding: '0.3rem 0.55rem',
+                                      boxShadow: '0 2px 8px rgba(239, 68, 68, 0.2)',
+                                      cursor: 'pointer'
+                                    }}
+                                    onClick={() => handleDeletePostOpItem(item.id)}
+                                  >🗑️</button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Attelle & Matériel Orthopédique */}
+                    <div className="p-3 rounded-3 d-flex align-items-center justify-content-between" style={{ background: 'rgba(59, 130, 246, 0.12)', border: '1px solid rgba(59, 130, 246, 0.35)' }}>
+                      <div className="d-flex align-items-center gap-2.5">
+                        <span className="fs-5">🩼</span>
+                        <div>
+                          <strong className="d-block" style={{ fontSize: '0.82rem', color: 'var(--text-main)' }}>Attelle & canne anglaise</strong>
+                          <small className="text-primary fw-bold" style={{ fontSize: '0.74rem' }}>Prise en charge matériel 100% CSU</small>
+                        </div>
+                      </div>
+                      <span className="badge bg-primary text-white fw-bold px-2.5 py-1" style={{ borderRadius: '6px', fontSize: '0.72rem' }}>100% Gratuit</span>
+                    </div>
+                  </div>
+                ) : (
+                  /* 🤰 CARD SUPPLÉMENTATION MATERNELLE & TPI PALUDISME (PNLP SÉNÉGAL / UNAMUSC) */
+                  <div className="p-4 rounded-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '20px' }}>
+                    <div className="d-flex align-items-center justify-content-between mb-3">
+                      <div className="d-flex align-items-center gap-2.5">
+                        <span className="fs-4">💊</span>
+                        <div>
+                          <h6 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '0.98rem' }}>Supplémentation & TPI paludisme</h6>
+                          <small className="text-muted d-block" style={{ fontSize: '0.76rem' }}>Directives PNLP Sénégal & UNAMUSC</small>
+                        </div>
+                      </div>
+                      {canEditMaternity && (
+                        <button 
+                          type="button" 
+                          className="btn btn-sm btn-outline-success fw-bold hover-lift"
+                          style={{ borderRadius: '10px', fontSize: '0.78rem', padding: '0.35rem 0.75rem' }}
+                          onClick={() => {
+                            setEditSupplementsForm(maternalSupplements);
+                            setShowSupplementsModal(true);
+                          }}
+                        >
+                          ✏️ Modifier
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Fer & Acide Folique */}
+                    <div className="p-3 rounded-3 mb-3" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+                      <div className="d-flex justify-content-between align-items-center mb-1.5">
+                        <small className="fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.82rem' }}>💊 Fer & acide folique (anti-anémie)</small>
+                        <span className="badge bg-success-subtle text-success fw-bold px-2 py-1" style={{ fontSize: '0.72rem', borderRadius: '6px' }}>
+                          {maternalSupplements.ferFolateDaysTaken} / {maternalSupplements.ferFolateTotalDays} jours
+                        </span>
+                      </div>
+                      <div className="progress mb-1" style={{ height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '6px' }}>
+                        <div className="progress-bar bg-success" style={{ width: `${Math.round((maternalSupplements.ferFolateDaysTaken / maternalSupplements.ferFolateTotalDays) * 100)}%`, borderRadius: '6px' }}></div>
+                      </div>
+                      <small className="d-block text-muted" style={{ fontSize: '0.72rem', lineHeight: '1.35' }}>
+                        1 comprimé par jour prescrit pendant toute la grossesse
+                      </small>
+                    </div>
+
+                    {/* TPI Paludisme (SP) */}
+                    <div className="mb-3">
+                      <small className="d-block text-muted fw-bold mb-2" style={{ fontSize: '0.75rem' }}>
+                        🦟 TPI paludisme (Sulfadoxine-pyriméthamine)
+                      </small>
+                      <div className="d-flex flex-column gap-2">
+                        {maternalSupplements.tpiDoses.map(dose => (
+                          <div key={dose.id} className="d-flex align-items-center justify-content-between p-2.5 rounded-3" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', fontSize: '0.8rem' }}>
+                            <span className="fw-semibold" style={{ color: 'var(--text-main)' }}>{dose.cpn}</span>
+                            <span className={`badge ${dose.given ? 'bg-success text-white' : 'bg-warning text-dark'} fw-bold px-2.5 py-1`} style={{ borderRadius: '6px', fontSize: '0.72rem' }}>
+                              {dose.given ? `✅ Administré` : `⏳ Programmé`}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* MILDA Moustiquaire */}
+                    <div className="p-3 rounded-3 d-flex align-items-center justify-content-between" style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.35)' }}>
+                      <div className="d-flex align-items-center gap-2.5">
+                        <span className="fs-5">🛖</span>
+                        <div>
+                          <strong className="d-block" style={{ fontSize: '0.82rem', color: 'var(--text-main)' }}>Moustiquaire MILDA offerte</strong>
+                          <small className="text-success fw-bold" style={{ fontSize: '0.74rem' }}>Remise certifiée CPN 1</small>
+                        </div>
+                      </div>
+                      <span className="badge bg-success text-white fw-bold px-2.5 py-1" style={{ borderRadius: '6px', fontSize: '0.72rem' }}>100% Gratuit</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Card Vos Avantages CSU — Adaptatif selon la catégorie médicale */}
+                <div className="p-4 rounded-4 text-white" style={{ 
+                  background: activeMother.category === 'chronic' 
+                    ? 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)' 
+                    : activeMother.category === 'surgery'
+                    ? 'linear-gradient(135deg, #d97706 0%, #b45309 100%)'
+                    : 'linear-gradient(135deg, #10b981 0%, #059669 100%)', 
+                  boxShadow: '0 10px 25px rgba(0,0,0,0.2)' 
+                }}>
                   <div className="d-flex justify-content-between align-items-center mb-3">
-                    <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.1rem' }}>Vos avantages CSU</h6>
+                    <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.1rem' }}>
+                      {activeMother.category === 'chronic' ? 'Vos garanties ALD 100% CSU' : activeMother.category === 'surgery' ? 'Vos garanties Chirurgie 100% CSU' : 'Vos avantages CSU'}
+                    </h6>
                     <span style={{ fontSize: '1.5rem' }}>🇸🇳</span>
                   </div>
 
                   <p className="small mb-3" style={{ opacity: 0.95, lineHeight: '1.5' }}>
-                    Dans le cadre du programme UNAMUSC, vos frais de maternité sont couverts à 100%.
+                    {activeMother.category === 'chronic' 
+                      ? 'Dans le cadre du programme UNAMUSC, la prise en charge de votre affection de longue durée est exonérée à 100%.'
+                      : activeMother.category === 'surgery'
+                      ? 'Prise en charge intégrale UNAMUSC pour votre intervention orthopédique et vos soins de rééducation.'
+                      : 'Dans le cadre du programme UNAMUSC, vos frais de maternité sont couverts à 100%.'}
                   </p>
 
                   <div className="d-flex flex-column gap-2 mb-4 small fw-semibold">
-                    <div className="d-flex align-items-center gap-2">
-                      <span>✓</span> <span><strong>Zéro dépense :</strong> Consultations & examens biologiques.</span>
-                    </div>
-                    <div className="d-flex align-items-center gap-2">
-                      <span>✓</span> <span><strong>Accouchement :</strong> Gratuité totale en structure publique.</span>
-                    </div>
-                    <div className="d-flex align-items-center gap-2">
-                      <span>✓</span> <span><strong>Pédiatrie :</strong> Soins offerts jusqu'à 5 ans.</span>
-                    </div>
+                    {activeMother.category === 'chronic' ? (
+                      <>
+                        <div className="d-flex align-items-center gap-2">
+                          <span>✓</span> <span><strong>Zéro ticket modérateur :</strong> Consultations spécialisées & bilans glycémiques.</span>
+                        </div>
+                        <div className="d-flex align-items-center gap-2">
+                          <span>✓</span> <span><strong>Médicaments ALD :</strong> Antidiabétiques & antihypertenseurs 100% gratuits.</span>
+                        </div>
+                        <div className="d-flex align-items-center gap-2">
+                          <span>✓</span> <span><strong>Auto-surveillance :</strong> Kit lecteur & 100 bandelettes offertes par mois.</span>
+                        </div>
+                      </>
+                    ) : activeMother.category === 'surgery' ? (
+                      <>
+                        <div className="d-flex align-items-center gap-2">
+                          <span>✓</span> <span><strong>Chirurgie & bloc :</strong> Gratuité des frais d'opérations et d'hospitalisation.</span>
+                        </div>
+                        <div className="d-flex align-items-center gap-2">
+                          <span>✓</span> <span><strong>Radiologie DICOM :</strong> Radiographies, scanners et IRM 100% couverts.</span>
+                        </div>
+                        <div className="d-flex align-items-center gap-2">
+                          <span>✓</span> <span><strong>Kinésithérapie :</strong> 10 séances de rééducation et orthèses offertes.</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="d-flex align-items-center gap-2">
+                          <span>✓</span> <span><strong>Zéro dépense :</strong> Consultations & examens biologiques.</span>
+                        </div>
+                        <div className="d-flex align-items-center gap-2">
+                          <span>✓</span> <span><strong>Accouchement :</strong> Gratuité totale en structure publique.</span>
+                        </div>
+                        <div className="d-flex align-items-center gap-2">
+                          <span>✓</span> <span><strong>Pédiatrie :</strong> Soins offerts jusqu'à 5 ans.</span>
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   <button 
                     type="button"
-                    style={{ background: '#ffffff', color: '#047857', border: 'none', borderRadius: '12px', padding: '0.65rem 1rem', fontWeight: '800', width: '100%', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}
+                    className="hover-lift"
+                    style={{ background: 'rgba(255, 255, 255, 0.22)', backdropFilter: 'blur(10px)', color: '#ffffff', border: '1px solid rgba(255, 255, 255, 0.4)', borderRadius: '12px', padding: '0.7rem 1rem', fontWeight: '800', width: '100%', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 4px 14px rgba(0,0,0,0.15)', transition: 'all 0.2s ease' }}
                     onClick={() => setShowRightsModal(true)}
                   >
                     En savoir plus sur mes droits
                   </button>
                 </div>
 
-                {/* Card Sage-femme de garde */}
+                {/* Card Médecin / Praticien de garde — Adaptatif */}
                 <div className="p-3.5 rounded-4 d-flex align-items-center justify-content-between" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
                   <div className="d-flex align-items-center gap-3">
-                    <img src="/dr_fatou_diop.png" onError={(e) => { e.target.src = '/mariama_avatar.png'; }} alt="Dr. Fatou Diome" style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }} />
+                    <img src={activeMother.category === 'chronic' ? '/mariama_avatar.png' : activeMother.category === 'surgery' ? '/mariama_avatar.png' : '/dr_fatou_diop.png'} onError={(e) => { e.target.src = '/mariama_avatar.png'; }} alt="Praticien" style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }} />
                     <div>
-                      <small className="d-block" style={{ color: 'var(--text-sub)', fontSize: '0.72rem' }}>Sage-femme de garde</small>
-                      <strong className="small d-block" style={{ color: 'var(--text-main)' }}>Dr. Fatou Diome</strong>
+                      <small className="d-block text-muted" style={{ fontSize: '0.72rem' }}>
+                        {activeMother.category === 'chronic' ? 'Médecin référent ALD / diabétologue' : activeMother.category === 'surgery' ? 'Chirurgien orthopédiste de garde' : 'Sage-femme de garde'}
+                      </small>
+                      <strong className="small d-block" style={{ color: 'var(--text-main)' }}>
+                        {activeMother.category === 'chronic' ? 'Dr. Ousmane Sow' : activeMother.category === 'surgery' ? 'Dr. Babacar Kane' : 'Dr. Fatou Diome'}
+                      </strong>
                     </div>
                   </div>
 
                   <button 
                     type="button"
+                    className="hover-lift"
                     style={{ background: 'var(--bg-card-subtle)', color: '#10b981', border: '1px solid #10b981', borderRadius: '10px', padding: '0.45rem 0.85rem', fontWeight: '700', fontSize: '0.78rem', cursor: 'pointer' }}
                     onClick={() => setShowAskMidwifeModal(true)}
                   >
-                    Poser une question
+                    {activeMother.category === 'chronic' ? '💬 Contacter le médecin' : activeMother.category === 'surgery' ? '🚨 Signaler une douleur' : 'Poser une question'}
                   </button>
                 </div>
 
@@ -1413,637 +3645,526 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
           </div>
         )}
 
-        {/* TAB 2: CROISSANCE & VACCINS PEV */}
+        {/* TAB 2: CROISSANCE & VACCINS PEV / PHARMACIE ALD / IMAGERIE SURGERY */}
         {activeTab === 'pev' && (
-          <div className="d-flex flex-column gap-4 mb-5">
-            {/* KPI Summary Cards Header (100% DYNAMIQUE & CALCULÉ) */}
-            <div className="row g-3 mb-2">
-              <div className="col-md-4">
-                <div className="p-3.5 rounded-4 d-flex align-items-center justify-content-between h-100" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
-                  <div className="d-flex align-items-center gap-3">
-                    <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>
-                      👶
+          <>
+            {/* Cas 1: PATIENT CHRONIQUE (Diabète / HTA / ALD) */}
+            {activeMother.category === 'chronic' ? (
+              <div className="d-flex flex-column gap-4 mb-5">
+                {/* KPI Cards Summary ALD */}
+                <div className="row g-3 mb-2">
+                  <div className="col-md-4">
+                    <div className="p-3.5 rounded-4 d-flex align-items-center gap-3 h-100" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
+                      <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>
+                        💊
+                      </div>
+                      <div>
+                        <small className="d-block text-muted fw-bold" style={{ fontSize: '0.74rem' }}>Traitement ALD actif</small>
+                        <strong style={{ color: 'var(--text-main)', fontSize: '1rem' }}>{aldPrescriptions.length} médicaments prescrits</strong>
+                        <small className="d-block text-danger fw-bold" style={{ fontSize: '0.78rem' }}>✓ Renouvellement 6 mois CSU</small>
+                      </div>
                     </div>
+                  </div>
+
+                  <div className="col-md-4">
+                    <div className="p-3.5 rounded-4 d-flex align-items-center gap-3 h-100" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
+                      <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>
+                        🧪
+                      </div>
+                      <div>
+                        <small className="d-block text-muted fw-bold" style={{ fontSize: '0.74rem' }}>Bilan biologique récent</small>
+                        <strong style={{ color: 'var(--text-main)', fontSize: '1rem' }}>HbA1c : 6.9% (Objectif &lt; 7%)</strong>
+                        <small className="d-block text-success fw-bold" style={{ fontSize: '0.78rem' }}>Glycémie à jeun : 1.25 g/L</small>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="col-md-4">
+                    <div className="p-3.5 rounded-4 d-flex align-items-center gap-3 h-100" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
+                      <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>
+                        🛡️
+                      </div>
+                      <div>
+                        <small className="d-block text-muted fw-bold" style={{ fontSize: '0.74rem' }}>Prise en charge ALD</small>
+                        <strong style={{ color: 'var(--text-main)', fontSize: '1rem' }}>100% Intégrale UNAMUSC</strong>
+                        <small className="d-block text-primary fw-bold" style={{ fontSize: '0.78rem' }}>Exonération du ticket modérateur</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Ordonnances & Pharmacie ALD Table Card DYNAMIQUE ET AVEC CRUD COMPLET */}
+                <div className="p-4 rounded-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                  <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
                     <div>
-                      <small className="d-block text-muted fw-bold" style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Bébé rattaché</small>
-                      <strong style={{ color: 'var(--text-main)', fontSize: '1rem' }}>{babyProfile.name}</strong>
-                      <small className="d-block text-success fw-bold" style={{ fontSize: '0.78rem' }}>
-                        Né le {new Date(babyProfile.birthDate).toLocaleDateString('fr-FR')} • <span className="badge bg-success-subtle text-success border border-success">{calculateBabyAge(babyProfile.birthDate)}</span>
-                      </small>
+                      <h5 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>💊 Ordonnance thérapeutique & traitement ALD permanent</h5>
+                      <small className="text-muted" style={{ fontSize: '0.82rem' }}>Délivrance gratuite en pharmacie agréée UNAMUSC sur présentation de la carte CSU N° {activeMother.cmuNumber}</small>
+                    </div>
+                    <div className="d-flex gap-2">
+                      {canEditMaternity && (
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-outline-danger fw-bold hover-lift"
+                          style={{ borderRadius: '10px', padding: '0.45rem 0.9rem' }}
+                          onClick={() => {
+                            setEditingPrescription({ name: '', form: '', specialty: '🩸 Diabétologie', dosage: '', coverage: '✅ 100% CSU Gratuit' });
+                            setShowPrescriptionModal(true);
+                          }}
+                        >
+                          ➕ Prescrire un médicament
+                        </button>
+                      )}
+                      <button type="button" className="btn btn-sm btn-danger fw-bold hover-lift" style={{ borderRadius: '10px', padding: '0.45rem 0.9rem' }} onClick={handleGenerateDeliveryCertificate}>
+                        📜 Imprimer l'ordonnance ALD 100% PDF
+                      </button>
                     </div>
                   </div>
-                  <button 
-                    type="button" 
-                    className="btn btn-sm btn-outline-success fw-bold ms-2"
-                    style={{ borderRadius: '8px', fontSize: '0.75rem' }}
-                    onClick={() => {
-                      setBabyForm(babyProfile);
-                      setShowBabyModal(true);
-                    }}
-                    title="Modifier le profil du bébé & contact assurée"
-                  >
-                    ✏️
-                  </button>
-                </div>
-              </div>
 
-              <div className="col-md-4">
-                <div className="p-3.5 rounded-4 d-flex align-items-center gap-3 h-100" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
-                  <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>
-                    💉
-                  </div>
-                  <div>
-                    <small className="d-block text-muted fw-bold" style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Progression vaccinale</small>
-                    <strong style={{ color: 'var(--text-main)', fontSize: '1rem' }}>{vaccinations.filter(v => v.completed).length} / {vaccinations.length} doses administrées</strong>
-                    <small className="d-block text-primary fw-semibold" style={{ fontSize: '0.78rem' }}>
-                      {vaccinations.length > 0 ? Math.round((vaccinations.filter(v => v.completed).length / vaccinations.length) * 100) : 0}% du programme PEV accompli
-                    </small>
-                  </div>
-                </div>
-              </div>
-
-              <div className="col-md-4">
-                <div className="p-3.5 rounded-4 d-flex align-items-center gap-3 h-100" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
-                  <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(245, 158, 11, 0.15)', color: '#d97706', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>
-                    📅
-                  </div>
-                  <div>
-                    <small className="d-block text-muted fw-bold" style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Prochaine échéance</small>
-                    {(() => {
-                      const nextPending = vaccinations.find(v => !v.completed);
-                      if (nextPending) {
-                        return (
-                          <>
-                            <strong style={{ color: 'var(--text-main)', fontSize: '1rem' }}>{nextPending.ageLabel}</strong>
-                            <small className="d-block text-warning fw-semibold" style={{ fontSize: '0.78rem' }}>🏥 {nextPending.structure}</small>
-                          </>
-                        );
-                      }
-                      return (
-                        <>
-                          <strong style={{ color: '#10b981', fontSize: '1rem' }}>Programme accompli 100%</strong>
-                          <small className="d-block text-success fw-semibold" style={{ fontSize: '0.78rem' }}>✅ Vaccins 0-12 mois à jour</small>
-                        </>
-                      );
-                    })()}
+                  <div className="table-responsive">
+                    <table className="table align-middle" style={{ minWidth: '750px' }}>
+                      <thead>
+                        <tr style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', fontSize: '0.78rem' }}>
+                          <th>Médicament prescrit</th>
+                          <th>Spécialité & motif</th>
+                          <th>Posologie quotidienne</th>
+                          <th>Statut prise en charge</th>
+                          {canEditMaternity && <th style={{ textAlign: 'right' }}>Actions</th>}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {aldPrescriptions.map(p => (
+                          <tr key={p.id}>
+                            <td>
+                              <strong className="text-primary">{p.name}</strong>
+                              <br/><small className="text-muted">{p.form}</small>
+                            </td>
+                            <td>
+                              <span className="badge bg-danger-subtle text-danger border border-danger">{p.specialty}</span>
+                            </td>
+                            <td>{p.dosage}</td>
+                            <td><span className="badge bg-success text-white">{p.coverage}</span></td>
+                            {canEditMaternity && (
+                              <td style={{ textAlign: 'right' }}>
+                                <div className="d-flex justify-content-end gap-1.5">
+                                  <button type="button" className="btn btn-sm btn-outline-primary py-1 px-2 hover-lift" style={{ fontSize: '0.75rem', borderRadius: '6px' }} onClick={() => { setEditingPrescription(p); setShowPrescriptionModal(true); }}>✏️</button>
+                                  <button type="button" className="btn btn-sm btn-outline-danger py-1 px-2 hover-lift" style={{ fontSize: '0.75rem', borderRadius: '6px' }} onClick={() => handleDeletePrescription(p.id)}>🗑️</button>
+                                </div>
+                              </td>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </div>
-            </div>
-
-            {/* CARD CENTRE DE RAPPELS AUTOMATIQUES SMS / WHATSAPP / VOCAL (SENTENCE CASE STRICT & CONTRASTE MAX) */}
-            <div className="p-4 rounded-4 text-white" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', border: '1px solid rgba(16, 185, 129, 0.4)', boxShadow: '0 12px 35px rgba(0,0,0,0.35)' }}>
-              <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
-                <div className="d-flex align-items-center gap-2.5">
-                  <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem' }}>
-                    🔔
+            ) : activeMother.category === 'surgery' ? (
+              /* Cas 2: PATIENT CHIRURGIE / TRAUMATOLOGIE */
+              <div className="d-flex flex-column gap-4 mb-5">
+                <div className="p-4 rounded-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                  <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+                    <div>
+                      <h5 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>🦴 Galerie d'imagerie radiologique DICOM & examens osseux</h5>
+                      <small className="text-muted" style={{ fontSize: '0.82rem' }}>Radio numérique de contrôle post-opératoire et scanners d'ostéosynthèse</small>
+                    </div>
                   </div>
-                  <div>
-                    <h6 className="fw-extrabold mb-0 text-white" style={{ fontSize: '1.05rem', letterSpacing: '-0.01em' }}>
-                      Centre de rappels & relances automatiques (suivi mère & bébé)
-                    </h6>
-                    <small style={{ color: '#94a3b8', fontSize: '0.82rem' }}>
-                      Assurée : <strong className="text-white">{babyProfile.motherName}</strong> ({babyProfile.motherPhone}) • Canal : <strong className="text-emerald-400">{babyProfile.reminderChannel}</strong>
-                    </small>
+
+                  <div className="row g-3">
+                    <div className="col-md-6">
+                      <div className="p-3.5 rounded-4 border d-flex flex-column gap-2" style={{ background: 'var(--bg-card-subtle)' }}>
+                        <div className="d-flex justify-content-between align-items-center">
+                          <strong className="text-warning">🦴 Radio fémur droit (face & profil J+30)</strong>
+                          <span className="badge bg-success text-white">Archive DICOM</span>
+                        </div>
+                        <img src="/csu_dicom_xray.jpg" alt="Radio Fémur DICOM" style={{ width: '100%', height: '180px', objectFit: 'cover', borderRadius: '12px', border: '1px solid var(--border-color)' }} />
+                        <small className="text-muted">Observation : Cal osseux régulier en cours de formation. Plaque d'ostéosynthèse parfaitement alignée.</small>
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="p-3.5 rounded-4 border d-flex flex-column gap-2" style={{ background: 'var(--bg-card-subtle)' }}>
+                        <div className="d-flex justify-content-between align-items-center">
+                          <strong className="text-primary">💊 Ordonnance antalgique & anticoagulant</strong>
+                          <span className="badge bg-success text-white">100% CSU</span>
+                        </div>
+                        <div className="p-3 rounded-3 border" style={{ background: 'var(--bg-card)' }}>
+                          <strong className="d-block text-primary small">Lovenox 0.4 ml (Injections HBPM)</strong>
+                          <small className="text-muted d-block">1 injection sous-cutanée par jour pendant 30 jours (prévention phlébite).</small>
+                          <strong className="d-block text-danger small mt-2">Paracétamol codeiné 500mg/30mg</strong>
+                          <small className="text-muted d-block">1 gélule toutes les 6 heures si douleur importante.</small>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-
-                <span className="badge px-3 py-2 rounded-pill fw-bold" style={{ background: 'rgba(16, 185, 129, 0.25)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.5)', fontSize: '0.78rem' }}>
-                  🟢 Relances automatiques H-48 actives
-                </span>
               </div>
+            ) : (
+              /* Cas 3: MATERNITÉ / PÉDIATRIE (Code existant pour PEV & Croissance Enfant) */
+              <div className="d-flex flex-column gap-4 mb-5">
+                {/* KPI Summary Cards Header (100% DYNAMIQUE & CALCULÉ) */}
+                <div className="row g-3 mb-2">
+                  <div className="col-md-4">
+                    <div className="p-3.5 rounded-4 d-flex align-items-center justify-content-between h-100" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
+                      <div className="d-flex align-items-center gap-3">
+                        <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>
+                          👶
+                        </div>
+                        <div>
+                          <small className="d-block text-muted fw-bold" style={{ fontSize: '0.74rem' }}>Bébé rattaché</small>
+                          <strong style={{ color: 'var(--text-main)', fontSize: '1rem' }}>{babyProfile.name}</strong>
+                          <small className="d-block text-success fw-bold" style={{ fontSize: '0.78rem' }}>
+                            Né le {new Date(babyProfile.birthDate).toLocaleDateString('fr-FR')} • <span className="badge bg-success-subtle text-success border border-success">{calculateBabyAge(babyProfile.birthDate)}</span>
+                          </small>
+                        </div>
+                      </div>
+                      <button 
+                        type="button" 
+                        className="btn btn-sm btn-outline-success fw-bold ms-2 hover-lift"
+                        style={{ borderRadius: '8px', fontSize: '0.75rem' }}
+                        onClick={() => {
+                          setBabyForm(babyProfile);
+                          setShowBabyModal(true);
+                        }}
+                        title="Modifier le profil du bébé & contact assurée"
+                      >
+                        ✏️
+                      </button>
+                    </div>
+                  </div>
 
-              {reminderToast && (
-                <div className="alert d-flex align-items-center p-3 mb-3 rounded-3 border-0 fade-in" style={{ background: 'rgba(5, 150, 105, 0.25)', color: '#a7f3d0', border: '1px solid #059669', boxShadow: '0 4px 15px rgba(5, 150, 105, 0.3)' }}>
-                  <span className="me-2 fs-4">🔊</span>
-                  <div className="small fw-bold" style={{ lineHeight: '1.45', fontSize: '0.88rem' }}>{reminderToast}</div>
+                  <div className="col-md-4">
+                    <div className="p-3.5 rounded-4 d-flex align-items-center gap-3 h-100" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
+                      <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>
+                        💉
+                      </div>
+                      <div>
+                        <small className="d-block text-muted fw-bold" style={{ fontSize: '0.74rem' }}>Progression vaccinale</small>
+                        <strong style={{ color: 'var(--text-main)', fontSize: '1rem' }}>{vaccinations.filter(v => v.completed).length} / {vaccinations.length} doses administrées</strong>
+                        <small className="d-block text-primary fw-semibold" style={{ fontSize: '0.78rem' }}>
+                          {vaccinations.length > 0 ? Math.round((vaccinations.filter(v => v.completed).length / vaccinations.length) * 100) : 0}% du programme PEV accompli
+                        </small>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="col-md-4">
+                    <div className="p-3.5 rounded-4 d-flex align-items-center gap-3 h-100" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
+                      <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(245, 158, 11, 0.15)', color: '#d97706', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>
+                        📅
+                      </div>
+                      <div>
+                        <small className="d-block text-muted fw-bold" style={{ fontSize: '0.74rem' }}>Prochaine échéance</small>
+                        {(() => {
+                          const nextPending = vaccinations.find(v => !v.completed);
+                          if (nextPending) {
+                            return (
+                              <>
+                                <strong style={{ color: 'var(--text-main)', fontSize: '1rem' }}>{nextPending.ageLabel}</strong>
+                                <small className="d-block text-warning fw-semibold" style={{ fontSize: '0.78rem' }}>🏥 {nextPending.structure}</small>
+                              </>
+                            );
+                          }
+                          return (
+                            <>
+                              <strong style={{ color: '#10b981', fontSize: '1rem' }}>Programme accompli 100%</strong>
+                              <small className="d-block text-success fw-semibold" style={{ fontSize: '0.78rem' }}>✅ Vaccins 0-12 mois à jour</small>
+                            </>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              )}
 
-              <div className="d-flex gap-3 flex-wrap align-items-center justify-content-between pt-2 border-top" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-                <div className="d-flex align-items-center gap-2">
-                  <span className="small text-white-50 fw-bold" style={{ fontSize: '0.83rem' }}>Choix de la langue vocale :</span>
-                  <div className="btn-group btn-group-sm" role="group">
+                {/* CARD CENTRE DE RAPPELS AUTOMATIQUES SMS / WHATSAPP / VOCAL (SENTENCE CASE STRICT & CONTRASTE MAX) */}
+                <div className="p-4 rounded-4 text-white" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', border: '1px solid rgba(16, 185, 129, 0.4)', boxShadow: '0 12px 35px rgba(0,0,0,0.35)' }}>
+                  <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                    <div className="d-flex align-items-center gap-2.5">
+                      <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem' }}>
+                        🔔
+                      </div>
+                      <div>
+                        <h6 className="fw-extrabold mb-0 text-white" style={{ fontSize: '1.05rem', letterSpacing: '-0.01em' }}>
+                          Centre de rappels & relances automatiques (suivi mère & bébé)
+                        </h6>
+                        <small style={{ color: '#94a3b8', fontSize: '0.82rem' }}>
+                          Assurée : <strong className="text-white">{babyProfile.motherName}</strong> ({babyProfile.motherPhone}) • Canal : <strong className="text-emerald-400">{babyProfile.reminderChannel}</strong>
+                        </small>
+                      </div>
+                    </div>
+
+                    <span className="badge px-3 py-2 rounded-pill fw-bold" style={{ background: 'rgba(16, 185, 129, 0.25)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.5)', fontSize: '0.78rem' }}>
+                      🟢 Relances automatiques H-48 actives
+                    </span>
+                  </div>
+
+                  {reminderToast && (
+                    <div className="alert d-flex align-items-center p-3 mb-3 rounded-3 border-0 fade-in" style={{ background: 'rgba(5, 150, 105, 0.25)', color: '#a7f3d0', border: '1px solid #059669', boxShadow: '0 4px 15px rgba(5, 150, 105, 0.3)' }}>
+                      <span className="me-2 fs-4">🔊</span>
+                      <div className="small fw-bold" style={{ lineHeight: '1.45', fontSize: '0.88rem' }}>{reminderToast}</div>
+                    </div>
+                  )}
+
+                  <div className="d-flex gap-3 flex-wrap align-items-center justify-content-between pt-2 border-top" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
+                    <div className="d-flex align-items-center gap-2">
+                      <span className="small text-white-50 fw-bold" style={{ fontSize: '0.83rem' }}>Choix de la langue vocale :</span>
+                      <div className="btn-group btn-group-sm" role="group">
+                        <button 
+                          type="button" 
+                          style={{ 
+                            background: audioLang === 'fr' ? '#059669' : 'rgba(30, 41, 59, 0.9)', 
+                            color: '#ffffff', 
+                            border: audioLang === 'fr' ? '1px solid #10b981' : '1px solid rgba(255,255,255,0.2)', 
+                            borderRadius: '8px 0 0 8px', 
+                            padding: '0.35rem 0.75rem', 
+                            fontSize: '0.78rem', 
+                            fontWeight: '700',
+                            cursor: 'pointer'
+                          }} 
+                          onClick={() => setAudioLang('fr')}
+                        >
+                          🗣️ Français
+                        </button>
+                        <button 
+                          type="button" 
+                          style={{ 
+                            background: audioLang === 'wolof' ? '#059669' : 'rgba(30, 41, 59, 0.9)', 
+                            color: '#ffffff', 
+                            border: audioLang === 'wolof' ? '1px solid #10b981' : '1px solid rgba(255,255,255,0.2)', 
+                            padding: '0.35rem 0.75rem', 
+                            fontSize: '0.78rem', 
+                            fontWeight: '700',
+                            cursor: 'pointer'
+                          }} 
+                          onClick={() => setAudioLang('wolof')}
+                        >
+                          🗣️ Wolof
+                        </button>
+                        <button 
+                          type="button" 
+                          style={{ 
+                            background: audioLang === 'pulaar' ? '#059669' : 'rgba(30, 41, 59, 0.9)', 
+                            color: '#ffffff', 
+                            border: audioLang === 'pulaar' ? '1px solid #10b981' : '1px solid rgba(255,255,255,0.2)', 
+                            borderRadius: '0 8px 8px 0', 
+                            padding: '0.35rem 0.75rem', 
+                            fontSize: '0.78rem', 
+                            fontWeight: '700',
+                            cursor: 'pointer'
+                          }} 
+                          onClick={() => setAudioLang('pulaar')}
+                        >
+                          🗣️ Pulaar
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="d-flex gap-2.5 flex-wrap">
+                      <button 
+                        type="button"
+                        className="hover-lift"
+                        style={{ background: '#059669', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.55rem 1.1rem', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 4px 14px rgba(5, 150, 105, 0.4)' }}
+                        disabled={reminderSending}
+                        onClick={() => triggerInstantReminder('sms', audioLang)}
+                      >
+                        <span>💬</span> {reminderSending ? 'Envoi...' : 'Envoyer un rappel SMS / WhatsApp immédiat'}
+                      </button>
+
+                      <button 
+                        type="button"
+                        className="hover-lift"
+                        style={{ background: '#1e3a8a', color: '#ffffff', border: '1px solid #3b82f6', borderRadius: '12px', padding: '0.55rem 1.1rem', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 4px 14px rgba(59, 130, 246, 0.35)' }}
+                        disabled={reminderSending}
+                        onClick={() => triggerInstantReminder('voice', audioLang)}
+                      >
+                        <span>🔊</span> Relance vocale ({audioLang.toUpperCase()})
+                      </button>
+
+                      <button 
+                        type="button"
+                        className="hover-lift"
+                        style={{ background: '#1e293b', color: '#fbbf24', border: '1px solid #f59e0b', borderRadius: '12px', padding: '0.55rem 0.95rem', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer' }}
+                        onClick={() => {
+                          setBabyForm(babyProfile);
+                          setShowBabyModal(true);
+                        }}
+                      >
+                        ⚙️ Configurer le contact
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 📊 CARD SUIVI & COURBE DE CROISSANCE OMS DU BÉBÉ (0-24 MOIS) */}
+                <div className="p-4 rounded-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '24px' }}>
+                  <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+                    <div className="d-flex align-items-center gap-3">
+                      <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem', flexShrink: 0 }}>
+                        📊
+                      </div>
+                      <div>
+                        <h5 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>Courbe de croissance & périmètre crânien OMS (0-24 mois)</h5>
+                        <small className="text-muted" style={{ fontSize: '0.82rem' }}>Suivi pédiatrique certifié par les normes OMS de santé infantile</small>
+                      </div>
+                    </div>
+
+                    <div className="d-flex align-items-center gap-2">
+                      <span className="badge bg-success-subtle text-success px-3 py-2 fw-bold" style={{ borderRadius: '10px', fontSize: '0.8rem' }}>
+                        🟢 Trajectoire OMS : Harmonieuse (P50)
+                      </span>
+                      {canEditMaternity && (
+                        <button 
+                          type="button" 
+                          className="btn btn-sm btn-success fw-bold text-white shadow-sm hover-lift"
+                          style={{ borderRadius: '10px', padding: '0.45rem 0.9rem', fontSize: '0.82rem', background: '#059669', borderColor: '#059669' }}
+                          onClick={() => setShowAddGrowthModal(true)}
+                        >
+                          ➕ Consigner une pesée (Pédiatre / Médecin)
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* GRAPHIQUE VISUEL INTERACTIF SVG DE LA COURBE OMS */}
+                  <div className="p-3.5 rounded-4 mb-4 text-white position-relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', border: '1px solid rgba(16, 185, 129, 0.35)' }}>
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                      <small className="fw-bold text-emerald-400" style={{ fontSize: '0.82rem' }}>📈 Trajectoire de poids (kg) vs couloir vert OMS (percentile 3 à 97)</small>
+                      <small className="text-slate-400" style={{ fontSize: '0.78rem' }}>Dernière pesée : {babyGrowth[babyGrowth.length - 1]?.date} ({babyGrowth[babyGrowth.length - 1]?.weight} kg)</small>
+                    </div>
+
+                    <div style={{ width: '100%', height: '140px', position: 'relative' }}>
+                      <svg width="100%" height="100%" viewBox="0 0 500 120" preserveAspectRatio="none">
+                        <path d="M 30 90 Q 250 55 470 20 L 470 45 Q 250 80 30 110 Z" fill="rgba(16, 185, 129, 0.18)" />
+                        <path d="M 30 100 Q 250 67 470 32" fill="none" stroke="rgba(16, 185, 129, 0.4)" strokeWidth="2" strokeDasharray="4 4" />
+                        <path d="M 30 95 Q 250 60 470 25" fill="none" stroke="#10b981" strokeWidth="3.5" />
+                        {babyGrowth.map((g, idx) => {
+                          const x = 30 + (idx / Math.max(1, babyGrowth.length - 1)) * 440;
+                          const y = 95 - (idx * 23);
+                          return (
+                            <g key={g.id}>
+                              <circle cx={x} cy={y} r="6" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
+                              <text x={x} y={y - 10} fill="#ffffff" fontSize="10" fontWeight="bold" textAnchor="middle">{g.weight} kg</text>
+                            </g>
+                          );
+                        })}
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* TABLEAU HISTORIQUE DE PESÉE OMS */}
+                  <div className="table-responsive">
+                    <table className="table align-middle mb-0" style={{ minWidth: '750px' }}>
+                      <thead>
+                        <tr style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', fontSize: '0.78rem' }}>
+                          <th>Échéance mensuelle</th>
+                          <th>Date pesée</th>
+                          <th>Poids (kg)</th>
+                          <th>Taille (cm)</th>
+                          <th>Périmètre crânien</th>
+                          <th>Statut OMS</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {babyGrowth.map((row) => (
+                          <tr key={row.id}>
+                            <td><strong style={{ color: 'var(--text-main)', fontSize: '0.88rem' }}>{row.month}</strong></td>
+                            <td><span style={{ color: 'var(--text-sub)', fontSize: '0.84rem' }}>📅 {row.date}</span></td>
+                            <td><span className="fw-bold text-success" style={{ fontSize: '0.92rem' }}>⚖️ {row.weight} kg</span></td>
+                            <td><span style={{ color: 'var(--text-main)', fontSize: '0.88rem' }}>📏 {row.height} cm</span></td>
+                            <td><span style={{ color: 'var(--text-main)', fontSize: '0.88rem' }}>🧠 {row.head} cm</span></td>
+                            <td>
+                              <span className="badge bg-success-subtle text-success border border-success fw-bold" style={{ borderRadius: '8px', padding: '0.35rem 0.7rem', fontSize: '0.76rem' }}>
+                                🟢 {row.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* 🛡️ PROGRAMME ÉLARGI DE VACCINATION PEV (SÉNÉGAL 0-12 MOIS) */}
+                <div className="p-4 rounded-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '24px' }}>
+                  <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+                    <div className="d-flex align-items-center gap-3">
+                      <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem', flexShrink: 0 }}>
+                        🛡️
+                      </div>
+                      <div>
+                        <h5 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>Programme élargi de vaccination (PEV Sénégal 0-12 mois)</h5>
+                        <small className="text-muted" style={{ fontSize: '0.82rem' }}>Prise en charge intégrale à 100% UNAMUSC dans tous les centres publics du Sénégal</small>
+                      </div>
+                    </div>
+
                     <button 
                       type="button" 
-                      style={{ 
-                        background: audioLang === 'fr' ? '#059669' : 'rgba(30, 41, 59, 0.9)', 
-                        color: '#ffffff', 
-                        border: audioLang === 'fr' ? '1px solid #10b981' : '1px solid rgba(255,255,255,0.2)', 
-                        borderRadius: '8px 0 0 8px', 
-                        padding: '0.35rem 0.75rem', 
-                        fontSize: '0.78rem', 
-                        fontWeight: '700',
-                        cursor: 'pointer'
-                      }} 
-                      onClick={() => setAudioLang('fr')}
+                      className="btn btn-sm btn-outline-success fw-bold hover-lift"
+                      style={{ borderRadius: '10px', padding: '0.45rem 0.9rem', fontSize: '0.82rem' }}
+                      onClick={handleGenerateDeliveryCertificate}
                     >
-                      🗣️ Français
-                    </button>
-                    <button 
-                      type="button" 
-                      style={{ 
-                        background: audioLang === 'wolof' ? '#059669' : 'rgba(30, 41, 59, 0.9)', 
-                        color: '#ffffff', 
-                        border: audioLang === 'wolof' ? '1px solid #10b981' : '1px solid rgba(255,255,255,0.2)', 
-                        padding: '0.35rem 0.75rem', 
-                        fontSize: '0.78rem', 
-                        fontWeight: '700',
-                        cursor: 'pointer'
-                      }} 
-                      onClick={() => setAudioLang('wolof')}
-                    >
-                      🗣️ Wolof
-                    </button>
-                    <button 
-                      type="button" 
-                      style={{ 
-                        background: audioLang === 'pulaar' ? '#059669' : 'rgba(30, 41, 59, 0.9)', 
-                        color: '#ffffff', 
-                        border: audioLang === 'pulaar' ? '1px solid #10b981' : '1px solid rgba(255,255,255,0.2)', 
-                        borderRadius: '0 8px 8px 0', 
-                        padding: '0.35rem 0.75rem', 
-                        fontSize: '0.78rem', 
-                        fontWeight: '700',
-                        cursor: 'pointer'
-                      }} 
-                      onClick={() => setAudioLang('pulaar')}
-                    >
-                      🗣️ Pulaar
+                      📥 Télécharger carnet vaccinal PDF
                     </button>
                   </div>
-                </div>
 
-                <div className="d-flex gap-2.5 flex-wrap">
-                  <button 
-                    type="button"
-                    style={{ background: '#059669', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.55rem 1.1rem', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 4px 14px rgba(5, 150, 105, 0.4)' }}
-                    disabled={reminderSending}
-                    onClick={() => triggerInstantReminder('sms', audioLang)}
-                  >
-                    <span>💬</span> {reminderSending ? 'Envoi...' : 'Envoyer un rappel SMS / WhatsApp immédiat'}
-                  </button>
-
-                  <button 
-                    type="button"
-                    style={{ background: '#1e3a8a', color: '#ffffff', border: '1px solid #3b82f6', borderRadius: '12px', padding: '0.55rem 1.1rem', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer', boxShadow: '0 4px 14px rgba(59, 130, 246, 0.35)' }}
-                    disabled={reminderSending}
-                    onClick={() => triggerInstantReminder('voice', audioLang)}
-                  >
-                    <span>🔊</span> Relance vocale ({audioLang.toUpperCase()})
-                  </button>
-
-                  <button 
-                    type="button"
-                    style={{ background: '#1e293b', color: '#fbbf24', border: '1px solid #f59e0b', borderRadius: '12px', padding: '0.55rem 0.95rem', fontWeight: '700', fontSize: '0.85rem', cursor: 'pointer' }}
-                    onClick={() => {
-                      setBabyForm(babyProfile);
-                      setShowBabyModal(true);
-                    }}
-                  >
-                    ⚙️ Configurer le contact
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* 📊 CARD SUIVI & COURBE DE CROISSANCE OMS DU BÉBÉ (0-24 MOIS) */}
-            <div className="p-4 rounded-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '24px' }}>
-              <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
-                <div className="d-flex align-items-center gap-3">
-                  <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem', flexShrink: 0 }}>
-                    📊
+                  <div className="table-responsive">
+                    <table className="table align-middle" style={{ minWidth: '850px' }}>
+                      <thead>
+                        <tr style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', fontSize: '0.78rem' }}>
+                          <th>Échéance / âge</th>
+                          <th>Vaccins obligatoires</th>
+                          <th>Maladies protégées</th>
+                          <th>Structure agréée</th>
+                          <th>Statut PEV</th>
+                          <th>Actions médicales</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {vaccinations.map((vac) => (
+                          <tr key={vac.id}>
+                            <td>
+                              <strong style={{ color: 'var(--text-main)', fontSize: '0.88rem' }}>{vac.ageLabel}</strong>
+                              <small className="d-block text-muted" style={{ fontSize: '0.74rem' }}>PEV Sénégal</small>
+                            </td>
+                            <td>
+                              <strong className="text-primary d-block" style={{ fontSize: '0.88rem' }}>{vac.vaccines}</strong>
+                              <small className="text-muted" style={{ fontSize: '0.74rem' }}>{vac.subtext}</small>
+                            </td>
+                            <td><span style={{ color: 'var(--text-sub)', fontSize: '0.82rem' }}>{vac.diseases}</span></td>
+                            <td><span style={{ color: 'var(--text-main)', fontSize: '0.82rem' }}>🏥 {vac.structure}</span></td>
+                            <td>
+                              <span className={`badge ${vac.completed ? 'bg-success text-white' : 'bg-warning-subtle text-warning border border-warning'}`} style={{ borderRadius: '8px', padding: '0.35rem 0.7rem', fontSize: '0.76rem' }}>
+                                {vac.completed ? '✅ Administré (100% CSU)' : `🗓️ ${vac.status}`}
+                              </span>
+                            </td>
+                            <td>
+                              {canEditMaternity && (
+                                <div className="d-flex gap-2">
+                                  <button type="button" className="btn btn-sm btn-outline-primary" style={{ borderRadius: '6px', fontSize: '0.72rem' }}>✏️ Modifier</button>
+                                  <button type="button" className="btn btn-sm btn-outline-danger" style={{ borderRadius: '6px', fontSize: '0.72rem' }}>🗑️ Supprimer</button>
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                  <div>
-                    <h5 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>Courbe de croissance & périmètre crânien OMS (0-24 mois)</h5>
-                    <small className="text-muted" style={{ fontSize: '0.82rem' }}>Suivi pédiatrique certifié par les normes OMS de santé infantile</small>
-                  </div>
-                </div>
 
-                <div className="d-flex align-items-center gap-2">
-                  <span className="badge bg-success-subtle text-success px-3 py-2 fw-bold" style={{ borderRadius: '10px', fontSize: '0.8rem' }}>
-                    🟢 Trajectoire OMS : Harmonieuse (P50)
-                  </span>
+                  {/* Bouton Ajouter une vaccination PEV — Médecin / Sage-femme / SuperAdmin */}
                   {canEditMaternity && (
                     <button 
                       type="button" 
-                      className="btn btn-sm btn-success fw-bold text-white shadow-sm"
-                      style={{ borderRadius: '10px', padding: '0.45rem 0.9rem', fontSize: '0.82rem', background: '#059669', borderColor: '#059669' }}
-                      onClick={() => setShowAddGrowthModal(true)}
+                      className="mt-3" 
+                      style={{ background: 'rgba(16,185,129,0.12)', color: '#10b981', border: '2px dashed #10b981', borderRadius: '12px', padding: '0.85rem', fontWeight: '700', fontSize: '0.88rem', cursor: 'pointer', width: '100%' }} 
+                      onClick={() => setShowAddVaccineModal(true)}
                     >
-                      ➕ Consigner une pesée (Pédiatre / Médecin)
+                      ➕ Enregistrer une nouvelle vaccination PEV ({isMidwife ? 'Sage-femme' : isSuperAdmin ? 'SuperAdmin' : 'Médecin'})
                     </button>
                   )}
                 </div>
               </div>
-
-              {/* GRAPHIQUE VISUEL INTERACTIF SVG DE LA COURBE OMS */}
-              <div className="p-3.5 rounded-4 mb-4 text-white position-relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', border: '1px solid rgba(16, 185, 129, 0.35)' }}>
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                  <small className="fw-bold text-emerald-400" style={{ fontSize: '0.82rem' }}>📈 TRAJECTOIRE DE POIDS (KG) VS COULOIR VERT OMS (PERCENTILE 3 À 97)</small>
-                  <small className="text-slate-400" style={{ fontSize: '0.78rem' }}>Dernière pesée : {babyGrowth[babyGrowth.length - 1]?.date} ({babyGrowth[babyGrowth.length - 1]?.weight} kg)</small>
-                </div>
-
-                <div style={{ width: '100%', height: '140px', position: 'relative' }}>
-                  <svg width="100%" height="100%" viewBox="0 0 500 120" preserveAspectRatio="none">
-                    {/* Zone verte OMS corridor */}
-                    <path d="M 30 90 Q 250 55 470 20 L 470 45 Q 250 80 30 110 Z" fill="rgba(16, 185, 129, 0.18)" />
-                    
-                    {/* Ligne médiane OMS P50 */}
-                    <path d="M 30 100 Q 250 67 470 32" fill="none" stroke="rgba(16, 185, 129, 0.4)" strokeWidth="2" strokeDasharray="4 4" />
-
-                    {/* Ligne pesée réelle bébé */}
-                    <path 
-                      d={`M ${babyGrowth.map((g, idx) => {
-                        const x = 30 + (idx * 210);
-                        const y = 100 - ((g.weight - 3) * 22);
-                        return `${x} ${y}`;
-                      }).join(' L ')}`} 
-                      fill="none" 
-                      stroke="#34d399" 
-                      strokeWidth="3.5" 
-                    />
-
-                    {/* Points pesées */}
-                    {babyGrowth.map((g, idx) => {
-                      const x = 30 + (idx * 210);
-                      const y = 100 - ((g.weight - 3) * 22);
-                      return (
-                        <g key={g.id}>
-                          <circle cx={x} cy={y} r="6" fill="#059669" stroke="#ffffff" strokeWidth="2" />
-                          <text x={x} y={y - 10} fill="#a7f3d0" fontSize="10" fontWeight="bold" textAnchor="middle">{g.weight} kg</text>
-                        </g>
-                      );
-                    })}
-                  </svg>
-                </div>
-              </div>
-
-              {/* TABLEAU DES RELEVÉS MENSUELS BÉBÉ */}
-              <div className="table-responsive" style={{ borderRadius: '14px', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
-                <table className="table align-middle mb-0" style={{ background: 'transparent' }}>
-                  <thead style={{ background: 'var(--bg-card-subtle)' }}>
-                    <tr className="small" style={{ fontSize: '0.78rem', color: 'var(--text-sub)' }}>
-                      <th>ÉCHÉANCE MENSUELLE</th>
-                      <th>DATE PESÉE</th>
-                      <th>POIDS (KG)</th>
-                      <th>TAILLE (CM)</th>
-                      <th>PÉRIMÈTRE CRÂNIEN</th>
-                      <th className="text-end">STATUT OMS</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {babyGrowth.map((g) => (
-                      <tr key={g.id} className="border-bottom" style={{ borderColor: 'var(--border-color)' }}>
-                        <td className="fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.88rem' }}>{g.month}</td>
-                        <td style={{ color: 'var(--text-sub)', fontSize: '0.85rem' }}>📅 {g.date}</td>
-                        <td className="fw-extrabold text-success" style={{ fontSize: '0.95rem' }}>⚖️ {g.weight} kg</td>
-                        <td className="fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.88rem' }}>📏 {g.height} cm</td>
-                        <td style={{ color: 'var(--text-sub)', fontSize: '0.85rem' }}>🧠 {g.head} cm</td>
-                        <td className="text-end">
-                          <span className="badge bg-success-subtle text-success border border-success fw-bold px-2.5 py-1" style={{ borderRadius: '8px', fontSize: '0.75rem' }}>
-                            🟢 {g.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            {/* Main Vaccination Table Card */}
-            <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
-              <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
-                <div className="d-flex align-items-center gap-2.5">
-                  <span style={{ fontSize: '1.5rem' }}>🛡️</span>
-                  <div>
-                    <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>Programme élargi de vaccination (PEV Sénégal 0-12 mois)</h5>
-                    <small style={{ color: 'var(--text-sub)', fontSize: '0.82rem' }}>Prise en charge intégrale à 100% UNAMUSC dans tous les centres publics du Sénégal</small>
-                  </div>
-                </div>
-
-                <button 
-                  type="button"
-                  style={{ background: 'rgba(16,185,129,0.12)', color: '#10b981', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '10px', padding: '0.5rem 1rem', fontWeight: '700', fontSize: '0.82rem', cursor: 'pointer' }}
-                  onClick={handleDownloadCarnet}
-                >
-                  📥 Télécharger carnet vaccinal PDF
-                </button>
-              </div>
-
-              <div className="table-responsive" style={{ borderRadius: '14px', border: '1px solid var(--border-color)', overflowX: 'auto' }}>
-                <table className="table align-middle mb-0" style={{ background: 'transparent', minWidth: '940px' }}>
-                  <thead style={{ background: 'var(--bg-card-subtle)' }}>
-                    <tr className="small" style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>
-                      <th scope="col" style={{ padding: '1rem 1.25rem' }}>ÉCHÉANCE / ÂGE</th>
-                      <th scope="col" style={{ padding: '1rem 1.25rem' }}>VACCINS OBLIGATOIRES</th>
-                      <th scope="col" style={{ padding: '1rem 1.25rem' }}>MALADIES PROTÉGÉES</th>
-                      <th scope="col" style={{ padding: '1rem 1.25rem' }}>STRUCTURE AGRÉÉE</th>
-                      <th scope="col" className="text-end" style={{ padding: '1rem 1.25rem' }}>STATUT PEV</th>
-                      {canEditMaternity && <th scope="col" className="text-end" style={{ padding: '1rem 1.25rem' }}>ACTIONS MÉDICALES</th>}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {vaccinations.map((item) => (
-                      <tr key={item.id} className="border-bottom" style={{ borderColor: 'var(--border-color)' }}>
-                        <td style={{ padding: '1.1rem 1.25rem' }}>
-                          <strong style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>{item.ageLabel}</strong>
-                          <small className="d-block text-muted" style={{ fontSize: '0.75rem' }}>PEV Sénégal</small>
-                        </td>
-                        <td style={{ padding: '1.1rem 1.25rem' }}>
-                          <span className={item.completed ? 'text-success fw-bold' : 'text-primary fw-bold'} style={{ fontSize: '0.9rem' }}>{item.vaccines}</span>
-                          <small className="d-block text-muted" style={{ fontSize: '0.75rem' }}>{item.subtext}</small>
-                        </td>
-                        <td style={{ padding: '1.1rem 1.25rem', color: 'var(--text-sub)', fontSize: '0.85rem' }}>
-                          {item.diseases}
-                        </td>
-                        <td style={{ padding: '1.1rem 1.25rem', color: 'var(--text-sub)', fontSize: '0.85rem' }}>
-                          🏥 {item.structure}
-                        </td>
-                        <td className="text-end" style={{ padding: '1.1rem 1.25rem', whiteSpace: 'nowrap' }}>
-                          <span style={{ 
-                            display: 'inline-flex', 
-                            alignItems: 'center', 
-                            gap: '0.35rem', 
-                            background: item.completed ? 'rgba(16, 185, 129, 0.12)' : 'rgba(59, 130, 246, 0.12)', 
-                            color: item.completed ? '#10b981' : '#3b82f6', 
-                            border: item.completed ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(59, 130, 246, 0.3)', 
-                            padding: '0.45rem 0.9rem', 
-                            borderRadius: '30px', 
-                            fontSize: '0.78rem', 
-                            fontWeight: '800' 
-                          }}>
-                            <span>{item.completed ? '✅' : '🗓️'}</span> <span>{item.status}</span>
-                          </span>
-                        </td>
-                        {canEditMaternity && (
-                          <td className="text-end" style={{ padding: '1.1rem 1.25rem', whiteSpace: 'nowrap' }}>
-                            <div className="d-flex justify-content-end gap-1.5">
-                              <button 
-                                type="button" 
-                                style={{ background: 'rgba(59,130,246,0.15)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '8px', padding: '0.35rem 0.65rem', fontWeight: '700', fontSize: '0.75rem', cursor: 'pointer' }}
-                                onClick={() => openEditVaccine(item)}
-                              >
-                                ✏️ Modifier
-                              </button>
-                              <button 
-                                type="button" 
-                                style={{ background: '#dc2626', color: '#ffffff', border: '1px solid #b91c1c', borderRadius: '10px', padding: '0.4rem 0.75rem', fontWeight: '700', fontSize: '0.75rem', cursor: 'pointer', boxShadow: '0 3px 10px rgba(220, 38, 38, 0.3)' }}
-                                onClick={() => handleDeleteVaccine(item)}
-                              >
-                                🗑️ Supprimer
-                              </button>
-                            </div>
-                          </td>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Bouton Ajouter une vaccination PEV — Médecin / Sage-femme / SuperAdmin */}
-              {canEditMaternity && (
-                <button 
-                  type="button" 
-                  className="mt-3" 
-                  style={{ background: 'rgba(16,185,129,0.12)', color: '#10b981', border: '2px dashed #10b981', borderRadius: '12px', padding: '0.85rem', fontWeight: '700', fontSize: '0.88rem', cursor: 'pointer', width: '100%' }} 
-                  onClick={() => setShowAddVaccineModal(true)}
-                >
-                  ➕ Enregistrer une nouvelle vaccination PEV ({isMidwife ? 'Sage-femme' : isSuperAdmin ? 'SuperAdmin' : 'Médecin'})
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: CONSEILS EXPERTS & Q&A */}
-        {activeTab === 'advice' && (
-          <div className="row g-4 mb-5">
-            {/* Left Column: Questions List */}
-            <div className="col-lg-7">
-              <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
-                
-                <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-                  <div>
-                    <h5 className="fw-bold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.2rem' }}>💬 Questions posées & réponses de la sage-femme</h5>
-                    <small style={{ color: 'var(--text-sub)', fontSize: '0.82rem' }}>Échanges sécurisés certifiés par le Conseil National de l'Ordre des Sages-Femmes</small>
-                  </div>
-
-                  <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16,185,129,0.3)', padding: '0.35rem 0.8rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '700' }}>
-                    ⚡ Service 24h/7 actif
-                  </span>
-                </div>
-
-                <div className="d-flex flex-column gap-3 mb-4">
-                  {midwifeAnswers.map((item, idx) => (
-                    <div key={idx} className="p-4 rounded-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
-                      <div className="d-flex align-items-center justify-content-between mb-2">
-                        <span style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#d97706', padding: '0.25rem 0.65rem', borderRadius: '8px', fontSize: '0.75rem', fontWeight: '700' }}>
-                          ❓ Question citoyenne
-                        </span>
-                        <small style={{ color: 'var(--text-sub)', fontSize: '0.75rem' }}>{item.date}</small>
-                      </div>
-
-                      <strong className="d-block mb-3" style={{ color: 'var(--text-main)', fontSize: '0.98rem', lineHeight: '1.5' }}>
-                        {item.q}
-                      </strong>
-
-                      <div className="p-4 rounded-3 border-start border-4 border-success shadow-sm" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderLeftColor: '#059669 !important', borderRadius: '16px' }}>
-                        <div className="d-flex align-items-center gap-3 mb-3">
-                          <img src="/dr_fatou_diop.png" onError={(e) => { e.target.src = '/mariama_avatar.png'; }} alt="Dr. Fatou Diome" style={{ width: '42px', height: '42px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #059669' }} />
-                          <div>
-                            <div className="d-flex align-items-center gap-2 mb-0.5">
-                              <strong className="d-block text-success fw-extrabold" style={{ fontSize: '0.94rem' }}>{item.doctor || 'Sage-femme Fatou Diome'}</strong>
-                              <span className="badge bg-success-subtle text-success px-2 py-0.5 fw-bold" style={{ borderRadius: '6px', fontSize: '0.68rem' }}>🟢 Réponse certifiée</span>
-                            </div>
-                            <small className="text-muted d-block" style={{ fontSize: '0.76rem' }}>Sage-femme d'État • CHU de Fann</small>
-                          </div>
-                        </div>
-                        <p className="small mb-0 text-secondary" style={{ lineHeight: '1.65', fontSize: '0.9rem' }}>
-                          {item.a}
-                        </p>
-                      </div>
-
-                      {/* Zone réponse professionnel (médecin / sage-femme / superadmin) */}
-                      {canEditMaternity && (
-                        <div className="mt-3 p-3 rounded-3" style={{ background: 'rgba(59,130,246,0.06)', border: '1px solid rgba(59,130,246,0.25)' }}>
-                          {replyingToIdx === idx ? (
-                            <div className="d-flex flex-column gap-2">
-                              <textarea className="form-control form-control-sm" rows={3} placeholder="Saisissez votre réponse médicale..." value={proReply} onChange={(e) => setProReply(e.target.value)} style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '8px' }} />
-                              <div className="d-flex gap-2">
-                                <button type="button" className="btn btn-sm btn-success fw-bold" style={{ borderRadius: '8px' }} onClick={() => handleProReply(idx)}>📨 Publier la réponse</button>
-                                <button type="button" className="btn btn-sm btn-secondary" onClick={() => { setReplyingToIdx(null); setProReply(''); }}>Annuler</button>
-                              </div>
-                            </div>
-                          ) : (
-                            <button type="button" className="btn btn-sm fw-bold w-100" style={{ background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '8px' }} onClick={() => { setReplyingToIdx(idx); setProReply(item.a && !item.a.includes('Bonjour Awa') ? item.a : ''); }}>
-                              💬 Répondre en tant que {isMidwife ? 'sage-femme' : isSuperAdmin ? 'SuperAdmin' : 'médecin'}
-                            </button>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Bouton poser question — réservé à l'assuré */}
-                {isCitizen && (
-                  <button
-                    type="button"
-                    style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.8rem 1.5rem', fontWeight: '800', fontSize: '0.9rem', cursor: 'pointer', width: '100%', boxShadow: '0 4px 15px rgba(16,185,129,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
-                    onClick={() => setShowAskMidwifeModal(true)}
-                  >
-                    <span>➕</span> Poser une nouvelle question à la sage-femme
-                  </button>
-                )}
-                {canEditMaternity && (
-                  <div className="mt-2 text-center small" style={{ color: 'var(--text-sub)' }}>
-                    🔒 En tant que professionnel, vous répondez aux questions (aucune action sur le bouton ci-dessus).
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Right Column: Sage-femme profile & Advice Cards */}
-            <div className="col-lg-5">
-              <div className="d-flex flex-column gap-4">
-                
-                {/* Sage-femme de garde Card */}
-                <div className="p-4 rounded-4 text-white" style={{ background: 'linear-gradient(135deg, #064e3b 0%, #047857 100%)', boxShadow: '0 10px 25px rgba(6, 78, 59, 0.3)' }}>
-                  <div className="d-flex align-items-center gap-3 mb-3">
-                    <img src="/dr_fatou_diop.png" onError={(e) => { e.target.src = '/mariama_avatar.png'; }} alt="Dr. Fatou Diome" style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #10b981' }} />
-                    <div>
-                      <span className="badge bg-success-subtle text-success mb-1" style={{ background: 'rgba(16, 185, 129, 0.25)', color: '#6ee7b7', padding: '0.2rem 0.6rem', borderRadius: '6px', fontSize: '0.72rem', fontWeight: '700' }}>
-                        ● EN GARDE AUJOURD'HUI
-                      </span>
-                      <h5 className="fw-bold mb-0" style={{ color: '#ffffff' }}>Dr. Fatou Diome</h5>
-                      <small style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.78rem' }}>Sage-femme de garde UNAMUSC</small>
-                    </div>
-                  </div>
-
-                  <p className="small mb-3" style={{ color: 'rgba(255,255,255,0.88)', lineHeight: '1.5' }}>
-                    Posez vos questions en toute confidentialité concernant vos symptômes de grossesse, la nutrition maternelle ou les soins du nouveau-né.
-                  </p>
-
-                  <div style={{ background: 'rgba(255,255,255,0.1)', borderRadius: '12px', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.78rem', color: '#6ee7b7' }}>
-                    <span>⏱️</span> <span>Réponse moyenne notifiée en <strong>moins de 15 min</strong></span>
-                  </div>
-                </div>
-
-                {/* FAQ Advice Articles Dynamiques — Espace réservé Infirmière / Sage-Femme */}
-                <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
-                  <div className="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-                    <div>
-                      <div className="d-flex align-items-center gap-2 mb-1">
-                        <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>💡 Fiches conseils prénatals & santé bébé</h6>
-                        <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', padding: '0.2rem 0.6rem', borderRadius: '8px', fontSize: '0.68rem', fontWeight: '700' }}>
-                          👩‍⚕️ Espace Sage-femme & Médecin
-                        </span>
-                      </div>
-                      <small style={{ color: 'var(--text-sub)', fontSize: '0.76rem' }}>Recommandations médicales certifiées par l'équipe soignante UNAMUSC</small>
-                    </div>
-
-                    {canEditMaternity && (
-                      <button
-                        type="button"
-                        style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.45rem 0.85rem', fontSize: '0.78rem', fontWeight: '800', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.25)' }}
-                        onClick={() => setShowAddAdviceModal(true)}
-                      >
-                        ➕ Ajouter une fiche ({isMidwife ? 'Sage-femme' : isSuperAdmin ? 'SuperAdmin' : 'Médecin'})
-                      </button>
-                    )}
-                    {isCitizen && (
-                      <span className="badge bg-secondary-subtle text-secondary border border-secondary px-2.5 py-1.5" style={{ borderRadius: '8px', fontSize: '0.74rem' }}>
-                        🔒 Lecture seule — Modifications par votre sage-femme/médecin
-                      </span>
-                    )}
-                  </div>
-                  
-                  <div className="d-flex flex-column gap-3.5">
-                    {adviceArticles.map((art) => (
-                      <div 
-                        key={art.id} 
-                        className="p-4 rounded-4 d-flex flex-column gap-3 shadow-sm" 
-                        style={{ 
-                          background: 'var(--bg-card-subtle)', 
-                          border: '1px solid var(--border-color)', 
-                          borderRadius: '20px',
-                          cursor: 'pointer',
-                          transition: 'all 0.25 ease'
-                        }} 
-                        onClick={() => setSelectedAdviceArticle(art)}
-                        onMouseEnter={(e) => e.currentTarget.style.borderColor = '#059669'}
-                        onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--border-color)'}
-                      >
-                        <div className="d-flex align-items-start justify-content-between gap-3 flex-wrap">
-                          <div className="d-flex align-items-center gap-3">
-                            <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(5, 150, 105, 0.14)', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem', flexShrink: 0, border: '1px solid rgba(5, 150, 105, 0.25)' }}>
-                              {art.icon}
-                            </div>
-                            <div>
-                              <div className="d-flex align-items-center gap-2 mb-1">
-                                <span className="badge bg-success-subtle text-success fw-bold px-2.5 py-1" style={{ borderRadius: '8px', fontSize: '0.72rem', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981' }}>
-                                  {art.badge}
-                                </span>
-                                <small className="text-muted fw-semibold" style={{ fontSize: '0.75rem' }}>⏱️ {art.readTime}</small>
-                              </div>
-                              <h6 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.02rem', lineHeight: '1.35' }}>
-                                {art.title}
-                              </h6>
-                            </div>
-                          </div>
-
-                          {/* Boutons d'action pour médecin / sage-femme / superadmin */}
-                          {canEditMaternity && (
-                            <div className="d-flex align-items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                              <button 
-                                type="button" 
-                                className="btn btn-sm btn-outline-primary fw-bold d-inline-flex align-items-center gap-1" 
-                                style={{ borderRadius: '10px', padding: '0.35rem 0.75rem', fontSize: '0.78rem' }} 
-                                onClick={() => openEditAdvice(art)}
-                              >
-                                ✏️ Modifier
-                              </button>
-                              <button 
-                                type="button" 
-                                className="btn btn-sm text-white fw-bold d-inline-flex align-items-center gap-1 shadow-sm" 
-                                style={{ background: '#dc2626', borderColor: '#b91c1c', borderRadius: '10px', padding: '0.4rem 0.8rem', fontSize: '0.78rem' }} 
-                                onClick={() => handleDeleteAdvice(art.id)}
-                              >
-                                🗑️ Supprimer
-                              </button>
-                            </div>
-                          )}
-                        </div>
-
-                        <p className="mb-0 text-muted small" style={{ fontSize: '0.86rem', lineHeight: '1.55' }}>
-                          {art.subtitle}
-                        </p>
-
-                        <div className="pt-2.5 border-top d-flex align-items-center justify-content-between flex-wrap gap-2" style={{ borderColor: 'var(--border-color)' }}>
-                          <small className="text-success fw-bold d-inline-flex align-items-center gap-1.5" style={{ fontSize: '0.78rem' }}>
-                            <span>🛡️</span> Recommandation médicale certifiée UNAMUSC
-                          </small>
-
-                          <button
-                            type="button"
-                            className="btn btn-sm btn-success text-white fw-bold d-inline-flex align-items-center gap-1.5 shadow-sm"
-                            style={{ borderRadius: '12px', background: '#059669', borderColor: '#059669', padding: '0.45rem 1rem', fontSize: '0.82rem' }}
-                            onClick={() => setSelectedAdviceArticle(art)}
-                          >
-                            <span>👉</span> Lire la fiche conseil <span style={{ fontSize: '1rem' }}>›</span>
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          </div>
+            )}
+          </>
         )}
 
       </div>
@@ -2679,7 +4800,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                 </div>
                 <div>
                   <div className="d-flex align-items-center gap-2 mb-0.5">
-                    <span className="small text-muted fw-bold" style={{ fontSize: '0.76rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Bébé rattaché</span>
+                    <span className="small text-muted fw-bold" style={{ fontSize: '0.76rem' }}>Bébé rattaché</span>
                     <span className="badge bg-success-subtle text-success px-2 py-0.5 fw-bold" style={{ borderRadius: '6px', fontSize: '0.7rem' }}>🟢 Profil certifié</span>
                   </div>
                   <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.05rem', color: 'var(--text-main)' }}>
@@ -2740,8 +4861,8 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
             </div>
 
             <div className="d-flex justify-content-end gap-2.5 pt-2 border-top" style={{ borderColor: 'var(--border-color)' }}>
-              <button type="button" className="btn px-4 py-2.5 fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.88rem' }} onClick={() => setShowAddVaccineModal(false)}>Annuler</button>
-              <button type="submit" className="btn px-4 py-2.5 fw-bold text-white shadow-sm" style={{ background: '#059669', borderColor: '#059669', borderRadius: '12px', fontSize: '0.9rem' }}>💾 Enregistrer la vaccination</button>
+              <button type="button" className="btn px-4 py-2.5 fw-bold hover-lift" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.88rem' }} onClick={() => setShowAddVaccineModal(false)}>Annuler</button>
+              <button type="submit" className="btn px-4 py-2.5 fw-bold text-white shadow-sm hover-lift" style={{ background: '#059669', borderColor: '#059669', borderRadius: '12px', fontSize: '0.9rem' }}>💾 Enregistrer la vaccination</button>
             </div>
           </form>
         </div>,
@@ -2789,7 +4910,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                 </div>
                 <div>
                   <div className="d-flex align-items-center gap-2 mb-0.5">
-                    <span className="small text-muted fw-bold" style={{ fontSize: '0.76rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Bébé rattaché</span>
+                    <span className="small text-muted fw-bold" style={{ fontSize: '0.76rem' }}>Bébé rattaché</span>
                     <span className="badge bg-success-subtle text-success px-2 py-0.5 fw-bold" style={{ borderRadius: '6px', fontSize: '0.7rem' }}>🟢 Profil certifié</span>
                   </div>
                   <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.05rem', color: 'var(--text-main)' }}>
@@ -3157,6 +5278,477 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
               <button type="submit" className="btn px-4 py-2.5 fw-bold text-white shadow-sm" style={{ background: '#059669', borderColor: '#059669', borderRadius: '12px', fontSize: '0.9rem' }}>💾 Enregistrer le profil & rappels</button>
             </div>
           </form>
+        </div>,
+        document.body
+      )}
+
+      {/* MODAL DE CRÉATION / ÉDITION MÈRE RÉGISTRE ÉTABLISSEMENT (React Portal) */}
+      {editingMother && createPortal(
+        <div 
+          style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.25rem', overflowY: 'auto' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setEditingMother(null); }}
+        >
+          <form onSubmit={handleSaveMother} style={{ maxWidth: '680px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2.25rem', border: '1.5px solid #10b981', boxShadow: '0 25px 60px rgba(0,0,0,0.4)', margin: 'auto' }}>
+            
+            <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+              <div className="d-flex align-items-center gap-3">
+                <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 'bold' }}>
+                  🏥
+                </div>
+                <div>
+                  <h5 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>
+                    {isNewMother ? 'Inscrire un nouvel assuré dans l\'établissement' : 'Modifier le dossier patient du registre'}
+                  </h5>
+                  <span className="badge bg-success-subtle text-success border border-success fw-bold" style={{ borderRadius: '6px', fontSize: '0.74rem' }}>
+                    {partnerUser?.structureName || partnerUser?.name || 'Hôpital Principal de Dakar'}
+                  </span>
+                </div>
+              </div>
+              <button type="button" className="btn-close" onClick={() => setEditingMother(null)}></button>
+            </div>
+
+            <div className="row g-3 mb-3">
+              <div className="col-md-6">
+                <label className="form-label small fw-bold mb-1">Nom & Prénom de l'assuré *</label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingMother.name || ''}
+                  onChange={(e) => setEditingMother({ ...editingMother, name: e.target.value })}
+                  placeholder="Ex: Mamadou Ndiaye"
+                  required
+                />
+              </div>
+
+              <div className="col-md-6">
+                <label className="form-label small fw-bold mb-1">N° Carte CSU *</label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingMother.cmuNumber || ''}
+                  onChange={(e) => setEditingMother({ ...editingMother, cmuNumber: e.target.value })}
+                  placeholder="Ex: CMU-DKR-2026-5541"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="row g-3 mb-3">
+              <div className="col-md-4">
+                <label className="form-label small fw-bold mb-1">Sexe / Genre</label>
+                <select 
+                  className="form-select"
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingMother.gender || 'F'}
+                  onChange={(e) => setEditingMother({ ...editingMother, gender: e.target.value })}
+                >
+                  <option value="F">Femme (F)</option>
+                  <option value="M">Homme (M)</option>
+                </select>
+              </div>
+
+              <div className="col-md-4">
+                <label className="form-label small fw-bold mb-1">Âge (Ans)</label>
+                <input 
+                  type="number" 
+                  className="form-control" 
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingMother.age || ''}
+                  onChange={(e) => setEditingMother({ ...editingMother, age: e.target.value })}
+                  placeholder="Ex: 54"
+                />
+              </div>
+
+              <div className="col-md-4">
+                <label className="form-label small fw-bold mb-1">Téléphone de contact</label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingMother.phone || ''}
+                  onChange={(e) => setEditingMother({ ...editingMother, phone: e.target.value })}
+                  placeholder="Ex: +221 77 612 88 11"
+                />
+              </div>
+            </div>
+
+            <div className="row g-3 mb-3">
+              <div className="col-md-6">
+                <label className="form-label small fw-bold mb-1">Catégorie Médicale</label>
+                <select 
+                  className="form-select"
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingMother.category || 'maternity'}
+                  onChange={(e) => setEditingMother({ ...editingMother, category: e.target.value })}
+                >
+                  <option value="maternity">🤰 Maternité & CPN</option>
+                  <option value="chronic">🩸 Maladies Chroniques (Diabète/HTA)</option>
+                  <option value="pediatric">👶 Pédiatrie (0-5 ans)</option>
+                  <option value="surgery">🩹 Traumatologie & Chirurgie</option>
+                </select>
+              </div>
+
+              <div className="col-md-6">
+                <label className="form-label small fw-bold mb-1">Pathologie / Diagnostique</label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingMother.pathology || ''}
+                  onChange={(e) => setEditingMother({ ...editingMother, pathology: e.target.value })}
+                  placeholder="Ex: Diabète Type 2 & HTA Sévère"
+                />
+              </div>
+            </div>
+
+            <div className="row g-3 mb-4">
+              <div className="col-md-6">
+                <label className="form-label small fw-bold mb-1">Prochain RDV / Échéance</label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingMother.edd || ''}
+                  onChange={(e) => setEditingMother({ ...editingMother, edd: e.target.value })}
+                  placeholder="Ex: 15/10/2026 ou Suivi mensuel"
+                />
+              </div>
+
+              <div className="col-md-6">
+                <label className="form-label small fw-bold mb-1">Praticien référent</label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingMother.doctorRef || ''}
+                  onChange={(e) => setEditingMother({ ...editingMother, doctorRef: e.target.value })}
+                  placeholder="Ex: Dr. Ousmane Sow (Cardiologie)"
+                />
+              </div>
+            </div>
+
+            <div className="d-flex justify-content-between align-items-center pt-3.5 border-top w-100" style={{ borderColor: 'var(--border-color)' }}>
+              <button 
+                type="button" 
+                className="btn px-4 py-2.5 fw-bold" 
+                style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.88rem' }} 
+                onClick={() => setEditingMother(null)}
+              >
+                Annuler
+              </button>
+              <button 
+                type="submit" 
+                className="btn px-4.5 py-2.5 fw-bold text-white" 
+                style={{ background: '#059669', border: 'none', borderRadius: '12px', fontSize: '0.9rem', boxShadow: '0 4px 14px rgba(5,150,105,0.3)' }}
+              >
+                💾 Enregistrer au registre
+              </button>
+            </div>
+
+          </form>
+        </div>,
+        document.body
+      )}
+
+      {/* MODALE D'ÉDITION ET D'AJOUT D'EXAMEN DE SURVEILLANCE ALD */}
+      {showAldModal && editingAldItem && createPortal(
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+          <div style={{ maxWidth: '500px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '1.75rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)' }}>
+            <h5 className="fw-extrabold mb-3 text-danger">🛡️ {editingAldItem.id ? "Modifier un bilan ALD" : "Ajouter un examen de surveillance ALD"}</h5>
+            <form onSubmit={handleSaveAldItem} className="d-flex flex-column gap-3">
+              <div>
+                <label className="form-label small fw-bold mb-1">Intitulé de l'examen / bilan *</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingAldItem.title || ''}
+                  onChange={(e) => setEditingAldItem({ ...editingAldItem, title: e.target.value })}
+                  placeholder="Ex: 👁️ Fond d'œil annuel (Rétinopathie)"
+                  required
+                />
+              </div>
+              <div>
+                <label className="form-label small fw-bold mb-1">Date de réalisation</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingAldItem.date || ''}
+                  onChange={(e) => setEditingAldItem({ ...editingAldItem, date: e.target.value })}
+                  placeholder="Ex: 10/04/2026"
+                />
+              </div>
+              <div>
+                <label className="form-label small fw-bold mb-1">Résultat / Statut médical</label>
+                <select
+                  className="form-select"
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingAldItem.status || '✅ Normal'}
+                  onChange={(e) => setEditingAldItem({ ...editingAldItem, status: e.target.value })}
+                >
+                  <option value="✅ Normal">✅ Normal</option>
+                  <option value="✅ Pas de lésion">✅ Pas de lésion</option>
+                  <option value="✅ Effectué">✅ Effectué</option>
+                  <option value="⏳ Programmé">⏳ Programmé / À venir</option>
+                  <option value="⚠️ À surveiller">⚠️ À surveiller</option>
+                </select>
+              </div>
+              <div className="d-flex justify-content-end gap-2 pt-2">
+                <button type="button" className="btn btn-outline-secondary rounded-3" onClick={() => setShowAldModal(false)}>Annuler</button>
+                <button type="submit" className="btn btn-danger rounded-3 fw-bold text-white">Enregistrer</button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* MODALE D'ÉDITION ET D'AJOUT D'ÉLÉMENT POST-OPÉRATOIRE */}
+      {showPostOpModal && editingPostOpItem && createPortal(
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+          <div style={{ maxWidth: '500px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '1.75rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)' }}>
+            <h5 className="fw-extrabold mb-3 text-primary">🩹 {editingPostOpItem.id ? "Modifier un soin Post-Op" : "Ajouter un élément de suivi Post-Op"}</h5>
+            <form onSubmit={handleSavePostOpItem} className="d-flex flex-column gap-3">
+              <div>
+                <label className="form-label small fw-bold mb-1">Intitulé du soin / intervention *</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingPostOpItem.title || ''}
+                  onChange={(e) => setEditingPostOpItem({ ...editingPostOpItem, title: e.target.value })}
+                  placeholder="Ex: 🩹 Pansements stériles J+3 à J+14"
+                  required
+                />
+              </div>
+              <div>
+                <label className="form-label small fw-bold mb-1">Date</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingPostOpItem.date || ''}
+                  onChange={(e) => setEditingPostOpItem({ ...editingPostOpItem, date: e.target.value })}
+                  placeholder="Ex: 25/05/2026"
+                />
+              </div>
+              <div>
+                <label className="form-label small fw-bold mb-1">Statut du soin</label>
+                <select
+                  className="form-select"
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingPostOpItem.status || '✅ Fait'}
+                  onChange={(e) => setEditingPostOpItem({ ...editingPostOpItem, status: e.target.value })}
+                >
+                  <option value="✅ Fait">✅ Fait</option>
+                  <option value="✅ Ablation faite">✅ Ablation faite</option>
+                  <option value="⏳ En cours">⏳ En cours</option>
+                  <option value="📅 Programmé">📅 Programmé</option>
+                </select>
+              </div>
+              <div className="d-flex justify-content-end gap-2 pt-2">
+                <button type="button" className="btn btn-outline-secondary rounded-3" onClick={() => setShowPostOpModal(false)}>Annuler</button>
+                <button type="submit" className="btn btn-primary rounded-3 fw-bold text-white">Enregistrer</button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* MODALE DE PRESCRIPTION ALD (CRÉATION / MODIFICATION) */}
+      {showPrescriptionModal && editingPrescription && createPortal(
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+          <div style={{ maxWidth: '520px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '1.75rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)' }}>
+            <h5 className="fw-extrabold mb-3 text-danger">💊 {editingPrescription.id ? "Modifier la prescription ALD" : "Prescrire un nouveau traitement ALD"}</h5>
+            <form onSubmit={handleSavePrescription} className="d-flex flex-column gap-3">
+              <div>
+                <label className="form-label small fw-bold mb-1">Nom du médicament & Dosage *</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingPrescription.name || ''}
+                  onChange={(e) => setEditingPrescription({ ...editingPrescription, name: e.target.value })}
+                  placeholder="Ex: Metformine 1000 mg"
+                  required
+                />
+              </div>
+              <div>
+                <label className="form-label small fw-bold mb-1">Forme galénique</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingPrescription.form || ''}
+                  onChange={(e) => setEditingPrescription({ ...editingPrescription, form: e.target.value })}
+                  placeholder="Ex: Comprimés sécables"
+                />
+              </div>
+              <div>
+                <label className="form-label small fw-bold mb-1">Spécialité & Motif médical</label>
+                <select
+                  className="form-select"
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingPrescription.specialty || '🩸 Diabétologie'}
+                  onChange={(e) => setEditingPrescription({ ...editingPrescription, specialty: e.target.value })}
+                >
+                  <option value="🩸 Diabétologie">🩸 Diabétologie</option>
+                  <option value="🫀 Cardiologie / HTA">🫀 Cardiologie / HTA</option>
+                  <option value="🔬 Auto-Contrôle">🔬 Auto-Contrôle (Kit & Bandelettes)</option>
+                  <option value="🧠 Neurologie">🧠 Neurologie</option>
+                  <option value="🩺 Médecine Générale">🩺 Médecine Générale</option>
+                </select>
+              </div>
+              <div>
+                <label className="form-label small fw-bold mb-1">Posologie Quotidienne</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingPrescription.dosage || ''}
+                  onChange={(e) => setEditingPrescription({ ...editingPrescription, dosage: e.target.value })}
+                  placeholder="Ex: 1 comprimé matin et soir au milieu des repas"
+                />
+              </div>
+              <div>
+                <label className="form-label small fw-bold mb-1">Prise en charge CSU</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingPrescription.coverage || '✅ 100% CSU Gratuit'}
+                  onChange={(e) => setEditingPrescription({ ...editingPrescription, coverage: e.target.value })}
+                />
+              </div>
+              <div className="d-flex justify-content-end gap-2 pt-2">
+                <button type="button" className="btn btn-outline-secondary rounded-3" onClick={() => setShowPrescriptionModal(false)}>Annuler</button>
+                <button type="submit" className="btn btn-danger rounded-3 fw-bold text-white">💾 Enregistrer la prescription</button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* MODALE DES CONSTANTES VITALES ALD (CRÉATION / MODIFICATION) */}
+      {showAldVitalModal && editingAldVital && createPortal(
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+          <div style={{ maxWidth: '500px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '1.75rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)' }}>
+            <h5 className="fw-extrabold mb-3 text-success">📈 {editingAldVital.id ? "Modifier la constante vitale" : "Consigner une constante vitale ALD"}</h5>
+            <form onSubmit={handleSaveAldVital} className="d-flex flex-column gap-3">
+              <div>
+                <label className="form-label small fw-bold mb-1">Type de constante *</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingAldVital.type || ''}
+                  onChange={(e) => setEditingAldVital({ ...editingAldVital, type: e.target.value })}
+                  placeholder="Ex: Glycémie à jeun, Tension Artérielle"
+                  required
+                />
+              </div>
+              <div>
+                <label className="form-label small fw-bold mb-1">Valeur Mesurée *</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingAldVital.value || ''}
+                  onChange={(e) => setEditingAldVital({ ...editingAldVital, value: e.target.value })}
+                  placeholder="Ex: 1.25 g/L ou 135/85 mmHg"
+                  required
+                />
+              </div>
+              <div>
+                <label className="form-label small fw-bold mb-1">Objectif thérapeutique</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingAldVital.target || ''}
+                  onChange={(e) => setEditingAldVital({ ...editingAldVital, target: e.target.value })}
+                  placeholder="Ex: Objectif < 1.26 g/L"
+                />
+              </div>
+              <div>
+                <label className="form-label small fw-bold mb-1">Statut Médical</label>
+                <select
+                  className="form-select"
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingAldVital.status || '🟢 Dans la cible'}
+                  onChange={(e) => setEditingAldVital({ ...editingAldVital, status: e.target.value })}
+                >
+                  <option value="🟢 Dans la cible">🟢 Dans la cible</option>
+                  <option value="🟢 Contrôlée">🟢 Contrôlée</option>
+                  <option value="🟢 Optimal">🟢 Optimal</option>
+                  <option value="⚠️ À surveiller">⚠️ À surveiller</option>
+                  <option value="🔴 Élevée">🔴 Élevée / Attention</option>
+                </select>
+              </div>
+              <div className="d-flex justify-content-end gap-2 pt-2">
+                <button type="button" className="btn btn-outline-secondary rounded-3" onClick={() => setShowAldVitalModal(false)}>Annuler</button>
+                <button type="submit" className="btn btn-success rounded-3 fw-bold text-white">💾 Enregistrer constante</button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* MODAL / POP-UP DE CONFIRMATION DE SUPPRESSION UNIVERSEL (React Portal) */}
+      {confirmDeleteObj && createPortal(
+        <div 
+          style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.82)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', zIndex: 9999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.25rem' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setConfirmDeleteObj(null); }}
+        >
+          <div 
+            className="shadow-2xl text-center" 
+            style={{ maxWidth: '480px', width: '100%', background: 'var(--bg-card, #1e293b)', color: 'var(--text-main, #ffffff)', borderRadius: '24px', padding: '2.25rem 1.75rem', border: '1.5px solid rgba(239, 68, 68, 0.4)', boxShadow: '0 25px 70px rgba(239, 68, 68, 0.25), 0 10px 30px rgba(0, 0, 0, 0.5)', margin: 'auto' }}
+          >
+            <div 
+              style={{ width: '72px', height: '72px', borderRadius: '24px', background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.35) 100%)', border: '2px solid #ef4444', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.2rem', margin: '0 auto 1.25rem auto', boxShadow: '0 10px 25px rgba(239, 68, 68, 0.3)' }}
+            >
+              🗑️
+            </div>
+
+            <h4 className="fw-extrabold mb-2" style={{ color: 'var(--text-main)', fontSize: '1.25rem' }}>
+              Confirmer la suppression
+            </h4>
+
+            <p className="mb-4" style={{ color: 'var(--text-sub, #94a3b8)', fontSize: '0.92rem', lineHeight: '1.55' }}>
+              Voulez-vous vraiment supprimer définitivement <strong style={{ color: '#ef4444' }}>{confirmDeleteObj.title}</strong> ?
+              <br />
+              <small className="text-muted d-block mt-1">Cette action est irréversible dans le système UNAMUSC.</small>
+            </p>
+
+            <div className="d-flex justify-content-center gap-3 pt-2">
+              <button
+                type="button"
+                className="btn px-4 py-2.5 fw-bold"
+                style={{ background: 'var(--bg-card-subtle, #334155)', color: 'var(--text-main, #ffffff)', border: '1px solid var(--border-color, #475569)', borderRadius: '12px', fontSize: '0.88rem' }}
+                onClick={() => setConfirmDeleteObj(null)}
+              >
+                Annuler
+              </button>
+
+              <button
+                type="button"
+                className="btn px-4 py-2.5 fw-bold text-white"
+                style={{ background: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)', border: 'none', borderRadius: '12px', fontSize: '0.88rem', boxShadow: '0 4px 16px rgba(239, 68, 68, 0.4)' }}
+                onClick={() => {
+                  confirmDeleteObj.onConfirm();
+                  setConfirmDeleteObj(null);
+                }}
+              >
+                🗑️ Supprimer définitivement
+              </button>
+            </div>
+          </div>
         </div>,
         document.body
       )}

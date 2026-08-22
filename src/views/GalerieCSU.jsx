@@ -91,7 +91,7 @@ export default function GalerieCSU({ lang }) {
   const { data: galleryRaw = null, isPending } = useQuery({
     queryKey: ['galleryList'],
     queryFn: async () => {
-      const res = await fetch('http://localhost:5000/api/gallery');
+      const res = await fetch(`${window.API_BASE_URL}/api/gallery`);
       if (!res.ok) throw new Error('API Error');
       return res.json();
     }

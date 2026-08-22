@@ -267,7 +267,7 @@ export default function Departements({ lang, setView }) {
   const handleCommuneClick = async (commune) => {
     // 1. Chercher dans la base de données réelle d'abord
     try {
-      const response = await fetch(`http://localhost:5000/api/mutuelles?search=${encodeURIComponent(commune.name)}`);
+      const response = await fetch(`${window.API_BASE_URL}/api/mutuelles?search=${encodeURIComponent(commune.name)}`);
       if (response.ok) {
         const data = await response.json();
         // Chercher une correspondance exacte sur la commune
@@ -387,7 +387,7 @@ export default function Departements({ lang, setView }) {
       if (!activeDeptId || !activeDept) return null;
       try {
         const queryName = `MSD mutuelle de santé départementale de ${activeDept.name}`;
-        const response = await fetch(`http://localhost:5000/api/mutuelles?search=${encodeURIComponent(queryName)}`);
+        const response = await fetch(`${window.API_BASE_URL}/api/mutuelles?search=${encodeURIComponent(queryName)}`);
         if (response.ok) {
           const data = await response.json();
           const match = data.find(m => m.name.toLowerCase().includes(activeDept.name.toLowerCase()) && (m.name.toLowerCase().includes('union') || m.name.toLowerCase().includes('udms') || m.name.toLowerCase().includes('msd') || m.name.toLowerCase().includes('mutuelle')));

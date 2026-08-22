@@ -97,7 +97,7 @@ export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
       return;
     }
 
-    fetch(`http://localhost:5000/api/loyalty/${beneficiaryId}`, {
+    fetch(`${window.API_BASE_URL}/api/loyalty/${beneficiaryId}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then((res) => {
@@ -130,7 +130,7 @@ export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
       });
 
     if (isAgent) {
-      fetch('http://localhost:5000/api/loyalty/leaderboard', {
+      fetch(`${window.API_BASE_URL}/api/loyalty/leaderboard`, {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then((res) => {

@@ -243,6 +243,13 @@
   font-family: var(--font-body);
 }
 
+@media (max-width: 768px) {
+  .chatbot-container {
+    bottom: 78px !important;
+    right: 14px !important;
+  }
+}
+
 .chatbot-toggle {
   width: 60px;
   height: 60px;
@@ -257,6 +264,13 @@
   justify-content: center;
   transition: var(--transition-normal);
   position: relative;
+}
+
+@media (max-width: 768px) {
+  .chatbot-toggle {
+    width: 52px !important;
+    height: 52px !important;
+  }
 }
 
 .chatbot-toggle:hover {
@@ -283,18 +297,37 @@
 }
 
 .chatbot-window {
-  width: 360px;
-  height: 520px;
+  width: 390px;
+  max-width: calc(100vw - 32px);
+  height: min(530px, calc(100vh - 105px));
+  max-height: calc(100vh - 105px);
   border-radius: 20px;
-  position: absolute;
-  bottom: 80px;
-  right: 0;
+  position: fixed !important;
+  bottom: 86px !important;
+  right: 20px !important;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid var(--border-color);
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  border: 1.5px solid rgba(16, 185, 129, 0.4);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.28);
   animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  z-index: 99999;
+}
+
+@media (max-width: 768px) {
+  .chatbot-window {
+    position: fixed !important;
+    top: auto !important;
+    bottom: 80px !important;
+    left: auto !important;
+    right: 12px !important;
+    transform: none !important;
+    width: calc(100vw - 24px) !important;
+    max-width: 390px !important;
+    height: min(520px, calc(100vh - 95px)) !important;
+    max-height: calc(100vh - 95px) !important;
+    z-index: 99999 !important;
+  }
 }
 
 @keyframes slideIn {

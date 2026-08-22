@@ -29,6 +29,7 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
 
   // Stats
   const [stats, setStats] = useState(null);
+  const [partnerStatusFilter, setPartnerStatusFilter] = useState('all'); // all, 'Actif & agréé', etc.
   const isAuthenticated = !!partner || (portalMode === 'superadmin') || (portalMode === 'agent' && !!agentUser) || portalMode === 'doctor' || portalMode === 'midwife' || portalMode === 'pharmacist' || portalMode === 'partner';
   
   // Seuls les Agents UDMS et le SuperAdmin (non connectés comme médecins/hôpitaux partenaires) peuvent administrer
@@ -37,6 +38,23 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
   
   // Le prestataire / médecin (ex: Centre Hospitalier Abass Ndao) accède EXCLUSIVEMENT en lecteur aux informations qui le concernent
   const isPartner = !isUdmsAgentOrAdmin && (!!partner || portalMode === 'doctor' || portalMode === 'midwife' || portalMode === 'pharmacist' || portalMode === 'partner');
+
+  // Load KPI filter from Super Admin dashboard if present
+  useEffect(() => {
+    const filterStr = localStorage.getItem('superadminKpiFilter');
+    if (filterStr) {
+      try {
+        const filter = JSON.parse(filterStr);
+        if (filter.status) {
+          setPartnerStatusFilter(filter.status);
+        }
+        // Clear the filter after use
+        localStorage.removeItem('superadminKpiFilter');
+      } catch (e) {
+        console.error('Error parsing superadminKpiFilter', e);
+      }
+    }
+  }, []);
 
   // ============================================================================
   // PRESTATAIRES & PROFESSIONNELS CRÉÉS PAR L'UNION DÉPARTEMENTALE (UDMS)
@@ -82,10 +100,37 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
       status: 'Actif & agréé'
     },
     {
+      id: 106,
+      name: 'Laboratoire Pasteur Dakar',
+      role: 'Laboratoire d\'analyses & imagerie',
+      udms: 'UDMS Dakar',
+      structureName: 'Laboratoire Pasteur Dakar',
+      commune: 'Dakar Plateau / Mermoz',
+      agreement: 'AGR-2026-DKR-606',
+      rate: 80,
+      phone: '+221 33 839 92 00',
+      email: 'pasteur.dakar@pasteur.sn',
+      status: 'Actif & agréé'
+    },
+    {
+      id: 107,
+      name: 'Dr. Ousmane Diagne',
+      role: 'Biologiste / Responsable imagerie',
+      udms: 'UDMS Dakar',
+      structureName: 'Laboratoire Pasteur Dakar',
+      commune: 'Dakar Plateau / Mermoz',
+      agreement: 'AGR-2026-DKR-606-B1',
+      rate: 80,
+      phone: '+221 77 644 33 22',
+      email: 'ousmane.diagne@pasteur.sn',
+      status: 'Actif & agréé'
+    },
+    {
       id: 102,
       name: 'Pharmacie Centrale de la Médina',
       role: 'Pharmacie d\'officine (Bons 48h)',
       udms: 'UDMS Dakar',
+      structureName: 'Pharmacie Centrale de la Médina',
       commune: 'Médina',
       agreement: 'AGR-2026-DKR-404',
       rate: 80,
@@ -94,15 +139,81 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
       status: 'Actif & agréé'
     },
     {
+      id: 112,
+      name: 'Pharmacie Agréée Ndiaye Tiers-payant',
+      role: 'Pharmacie d\'officine (Bons 48h)',
+      udms: 'UDMS Dakar',
+      structureName: 'Pharmacie Agréée Ndiaye',
+      commune: 'Dakar Fann / Point E',
+      agreement: 'AGR-2026-DKR-505',
+      rate: 80,
+      phone: '+221 33 825 88 99',
+      email: 'pharmacie.ndiaye@unamusc.sn',
+      status: 'Actif & agréé'
+    },
+    {
+      id: 108,
+      name: 'Centre Hospitalier Universitaire de Fann',
+      role: 'Hôpital spécialisé / CHU agréé',
+      udms: 'UDMS Dakar',
+      structureName: 'CHU de Fann',
+      commune: 'Fann / Point E',
+      agreement: 'AGR-2026-DKR-202',
+      rate: 80,
+      phone: '+221 33 869 18 18',
+      email: 'contact@chufann.sn',
+      status: 'Actif & agréé'
+    },
+    {
       id: 104,
       name: 'Dr. Aïssatou Sow',
       role: 'Médecin / Télémédecine WebRTC',
       udms: 'UDMS Pikine',
+      structureName: 'Centre de Santé Pikine Nord',
       commune: 'Pikine Nord',
       agreement: 'AGR-2026-PKN-088',
       rate: 80,
       phone: '+221 78 221 99 88',
       email: 'dr.sow@cmu-pikine.sn',
+      status: 'Actif & agréé'
+    },
+    {
+      id: 109,
+      name: 'Hôpital de Pikine (Gounass)',
+      role: 'Hôpital départemental agréé',
+      udms: 'UDMS Pikine',
+      structureName: 'Hôpital de Pikine',
+      commune: 'Pikine Gounass',
+      agreement: 'AGR-2026-PKN-101',
+      rate: 80,
+      phone: '+221 33 834 50 50',
+      email: 'contact@hopitalpikine.sn',
+      status: 'Actif & agréé'
+    },
+    {
+      id: 110,
+      name: 'Pharmacie Rufisque Gare',
+      role: 'Pharmacie d\'officine (Bons 48h)',
+      udms: 'UDMS Rufisque',
+      structureName: 'Pharmacie Rufisque Gare',
+      commune: 'Rufisque Est',
+      agreement: 'AGR-2026-RUF-303',
+      rate: 80,
+      phone: '+221 33 836 12 12',
+      email: 'pharmacie.rufisque@unamusc.sn',
+      status: 'Actif & agréé'
+    },
+    {
+      id: 111,
+      name: 'Centre de Santé Keur Massar',
+      role: 'Centre de santé agréé',
+      udms: 'UDMS Keur Massar',
+      structureName: 'Centre de Santé Keur Massar',
+      commune: 'Keur Massar Nord',
+      agreement: 'AGR-2026-KMS-007',
+      rate: 80,
+      phone: '+221 33 878 90 00',
+      email: 'cskm@unamusc.sn',
       status: 'Actif & agréé'
     }
   ];
@@ -111,9 +222,9 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
     try {
       const saved = localStorage.getItem('cmu_udms_prestataires');
       let list = saved ? JSON.parse(saved) : defaultUdmsPrestataires;
-      // Garantit que la structure Abass Ndao, son médecin et sa sage-femme soient TOUJOURS présents même en cas de vieux cache localStorage
-      const hasAbassHospital = list.some(p => p.id === 100 || p.name.includes('Abass Ndao'));
-      if (!hasAbassHospital) {
+      // S'assure que Pasteur Dakar et les nouvelles structures soient synchronisées
+      const hasPasteur = list.some(p => p.id === 106 || (p.name && p.name.includes('Pasteur')));
+      if (!hasPasteur) {
         list = [...defaultUdmsPrestataires];
         localStorage.setItem('cmu_udms_prestataires', JSON.stringify(list));
       }
@@ -181,10 +292,12 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
     });
   };
 
-  const targetStructure = partner?.structureName || 'Centre Hospitalier Abass Ndao';
+  // ── PÉRIMÈTRE RBAC ET FILTRAGE DYNAMIQUE STRICT DE LA STRUCTURE & DES PRATICIENS ──
+  const activeUserUdms = partner?.udms || agentUser?.udms || selectedUdms || 'UDMS Dakar';
+  const activeUserStructure = (partner?.structureName || partner?.name || '').toLowerCase().trim();
 
   const filteredPrestataires = prestataires.filter(p => {
-    // 1. Filtre par rôle (fonctionne en mode admin et en mode lecteur)
+    // 1. Filtre par rôle (Médecin, Sage-Femme, Hôpital, Pharmacie, Labo...)
     let matchRole = true;
     if (roleFilter !== 'Tous') {
       const rf = roleFilter.toLowerCase();
@@ -202,19 +315,48 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
       }
     }
 
-    if (!isUdmsAgentOrAdmin) {
-      // Mode lecteur (ex: Centre Hospitalier Abass Ndao) :
-      // On n'affiche que la structure conventionnée ET le personnel/médecins rattachés à cette structure
-      const isStructureSelf = p.id === 100 || p.name.toLowerCase().includes('abass ndao') || p.name === targetStructure || p.structureName === targetStructure;
-      const isAttachedStaff = p.id === 101 || p.id === 105 || p.structureName === targetStructure || (p.role && p.role.toLowerCase().includes('abass ndao')) || p.name.toLowerCase().includes('abass ndao');
-      const isAbassAffiliated = isStructureSelf || isAttachedStaff;
+    if (!matchRole) return false;
 
-      return isAbassAffiliated && matchRole;
+    // Filtre par statut (Actif & agréé, etc.)
+    let matchStatus = true;
+    if (partnerStatusFilter !== 'all') {
+      matchStatus = (p.status || '').toLowerCase() === partnerStatusFilter.toLowerCase();
+    }
+    if (!matchStatus) return false;
+
+    // RÈGLE A : Super Admin (superadmin)
+    // -> Voit TOUTES les structures sanitaires du Sénégal. Peut filtrer par UDMS avec le sélecteur.
+    if (isSuperAdmin) {
+      if (selectedUdms && selectedUdms !== 'Toutes') {
+        return p.udms === selectedUdms;
+      }
+      return true;
     }
 
-    // Mode Agent UDMS / SuperAdmin : accès global filtrable par UDMS et rôle
-    const matchUdms = !selectedUdms || p.udms === selectedUdms || selectedUdms === 'Toutes';
-    return matchUdms && matchRole;
+    // RÈGLE B : Agent d'une Union Départementale (UDMS) (ex: UDMS Dakar, UDMS Pikine, etc.)
+    // -> Ne voit QUE les structures et praticiens localisés dans SON département et conventionnés avec son UDMS !
+    if (isUdmsAgentOrAdmin) {
+      const targetUdms = agentUser?.udms || selectedUdms || 'UDMS Dakar';
+      return p.udms === targetUdms;
+    }
+
+    // RÈGLE C : Structure sanitaire ou Praticien individuel (Médecin, Infirmier, Pharmacie, Labo...)
+    // -> Ne voit STRICTEMENT que les informations de SA propre structure sanitaire et du personnel rattaché !
+    if (activeUserStructure) {
+      const pNameNorm = (p.name || '').toLowerCase().trim();
+      const pStructNorm = (p.structureName || '').toLowerCase().trim();
+
+      const isSameStructure = (pStructNorm && activeUserStructure.includes(pStructNorm)) ||
+                              (pStructNorm && pStructNorm.includes(activeUserStructure)) ||
+                              activeUserStructure.includes(pNameNorm) ||
+                              pNameNorm.includes(activeUserStructure) ||
+                              p.id === partner?.id ||
+                              (p.email && partner?.email && p.email.toLowerCase() === partner.email.toLowerCase());
+
+      return isSameStructure;
+    }
+
+    return true;
   });
 
   const t = lang === 'fr' ? {
@@ -230,12 +372,10 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
     verifyBtn: 'Vérifier',
     valid: 'Couverture active — Tiers-payant autorisé (80%)',
     invalid: 'Couverture inactive — Tiers-payant non autorisé',
-    tpTitle: 'Déclarer un acte Tiers-Payant',
-    tpBeneficiary: 'Nom du patient',
-    tpCareType: 'Type de soin',
-    tpAmount: 'Montant facturé (FCFA)',
-    tpDesc: 'Description de l\'acte',
-    tpSubmit: 'Valider la prise en charge Tiers-Payant',
+    tpTitle: 'Déclarer un acte Tiers-payant',
+    tpScanPlaceholder: 'Entrez le N° Carte CSU ou Scannez le QR Code...',
+    tpActPlaceholder: 'Code ou libellé de l\'acte (ex: Consultation, Bilan sanguin, Chirurgie)...',
+    tpSubmit: 'Valider la prise en charge Tiers-payant',
     consultation: 'Consultation',
     pharmacie: 'Pharmacie',
     hospitalisation: 'Hospitalisation',
@@ -384,7 +524,7 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
                     <div className="d-flex gap-3.5 align-items-start p-3.5 rounded-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
                       <div style={{ fontSize: '1.85rem', color: '#059669', minWidth: '40px' }}>💳</div>
                       <div>
-                        <h5 className="fw-bold mb-1.5" style={{ color: 'var(--primary)', fontSize: '1.05rem' }}>Télétransmission & Tiers-Payant (80% à 100%)</h5>
+                        <h5 className="fw-bold mb-1.5" style={{ color: 'var(--primary)', fontSize: '1.05rem' }}>Télétransmission & Tiers-payant (80% à 100%)</h5>
                         <p className="text-muted mb-0" style={{ fontSize: '0.88rem', lineHeight: '1.55' }}>Validation en temps réel des cartes CMU et remboursement sous 72h des bordereaux d'actes médicaux.</p>
                       </div>
                     </div>
@@ -401,8 +541,8 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
 
                 {/* Comptes Démo Rapides */}
                 <div className="p-4 rounded-4 border mt-4" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
-                  <span className="small text-muted fw-bold d-block mb-3 text-uppercase" style={{ fontSize: '0.8rem', letterSpacing: '0.5px' }}>
-                    💡 COMPTES DÉMO PRÉ-REMPLIS (CLIQUEZ POUR TESTER INSTANTANÉMENT) :
+                  <span className="small text-muted fw-bold d-block mb-3" style={{ fontSize: '0.82rem' }}>
+                    💡 Comptes démo pré-remplis (cliquez pour tester instantanément) :
                   </span>
                   <div className="d-flex flex-wrap gap-2.5">
                     <button 
@@ -507,7 +647,7 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
               <div style={{ fontSize: '2.4rem', marginBottom: '0.75rem' }}>💊</div>
               <h5 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.5rem' }}>Officines de pharmacie</h5>
               <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', margin: 0, lineHeight: '1.6' }}>
-                Saisie des bons de commande pharmacie (50%) et remboursement direct du Tiers-Payant.
+                Saisie des bons de commande pharmacie (50%) et remboursement direct du Tiers-payant.
               </p>
             </div>
 
@@ -600,7 +740,7 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
               </div>
             )}
 
-            <div className="row g-4">
+            <div className="row g-4 gy-5">
               {/* Formulaire de création réservé EXCLUSIVEMENT aux AGENTS UDMS et SUPERADMIN */}
               {isUdmsAgentOrAdmin ? (
                 <div className="col-lg-5">
@@ -783,11 +923,11 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
                               Code agrément officiel :
                             </span>
                             <code className="text-success fw-extrabold d-block mb-1" style={{ fontSize: '1.05rem', letterSpacing: '0.5px' }}>
-                              {partner?.cnom || 'AGR-2026-DKR-101'}
+                              {partner?.agreement || partner?.cnom || 'AGR-2026-DKR-101'}
                             </code>
                           </div>
                           <span className="text-muted fw-semibold d-block mt-2 pt-2 border-top" style={{ fontSize: '0.82rem', borderColor: 'var(--border-color)' }}>
-                            🏛️ UDMS : UDMS Dakar
+                            🏛️ UDMS : {partner?.udms || 'UDMS Dakar'}
                           </span>
                         </div>
                       </div>
@@ -835,7 +975,13 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
                 <div className="p-4 rounded-4 border h-100 d-flex flex-column" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
                   <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                     <h5 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-                      <span>📋</span> {isUdmsAgentOrAdmin ? `Prestataires agréés (${filteredPrestataires.length})` : `Structure & praticiens agréés de l'établissement (${filteredPrestataires.length})`}
+                      <span>📋</span> {
+                        isSuperAdmin 
+                          ? `Tous les prestataires agréés du Sénégal (${filteredPrestataires.length})` 
+                          : isUdmsAgentOrAdmin 
+                            ? `Prestataires agréés de l'${selectedUdms || 'UDMS'} (${filteredPrestataires.length})` 
+                            : `Structure & praticiens agréés : ${partner?.structureName || partner?.name || 'Établissement'} (${filteredPrestataires.length})`
+                      }
                     </h5>
 
                     <div className="d-flex gap-2">
@@ -923,10 +1069,10 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
           {/* ============================================================================ */}
           {/* SECTION VÉRIFICATION & TIERS-PAYANT DU PARTENAIRE */}
           {/* ============================================================================ */}
-          <div className="row g-4">
+          <div className="d-flex flex-column gap-0">
             {/* Vérification carte CMU */}
-            <div className="col-md-6">
-              <div className="card shadow-sm border-0 p-4 h-100" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+            <div>
+              <div className="card shadow-sm border-0 p-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)', marginBottom: '2rem' }}>
                 <h5 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
                   <span>🔍</span> {t.verifyTitle}
                 </h5>
@@ -939,7 +1085,7 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
                       <input className="form-control input" placeholder="Téléphone patient" value={verifyPhone} onChange={(e) => setVerifyPhone(e.target.value)} style={{ borderRadius: '10px' }} />
                     </div>
                   </div>
-                  <button type="submit" className="btn btn-primary text-white fw-bold px-4 w-100" disabled={verifyLoading} style={{ borderRadius: '10px' }}>
+                  <button type="submit" className="btn btn-primary text-white fw-bold px-4 w-100" disabled={verifyLoading} style={{ borderRadius: '10px', padding: '0.75rem', marginTop: '0.5rem' }}>
                     {verifyLoading ? 'Vérification...' : `🔍 ${t.verifyBtn}`}
                   </button>
                 </form>
@@ -957,8 +1103,8 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
             </div>
 
             {/* Déclaration tiers-payant */}
-            <div className="col-md-6">
-              <div className="card shadow-sm border-0 p-4 h-100" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+            <div>
+              <div className="card shadow-sm border-0 p-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
                 <h5 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
                   <span>📋</span> {t.tpTitle}
                 </h5>
@@ -997,7 +1143,7 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
                     </div>
                   </div>
 
-                  <button type="submit" className="btn btn-success text-white fw-bold w-100" disabled={tpLoading} style={{ borderRadius: '10px' }}>
+                  <button type="submit" className="btn btn-success text-white fw-bold w-100" disabled={tpLoading} style={{ borderRadius: '10px', padding: '0.75rem', marginTop: '0.5rem' }}>
                     {tpLoading ? 'Traitement...' : `✍️ ${t.tpSubmit}`}
                   </button>
                 </form>

@@ -26,6 +26,23 @@ export default function Complaints({ lang, portalMode, citizenUser, agentUser, p
   const [resolutionNotes, setResolutionNotes] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); // all, open, resolved
 
+  // Load KPI filter from Super Admin dashboard if present
+  useEffect(() => {
+    const filterStr = localStorage.getItem('superadminKpiFilter');
+    if (filterStr) {
+      try {
+        const filter = JSON.parse(filterStr);
+        if (filter.status) {
+          setStatusFilter(filter.status);
+        }
+        // Clear the filter after use
+        localStorage.removeItem('superadminKpiFilter');
+      } catch (e) {
+        console.error('Error parsing superadminKpiFilter', e);
+      }
+    }
+  }, []);
+
   const dict = {
     fr: {
       titleCitizen: 'Signaler une réclamation',
@@ -172,7 +189,7 @@ export default function Complaints({ lang, portalMode, citizenUser, agentUser, p
     e.preventDefault();
     if (!resolvingId) return;
     const actor = agentUser ? agentUser.username : 'agent@cmu.sn';
-    fetch(`http://localhost:5000/api/complaints/${resolvingId}/resolve`, {
+    fetch(`${window.API_BASE_URL}/api/complaints/${resolvingId}/resolve`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -200,7 +217,7 @@ export default function Complaints({ lang, portalMode, citizenUser, agentUser, p
       title: titleStr,
       itemType: 'Réclamation / Requête',
       onConfirm: () => {
-        fetch(`http://localhost:5000/api/complaints/${compId}`, {
+        fetch(`${window.API_BASE_URL}/api/complaints/${compId}`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${localStorage.getItem('cmu-token') || ''}` }
         })
@@ -314,6 +331,46 @@ export default function Complaints({ lang, portalMode, citizenUser, agentUser, p
               </button>
             </form>
           )}
+
+          {/* HISTORIQUE PERSONNEL DES RÉCLAMATIONS DU CITOYEN */}
+          {(() => {
+            const citizenFullName = citizenUser ? `${citizenUser.firstName || ''} ${citizenUser.lastName || ''}`.trim().toLowerCase() : formName.trim().toLowerCase();
+            const citizenPhone = (citizenUser?.phone || formPhone || '').trim();
+            const myComplaints = complaints.filter(c => {
+              const nameMatch = citizenFullName && (c.citizen_name || '').trim().toLowerCase().includes(citizenFullName);
+              const phoneMatch = citizenPhone && (c.phone || '').trim() === citizenPhone;
+              return nameMatch || phoneMatch;
+            });
+
+            if (myComplaints.length === 0) return null;
+
+            return (
+              <div className="card mt-4 p-4 fade-in-up" style={{ borderRadius: '16px', background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                <h5 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>
+                  <span>📋</span> Mes réclamations déposées ({myComplaints.length})
+                </h5>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  {myComplaints.map(c => (
+                    <div key={c.id} className="p-3 rounded-3" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+                      <div className="d-flex justify-content-between align-items-start gap-2 mb-1">
+                        <strong style={{ color: 'var(--text-main)', fontSize: '0.88rem' }}>{c.title}</strong>
+                        <span className={`badge ${c.status === 'resolved' ? 'bg-success' : 'bg-warning text-dark'}`} style={{ fontSize: '0.72rem', borderRadius: '8px' }}>
+                          {c.status === 'resolved' ? '✅ Résolu' : '⏳ En cours'}
+                        </span>
+                      </div>
+                      <p className="small mb-1 text-muted" style={{ fontSize: '0.8rem', lineHeight: '1.4' }}>{c.description}</p>
+                      <small className="text-muted" style={{ fontSize: '0.72rem' }}>Déposée le {c.created_at ? new Date(c.created_at).toLocaleDateString('fr-FR') : 'Récemment'}</small>
+                      {c.resolution_notes && (
+                        <div className="mt-2 p-2 rounded-2" style={{ background: 'rgba(16, 185, 129, 0.08)', borderLeft: '3px solid #10b981', fontSize: '0.78rem', color: 'var(--text-main)' }}>
+                          <strong>Réponse de l'agent :</strong> {c.resolution_notes}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
         </div>
       )}
 

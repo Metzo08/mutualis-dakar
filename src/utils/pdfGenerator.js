@@ -166,7 +166,7 @@ export async function generateOfficialPdf({
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
   doc.setTextColor(5, 150, 105);
-  doc.text(`N° CSU BÉNÉFICIAIRE : ${cleanPdfText(bInfo.beneficiaryCode)}  |  CODE ADHÉRENT : ${cleanPdfText(bInfo.adherentCode)}`, 18, 88);
+  doc.text(`CODE BÉNÉFICIAIRE : ${cleanPdfText(bInfo.beneficiaryCode)}  |  CODE ADHÉRENT : ${cleanPdfText(bInfo.adherentCode)}`, 18, 88);
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7.5);
@@ -248,7 +248,7 @@ export async function generateOfficialPdf({
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
   doc.setTextColor(5, 150, 105);
-  doc.text('VALIDATION OFFICIELLE DU TIERS-PAYANT UNAMUSC SÉNÉGAL', 18, currentY + 5);
+  doc.text('Validation officielle du Tiers-payant UNAMUSC Sénégal', 18, currentY + 5);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7.5);
@@ -260,63 +260,71 @@ export async function generateOfficialPdf({
   // ---------------------------------------------------------------------------
   // 7. QR CODE INFALSIFIABLE & CACHET D'AUTHENTIFICATION UNAMUSC
   // ---------------------------------------------------------------------------
-  if (currentY > 222) {
-    currentY = 222;
+  if (currentY > 220) {
+    currentY = 220;
   }
 
-  // Encadré global d'authentification
+  // Encadré global d'authentification (hauteur ajustée à 42mm pour éviter tout débordement)
   doc.setFillColor(240, 253, 244);
   doc.setDrawColor(5, 150, 105);
   doc.setLineWidth(0.6);
-  doc.roundedRect(14, currentY, 182, 30, 3, 3, 'FD');
+  doc.roundedRect(14, currentY, 182, 42, 3, 3, 'FD');
 
   // Génération et insertion du QR Code de vérification
   try {
     const qrDataUrl = await QRCode.toDataURL(verifyUrl, {
       margin: 1,
-      width: 260,
+      width: 280,
       color: {
         dark: '#047857',
         light: '#FFFFFF'
       }
     });
-    doc.addImage(qrDataUrl, 'PNG', 17, currentY + 3, 24, 24);
+    doc.addImage(qrDataUrl, 'PNG', 17, currentY + 6, 28, 28);
   } catch (e) {
     console.warn("Erreur génération QR Code PDF:", e);
   }
 
-  // Textes de vérification à côté du QR Code
+  // Textes de vérification à côté du QR Code (alignement propre sans débordement)
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8.5);
   doc.setTextColor(5, 150, 105);
-  doc.text('AUTHENTICITÉ & VÉRIFICATION INFALSIFIABLE UNAMUSC', 44, currentY + 7);
+  doc.text('Authenticité et vérification infalsifiable UNAMUSC', 48, currentY + 8);
 
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.2);
+  doc.setFontSize(7.5);
   doc.setTextColor(51, 65, 85);
-  doc.text('Scannez ce QR Code avec un smartphone pour vérifier l\'authenticité certifiée sur mutualis.sn', 44, currentY + 12);
+  const splitQrMsg = doc.splitTextToSize('Scannez ce QR code avec un smartphone pour vérifier l\'authenticité certifiée sur mutualis.sn', 84);
+  doc.text(splitQrMsg, 48, currentY + 14);
 
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(6.8);
+  doc.setFontSize(7.5);
   doc.setTextColor(15, 23, 42);
-  doc.text(`EMPREINTE CRYPTOGRAPHIQUE : ${cryptoHash}`, 44, currentY + 17);
+  doc.text(`Empreinte cryptographique : ${cryptoHash}`, 48, currentY + 23);
 
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(7);
+  doc.setFontSize(7.5);
   doc.setTextColor(5, 150, 105);
-  doc.text('STATUT : CERTIFIÉ CONFORME & INFALSIFIABLE — UNION DES MUTUELLES DU SÉNÉGAL', 44, currentY + 23);
+  doc.text('Statut : certifié conforme et infalsifiable', 48, currentY + 29);
 
-  // Bloc Signature Direction UNAMUSC (Droites)
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7);
+  doc.setTextColor(100, 116, 139);
+  doc.text('Union des mutuelles de santé communautaires du Sénégal', 48, currentY + 34);
+
+  // Bloc Signature Direction UNAMUSC (Aligné proprement à droite)
+  const rightAlignX = 190;
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
+  doc.setFontSize(8.5);
   doc.setTextColor(15, 23, 42);
-  doc.text('Pour le Bureau National UNAMUSC', 142, currentY + 7);
+  doc.text('Pour le bureau national UNAMUSC', rightAlignX, currentY + 8, { align: 'right' });
 
   doc.setFont('helvetica', 'italic');
-  doc.setFontSize(7.2);
+  doc.setFontSize(7.5);
   doc.setTextColor(100, 116, 139);
-  doc.text('Signé électroniquement par la Direction', 142, currentY + 13);
-  doc.text('Union des Mutuelles de Santé', 142, currentY + 18);
+  doc.text('Signé électroniquement par la Direction', rightAlignX, currentY + 14, { align: 'right' });
+  doc.text('Union des mutuelles de santé', rightAlignX, currentY + 19, { align: 'right' });
+  doc.text('communautaires du Sénégal', rightAlignX, currentY + 24, { align: 'right' });
 
   // ---------------------------------------------------------------------------
   // 8. PIED DE PAGE PERMANENT NET & CLAIR (A4 Y = 280mm)

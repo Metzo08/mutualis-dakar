@@ -1,3 +1,4 @@
+import { addMemberFromAdhesion } from '../utils/beneficiaryStore';
 import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
@@ -70,7 +71,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
   };
 
   const fetchDonationStats = () => {
-    fetch('http://localhost:5000/api/donations/stats')
+    fetch(`${window.API_BASE_URL}/api/donations/stats`)
       .then(res => res.json())
       .then(data => {
         if (data.success && data.stats) {
@@ -133,7 +134,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
       'Mutuelle de Sangalkam',
       'Mutuelle de Keur Massar Nord'
     ];
-    fetch('http://localhost:5000/api/mutuelles')
+    fetch(`${window.API_BASE_URL}/api/mutuelles`)
       .then(res => {
         if (!res.ok) throw new Error('Erreur API');
         return res.json();
@@ -389,6 +390,22 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
     }
 
     if (cleanOtp === '7842') {
+      // Auto-création de la carte CSU dans le studio et le store
+      const autoCreatedMember = addMemberFromAdhesion({
+        firstName: formData.firstName || 'Adhérent',
+        lastName: formData.lastName || 'Nouveau',
+        birthDate: formData.birthDate || '01/01/1990',
+        phone: formData.phone || '77 000 00 00',
+        address: formData.address || 'Dakar',
+        mutuelleOrigine: selectedMutuelle || 'Mutuelle de Santé Départementale de Dakar',
+        package: selectedPackage === 'csu_eleves' ? 'Gratuité Élèves 100%' : 'UNAMUSC 80%',
+        dependents: (familyMembers || []).map(f => ({
+          name: f.name,
+          birthDate: f.age ? `01/01/${new Date().getFullYear() - (parseInt(f.age, 10) || 6)}` : '01/01/2018',
+          gender: 'M',
+          isMajor: (parseInt(f.age, 10) || 6) >= 18
+        }))
+      });
       const payload = {
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -430,7 +447,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
         return;
       }
 
-      fetch('http://localhost:5000/api/adhesions', {
+      fetch(`${window.API_BASE_URL}/api/adhesions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -519,7 +536,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
         return;
       }
 
-      fetch('http://localhost:5000/api/cotisations/renew', {
+      fetch(`${window.API_BASE_URL}/api/cotisations/renew`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone: renewPhone })
@@ -599,7 +616,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
         return;
       }
 
-      fetch('http://localhost:5000/api/donations', {
+      fetch(`${window.API_BASE_URL}/api/donations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

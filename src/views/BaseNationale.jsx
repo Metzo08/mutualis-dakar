@@ -536,7 +536,7 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
     queryKey: ['mutuellesList'],
     queryFn: async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/mutuelles');
+        const res = await fetch(`${window.API_BASE_URL}/api/mutuelles`);
         if (!res.ok) throw new Error('API Error');
         const data = await res.json();
         if (data && data.length > 0) {

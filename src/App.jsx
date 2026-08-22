@@ -40,6 +40,7 @@ import MedicalProfile from './views/MedicalProfile';
 import MaternalHealth from './views/MaternalHealth';
 import InstitutionPortal from './views/InstitutionPortal';
 import SuperAdminGovernance from './views/SuperAdminGovernance';
+import CardStudio from './views/CardStudio';
 import { syncOutbox, outboxCount, cacheSet, cacheGet } from './utils/offline';
 
 // Import Styles
@@ -57,7 +58,7 @@ class ErrorBoundary extends Component {
   }
   componentDidCatch(error, errorInfo) {
     console.error("ErrorBoundary caught rendering exception:", error, errorInfo);
-    fetch('http://localhost:5000/api/log', {
+    fetch(`${window.API_BASE_URL}/api/log`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: error.message || 'Unknown render error', stack: error.stack || '' })
@@ -84,9 +85,35 @@ class ErrorBoundary extends Component {
   }
 }
 
+// ── Expiration des sessions locales ──
+// Sans cela, la dernière session (ex. Super Admin de démonstration) était
+// restaurée silencieusement à CHAQUE rechargement, même après plusieurs jours :
+// l'usager croyait être « non connecté » alors que l'application le considérait
+// authentifié — d'où l'affichage de données sensibles. Une session inactive
+// depuis plus de 12 h est désormais purgée au démarrage.
+const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
+const isSessionFresh = () => {
+  try {
+    const ts = Number(localStorage.getItem('cmu-session-ts') || 0);
+    return ts > 0 && (Date.now() - ts) < SESSION_TTL_MS;
+  } catch (e) {
+    return false;
+  }
+};
+const purgeStaleSessions = () => {
+  try {
+    if (!isSessionFresh()) {
+      localStorage.removeItem('cmu-agent-user');
+      localStorage.removeItem('cmu-citizen-user');
+      localStorage.removeItem('cmu-partner-user');
+    }
+  } catch (e) {}
+};
+purgeStaleSessions();
+
 export default function App() {
   // Liste des vues valides (pour valider le hash URL)
-  const validViews = ['home','login','beneficiaries','services','map','directory','depts','programmes','about','medicaments','audit-logs','galerie','infos-csu','blog-experts','parrainage-solidaire','partnership','complaints','profile','verify','dashboard','claims','notifications','cotisations','partner','regional-stats','loyalty','payments','guarantees','purchase-orders','telemedicine','medical-profile','maternity','superadmin-governance','rse','institution-coud'];
+  const validViews = ['home','login','beneficiaries','services','map','directory','depts','programmes','about','medicaments','audit-logs','galerie','infos-csu','blog-experts','parrainage-solidaire','partnership','complaints','profile','verify','dashboard','claims','notifications','cotisations','partner','regional-stats','loyalty','payments','guarantees','purchase-orders','telemedicine','medical-profile','maternity','superadmin-governance','rse','institution-coud','card-studio'];
 
   // Initialise la vue depuis le hash URL (#/beneficiaries) pour le deep-linking
   const initialViewFromHash = () => {
@@ -129,78 +156,81 @@ export default function App() {
   const setCitizenUser = (user) => {
     rawSetCitizenUser(user);
     if (user) {
+      localStorage.setItem('cmu-citizen-user', JSON.stringify(user));
+      localStorage.setItem('cmu-portal-mode', 'citizen');
+      localStorage.setItem('cmu-session-ts', String(Date.now()));
       rawSetAgentUser(null);
       rawSetPartnerUser(null);
       localStorage.removeItem('cmu-agent-user');
       localStorage.removeItem('cmu-partner-user');
-      localStorage.removeItem('cmu-partner-token');
     }
   };
 
   const setAgentUser = (user) => {
     rawSetAgentUser(user);
     if (user) {
+      localStorage.setItem('cmu-agent-user', JSON.stringify(user));
+      localStorage.setItem('cmu-session-ts', String(Date.now()));
+      const mode = (user.role && (user.role.toLowerCase().includes('admin') || user.role.toLowerCase().includes('super'))) ? 'superadmin' : 'agent';
+      localStorage.setItem('cmu-portal-mode', mode);
       rawSetCitizenUser(null);
       rawSetPartnerUser(null);
       localStorage.removeItem('cmu-citizen-user');
       localStorage.removeItem('cmu-partner-user');
-      localStorage.removeItem('cmu-partner-token');
     }
   };
 
   const setPartnerUser = (user) => {
     rawSetPartnerUser(user);
     if (user) {
+      localStorage.setItem('cmu-partner-user', JSON.stringify(user));
+      localStorage.setItem('cmu-session-ts', String(Date.now()));
+      localStorage.setItem('cmu-portal-mode', 'partner');
       rawSetCitizenUser(null);
       rawSetAgentUser(null);
       localStorage.removeItem('cmu-citizen-user');
       localStorage.removeItem('cmu-agent-user');
-      localStorage.removeItem('cmu-token');
-      localStorage.removeItem('cmu-refresh-token');
     }
   };
 
-  // Enforce session mutual exclusivity & profile initialization V6 RBAC
-  // IMPORTANT : le mode 'citizen' SANS citizenUser préexistant = visiteur non connecté.
-  // On ne crée JAMAIS de citizenUser fictif ici (sinon un visiteur apparaît « connecté »).
+  // Persistance continue & garde de session au rafraichissement de page (F5).
+  // L'horodatage est rafraîchi à chaque visite : la session expire seulement
+  // après 12 h d'inactivité (expiration glissante).
   useEffect(() => {
-    const activeMode = localStorage.getItem('cmu-portal-mode') || portalMode || 'citizen';
-    if (activeMode === 'doctor' || activeMode === 'partner') {
-      const docUser = { name: 'Dr. Cheikh Anta Diop', structureName: 'Centre Hospitalier Abass Ndao', cnom: 'CNOM: 4522-SN', role: 'Médecin Prescripteur' };
-      rawSetPartnerUser(docUser);
-      rawSetCitizenUser(null);
-      rawSetAgentUser(null);
-    } else if (activeMode === 'midwife') {
-      const midwifeUser = { name: 'Dr. Fatou Diome', structureName: 'Centre de Santé SOS Médina', cnom: 'SF-2026-SN', role: 'Sage-Femme d\'État' };
-      rawSetPartnerUser(midwifeUser);
-      rawSetCitizenUser(null);
-      rawSetAgentUser(null);
-    } else if (activeMode === 'pharmacist') {
-      const pharmUser = { firstName: 'Pharmacie Agréée', lastName: 'Ndiaye Tiers-Payant', udms: 'Réseau Pharmacies Dakar', role: 'Pharmacien Agréé' };
-      rawSetAgentUser(pharmUser);
-      rawSetCitizenUser(null);
-      rawSetPartnerUser(null);
-    } else if (activeMode === 'agent') {
-      const agentRecord = { firstName: 'Mamadou', lastName: 'Diop', udms: 'Union Départementale Dakar', role: 'Agent Instructeur' };
-      rawSetAgentUser(agentRecord);
-      rawSetCitizenUser(null);
-      rawSetPartnerUser(null);
-    } else if (activeMode === 'superadmin') {
-      const adminRecord = { firstName: 'Direction DSI', lastName: 'UNAMUSC Sénégal', role: 'SuperAdmin' };
-      rawSetAgentUser(adminRecord);
-      rawSetCitizenUser(null);
-      rawSetPartnerUser(null);
-    } else if (activeMode === 'citizen_suspended') {
-      // Assuré suspendu : on garde le citizenUser existant (défini au login), on marque juste le statut
-      rawSetAgentUser(null);
-      rawSetPartnerUser(null);
-    } else {
-      // Mode 'citizen' : visiteur non connecté OU assuré déjà authentifié.
-      // On NE crée pas de citizenUser fictif — le visiteur reste invité.
-      rawSetAgentUser(null);
-      rawSetPartnerUser(null);
+    if (!isSessionFresh()) {
+      localStorage.removeItem('cmu-agent-user');
+      localStorage.removeItem('cmu-citizen-user');
+      localStorage.removeItem('cmu-partner-user');
+      return;
     }
-  }, [portalMode]);
+    localStorage.setItem('cmu-session-ts', String(Date.now()));
+
+    try {
+      const storedCitizen = localStorage.getItem('cmu-citizen-user');
+      if (storedCitizen && !citizenUser) {
+        rawSetCitizenUser(JSON.parse(storedCitizen));
+      }
+    } catch (e) {}
+
+    try {
+      const storedAgent = localStorage.getItem('cmu-agent-user');
+      if (storedAgent && !agentUser) {
+        rawSetAgentUser(JSON.parse(storedAgent));
+      }
+    } catch (e) {}
+
+    try {
+      const storedPartner = localStorage.getItem('cmu-partner-user');
+      if (storedPartner && !partnerUser) {
+        rawSetPartnerUser(JSON.parse(storedPartner));
+      }
+    } catch (e) {}
+
+    const storedMode = localStorage.getItem('cmu-portal-mode');
+    if (storedMode && storedMode !== portalMode) {
+      setPortalMode(storedMode);
+    }
+  }, [view]);
 
   // Dynamic document title update for SPA SEO and usability
   useEffect(() => {
@@ -236,7 +266,7 @@ export default function App() {
         'purchase-orders': 'Bons de Commande Pharmacie - MUTUALIS DAKAR',
         telemedicine: 'Télémédecine & Téléconsultation - MUTUALIS DAKAR',
         'medical-profile': 'Dossier Médical & Antécédents - MUTUALIS DAKAR',
-        maternity: 'Carnet de Santé Maternelle - MUTUALIS DAKAR',
+        maternity: 'Pôle Spécialités Médicales & Pathologies - MUTUALIS DAKAR',
         'institution-coud': 'Portail Institutionnel COUD UCAD - MUTUALIS DAKAR'
       },
       wo: {
@@ -404,10 +434,29 @@ export default function App() {
       // Agent Authentication Guard
       if (portalMode === 'agent' && !agentUser && ['home', 'beneficiaries', 'depts', 'audit-logs', 'complaints'].includes(view)) {
         return (
-          <Login 
-            lang={lang} 
-            setView={setView} 
-            portalMode={portalMode} 
+          <Login
+            lang={lang}
+            setView={setView}
+            portalMode={portalMode}
+            setPortalMode={setPortalMode}
+            setCitizenUser={setCitizenUser}
+            setAgentUser={setAgentUser}
+            setPartnerUser={setPartnerUser}
+          />
+        );
+      }
+
+      // 🔒 Garde données sensibles : ces vues affichent des données d'assurés
+      // (noms, dossiers médicaux, montants, encaissements) ou d'administration —
+      // elles exigent une session authentifiée (citoyen, agent ou partenaire).
+      // Sans connexion, on redirige vers la page de connexion.
+      const SENSITIVE_DATA_VIEWS = ['guarantees', 'purchase-orders', 'telemedicine', 'medical-profile', 'maternity', 'partner'];
+      if (SENSITIVE_DATA_VIEWS.includes(view) && !citizenUser && !agentUser && !partnerUser) {
+        return (
+          <Login
+            lang={lang}
+            setView={setView}
+            portalMode={portalMode}
             setPortalMode={setPortalMode}
             setCitizenUser={setCitizenUser}
             setAgentUser={setAgentUser}
@@ -517,7 +566,7 @@ export default function App() {
         case 'verify':
           return <VerifyCard lang={lang} setView={setView} citizenUser={citizenUser} />;
         case 'dashboard':
-          if (!agentUser && portalMode !== 'agent') {
+          if (!agentUser && portalMode !== 'agent' && portalMode !== 'superadmin') {
             return (
               <div className="container py-5 text-center">
                 <div className="card shadow-lg border-0 p-5 mx-auto" style={{ maxWidth: '500px', borderRadius: '24px', background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
@@ -538,7 +587,7 @@ export default function App() {
               </div>
             );
           }
-          return <AgentDashboard lang={lang} agentUser={agentUser} />;
+          return <AgentDashboard lang={lang} agentUser={agentUser} setView={setView} />;
         case 'claims':
           return (
             <Claims
@@ -588,7 +637,15 @@ export default function App() {
             />
           );
         case 'payments':
-          return <Payments lang={lang} citizenUser={citizenUser} setView={setView} />;
+          return (
+            <Payments 
+              lang={lang} 
+              citizenUser={citizenUser} 
+              agentUser={agentUser} 
+              portalMode={portalMode} 
+              setView={setView} 
+            />
+          );
         case 'complaints':
           return (
             <Complaints 
@@ -599,16 +656,44 @@ export default function App() {
               partnerUser={partnerUser}
             />
           );
-        case 'superadmin-governance':
+        case 'superadmin-governance': {
+          // 🔒 Garde d'accès : la Gouvernance Super Admin (comptes, KPI,
+          // habilitations) est réservée au Super Administrateur authentifié.
+          const isSuperAdmin = agentUser && (agentUser.role === 'Super Admin' || agentUser.role === 'SuperAdmin');
+          if (isSuperAdmin) {
+            return (
+              <SuperAdminGovernance
+                lang={lang}
+                setView={setView}
+                agentUser={agentUser}
+                citizenUser={citizenUser}
+                partnerUser={partnerUser}
+              />
+            );
+          }
           return (
-            <SuperAdminGovernance
-              lang={lang}
-              setView={setView}
-              agentUser={agentUser}
-              citizenUser={citizenUser}
-              partnerUser={partnerUser}
-            />
+            <div className="card text-center fade-in-up" style={{ padding: '3rem', margin: '2rem auto', maxWidth: '600px', borderRadius: '16px', borderTop: '4px solid var(--danger)' }}>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⛔</div>
+              <h2 style={{ color: 'var(--danger)', fontWeight: '850' }}>Accès réservé au Super Admin</h2>
+              <p style={{ color: 'var(--text-sub)', marginTop: '0.5rem' }}>
+                Le tableau de bord de Gouvernance (comptes utilisateurs, statistiques financières, habilitations médicales)
+                n'est accessible qu'après authentification avec un compte Super Administrateur (ANACSU / Ministère).
+              </p>
+              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+                <button
+                  className="btn btn-primary"
+                  style={{ fontWeight: 'bold' }}
+                  onClick={() => { setPortalMode('agent'); setView('login'); }}
+                >
+                  🔐 Se connecter en Super Admin
+                </button>
+                <button className="btn btn-outline" style={{ fontWeight: 'bold' }} onClick={() => setView('home')}>
+                  Retour à l'accueil
+                </button>
+              </div>
+            </div>
           );
+        }
         case 'profile':
           return (
             <Profile
@@ -664,6 +749,21 @@ export default function App() {
           return <MaternalHealth lang={lang} userRole={portalMode} citizenUser={citizenUser} agentUser={agentUser} partnerUser={partnerUser} setView={setView} />;
         case 'institution-coud':
           return <InstitutionPortal lang={lang} portalMode={portalMode} agentUser={agentUser} setView={setView} />;
+        case 'card-studio':
+          if ((portalMode === 'agent' || portalMode === 'superadmin') && agentUser && agentUser.role === 'Super Admin') {
+            return <CardStudio lang={lang} />;
+          } else {
+            return (
+              <div className="card text-center fade-in-up" style={{ padding: '3rem', margin: '2rem auto', maxWidth: '600px', borderRadius: '16px', borderTop: '4px solid var(--danger)' }}>
+                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⛔</div>
+                <h2 style={{ color: 'var(--danger)', fontWeight: '850' }}>Accès réservé au Super Admin</h2>
+                <p style={{ color: 'var(--text-sub)', marginTop: '0.5rem' }}>Le studio de conception et d'impression des cartes d'assurés CSU est strictement réservé à la gouvernance Super Admin.</p>
+                <button className="btn btn-primary" style={{ marginTop: '1.5rem', fontWeight: 'bold' }} onClick={() => setView('home')}>
+                  Retour à l'accueil
+                </button>
+              </div>
+            );
+          }
         default:
           return (
             <Home 
@@ -884,7 +984,7 @@ export default function App() {
                       ))
                     )}
                   </div>
-                  {(portalMode === 'superadmin' || (agentUser && (agentUser.role === 'SuperAdmin' || agentUser.role === 'Super Admin'))) && (
+                  {agentUser && (agentUser.role === 'SuperAdmin' || agentUser.role === 'Super Admin') && (
                     <div
                       style={{ padding: '0.75rem', textAlign: 'center', backgroundColor: 'var(--bg-card-subtle)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--primary)' }}
                       onClick={() => {
@@ -909,7 +1009,7 @@ export default function App() {
           <footer style={{
             marginTop: 'auto',
             paddingTop: '3rem',
-            paddingBottom: '1rem',
+            paddingBottom: '2.5rem',
             textAlign: 'center',
             fontSize: '0.85rem',
             color: 'var(--text-muted)'

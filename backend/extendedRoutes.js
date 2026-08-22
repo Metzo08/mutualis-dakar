@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { query } = require('./db');
+const { authenticateToken, requireRole } = require('./rbac');
 const crypto = require('crypto');
 
 // ==========================================
@@ -8,7 +9,7 @@ const crypto = require('crypto');
 // ==========================================
 
 // Liste des lettres de garantie
-router.get('/guarantees', async (req, res) => {
+router.get("/guarantees", authenticateToken, async (req, res) => {
   try {
     const { beneficiary_id, status } = req.query;
     let sql = `
@@ -38,8 +39,7 @@ router.get('/guarantees', async (req, res) => {
   }
 });
 
-// Demande d'une nouvelle lettre de garantie (Assuré)
-router.post('/guarantees', async (req, res) => {
+router.post("/guarantees", authenticateToken, async (req, res) => {
   try {
     const { beneficiary_id, partner_structure_id, medical_act, estimated_amount, document_url } = req.body;
     if (!beneficiary_id || !medical_act) {
@@ -63,7 +63,7 @@ router.post('/guarantees', async (req, res) => {
 });
 
 // Validation 100% humaine par un Agent CMU
-router.put('/guarantees/:id/status', async (req, res) => {
+router.put("/guarantees/:id/status", authenticateToken, requireRole("agent"), async (req, res) => {
   try {
     const { id } = req.params;
     const { status, guaranteed_percentage, max_amount, agent_note } = req.body;
@@ -94,7 +94,7 @@ router.put('/guarantees/:id/status', async (req, res) => {
 // 2. BONS DE COMMANDE (Pharmacie / Tiers-payant 48h)
 // ==========================================
 
-router.get('/purchase-orders', async (req, res) => {
+router.get("/purchase-orders", authenticateToken, async (req, res) => {
   try {
     const { beneficiary_id } = req.query;
     let sql = `
@@ -119,7 +119,7 @@ router.get('/purchase-orders', async (req, res) => {
   }
 });
 
-router.post('/purchase-orders', async (req, res) => {
+router.post("/purchase-orders", authenticateToken, async (req, res) => {
   try {
     const { beneficiary_id, items, total_amount, partner_structure_id } = req.body;
     if (!beneficiary_id || !items || !Array.isArray(items)) {
@@ -139,7 +139,7 @@ router.post('/purchase-orders', async (req, res) => {
   }
 });
 
-router.post('/purchase-orders/:id/redeem', async (req, res) => {
+router.post("/purchase-orders/:id/redeem", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const result = await query(`
@@ -164,7 +164,7 @@ router.post('/purchase-orders/:id/redeem', async (req, res) => {
 // 3. TÉLÉMÉDECINE & RENDEZ-VOUS EN LIGNE
 // ==========================================
 
-router.get('/telemedicine/sessions', async (req, res) => {
+router.get("/telemedicine/sessions", authenticateToken, async (req, res) => {
   try {
     const { beneficiary_id } = req.query;
     let sql = `
@@ -188,7 +188,7 @@ router.get('/telemedicine/sessions', async (req, res) => {
   }
 });
 
-router.post('/telemedicine/sessions', async (req, res) => {
+router.post("/telemedicine/sessions", authenticateToken, async (req, res) => {
   try {
     const { beneficiary_id, doctor_name, specialty, scheduled_at } = req.body;
     const roomToken = `TELE-ROOM-${Date.now().toString().slice(-6)}`;
@@ -206,7 +206,7 @@ router.post('/telemedicine/sessions', async (req, res) => {
   }
 });
 
-router.get('/appointments', async (req, res) => {
+router.get("/appointments", authenticateToken, async (req, res) => {
   try {
     const { beneficiary_id } = req.query;
     let sql = `
@@ -231,7 +231,7 @@ router.get('/appointments', async (req, res) => {
   }
 });
 
-router.post('/appointments', async (req, res) => {
+router.post("/appointments", authenticateToken, async (req, res) => {
   try {
     const { beneficiary_id, partner_structure_id, doctor_name, specialty, appointment_date, notes } = req.body;
     const accessCode = `RDV-${Date.now().toString().slice(-6)}`;
@@ -253,9 +253,14 @@ router.post('/appointments', async (req, res) => {
 // 4. DOSSIER MÉDICAL, ANTÉCÉDENTS & IMAGERIE (Scanner/Radio)
 // ==========================================
 
-router.get('/medical-profile/:beneficiaryId', async (req, res) => {
+router.get("/medical-profile/:beneficiaryId", authenticateToken, async (req, res) => {
   try {
     const { beneficiaryId } = req.params;
+    
+    // Un citoyen ne peut consulter que son propre profil médical
+    if (req.user.role === "citizen" && req.user.id !== parseInt(beneficiaryId)) {
+      return res.status(403).json({ error: "Accès interdit." });
+    }
 
     const anteRes = await query('SELECT * FROM medical_antecedents WHERE beneficiary_id = $1', [beneficiaryId]);
     const extCodes = await query('SELECT * FROM external_patient_codes WHERE beneficiary_id = $1', [beneficiaryId]);
@@ -277,7 +282,7 @@ router.get('/medical-profile/:beneficiaryId', async (req, res) => {
   }
 });
 
-router.post('/medical-profile/:beneficiaryId/antecedents', async (req, res) => {
+router.post("/medical-profile/:beneficiaryId/antecedents", authenticateToken, async (req, res) => {
   try {
     const { beneficiaryId } = req.params;
     const { blood_group, allergies, chronic_conditions, past_surgeries, emergency_contact_name, emergency_contact_phone } = req.body;
@@ -311,7 +316,7 @@ router.post('/medical-profile/:beneficiaryId/antecedents', async (req, res) => {
 // 5. GRANDES INSTITUTIONS & COUD UCAD
 // ==========================================
 
-router.get('/institutions/coud/summary', async (req, res) => {
+router.get("/institutions/coud/summary", authenticateToken, async (req, res) => {
   try {
     const instRes = await query(`SELECT * FROM institutional_tenants WHERE code = 'COUD_UCAD' LIMIT 1`);
     const countRes = await query(`SELECT COUNT(*) as total FROM beneficiaries WHERE region = 'Dakar'`);

@@ -21,6 +21,22 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
     }
   }, [citizenUser]);
 
+  // ─── Redirection automatique vers le tableau de bord dédié selon le rôle ───
+  // Au lieu d'afficher les 4 étapes génériques, on oriente l'utilisateur vers son espace métier.
+  useEffect(() => {
+    if (!setView) return;
+    if (portalMode === 'superadmin') {
+      setView('dashboard'); // Tableau de bord (statistiques plateforme) — différent de la gouvernance
+    } else if (portalMode === 'agent') {
+      setView('dashboard');
+    } else if (portalMode === 'doctor' || portalMode === 'midwife') {
+      setView('telemedicine');
+    } else if (portalMode === 'pharmacist') {
+      setView('purchase-orders');
+    }
+    // citizen et visiteurs non connectés → restent sur Home (4 étapes + hero)
+  }, [portalMode]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const [nowTick, setNowTick] = useState(Date.now());
 
   useEffect(() => {
@@ -148,9 +164,9 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
                 </svg>
 
                 <div>
-                  <h6 class="fw-bold mb-0 text-uppercase" style="color: #047857; letter-spacing: 0.6px; font-size: 0.95rem;">RÉPUBLIQUE DU SÉNÉGAL</h6>
+                  <h6 class="fw-bold mb-0" style="color: #047857; font-size: 0.95rem;">République du Sénégal</h6>
                   <small class="text-muted fw-semibold d-block" style="font-size: 0.78rem;">Un Peuple — Un But — Une Foi</small>
-                  <strong class="text-uppercase d-block mt-0.5" style="color: #0f172a; font-size: 0.82rem; letter-spacing: 0.3px;">AGENCE NATIONALE DE LA COUVERTURE MALADIE UNIVERSELLE (SEN-CSU)</strong>
+                  <strong class="d-block mt-0.5" style="color: #0f172a; font-size: 0.82rem;">Agence nationale de la couverture maladie universelle (SEN-CSU)</strong>
                 </div>
               </div>
 
@@ -170,8 +186,8 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
 
             <!-- Titre Principal -->
             <div class="text-center my-4 p-4 rounded-4" style="background: #f0fdf4; border: 1.5px solid #a7f3d0;">
-              <h3 class="fw-extrabold text-uppercase mb-1" style="color: #047857; letter-spacing: 0.5px;">
-                RAPPORT NATIONAL DE COUVERTURE PAR TYPE DE MUTUELLE
+              <h3 class="fw-extrabold mb-1" style="color: #047857; letter-spacing: 0.2px;">
+                Rapport national de couverture par type de mutuelle
               </h3>
               <p class="text-muted fw-medium mb-2" style="font-size: 0.95rem;">
                 Statistiques consolidées d'adhésion & répartition des bénéficiaires CSU
@@ -187,10 +203,10 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
               <table class="table align-middle" style="width: 100%; border-collapse: collapse;">
                 <thead>
                   <tr style="background: #f8fafc; border-bottom: 2px solid #cbd5e1;">
-                    <th style="padding: 1.1rem 1rem; font-size: 0.9rem; font-weight: 800;">Type de Mutuelle / Organisme</th>
-                    <th style="padding: 1.1rem 1rem; font-size: 0.9rem; font-weight: 800; text-align: right;">Bénéficiaires Couverts</th>
-                    <th style="padding: 1.1rem 1rem; font-size: 0.9rem; font-weight: 800; text-align: right;">Part Relat. (%)</th>
-                    <th style="padding: 1.1rem 1rem; font-size: 0.9rem; font-weight: 800; text-align: center;">Taux d'Efficience</th>
+                    <th style="padding: 1.1rem 1rem; font-size: 0.9rem; font-weight: 800;">Type de mutuelle / organisme</th>
+                    <th style="padding: 1.1rem 1rem; font-size: 0.9rem; font-weight: 800; text-align: right;">Bénéficiaires couverts</th>
+                    <th style="padding: 1.1rem 1rem; font-size: 0.9rem; font-weight: 800; text-align: right;">Part relat. (%)</th>
+                    <th style="padding: 1.1rem 1rem; font-size: 0.9rem; font-weight: 800; text-align: center;">Taux d'efficience</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -226,7 +242,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
               </div>
               <div class="col-4 text-end">
                 <div class="border border-success rounded-3 p-3 d-inline-block text-center" style="background: #f0fdf4; border-width: 2px !important;">
-                  <strong class="d-block text-uppercase" style="font-size: 0.78rem; color: #047857; letter-spacing: 0.5px;">CACHET OFFICIEL UNAMUSC</strong>
+                  <strong class="d-block" style="font-size: 0.78rem; color: #047857;">Cachet officiel UNAMUSC</strong>
                   <span style="font-size: 0.72rem; color: #059669; font-weight: 700;">✔ Certifié Conforme</span>
                 </div>
               </div>
@@ -284,7 +300,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
   }));
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/coverage/regions')
+    fetch(`${window.API_BASE_URL}/api/coverage/regions`)
       .then(res => {
         if (!res.ok) throw new Error('API Error');
         return res.json();
@@ -308,7 +324,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
   });
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/campaign/active')
+    fetch(`${window.API_BASE_URL}/api/campaign/active`)
       .then(res => {
         if (!res.ok) throw new Error('API Error');
         return res.json();
@@ -327,7 +343,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
   useEffect(() => {
     if (citizenUser) {
       const token = localStorage.getItem('cmu-token') || '';
-      fetch(`http://localhost:5000/api/loyalty/${citizenUser.id}`, {
+      fetch(`${window.API_BASE_URL}/api/loyalty/${citizenUser.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       })
         .then(res => res.json())
@@ -410,7 +426,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
   useEffect(() => {
     setStatsLoading(true);
     setStatsError(false);
-    fetch('http://localhost:5000/api/stats')
+    fetch(`${window.API_BASE_URL}/api/stats`)
       .then(res => {
         if (!res.ok) throw new Error('API Error');
         return res.json();
@@ -442,7 +458,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
     if (portalMode !== 'agent') return; // les citoyens n'ont pas accès aux logs
     const token = localStorage.getItem('cmu-token');
     if (!token) return;
-    fetch('http://localhost:5000/api/audit-logs?limit=5', {
+    fetch(`${window.API_BASE_URL}/api/audit-logs?limit=5`, {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())
@@ -489,7 +505,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
     setLoginLoading(true);
     setLoginError(null);
 
-    fetch('http://localhost:5000/api/auth/citizen/login', {
+    fetch(`${window.API_BASE_URL}/api/auth/citizen/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ phone: loginPhone, pinCode: loginPin })

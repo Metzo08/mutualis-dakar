@@ -302,7 +302,64 @@ router.get('/api/cmu-card/:cmuNumber', async (req, res) => {
 // TABLEAU DE BORD AGENT — KPIs CSU
 // ============================================================================
 
-router.get('/api/dashboard/stats', authenticateToken, requireRole('agent', 'admin'), async (req, res) => {
+// Endpoint PUBLIC (sans auth) pour le mode démo — retourne les vraies données agrégées.
+// Sécurité : ne renvoie que des compteurs et sommes, jamais de données personnelles.
+router.get('/api/dashboard/demo-stats', async (req, res) => {
+  try {
+    const totalBeneficiaries = await query('SELECT COUNT(*) FROM beneficiaries');
+    const activeBeneficiaries = await query("SELECT COUNT(*) FROM beneficiaries WHERE status = 'active'");
+    const pendingBeneficiaries = await query("SELECT COUNT(*) FROM beneficiaries WHERE status = 'pending'");
+    const totalMutuelles = await query('SELECT COUNT(*) FROM mutuelles');
+    const totalDonations = await query('SELECT COALESCE(SUM(amount),0) AS sum FROM donations');
+    const totalCotisations = await query("SELECT COALESCE(SUM(amount),0) AS sum FROM cotisations WHERE status = 'paid'");
+
+    const claimsByStatus = await query('SELECT status, COUNT(*) AS count FROM claims GROUP BY status ORDER BY count DESC');
+    const claimsTotal = await query('SELECT COUNT(*) FROM claims');
+    const claimsAmount = await query("SELECT COALESCE(SUM(reimbursed_amount),0) AS sum FROM claims WHERE status IN ('approved','paid')");
+
+    const byPackage = await query('SELECT package_type, COUNT(*) AS count FROM beneficiaries GROUP BY package_type ORDER BY count DESC');
+    const byMutuelle = await query('SELECT mutuelle_name, COUNT(*) AS count FROM beneficiaries GROUP BY mutuelle_name ORDER BY count DESC LIMIT 10');
+    const byCommune = await query("SELECT m.commune, COUNT(b.id) AS count FROM beneficiaries b LEFT JOIN mutuelles m ON b.mutuelle_name = m.name GROUP BY m.commune ORDER BY count DESC LIMIT 10");
+    const adhesionsTrend = await query("SELECT DATE(created_at) AS date, COUNT(*) AS count FROM beneficiaries WHERE created_at >= NOW() - INTERVAL '30 days' GROUP BY DATE(created_at) ORDER BY date ASC");
+    const complaintsByStatus = await query('SELECT status, COUNT(*) AS count FROM complaints GROUP BY status');
+
+    // Parrainage
+    const sponsorsRes = await query("SELECT COUNT(*) FROM beneficiaries WHERE package_type = 'parrainage'");
+    const sponsoredRes = await query("SELECT COUNT(*) FROM beneficiaries WHERE sponsor_phone IS NOT NULL AND package_type != 'parrainage'");
+
+    res.json({
+      beneficiaries: {
+        total: parseInt(totalBeneficiaries.rows[0].count),
+        active: parseInt(activeBeneficiaries.rows[0].count),
+        pending: parseInt(pendingBeneficiaries.rows[0].count)
+      },
+      mutuelles: parseInt(totalMutuelles.rows[0].count),
+      cotisationsAmount: parseInt(totalCotisations.rows[0].sum),
+      donations: parseInt(totalDonations.rows[0].sum),
+      byPackage: byPackage.rows.map(r => ({ package: r.package_type || 'Non spécifié', count: parseInt(r.count) })),
+      byMutuelle: byMutuelle.rows.map(r => ({ name: r.mutuelle_name || 'Non spécifié', count: parseInt(r.count) })),
+      byCommune: byCommune.rows.map(r => ({ commune: r.commune || 'Non spécifié', count: parseInt(r.count) })),
+      adhesionsTrend: adhesionsTrend.rows.map(r => ({ date: r.date, count: parseInt(r.count) })),
+      claims: {
+        total: parseInt(claimsTotal.rows[0].count),
+        reimbursedAmount: parseInt(claimsAmount.rows[0].sum),
+        byStatus: claimsByStatus.rows.map(r => ({ status: r.status, count: parseInt(r.count) }))
+      },
+      claimsByStatus: claimsByStatus.rows.map(r => ({ status: r.status, count: parseInt(r.count) })),
+      complaintsByStatus: complaintsByStatus.rows.map(r => ({ status: r.status, count: parseInt(r.count) })),
+      parrainage: {
+        sponsorsCount: parseInt(sponsorsRes.rows[0].count),
+        sponsoredCount: parseInt(sponsoredRes.rows[0].count),
+        totalAmount: 0
+      }
+    });
+  } catch (err) {
+    console.error('[demo-stats] Erreur:', err.message);
+    res.status(500).json({ error: 'Erreur lors de la récupération des statistiques.' });
+  }
+});
+
+router.get('/api/dashboard/stats', authenticateToken, requireRole('agent', 'admin', 'Super Admin'), async (req, res) => {
   try {
     const isAgent = ['agent', 'admin'].includes(req.user.role);
     const isSuperAdmin = req.user.role === 'Super Admin';
@@ -502,6 +559,37 @@ router.get('/api/dashboard/export/beneficiaries', authenticateToken, requireRole
   } catch (err) {
     console.error('Erreur export CSV :', err);
     res.status(500).json({ error: 'Erreur lors de l\'export.' });
+  }
+});
+
+// GET /api/parrainages/demo-sponsors (PUBLIC — sans auth, pour mode démo)
+router.get('/api/parrainages/demo-sponsors', async (req, res) => {
+  try {
+    const result = await query(
+      `SELECT b.id, b.first_name, b.last_name, b.phone, b.cmu_number, b.mutuelle_name,
+              b.package_type, b.status, b.created_at,
+              COUNT(f.id) AS filleul_count
+       FROM beneficiaries b
+       LEFT JOIN beneficiaries f ON f.sponsor_phone = b.phone AND f.package_type != 'parrainage'
+       WHERE b.package_type = 'parrainage'
+       GROUP BY b.id
+       ORDER BY filleul_count DESC`
+    );
+    res.json(result.rows.map(r => ({
+      id: r.id,
+      firstName: r.first_name,
+      lastName: r.last_name,
+      phone: r.phone,
+      cmuNumber: r.cmu_number,
+      mutuelleName: r.mutuelle_name,
+      packageType: r.package_type,
+      status: r.status,
+      created_at: r.created_at,
+      filleulCount: parseInt(r.filleul_count)
+    })));
+  } catch (err) {
+    console.error('[demo-sponsors] Erreur:', err.message);
+    res.status(500).json({ error: 'Erreur lors de la récupération des sponsors.' });
   }
 });
 

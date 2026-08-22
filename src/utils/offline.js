@@ -115,7 +115,7 @@ export async function syncOutbox() {
 
   for (const item of items) {
     try {
-      const res = await fetch('http://localhost:5000/api/sync/queue', {
+      const res = await fetch(`${window.API_BASE_URL}/api/sync/queue`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({

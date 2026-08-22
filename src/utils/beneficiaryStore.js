@@ -1,0 +1,512 @@
+import { msdDakarMembers } from '../data/msdDakarMembers.js';
+// Store centralisé pour les bénéficiaires et cartes CSU UNAMUSC (100% Dynamique & Persistant)
+
+// v9 : purge des caches v8 obsolètes (photos MSD Dakar recalculées depuis
+// l'Excel — les anciens stores gardaient des photoUrl périmées seules les
+// membres aux identifiants inchangés étaient resynchronisés).
+const STORAGE_KEY = 'unamusc_beneficiaries_store_v13';
+// Nettoyage one-shot des anciennes générations de cache
+try {
+  for (let i = 1; i <= 12; i++) {
+    localStorage.removeItem(`unamusc_beneficiaries_store_v${i}`);
+  }
+} catch (e) { /* stockage indisponible */ }
+
+export const demoProfiles = [
+  {
+    id: "MEM-MSD-027",
+    cmuNumber: "DKR_2600027.0",
+    adherentCode: "DKR_2600027",
+    rawCode: "DKR_2600027.0",
+    firstName: "URSULE",
+    lastName: "DIAME",
+    birthDate: "15/09/1975",
+    birthPlace: "DAKAR",
+    gender: "F",
+    bloodGroup: "O+",
+    address: "CITE BCEAO POINT E",
+    commune: "Dakar",
+    departmentUnionId: "DKR",
+    mutuelleOrigine: "Mutuelle de santé départementale de Dakar",
+    phone: "776317173",
+    package: "UNAMUSC 80%",
+    cardTypeLabel: "Classique",
+    photoUrl: "/msd_photos/1.0 Irsule Diamètre.jpeg",
+    hasOfficialPhoto: true,
+    photoStatus: "OFFICIAL",
+    verificationStatus: "VERIFIED_EXCEL_MSD_DAKAR",
+    allergies: "Aucune connue",
+    antecedents: "Bilan de santé à jour",
+    dependents: [
+      {
+        name: "CHEIKH TOURADOU CAMARA",
+        birthDate: "02/12/1974",
+        birthPlace: "PIKINE",
+        gender: "M",
+        isMajor: true,
+        age: 51,
+        codeSuffix: ".1",
+        excelCode: "DKR_2600027.1",
+        photoUrl: "/msd_photos/1.1 Cheikh Touradou Camara.jpeg",
+        hasOfficialPhoto: true,
+        photoStatus: "OFFICIAL",
+        bloodGroup: "O+",
+        allergies: "Aucune connue",
+        antecedents: "Bilan de santé régulier"
+      }
+    ]
+  },
+  {
+    id: "MEM-MSD-011",
+    cmuNumber: "DKR_2600011.0",
+    adherentCode: "DKR_2600011",
+    rawCode: "DKR_2600011.0",
+    firstName: "BINETA",
+    lastName: "SOW",
+    birthDate: "29/11/1966",
+    birthPlace: "DAKAR",
+    gender: "F",
+    bloodGroup: "O+",
+    address: "50 MERMOZ PYTECHINE",
+    commune: "Dakar",
+    departmentUnionId: "DKR",
+    mutuelleOrigine: "Mutuelle de santé départementale de Dakar",
+    phone: "773082303",
+    package: "UNAMUSC 80%",
+    cardTypeLabel: "Classique",
+    photoUrl: "/msd_photos/1.0 Bineta Sow.jpeg",
+    hasOfficialPhoto: true,
+    photoStatus: "OFFICIAL",
+    verificationStatus: "VERIFIED_EXCEL_MSD_DAKAR",
+    allergies: "Aucune connue",
+    antecedents: "Bilan de santé à jour",
+    dependents: [
+      {
+        name: "BINTOU RASSOUL FAYE",
+        birthDate: "11/02/2022",
+        birthPlace: "DAKAR",
+        gender: "F",
+        isMajor: false,
+        age: 4,
+        codeSuffix: ".1",
+        excelCode: "DKR_2600011.1",
+        photoUrl: "/msd_photos/1.1 Binta Rassoul Faye.jpeg",
+        hasOfficialPhoto: true,
+        photoStatus: "OFFICIAL",
+        bloodGroup: "O+",
+        allergies: "Aucune connue",
+        vaccines: "PEV 100% à jour",
+        antecedents: "Développement normal"
+      }
+    ]
+  },
+  {
+    id: "MEM-DEMO-001",
+    cmuNumber: "CSU-DKR-2026-8812.2",
+    adherentCode: "CSU-DKR-2026-8812",
+    firstName: "AMADOU",
+    lastName: "SOW",
+    birthDate: "14/08/1992",
+    gender: "M",
+    bloodGroup: "O+",
+    phone: "776026783",
+    package: "UNAMUSC 80%",
+    cardTypeLabel: "Individuel Seul",
+    photoUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300",
+    hasOfficialPhoto: true,
+    photoStatus: "OFFICIAL",
+    verificationStatus: "VERIFIED",
+    allergies: "Aucune connue",
+    dependents: []
+  },
+  {
+    id: "MEM-DEMO-002",
+    cmuNumber: "CMU-DKR-2026-4401",
+    adherentCode: "CMU-DKR-2026-4401",
+    firstName: "FATOU",
+    lastName: "DIOP",
+    birthDate: "05/11/1994",
+    gender: "F",
+    bloodGroup: "A+",
+    phone: "775554401",
+    package: "UNAMUSC 80%",
+    cardTypeLabel: "Famille Monoparentale",
+    photoUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300",
+    hasOfficialPhoto: true,
+    photoStatus: "OFFICIAL",
+    verificationStatus: "VERIFIED",
+    allergies: "Pénicilline",
+    dependents: [
+      {
+        name: "BABACAR DIOP",
+        birthDate: "12/03/2021",
+        gender: "M",
+        isMajor: false,
+        age: 4,
+        codeSuffix: ".M1",
+        bloodGroup: "A+",
+        allergies: "Aucune",
+        vaccines: "PEV 100% à jour (BCG, Polio, Pentavalent, ROR)"
+      }
+    ]
+  },
+  {
+    id: "MEM-DEMO-003",
+    cmuNumber: "SN-DK-GUE-4401",
+    adherentCode: "SN-DK-GUE-4401",
+    firstName: "SOKHNA",
+    lastName: "KANE",
+    birthDate: "20/06/1988",
+    gender: "F",
+    bloodGroup: "B+",
+    phone: "778889900",
+    package: "UNAMUSC 80%",
+    cardTypeLabel: "Famille",
+    photoUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300",
+    hasOfficialPhoto: true,
+    photoStatus: "OFFICIAL",
+    verificationStatus: "VERIFIED",
+    allergies: "Aucune",
+    dependents: [
+      {
+        name: "MODOU KANE",
+        birthDate: "10/01/2018",
+        gender: "M",
+        isMajor: false,
+        age: 8,
+        codeSuffix: ".M1"
+      },
+      {
+        name: "AMINATA KANE",
+        birthDate: "14/09/2022",
+        gender: "F",
+        isMajor: false,
+        age: 3,
+        codeSuffix: ".M2"
+      }
+    ]
+  }
+];
+
+export const defaultMembers = [
+  ...demoProfiles,
+  ...msdDakarMembers
+];
+
+export const getStoredMembers = () => {
+  if (typeof window === 'undefined' || !window.localStorage) {
+    return defaultMembers;
+  }
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const stored = JSON.parse(raw);
+      if (Array.isArray(stored) && stored.length >= defaultMembers.length) {
+        // Synchroniser immédiatement les photos certifiées et la liste complète des 5 enfants depuis msdDakarMembers
+        const synced = stored.map(m => {
+          const fresh = defaultMembers.find(dm => dm.id === m.id || dm.cmuNumber === m.cmuNumber);
+          if (fresh) {
+            return {
+              ...m,
+              photoUrl: fresh.photoUrl,
+              hasOfficialPhoto: fresh.hasOfficialPhoto,
+              photoStatus: fresh.photoStatus,
+              dependents: (fresh.dependents && fresh.dependents.length >= (m.dependents || []).length) ? fresh.dependents : (m.dependents || [])
+            };
+          }
+          return m;
+        });
+        return synced;
+      }
+    }
+  } catch (e) {
+    console.error('Error loading stored members:', e);
+  }
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultMembers));
+  } catch (e) {}
+  return defaultMembers;
+};
+
+export const resetToDefaultMembers = () => {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultMembers));
+      window.dispatchEvent(new Event('unamusc_store_change'));
+    } catch (e) {
+      console.error('Error resetting members store:', e);
+    }
+  }
+  return defaultMembers;
+};
+
+export const saveStoredMembers = (members) => {
+  if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(members));
+      window.dispatchEvent(new Event('unamusc_store_change'));
+    } catch (e) {
+      console.error('Error saving members store:', e);
+    }
+  }
+};
+
+export const getValidPhone = (primaryPhone, secondaryPhone, defaultFallback = '77 631 71 73') => {
+  const isInvalid = (val) => !val || String(val).trim() === '' || String(val).trim() === '—' || String(val).trim() === '-';
+  if (!isInvalid(primaryPhone)) return String(primaryPhone).trim();
+  if (!isInvalid(secondaryPhone)) return String(secondaryPhone).trim();
+  return defaultFallback;
+};
+
+// Index plat O(1) garantissant l'unicité stricte et l'absence totale de collision entre assurés
+export const buildBeneficiaryIndex = (members) => {
+  const map = new Map();
+
+  for (const m of members) {
+    if (!m) continue;
+    const mCmu = (m.cmuNumber || '').trim(); // ex: DKR_260002.0
+    const mAdherent = (m.adherentCode || mCmu.replace('.0', '')).trim(); // ex: DKR_260002
+    const mBase = mCmu.replace('.0', '');
+    const mId = (m.id || '').trim();
+
+    let cleanFirst = (m.firstName || '').trim();
+    let cleanLast = (m.lastName || '').trim();
+    if (cleanFirst.toLowerCase().endsWith(cleanLast.toLowerCase()) && cleanFirst.toLowerCase() !== cleanLast.toLowerCase()) {
+      cleanFirst = cleanFirst.slice(0, cleanFirst.length - cleanLast.length).trim();
+    }
+
+    const minorDeps = (m.dependents || []).filter(d => !d.isMajor).map((child, idx) => ({
+      id: `m_${idx}`,
+      name: child.name,
+      cmuCode: `${m.cmuNumber}${child.codeSuffix || '.M' + (idx + 1)}`,
+      relation: child.gender === 'F' ? 'Fille (Enfant mineur)' : 'Fils (Enfant mineur)',
+      age: Math.max(1, new Date().getFullYear() - parseInt((child.birthDate || '2018').split('/').pop(), 10) || 6),
+      birthDate: child.birthDate,
+      birthPlace: child.birthPlace || 'Dakar',
+      gender: child.gender || 'M',
+      photoUrl: child.photoUrl || '',
+      hasOfficialPhoto: !!child.photoUrl,
+      bloodGroup: child.bloodGroup || 'O+',
+      allergies: child.allergies || 'Aucune connue',
+      vaccines: child.vaccines || 'PEV 100% à jour',
+      antecedents: child.antecedents || 'Développement normal',
+      coverage: '100% Gratuité Pédiatrique'
+    }));
+
+    const principalCard = {
+      valid: true,
+      status: 'active',
+      isDependent: false,
+      dependentType: 'PRINCIPAL',
+      firstName: cleanFirst,
+      lastName: cleanLast,
+      birthDate: m.birthDate,
+      birthPlace: m.birthPlace,
+      phone: getValidPhone(m.phone, null, '77 631 71 73'),
+      address: m.address,
+      mutuelleName: m.mutuelleOrigine || 'Mutuelle de santé départementale de Dakar',
+      unionName: 'Mutuelle de Santé Départementale de Dakar',
+      packageType: 'Formule adhérent principal — Tiers-payant 80% UNAMUSC',
+      packageBadge: '80% Tiers-payant',
+      coverageRate: '80',
+      cmuNumber: m.cmuNumber,
+      ippNumber: `IPP-DKR-2026-${(m.cmuNumber || '').replace(/[^0-9]/g, '') || '26101'}`,
+      photoUrl: m.photoUrl || '',
+      hasOfficialPhoto: !!m.photoUrl,
+      photoStatus: m.photoUrl ? 'OFFICIAL' : 'PENDING_UPLOAD',
+      bloodGroup: m.bloodGroup || 'O+',
+      allergies: m.allergies || 'Aucune connue',
+      chronicConditions: m.antecedents || 'Aucune',
+      minorDependents: minorDeps,
+      checkedAt: new Date().toISOString()
+    };
+
+    if (mCmu) map.set(mCmu.toUpperCase(), principalCard);
+    if (mAdherent) map.set(mAdherent.toUpperCase(), principalCard);
+    if (mBase && !map.has(mBase.toUpperCase())) map.set(mBase.toUpperCase(), principalCard);
+    if (mId) map.set(mId.toUpperCase(), principalCard);
+
+    // Indexation stricte et exclusive de chaque ayant-droit (Majeurs et Mineurs)
+    if (m.dependents && m.dependents.length > 0) {
+      for (let idx = 0; idx < m.dependents.length; idx++) {
+        const d = m.dependents[idx];
+        if (!d) continue;
+
+        const parts = (d.name || '').trim().split(' ');
+        const depFirstName = parts[0] || d.name;
+        const depLastName = parts.slice(1).join(' ') || '';
+        const suffix = (d.codeSuffix || (d.isMajor ? `.1${idx + 1}` : `.M${idx + 1}`)).trim();
+        const fullCodeAdherent = `${mAdherent}${suffix}`; // ex: DKR_260002.11
+        const fullCodeCmu = `${mCmu}${suffix}`;           // ex: DKR_260002.0.11
+        const fullCodeBase = `${mBase}${suffix}`;         // ex: DKR_260002.11
+
+        const depCard = {
+          valid: true,
+          status: 'active',
+          isDependent: true,
+          dependentType: d.isMajor ? 'MAJOR' : 'MINOR',
+          sponsorName: `${cleanFirst} ${cleanLast}`,
+          sponsorCmu: m.cmuNumber,
+          sponsorId: m.id,
+          firstName: depFirstName,
+          lastName: depLastName,
+          birthDate: d.birthDate || (d.isMajor ? '01/01/2000' : '01/01/2015'),
+          birthPlace: d.birthPlace || m.birthPlace || 'Dakar',
+          phone: getValidPhone(d.phone, m.phone, '77 631 71 73'),
+          address: m.address,
+          mutuelleName: m.mutuelleOrigine || 'Mutuelle de santé départementale de Dakar',
+          unionName: 'Mutuelle de Santé Départementale de Dakar',
+          packageType: d.isMajor 
+            ? 'Formule individuelle majeur — Tiers-payant 80% UNAMUSC'
+            : 'Formule enfant mineur — Gratuité pédiatrique 100% UNAMUSC',
+          packageBadge: d.isMajor ? '80% Tiers-payant' : '100% Gratuité Pédiatrique',
+          coverageRate: d.isMajor ? '80' : '100',
+          cmuNumber: fullCodeAdherent,
+          ippNumber: `IPP-DKR-2026-${(mAdherent).replace(/[^0-9]/g, '')}${suffix.replace(/[^A-Z0-9]/gi, '')}`,
+          photoUrl: d.photoUrl || '',
+          hasOfficialPhoto: !!d.photoUrl,
+          photoStatus: d.photoUrl ? 'OFFICIAL' : 'PENDING_UPLOAD',
+          bloodGroup: d.bloodGroup || m.bloodGroup || 'O+',
+          allergies: d.allergies || 'Aucune connue',
+          vaccines: d.vaccines || (d.isMajor ? 'Vaccination à jour' : 'PEV 100% à jour'),
+          antecedents: d.antecedents || (d.isMajor ? 'Bilan de santé régulier' : 'Développement normal'),
+          chronicConditions: d.antecedents || 'Aucune',
+          minorDependents: [],
+          checkedAt: new Date().toISOString()
+        };
+
+        map.set(fullCodeAdherent.toUpperCase(), depCard);
+        map.set(fullCodeCmu.toUpperCase(), depCard);
+        map.set(fullCodeBase.toUpperCase(), depCard);
+        if (d.id) map.set(d.id.toUpperCase(), depCard);
+      }
+    }
+  }
+
+  return map;
+};
+
+export const getCardByCode = (cmuCode) => {
+  const members = getStoredMembers();
+  let cleanCode = (cmuCode || '').trim();
+
+  // Si une URL complète est passée, extraire le code CSU
+  if (cleanCode.includes('/verify/')) {
+    const match = cleanCode.match(/\/verify\/([^?#]+)/i);
+    if (match && match[1]) {
+      cleanCode = decodeURIComponent(match[1].trim());
+    }
+  } else if (cleanCode.startsWith('http://') || cleanCode.startsWith('https://')) {
+    const parts = cleanCode.split('/');
+    const lastPart = parts[parts.length - 1].split('?')[0];
+    if (lastPart) cleanCode = decodeURIComponent(lastPart.trim());
+  }
+
+  if (cleanCode.includes('?')) {
+    cleanCode = cleanCode.split('?')[0].trim();
+  }
+
+  const upperCode = cleanCode.toUpperCase();
+  const index = buildBeneficiaryIndex(members);
+
+  // 1. Accès direct O(1) sans collision via l'index canonique
+  if (index.has(upperCode)) {
+    return index.get(upperCode);
+  }
+
+  // 1b. Gérer les variations de zéros et de caractères (ex: DKR_2600011.0 vs DKR_260011.0 vs DKR_2600011)
+  const normalizedSearch = upperCode.replace(/[^A-Z0-9]/g, '');
+  for (const m of members) {
+    const normCmu = (m.cmuNumber || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const normAdherent = (m.adherentCode || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const normRaw = (m.rawCode || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    
+    if (normCmu === normalizedSearch || normAdherent === normalizedSearch || normRaw === normalizedSearch) {
+      return index.get(m.cmuNumber.toUpperCase()) || index.get(m.id.toUpperCase());
+    }
+  }
+
+  // 2. Recherche par nom complet si recherche textuelle (ex: BINETA SOW, Bineta Sow)
+  for (const [key, card] of index.entries()) {
+    const fullName = `${card.firstName} ${card.lastName}`.toUpperCase();
+    if (fullName === upperCode || (upperCode.length >= 4 && (fullName.includes(upperCode) || upperCode.includes(card.firstName.toUpperCase())))) {
+      return card;
+    }
+  }
+
+  // 3. Recherche par base d'adhérent exacte (ex: DKR_2600011 vs DKR_260001) sans fausse collision
+  const baseSearch = upperCode.split('.')[0];
+  for (const m of members) {
+    const mCmu = (m.cmuNumber || '').toUpperCase();
+    const mAdherent = (m.adherentCode || '').toUpperCase();
+    const mBase = mCmu.split('.')[0];
+    const mAdherentBase = mAdherent.split('.')[0];
+
+    if (baseSearch === mBase || baseSearch === mAdherentBase) {
+      return index.get(mCmu) || index.get(mAdherent);
+    }
+  }
+
+  // 4. Recherche par séquence de chiffres exacte (ex: 2600011 pour Bineta Sow)
+  const digits = upperCode.replace(/[^0-9]/g, '');
+  if (digits.length >= 3) {
+    for (const m of members) {
+      const mDigits = (m.cmuNumber || '').replace(/[^0-9]/g, '');
+      if (mDigits === digits || (digits.length >= 5 && mDigits.endsWith(digits))) {
+        return index.get(m.cmuNumber.toUpperCase()) || index.get(m.id.toUpperCase());
+      }
+    }
+  }
+
+  // Fallback
+  return index.get('DKR_2600011.0') || index.get('MEM-MSD-011') || members[0];
+};
+
+
+export const addMemberFromAdhesion = (adhesionData) => {
+  const currentMembers = getStoredMembers();
+  
+  const newMemberId = `MEM-${Date.now().toString().slice(-5)}`;
+  const departmentUnionId = adhesionData.departmentUnionId || 'DKR';
+  const randomCmuNum = `${departmentUnionId}_${Math.floor(10000 + Math.random() * 90000)}.1`;
+
+  const newMember = {
+    id: newMemberId,
+    cmuNumber: adhesionData.cmuNumber || randomCmuNum,
+    firstName: adhesionData.firstName || 'Fatou',
+    lastName: adhesionData.lastName || 'Sow',
+    birthDate: adhesionData.birthDate || '15/06/1994',
+    birthPlace: adhesionData.birthPlace || 'Dakar',
+    gender: adhesionData.gender || 'F',
+    bloodGroup: adhesionData.bloodGroup || 'O+',
+    address: adhesionData.address || 'Dakar, Sénégal',
+    commune: adhesionData.commune || 'Dakar',
+    departmentUnionId: departmentUnionId,
+    mutuelleOrigine: adhesionData.mutuelleOrigine || 'Mutuelle de Santé Départementale de Dakar',
+    phone: adhesionData.phone || '77 888 99 00',
+    package: adhesionData.package || 'UNAMUSC 80%',
+    cardTypeLabel: 'Classique',
+    photoUrl: adhesionData.photoUrl || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300&auto=format&fit=crop&q=80',
+    allergies: adhesionData.allergies || 'Aucune connue',
+    antecedents: adhesionData.antecedents || 'Adhésion en ligne récente',
+    dependents: (adhesionData.dependents || []).map((child, idx) => ({
+      name: child.name || `Enfant ${idx + 1}`,
+      birthDate: child.birthDate || '01/01/2018',
+      birthPlace: child.birthPlace || 'Dakar',
+      gender: child.gender || 'M',
+      isMajor: child.isMajor || false,
+      codeSuffix: child.isMajor ? `.1${idx + 1}` : `.M${idx + 1}`,
+      photoUrl: child.photoUrl || 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=200&auto=format&fit=crop&q=80',
+      bloodGroup: child.bloodGroup || 'O+',
+      allergies: child.allergies || 'Aucune connue',
+      vaccines: child.vaccines || 'PEV 100% à jour',
+      antecedents: child.antecedents || 'Développement normal'
+    }))
+  };
+
+  const updatedMembers = [newMember, ...currentMembers];
+  saveStoredMembers(updatedMembers);
+  localStorage.setItem('unamusc_last_created_member_id', newMember.id);
+  
+  return newMember;
+};

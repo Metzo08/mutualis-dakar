@@ -4,41 +4,14 @@ import { getBeneficiaryInfo, getAdherentCode, getBeneficiaryCode } from '../util
 
 export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, partnerUser = null, setView = null }) {
   const defaultOrders = [
-    {
-      id: 101,
-      first_name: 'Amadou',
-      last_name: 'Sow',
-      cmu_number: 'CSU-DKR-2026-8812.2',
-      items_json: JSON.stringify([
-        { name: 'Amoxicilline 500mg (Gélules)', qty: 2, price: 3500 },
-        { name: 'Paracétamol 1000mg', qty: 1, price: 1500 }
-      ]),
-      total_amount: 8500,
-      cmu_covered: 6800,
-      patient_pay: 1700,
-      status: 'active',
-      created_at: new Date().toISOString(),
-      expires_at: new Date(Date.now() + 48 * 3600 * 1000).toISOString(),
-      order_code: 'ORD-2026-PHARM-881'
-    },
-    {
-      id: 102,
-      first_name: 'Fatou',
-      last_name: 'Diop',
-      cmu_number: 'CMU-DKR-2026-4401',
-      items_json: JSON.stringify([
-        { name: 'Sirop Toux Enfant', qty: 1, price: 2800 },
-        { name: 'Sérum Physiologique (Boîte)', qty: 2, price: 1200 }
-      ]),
-      total_amount: 5200,
-      cmu_covered: 4160,
-      patient_pay: 1040,
-      status: 'used',
-      created_at: new Date(Date.now() - 36 * 3600 * 1000).toISOString(),
-      expires_at: new Date(Date.now() + 12 * 3600 * 1000).toISOString(),
-      order_code: 'ORD-2026-PHARM-440'
-    }
+    { id: 101, first_name: 'Amadou', last_name: 'Sow', cmu_number: 'CSU-DKR-2026-8812.2', items_json: JSON.stringify([{ name: 'Amoxicilline 500mg (Gélules)', qty: 2, price: 3500 }, { name: 'Paracétamol 1000mg', qty: 1, price: 1500 }]), total_amount: 8500, cmu_covered: 4250, patient_pay: 4250, status: 'active', created_at: new Date().toISOString(), expires_at: new Date(Date.now() + 48 * 3600 * 1000).toISOString(), order_code: 'ORD-2026-PHARM-881' },
+    { id: 102, first_name: 'Fatou', last_name: 'Diop', cmu_number: 'CMU-DKR-2026-4401', items_json: JSON.stringify([{ name: 'Sirop Toux Enfant', qty: 1, price: 2800 }, { name: 'Sérum Physiologique (Boîte)', qty: 2, price: 1200 }]), total_amount: 5200, cmu_covered: 2600, patient_pay: 2600, status: 'used', created_at: new Date(Date.now() - 36 * 3600 * 1000).toISOString(), expires_at: new Date(Date.now() + 12 * 3600 * 1000).toISOString(), order_code: 'ORD-2026-PHARM-440' },
+    { id: 103, first_name: 'Modou', last_name: 'Diop', cmu_number: 'SN-DK-MED-1001.1', items_json: JSON.stringify([{ name: 'Metformine 850mg (Diabète)', qty: 3, price: 4200 }, { name: 'Amlodipine 10mg (HTA)', qty: 2, price: 3800 }]), total_amount: 20200, cmu_covered: 10100, patient_pay: 10100, status: 'used', created_at: new Date(Date.now() - 48 * 3600 * 1000).toISOString(), expires_at: new Date().toISOString(), order_code: 'ORD-2026-PHARM-101' },
+    { id: 104, first_name: 'Awa', last_name: 'Ndiaye', cmu_number: 'SN-DK-PIK-9001', items_json: JSON.stringify([{ name: 'Fer + Acide Folique Maternité', qty: 2, price: 2500 }, { name: 'Calcium + Vitamine D3', qty: 1, price: 3100 }]), total_amount: 8100, cmu_covered: 4050, patient_pay: 4050, status: 'used', created_at: new Date(Date.now() - 72 * 3600 * 1000).toISOString(), expires_at: new Date(Date.now() - 24 * 3600 * 1000).toISOString(), order_code: 'ORD-2026-PHARM-900' },
+    { id: 105, first_name: 'Moustapha', last_name: 'Ndiaye', cmu_number: 'SN-DK-PIK-9021', items_json: JSON.stringify([{ name: 'Ibuprofène 400mg', qty: 2, price: 2100 }, { name: 'Bande Velpeau 10cm', qty: 3, price: 1500 }]), total_amount: 8700, cmu_covered: 4350, patient_pay: 4350, status: 'active', created_at: new Date().toISOString(), expires_at: new Date(Date.now() + 48 * 3600 * 1000).toISOString(), order_code: 'ORD-2026-PHARM-902' }
   ];
+
+  const [orderPage, setOrderPage] = useState(1);
 
   // ═══════════════════════════════════════════════════════
   // RBAC — Définition granulaire des rôles (cohérent avec MedicalProfile)
@@ -68,43 +41,74 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
   const [medicineName, setMedicineName] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [estimatedPrice, setEstimatedPrice] = useState('');
+  const [prescriptionPhoto, setPrescriptionPhoto] = useState(null);
+  const [prescriptionFileName, setPrescriptionFileName] = useState('');
   const [selectedVoucher, setSelectedVoucher] = useState(null);
   const [editingVoucher, setEditingVoucher] = useState(null);
   const [editedPharmacyPrice, setEditedPharmacyPrice] = useState('');
   const [redeemSuccess, setRedeemSuccess] = useState('');
   const [creating, setCreating] = useState(false);
 
-  // ── État de validation agent (ordonnances pending_review) ──
-  const [validatingOrder, setValidatingOrder] = useState(null); // bon en cours de validation
-  const [agentRejectNote, setAgentRejectNote] = useState('');   // note de refus
-  const [agentValidationMsg, setAgentValidationMsg] = useState(''); // message de confirmation
-
-  // Approuver une ordonnance pending_review → statut active
-  const handleApproveOrder = (orderId) => {
-    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'active', agentNote: 'Ordonnance validée par le gérant UNAMUSC' } : o));
-    try {
-      const stored = JSON.parse(localStorage.getItem('cmu-purchase-orders') || '[]');
-      const updated = stored.map(o => o.id === orderId ? { ...o, status: 'active', agentNote: 'Ordonnance validée par le gérant UNAMUSC' } : o);
-      localStorage.setItem('cmu-purchase-orders', JSON.stringify(updated));
-    } catch(e) {}
-    setValidatingOrder(null);
-    setAgentValidationMsg('✅ Bon activé avec succès ! L\'assuré peut maintenant le présenter en pharmacie.');
-    setTimeout(() => setAgentValidationMsg(''), 4000);
+  const handlePrescriptionFileUpload = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (file) {
+      setPrescriptionFileName(file.name);
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        setPrescriptionPhoto(evt.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  // Rejeter une ordonnance pending_review → statut rejected
-  const handleRejectOrder = (orderId, note) => {
-    if (!note?.trim()) { alert('Veuillez saisir une note de refus pour informer l\'assuré.'); return; }
-    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'rejected', agentNote: note } : o));
-    try {
-      const stored = JSON.parse(localStorage.getItem('cmu-purchase-orders') || '[]');
-      const updated = stored.map(o => o.id === orderId ? { ...o, status: 'rejected', agentNote: note } : o);
-      localStorage.setItem('cmu-purchase-orders', JSON.stringify(updated));
-    } catch(e) {}
-    setValidatingOrder(null);
-    setAgentRejectNote('');
-    setAgentValidationMsg('❌ Bon rejeté. L\'assuré sera notifié pour corriger son ordonnance.');
-    setTimeout(() => setAgentValidationMsg(''), 4000);
+  // ── States & handlers pour CRUD complet (Créer, Modifier, Supprimer) des Bons de Commande ──
+  const [editingOrderObj, setEditingOrderObj] = useState(null);
+  const [isNewOrderObj, setIsNewOrderObj] = useState(false);
+  const [confirmDeleteObj, setConfirmDeleteObj] = useState(null); // { title: string, onConfirm: function }
+
+  const handleSaveOrderObj = (e) => {
+    e.preventDefault();
+    if (!editingOrderObj) return;
+    if (!editingOrderObj.first_name || !editingOrderObj.cmu_number) {
+      alert('Veuillez renseigner le nom du bénéficiaire et son N° de Carte CSU.');
+      return;
+    }
+
+    const totalSum = parseFloat(editingOrderObj.total_amount) || 0;
+    const cmuCovered = totalSum * 0.5;
+    const patientPay = totalSum * 0.5;
+
+    const orderToSave = {
+      ...editingOrderObj,
+      id: editingOrderObj.id || Date.now(),
+      total_amount: totalSum,
+      cmu_covered: cmuCovered,
+      patient_pay: patientPay,
+      order_code: editingOrderObj.order_code || `ORD-2026-PHARM-${Math.floor(100 + Math.random() * 900)}`,
+      created_at: editingOrderObj.created_at || new Date().toISOString()
+    };
+
+    let updated;
+    if (isNewOrderObj) {
+      updated = [orderToSave, ...orders];
+    } else {
+      updated = orders.map(o => o.id === orderToSave.id ? orderToSave : o);
+    }
+    setOrders(updated);
+    localStorage.setItem('cmu_purchase_orders', JSON.stringify(updated));
+    setEditingOrderObj(null);
+    setIsNewOrderObj(false);
+  };
+
+  const handleDeleteOrderObj = (ord) => {
+    setConfirmDeleteObj({
+      title: `le bon de commande "${ord.order_code || 'ORD'}" de ${ord.first_name} ${ord.last_name}`,
+      onConfirm: () => {
+        const updated = orders.filter(o => o.id !== ord.id);
+        setOrders(updated);
+        localStorage.setItem('cmu_purchase_orders', JSON.stringify(updated));
+      }
+    });
   };
 
   // Générateur PDF / Fenêtre d'Impression A4 pour les Bons de Commande Pharmacie
@@ -152,25 +156,25 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               <div class="d-flex align-items-center gap-3">
                 <img src="/senegal_flag.png" alt="Drapeau du Sénégal" style="width: 54px; height: 36px; object-fit: cover; border-radius: 4px; border: 1.5px solid #d97706;" />
                 <div>
-                  <h6 class="fw-bold mb-0 text-uppercase" style="color: #047857; letter-spacing: 0.5px;">RÉPUBLIQUE DU SÉNÉGAL</h6>
+                  <h6 class="fw-bold mb-0" style="color: #047857;">République du Sénégal</h6>
                   <small class="text-muted fw-semibold" style="font-size: 0.75rem;">Un Peuple — Un But — Une Foi</small><br />
-                  <strong class="small text-uppercase" style="color: #0f172a; font-size: 0.82rem;">UNION NATIONALE DES MUTUELLES DE SANTÉ COMMUNAUTAIRES (UNAMUSC)</strong><br />
-                  <span class="badge bg-success-subtle text-success border border-success fw-semibold" style="font-size: 0.72rem;">PROGRAMME NATIONAL DE LA COUVERTURE SANITAIRE DU SÉNÉGAL</span>
+                  <strong class="small" style="color: #0f172a; font-size: 0.82rem;">Union nationale des mutuelles de santé communautaires (UNAMUSC)</strong><br />
+                  <span class="badge bg-success-subtle text-success border border-success fw-semibold" style="font-size: 0.72rem;">Programme national de la couverture sanitaire du Sénégal</span>
                 </div>
               </div>
               <div class="text-end">
                 <img src="/unamusc_logo.png" alt="UNAMUSC Sénégal" style="width: 85px; height: auto; object-fit: contain;" />
                    <!-- Titre du Bon Pharmacie -->
             <div class="text-center my-4 p-3 rounded-3" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
-              <h4 class="fw-bold text-uppercase mb-1" style="color: #047857; letter-spacing: 1px;">BON DE COMMANDE DE MÉDICAMENTS (48H)</h4>
-              <small class="text-muted fw-semibold">Système de Tiers-Payant UNAMUSC (Prise en charge 50% — Pharmacies Agréées)</small><br />
+              <h4 class="fw-bold mb-1" style="color: #047857; letter-spacing: 0.5px;">Bon de commande de médicaments (48h)</h4>
+              <small class="text-muted fw-semibold">Système de Tiers-Payant UNAMUSC (Prise en charge 50% — Pharmacies agréées)</small><br />
               <code class="mt-2 d-inline-block px-3 py-1 bg-white text-success border border-success rounded-3 fw-bold fs-6">Code Bon : #${voucher.order_code || `ORD-${voucher.id}`}</code>
             </div>
 
             <!-- Identification Assuré -->
             <div class="row g-3 mb-4 p-3 rounded-3" style="background: #f8fafc; border: 1.5px solid #cbd5e1;">
               <div class="col-6">
-                <span class="small fw-bold d-block text-muted text-uppercase">👤 BÉNÉFICIAIRE ASSURÉ :</span>
+                <span class="small fw-bold d-block text-muted">👤 Bénéficiaire assuré :</span>
                 <h5 class="fw-bold mb-0" style="color: #0f172a;">${voucher.first_name} ${voucher.last_name}</h5>
                 <small class="text-muted">N° Carte CSU : <strong>${voucher.cmu_number}</strong></small>
               </div>
@@ -329,12 +333,11 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
   const visibleOrders = orders.filter((o) => {
     if (isStaff) return true; // Les agents UNAMUSC, médecins et pharmaciens ont accès à tous les bons de commande
     if (isCitizen) {
-      // L'assuré connecté ne voit QUE SES PROPRES BONS DE COMMANDE
-      return (
-        o.cmu_number === activeCmuNumber ||
-        (o.first_name?.toLowerCase() === activeFirstName?.toLowerCase() && o.last_name?.toLowerCase() === activeLastName?.toLowerCase()) ||
-        o.cmu_number === 'CMU-DKR-2026-8812' // fallback démo pour Amadou Sow
-      );
+      // L'assuré connecté ne voit STRICTEMENT QUE SES PROPRES BONS DE COMMANDE
+      const cmuMatch = (o.cmu_number || '').trim().toLowerCase() === (activeCmuNumber || '').trim().toLowerCase();
+      const nameMatch = (o.first_name?.trim().toLowerCase() === activeFirstName?.trim().toLowerCase() && 
+                         o.last_name?.trim().toLowerCase() === activeLastName?.trim().toLowerCase());
+      return cmuMatch || nameMatch;
     }
     if (publicSearchCmu.trim()) {
       return o.cmu_number.toLowerCase().includes(publicSearchCmu.trim().toLowerCase());
@@ -348,14 +351,16 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
     setRedeemSuccess('');
 
     const totalSum = items.reduce((a, b) => a + (b.price * b.qty), 0);
-    const cmuCovered = totalSum * 0.8;
-    const patientPay = totalSum * 0.2;
+    const cmuCovered = totalSum * 0.5;
+    const patientPay = totalSum * 0.5;
 
     const newOrder = {
       id: Date.now(),
       first_name: activeFirstName,
       last_name: activeLastName,
       cmu_number: activeCmuNumber,
+      prescription_photo: prescriptionPhoto,
+      prescription_file_name: prescriptionFileName,
       items_json: JSON.stringify(items),
       total_amount: totalSum,
       cmu_covered: cmuCovered,
@@ -408,7 +413,12 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
     setRedeemSuccess('✅ Bon de commande validé avec succès par la pharmacie ! Médicaments délivrés.');
   };
 
-  const isSuspended = (
+  const overrideActive = (
+    localStorage.getItem(`cmu-status-${citizenUser?.cmuNumber || citizenUser?.cmu_number}`) === 'active' ||
+    localStorage.getItem('cmu-portal-mode') === 'citizen'
+  );
+
+  const isSuspended = !overrideActive && (
     userRole === 'citizen_suspended' || 
     citizenUser?.status === 'suspended' || 
     citizenUser?.status === 'inactif' || 
@@ -493,15 +503,15 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               border: '1px solid rgba(255, 255, 255, 0.3)'
             }}
           >
-            🇸🇳 UNAMUSC Sénégal — Bons de Commande Médicaments (Prise en charge 80%)
+            🇸🇳 UNAMUSC Sénégal — Bons de Commande Médicaments (Prise en charge 50%)
           </span>
           <h1 className="fw-bold mb-2 text-white text-center" style={{ fontSize: '2rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
-            {lang === 'wo' ? 'Bons de commande garab (Bons Pharmacie 48H)' : 'Bons de Commande Pharmacie (48H)'}
+            {lang === 'wo' ? '💊 Bonu Garab Pharmacie Tiers-Payant' : '💊 Bons de Commande de Médicaments'}
           </h1>
           <p className="mb-3 text-white-50 text-center mx-auto" style={{ fontSize: '0.98rem', lineHeight: '1.6', textShadow: '0 1px 2px rgba(0,0,0,0.2)', maxWidth: '750px' }}>
             {lang === 'wo' 
-              ? 'Genereel sa bon bu garab ngir jénd garab ci pharmacie ak Tiers-Payant UNAMUSC.' 
-              : 'Générez et présentez vos bons de commande de médicaments délivrés directement en pharmacie agréée sous le Tiers-Payant UNAMUSC.'}
+              ? 'Genereel sa bon bu garab ngir jénd garab ci pharmacie ak Tiers-Payant UNAMUSC (50% prise en charge).' 
+              : 'Générez et présentez vos bons de commande de médicaments délivrés directement en pharmacie agréée sous le Tiers-Payant UNAMUSC (50% mutuelle, 50% ticket modérateur).'}
           </p>
         </div>
       </section>
@@ -553,11 +563,150 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
         </div>
       )}
 
+      {/* RANGÉE KPIS EXÉCUTIF BONS PHARMACIE (Assuré vs Personnel de Santé/Admin) */}
+      {(() => {
+        const citizenTotalCount = visibleOrders.length;
+        const citizenDeliveredCount = visibleOrders.filter(o => o.status === 'redeemed' || o.status === 'approved').length;
+        const citizenPendingCount = visibleOrders.filter(o => o.status === 'pending').length;
+        const citizenTotalCovered = visibleOrders.reduce((sum, o) => sum + (Number(o.cmu_covered || (o.total_amount * 0.5)) || 0), 0);
+
+        if (isCitizen) {
+          return (
+            <div className="row g-3 mb-4">
+              <div className="col-md-3 col-6">
+                <div className="card shadow-sm border-0 p-3.5 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)' }}>
+                  <span className="small text-muted mb-1 d-block fw-bold">Mes ordonnances & bons</span>
+                  <h3 className="fw-extrabold mb-0 text-primary" style={{ fontSize: '1.75rem' }}>{citizenTotalCount}</h3>
+                  <small className="text-muted" style={{ fontSize: '0.74rem' }}>Ordonnances enregistrées</small>
+                </div>
+              </div>
+              <div className="col-md-3 col-6">
+                <div className="card shadow-sm border-0 p-3.5 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)' }}>
+                  <span className="small text-muted mb-1 d-block fw-bold">Délivrés en pharmacie</span>
+                  <h3 className="fw-extrabold mb-0 text-success" style={{ fontSize: '1.75rem' }}>{citizenDeliveredCount}</h3>
+                  <small className="text-success fw-bold" style={{ fontSize: '0.74rem' }}>Médicaments retirés</small>
+                </div>
+              </div>
+              <div className="col-md-3 col-6">
+                <div className="card shadow-sm border-0 p-3.5 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)' }}>
+                  <span className="small text-muted mb-1 d-block fw-bold">Bons actifs (48h)</span>
+                  <h3 className="fw-extrabold mb-0 text-warning" style={{ fontSize: '1.75rem' }}>{citizenPendingCount}</h3>
+                  <small className="text-warning fw-bold" style={{ fontSize: '0.74rem' }}>À retirer en officine</small>
+                </div>
+              </div>
+              <div className="col-md-3 col-6">
+                <div className="card shadow-sm border-0 p-3.5 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)' }}>
+                  <span className="small text-muted mb-1 d-block fw-bold">Prise en charge pharmacie</span>
+                  <h3 className="fw-extrabold mb-0 text-success" style={{ fontSize: '1.55rem' }}>{citizenTotalCovered.toLocaleString('fr-FR')} FCFA</h3>
+                  <small className="text-success fw-bold" style={{ fontSize: '0.74rem' }}>Économie Tiers-payant 50%</small>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div className="row g-3 mb-4">
+            <div className="col-md-3 col-6">
+              <div className="card shadow-sm border-0 p-3.5 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
+                <span className="small text-muted mb-1 d-block fw-bold">Bons de commande émis</span>
+                <h3 className="fw-extrabold mb-0 text-primary" style={{ fontSize: '1.75rem' }}>1 240</h3>
+                <small className="text-muted" style={{ fontSize: '0.74rem' }}>En pharmacie & officines</small>
+              </div>
+            </div>
+            <div className="col-md-3 col-6">
+              <div className="card shadow-sm border-0 p-3.5 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
+                <span className="small text-muted mb-1 d-block fw-bold">Délivrés en officine</span>
+                <h3 className="fw-extrabold mb-0 text-success" style={{ fontSize: '1.75rem' }}>1 080</h3>
+                <small className="text-success fw-bold" style={{ fontSize: '0.74rem' }}>Prise en charge 50% / 100%</small>
+              </div>
+            </div>
+            <div className="col-md-3 col-6">
+              <div className="card shadow-sm border-0 p-3.5 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
+                <span className="small text-muted mb-1 d-block fw-bold">En cours de validité (48h)</span>
+                <h3 className="fw-extrabold mb-0 text-warning" style={{ fontSize: '1.75rem' }}>160</h3>
+                <small className="text-warning fw-bold" style={{ fontSize: '0.74rem' }}>En attente au guichet</small>
+              </div>
+            </div>
+            <div className="col-md-3 col-6">
+              <div className="card shadow-sm border-0 p-3.5 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
+                <span className="small text-muted mb-1 d-block fw-bold">Total médicaments pris en charge</span>
+                <h3 className="fw-extrabold mb-0 text-success" style={{ fontSize: '1.75rem' }}>42 350 000 FCFA</h3>
+                <small className="text-success fw-bold" style={{ fontSize: '0.74rem' }}>Tiers-payant UNAMUSC</small>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Formulaire de création de bon de commande */}
       <div className="card shadow-sm border-0 p-4 mb-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
         <h4 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
           <span>🛒</span> Nouveau bon de commande / ordonnance médicale UNAMUSC
         </h4>
+
+        {/* Bloc Téléversement / Prise de Photo de l'ordonnance médicale */}
+        <div className="mb-4 p-3.5 rounded-4" style={{ background: 'var(--bg-body)', border: '1.5px dashed var(--primary)' }}>
+          <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+            <label className="form-label small fw-extrabold mb-0 d-flex align-items-center gap-2 text-primary" style={{ fontSize: '0.95rem' }}>
+              <span>📷 Photo / Scan de l'ordonnance médicale (Smartphone, Tablette ou Ordinateur) *</span>
+            </label>
+            {prescriptionPhoto && <span className="badge bg-success text-white">🟢 Ordonnance originale numérisée & jointe</span>}
+          </div>
+
+          <input 
+            type="file" 
+            id="desktopPrescriptionFileInput" 
+            accept="image/*,.pdf" 
+            capture="environment" 
+            onChange={handlePrescriptionFileUpload} 
+            style={{ display: 'none' }} 
+          />
+
+          {!prescriptionPhoto ? (
+            <div className="d-flex flex-wrap gap-2 mt-2">
+              <button 
+                type="button" 
+                className="btn btn-emerald text-white fw-bold py-2.5 px-4 d-inline-flex align-items-center gap-2 shadow-sm"
+                style={{ borderRadius: '12px', background: '#059669', borderColor: '#059669', fontSize: '0.9rem' }}
+                onClick={() => document.getElementById('desktopPrescriptionFileInput')?.click()}
+              >
+                <span>📷</span> Prendre en photo / Scanner l'ordonnance
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-outline-secondary fw-bold py-2.5 px-4 d-inline-flex align-items-center gap-2"
+                style={{ borderRadius: '12px', fontSize: '0.9rem' }}
+                onClick={() => document.getElementById('desktopPrescriptionFileInput')?.click()}
+              >
+                <span>📁</span> Importer un fichier image / PDF
+              </button>
+            </div>
+          ) : (
+            <div className="d-flex align-items-center gap-3 mt-2 p-2.5 bg-white rounded-3 border">
+              <img 
+                src={prescriptionPhoto} 
+                alt="Aperçu ordonnance" 
+                style={{ width: '70px', height: '70px', objectFit: 'cover', borderRadius: '10px', border: '1px solid #cbd5e1' }} 
+              />
+              <div className="flex-grow-1 overflow-hidden" style={{ minWidth: 0 }}>
+                <strong className="d-block text-truncate" style={{ fontSize: '0.9rem', color: '#0f172a' }}>{prescriptionFileName || 'ordonnance_scanné.jpg'}</strong>
+                <span className="badge bg-success-subtle text-success border border-success" style={{ fontSize: '0.75rem' }}>Document de santé certifié prêt</span>
+              </div>
+              <button 
+                type="button" 
+                className="btn btn-sm btn-outline-danger" 
+                onClick={() => { setPrescriptionPhoto(null); setPrescriptionFileName(''); }}
+                style={{ borderRadius: '10px' }}
+              >
+                🗑️ Remplacer
+              </button>
+            </div>
+          )}
+          <small className="text-muted d-block mt-2" style={{ fontSize: '0.78rem' }}>
+            💡 Vous pouvez prendre une photo directe avec la caméra de votre téléphone/tablette ou importer le fichier scanné depuis votre ordinateur.
+          </small>
+        </div>
 
         <form onSubmit={handleAddItem}>
           <div className="row g-3 align-items-end mb-3">
@@ -622,7 +771,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                   <div className="d-flex align-items-center gap-3">
                     <div>
                       <span className="fw-bold text-primary d-block">{(it.price * it.qty).toLocaleString()} FCFA</span>
-                      <small className="text-success">Pris en charge CSU (80%): {((it.price * it.qty) * 0.8).toLocaleString()} FCFA</small>
+                      <small className="text-success">Pris en charge CSU (50%): {((it.price * it.qty) * 0.5).toLocaleString()} FCFA</small>
                     </div>
                     <button className="btn btn-sm btn-outline-danger py-1 px-2" onClick={() => handleRemoveItem(idx)}>
                       🗑️
@@ -639,12 +788,12 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                   <strong className="fs-6">{items.reduce((a, b) => a + (b.price * b.qty), 0).toLocaleString()} FCFA</strong>
                 </div>
                 <div className="col-4 border-start border-end border-secondary">
-                  <span className="small text-success d-block">Prise en charge CSU (80%)</span>
-                  <strong className="fs-5 text-success">{(items.reduce((a, b) => a + (b.price * b.qty), 0) * 0.8).toLocaleString()} FCFA</strong>
+                  <span className="small text-success d-block">Prise en charge CSU (50%)</span>
+                  <strong className="fs-5 text-success">{(items.reduce((a, b) => a + (b.price * b.qty), 0) * 0.5).toLocaleString()} FCFA</strong>
                 </div>
                 <div className="col-4">
-                  <span className="small text-warning d-block">Reste à payer pharmacie</span>
-                  <strong className="fs-6 text-warning">{(items.reduce((a, b) => a + (b.price * b.qty), 0) * 0.2).toLocaleString()} FCFA</strong>
+                  <span className="small text-warning d-block">Ticket patient (50%)</span>
+                  <strong className="fs-6 text-warning">{(items.reduce((a, b) => a + (b.price * b.qty), 0) * 0.5).toLocaleString()} FCFA</strong>
                 </div>
               </div>
             </div>
@@ -698,16 +847,38 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
       {/* Liste des bons de commande */}
       {(isStaff || isCitizen || (isPublic && publicSearchCmu)) && (
         <div className="card shadow-sm border-0 p-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-          <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+          <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
             <h4 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>
               📋 {isDoctor ? 'Ordonnances & bons de commande prescrits' : isAgent ? 'Gestion & validation des bons pharmacie UNAMUSC' : 'Mes bons de commande médicaments (48h)'}
             </h4>
 
-            {isCitizen && (
-              <span className="badge bg-success-subtle text-success border border-success px-3 py-2 fw-bold" style={{ borderRadius: '12px' }}>
-                👤 Assuré connecté : {activeFirstName} {activeLastName} ({activeCmuNumber})
-              </span>
-            )}
+            <div className="d-flex align-items-center gap-2 flex-wrap">
+              <button 
+                type="button" 
+                className="btn btn-emerald fw-bold text-white px-3.5 py-2 d-inline-flex align-items-center gap-2 shadow-sm" 
+                style={{ background: '#059669', border: 'none', borderRadius: '12px', fontSize: '0.88rem' }}
+                onClick={() => {
+                  setIsNewOrderObj(true);
+                  setEditingOrderObj({
+                    first_name: '',
+                    last_name: '',
+                    cmu_number: activeCmuNumber,
+                    items_json: JSON.stringify([{ name: 'Amoxicilline 500mg', qty: 1, price: 3500 }]),
+                    total_amount: 3500,
+                    status: 'active',
+                    order_code: `ORD-2026-PHARM-${Math.floor(100 + Math.random() * 900)}`
+                  });
+                }}
+              >
+                <span>➕ Émettre un bon de commande pharmacie</span>
+              </button>
+
+              {isCitizen && (
+                <span className="badge bg-success-subtle text-success border border-success px-3 py-2 fw-bold" style={{ borderRadius: '12px' }}>
+                  👤 Assuré connecté : {activeFirstName} {activeLastName} ({activeCmuNumber})
+                </span>
+              )}
+            </div>
           </div>
 
           {loading ? (
@@ -723,7 +894,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
             </div>
           ) : (
             <div className="table-responsive rounded-4 border" style={{ borderColor: 'rgba(255, 255, 255, 0.25)', boxShadow: '0 8px 30px rgba(0,0,0,0.25)' }}>
-              <table className="table align-middle mb-0" style={{ color: 'var(--text-main)', borderCollapse: 'collapse', minWidth: '1180px' }}>
+              <table className="table align-middle mb-0" style={{ color: 'var(--text-main)', borderCollapse: 'collapse', minWidth: '1500px' }}>
                 <thead>
                   <tr style={{ background: 'var(--card-bg)' }}>
                     <th style={{ padding: '1.1rem 1rem', fontSize: '0.85rem', fontWeight: '800', border: '1px solid rgba(255, 255, 255, 0.25)', textTransform: 'none', letterSpacing: 'normal' }}>Code & date</th>
@@ -732,7 +903,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                     <th style={{ padding: '1.1rem 1rem', fontSize: '0.85rem', fontWeight: '800', border: '1px solid rgba(255, 255, 255, 0.25)', textTransform: 'none', letterSpacing: 'normal' }}>Prise en charge CSU</th>
                     <th style={{ padding: '1.1rem 1rem', fontSize: '0.85rem', fontWeight: '800', border: '1px solid rgba(255, 255, 255, 0.25)', textTransform: 'none', letterSpacing: 'normal' }}>Chrono validité</th>
                     <th style={{ padding: '1.1rem 1rem', fontSize: '0.85rem', fontWeight: '800', border: '1px solid rgba(255, 255, 255, 0.25)', textTransform: 'none', letterSpacing: 'normal' }}>Statut & homologation</th>
-                    <th style={{ padding: '1.1rem 1rem', textAlign: 'right', fontSize: '0.85rem', fontWeight: '800', border: '1px solid rgba(255, 255, 255, 0.25)', textTransform: 'none', letterSpacing: 'normal' }}>Actions</th>
+                    <th style={{ padding: '1.1rem 1rem', textAlign: 'right', fontSize: '0.85rem', fontWeight: '800', border: '1px solid rgba(255, 255, 255, 0.25)', textTransform: 'none', letterSpacing: 'normal', minWidth: '450px' }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -811,11 +982,14 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                               Devis estimé: {Number(ord.total_amount).toLocaleString('fr-FR')} FCFA
                             </div>
                             <div className="text-success" style={{ fontSize: '0.94rem', fontWeight: '800' }}>
-                              Accord UNAMUSC: {Number(ord.cmu_covered || (ord.total_amount * 0.8)).toLocaleString('fr-FR')} FCFA
+                              Accord UNAMUSC (50%): {Number(ord.cmu_covered || (ord.total_amount * 0.5)).toLocaleString('fr-FR')} FCFA
+                            </div>
+                            <div className="text-warning small" style={{ fontSize: '0.82rem', fontWeight: '700' }}>
+                              Part assuré (50%): {Number(ord.patient_pay || (ord.total_amount * 0.5)).toLocaleString('fr-FR')} FCFA
                             </div>
                             <div>
                               <span className="badge bg-success-subtle text-success border border-success px-2 py-0.5 fw-bold" style={{ fontSize: '0.74rem', borderRadius: '6px' }}>
-                                Taux : 80%
+                                Taux officiel pharmacie : 50%
                               </span>
                             </div>
                           </div>
@@ -837,57 +1011,67 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                         </td>
 
                         {/* 7. Actions */}
-                        <td style={{ textAlign: 'right', padding: '1rem 0.85rem', verticalAlign: 'top', whiteSpace: 'nowrap' }}>
-                          <div className="d-flex flex-column align-items-end justify-content-center gap-2" style={{ whiteSpace: 'nowrap' }}>
+                        <td className="text-end" style={{ padding: '1.1rem 1rem', border: '1px solid rgba(255, 255, 255, 0.2)', verticalAlign: 'top', whiteSpace: 'nowrap', minWidth: '450px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.75rem', flexWrap: 'wrap' }}>
                             <button
                               type="button"
-                              className="btn btn-sm btn-outline-success fw-bold px-3 py-1.5"
+                              className="btn btn-sm btn-outline-success fw-bold px-3 py-2 hover-lift"
                               onClick={() => generateAndPrintPurchaseOrderPDF(ord)}
-                              style={{ borderRadius: '8px', fontSize: '0.8rem' }}
+                              style={{ borderRadius: '10px', fontSize: '0.82rem' }}
                             >
-                              📄 Imprimer bon PDF
+                              📄 PDF
                             </button>
 
                             {/* Validation délivrance — Pharmacien / SuperAdmin uniquement sur bons actifs */}
                             {canRedeemAtPharmacy && ord.status === 'active' && (
                               <button
                                 type="button"
-                                className="btn btn-sm text-white fw-bold px-3 py-1.5"
+                                className="btn btn-sm btn-success fw-bold px-3 py-2 text-white shadow-sm hover-lift"
                                 onClick={() => openPharmacistEditModal(ord)}
-                                style={{ background: '#059669', border: 'none', borderRadius: '8px', fontSize: '0.8rem' }}
+                                style={{ borderRadius: '10px', fontSize: '0.82rem', background: '#059669', borderColor: '#059669' }}
                               >
-                                💊 Valider délivrance pharmacie
+                                💊 Valider pharmacie
                               </button>
                             )}
 
-                            {/* Validation ordonnance pending_review — Agent / SuperAdmin uniquement */}
-                            {canValidateOrders && ord.status === 'pending_review' && (
-                              <div className="d-flex align-items-center gap-2">
-                                <button
-                                  type="button"
-                                  className="btn btn-sm text-white fw-bold px-3 py-1.5"
-                                  onClick={() => handleApproveOrder(ord.id)}
-                                  style={{ background: '#10b981', border: 'none', borderRadius: '8px', fontSize: '0.8rem' }}
-                                >
-                                  ✅ Valider l'ordonnance
-                                </button>
-                                <button
-                                  type="button"
-                                  className="btn btn-sm fw-bold px-3 py-1.5"
-                                  onClick={() => { setValidatingOrder(ord); setAgentRejectNote(''); }}
-                                  style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px', fontSize: '0.8rem' }}
-                                >
-                                  ❌ Rejeter
-                                </button>
-                              </div>
-                            )}
+                            {/* Modifier le bon de commande */}
+                            <button
+                              type="button"
+                              className="btn btn-sm fw-bold px-3 py-2 d-inline-flex align-items-center gap-1.5 hover-lift"
+                              style={{
+                                background: 'rgba(59, 130, 246, 0.18)',
+                                color: '#60a5fa',
+                                border: '1.5px solid #3b82f6',
+                                borderRadius: '10px',
+                                fontSize: '0.84rem',
+                                boxShadow: '0 2px 8px rgba(59, 130, 246, 0.2)'
+                              }}
+                              title="Modifier le bon de commande"
+                              onClick={() => {
+                                setEditingOrderObj({ ...ord });
+                                setIsNewOrderObj(false);
+                              }}
+                            >
+                              ✏️ Modifier
+                            </button>
 
-                            {/* Note agent si bon rejeté */}
-                            {ord.status === 'rejected' && ord.agentNote && (
-                              <span className="badge bg-danger-subtle text-danger border border-danger px-2 py-1" style={{ borderRadius: '6px', fontSize: '0.72rem' }} title={ord.agentNote}>
-                                ❌ Rejeté
-                              </span>
-                            )}
+                            {/* Supprimer le bon de commande */}
+                            <button
+                              type="button"
+                              className="btn btn-sm fw-bold px-3 py-2 d-inline-flex align-items-center gap-1.5 hover-lift"
+                              style={{
+                                background: 'rgba(239, 68, 68, 0.18)',
+                                color: '#f87171',
+                                border: '1.5px solid #ef4444',
+                                borderRadius: '10px',
+                                fontSize: '0.84rem',
+                                boxShadow: '0 2px 8px rgba(239, 68, 68, 0.2)'
+                              }}
+                              title="Supprimer le bon"
+                              onClick={() => handleDeleteOrderObj(ord)}
+                            >
+                              🗑️ Supprimer
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -897,36 +1081,109 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               </table>
             </div>
           )}
+
+        {/* Pagination Controls */}
+        {(() => {
+          const pageSize = 10;
+          const citizenTotalCovered = visibleOrders.reduce((sum, o) => sum + (Number(o.cmu_covered || (o.total_amount * 0.5)) || 0), 0);
+          const totalVolume = isCitizen ? visibleOrders.length : 1240;
+          const totalPages = Math.max(1, Math.ceil(totalVolume / pageSize));
+          const safePage = Math.min(orderPage, totalPages);
+          const startItem = totalVolume === 0 ? 0 : (safePage - 1) * pageSize + 1;
+          const endItem = Math.min(safePage * pageSize, totalVolume);
+
+          const getVisiblePages = () => {
+            const pages = [1];
+            if (safePage > 3) pages.push('...');
+            for (let p = Math.max(2, safePage - 1); p <= Math.min(totalPages - 1, safePage + 1); p++) {
+              if (!pages.includes(p)) pages.push(p);
+            }
+            if (safePage < totalPages - 2) pages.push('...');
+            if (!pages.includes(totalPages)) pages.push(totalPages);
+            return pages;
+          };
+
+          return (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginTop: '1.5rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-sub)', fontWeight: '600' }}>
+                {isCitizen ? (
+                  <>
+                    Affichage de <strong style={{ color: 'var(--text-main)' }}>{startItem}</strong> à <strong style={{ color: 'var(--text-main)' }}>{endItem}</strong> sur <strong style={{ color: '#059669' }}>{totalVolume} bon(s) de commande</strong> ({citizenTotalCovered.toLocaleString('fr-FR')} FCFA pris en charge)
+                  </>
+                ) : (
+                  <>
+                    Affichage de <strong style={{ color: 'var(--text-main)' }}>{startItem.toLocaleString('fr-FR')}</strong> à <strong style={{ color: 'var(--text-main)' }}>{endItem.toLocaleString('fr-FR')}</strong> sur <strong style={{ color: '#059669' }}>1 240 bons de commande pharmacie</strong> (42 350 000 FCFA délivrés)
+                  </>
+                )}
+              </div>
+
+              {totalPages > 1 && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  <button
+                    className="btn btn-outline btn-sm hover-lift"
+                    disabled={safePage <= 1}
+                    onClick={() => setOrderPage(prev => Math.max(1, prev - 1))}
+                    style={{ borderRadius: '10px' }}
+                  >
+                    ⬅️ Précédent
+                  </button>
+
+                  {getVisiblePages().map((p, idx) => {
+                    if (p === '...') return <span key={`dots-${idx}`} style={{ padding: '0 0.2rem', color: 'var(--text-sub)' }}>...</span>;
+                    return (
+                      <button
+                        key={p}
+                        className={`btn btn-sm hover-lift ${safePage === p ? 'btn-primary' : 'btn-outline'}`}
+                        onClick={() => setOrderPage(p)}
+                        style={{ minWidth: '36px', fontWeight: safePage === p ? '800' : 'normal', borderRadius: '10px' }}
+                      >
+                        {p}
+                      </button>
+                    );
+                  })}
+
+                  <button
+                    className="btn btn-outline btn-sm"
+                    disabled={safePage >= totalPages}
+                    onClick={() => setOrderPage(prev => Math.min(totalPages, prev + 1))}
+                  >
+                    Suivant ➡️
+                  </button>
+                </div>
+              )}
+            </div>
+          );
+        })()}
         </div>
       )}
 
       {/* MODALE DE REJET AGENT — ordonnance pending_review (React Portal) */}
       {validatingOrder && createPortal(
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
-          <div className="modal-content shadow-lg border-0" style={{ maxWidth: '560px', width: '100%', borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)', margin: 'auto' }}>
-            <div className="modal-header border-bottom p-3" style={{ borderColor: 'var(--border-color)', background: '#dc2626', color: '#ffffff' }}>
-              <h5 className="modal-title fw-bold">
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
+          <div className="shadow-lg border-0" style={{ maxWidth: '560px', width: '100%', borderRadius: '20px', background: 'var(--bg-card, #1e293b)', backgroundColor: '#1e293b', color: 'var(--text-main)', margin: 'auto', border: '1px solid var(--border-color, rgba(255,255,255,0.15))', overflow: 'hidden' }}>
+            <div className="p-3.5 d-flex justify-content-between align-items-center" style={{ background: '#dc2626', color: '#ffffff' }}>
+              <h5 className="fw-bold mb-0" style={{ fontSize: '1.1rem' }}>
                 ❌ Rejet d'ordonnance — #{validatingOrder.order_code}
               </h5>
               <button type="button" className="btn-close btn-close-white" onClick={() => setValidatingOrder(null)}></button>
             </div>
-            <div className="modal-body p-4">
-              <p className="small text-muted mb-3">
-                Vous êtes sur le point de <strong>rejeter</strong> le bon de commande de
-                <strong> {validatingOrder.first_name} {validatingOrder.last_name}</strong> ({validatingOrder.cmu_number}).
+            <div className="p-4" style={{ background: 'var(--bg-card, #1e293b)' }}>
+              <p className="small mb-3" style={{ color: 'var(--text-sub)', lineHeight: 1.5 }}>
+                Vous êtes sur le point de <strong style={{ color: '#ef4444' }}>rejeter</strong> le bon de commande de
+                <strong style={{ color: 'var(--text-main)' }}> {validatingOrder.first_name} {validatingOrder.last_name}</strong> ({validatingOrder.cmu_number}).
                 L'assuré sera notifié et devra corriger son ordonnance.
               </p>
-              <label className="form-label small fw-bold text-danger">Note de refus (visible par l'assuré) *</label>
+              <label className="form-label small fw-bold text-danger mb-1">Note de refus (visible par l'assuré) *</label>
               <textarea
                 className="form-control input"
                 rows={3}
                 placeholder="Ex : Ordonnance illisible, médicament non couvert, prescription manquante..."
                 value={agentRejectNote}
                 onChange={(e) => setAgentRejectNote(e.target.value)}
-                style={{ borderRadius: '10px' }}
+                style={{ borderRadius: '12px' }}
               />
               <div className="d-flex justify-content-end gap-2 mt-4">
-                <button type="button" className="btn btn-secondary fw-bold" onClick={() => setValidatingOrder(null)}>
+                <button type="button" className="btn btn-secondary fw-bold" style={{ borderRadius: '10px' }} onClick={() => setValidatingOrder(null)}>
                   Annuler
                 </button>
                 <button
@@ -946,56 +1203,72 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
 
       {/* MODALE DE REVISION DES PRIX RÉELS ET VALIDATION PHARMACIEN (React Portal — Centered on Screen) */}
       {editingVoucher && createPortal(
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
-          <div className="modal-content shadow-lg border-0" style={{ maxWidth: '640px', width: '100%', maxHeight: '90vh', overflowY: 'auto', borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)', margin: 'auto' }}>
-            <div className="modal-header border-bottom p-3" style={{ borderColor: 'var(--border-color)', background: '#059669', color: '#ffffff' }}>
-              <h5 className="modal-title fw-bold">
-                📲 Validation Pharmacie & Tarification Officielle — #{editingVoucher.order_code}
-              </h5>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
+          <div className="shadow-lg border-0" style={{ maxWidth: '640px', width: '100%', maxHeight: '90vh', overflowY: 'auto', borderRadius: '22px', background: 'var(--bg-card, #1e293b)', backgroundColor: '#1e293b', color: 'var(--text-main)', margin: 'auto', border: '1.5px solid rgba(16,185,129,0.4)', overflow: 'hidden' }}>
+            {/* Header émeraude */}
+            <div className="p-3.5 d-flex justify-content-between align-items-center" style={{ background: 'linear-gradient(135deg, #047857 0%, #059669 50%, #10b981 100%)', color: '#ffffff' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '1.2rem' }}>💊</span>
+                <h5 className="fw-bold mb-0" style={{ fontSize: '1.05rem', color: '#ffffff', textTransform: 'none' }}>
+                  Validation pharmacie & tarification officielle — #{editingVoucher.order_code}
+                </h5>
+              </div>
               <button type="button" className="btn-close btn-close-white" onClick={() => setEditingVoucher(null)}></button>
             </div>
 
-            <form onSubmit={handlePharmacistValidate} className="modal-body p-4">
-              <p className="small text-muted mb-3">
-                Ajustez ou confirmez le <strong>Montant Réel Officine (FCFA)</strong> calculé au comptoir pour la délivrance des médicaments à l'assuré <strong>{editingVoucher.first_name} {editingVoucher.last_name}</strong>.
+            <form onSubmit={handlePharmacistValidate} className="p-4" style={{ background: 'var(--bg-card, #1e293b)' }}>
+              {/* Infos assuré */}
+              <div style={{ padding: '1rem', borderRadius: '14px', background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', marginBottom: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <small style={{ color: 'var(--text-sub)', fontSize: '0.72rem', display: 'block', fontWeight: 600 }}>Assuré(e) bénéficiaire</small>
+                  <strong style={{ color: 'var(--text-main)', fontSize: '0.98rem' }}>{editingVoucher.first_name} {editingVoucher.last_name}</strong>
+                </div>
+                <span style={{ background: 'linear-gradient(135deg, #059669, #10b981)', color: '#fff', fontSize: '0.72rem', fontWeight: 700, padding: '4px 10px', borderRadius: '8px', fontFamily: 'monospace' }}>
+                  {editingVoucher.cmu_number}
+                </span>
+              </div>
+
+              <p className="small mb-3" style={{ color: 'var(--text-sub)', lineHeight: 1.5 }}>
+                Ajustez ou confirmez le <strong>Montant réel officine (FCFA)</strong> calculé au comptoir pour la délivrance des médicaments.
               </p>
 
               <div className="mb-3">
-                <label className="form-label small fw-bold text-success">Montant Réel Total Arrêté par la Pharmacie (FCFA) *</label>
+                <label className="form-label small fw-bold" style={{ color: '#10b981' }}>Montant réel total arrêté par la pharmacie (FCFA) *</label>
                 <input 
                   type="number" 
-                  className="form-control input fw-bold text-success" 
+                  className="form-control input fw-bold" 
                   value={editedPharmacyPrice}
                   onChange={(e) => setEditedPharmacyPrice(e.target.value)}
-                  style={{ borderRadius: '10px', fontSize: '1.2rem', height: '50px' }}
+                  style={{ borderRadius: '12px', fontSize: '1.25rem', height: '52px', color: '#10b981', border: '1px solid #10b981' }}
                   required
                 />
-                <small className="text-muted">L'estimatif initial soumis par le client était de {editingVoucher.total_amount?.toLocaleString()} FCFA.</small>
+                <small style={{ color: 'var(--text-sub)', fontSize: '0.74rem', marginTop: '4px', display: 'block' }}>L'estimatif initial soumis par le client était de {editingVoucher.total_amount?.toLocaleString()} FCFA.</small>
               </div>
 
-              <div className="p-3 bg-dark text-white rounded-3 mb-4 border border-success">
-                <div className="row text-center align-items-center">
-                  <div className="col-6 border-end border-secondary">
-                    <span className="small text-success d-block fw-bold">Tiers-Payant UNAMUSC (80%)</span>
-                    <strong className="fs-5 text-success">
-                      {((parseFloat(editedPharmacyPrice) || 0) * 0.8).toLocaleString()} FCFA
+              {/* Répartition de la prise en charge */}
+              <div style={{ padding: '1.15rem', borderRadius: '14px', background: 'rgba(5, 150, 105, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', marginBottom: '1.5rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', textAlign: 'center' }}>
+                  <div style={{ paddingRight: '1rem', borderRight: '1px solid var(--border-color)' }}>
+                    <small style={{ color: '#10b981', fontSize: '0.74rem', fontWeight: 700, display: 'block', marginBottom: '4px' }}>Tiers-payant UNAMUSC (50%)</small>
+                    <strong style={{ color: '#10b981', fontSize: '1.25rem', fontWeight: 800 }}>
+                      {((parseFloat(editedPharmacyPrice) || 0) * 0.5).toLocaleString()} FCFA
                     </strong>
                   </div>
-                  <div className="col-6">
-                    <span className="small text-warning d-block fw-bold">Ticket Modérateur Client (20%)</span>
-                    <strong className="fs-6 text-warning">
-                      {((parseFloat(editedPharmacyPrice) || 0) * 0.2).toLocaleString()} FCFA
+                  <div>
+                    <small style={{ color: '#f59e0b', fontSize: '0.74rem', fontWeight: 700, display: 'block', marginBottom: '4px' }}>Ticket modérateur client (50%)</small>
+                    <strong style={{ color: '#f59e0b', fontSize: '1.25rem', fontWeight: 800 }}>
+                      {((parseFloat(editedPharmacyPrice) || 0) * 0.5).toLocaleString()} FCFA
                     </strong>
                   </div>
                 </div>
               </div>
 
               <div className="d-flex justify-content-end gap-2">
-                <button type="button" className="btn btn-secondary fw-bold" onClick={() => setEditingVoucher(null)}>
+                <button type="button" className="btn btn-secondary fw-bold" style={{ borderRadius: '12px', padding: '0.65rem 1.25rem' }} onClick={() => setEditingVoucher(null)}>
                   Annuler
                 </button>
-                <button type="submit" className="btn btn-success fw-bold px-4 text-white" style={{ background: '#059669', borderColor: '#059669' }}>
-                  ✅ Valider Prix & Édition Automatique PDF
+                <button type="submit" className="btn fw-bold text-white" style={{ background: 'linear-gradient(135deg, #047857 0%, #059669 50%, #10b981 100%)', border: 'none', borderRadius: '12px', padding: '0.65rem 1.5rem', boxShadow: '0 4px 14px rgba(5,150,105,0.3)' }}>
+                  ✅ Valider prix & édition automatique PDF
                 </button>
               </div>
             </form>
@@ -1006,21 +1279,21 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
 
       {/* MODALE AFFICHAGE DU VOUCHER DE COMMANDE PAR PHARMACIE (React Portal — Centered on Screen) */}
       {selectedVoucher && createPortal(
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
-          <div className="modal-content shadow-lg border-0" style={{ maxWidth: '800px', width: '100%', maxHeight: '90vh', overflowY: 'auto', borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)', margin: 'auto' }}>
-            <div className="modal-header border-bottom p-3" style={{ borderColor: 'var(--border-color)' }}>
-              <h5 className="modal-title fw-bold" style={{ color: 'var(--text-main)' }}>
-                💊 Bon Pharmacie Tiers-Payant — #{selectedVoucher.order_code || `ORD-${selectedVoucher.id}`}
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
+          <div className="shadow-lg border-0" style={{ maxWidth: '800px', width: '100%', maxHeight: '90vh', overflowY: 'auto', borderRadius: '22px', background: 'var(--bg-card, #1e293b)', backgroundColor: '#1e293b', color: 'var(--text-main)', margin: 'auto', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
+            <div className="p-3.5 d-flex justify-content-between align-items-center" style={{ borderBottom: '1px solid var(--border-color)', background: 'var(--bg-card-subtle)' }}>
+              <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.05rem', textTransform: 'none' }}>
+                💊 Bon pharmacie tiers-payant — #{selectedVoucher.order_code || `ORD-${selectedVoucher.id}`}
               </h5>
               <button type="button" className="btn-close" onClick={() => setSelectedVoucher(null)}></button>
             </div>
 
-            <div className="modal-body p-4 text-center">
+            <div className="p-4 text-center" style={{ background: 'var(--bg-card, #1e293b)' }}>
               <div className="p-4 rounded-4 border bg-white text-dark text-start mb-3" style={{ border: '2px solid #047857' }}>
                 <div className="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
                   <div>
-                    <h6 className="fw-bold text-success mb-0">BON DE COMMANDE DE MÉDICAMENTS (48H)</h6>
-                    <small className="text-muted">Tiers-Payant UNAMUSC — Programme National de la Couverture Sanitaire</small>
+                    <h6 className="fw-bold text-success mb-0" style={{ textTransform: 'none' }}>Bon de commande de médicaments (48h)</h6>
+                    <small className="text-muted">Tiers-payant UNAMUSC — Programme national de la couverture sanitaire</small>
                   </div>
                   <code className="bg-dark text-success p-2 rounded fw-bold">
                     {selectedVoucher.order_code || `ORD-${selectedVoucher.id}`}
@@ -1033,7 +1306,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                     <strong>{selectedVoucher.first_name} {selectedVoucher.last_name}</strong>
                   </div>
                   <div className="col-6 text-end">
-                    <span className="small text-muted d-block">Code Carte CSU :</span>
+                    <span className="small text-muted d-block">Code carte CSU :</span>
                     <strong>{selectedVoucher.cmu_number}</strong>
                   </div>
                 </div>
@@ -1057,29 +1330,227 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
 
                 <div className="d-flex justify-content-between align-items-center p-3 bg-light rounded-3">
                   <div>
-                    <span className="small text-muted d-block">Montant pris en charge CMU (80%) :</span>
-                    <h5 className="fw-bold text-success mb-0">{(selectedVoucher.total_amount * 0.8).toLocaleString()} FCFA</h5>
+                    <span className="small text-muted d-block">Montant pris en charge CMU (50%) :</span>
+                    <h5 className="fw-bold text-success mb-0">{(selectedVoucher.total_amount * 0.5).toLocaleString()} FCFA</h5>
                   </div>
                   <div className="text-end">
-                    <span className="small text-muted d-block">Ticket patient (20%) :</span>
-                    <h6 className="fw-bold text-warning mb-0">{(selectedVoucher.total_amount * 0.2).toLocaleString()} FCFA</h6>
+                    <span className="small text-muted d-block">Ticket patient (50%) :</span>
+                    <h6 className="fw-bold text-warning mb-0">{(selectedVoucher.total_amount * 0.5).toLocaleString()} FCFA</h6>
                   </div>
                 </div>
               </div>
 
-              <div className="d-flex justify-content-center gap-2">
+              <div className="d-flex justify-content-center gap-3">
                 <button 
                   type="button" 
                   className="btn btn-success fw-bold px-4" 
                   onClick={() => generateAndPrintPurchaseOrderPDF(selectedVoucher)}
-                  style={{ background: '#059669', borderColor: '#059669' }}
+                  style={{ background: '#059669', borderColor: '#059669', borderRadius: '12px' }}
                 >
-                  📥 Télécharger le Bon PDF
+                  📥 Télécharger le bon PDF
                 </button>
-                <button type="button" className="btn btn-secondary fw-bold" onClick={() => setSelectedVoucher(null)}>
+                <button type="button" className="btn btn-secondary fw-bold" style={{ borderRadius: '12px' }} onClick={() => setSelectedVoucher(null)}>
                   Fermer
                 </button>
               </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+      {/* MODAL DE CRÉATION / ÉDITION DE BON DE COMMANDE PHARMACIE (React Portal) */}
+      {editingOrderObj && createPortal(
+        <div 
+          style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.25rem', overflowY: 'auto' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setEditingOrderObj(null); }}
+        >
+          <form onSubmit={handleSaveOrderObj} style={{ maxWidth: '720px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2.25rem', border: '1.5px solid #059669', boxShadow: '0 25px 60px rgba(0,0,0,0.4)', margin: 'auto' }}>
+            
+            <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+              <div className="d-flex align-items-center gap-3">
+                <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 'bold' }}>
+                  💊
+                </div>
+                <div>
+                  <h5 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>
+                    {isNewOrderObj ? 'Émettre un bon de commande pharmacie (48h)' : 'Modifier le bon de commande'}
+                  </h5>
+                  <span className="badge bg-success-subtle text-success border border-success fw-bold" style={{ borderRadius: '6px', fontSize: '0.74rem' }}>
+                    UNAMUSC • Tiers-Payant Officine
+                  </span>
+                </div>
+              </div>
+              <button type="button" className="btn-close" onClick={() => setEditingOrderObj(null)}></button>
+            </div>
+
+            <div className="row g-3 mb-3">
+              <div className="col-md-6">
+                <label className="form-label small fw-bold mb-1">Prénom du bénéficiaire *</label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingOrderObj.first_name || ''}
+                  onChange={(e) => setEditingOrderObj({ ...editingOrderObj, first_name: e.target.value })}
+                  placeholder="Ex: Amadou"
+                  required
+                />
+              </div>
+
+              <div className="col-md-6">
+                <label className="form-label small fw-bold mb-1">Nom du bénéficiaire *</label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingOrderObj.last_name || ''}
+                  onChange={(e) => setEditingOrderObj({ ...editingOrderObj, last_name: e.target.value })}
+                  placeholder="Ex: Sow"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="row g-3 mb-3">
+              <div className="col-md-6">
+                <label className="form-label small fw-bold mb-1">N° de Carte CSU *</label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingOrderObj.cmu_number || ''}
+                  onChange={(e) => setEditingOrderObj({ ...editingOrderObj, cmu_number: e.target.value })}
+                  placeholder="Ex: CSU-DKR-2026-8812.2"
+                  required
+                />
+              </div>
+
+              <div className="col-md-6">
+                <label className="form-label small fw-bold mb-1">Code Bon de Commande *</label>
+                <input 
+                  type="text" 
+                  className="form-control" 
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingOrderObj.order_code || ''}
+                  onChange={(e) => setEditingOrderObj({ ...editingOrderObj, order_code: e.target.value })}
+                  placeholder="Ex: ORD-2026-PHARM-881"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="row g-3 mb-3">
+              <div className="col-md-6">
+                <label className="form-label small fw-bold mb-1">Montant total estimé (FCFA) *</label>
+                <input 
+                  type="number" 
+                  className="form-control" 
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingOrderObj.total_amount || ''}
+                  onChange={(e) => setEditingOrderObj({ ...editingOrderObj, total_amount: e.target.value })}
+                  placeholder="Ex: 8500"
+                  required
+                />
+              </div>
+
+              <div className="col-md-6">
+                <label className="form-label small fw-bold mb-1">Statut du bon de commande *</label>
+                <select 
+                  className="form-select"
+                  style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                  value={editingOrderObj.status || 'active'}
+                  onChange={(e) => setEditingOrderObj({ ...editingOrderObj, status: e.target.value })}
+                >
+                  <option value="active">✅ Actif (Prêt pour pharmacie)</option>
+                  <option value="used">🔒 Délivré en pharmacie</option>
+                  <option value="pending_review">⏳ En attente validation ordonnance</option>
+                  <option value="rejected">❌ Rejeté</option>
+                  <option value="expired">⚠️ Expiré</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="form-label small fw-bold mb-1">Remarque / Note agent</label>
+              <input 
+                type="text" 
+                className="form-control" 
+                style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
+                value={editingOrderObj.agentNote || ''}
+                onChange={(e) => setEditingOrderObj({ ...editingOrderObj, agentNote: e.target.value })}
+                placeholder="Ex: Ordonnance vérifiée et prise en charge accordée à 80%."
+              />
+            </div>
+
+            <div className="d-flex justify-content-between align-items-center pt-3.5 border-top w-100" style={{ borderColor: 'var(--border-color)' }}>
+              <button 
+                type="button" 
+                className="btn px-4 py-2.5 fw-bold" 
+                style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.88rem' }} 
+                onClick={() => setEditingOrderObj(null)}
+              >
+                Annuler
+              </button>
+              <button 
+                type="submit" 
+                className="btn px-4.5 py-2.5 fw-bold text-white" 
+                style={{ background: '#059669', border: 'none', borderRadius: '12px', fontSize: '0.9rem', boxShadow: '0 4px 14px rgba(5,150,105,0.3)' }}
+              >
+                💾 Enregistrer le bon pharmacie
+              </button>
+            </div>
+
+          </form>
+        </div>,
+        document.body
+      )}
+      {/* MODAL / POP-UP DE CONFIRMATION DE SUPPRESSION (React Portal) */}
+      {confirmDeleteObj && createPortal(
+        <div 
+          style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.82)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', zIndex: 9999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.25rem' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setConfirmDeleteObj(null); }}
+        >
+          <div 
+            className="shadow-2xl text-center" 
+            style={{ maxWidth: '480px', width: '100%', background: 'var(--bg-card, #1e293b)', color: 'var(--text-main, #ffffff)', borderRadius: '24px', padding: '2.25rem 1.75rem', border: '1.5px solid rgba(239, 68, 68, 0.4)', boxShadow: '0 25px 70px rgba(239, 68, 68, 0.25), 0 10px 30px rgba(0, 0, 0, 0.5)', margin: 'auto' }}
+          >
+            <div 
+              style={{ width: '72px', height: '72px', borderRadius: '24px', background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.35) 100%)', border: '2px solid #ef4444', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.2rem', margin: '0 auto 1.25rem auto', boxShadow: '0 10px 25px rgba(239, 68, 68, 0.3)' }}
+            >
+              🗑️
+            </div>
+
+            <h4 className="fw-extrabold mb-2" style={{ color: 'var(--text-main)', fontSize: '1.25rem' }}>
+              Confirmer la suppression
+            </h4>
+
+            <p className="mb-4" style={{ color: 'var(--text-sub, #94a3b8)', fontSize: '0.92rem', lineHeight: '1.55' }}>
+              Voulez-vous vraiment supprimer définitivement <strong style={{ color: '#ef4444' }}>{confirmDeleteObj.title}</strong> ?
+              <br />
+              <small className="text-muted d-block mt-1">Cette action est irréversible dans le système UNAMUSC.</small>
+            </p>
+
+            <div className="d-flex justify-content-center gap-3 pt-2">
+              <button
+                type="button"
+                className="btn px-4 py-2.5 fw-bold"
+                style={{ background: 'var(--bg-card-subtle, #334155)', color: 'var(--text-main, #ffffff)', border: '1px solid var(--border-color, #475569)', borderRadius: '12px', fontSize: '0.88rem' }}
+                onClick={() => setConfirmDeleteObj(null)}
+              >
+                Annuler
+              </button>
+
+              <button
+                type="button"
+                className="btn px-4 py-2.5 fw-bold text-white"
+                style={{ background: 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)', border: 'none', borderRadius: '12px', fontSize: '0.88rem', boxShadow: '0 4px 16px rgba(239, 68, 68, 0.4)' }}
+                onClick={() => {
+                  confirmDeleteObj.onConfirm();
+                  setConfirmDeleteObj(null);
+                }}
+              >
+                🗑️ Supprimer définitivement
+              </button>
             </div>
           </div>
         </div>,

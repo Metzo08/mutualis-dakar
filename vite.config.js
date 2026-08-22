@@ -4,8 +4,12 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
   server: {
-    port: 5180,
-    host: '0.0.0.0',
+    port: 5173,
+    host: '0.0.0.0'
+  },
+  preview: {
+    port: 5173,
+    host: '0.0.0.0'
   },
   plugins: [
     react(),
@@ -89,6 +93,12 @@ export default defineConfig({
         ]
       },
       workbox: {
+        // Les nouvelles versions du service worker s'activent immédiatement
+        // (au lieu d'attendre la fermeture de tous les onglets) et les vieux
+        // precaches sont purgés automatiquement.
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
         maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
         globPatterns: ['**/*.{js,css,html,png,svg,jpg,jpeg,woff,woff2}'],
         // Stratégies de cache avancées pour le mode hors-ligne
@@ -124,7 +134,10 @@ export default defineConfig({
         ]
       },
       devOptions: {
-        enabled: true
+        // ⚠️ Service worker désactivé en développement : il servait une copie
+        // périmée des assets (les corrections semblaient « ne rien changer »).
+        // Le SW reste actif uniquement dans les builds de production.
+        enabled: false
       }
     })
   ],

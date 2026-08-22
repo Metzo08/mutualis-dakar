@@ -71,7 +71,7 @@ export default function Notifications({ lang, portalMode, agentUser }) {
   const fetchNotifications = (p = 1) => {
     setLoading(true);
     const token = localStorage.getItem('cmu-token') || '';
-    fetch(`http://localhost:5000/api/notifications?page=${p}&limit=20`, {
+    fetch(`${window.API_BASE_URL}/api/notifications?page=${p}&limit=20`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then((res) => res.json())
@@ -90,7 +90,7 @@ export default function Notifications({ lang, portalMode, agentUser }) {
     setSendLoading(true);
     setSendMsg('');
     const token = localStorage.getItem('cmu-token') || '';
-    fetch('http://localhost:5000/api/notifications', {
+    fetch(`${window.API_BASE_URL}/api/notifications`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(form)

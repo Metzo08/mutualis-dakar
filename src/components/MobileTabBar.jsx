@@ -38,6 +38,7 @@ export default function MobileTabBar({ view, setView, lang = 'fr', setChatOpen =
             type="button"
             onClick={() => {
               if (tab.id === 'chatbot') {
+                window.dispatchEvent(new Event('open-zahara-chat'));
                 if (setChatOpen) setChatOpen(true);
               } else {
                 setView(tab.id);
