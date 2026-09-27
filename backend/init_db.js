@@ -377,7 +377,27 @@ const createTablesQuery = `
   ALTER TABLE payments ADD COLUMN IF NOT EXISTS net_amount INTEGER;      -- reversé à la MSD
   CREATE INDEX IF NOT EXISTS idx_payments_union ON payments(union_code);
 
-  -- Un seul compte marchand par défaut (repli si union_code absent/inconnu)
+  -- Un compte marchand par MSD, afin que CHAQUE mutuelle dispose de son
+  -- propre moyen de paiement (clés Kadev, RIB, commission). L'insert est
+  -- idempotent : il complète les comptes manquants sans écraser les clés
+  -- déjà déclarées par l'administrateur.
+  INSERT INTO merchant_accounts (union_code, union_name, region, is_default, provider)
+  VALUES
+    ('DKR', 'Mutuelle de Santé Départementale de Dakar',    'Dakar',     FALSE, 'kadev'),
+    ('PKN', 'Mutuelle de Santé Départementale de Pikine',   'Dakar',     FALSE, 'kadev'),
+    ('GDW', 'Mutuelle de Santé Départementale de Guédiawaye','Dakar',    FALSE, 'kadev'),
+    ('RFS', 'Mutuelle de Santé Départementale de Rufisque', 'Dakar',     FALSE, 'kadev'),
+    ('THS', 'Mutuelle de Santé Départementale de Thiès',    'Thiès',     FALSE, 'kadev'),
+    ('MBR', 'Mutuelle de Santé Départementale de Mbour',    'Thiès',     FALSE, 'kadev'),
+    ('STL', 'Mutuelle de Santé Départementale de Saint-Louis','Saint-Louis',FALSE, 'kadev'),
+    ('KLC', 'Mutuelle de Santé Départementale de Kaolack',  'Kaolack',   FALSE, 'kadev'),
+    ('ZGC', 'Mutuelle de Santé Départementale de Ziguinchor','Ziguinchor',FALSE, 'kadev'),
+    ('DRB', 'Mutuelle de Santé Départementale de Diourbel', 'Diourbel',  FALSE, 'kadev')
+  ON CONFLICT (union_code) DO NOTHING;
+
+  -- Compte de l'agrégateur : sert de filet quand une MSD n'a pas encore
+  -- déclaré son propre compte. La commission reste à la charge de la
+  -- plateforme et n'est jamais déduite du reversement de la MSD.
   INSERT INTO merchant_accounts (union_code, union_name, region, is_default, provider)
   VALUES ('AGG', 'Compte agrégateur MUTUALIS DAKAR', 'National', TRUE, 'kadev')
   ON CONFLICT (union_code) DO NOTHING;

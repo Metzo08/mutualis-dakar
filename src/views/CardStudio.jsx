@@ -1387,7 +1387,7 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
                     if (fresh.length > 0) setSelectedMemberId(fresh[0].id);
                   }}
                 >
-                  🔄 Recharger les 36 assurés
+                  🔄 Recharger les {resetToDefaultMembers().length} assurés
                 </button>
               </div>
             </div>

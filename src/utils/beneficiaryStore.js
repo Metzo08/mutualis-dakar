@@ -16,10 +16,13 @@ import { msdDakarMembers } from '../data/msdDakarMembers.js';
 // désigner la MSD émettrice (DRB = Diourbel) et non Mbour (MBK). Le code
 // figurant sur une carte imprimée fait foi : la purge du cache v15 évite
 // qu'une ancienne fiche subsiste sous l'ancien code.
-const STORAGE_KEY = 'unamusc_beneficiaries_store_v16';
+// v17 : suppression définitive des fiches FICTIVES (AMADOU SOW, FATOU DIOP,
+// SOKHNA KANE) — profils de démonstration ne correspondant à aucune personne
+// réelle. La purge du cache v16 les retire du poste de l'agent.
+const STORAGE_KEY = 'unamusc_beneficiaries_store_v17';
 // Nettoyage one-shot des anciennes générations de cache
 try {
-  for (let i = 1; i <= 15; i++) {
+  for (let i = 1; i <= 16; i++) {
     localStorage.removeItem(`unamusc_beneficiaries_store_v${i}`);
   }
 } catch (e) { /* stockage indisponible */ }
@@ -109,58 +112,6 @@ export const demoProfiles = [
         allergies: "Aucune connue",
         vaccines: "PEV 100% à jour",
         antecedents: "Développement normal"
-      }
-    ]
-  },
-  {
-    id: "MEM-DEMO-001",
-    cmuNumber: "CSU-DKR-2026-8812.2",
-    adherentCode: "CSU-DKR-2026-8812",
-    departmentUnionId: "DKR",
-    firstName: "AMADOU",
-    lastName: "SOW",
-    birthDate: "14/08/1992",
-    gender: "M",
-    bloodGroup: "O+",
-    phone: "776026783",
-    package: "UNAMUSC 80%",
-    cardTypeLabel: "Individuel Seul",
-    photoUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300",
-    hasOfficialPhoto: true,
-    photoStatus: "OFFICIAL",
-    verificationStatus: "VERIFIED",
-    allergies: "Aucune connue",
-    dependents: []
-  },
-  {
-    id: "MEM-DEMO-002",
-    cmuNumber: "CMU-DKR-2026-4401",
-    adherentCode: "CMU-DKR-2026-4401",
-    departmentUnionId: "DKR",
-    firstName: "FATOU",
-    lastName: "DIOP",
-    birthDate: "05/11/1994",
-    gender: "F",
-    bloodGroup: "A+",
-    phone: "775554401",
-    package: "UNAMUSC 80%",
-    cardTypeLabel: "Famille Monoparentale",
-    photoUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300",
-    hasOfficialPhoto: true,
-    photoStatus: "OFFICIAL",
-    verificationStatus: "VERIFIED",
-    allergies: "Pénicilline",
-    dependents: [
-      {
-        name: "BABACAR DIOP",
-        birthDate: "12/03/2021",
-        gender: "M",
-        isMajor: false,
-        age: 4,
-        codeSuffix: ".M1",
-        bloodGroup: "A+",
-        allergies: "Aucune",
-        vaccines: "PEV 100% à jour (BCG, Polio, Pentavalent, ROR)"
       }
     ]
   },
@@ -282,43 +233,6 @@ export const demoProfiles = [
     antecedents: "Bilan de santé daara à jour",
     dependents: []
   },
-  {
-    id: "MEM-DEMO-003",
-    cmuNumber: "SN-DK-GUE-4401",
-    adherentCode: "SN-DK-GUE-4401",
-    departmentUnionId: "GDW",
-    firstName: "SOKHNA",
-    lastName: "KANE",
-    birthDate: "20/06/1988",
-    gender: "F",
-    bloodGroup: "B+",
-    phone: "778889900",
-    package: "UNAMUSC 80%",
-    cardTypeLabel: "Famille",
-    photoUrl: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300",
-    hasOfficialPhoto: true,
-    photoStatus: "OFFICIAL",
-    verificationStatus: "VERIFIED",
-    allergies: "Aucune",
-    dependents: [
-      {
-        name: "MODOU KANE",
-        birthDate: "10/01/2018",
-        gender: "M",
-        isMajor: false,
-        age: 8,
-        codeSuffix: ".M1"
-      },
-      {
-        name: "AMINATA KANE",
-        birthDate: "14/09/2022",
-        gender: "F",
-        isMajor: false,
-        age: 3,
-        codeSuffix: ".M2"
-      }
-    ]
-  }
 ];
 
 // Dédoublonnage strict par adherentCode : si un adhérent démo existe déjà dans
@@ -779,7 +693,10 @@ export const addMemberFromAdhesion = (adhesionData) => {
     phone: adhesionData.phone || '77 888 99 00',
     package: adhesionData.package || 'UNAMUSC 80%',
     cardTypeLabel: 'Classique',
-    photoUrl: adhesionData.photoUrl || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300&auto=format&fit=crop&q=80',
+    // Aucune photo par défaut : une photo générique de banque d'images ferait
+    // passer une personne réelle pour un autre individu. L'agent doit
+    // téléverser la véritable pièce d'identité.
+    photoUrl: adhesionData.photoUrl || '',
     allergies: adhesionData.allergies || 'Aucune connue',
     antecedents: adhesionData.antecedents || 'Adhésion en ligne récente',
     dependents: (adhesionData.dependents || []).map((child, idx) => ({
