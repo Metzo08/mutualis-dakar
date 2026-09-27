@@ -1101,26 +1101,40 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
   const [editingMother, setEditingMother] = useState(null);
   const [isNewMother, setIsNewMother] = useState(false);
 
+  // Dossier de la patiente / patient connecté.
+  // Aucune pathologie, aucun praticien, aucune date ne sont inventés : on
+  // affiche les données réellement connues (identité issues du compte) et on
+  // laisse le champ clinique vide tant qu'aucun suivi n'a été saisi.
   const activeMother = (isCitizen && citizenUser) ? {
     id: 999,
     name: activeFullName,
     gender: isMaleUser ? 'M' : 'F',
-    age: isMaleUser ? 48 : 28,
-    phone: citizenUser?.phone || '+221 77 450 88 99',
-    cmuNumber: activeCmuNumber,
-    category: isMaleUser ? 'chronic' : citizenSpecialtyTab,
-    pathology: (isMaleUser || citizenSpecialtyTab === 'chronic') ? '🩸 Diabète Type 2 & 🫀 HTA d\'effort (ALD 100%)' : '🤰 Suivi Prénatal & Grossesse (28 SA - CPN 3)',
-    edd: (isMaleUser || citizenSpecialtyTab === 'chronic') ? 'Protocole ALD 100% — Contrôle semestriel' : '15/12/2026',
-    facility: citizenUser?.mutuelleName || 'Centre Hospitalier Universitaire de Dakar',
-    doctorRef: (isMaleUser || citizenSpecialtyTab === 'chronic') ? 'Dr. Ousmane Sow (Cardiologie & Médecine Interne)' : 'Sage-femme Mme Fatou Diop',
-    status: 'active',
-    lastConsultation: '03/08/2026'
-  } : (maternalRegistry.find(m => m.id === selectedMotherId) || maternalRegistry[0] || {
-    name: activeFullName,
-    cmuNumber: 'CMU-DKR-2026-9921',
-    gestationalAge: '32 SA (CPN 3)',
-    phone: '+221 77 450 88 99'
-  });
+    age: citizenUser?.age || '—',
+    phone: citizenUser?.phone || '—',
+    cmuNumber: activeCmuNumber || '—',
+    category: citizenSpecialtyTab,
+    pathology: 'Aucun suivi enregistré',
+    edd: '—',
+    facility: citizenUser?.mutuelleName || '—',
+    doctorRef: '—',
+    status: 'none',
+    lastConsultation: '—'
+  } : (maternalRegistry.find(m => m.id === selectedMotherId)
+    // Aucun registre réel pour cette patiente : on ne fabrique NI patiente NI
+    // grossesse. Le dossier reste vide — afficher « 32 SA / CPN 3 » ou
+    // « Dr. Ousmane Sow » pour une patiente réelle serait un faux dossier.
+    || {
+      name: activeFullName || 'Patiente non enregistrée',
+      cmuNumber: activeCmuNumber || '—',
+      gestationalAge: 'Aucune grossesse suivie',
+      phone: citizenUser?.phone || '—',
+      pathology: 'Aucun suivi enregistré',
+      edd: '—',
+      facility: '—',
+      doctorRef: '—',
+      status: 'none',
+      lastConsultation: '—'
+    });
 
   const handleSaveMother = (e) => {
     e.preventDefault();
@@ -1163,18 +1177,10 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
   };
 
   // States pour la section Laboratoire CPN (déclarés au niveau supérieur selon les règles des Hooks React)
-  const [cpnOrders, setCpnOrders] = useState([
-    {
-      id: 1,
-      period: 'CPN 1er trimestre',
-      periodDetail: 'Datation & Sérologies',
-      exams: 'Groupe sanguin, Rhesus, BW, Toxoplasmose, Rubéole',
-      examDetail: 'NFS complet + Glycémie à jeun',
-      midwife: 'Sage-femme Mme Fatou Diop',
-      coverage: '100% CSU Gratuit',
-      status: 'pending'
-    }
-  ]);
+  // AUCUNE prescription CPN pré-remplie : ni sage-femme, ni examens, ni
+  // statut ne sont inventés. Les ordres sont réellement prescrits par la
+  // sage-femme ou le médecin via le formulaire ci-dessous.
+  const [cpnOrders, setCpnOrders] = useState([]);
 
   const [uploadCpnTarget, setUploadCpnTarget] = useState(null);
   const [uploadCpnFileName, setUploadCpnFileName] = useState('');
@@ -1324,11 +1330,11 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                 onClick={() => {
                   setIsNewCpnOrder(true);
                   setEditingCpnOrder({
-                    period: 'CPN 1er trimestre',
-                    periodDetail: 'Datation & Sérologies',
-                    exams: 'Groupe sanguin, Rhésus, BW, Toxoplasmose, Rubéole',
-                    examDetail: 'NFS complet + glycémie à jeun',
-                    midwife: 'Sage-femme Mme Fatou Diop',
+                    period: '',
+                    periodDetail: '',
+                    exams: '',
+                    examDetail: '',
+                    midwife: '',
                     coverage: '100% CSU Gratuit',
                     status: 'pending'
                   });
@@ -2355,7 +2361,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
               {/* Pagination Registre Spécialités & Pathologies */}
               <div className="d-flex align-items-center justify-content-between p-3.5 border-top" style={{ borderColor: 'var(--border-color)', flexWrap: 'wrap', gap: '1rem', background: 'var(--bg-card-subtle)' }}>
                 <span style={{ fontSize: '0.85rem', color: 'var(--text-sub)' }}>
-                  Affichage de <strong>1</strong> à <strong>10</strong> sur <strong>1 450</strong> dossiers médicaux suivis (Page {registryPage} sur 145)
+                  Affichage de <strong>1</strong> à <strong>{Math.min(10, maternalRegistry.length)}</strong> sur <strong>{maternalRegistry.length}</strong> dossiers médicaux réellement enregistrés (Page {registryPage} sur {Math.max(1, Math.ceil(maternalRegistry.length / 10))})
                 </span>
                 <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
                   <button

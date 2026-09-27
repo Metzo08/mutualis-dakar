@@ -3495,47 +3495,32 @@ export default function Telemedicine({
         <div className="mt-5 p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
           {/* En-tête de la section historique (Assuré vs Personnel Médical/Agent) */}
           {(() => {
-            const rawHistory = [
-              { code: 'TM-2026-0420', patient: 'Amadou Sow', cmu: 'CSU-DKR-2026-8812.2', doc: 'Dr. Cheikh Tidiane Seck', spec: 'Cardiologie', reason: 'Tension artérielle 14/9 & palpitation', date: '08 Fév 2026 à 14h30', status: 'Ordonnance émise', paid: 'Wave' },
-              { code: 'TM-2026-0419', patient: 'Awa Ndiaye', cmu: 'CMU-DKR-2026-3302', doc: 'Dr. Aminata Ndiaye', spec: 'Pédiatrie', reason: 'Fièvre infantile 38.5°C & toux', date: '08 Fév 2026 à 11h15', status: 'Ordonnance émise', paid: 'Orange Money' },
-              { code: 'TM-2026-0418', patient: 'Ibrahima Sarr', cmu: 'CSU-UCAD-2026-9012', doc: 'Dr. Ousmane Sow', spec: 'Urgence / Généraliste', reason: 'Bilan de santé & consultation générale', date: '07 Fév 2026 à 16h45', status: 'Certificat médical', paid: 'Free Money' },
-              { code: 'TM-2026-0417', patient: 'Fatou Diop', cmu: 'CMU-DKR-2026-4401', doc: 'Dr. Mariama Ba', spec: 'Gynécologie', reason: 'Suivi prénatal prématernité CPN 3', date: '07 Fév 2026 à 10h00', status: 'Ordonnance prénatale', paid: 'Wave' },
-              { code: 'TM-2026-0416', patient: 'Mamadou Ndiaye', cmu: 'CMU-DKR-2026-5541', doc: 'Dr. Papa Mamadou Kane', spec: 'Endocrinologie', reason: 'Renouvellement traitement diabète type 2', date: '06 Fév 2026 à 15h20', status: 'Ordonnance ALD 100%', paid: 'Wave' },
-              { code: 'TM-2026-0415', patient: 'Coumba Ndiaye', cmu: 'CMU-DKR-2026-1188', doc: 'Dr. Saliou Wade', spec: 'Pneumologie', reason: 'Contrôle crise d\'asthme saisonnière', date: '06 Fév 2026 à 09h40', status: 'Ordonnance émise', paid: 'Orange Money' },
-              { code: 'TM-2026-0414', patient: 'Ousmane Ba', cmu: 'CMU-DKR-2026-7734', doc: 'Dr. Ibrahima Faye', spec: 'Orthopédie', reason: 'Suivi post-opératoire fracture tibia', date: '05 Fév 2026 à 14h10', status: 'Consignes kiné', paid: 'Wave' },
-              { code: 'TM-2026-0413', patient: 'Mariama Diallo', cmu: 'CMU-DKR-2026-9902', doc: 'Dr. Ndèye Khady Cissé', spec: 'Ophtalmologie', reason: 'Correction visuelle & fatigue oculaire', date: '05 Fév 2026 à 11h30', status: 'Ordonnance lunettes', paid: 'Wave' },
-              { code: 'TM-2026-0412', patient: 'Babacar Kane', cmu: 'CMU-DKR-2026-3399', doc: 'Dr. Babacar Diagne', spec: 'Neurologie', reason: 'Céphalées persistantes & vertiges', date: '04 Fév 2026 à 17h00', status: 'Demande scanner', paid: 'Orange Money' },
-              { code: 'TM-2026-0411', patient: 'Aïssatou Sow', cmu: 'CMU-DKR-2026-8841', doc: 'Dr. Aïssatou Kane', spec: 'Dermatologie', reason: 'Éruption cutanée allergique', date: '04 Fév 2026 à 10h15', status: 'Ordonnance émise', paid: 'Free Money' }
-            ];
+            // Historique RÉELLEMENT enregistré (téléconsultations saisies par
+            // les praticiens). Aucune téléconsultation de démonstration :
+            // un diagnostic et une ordonnance fictifs rattachés à un patient
+            // réel constitueraient un faux dossier médical.
+            const rawHistory = (() => {
+              if (typeof window === 'undefined') return [];
+              try {
+                const raw = localStorage.getItem('cmu-teleconsultations');
+                const parsed = raw ? JSON.parse(raw) : [];
+                return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+              } catch (e) {
+                return [];
+              }
+            })();
 
             let activeHistoryList = rawHistory;
             if (isCitizen) {
-              const citizenFull = `${activeFirstName} ${activeLastName}`.trim().toLowerCase();
-              activeHistoryList = rawHistory.filter(h => {
-                const matchName = h.patient.toLowerCase().includes(activeFirstName.toLowerCase()) || 
-                                  h.patient.toLowerCase().includes(activeLastName.toLowerCase());
-                const matchCmu = (h.cmu || '').trim().toLowerCase() === (activeCmuNumber || '').trim().toLowerCase();
-                return matchName || matchCmu;
-              });
-
-              if (activeHistoryList.length === 0) {
-                activeHistoryList = [
-                  { 
-                    code: 'TM-2026-0418', 
-                    patient: `${activeFirstName} ${activeLastName}`, 
-                    cmu: activeCmuNumber, 
-                    doc: 'Dr. Ousmane Sow', 
-                    spec: 'Médecine Générale & Suivi', 
-                    reason: 'Bilan de santé régulier & renouvellement', 
-                    date: '07 Fév 2026 à 16h45', 
-                    status: 'Certificat médical', 
-                    paid: 'Wave' 
-                  }
-                ];
-              }
+              const citizenCmu = (activeCmuNumber || '').trim().toLowerCase();
+              activeHistoryList = rawHistory.filter((h) =>
+                (h.cmu || '').trim().toLowerCase() === citizenCmu
+              );
+              // Aucun repli : un dossier vierge est préférable à une ligne
+              // de téléconsultation inventée pour ce patient.
             }
 
-            const totalVolume = isCitizen ? activeHistoryList.length : 420;
+            const totalVolume = activeHistoryList.length;
             const pageSize = 10;
             const totalPages = Math.max(1, Math.ceil(totalVolume / pageSize));
             const safePage = Math.min(historyPage, totalPages);
@@ -3552,9 +3537,9 @@ export default function Telemedicine({
                       {isCitizen ? `📜 Mes Téléconsultations & Ordonnances Médicales (${activeFirstName} ${activeLastName})` : '📜 Historique Régional des Téléconsultations Certifiées UNAMUSC'}
                     </h5>
                     <small style={{ color: 'var(--text-sub)', fontSize: '0.82rem' }}>
-                      {isCitizen 
+                      {isCitizen
                         ? `Historique médical certifié par le Conseil National de l'Ordre des Médecins (CNOM) • ${activeHistoryList.length} consultation(s)`
-                        : 'Registre national certifié par l\'Ordre des Médecins du Sénégal (CNOM) • 420 téléconsultations enregistrées'
+                        : `Registre national — ${totalVolume} téléconsultation(s) réellement enregistrée(s)`
                       }
                     </small>
                   </div>
@@ -3932,7 +3917,7 @@ export default function Telemedicine({
               justifyContent: 'space-between'
             }}
             onClick={() => setActiveModal('kpi_telemed_details')}
-            title="Cliquer pour voir la répartition régionale des 420+ téléconsultations"
+            title="Cliquer pour voir la répartition des téléconsultations enregistrées"
           >
             <div className="d-flex align-items-center justify-content-between mb-3">
               <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'linear-gradient(135deg, #059669, #10b981)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', boxShadow: '0 6px 16px rgba(16,185,129,0.30)' }}>
