@@ -7,6 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "init-db": "node init_db.js",
+    "ensure-agents": "node ensureDemoAgents.js",
     "test": "jest --runInBand --forceExit"
   },
   "jest": {
