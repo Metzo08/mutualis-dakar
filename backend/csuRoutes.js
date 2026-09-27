@@ -727,8 +727,18 @@ router.put(
     try {
       const { phone } = req.params;
       const { logoUrl } = req.body;
+      // On cible le parrain par son numéro, en privilégiant la fiche de
+      // parrainage : un sponsor géré depuis le studio peut avoir une autre
+      // valeur de package_type, son logo doit malgré tout être enregistré.
       const result = await query(
-        "UPDATE beneficiaries SET sponsor_logo = $1 WHERE phone = $2 AND package_type = 'parrainage' RETURNING id, first_name, last_name",
+        `UPDATE beneficiaries SET sponsor_logo = $1
+         WHERE id = (
+           SELECT id FROM beneficiaries
+           WHERE phone = $2
+           ORDER BY CASE WHEN package_type = 'parrainage' THEN 0 ELSE 1 END, id
+           LIMIT 1
+         )
+         RETURNING id, first_name, last_name`,
         [logoUrl ? logoUrl : null, phone]
       );
       if (result.rows.length === 0) {
@@ -757,7 +767,14 @@ router.delete(
     try {
       const { phone } = req.params;
       const result = await query(
-        "UPDATE beneficiaries SET sponsor_logo = NULL WHERE phone = $1 AND package_type = 'parrainage' RETURNING id",
+        `UPDATE beneficiaries SET sponsor_logo = NULL
+         WHERE id = (
+           SELECT id FROM beneficiaries
+           WHERE phone = $1
+           ORDER BY CASE WHEN package_type = 'parrainage' THEN 0 ELSE 1 END, id
+           LIMIT 1
+         )
+         RETURNING id`,
         [phone]
       );
       if (result.rows.length === 0) {

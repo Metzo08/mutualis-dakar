@@ -1,5 +1,5 @@
 import { calculateAge, getAgeLabel } from '../utils/csuFormatter';
-import { getStoredMembers, saveStoredMembers, resetToDefaultMembers } from '../utils/beneficiaryStore';
+import { getStoredMembers, saveStoredMembers, resetToDefaultMembers, purgeDuplicateMembers } from '../utils/beneficiaryStore';
 import { detectLanIp, getCachedLanIp } from '../utils/lanIp';
 import {
   fetchSponsorsWithLogos,
@@ -1353,18 +1353,43 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
               <h5 className="fw-extrabold mb-0 text-success d-flex align-items-center gap-2.5" style={{ fontSize: '1.25rem' }}>
                 <span>👤</span> 1. Dossier adhérent principal
               </h5>
-              <button
-                type="button"
-                className="btn btn-sm text-white fw-extrabold px-3.5 py-2 shadow-sm hover-lift"
-                style={{ borderRadius: '12px', fontSize: '0.82rem', background: '#059669', border: '1.5px solid #10b981' }}
-                onClick={() => {
-                  const fresh = resetToDefaultMembers();
-                  setMembers(fresh);
-                  if (fresh.length > 0) setSelectedMemberId(fresh[0].id);
-                }}
-              >
-                🔄 Recharger les 36 assurés
-              </button>
+              <div className="d-flex gap-2 flex-wrap">
+                <button
+                  type="button"
+                  className="btn btn-sm fw-extrabold px-3.5 py-2 shadow-sm hover-lift"
+                  style={{ borderRadius: '12px', fontSize: '0.82rem', background: 'rgba(180,83,9,0.12)', color: '#b45309', border: '1.5px solid #f59e0b' }}
+                  title="Fusionne les fiches identiques (même code CSU ou même nom + naissance) et conserve la plus complète"
+                  onClick={() => {
+                    const { members: cleaned, removed } = purgeDuplicateMembers();
+                    setMembers(cleaned);
+                    if (removed > 0) {
+                      if (cleaned.some(m => m.id === selectedMemberId)) {
+                        setSelectedMemberId(cleaned[0].id);
+                      }
+                      setBulkNotice({
+                        type: 'success',
+                        text: `🧹 ${removed} doublon(s) supprimé(s) — les fiches ont été fusionnées, aucune donnée perdue.`
+                      });
+                    } else {
+                      setBulkNotice({ type: 'info', text: '✅ Aucun doublon détecté dans le studio.' });
+                    }
+                  }}
+                >
+                  🧹 Nettoyer les doublons
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-sm text-white fw-extrabold px-3.5 py-2 shadow-sm hover-lift"
+                  style={{ borderRadius: '12px', fontSize: '0.82rem', background: '#059669', border: '1.5px solid #10b981' }}
+                  onClick={() => {
+                    const fresh = resetToDefaultMembers();
+                    setMembers(fresh);
+                    if (fresh.length > 0) setSelectedMemberId(fresh[0].id);
+                  }}
+                >
+                  🔄 Recharger les 36 assurés
+                </button>
+              </div>
             </div>
 
             <div className="studio-form-group mb-4">

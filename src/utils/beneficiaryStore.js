@@ -328,9 +328,93 @@ export const defaultMembers = [
   ...msdDakarMembers
 ];
 
+/**
+ * Identifiant métier d'un bénéficiaire : sert à reconnaître les doublons.
+ * Le code CSU fait foi ; à défaut on retombe sur nom + naissance, ce qui
+ * évite deux fiches pour la même personne entrée par deux canaux différents
+ * (import Excel vs adhésion en ligne).
+ */
+const memberIdentityKey = (m) => {
+  const code = String(m.cmuNumber || m.adherentCode || m.rawCode || '').trim().toUpperCase();
+  if (code) return `code:${code}`;
+  const name = `${m.firstName || ''} ${m.lastName || ''}`.trim().toUpperCase().replace(/\s+/g, ' ');
+  const birth = String(m.birthDate || '').trim();
+  if (name) return `nom:${name}|${birth}`;
+  return null;
+};
+
+/** Complétude d'une fiche : sert à conserver la MEILLEURE version du doublon. */
+const memberScore = (m) => {
+  let score = 0;
+  if (m.photoUrl) score += 4;
+  if (m.hasOfficialPhoto) score += 2;
+  if (m.dependents && m.dependents.length) score += m.dependents.length;
+  if (m.academicData) score += Object.values(m.academicData).filter(Boolean).length;
+  ['tuteurName', 'tuteurPhone', 'phone', 'birthPlace', 'address', 'ine', 'cardProgram'].forEach((k) => {
+    if (m[k]) score += 1;
+  });
+  if (m.verificationStatus === 'VERIFIED') score += 2;
+  return score;
+};
+
+/** Fusionne deux fiches du même bénéficiaire : la plus riche gagne, l'autre
+    comble les champs manquants (aucune donnée n'est perdue). */
+const mergeMembers = (kept, extra) => {
+  const merged = { ...kept };
+  Object.keys(extra).forEach((k) => {
+    const current = merged[k];
+    const incoming = extra[k];
+    if (current === undefined || current === null || current === '') {
+      merged[k] = incoming;
+    } else if (Array.isArray(current) && Array.isArray(incoming)) {
+      // On garde la liste la plus longue, sans perdre les ayants droit.
+      merged[k] = incoming.length > current.length ? incoming : current;
+    } else if (typeof current === 'object' && typeof incoming === 'object') {
+      merged[k] = { ...incoming, ...current };
+    }
+  });
+  return merged;
+};
+
+/**
+ * Supprime les fiches en double d'une liste de bénéficiaires.
+ *
+ * Un même bénéficiaire peut arriver plusieurs fois : import Excel + export
+ * en ligne, restauration depuis le serveur, ou simple usage duplicated d'un
+ * ancien cache. On conserve la fiche la plus complète et on fusionne les
+ * informations complémentaires des autres.
+ * @param {Array} members
+ * @returns {{members: Array, removed: number}}
+ */
+export const dedupeMembers = (members) => {
+  if (!Array.isArray(members)) return { members: [], removed: 0 };
+  const byIdentity = new Map();
+  const withoutKey = [];
+  let removed = 0;
+
+  members.forEach((m) => {
+    const key = memberIdentityKey(m);
+    if (!key) {
+      withoutKey.push(m);
+      return;
+    }
+    const existing = byIdentity.get(key);
+    if (!existing) {
+      byIdentity.set(key, m);
+      return;
+    }
+    const keep = memberScore(existing) >= memberScore(m) ? existing : m;
+    const drop = keep === existing ? m : existing;
+    byIdentity.set(key, mergeMembers(keep, drop));
+    removed += 1;
+  });
+
+  return { members: [...byIdentity.values(), ...withoutKey], removed };
+};
+
 export const getStoredMembers = () => {
   if (typeof window === 'undefined' || !window.localStorage) {
-    return defaultMembers;
+    return dedupeMembers(defaultMembers).members;
   }
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -351,7 +435,9 @@ export const getStoredMembers = () => {
           }
           return m;
         });
-        return synced;
+        // Les doublons éventuels sont purgés à la lecture : le studio ne
+        // propose jamais deux fois la même personne.
+        return dedupeMembers(synced).members;
       }
     }
   } catch (e) {
@@ -360,7 +446,15 @@ export const getStoredMembers = () => {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultMembers));
   } catch (e) {}
-  return defaultMembers;
+  return dedupeMembers(defaultMembers).members;
+};
+
+/** Nettoyage manuel : retire les doublons du stockage et renvoie le compte. */
+export const purgeDuplicateMembers = () => {
+  const stored = getStoredMembers();
+  const { members, removed } = dedupeMembers(stored);
+  if (removed > 0) saveStoredMembers(members);
+  return { members, removed };
 };
 
 export const resetToDefaultMembers = () => {

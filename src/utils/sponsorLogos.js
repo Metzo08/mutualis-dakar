@@ -369,12 +369,24 @@ export const saveSponsorLogo = async (phone, logoUrl) => {
         warning: 'Parrain absent de la base : logo conservé localement.'
       };
     }
+    // Diagnostic précis : un message générique masque la vraie cause
+    // (session expirée, rôle insuffisant, base injoignable, image refusée).
+    const body = await res.json().catch(() => ({}));
+    if (res.status === 401) {
+      return { saved: 'local', sponsorLogo: logoUrl, warning: 'Session expirée : reconnectez-vous pour enregistrer le logo en base.' };
+    }
+    if (res.status === 403) {
+      return { saved: 'local', sponsorLogo: logoUrl, warning: 'Droits insuffisants (agent ou admin requis) : logo conservé localement.' };
+    }
+    if (res.status === 400 || res.status === 422) {
+      return { saved: 'local', sponsorLogo: logoUrl, warning: `Image refusée par le serveur : ${body.error || 'format non accepté'}.` };
+    }
     return {
       saved: 'local',
       sponsorLogo: logoUrl,
-      warning: 'Enregistrement serveur indisponible : logo conservé localement.'
+      warning: `Serveur indisponible (erreur ${res.status}) : logo conservé localement.`
     };
-  } catch {
+  } catch (err) {
     return {
       saved: 'local',
       sponsorLogo: logoUrl,
