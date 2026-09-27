@@ -9,12 +9,16 @@ import {
   getLocalSponsorLogo,
   getCardSponsorAssignments,
   assignSponsorToCard,
+  getCardLogo,
+  setCardLogo,
   SPONSOR_LOGO_MAX_BYTES
 } from '../utils/sponsorLogos';
 import React, { useState, useEffect, useRef } from 'react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
+// Armoiries vectorielles de la Ville de Dakar (filigrane des cartes scolaires)
+import DakarCoatOfArms from '../components/DakarCoatOfArms';
 
 // Vecteur SVG officiel du Drapeau du Sénégal (Vert, Jaune avec étoile verte, Rouge)
 const SenegalFlagSvg = ({ style }) => (
@@ -67,79 +71,90 @@ const saveCardDesign = (cardNumber, design) => {
   }
 };
 
-function SchoolCardFront({ cardData, currentUnion, getMsdLogo }) {
-  const isDaara = cardData.cardProgram === 'CMU_DAARA';
-  const programLabel = isDaara ? 'Carte Daara — CMU-Daara' : 'Carte scolaire — CMU-Élèves';
-  const watermarkStyle = cardData.sponsorLogo ? {
-    backgroundImage: `url(${cardData.sponsorLogo})`,
+function SchoolCardFront({ cardData, currentUnion, getMsdLogo, customLogo = null }) {
+  // Modèle officiel MSDD Dakar (dossier « modele cartes cmu-eleves et daara ») :
+  // le recto est COMMUN aux cartes scolaires CMU-Élèves et CMU-Daara — mêmes
+  // en-têtes ministériels, même barre de programme verte, mêmes 6 champs et
+  // même pied de carte. Seules les données du bénéficiaire changent.
+  // Filigrane : logo du parrain / de la carte s'il a été choisi, sinon les
+  // armoiries de la Ville de Dakar (comme sur les cartes modèles).
+  const watermarkStyle = customLogo ? {
+    backgroundImage: `url(${customLogo})`,
     opacity: cardData.cardDesign.watermarkOpacity,
     backgroundSize: `${cardData.cardDesign.watermarkScale}%`,
     backgroundPosition: cardData.cardDesign.watermarkPosition === 'TOP' ? 'center 26%' : cardData.cardDesign.watermarkPosition === 'BOTTOM' ? 'center 74%' : 'center'
-  } : {};
+  } : { opacity: Math.min(0.9, Number(cardData.cardDesign.watermarkOpacity || 0.12) * 2.6) };
   const labelStyle = { color: '#64748b', fontSize: '0.53rem', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.04em', lineHeight: 1.1 };
   const valueStyle = { color: '#0f172a', fontSize: '0.86rem', fontWeight: '900', lineHeight: 1.1, overflowWrap: 'anywhere' };
 
   return <>
-    <div className="school-card-watermark" style={watermarkStyle} aria-hidden="true" />
+    <div className="school-card-watermark" style={watermarkStyle} aria-hidden="true">
+      {!customLogo && <DakarCoatOfArms className="school-card-watermark-emblem" />}
+    </div>
     <div className="school-card-header">
       <img src={getMsdLogo(cardData.unionCode)} alt="MSD" className="school-card-brand" />
       <div className="school-card-government">
         <SenegalFlagSvg style={{ width: '28px', height: '18px', marginBottom: '2px' }} />
         <strong>République du Sénégal</strong>
-        {!isDaara && <strong>Ministère de l'Éducation nationale</strong>}
+        <strong>Ministère de l'Éducation nationale</strong>
         <b>{cardData.unionName}</b>
       </div>
       <img src="/sencsu_logo.png" alt="SEN-CSU" className="school-card-brand" onError={(e) => { e.currentTarget.src = '/logo_csu_official.png'; }} />
     </div>
     <div className="school-card-tricolor" />
     <div className="school-card-program-bar" style={{ borderColor: `${cardData.cardDesign.accentColor}55` }}>
-      <strong>{isDaara ? '📖' : '🎓'} {programLabel}</strong>
+      <strong>🎓 Carte scolaire — CMU-Élèves</strong>
       <span>Année {cardData.academicData.academicYear || 'à renseigner'}</span>
     </div>
     <div className="school-card-front-content">
       <div className="school-card-details">
         <div><span style={labelStyle}>Prénom(s)</span><strong style={valueStyle}>{cardData.firstName}</strong></div>
         <div><span style={labelStyle}>Nom</span><strong style={valueStyle}>{cardData.lastName}</strong></div>
-        <div><span style={labelStyle}>Né(e) le, lieu & sexe</span><strong style={valueStyle}>{cardData.birthDate} à {cardData.birthPlace} • {cardData.gender === 'F' ? 'Féminin' : 'Masculin'}</strong></div>
-        <div><span style={labelStyle}>N° INE / IEN (identifiant élève)</span><strong style={valueStyle}>{cardData.cmuNumber}</strong></div>
-        <div><span style={labelStyle}>Classe / niveau</span><strong style={valueStyle}>{cardData.academicData.classLevel || 'À renseigner'}</strong></div>
+        <div className="school-card-wide"><span style={labelStyle}>🎂 Né(e) le & Lieu • Sexe</span><strong style={valueStyle}>{cardData.birthDate} à {cardData.birthPlace} • {cardData.gender === 'F' ? 'Féminin' : 'Masculin'}</strong></div>
+        <div className="school-card-wide"><span style={labelStyle}>N° INE / IEN (Identifiant Élève)</span><strong style={valueStyle}>{cardData.academicData.ine || cardData.cmuNumber}</strong></div>
+        <div><span style={labelStyle}>Classe / Niveau</span><strong style={valueStyle}>{cardData.academicData.classLevel || 'À renseigner'}</strong></div>
         <div><span style={labelStyle}>Établissement</span><strong style={valueStyle}>{cardData.academicData.schoolName || cardData.mutuelleOrigine}</strong></div>
-        {!isDaara && <div className="school-card-wide"><span style={labelStyle}>IA / IEF</span><strong style={valueStyle}>{cardData.academicData.ia || 'IA à renseigner'} — {cardData.academicData.ief || 'IEF à renseigner'}</strong></div>}
-        <div className="school-card-wide"><span style={labelStyle}>👤 Tuteur / responsable</span><strong style={valueStyle}>{cardData.sponsorName || cardData.fullName} • {cardData.tuteurPhone || cardData.phone}</strong></div>
+        <div className="school-card-wide"><span style={labelStyle}>IA / IEF</span><strong style={valueStyle}>{cardData.academicData.ia || 'IA à renseigner'} — {cardData.academicData.ief || 'IEF à renseigner'}</strong></div>
+        <div className="school-card-wide"><span style={labelStyle}>👤 Tuteur / Responsable</span><strong style={valueStyle}>{cardData.tuteurName || cardData.sponsorName || cardData.fullName} • {cardData.tuteurPhone || cardData.phone || 'téléphone à renseigner'}</strong></div>
       </div>
       <div className="school-card-photo">
         {cardData.photoUrl ? <img src={cardData.photoUrl} alt={cardData.fullName} /> : <span>Photo<br />à importer</span>}
       </div>
     </div>
-    <div className="school-card-footer"><span>{isDaara ? 'CARTE OFFICIELLE — CMU-DAARA SÉNÉGAL' : 'CARTE SCOLAIRE OFFICIELLE — CMU-ÉLÈVES SÉNÉGAL'}</span><span>DÉLIVRÉE PAR LA MSD DE {currentUnion.region.toUpperCase()}</span></div>
+    <div className="school-card-footer"><span>CARTE SCOLAIRE OFFICIELLE — CMU-ÉLÈVES SÉNÉGAL</span><span>DÉLIVRÉE PAR LA MSD DE {currentUnion.region.toUpperCase()}</span></div>
   </>;
 }
 
-function SchoolCardBack({ cardData, qrCodeDataUrl }) {
-  const watermarkStyle = cardData.sponsorLogo ? {
-    backgroundImage: `url(${cardData.sponsorLogo})`,
+function SchoolCardBack({ cardData, qrCodeDataUrl, customLogo = null }) {
+  const watermarkStyle = customLogo ? {
+    backgroundImage: `url(${customLogo})`,
     opacity: cardData.cardDesign.watermarkOpacity,
     backgroundSize: `${cardData.cardDesign.watermarkScale}%`,
     backgroundPosition: cardData.cardDesign.watermarkPosition === 'TOP' ? 'center 26%' : cardData.cardDesign.watermarkPosition === 'BOTTOM' ? 'center 74%' : 'center'
-  } : {};
+  } : { opacity: Math.min(0.9, Number(cardData.cardDesign.watermarkOpacity || 0.12) * 2.6) };
   return <>
-    <div className="school-card-watermark" style={watermarkStyle} aria-hidden="true" />
+    <div className="school-card-watermark" style={watermarkStyle} aria-hidden="true">
+      {!customLogo && <DakarCoatOfArms className="school-card-watermark-emblem" />}
+    </div>
     <div className="school-card-header school-card-back-header">
       <img src="/logo_unamusc.png" alt="UNAMUSC" className="school-card-brand" />
-      <div className="school-card-government"><SenegalFlagSvg style={{ width: '28px', height: '18px', marginBottom: '2px' }} /><strong>Couverture Sanitaire Universelle</strong><b>CARTE SANITAIRE — {CARD_PROGRAMS[cardData.cardProgram].label.toUpperCase()}</b></div>
+      <div className="school-card-government"><SenegalFlagSvg style={{ width: '28px', height: '18px', marginBottom: '2px' }} /><strong>Couverture Sanitaire Universelle</strong><b>CARTE SANITAIRE — CMU-ÉLÈVES</b></div>
       <img src="/sencsu_logo.png" alt="SEN-CSU" className="school-card-brand" onError={(e) => { e.currentTarget.src = '/logo_csu_official.png'; }} />
     </div>
     <div className="school-card-tricolor" />
     <div className="school-card-back-content">
-      <div className="school-card-qr">{qrCodeDataUrl ? <img src={qrCodeDataUrl} alt="QR code de vérification" /> : 'QR'}</div>
+      <div className="school-card-qr-block">
+        <div className="school-card-qr">{qrCodeDataUrl ? <img src={qrCodeDataUrl} alt="QR code de vérification" /> : 'QR'}</div>
+        <span className="school-card-qr-caption">🧮 Scannez pour ouvrir le carnet de santé de l'enfant</span>
+      </div>
       <div className="school-card-back-info">
         <span>Bénéficiaire</span><strong>{cardData.fullName}</strong>
-        <span>Code bénéficiaire {CARD_PROGRAMS[cardData.cardProgram].label}</span><b>{cardData.cmuNumber}</b>
+        <span>Code bénéficiaire CMU-Élèves</span><b>{cardData.cmuNumber}</b>
         <span>Mutuelle de santé</span><strong>{cardData.unionName}</strong>
         <div className="school-card-health-box"><b>🚑 Samu : 15</b><b>📞 33 820 21 11</b><strong>Permanence MSD : <em>76 845 54 99 • 77 742 90 73</em></strong></div>
       </div>
     </div>
-    <div className="school-card-footer school-card-back-footer"><span>📱 Scannez pour ouvrir le carnet de santé</span><span>Solution développée par <b>Sen-E-Carte : 77 602 67 83</b></span></div>
+    <div className="school-card-footer school-card-back-footer"><span>Solution développée par <b>Sen-E-Carte : 77 602 67 83</b></span></div>
   </>;
 }
 
@@ -147,6 +162,13 @@ function SchoolCardBack({ cardData, qrCodeDataUrl }) {
 export default function CardStudio({ lang = 'fr', setView = null }) {
   // Système d'Audit & Filtres des Cartes et Photos Officielles (137/137)
   const [auditFilter, setAuditFilter] = useState('ALL'); // 'ALL' | 'VERIFIED' | 'PHOTO_PENDING'
+
+  // Import en masse (Excel MSD Dakar + dossier de photos appariées)
+  const [bulkImporting, setBulkImporting] = useState(false);
+  const [bulkNotice, setBulkNotice] = useState(null); // { type, text }
+  const excelInputRef = useRef(null);
+  const photosInputRef = useRef(null);
+  const pendingPhotosRef = useRef(null); // FileList gardée entre les 2 sélections
   // Unions Départementales des Mutuelles de Santé du Sénégal (UNAMUSC)
   const departmentalUnions = [
     { id: 'DKR', name: 'Mutuelle de Santé Départementale de Dakar', region: 'Dakar', codePrefix: 'DKR' },
@@ -196,7 +218,8 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
     classLevel: '',
     schoolName: '',
     ia: '',
-    ief: ''
+    ief: '',
+    ine: ''
   });
   const [cardDesign, setCardDesign] = useState({
     accentColor: '#059669',
@@ -286,12 +309,86 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
     fetchSponsorsWithLogos()
       .then(({ sponsors: list, source }) => {
         if (cancelled) return;
-        setSponsors(list);
-        setSponsorsSource(source);
+        // Repli officiel : quand aucun parrain n'est disponible (backend éteint,
+        // base vide…), la Mairie de Dakar reste toujours sélectionnable avec
+        // son logo officiel — le parrainage ne bloque jamais la personnalisation.
+        const effective = (list && list.length > 0) ? list : [{
+          id: null,
+          firstName: 'Mairie',
+          lastName: 'de Dakar',
+          name: 'Mairie de Dakar (logo officiel)',
+          phone: 'MAIRIE_DAKAR',
+          cmuNumber: '',
+          mutuelleName: '',
+          filleulCount: 0,
+          sponsorLogo: '/logo_mairie_dakar.png'
+        }];
+        setSponsors(effective);
+        setSponsorsSource(source === 'empty' ? 'local-official' : source);
       })
       .catch(() => {
         if (!cancelled) setSponsorsSource('empty');
       });
+    return () => { cancelled = true; };
+  }, []);
+
+  // Hydratation ZÉRO PERTE : récupère au démarrage les bénéficiaires conservés
+  // côté serveur (fichier secours backend/data/store.json quand PostgreSQL est
+  // éteint) et les fusionne dans le store du studio — les adhésions importées,
+  // en ligne ou en masse, et les cartes déjà imprimées ne sont jamais perdues.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { hydrateFromServerFallback } = await import('../utils/bulkImport');
+        const { apiFetch } = await import('../utils/api');
+        const res = await apiFetch('/api/beneficiaries/fallback');
+        if (!res.ok || cancelled) return;
+        const data = await res.json();
+        const records = (data && data.records) || [];
+        if (records.length === 0 || cancelled) return;
+        const existing = getStoredMembers();
+        const existingCodes = new Set(existing.map(m => (m.cmuNumber || '').toString()));
+        const missing = records
+          .filter(r => r.cmuNumber && !existingCodes.has(r.cmuNumber.toString()))
+          .map((r, i) => ({
+            id: `FB-${Date.now().toString(36)}-${i}`,
+            cmuNumber: r.cmuNumber,
+            adherentCode: r.numeroAdherent || String(r.cmuNumber).replace(/\.\d+$/, ''),
+            firstName: String(r.prenom || r.firstName || '').toUpperCase(),
+            lastName: String(r.nom || r.lastName || '').toUpperCase(),
+            birthDate: r.birthDate || '',
+            birthPlace: '',
+            gender: (r.sexe || 'M').toUpperCase().startsWith('F') ? 'F' : 'M',
+            bloodGroup: 'O+',
+            address: r.address || 'Dakar',
+            commune: 'Dakar',
+            departmentUnionId: 'DKR',
+            mutuelleOrigine: r.mutuelleName || 'Mutuelle de santé départementale de Dakar',
+            phone: r.telephone || r.phone || '',
+            package: 'UNAMUSC 80%',
+            cardTypeLabel: 'Import Excel',
+            photoUrl: r.photoUrl || '',
+            hasOfficialPhoto: !!r.photoUrl,
+            photoStatus: r.photoUrl ? 'OFFICIAL' : 'PENDING_UPLOAD',
+            verificationStatus: 'FALLBACK_HYDRATION',
+            allergies: 'Aucune connue',
+            antecedents: 'À compléter',
+            dependents: []
+          }));
+        if (missing.length > 0 && !cancelled) {
+          const next = [...missing, ...existing];
+          saveStoredMembers(next);
+          setMembers(next);
+          setBulkNotice({
+            type: 'success',
+            text: `☁️ ${missing.length} bénéficiaire(s) conservé(s) côté serveur ont été restaurés automatiquement dans le studio (adhésions/importations précédentes jamais perdues).`
+          });
+        }
+      } catch {
+        /* backend injoignable : le store local actuel reste la source */
+      }
+    })();
     return () => { cancelled = true; };
   }, []);
 
@@ -354,7 +451,8 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
       classLevel: storedDesign.classLevel || memberAcademic.classLevel || '',
       schoolName: storedDesign.schoolName || memberAcademic.schoolName || '',
       ia: storedDesign.ia || memberAcademic.ia || '',
-      ief: storedDesign.ief || memberAcademic.ief || ''
+      ief: storedDesign.ief || memberAcademic.ief || '',
+      ine: storedDesign.ine || memberAcademic.ine || currentMember.ine || ''
     });
     setCardDesign({
       accentColor: storedDesign.accentColor || CARD_PROGRAMS[nextProgram].accent,
@@ -389,7 +487,12 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
   // par la Mairie de Dakar (logo officiel) tant qu'aucun autre parrain n'est
   // explicitement attribué à la carte.
   const isSchoolCard = cardProgram !== 'CLASSIC';
-  const effectiveSponsorLogo = currentSponsorLogo || (isSchoolCard ? '/logo_mairie_dakar.png' : null);
+  // Logo personnalisé par carte (fonctionne même sans parrain enregistré)
+  const [cardLogo, setCardLogoState] = useState(() => getCardLogo(cardCmuNumber));
+  useEffect(() => {
+    setCardLogoState(getCardLogo(cardCmuNumber));
+  }, [cardCmuNumber]);
+  const effectiveSponsorLogo = currentSponsorLogo || cardLogo || (isSchoolCard ? '/logo_mairie_dakar.png' : null);
   // Tuteur (élève / talibé) : champ dédié du dossier, repli sur le parrain.
   const tuteurName = (editForm.tuteurName || currentMember.tuteurName) || null;
   const tuteurPhone = (editForm.tuteurPhone || currentMember.tuteurPhone) || null;
@@ -472,10 +575,9 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
       classLevel: cardData.academicData.classLevel || '',
       schoolName: cardData.academicData.schoolName || ''
     });
-    if (cardData.cardProgram === 'CMU_ELEVES') {
-      academicQrData.set('ia', cardData.academicData.ia || '');
-      academicQrData.set('ief', cardData.academicData.ief || '');
-    }
+    if (cardData.academicData.ine) academicQrData.set('ine', cardData.academicData.ine);
+    academicQrData.set('ia', cardData.academicData.ia || '');
+    academicQrData.set('ief', cardData.academicData.ief || '');
     let verifyUrl = `${origin}/#/verify/${cardData.cmuNumber}?${academicQrData.toString()}`;
 
     if (qrTargetMode === 'HTTPS') {
@@ -509,10 +611,9 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
       academicYear: cardData.academicData.academicYear || 'N/A',
       classLevel: cardData.academicData.classLevel || 'N/A',
       schoolName: cardData.academicData.schoolName || 'N/A',
-      ...(cardData.cardProgram === 'CMU_ELEVES' ? {
-        ia: cardData.academicData.ia || 'N/A',
-        ief: cardData.academicData.ief || 'N/A'
-      } : {}),
+      ia: cardData.academicData.ia || 'N/A',
+      ief: cardData.academicData.ief || 'N/A',
+      ine: cardData.academicData.ine || 'N/A',
       minorDependents: cardData.minorDependents.map(d => ({
         code: `${cardData.cmuNumber.replace(/\.0$/, '')}${d.codeSuffix}`,
         name: d.name,
@@ -567,6 +668,210 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
     });
   };
 
+  // --- Import en masse : Excel MSD Dakar + appariement photos ---------------
+
+  /** Normalisation identique à bulkImport.js (accents/espaces supprimés) */
+  const norm = (v) => (v || '').toString().trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+
+  /**
+   * Importe le fichier Excel, apparie les photos (dossier sélectionné juste
+   * avant ou à cette étape), ajoute les bénéficiaires au store local du studio
+   * puis pousse le tout vers le backend (mode secours fichier si base off).
+   */
+  const handleBulkImport = async (excelFile) => {
+    if (!excelFile) return;
+    setBulkImporting(true);
+    setBulkNotice({ type: 'info', text: '⏳ Lecture du fichier Excel en cours…' });
+    try {
+      const XLSX = await import('xlsx');
+      const buffer = await excelFile.arrayBuffer();
+      const workbook = XLSX.read(buffer, { type: 'array', cellDates: true });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const raw = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+      if (raw.length === 0) throw new Error('Aucune ligne trouvée dans le fichier.');
+
+      // Lecture UNIQUE et normalisée : mêmes règles que src/utils/bulkImport.js.
+      // → codes canoniques sans décimale parasite (« DKR_2600011.0 » devient
+      //   « DKR_2600011 » : plus aucun doublon de carte ni collision de scan) ;
+      // → dates de naissance sérielles Excel converties en AAAA-MM-JJ ;
+      // → colonne « PHOTO » du classeur exploitée pour l'appariement.
+      const { parseRowsToRecords } = await import('../utils/bulkImport');
+      const records = parseRowsToRecords(raw);
+
+      const photoFiles = Array.from(pendingPhotosRef.current || []).filter(f => f.type.startsWith('image/'));
+      const photoIndex = photoFiles.map(f => {
+        const base = f.name.replace(/\.[^.]+$/, '');
+        return { file: f, nameNorm: norm(base), phoneNorm: (base || '').replace(/[^0-9]/g, '') };
+      });
+      const usedPhotos = new Set();
+      const findPhoto = (r) => {
+        const hint = norm(String(r.photoHint || '').replace(/\.[^.]+$/, ''));
+        const fullName = norm(`${r.prenom || ''}${r.nom || ''}`);
+        const first = norm(r.prenom || '');
+        const phone = (r.telephone || '').toString().replace(/[^0-9]/g, '');
+        const code = norm(r.codeBeneficiaire || '');
+        return (hint && photoIndex.find(p => !usedPhotos.has(p.file.name) && p.nameNorm === hint))
+          || photoIndex.find(p => !usedPhotos.has(p.file.name) && p.nameNorm === fullName)
+          || photoIndex.find(p => !usedPhotos.has(p.file.name) && first && p.nameNorm === first)
+          || photoIndex.find(p => !usedPhotos.has(p.file.name) && phone && p.phoneNorm === phone)
+          || photoIndex.find(p => !usedPhotos.has(p.file.name) && code && p.nameNorm === code);
+      };
+
+      // Détection des membres du même ménage (NUMERO_ADHERENT partagé)
+      const household = {};
+      const members = [];
+      for (const r of records) {
+        if (!r.prenom && !r.nom) continue; // ligne vide
+        r.sexe = r.sexe || 'M';
+
+        // Photo appariée → lecture en data-URL (max 500 Ko compressés en 300px)
+        const photo = findPhoto(r);
+        let photoUrl = '';
+        if (photo) {
+          usedPhotos.add(photo.file.name);
+          photoUrl = await new Promise((resolve) => {
+            const img = new Image();
+            const reader = new FileReader();
+            reader.onload = () => {
+              img.onload = () => {
+                const max = 300;
+                const scale = Math.min(1, max / Math.max(img.width, img.height));
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.round(img.width * scale);
+                canvas.height = Math.round(img.height * scale);
+                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                resolve(canvas.toDataURL('image/jpeg', 0.82));
+              };
+              img.onerror = () => resolve('');
+              img.src = reader.result;
+            };
+            reader.readAsDataURL(photo.file);
+          });
+        }
+
+        const age = r.birthDate ? new Date().getFullYear() - parseInt(r.birthDate.slice(0, 4), 10) : 30;
+
+        members.push({
+          id: `IMP-${Date.now().toString(36)}-${members.length}`,
+          cmuNumber: r.codeBeneficiaire || r.numeroAdherent,
+          adherentCode: r.numeroAdherent || (r.codeBeneficiaire || '').replace(/\.\d+$/, ''),
+          rawCode: r.codeBeneficiaire,
+          firstName: (r.prenom || '').toUpperCase(),
+          lastName: (r.nom || '').toUpperCase(),
+          birthDate: r.birthDate || '',
+          birthPlace: '',
+          gender: r.sexe,
+          bloodGroup: 'O+',
+          address: r.address || 'Dakar',
+          commune: 'Dakar',
+          departmentUnionId: 'DKR',
+          mutuelleOrigine: 'Mutuelle de santé départementale de Dakar',
+          phone: r.telephone || '',
+          package: 'UNAMUSC 80%',
+          cardTypeLabel: 'Import Excel',
+          photoUrl,
+          hasOfficialPhoto: !!photoUrl,
+          photoStatus: photoUrl ? 'OFFICIAL' : 'PENDING_UPLOAD',
+          verificationStatus: 'IMPORT_EXCEL_MSD_DAKAR',
+          allergies: 'Aucune connue',
+          antecedents: 'À compléter',
+          isMajor: age >= 18,
+          dependents: []
+        });
+
+        // Regroupement par ménage : les membres partageant NUMERO_ADHERENT
+        // deviennent ayant-droit du chef de ménage (lignes 1 = chef).
+        if (r.numeroAdherent) {
+          if (!household[r.numeroAdherent]) household[r.numeroAdherent] = [];
+          household[r.numeroAdherent].push(members[members.length - 1]);
+        }
+      }
+
+      // Les membres du même ménage au-delà du 1er deviennent dependents du chef
+      const principals = [];
+      for (const group of Object.values(household)) {
+        const [chef, ...deps] = group;
+        chef.dependents = deps.map((d, i) => ({
+          ...d,
+          isMajor: true,
+          codeSuffix: `.${i + 1}`,
+          bloodGroup: d.bloodGroup || 'O+',
+          allergies: d.allergies || 'Aucune connue',
+          vaccines: d.vaccines || 'Vaccination à jour',
+          antecedents: d.antecedents || 'À compléter'
+        }));
+        principals.push(chef);
+      }
+      // Membres sans numéro d'adhérent → principaux individuels
+      for (const m of members) {
+        if (!household[m.adherentCode]) principals.push(m);
+      }
+
+      if (principals.length === 0) throw new Error('Aucun bénéficiaire exploitable trouvé dans le fichier.');
+
+      // 1. Ajout au store local du studio (immédiatement imprimable)
+      const existing = getStoredMembers();
+      const existingCodes = new Set(existing.map(m => (m.cmuNumber || '').toString()));
+      const fresh = principals.filter(m => !existingCodes.has((m.cmuNumber || '').toString()));
+      const nextMembers = [...fresh, ...existing];
+      saveStoredMembers(nextMembers);
+      setMembers(nextMembers);
+
+      // 2. Push backend (mode secours fichier automatique si base off)
+      let serverInfo = '';
+      try {
+        const { apiFetch } = await import('../utils/api');
+        const res = await apiFetch('/api/beneficiaries/bulk', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rows: fresh.map(m => ({
+            codeBeneficiaire: m.cmuNumber,
+            numeroAdherent: m.adherentCode,
+            prenom: m.firstName,
+            nom: m.lastName,
+            birthDate: m.birthDate,
+            sexe: m.gender,
+            telephone: m.phone,
+            address: m.address,
+            schoolName: m.schoolName || null
+          })) })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          serverInfo = data.mode === 'fallback-file'
+            ? ' · Base indisponible : conservés dans le fichier secours serveur (flush automatique à la reconnexion).'
+            : ` · ${data.inserted} enregistrés en base de données.`;
+        }
+      } catch {
+        serverInfo = ' · Backend injoignable : bénéficiaires conservés localement (store studio).';
+      }
+
+      setBulkNotice({
+        type: 'success',
+        text: `✅ ${fresh.length} bénéficiaires importés (${members.length} personnes au total, photos appariées : ${usedPhotos.size}).${serverInfo} Sélectionnez-les dans la liste ci-dessus pour générer leurs cartes.`
+      });
+      if (fresh.length > 0) setSelectedMemberId(fresh[0].id);
+    } catch (err) {
+      console.error('[BulkImport] Erreur :', err);
+      setBulkNotice({ type: 'error', text: `❌ Import impossible : ${err.message}` });
+    } finally {
+      setBulkImporting(false);
+      pendingPhotosRef.current = null;
+      if (excelInputRef.current) excelInputRef.current.value = '';
+      if (photosInputRef.current) photosInputRef.current.value = '';
+    }
+  };
+
+  /** L'utilisateur choisit d'abord le dossier de photos (webkitdirectory) */
+  const handlePhotosFolderPick = (e) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      pendingPhotosRef.current = files;
+      setBulkNotice({ type: 'info', text: `📁 ${files.length} fichiers de photos chargés — sélectionnez maintenant le fichier Excel à importer.` });
+      if (excelInputRef.current) excelInputRef.current.click();
+    }
+  };
+
   // --- Personnalisation parrain / Mairie : actions du panneau dédié ---------
 
   // Attribuer (ou retirer avec une chaîne vide) un parrain à la carte affichée
@@ -585,21 +890,25 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
     );
   };
 
-  // Téléverser le logo du parrain sélectionné (500 Ko max, image uniquement)
+  // Téléverser un logo (500 Ko max, image uniquement) :
+  //  - si un parrain est sélectionné → logo du parrain (backend + cache local)
+  //  - sinon → logo personnalisé de CETTE carte (cache local, toujours possible)
   const handleSponsorLogoFile = async (file) => {
-    if (!currentSponsorPhone) {
-      setSponsorNotice({ type: 'warning', text: "Sélectionnez d'abord un parrain pour cette carte." });
-      return;
-    }
     setSponsorLogoBusy(true);
     try {
       const dataUrl = await readImageFileAsDataUrl(file);
-      const result = await saveSponsorLogo(currentSponsorPhone, dataUrl);
-      setSponsors(prev => prev.map(s => (s.phone === currentSponsorPhone ? { ...s, sponsorLogo: result.sponsorLogo } : s)));
-      setSponsorNotice({
-        type: result.warning ? 'warning' : 'success',
-        text: result.warning ? `${result.warning} Le logo est néanmoins apposé sur la carte.` : 'Logo du parrain enregistré et apposé sur la carte.'
-      });
+      if (currentSponsorPhone) {
+        const result = await saveSponsorLogo(currentSponsorPhone, dataUrl);
+        setSponsors(prev => prev.map(s => (s.phone === currentSponsorPhone ? { ...s, sponsorLogo: result.sponsorLogo } : s)));
+        setSponsorNotice({
+          type: result.warning ? 'warning' : 'success',
+          text: result.warning ? `${result.warning} Le logo est néanmoins apposé sur la carte.` : 'Logo du parrain enregistré et apposé sur la carte.'
+        });
+      } else {
+        setCardLogo(cardCmuNumber, dataUrl);
+        setCardLogoState(dataUrl);
+        setSponsorNotice({ type: 'success', text: 'Logo personnalisé apposé sur cette carte (stocké localement, disponible hors-ligne).' });
+      }
     } catch (err) {
       setSponsorNotice({ type: 'error', text: err.message || 'Import du logo impossible.' });
     } finally {
@@ -811,7 +1120,7 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
 
   return (
     <div className="card-studio-view fade-in-up container-fluid py-4 px-3 px-md-4" style={{ maxWidth: '1440px', margin: '0 auto' }}>
-      
+
       {/* Banner Super Admin */}
       <section className="banner-mini mb-5" style={{
         background: 'linear-gradient(135deg, rgba(6, 78, 59, 0.96) 0%, rgba(4, 120, 87, 0.9) 100%), url("/bg_audit_stock.jpg") center/cover no-repeat',
@@ -843,8 +1152,8 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
           </div>
 
           <div className="d-flex align-items-center gap-3 flex-wrap">
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="btn fw-extrabold px-4 py-3 d-flex align-items-center gap-2 shadow-sm hover-lift"
               style={{ borderRadius: '16px', fontSize: '0.92rem', background: '#0f172a', color: '#ffffff', border: '1.5px solid #10b981', minHeight: '48px' }}
               onClick={handleTestVerifyClick}
@@ -853,8 +1162,8 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
             </button>
 
             {/* Téléchargement PNG HD (Recto & Verso) */}
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="btn fw-extrabold px-4 py-3 shadow-lg hover-lift d-flex align-items-center gap-2"
               style={{ borderRadius: '16px', fontSize: '0.94rem', cursor: 'pointer', background: '#0284c7', color: '#ffffff', border: 'none', minHeight: '48px' }}
               onClick={() => handleDownloadPng('BOTH')}
@@ -874,8 +1183,8 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
             </button>
 
             {/* Téléchargement PDF 2 pages CNI */}
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="btn fw-extrabold px-4 py-3 shadow-lg hover-lift d-flex align-items-center gap-2"
               style={{ borderRadius: '16px', fontSize: '0.94rem', cursor: 'pointer', background: '#d97706', color: '#ffffff', border: 'none', minHeight: '48px' }}
               onClick={() => handlePrintPdf(null)}
@@ -896,6 +1205,82 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
         </div>
       </section>
 
+      {/* 0. SECTION IMPORT EN MASSE (EXCEL MSD DAKAR + PHOTOS APPARIÉES) */}
+      <div className="card p-4 p-md-5 rounded-4 mb-5 shadow-sm" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '28px' }}>
+        <div className="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-3">
+          <div>
+            <h5 className="fw-extrabold mb-1 text-success d-flex align-items-center gap-2.5" style={{ fontSize: '1.25rem' }}>
+              <span>📥</span> 0. Import en masse — création de cartes à partir d'un fichier Excel
+            </h5>
+            <p className="text-sub small mb-0" style={{ fontSize: '0.88rem' }}>
+              Chargez le fichier MSD Dakar (ex : <strong>Ville de Dakar msd Dakar.xlsx</strong>) puis le dossier de photos.
+              Les photos sont appariées automatiquement par <strong>nom, code bénéficiaire ou téléphone</strong>.
+              Chaque ménage (même NUMERO_ADHERENT) est regroupé : le chef reçoit les ayants droit.
+            </p>
+          </div>
+          <div className="d-flex gap-2 flex-wrap">
+            <input
+              ref={photosInputRef}
+              type="file"
+              multiple
+              accept="image/*"
+              className="d-none"
+              onChange={handlePhotosFolderPick}
+            />
+            <input
+              ref={excelInputRef}
+              type="file"
+              accept=".xlsx,.xls,.csv"
+              className="d-none"
+              onChange={(e) => { const f = e.target.files && e.target.files[0]; if (f) handleBulkImport(f); }}
+            />
+            <button
+              type="button"
+              className="btn fw-extrabold px-4 py-3 hover-lift d-flex align-items-center gap-2"
+              style={{ borderRadius: '14px', fontSize: '0.88rem', background: '#0369a1', color: '#fff', border: '1.5px solid #38bdf8', minHeight: '48px' }}
+              disabled={bulkImporting}
+              onClick={() => { if (photosInputRef.current) photosInputRef.current.click(); }}
+            >
+              🗂️ 1️⃣ Dossier de photos…
+            </button>
+            <button
+              type="button"
+              className="btn fw-extrabold px-4 py-3 hover-lift d-flex align-items-center gap-2"
+              style={{ borderRadius: '14px', fontSize: '0.88rem', background: bulkImporting ? '#94a3b8' : '#059669', color: '#fff', border: '1.5px solid #10b981', minHeight: '48px' }}
+              disabled={bulkImporting}
+              onClick={() => { if (excelInputRef.current) excelInputRef.current.click(); }}
+            >
+              {bulkImporting ? (
+                <><span className="spinner-border spinner-border-sm" role="status"></span> Import en cours…</>
+              ) : (
+                <>📊 2️⃣ Importer le fichier Excel…</>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {bulkNotice && (
+          <div
+            className="alert mb-0 rounded-4 border-0 py-3 px-3.5"
+            style={{
+              fontSize: '0.86rem',
+              fontWeight: '700',
+              background: bulkNotice.type === 'error' ? 'rgba(220,38,38,0.12)' : bulkNotice.type === 'success' ? 'rgba(5,150,105,0.12)' : 'rgba(2,132,199,0.1)',
+              color: bulkNotice.type === 'error' ? '#b91c1c' : bulkNotice.type === 'success' ? '#047857' : '#0369a1',
+              lineHeight: 1.5
+            }}
+          >
+            {bulkNotice.text}
+          </div>
+        )}
+
+        <small className="text-muted d-block mt-2" style={{ fontSize: '0.76rem' }}>
+          💾 Zéro perte : les bénéficiaires importés sont enregistrés dans le store du studio ET poussés vers le backend.
+          Si PostgreSQL est indisponible, le serveur les conserve dans son fichier secours
+          (<code>backend/data/store.json</code>) et les rejoue automatiquement à la reconnexion de la base.
+        </small>
+      </div>
+
       {/* 1. SECTION SÉLECTION DU DOSSIER & CARTE À ÉDITER */}
       <div className="studio-grid-2">
         {/* Sélecteur de l'Adhérent Principal */}
@@ -905,8 +1290,8 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
               <h5 className="fw-extrabold mb-0 text-success d-flex align-items-center gap-2.5" style={{ fontSize: '1.25rem' }}>
                 <span>👤</span> 1. Dossier adhérent principal
               </h5>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="btn btn-sm text-white fw-extrabold px-3.5 py-2 shadow-sm hover-lift"
                 style={{ borderRadius: '12px', fontSize: '0.82rem', background: '#059669', border: '1.5px solid #10b981' }}
                 onClick={() => {
@@ -923,7 +1308,7 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
               <label className="form-label text-sub fw-extrabold" style={{ fontSize: '0.9rem' }}>
                 🏛️ Sélectionner l'adhérent MSD Dakar ({members.length} familles au total) :
               </label>
-              <select 
+              <select
                 className="form-select py-3 px-3.5 fw-extrabold"
                 style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '16px', fontSize: '0.95rem', minHeight: '52px' }}
                 value={selectedMemberId}
@@ -945,13 +1330,13 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
               <label className="form-label text-sub fw-extrabold mb-3.5 d-block" style={{ fontSize: '0.88rem' }}>
                 📡 Mode de destination du QR code :
               </label>
-              
+
               <div className="d-flex flex-wrap gap-3.5 mb-4">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="btn btn-sm fw-extrabold px-4 py-2.5 shadow-sm hover-lift"
-                  style={{ 
-                    borderRadius: '14px', 
+                  style={{
+                    borderRadius: '14px',
                     fontSize: '0.86rem',
                     minHeight: '48px',
                     background: qrTargetMode === 'HTTPS' ? '#059669' : 'var(--bg-card)',
@@ -963,11 +1348,11 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
                   🌐 URL web (https://mutualis.sn)
                 </button>
 
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="btn btn-sm fw-extrabold px-4 py-2.5 shadow-sm hover-lift"
-                  style={{ 
-                    borderRadius: '14px', 
+                  style={{
+                    borderRadius: '14px',
                     fontSize: '0.86rem',
                     minHeight: '48px',
                     background: qrTargetMode === 'WIFI_IP' ? '#059669' : 'var(--bg-card)',
@@ -979,11 +1364,11 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
                   📶 IP Wi-Fi PC (192.168.x.x)
                 </button>
 
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="btn btn-sm fw-extrabold px-4 py-2.5 shadow-sm hover-lift"
-                  style={{ 
-                    borderRadius: '14px', 
+                  style={{
+                    borderRadius: '14px',
                     fontSize: '0.86rem',
                     minHeight: '48px',
                     background: qrTargetMode === 'RAW_CODE' ? '#059669' : 'var(--bg-card)',
@@ -1002,10 +1387,10 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
                     🌐 URL Publique / Tunnel / En Ligne (Accessible depuis TOUT Wi-Fi & 4G/5G) :
                   </label>
                   <div className="d-flex gap-2.5 mb-2 flex-wrap">
-                    <input 
-                      type="text" 
-                      className="form-control fw-mono fw-bold py-2.5 px-3 flex-grow-1" 
-                      placeholder="https://mutualis.sn ou https://votre-tunnel.loca.lt" 
+                    <input
+                      type="text"
+                      className="form-control fw-mono fw-bold py-2.5 px-3 flex-grow-1"
+                      placeholder="https://mutualis.sn ou https://votre-tunnel.loca.lt"
                       style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '12px', minHeight: '46px', minWidth: '220px' }}
                       value={customPublicUrl}
                       onChange={(e) => {
@@ -1026,10 +1411,10 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
                     📶 Adresse IP Wi-Fi locale de votre PC ({customWifiIp || '192.168.1.42'}) :
                   </label>
                   <div className="d-flex gap-2.5 mb-2 flex-wrap">
-                    <input 
-                      type="text" 
-                      className="form-control fw-mono fw-bold py-2.5 px-3 flex-grow-1" 
-                      placeholder="ex: 192.168.1.42" 
+                    <input
+                      type="text"
+                      className="form-control fw-mono fw-bold py-2.5 px-3 flex-grow-1"
+                      placeholder="ex: 192.168.1.42"
                       style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '12px', minHeight: '46px', minWidth: '180px' }}
                       value={customWifiIp}
                       onChange={(e) => {
@@ -1165,9 +1550,9 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
             {/* Cadre Photo & Upload */}
             <div className="d-flex align-items-center gap-4 mb-4 p-4 rounded-4 bg-body border" style={{ borderColor: 'var(--border-color)', borderRadius: '20px' }}>
               {editForm.photoUrl || cardData.photoUrl ? (
-                <img 
-                  src={editForm.photoUrl || cardData.photoUrl} 
-                  alt="Photo Adhérent" 
+                <img
+                  src={editForm.photoUrl || cardData.photoUrl}
+                  alt="Photo Adhérent"
                   style={{ width: '76px', height: '76px', borderRadius: '50%', objectFit: 'cover', border: '3.5px solid #10b981', boxShadow: '0 6px 18px rgba(16,185,129,0.25)', flexShrink: 0 }}
                 />
               ) : (
@@ -1182,14 +1567,14 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
                 <div className="d-flex gap-3 align-items-center flex-wrap">
                   <label className="btn text-white fw-extrabold px-3.5 py-2.5 shadow-sm hover-lift" style={{ borderRadius: '14px', cursor: 'pointer', fontSize: '0.86rem', background: '#059669', border: '1.5px solid #10b981', minHeight: '46px', display: 'inline-flex', alignItems: 'center' }}>
                     📁 Importer une photo...
-                    <input 
-                      type="file" 
-                      accept="image/*" 
+                    <input
+                      type="file"
+                      accept="image/*"
                       style={{ display: 'none' }}
                       onChange={(e) => handlePhotoFileUpload(e, (dataUrl) => handleEditChange('photoUrl', dataUrl))}
                     />
                   </label>
-                  <input 
+                  <input
                     type="text"
                     className="form-control fw-bold flex-grow-1 py-2.5 px-3"
                     placeholder="Ou collez l'URL de la photo..."
@@ -1205,7 +1590,7 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
             <div className="studio-form-grid-2">
               <div className="studio-form-group">
                 <label>Prénom :</label>
-                <input 
+                <input
                   type="text"
                   className="form-control fw-bold"
                   value={editForm.firstName || ''}
@@ -1215,7 +1600,7 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
 
               <div className="studio-form-group">
                 <label>Nom :</label>
-                <input 
+                <input
                   type="text"
                   className="form-control fw-bold"
                   value={editForm.lastName || ''}
@@ -1232,7 +1617,7 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
                     </span>
                   )}
                 </label>
-                <input 
+                <input
                   type="text"
                   className="form-control fw-bold"
                   placeholder="JJ/MM/AAAA"
@@ -1243,7 +1628,7 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
 
               <div className="studio-form-group">
                 <label>Lieu de naissance :</label>
-                <input 
+                <input
                   type="text"
                   className="form-control fw-bold"
                   placeholder="ex: Dakar Plateau"
@@ -1278,7 +1663,7 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
 
               <div className="studio-form-group">
                 <label>Mutuelle d'origine :</label>
-                <input 
+                <input
                   type="text"
                   className="form-control fw-bold"
                   value={editForm.mutuelleOrigine || ''}
@@ -1288,7 +1673,7 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
 
               <div className="studio-form-group">
                 <label>🩸 Groupe sanguin :</label>
-                <select 
+                <select
                   className="form-select fw-bold"
                   value={editForm.bloodGroup || 'O+'}
                   onChange={(e) => handleEditChange('bloodGroup', e.target.value)}
@@ -1306,7 +1691,7 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
 
               <div className="studio-form-group">
                 <label>N° CSU / Matricule :</label>
-                <input 
+                <input
                   type="text"
                   className="form-control fw-bold font-monospace"
                   value={editForm.cmuNumber || ''}
@@ -1317,7 +1702,7 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
 
             <div className="studio-form-group">
               <label>Téléphone adhérent :</label>
-              <input 
+              <input
                 type="text"
                 className="form-control fw-bold"
                 placeholder="ex: 77 000 00 00"
@@ -1342,7 +1727,11 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
           <div className="studio-form-group"><label>Année scolaire *</label><input className="form-control fw-bold" value={academicData.academicYear} onChange={(e) => updateAcademicData({ academicYear: e.target.value })} placeholder="2026-2027" /></div>
           <div className="studio-form-group"><label>Classe / niveau *</label><input className="form-control fw-bold" value={academicData.classLevel} onChange={(e) => updateAcademicData({ classLevel: e.target.value })} placeholder={cardProgram === 'CMU_DAARA' ? 'Niveau 2 (Coran)' : '3ème'} /></div>
           <div className="studio-form-group"><label>{cardProgram === 'CMU_DAARA' ? 'Daara' : 'Établissement'} *</label><input className="form-control fw-bold" value={academicData.schoolName} onChange={(e) => updateAcademicData({ schoolName: e.target.value })} placeholder={cardProgram === 'CMU_DAARA' ? 'Daara Serigne...' : 'Lycée / école...'} /></div>
-          {cardProgram === 'CMU_ELEVES' && <><div className="studio-form-group"><label>IA</label><input className="form-control fw-bold" value={academicData.ia} onChange={(e) => updateAcademicData({ ia: e.target.value })} placeholder="IA de Dakar" /></div><div className="studio-form-group"><label>IEF</label><input className="form-control fw-bold" value={academicData.ief} onChange={(e) => updateAcademicData({ ief: e.target.value })} placeholder="IEF Dakar Plateau" /></div></>}
+          {/* N° INE / IEN : identifiant scolaire imprimé au recto (il peut différer
+              du code bénéficiaire CMU porté au verso, ex. SN-INE-2025-009341). */}
+          <div className="studio-form-group"><label>N° INE / IEN (Identifiant Élève)</label><input className="form-control fw-bold" value={academicData.ine} onChange={(e) => updateAcademicData({ ine: e.target.value })} placeholder={cardProgram === 'CMU_DAARA' ? 'DAARA-2025-0078' : 'SN-INE-2025-009341'} /></div>
+          <div className="studio-form-group"><label>IA</label><input className="form-control fw-bold" value={academicData.ia} onChange={(e) => updateAcademicData({ ia: e.target.value })} placeholder={cardProgram === 'CMU_DAARA' ? 'IA de Diourbel' : 'IA de Dakar'} /></div>
+          <div className="studio-form-group"><label>IEF</label><input className="form-control fw-bold" value={academicData.ief} onChange={(e) => updateAcademicData({ ief: e.target.value })} placeholder={cardProgram === 'CMU_DAARA' ? 'IEF Mbacké' : 'IEF Dakar Plateau'} /></div>
         </div>}
       </div>
 
@@ -1366,7 +1755,7 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
               color: sponsorsSource === 'server' ? '#047857' : '#b45309'
             }}
           >
-            {sponsorsSource === 'server' ? '☁️ Synchronisé serveur' : sponsorsSource === 'local' ? '💾 Mode hors-ligne (cache local)' : '⚠️ Aucun parrain trouvé'}
+            {sponsorsSource === 'server' ? '☁️ Synchronisé serveur' : sponsorsSource === 'local' || sponsorsSource === 'local-official' ? '💾 Mode hors-ligne (cache local)' : '⚠️ Aucun parrain trouvé'}
           </span>
         </div>
 
@@ -1432,17 +1821,20 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
                   type="button"
                   className="btn btn-sm fw-extrabold px-3 py-2 hover-lift"
                   style={{ borderRadius: '12px', background: '#059669', color: '#ffffff', minHeight: '44px' }}
-                  disabled={sponsorLogoBusy || !currentSponsorPhone}
+                  disabled={sponsorLogoBusy}
                   onClick={() => { if (sponsorLogoInputRef.current) sponsorLogoInputRef.current.click(); }}
                 >
-                  {sponsorLogoBusy ? '⏳ Traitement…' : '⬆️ Téléverser le logo'}
+                  {sponsorLogoBusy ? '⏳ Traitement…' : (currentSponsorPhone ? '⬆️ Logo du parrain' : '⬆️ Logo de cette carte')}
                 </button>
                 <button
                   type="button"
                   className="btn btn-sm fw-extrabold px-3 py-2 text-danger border border-danger hover-lift"
                   style={{ borderRadius: '12px', minHeight: '44px', background: 'rgba(220,38,38,0.06)' }}
-                  disabled={sponsorLogoBusy || !currentSponsorPhone || !currentSponsorLogo}
-                  onClick={handleRemoveSponsorLogo}
+                  disabled={sponsorLogoBusy || !(cardLogo || (currentSponsorPhone && currentSponsorLogo))}
+                  onClick={() => {
+                    if (currentSponsorPhone && currentSponsorLogo) handleRemoveSponsorLogo();
+                    else if (cardLogo) { setCardLogo(cardCmuNumber, null); setCardLogoState(null); setSponsorNotice({ type: 'success', text: 'Logo personnalisé retiré de cette carte.' }); }
+                  }}
                 >
                   🗑️ Retirer le logo
                 </button>
@@ -1822,7 +2214,7 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
               }}
             >
               {cardProgram !== 'CLASSIC' ? (
-                <SchoolCardFront cardData={cardData} currentUnion={currentUnion} getMsdLogo={getMsdLogo} />
+                <SchoolCardFront cardData={cardData} currentUnion={currentUnion} getMsdLogo={getMsdLogo} customLogo={currentSponsorLogo || cardLogo} />
               ) : (
                 <>
               {/* En-tête Officiel Recto : Logo MSD ÉMETTRICE (GAUCHE, dynamique) | Drapeau + République du Sénégal + Union (CENTRE) | Logo SEN-CSU (DROITE) */}
@@ -2056,7 +2448,7 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
               }}
             >
               {cardProgram !== 'CLASSIC' ? (
-                <SchoolCardBack cardData={cardData} qrCodeDataUrl={qrCodeDataUrl} />
+                <SchoolCardBack cardData={cardData} qrCodeDataUrl={qrCodeDataUrl} customLogo={currentSponsorLogo || cardLogo} />
               ) : (
                 <>
               {/* En-tête Verso : Logo UNAMUSC (GAUCHE) | Drapeau + Couverture Sanitaire (CENTRE) | Logo SEN-CSU (DROITE) */}

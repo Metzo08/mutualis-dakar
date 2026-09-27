@@ -41,3 +41,7 @@ dev-dist/
 modele cartes cmu-eleves et daara/
 modele_eleves_cmu.xlsx
 scripts/_qa_*.png
+
+# Donnees runtime du repli fichier du backend (recreees automatiquement,
+# contiennent les adhesions/cotisations saisies — jamais versionnees)
+backend/data/

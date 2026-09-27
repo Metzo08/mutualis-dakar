@@ -4,10 +4,15 @@ import { msdDakarMembers } from '../data/msdDakarMembers.js';
 // v9 : purge des caches v8 obsolètes (photos MSD Dakar recalculées depuis
 // l'Excel — les anciens stores gardaient des photoUrl périmées seules les
 // membres aux identifiants inchangés étaient resynchronisés).
-const STORAGE_KEY = 'unamusc_beneficiaries_store_v13';
+// v14 : alignement sur les cartes modèles officielles MSDD Dakar
+// (« modele cartes cmu-eleves et daara ») — codes bénéficiaires scolaires
+// EDU_DKR_26000163 / EDU_MBK_26000164 et N° INE/IEN distincts du code CMU.
+// La purge des caches v1→v13 garantit que les cartes déjà imprimées ne
+// réaffichent pas d'anciens codes scolaires.
+const STORAGE_KEY = 'unamusc_beneficiaries_store_v14';
 // Nettoyage one-shot des anciennes générations de cache
 try {
-  for (let i = 1; i <= 12; i++) {
+  for (let i = 1; i <= 13; i++) {
     localStorage.removeItem(`unamusc_beneficiaries_store_v${i}`);
   }
 } catch (e) { /* stockage indisponible */ }
@@ -192,10 +197,10 @@ export const demoProfiles = [
     dependents: []
   },
   {
-    id: "MEM-EDU-009341",
-    cmuNumber: "SN-INE-2025-009341",
-    adherentCode: "SN-INE-2025-009341",
-    rawCode: "SN-INE-2025-009341",
+    id: "MEM-EDU-26000163",
+    cmuNumber: "EDU_DKR_26000163",
+    adherentCode: "EDU_DKR_26000163",
+    rawCode: "EDU_DKR_26000163",
     firstName: "MOUSSA",
     lastName: "DIOP",
     birthDate: "05/09/2010",
@@ -209,6 +214,7 @@ export const demoProfiles = [
     phone: "769876543",
     tuteurName: "Ousmane DIOP",
     tuteurPhone: "76 987 65 43",
+    ine: "SN-INE-2025-009341",
     package: "CMU-Élèves 100%",
     cardTypeLabel: "CMU-Élèves",
     cardProgram: "CMU_ELEVES",
@@ -217,7 +223,8 @@ export const demoProfiles = [
       classLevel: "3ème",
       schoolName: "Lycée Blaise Diagne (Dakar)",
       ia: "IA de Dakar",
-      ief: "IEF Dakar Plateau"
+      ief: "IEF Dakar Plateau",
+      ine: "SN-INE-2025-009341"
     },
     photoUrl: "/msd_photos/moussa_diop_ine_009341.jpg",
     hasOfficialPhoto: true,
@@ -228,10 +235,10 @@ export const demoProfiles = [
     dependents: []
   },
   {
-    id: "MEM-DAARA-0078",
-    cmuNumber: "DAARA-2025-0078",
-    adherentCode: "DAARA-2025-0078",
-    rawCode: "DAARA-2025-0078",
+    id: "MEM-DAARA-26000164",
+    cmuNumber: "EDU_MBK_26000164",
+    adherentCode: "EDU_MBK_26000164",
+    rawCode: "EDU_MBK_26000164",
     firstName: "MAMADOU",
     lastName: "FALL",
     birthDate: "20/07/2013",
@@ -240,11 +247,12 @@ export const demoProfiles = [
     bloodGroup: "O+",
     address: "DAARA SERIGNE SALIOU MBACKÉ, TOUBA",
     commune: "Touba",
-    departmentUnionId: "DRB",
-    mutuelleOrigine: "Mutuelle de Santé Départementale de Mbacké",
+    departmentUnionId: "DKR",
+    mutuelleOrigine: "Mutuelle de Santé Départementale de Dakar",
     phone: "705551234",
     tuteurName: "Serigne Modou MBACKE",
     tuteurPhone: "70 555 12 34",
+    ine: "DAARA-2025-0078",
     package: "CMU-Daara 100%",
     cardTypeLabel: "CMU-Daara",
     cardProgram: "CMU_DAARA",
@@ -253,7 +261,8 @@ export const demoProfiles = [
       classLevel: "Niveau 2 (Coran)",
       schoolName: "Daara Serigne Saliou Mbacké (Touba)",
       ia: "IA de Diourbel",
-      ief: "IEF Mbacké"
+      ief: "IEF Mbacké",
+      ine: "DAARA-2025-0078"
     },
     photoUrl: "/msd_photos/mamadou_fall_daara_0078.jpg",
     hasOfficialPhoto: true,

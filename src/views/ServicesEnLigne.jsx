@@ -1,4 +1,4 @@
-import { addMemberFromAdhesion } from '../utils/beneficiaryStore';
+import { addMemberFromAdhesion, getStoredMembers, saveStoredMembers } from '../utils/beneficiaryStore';
 import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
@@ -456,6 +456,18 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
       .then(data => {
         if (data.success) {
           if (window.addLog) window.addLog('SUCCESS', `Adhésion créée avec succès. CMU: ${data.cmuNumber}`);
+          // Persistance ZÉRO PERTE : le membre du store est réaligné sur le
+          // numéro CMU officiel renvoyé par le serveur (base ou fichier secours).
+          // La carte créée localement reste valable et retrouvable dans le studio.
+          try {
+            const stored = getStoredMembers();
+            const lastId = localStorage.getItem('unamusc_last_created_member_id');
+            const idx = stored.findIndex(m => m.id === lastId);
+            if (idx >= 0) {
+              stored[idx] = { ...stored[idx], cmuNumber: data.cmuNumber, adherentCode: data.cmuNumber, verificationStatus: 'VERIFIED_SERVER' };
+              saveStoredMembers(stored);
+            }
+          } catch (e) { console.warn('Réalignement CMU du store impossible :', e); }
           setGeneratedCmuNumber(data.cmuNumber);
           setPaymentSuccess(true);
           setRegStep(8);

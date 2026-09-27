@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { query, pool } = require('./db');
+const fallbackStore = require('./fallbackStore');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -214,7 +215,7 @@ app.post('/api/auth/citizen/login', validate(citizenLoginSchema), async (req, re
 
     const cleanedPhone = phone; // déjà normalisé par le schéma zod
     const userRes = await query('SELECT * FROM beneficiaries WHERE phone = $1 LIMIT 1', [cleanedPhone]);
-    
+
     if (userRes.rows.length === 0) {
       return res.status(404).json({ error: 'Aucun assuré trouvé avec ce numéro.' });
     }
@@ -254,7 +255,7 @@ app.post('/api/auth/citizen/login', validate(citizenLoginSchema), async (req, re
 
     // Get family members
     const fRes = await query('SELECT * FROM family_members WHERE beneficiary_id = $1 ORDER BY id ASC', [user.id]);
-    
+
     const mappedUser = {
       id: user.id,
       firstName: user.first_name,
@@ -545,7 +546,7 @@ app.post('/api/adhesions', validate(adhesionSchema), async (req, res) => {
       schoolName || null,
       hashedPin
     ]);
-    
+
     const beneficiaryId = bResult.rows[0].id;
 
     // Insert Family Members & Create Sub-accounts for Sponsoring/Students
@@ -648,6 +649,39 @@ app.post('/api/adhesions', validate(adhesionSchema), async (req, res) => {
   } catch (err) {
     await client.query('ROLLBACK');
     console.error('Erreur lors de l\'enregistrement de l\'adhésion :', err);
+
+    // ========================================================
+    //  FALLBACK : base indisponible (Postgres non démarré…)
+    //  → l'adhésion est TOUJOURS sauvegardée dans le fichier
+    //    backend/data/store.json, puis rejouée à la reconnexion.
+    // ========================================================
+    try {
+      const body = req.body || {};
+      fallbackStore.addRecord('adhesions', {
+        firstName: body.firstName || '',
+        lastName: body.lastName || '',
+        birthDate: body.birthDate || body.dateOfBirth || '',
+        phone: body.phone || '',
+        email: body.email || '',
+        address: body.address || '',
+        mutuelleName: body.mutuelleName || 'MSD Dakar',
+        packageType: body.packageType || 'individuel',
+        paymentMethod: body.paymentMethod || 'mobile_money',
+        cmuNumber: cmuNumber,
+        sponsorPhone: body.sponsorPhone || null,
+        schoolName: body.schoolName || null,
+        status: 'active'
+      });
+      return res.status(201).json({
+        success: true,
+        fallback: true,
+        message: 'Base indisponible : votre adhésion est enregistrée en mode secours (fichier) et sera synchronisée automatiquement à la reconnexion.',
+        cmuNumber
+      });
+    } catch (fbErr) {
+      console.error('[FallbackStore] Échec de la sauvegarde secours :', fbErr.message);
+    }
+
     res.status(500).json({ error: 'Erreur lors de la sauvegarde de l\'adhésion.' });
   } finally {
     client.release();
@@ -1919,6 +1953,102 @@ app.get('/api/lan-ip', (req, res) => {
   res.json({ ip: lanIp || '192.168.1.42' });
 });
 
+// ============================================================
+//  IMPORT EN MASSE + HYDRATATION / SYNCHRONISATION FALLBACK
+//  (doit être déclaré AVANT le gestionnaire 404 ci-dessous)
+// ============================================================
+
+// Import en masse de bénéficiaires (Excel « Ville de Dakar msd Dakar » ou
+// adhésion de masse). Si PostgreSQL est indisponible → fallback fichier
+// (backend/data/store.json) : ZÉRO PERTE, même les cartes déjà imprimées.
+app.post('/api/beneficiaries/bulk', async (req, res) => {
+  const rows = Array.isArray(req.body && req.body.rows) ? req.body.rows : [];
+  if (rows.length === 0) return res.status(400).json({ error: 'Aucune ligne à importer.' });
+  if (rows.length > 5000) return res.status(400).json({ error: 'Maximum 5000 lignes par import.' });
+
+  try {
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+      let inserted = 0;
+      let skipped = 0;
+      for (const r of rows) {
+        const cmu = (r.codeBeneficiaire || r.cmuNumber || '').toString().trim();
+        if (!cmu) { skipped++; continue; }
+        // Idempotent : le même code bénéficiaire n'est jamais importé deux fois
+        const exists = await client.query('SELECT id FROM beneficiaries WHERE cmu_number = $1 LIMIT 1', [cmu]);
+        if (exists.rows.length > 0) { skipped++; continue; }
+        await client.query(
+          `INSERT INTO beneficiaries (first_name, last_name, birth_date, phone, email, address, mutuelle_name, package_type, payment_method, cmu_number, status, school_name, sponsor_phone)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+          [r.prenom || r.firstName || '', r.nom || r.lastName || '', r.birthDate || '', r.telephone || r.phone || '',
+           r.email || '', r.address || '', r.mutuelleName || 'MSD Dakar', r.packageType || 'individuel', r.paymentMethod || 'excel_import',
+           cmu, r.status || 'active', r.schoolName || null, r.sponsorPhone || null]
+        );
+        inserted++;
+      }
+      await client.query('COMMIT');
+      await query(`INSERT INTO audit_logs (action, actor, details) VALUES ($1, $2, $3)`,
+        ['IMPORT_MASSE', 'card-studio', `Import en masse de ${inserted} bénéficiaires (${skipped} ignorés/doublons).`]);
+      return res.status(201).json({ success: true, mode: 'database', inserted, skipped, total: rows.length });
+    } finally {
+      client.release();
+    }
+  } catch (dbErr) {
+    // Base indisponible → fallback fichier : chaque ligne est conservée
+    console.warn('[BULK] Base indisponible, fallback fichier :', dbErr.message);
+    let inserted = 0;
+    for (const r of rows) {
+      const cmu = (r.codeBeneficiaire || r.cmuNumber || '').toString().trim();
+      if (!cmu) continue;
+      const already = fallbackStore.listRecords('beneficiaries').some(x => (x.cmuNumber || '') === cmu);
+      if (already) continue;
+      fallbackStore.addRecord('beneficiaries', {
+        cmuNumber: cmu,
+        numeroAdherent: r.numeroAdherent || null,
+        prenom: r.prenom || r.firstName || '',
+        nom: r.nom || r.lastName || '',
+        birthDate: r.birthDate || '',
+        sexe: r.sexe || '',
+        telephone: r.telephone || r.phone || '',
+        address: r.address || '',
+        mutuelleName: r.mutuelleName || 'MSD Dakar',
+        packageType: r.packageType || 'individuel',
+        photoUrl: r.photoUrl || null,
+        status: 'active'
+      });
+      inserted++;
+    }
+    return res.status(201).json({
+      success: true,
+      mode: 'fallback-file',
+      inserted,
+      total: rows.length,
+      message: 'Base indisponible : les bénéficiaires sont conservés dans le fichier secours (backend/data/store.json) et seront rejoués automatiquement.'
+    });
+  }
+});
+
+// Hydratation : retourne les bénéficiaires du fallback fichier (pour que le
+// Studio retrouve les adhésions/importations perdues) + tentative de flush DB.
+app.get('/api/beneficiaries/fallback', async (req, res) => {
+  try {
+    const flush = await fallbackStore.flushToDb(query);
+    const records = fallbackStore.listRecords('beneficiaries');
+    return res.json({ success: true, count: records.length, flushed: flush.flushed, remaining: flush.remaining, records });
+  } catch (err) {
+    return res.json({ success: true, count: 0, flushed: 0, remaining: 0, records: [] });
+  }
+});
+
+// Statut du fallback (diagnostic)
+app.get('/api/fallback-status', (req, res) => {
+  const store = fallbackStore.readStore();
+  const counts = {};
+  for (const [k, v] of Object.entries(store)) counts[k] = Array.isArray(v) ? v.length : 0;
+  res.json({ success: true, path: fallbackStore.STORE_PATH, counts });
+});
+
 // Gestionnaire 404 pour les routes non définies
 app.use((req, res, next) => {
   res.status(404).json({ error: "Route non trouvée" });
@@ -1984,8 +2114,7 @@ app.use((err, req, res, next) => {
   } catch (e) {
     console.warn('[Voix] Impossible de lancer Piper automatiquement :', e.message);
   }
-})();
-
+  })();
 
 // Start the server
 if (process.env.NODE_ENV !== 'test') {

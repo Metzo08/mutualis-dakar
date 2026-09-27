@@ -78,6 +78,23 @@ export const assignSponsorToCard = (cmuNumber, phone) => {
   writeStore(ASSIGN_STORE_KEY, store);
 };
 
+// --- Logo personnalisé par carte (fonctionne même sans parrain enregistré) -
+
+const CARD_LOGO_STORE_KEY = 'cmu-card-logos';
+
+export const getCardLogo = (cmuNumber) => {
+  if (!cmuNumber) return null;
+  return readStore(CARD_LOGO_STORE_KEY, {})[String(cmuNumber)] || null;
+};
+
+export const setCardLogo = (cmuNumber, logoUrl) => {
+  if (!cmuNumber) return;
+  const store = readStore(CARD_LOGO_STORE_KEY, {});
+  if (logoUrl) store[String(cmuNumber)] = logoUrl;
+  else delete store[String(cmuNumber)];
+  writeStore(CARD_LOGO_STORE_KEY, store);
+};
+
 // --- Lecture d'un fichier image --------------------------------------------
 
 export const readImageFileAsDataUrl = (file) =>
