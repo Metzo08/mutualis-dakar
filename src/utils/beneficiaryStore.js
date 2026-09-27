@@ -9,10 +9,13 @@ import { msdDakarMembers } from '../data/msdDakarMembers.js';
 // EDU_DKR_26000163 / EDU_MBK_26000164 et N° INE/IEN distincts du code CMU.
 // La purge des caches v1→v13 garantit que les cartes déjà imprimées ne
 // réaffichent pas d'anciens codes scolaires.
-const STORAGE_KEY = 'unamusc_beneficiaries_store_v14';
+// v15 : rattachement de MAMADOU FALL (EDU_MBK_26000164) à la MSD de Diourbel
+// et non à celle de Dakar. La purge du cache v14 garantit que la fiche
+// corrigée remplace celle qui contenait l'affectation erronée.
+const STORAGE_KEY = 'unamusc_beneficiaries_store_v15';
 // Nettoyage one-shot des anciennes générations de cache
 try {
-  for (let i = 1; i <= 13; i++) {
+  for (let i = 1; i <= 14; i++) {
     localStorage.removeItem(`unamusc_beneficiaries_store_v${i}`);
   }
 } catch (e) { /* stockage indisponible */ }
@@ -247,8 +250,11 @@ export const demoProfiles = [
     bloodGroup: "O+",
     address: "DAARA SERIGNE SALIOU MBACKÉ, TOUBA",
     commune: "Touba",
-    departmentUnionId: "DKR",
-    mutuelleOrigine: "Mutuelle de Santé Départementale de Dakar",
+    // Correctif : Mamadou FALL est rattaché à la MSD de DIOURBEL (Touba) et
+    // NON à celle de Dakar. Cette valeur erronée déterminait à tort la MSD
+    // émettrice de sa carte ainsi que son compte de paiement Kadev.
+    departmentUnionId: "DRB",
+    mutuelleOrigine: "Mutuelle de Santé Départementale de Diourbel",
     phone: "705551234",
     tuteurName: "Serigne Modou MBACKE",
     tuteurPhone: "70 555 12 34",

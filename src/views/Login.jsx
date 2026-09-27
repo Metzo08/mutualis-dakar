@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_BASE, setTokens } from '../utils/api';
 
 // Registre des 13 profils d'accès avec E-mail et Mot de passe uniques
 export const PRESET_ACCOUNTS_13 = [
@@ -38,7 +39,37 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
     }
   };
 
-  const handleLoginSubmit = (e) => {
+  /**
+   * Récupère un VRAI jeton d'accès auprès du backend pour les portals agent
+   * et super admin. Sans ce jeton, les routes protégées (enregistrement du
+   * logo d'un parrain, gestion des marchands…) répondent 401 : la session
+   * applicative seule ne suffit pas.
+   *
+   * L'échec n'est PAS bloquant : la session locale reste valide et
+   * l'application fonctionne comme avant, seule la synchronisation serveur
+   * est indisponible.
+   */
+  const syncBackendSession = async (username, password) => {
+    if (!username || !password) return false;
+    try {
+      const res = await fetch(`${API_BASE}/api/auth/agent/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
+      if (!res.ok) return false;
+      const data = await res.json();
+      if (data && (data.token || data.accessToken)) {
+        setTokens(data.token || data.accessToken, data.refreshToken);
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  };
+
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
     if (!emailInput || !passwordInput) {
       setError('Veuillez remplir votre e-mail et votre mot de passe.');
@@ -89,6 +120,8 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
         } else if (portal === 'agent' || rbacMode === 'agent' || rbacMode === 'superadmin' || rbacMode === 'pharmacist') {
           localStorage.setItem('cmu-agent-user', JSON.stringify(user));
           if (setAgentUser) setAgentUser(user);
+          // Jeton backend : indispensable pour les routes protégées.
+          syncBackendSession(emailInput.trim(), passwordInput);
         } else {
           localStorage.setItem('cmu-partner-user', JSON.stringify(user));
           if (setPartnerUser) setPartnerUser(user);
@@ -107,6 +140,7 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
         } else if (portal === 'agent') {
           localStorage.setItem('cmu-agent-user', JSON.stringify(userObj));
           if (setAgentUser) setAgentUser(userObj);
+          syncBackendSession(matchedDynamic.email || matchedDynamic.username || emailInput.trim(), passwordInput);
         } else if (portal === 'partner') {
           localStorage.setItem('cmu-partner-user', JSON.stringify(userObj));
           if (setPartnerUser) setPartnerUser(userObj);

@@ -1,5 +1,51 @@
 import { describe, it, expect } from 'vitest';
-import { dedupeMembers } from '../utils/beneficiaryStore';
+import { dedupeMembers, getStoredMembers } from '../utils/beneficiaryStore';
+import { resolveUnion, resolveCardProgram } from '../utils/cardPrograms';
+
+/**
+ * MAMADOU FALL (carte CMU-Daara, EDU_MBK_26000164) est élève du daara de
+ * Touba : il relève de la MSD de Diourbel. Il était à tort rattaché à celle
+ * de Dakar, ce qui désignait la mauvaise MSD émettrice sur sa carte et le
+ * mauvais compte de paiement Kadev.
+ */
+describe('Rattachement de MAMADOU FALL', () => {
+  const mamadou = getStoredMembers().find(
+    (m) => String(m.cmuNumber || '').includes('26000164') || (m.lastName === 'FALL' && m.firstName === 'MAMADOU')
+  );
+
+  it('la fiche existe dans le store', () => {
+    expect(mamadou).toBeDefined();
+  });
+
+  it('est rattaché à la MSD de Diourbel et non à celle de Dakar', () => {
+    expect(mamadou.departmentUnionId).toBe('DRB');
+    expect(mamadou.departmentUnionId).not.toBe('DKR');
+  });
+
+  it('porte la bonne dénomination de mutuelle', () => {
+    expect(mamadou.mutuelleOrigine).toBe('Mutuelle de Santé Départementale de Diourbel');
+  });
+
+  it('sa MSD émettrice est bien Diourbel', () => {
+    const union = resolveUnion(mamadou.departmentUnionId);
+    expect(union.id).toBe('DRB');
+    expect(union.region).toBe('Diourbel');
+  });
+
+  it('reste une carte CMU-Daara (pas de circuit IA/IEF)', () => {
+    const program = resolveCardProgram(mamadou.cardProgram);
+    expect(program.id).toBe('CMU_DAARA');
+    expect(program.showIef).toBe(false);
+  });
+
+  it('ne contredit pas la règle d\'unicité des fiches', () => {
+    const members = getStoredMembers();
+    const occurrences = members.filter(
+      (m) => String(m.cmuNumber || '').includes('26000164')
+    );
+    expect(occurrences).toHaveLength(1);
+  });
+});
 
 /**
  * Un même bénéficiaire peut entrer deux fois dans le studio (import Excel +

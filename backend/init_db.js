@@ -1262,12 +1262,23 @@ async function initializeDatabase() {
     const salt = await bcrypt.genSalt(10);
     const hashAgent = await bcrypt.hash('senecarte', salt);
     const hashSuperAdmin = await bcrypt.hash('superadmin2026', salt);
+    // Compte du Super Admin présenté sur l'écran de connexion (ACC-11 :
+    // Dr. Mamadou Ba). Sans lui, la connexion applicative aboutit mais aucun
+    // jeton n'est délivré : les routes protégées (logo de parrain, marchands
+    // Kadev…) répondraient 401 malgré une session valide.
+    const hashAnacsu = await bcrypt.hash('SuperAdmin2026!', salt);
 
     await pool.query(
       `INSERT INTO agents (username, password_hash, first_name, last_name, role, department) VALUES
        ('agent@cmu.sn', $1, 'Amadou', 'Sall', 'Admin Régional', 'Pikine'),
        ('superadmin@cmu.sn', $2, 'Moussa', 'Ndiaye', 'Super Admin', NULL)`,
        [hashAgent, hashSuperAdmin]
+    );
+    await pool.query(
+      `INSERT INTO agents (username, password_hash, first_name, last_name, role, department)
+       VALUES ('superadmin@anacsu.sn', $1, 'Mamadou', 'Ba', 'Super Admin', NULL)
+       ON CONFLICT (username) DO NOTHING`,
+      [hashAnacsu]
     );
     console.log('Agent CMU de démonstration créé.');
 
