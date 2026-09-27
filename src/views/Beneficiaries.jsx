@@ -656,8 +656,8 @@ export default function Beneficiaries({ lang, agentUser }) {
           <span style={{ fontSize: '1.2rem' }}>📊</span>
           <div>
             <strong style={{ color: 'var(--text-main)' }}>Registre Régional des Assurés CSU :</strong>{' '}
-            <span style={{ color: '#3b82f6', fontWeight: '800' }}>18 450 bénéficiaires enregistrés</span>{' '}
-            <span style={{ color: 'var(--text-sub)', fontSize: '0.78rem' }}>(16 236 actifs • 587 en attente de validation • 1 627 suspendus)</span>
+            <span style={{ color: '#3b82f6', fontWeight: '800' }}>{beneficiaries.length} bénéficiaires enregistrés</span>{' '}
+            <span style={{ color: 'var(--text-sub)', fontSize: '0.78rem' }}>({beneficiaries.filter(b => ['active', 'actif'].includes(String(b.status).toLowerCase())).length} actifs • {beneficiaries.filter(b => ['pending', 'en attente'].includes(String(b.status).toLowerCase())).length} en attente de validation • {beneficiaries.filter(b => ['suspended', 'suspendu'].includes(String(b.status).toLowerCase())).length} suspendus)</span>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -704,17 +704,10 @@ export default function Beneficiaries({ lang, agentUser }) {
             {(() => {
               const pageSize = 10;
 
-              const getTotalVolume = () => {
-                if (searchQuery) return filteredBeneficiaries.length;
-                const st = (selectedStatus || 'all').toLowerCase();
-                if (selectedMutuelle !== 'all') {
-                  return 2306; // Approx per mutuelle
-                }
-                if (st === 'active' || st === 'actif') return 16236;
-                if (st === 'pending' || st === 'en attente') return 587;
-                if (st === 'suspended' || st === 'suspendu') return 1627;
-                return 18450;
-              };
+              // Le volume affiché est celui de la liste RÉELLEMENT chargée.
+              // Aucune volumétrie inventée : un registre annonçant 18 450
+              // assurés pour 41 fiches en base induit l'agent en erreur.
+              const getTotalVolume = () => filteredBeneficiaries.length;
 
               const totalVolume = getTotalVolume();
               const totalPages = Math.max(1, Math.ceil(totalVolume / pageSize));
@@ -861,17 +854,7 @@ export default function Beneficiaries({ lang, agentUser }) {
       {/* Pagination controls */}
       {(() => {
         const pageSize = 10;
-        const getTotalVolume = () => {
-          if (searchQuery) return filteredBeneficiaries.length;
-          const st = (selectedStatus || 'all').toLowerCase();
-          if (selectedMutuelle !== 'all') {
-            return 2306;
-          }
-          if (st === 'active' || st === 'actif') return 16236;
-          if (st === 'pending' || st === 'en attente') return 587;
-          if (st === 'suspended' || st === 'suspendu') return 1627;
-          return 18450;
-        };
+        const getTotalVolume = () => filteredBeneficiaries.length;
 
         const totalVolume = getTotalVolume();
         const totalPages = Math.max(1, Math.ceil(totalVolume / pageSize));

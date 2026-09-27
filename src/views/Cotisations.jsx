@@ -299,7 +299,7 @@ export default function Cotisations({ lang, portalMode, citizenUser, agentUser }
                     <tbody>
                       {(() => {
                         const pageSize = 10;
-                        const totalVolume = isAgent ? 14280 : activeList.length;
+                        const totalVolume = activeList.length;
                         const totalPages = Math.max(1, Math.ceil(totalVolume / pageSize));
                         const safePage = Math.min(page, totalPages);
 
@@ -346,7 +346,7 @@ export default function Cotisations({ lang, portalMode, citizenUser, agentUser }
               {/* Pagination Controls */}
               {(() => {
                 const pageSize = 10;
-                const totalVolume = isAgent ? 14280 : activeList.length;
+                const totalVolume = activeList.length;
                 const totalPages = Math.max(1, Math.ceil(totalVolume / pageSize));
                 const safePage = Math.min(page, totalPages);
                 const startItem = totalVolume === 0 ? 0 : (safePage - 1) * pageSize + 1;

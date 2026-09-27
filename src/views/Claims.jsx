@@ -632,7 +632,7 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
               <tbody>
                 {(() => {
                   const pageSize = 10;
-                  const totalVolume = isAgent ? 3421 : filteredClaims.length;
+                  const totalVolume = filteredClaims.length;
                   const totalPages = Math.max(1, Math.ceil(totalVolume / pageSize));
                   const safePage = Math.min(claimPage, totalPages);
                   
@@ -741,7 +741,7 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
           {/* Pagination Controls */}
           {(() => {
             const pageSize = 10;
-            const totalVolume = isAgent ? 3421 : filteredClaims.length;
+            const totalVolume = filteredClaims.length;
             const totalPages = Math.max(1, Math.ceil(totalVolume / pageSize));
             const safePage = Math.min(claimPage, totalPages);
             const startItem = totalVolume === 0 ? 0 : (safePage - 1) * pageSize + 1;

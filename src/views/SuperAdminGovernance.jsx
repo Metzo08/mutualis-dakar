@@ -92,20 +92,12 @@ export default function SuperAdminGovernance({ lang = 'fr', setView, agentUser, 
       setDashboardStats(data);
     } catch (err) {
       console.error('Failed to fetch dashboard stats:', err);
-      // Mode démo : si l'API n'est pas accessible ou l'auth absente (mode démo RBAC),
-      // on affiche des statistiques de démonstration réalistes.
-      const demoStats = {
-        totalBeneficiaries: 18450,
-        totalContributions: 82972500,
-        totalDonations: 1247500,
-        totalClaims: 3421,
-        totalAdhesions: 2103,
-        totalPartners: 87,
-        byPackage: { 'individuel': 8120, 'familial': 6340, 'scolaire': 2980, 'gratuité': 1010 },
-        _demo: true
-      };
-      setDashboardStats(demoStats);
-      setStatsError('Mode démonstration — connectez-vous avec un compte Super Admin réel pour les données live.');
+      // AUCUN mode démonstration. Un tableau de bord de gouvernance qui
+      // affiche 18 450 assurés et 82 972 500 FCFA de cotisations alors que
+      // l'API est injoignable est pire qu'un écran vide : ces montants
+      // peuvent servir à décider d'un budget ou d'une tarification.
+      setDashboardStats(null);
+      setStatsError("Statistiques indisponibles : l'API n'a pas répondu. Aucun chiffre de remplacement n'est affiché.");
     } finally {
       setStatsLoading(false);
     }
