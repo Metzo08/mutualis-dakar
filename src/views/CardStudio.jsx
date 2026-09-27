@@ -1387,7 +1387,12 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
                     if (fresh.length > 0) setSelectedMemberId(fresh[0].id);
                   }}
                 >
-                  🔄 Recharger les {resetToDefaultMembers().length} assurés
+                  {/* ⚠️ Ne jamais appeler resetToDefaultMembers() ici : cette
+                      fonction écrit dans le localStorage et dispatche un
+                      événement, ce qui provoquerait une boucle de rendu
+                      infinie (« Too many re-renders »). On affiche le nombre
+                      courant, sans effet de bord. */}
+                  🔄 Recharger les {members.length} assurés
                 </button>
               </div>
             </div>

@@ -371,9 +371,13 @@ export default function SuperAdminGovernance({ lang = 'fr', setView, agentUser, 
               {/* KPIs principaux - Clickable navigation cards */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
                 {[
+                  // AUCUNE valeur de repli : un chiffre absent doit s'afficher
+                  // « — », pas un nombre inventé. Les 18 450 assurés et
+                  // 82 972 500 FCFA affichés ici étaient des valeurs en dur,
+                  // sans lien avec la base : elles trompaient la gouvernance.
                   {
                     label: 'Assurés totaux',
-                    value: dashboardStats.totalBeneficiaries ?? dashboardStats.beneficiaries ?? 18450,
+                    value: dashboardStats.totalBeneficiaries ?? dashboardStats.beneficiaries,
                     icon: '👥',
                     color: '#3b82f6',
                     isMoney: false,
@@ -382,7 +386,7 @@ export default function SuperAdminGovernance({ lang = 'fr', setView, agentUser, 
                   },
                   {
                     label: 'Assurés actifs',
-                    value: Math.floor((dashboardStats.totalBeneficiaries ?? dashboardStats.beneficiaries ?? 18450) * 0.88),
+                    value: dashboardStats.activeBeneficiaries ?? dashboardStats.active,
                     icon: '💳',
                     color: '#10b981',
                     isMoney: false,
@@ -391,7 +395,7 @@ export default function SuperAdminGovernance({ lang = 'fr', setView, agentUser, 
                   },
                   {
                     label: 'Dossiers en attente',
-                    value: dashboardStats.totalClaims ?? dashboardStats.claims ?? 587,
+                    value: dashboardStats.totalClaims ?? dashboardStats.claims,
                     icon: '⏳',
                     color: '#f59e0b',
                     isMoney: false,
@@ -400,7 +404,7 @@ export default function SuperAdminGovernance({ lang = 'fr', setView, agentUser, 
                   },
                   {
                     label: 'Mutuelles actives',
-                    value: dashboardStats.totalPartners ?? dashboardStats.partners ?? 24,
+                    value: dashboardStats.totalPartners ?? dashboardStats.partners,
                     icon: '📋',
                     color: '#f59e0b',
                     isMoney: false,
@@ -409,7 +413,7 @@ export default function SuperAdminGovernance({ lang = 'fr', setView, agentUser, 
                   },
                   {
                     label: 'Cotisations perçues (FCFA)',
-                    value: dashboardStats.totalContributions ?? dashboardStats.contributions ?? 82972500,
+                    value: dashboardStats.totalContributions ?? dashboardStats.contributions,
                     icon: '📝',
                     color: '#8b5cf6',
                     isMoney: true,
@@ -418,7 +422,7 @@ export default function SuperAdminGovernance({ lang = 'fr', setView, agentUser, 
                   },
                   {
                     label: 'Total des fonds mobilisés (FCFA)',
-                    value: ((dashboardStats.totalContributions ?? dashboardStats.contributions ?? 82972500) + (dashboardStats.totalDonations ?? dashboardStats.donations ?? 1247500)),
+                    value: (dashboardStats.totalContributions ?? dashboardStats.contributions) + (dashboardStats.totalDonations ?? dashboardStats.donations ?? 0),
                     icon: '🏥',
                     color: '#06b6d4',
                     isMoney: true,
@@ -471,7 +475,7 @@ export default function SuperAdminGovernance({ lang = 'fr', setView, agentUser, 
                     <div style={{ fontSize: kpi.isMoney ? '1.3rem' : '1.8rem', fontWeight: '800', color: kpi.color, lineHeight: 1.1 }}>
                       {typeof kpi.value === 'number'
                         ? (kpi.isMoney ? `${kpi.value.toLocaleString('fr-FR')} FCFA` : kpi.value.toLocaleString('fr-FR'))
-                        : kpi.value}
+                        : '—'}
                     </div>
                     <div style={{ fontSize: '0.82rem', color: 'var(--text-sub)', marginTop: '0.5rem', fontWeight: '600' }}>{kpi.label}</div>
                   </button>

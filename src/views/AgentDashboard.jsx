@@ -88,49 +88,11 @@ export default function AgentDashboard({ lang, agentUser, setView }) {
           .then((res) => { if (!res.ok) throw new Error('Auth requise'); return res.json(); })
           .then((data) => { setStats(data); setLoading(false); })
           .catch(() => {
-            // Fallback statique
-            setStats({
-              beneficiaries: { total: 18450, active: 16203, pending: 587 },
-              mutuelles: 24,
-              cotisationsAmount: 82972500,
-              parrainage: { sponsorsCount: 142, sponsoredCount: 891, totalAmount: 4012500 },
-              claims: { total: 3421, reimbursedAmount: 15640000 },
-              donations: 1247500,
-              byPackage: [
-                { package: 'Individuel', count: 8120 },
-                { package: 'Familial', count: 6340 },
-                { package: 'Scolaire', count: 2980 },
-                { package: 'Gratuité BSF', count: 1010 }
-              ],
-              byMutuelle: [
-                { name: 'UDMS Dakar Plateau', count: 3420 },
-                { name: 'UDMS Pikine', count: 2810 },
-                { name: 'UDMS Guédiawaye', count: 1950 },
-                { name: 'UDMS Rufisque', count: 1680 },
-                { name: 'UDMS Parcelles', count: 1490 },
-                { name: 'UDMS Médina', count: 1240 },
-                { name: 'UDMS Fann', count: 980 },
-                { name: 'UDMS Grand Yoff', count: 880 }
-              ],
-              byCommune: [
-                { commune: 'Plateau', count: 2840 },
-                { commune: 'Médina', count: 2210 },
-                { commune: 'Pikine', count: 3105 },
-                { commune: 'Guédiawaye', count: 1950 },
-                { commune: 'Rufisque', count: 1680 },
-                { commune: 'Parcelles', count: 2490 }
-              ],
-              adhesionsTrend: Array.from({ length: 30 }, (_, i) => ({
-                date: new Date(Date.now() - (29 - i) * 86400000).toISOString(),
-                count: Math.floor(20 + Math.random() * 80 + i * 2)
-              })),
-              claimsByStatus: [
-                { status: 'Approuvée', count: 2180 },
-                { status: 'En cours', count: 890 },
-                { status: 'Rejetée', count: 351 }
-              ],
-              _staticFallback: true
-            });
+            // AUCUN repli sur des chiffres inventés. Un tableau de bord
+            // financier qui affiche 18 450 assurés et 82 972 500 FCFA sans
+            // source réelle induit gravement en erreur l'agent comme la
+            // hiérarchie. On affiche explicitement « données indisponibles ».
+            setStats(null);
             setLoading(false);
           });
       });
@@ -309,7 +271,27 @@ export default function AgentDashboard({ lang, agentUser, setView }) {
     );
   }
 
-  if (!stats) return null;
+  // Pas de données = pas de chiffres affichés. On le dit clairement plutôt
+  // que de revenir à un jeu de valeurs inventées : des montants de
+  // cotisations ou de garanties fictifs sont indéfendables.
+  if (!stats) {
+    return (
+      <div className="fade-in-up container py-4 px-3 px-md-4" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        <div className="card p-5 text-center" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '24px' }}>
+          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>📭</div>
+          <h5 className="fw-extrabold mb-2" style={{ fontSize: '1.15rem' }}>Données indisponibles</h5>
+          <p className="mb-3" style={{ color: 'var(--text-sub)', fontSize: '0.9rem' }}>
+            Les statistiques de la plateforme n'ont pas pu être récupérées du serveur.
+            Aucun chiffre n'est affiché : les indicateurs doivent provenir de données réelles.
+          </p>
+          <button type="button" className="btn btn-primary fw-extrabold px-4 py-2" onClick={fetchStats}>
+            {t.refresh}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
 
   const coverageRate = stats.beneficiaries.total > 0
     ? Math.round((stats.beneficiaries.active / stats.beneficiaries.total) * 100)
