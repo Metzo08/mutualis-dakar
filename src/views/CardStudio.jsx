@@ -416,11 +416,6 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
   // Obtenir l'Union Départementale courante
   const currentUnion = resolveUnion(editForm.departmentUnionId || currentMember.departmentUnionId);
 
-  // Coordonnées de la MSD émettrice (permanence, standard) : elles suivent
-  // l'union départementale du bénéficiaire et ne sont jamais partagées
-  // d'une MSD à l'autre. Saisies MSD stockées par carte (design persisté).
-  const msdContacts = (getStoredCardDesign(cardCmuNumber) || {}).msdContacts || null;
-
   const getValidPhone = (primaryPhone, secondaryPhone, defaultFallback = '77 631 71 73') => {
     const isInvalid = (val) => !val || String(val).trim() === '' || String(val).trim() === '—' || String(val).trim() === '-';
     if (!isInvalid(primaryPhone)) return String(primaryPhone).trim();
@@ -446,6 +441,14 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
   const cardCmuNumber = currentMajorDependent
     ? `${(editForm.cmuNumber || currentMember.cmuNumber).replace(/\.0$/, '')}${currentMajorDependent.codeSuffix}`
     : (editForm.cmuNumber || currentMember.cmuNumber);
+
+  // Coordonnées de la MSD émettrice (permanence, standard) : elles suivent
+  // l'union départementale du bénéficiaire et ne sont jamais partagées
+  // d'une MSD à l'autre. Saisies MSD stockées par carte (design persisté).
+  // ⚠️ Calculé APRÈS cardCmuNumber : le lire plus tôt déclencherait une
+  // erreur de zone morte temporelle (ReferenceError) au rendu.
+  const msdContacts = (getStoredCardDesign(cardCmuNumber) || {}).msdContacts || null;
+
   // Parrain explicitement attribué à cette carte (persisté par numéro de carte)
   const currentSponsorPhone = sponsorAssignments[cardCmuNumber] || '';
   const currentSponsor = sponsors.find(s => s.phone === currentSponsorPhone) || null;
