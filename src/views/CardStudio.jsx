@@ -109,8 +109,11 @@ function SchoolCardFront({ cardData, currentUnion, getMsdLogo, customLogo = null
     </div>
     <div className="school-card-tricolor" />
     <div className="school-card-program-bar" style={{ borderColor: `${cardData.cardDesign.accentColor}55` }}>
+      {/* L'année scolaire et la classe ne figurent PAS sur le recto : ces
+          données changent chaque année. Elles sont portées par le QR code
+          (scannable par l'agent) — voir academicQrData dans l'effet QR. */}
       <strong>{program.frontBanner}</strong>
-      <span>Année {cardData.academicData.academicYear || 'à renseigner'}</span>
+      <span>{program.frontBadge}</span>
     </div>
     <div className="school-card-front-content">
       <div className="school-card-details">
@@ -118,8 +121,7 @@ function SchoolCardFront({ cardData, currentUnion, getMsdLogo, customLogo = null
         <div><span style={labelStyle}>Nom</span><strong style={valueStyle}>{cardData.lastName}</strong></div>
         <div className="school-card-wide"><span style={labelStyle}>🎂 Né(e) le & Lieu • Sexe</span><strong style={valueStyle}>{cardData.birthDate} à {cardData.birthPlace} • {cardData.gender === 'F' ? 'Féminin' : 'Masculin'}</strong></div>
         <div className="school-card-wide"><span style={labelStyle}>{program.idLabel}</span><strong style={valueStyle}>{idValue}</strong></div>
-        <div><span style={labelStyle}>Classe / Niveau</span><strong style={valueStyle}>{cardData.academicData.classLevel || 'À renseigner'}</strong></div>
-        <div><span style={labelStyle}>{program.schoolWord}</span><strong style={valueStyle}>{cardData.academicData.schoolName || cardData.mutuelleOrigine}</strong></div>
+        <div className="school-card-wide"><span style={labelStyle}>{program.schoolWord}</span><strong style={valueStyle}>{cardData.academicData.schoolName || cardData.mutuelleOrigine}</strong></div>
         {/* IA / IEF : uniquement pour les élèves de l'école publique.
             Les daaras ne relèvent pas de ce circuit — le champ est masqué
             et ne doit pas laisser de trou sur la carte. */}

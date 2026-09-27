@@ -31,6 +31,10 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  // Données scolaires portées par le QR code de la carte (CMU-Élèves /
+  // CMU-Daara). Elles ne sont PLUS imprimées sur le recto : l'agent les
+  // lit ici, après scan. Absentes sur les cartes classiques.
+  const [scannedAcademic, setScannedAcademic] = useState(null);
   const [showAdModal, setShowAdModal] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
   const [showCameraScanner, setShowCameraScanner] = useState(false);
@@ -400,6 +404,21 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
       }
 
       if (queryRef && !queryRef.includes('PAYMENTS') && !queryRef.includes('VERIFY')) {
+        // Données scolaires encodées dans le QR par le Studio des cartes :
+        // année + classe (toujours), identifiant INE, et IA/IEF uniquement
+        // pour le circuit école publique (absent des cartes CMU-Daara).
+        const academicYear = urlParams.get('academicYear') || '';
+        const classLevel = urlParams.get('classLevel') || '';
+        const schoolName = urlParams.get('schoolName') || '';
+        const ine = urlParams.get('ine') || '';
+        const ia = urlParams.get('ia') || '';
+        const ief = urlParams.get('ief') || '';
+        const cardProgram = urlParams.get('cardProgram') || '';
+        if (academicYear || classLevel || schoolName || ine) {
+          setScannedAcademic({ academicYear, classLevel, schoolName, ine, ia, ief, cardProgram });
+        } else {
+          setScannedAcademic(null);
+        }
         setCmuNumber(queryRef);
         verify(queryRef);
       } else {
@@ -1646,6 +1665,66 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
                     🏥 {result.mutuelleName ? result.mutuelleName : 'Mutuelle de santé départementale de Dakar'}
                   </span>
                 </div>
+
+                {/* 📚 DONNÉES SCOLAIRES lues dans le QR code de la carte.
+                    Elles ne figurent plus sur le recto (elles changent chaque
+                    année) : c'est ici, après scan, que l'agent les consulte. */}
+                {scannedAcademic && (
+                  <div className="p-3 mt-3 rounded-4 border" style={{ background: 'rgba(37, 99, 235, 0.07)', borderColor: 'rgba(37, 99, 235, 0.28)' }}>
+                    <div className="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                      <span style={{ fontSize: '1.05rem' }}>📚</span>
+                      <strong style={{ fontSize: '0.92rem', color: '#1d4ed8' }}>
+                        Données scolaires (lues dans le QR)
+                      </strong>
+                      {scannedAcademic.cardProgram === 'CMU_DAARA' && (
+                        <span className="badge fw-bold px-2 py-1" style={{ background: 'rgba(180, 83, 9, 0.16)', color: '#b45309', borderRadius: '10px', fontSize: '0.72rem' }}>CMU-Daara</span>
+                      )}
+                      {scannedAcademic.cardProgram === 'CMU_ELEVES' && (
+                        <span className="badge fw-bold px-2 py-1" style={{ background: 'rgba(37, 99, 235, 0.16)', color: '#1d4ed8', borderRadius: '10px', fontSize: '0.72rem' }}>CMU-Élèves</span>
+                      )}
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(165px, 1fr))', gap: '0.6rem' }}>
+                      {scannedAcademic.academicYear && (
+                        <div>
+                          <span className="d-block text-muted" style={{ fontSize: '0.7rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Année scolaire</span>
+                          <strong style={{ fontSize: '0.92rem' }}>{scannedAcademic.academicYear}</strong>
+                        </div>
+                      )}
+                      {scannedAcademic.classLevel && (
+                        <div>
+                          <span className="d-block text-muted" style={{ fontSize: '0.7rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Classe / Niveau</span>
+                          <strong style={{ fontSize: '0.92rem' }}>{scannedAcademic.classLevel}</strong>
+                        </div>
+                      )}
+                      {scannedAcademic.schoolName && (
+                        <div>
+                          <span className="d-block text-muted" style={{ fontSize: '0.7rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                            {scannedAcademic.cardProgram === 'CMU_DAARA' ? 'Daara' : 'Établissement'}
+                          </span>
+                          <strong style={{ fontSize: '0.92rem' }}>{scannedAcademic.schoolName}</strong>
+                        </div>
+                      )}
+                      {scannedAcademic.ine && (
+                        <div>
+                          <span className="d-block text-muted" style={{ fontSize: '0.7rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                            {scannedAcademic.cardProgram === 'CMU_DAARA' ? 'N° IEN' : 'N° INE'}
+                          </span>
+                          <strong className="font-monospace" style={{ fontSize: '0.9rem' }}>{scannedAcademic.ine}</strong>
+                        </div>
+                      )}
+                      {/* IA / IEF : circuit école publique uniquement — jamais
+                          présent sur une carte CMU-Daara. */}
+                      {scannedAcademic.cardProgram !== 'CMU_DAARA' && (scannedAcademic.ia || scannedAcademic.ief) && (
+                        <div style={{ gridColumn: '1 / -1' }}>
+                          <span className="d-block text-muted" style={{ fontSize: '0.7rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em' }}>IA / IEF</span>
+                          <strong style={{ fontSize: '0.92rem' }}>
+                            {[scannedAcademic.ia, scannedAcademic.ief].filter(Boolean).join(' — ') || 'Non renseigné'}
+                          </strong>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

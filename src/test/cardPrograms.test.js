@@ -56,6 +56,24 @@ describe('Programmes de cartes scolaires', () => {
     expect(resolveCardProgram('CMU_DAARA').idLabel).toContain('IEN');
     expect(resolveCardProgram('CMU_DAARA').schoolWord).toBe('Daara');
   });
+
+  it("n'inscrit AUCUNE donnée annuelle dans le bandeau du recto", () => {
+    // L'année scolaire et la classe changent chaque année : elles ne sont
+    // imprimées que dans le QR code, jamais sur la carte.
+    ['CMU_ELEVES', 'CMU_DAARA'].forEach((id) => {
+      const p = resolveCardProgram(id);
+      const printed = `${p.frontBanner} ${p.frontBadge}`;
+      expect(printed).not.toMatch(/\d{4}\s*-\s*\d{4}/); // pas « 2025-2026 »
+      expect(printed).not.toMatch(/20\d{2}/);            // aucune année
+      expect(printed).not.toMatch(/Année/i);
+      expect(printed).not.toMatch(/Classe|Niveau/i);
+    });
+  });
+
+  it('fournit un badge de programme non vide pour chaque variante', () => {
+    expect(resolveCardProgram('CMU_ELEVES').frontBadge).toBeTruthy();
+    expect(resolveCardProgram('CMU_DAARA').frontBadge).toBeTruthy();
+  });
 });
 
 describe('Coordonnées par MSD', () => {
