@@ -957,7 +957,7 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
         setSponsorNotice({
           type: result.warning ? 'warning' : 'success',
           text: result.warning
-            ? `${result.warning} Logo compressé${saved} et appliqué à ${spread || 1} carte(s).`
+            ? `${result.warning} Logo compressé${saved} et appliqué à cette carte.`
             : `✅ Logo enregistré${saved}${dims} et appliqué automatiquement à ses ${spread} carte(s), sans sélection individuelle.`
         });
       } else {

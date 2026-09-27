@@ -8,7 +8,7 @@
 // Deux mémoires locales :
 //  - cmu-sponsor-logos  : { [téléphoneParrain]: dataUrlOuChemin }
 //  - cmu-card-sponsors  : { [cmuNumber]: téléphoneParrain }  (attribution carte → parrain)
-import { apiFetch, API_BASE } from './api';
+import { apiFetch, API_BASE, getAccessToken } from './api';
 
 export const SPONSOR_LOGO_MAX_BYTES = 500 * 1024;
 const LOGO_STORE_KEY = 'cmu-sponsor-logos';
@@ -37,8 +37,15 @@ const writeStore = (key, value) => {
   }
 };
 
-// Clé de téléphone normalisée (chiffres uniquement) pour des correspondances fiables.
-export const normalizePhoneKey = (phone) => String(phone || '').replace(/\D/g, '');
+// Clé d'identification d'un contact ou d'un parrain.
+//
+// Elle ne doit PAS supprimer les lettres : un sponsor peut être identifié
+// par un code non numérique (ex. « MAIRIE_DAKAR »). Retirer les lettres
+// réduirait la clé à une chaîne vide et ferait échouer silencieusement la
+// recherche du logo ET sa propagation aux cartes du parrain — exactement ce
+// qui se produisait. On ne retire donc que les séparateurs de présentation.
+export const normalizePhoneKey = (phone) =>
+  String(phone || '').replace(/[\s.\-/\\()_]/g, '').toUpperCase();
 
 // --- Logos des parrains -----------------------------------------------------
 
@@ -351,6 +358,16 @@ export const fetchSponsorsWithLogos = async () => {
 // Enregistre le logo d'un parrain : backend d'abord, cache local dans tous les cas.
 export const saveSponsorLogo = async (phone, logoUrl) => {
   setLocalSponsorLogo(phone, logoUrl);
+  // Sans jeton, la route serveur renverrait 401 : inutile d'aller jusqu'à la
+  // requête. On le dit tout de suite, et surtout on ne laisse pas croire à un
+  // échec serveur.
+  if (!getAccessToken()) {
+    return {
+      saved: 'local',
+      sponsorLogo: logoUrl,
+      warning: 'Vous n\'êtes pas connecté : logo conservé sur cet appareil uniquement. Connectez-vous (agent ou admin) pour l\'enregistrer aussi en base.'
+    };
+  }
   try {
     const res = await apiFetch(`/api/parrainages/sponsors/${encodeURIComponent(phone)}/logo`, {
       method: 'PUT',
