@@ -3,7 +3,7 @@ import { dedupeMembers, getStoredMembers } from '../utils/beneficiaryStore';
 import { resolveUnion, resolveCardProgram } from '../utils/cardPrograms';
 
 /**
- * MAMADOU FALL (carte CMU-Daara, EDU_MBK_26000164) est élève du daara de
+ * MAMADOU FALL (carte CMU-Daara, EDU_DRB_26000164) est élève du daara de
  * Touba : il relève de la MSD de Diourbel. Il était à tort rattaché à celle
  * de Dakar, ce qui désignait la mauvaise MSD émettrice sur sa carte et le
  * mauvais compte de paiement Kadev.
@@ -45,6 +45,24 @@ describe('Rattachement de MAMADOU FALL', () => {
     );
     expect(occurrences).toHaveLength(1);
   });
+
+  it('porte un code préfixé par le code de sa MSD émettrice', () => {
+    // Le préfixe du code doit désigner la MSD : DRB pour Diourbel. Il ne doit
+    // plus porter MBK (Mbour), incohérent avec l'union déclarée.
+    expect(mamadou.cmuNumber).toBe('EDU_DRB_26000164');
+    expect(mamadou.cmuNumber.startsWith(`EDU_${mamadou.departmentUnionId}_`)).toBe(true);
+    expect(mamadou.cmuNumber).not.toContain('MBK');
+  });
+
+  it('aligne adherentCode et rawCode sur le nouveau code', () => {
+    expect(mamadou.adherentCode).toBe(mamadou.cmuNumber);
+    expect(mamadou.rawCode).toBe(mamadou.cmuNumber);
+  });
+
+  it('ne conserve aucune fiche sous l\'ancien code MBK', () => {
+    const members = getStoredMembers();
+    expect(members.some((m) => String(m.cmuNumber || '').includes('EDU_MBK'))).toBe(false);
+  });
 });
 
 /**
@@ -56,7 +74,7 @@ describe('Rattachement de MAMADOU FALL', () => {
 describe('Déduplication des fiches bénéficiaires', () => {
   const base = {
     id: 'MEM-1',
-    cmuNumber: 'EDU_MBK_26000164',
+    cmuNumber: 'EDU_DRB_26000164',
     firstName: 'MAMADOU',
     lastName: 'FALL',
     birthDate: '20/07/2013',

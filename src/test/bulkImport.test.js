@@ -167,7 +167,7 @@ describe("parseExcelFile (chaîne complète)", () => {
   it("extrait les bénéficiaires d'un vrai classeur .xlsx", async () => {
     const sheet = XLSX.utils.json_to_sheet([
       { CODE_BENEFICIAIRE: 'EDU_DKR_26000163.0', PRENOM: 'Moussa', NOM_FAMILLE: 'DIOP', DATE_NAISSANCE: 40517 },
-      { CODE_BENEFICIAIRE: 'EDU_MBK_26000164.0', PRENOM: 'Mamadou', NOM_FAMILLE: 'FALL', DATE_NAISSANCE: 41475 }
+      { CODE_BENEFICIAIRE: 'EDU_DRB_26000164.0', PRENOM: 'Mamadou', NOM_FAMILLE: 'FALL', DATE_NAISSANCE: 41475 }
     ]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, sheet, 'Beneficiaires');
@@ -180,6 +180,6 @@ describe("parseExcelFile (chaîne complète)", () => {
     expect(result.rows[0].codeBeneficiaire).toBe('EDU_DKR_26000163');
     expect(result.rows[0].prenom).toBe('Moussa');
     expect(result.rows[0].birthDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(result.rows[1].codeBeneficiaire).toBe('EDU_MBK_26000164');
+    expect(result.rows[1].codeBeneficiaire).toBe('EDU_DRB_26000164');
   });
 });

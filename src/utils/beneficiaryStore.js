@@ -6,16 +6,20 @@ import { msdDakarMembers } from '../data/msdDakarMembers.js';
 // membres aux identifiants inchangés étaient resynchronisés).
 // v14 : alignement sur les cartes modèles officielles MSDD Dakar
 // (« modele cartes cmu-eleves et daara ») — codes bénéficiaires scolaires
-// EDU_DKR_26000163 / EDU_MBK_26000164 et N° INE/IEN distincts du code CMU.
+// EDU_DKR_26000163 / EDU_DRB_26000164 et N° INE/IEN distincts du code CMU.
 // La purge des caches v1→v13 garantit que les cartes déjà imprimées ne
 // réaffichent pas d'anciens codes scolaires.
 // v15 : rattachement de MAMADOU FALL (EDU_MBK_26000164) à la MSD de Diourbel
 // et non à celle de Dakar. La purge du cache v14 garantit que la fiche
 // corrigée remplace celle qui contenait l'affectation erronée.
-const STORAGE_KEY = 'unamusc_beneficiaries_store_v15';
+// v16 : le code de MAMADOU FALL devient EDU_DRB_26000164 — le préfixe doit
+// désigner la MSD émettrice (DRB = Diourbel) et non Mbour (MBK). Le code
+// figurant sur une carte imprimée fait foi : la purge du cache v15 évite
+// qu'une ancienne fiche subsiste sous l'ancien code.
+const STORAGE_KEY = 'unamusc_beneficiaries_store_v16';
 // Nettoyage one-shot des anciennes générations de cache
 try {
-  for (let i = 1; i <= 14; i++) {
+  for (let i = 1; i <= 15; i++) {
     localStorage.removeItem(`unamusc_beneficiaries_store_v${i}`);
   }
 } catch (e) { /* stockage indisponible */ }
@@ -239,9 +243,9 @@ export const demoProfiles = [
   },
   {
     id: "MEM-DAARA-26000164",
-    cmuNumber: "EDU_MBK_26000164",
-    adherentCode: "EDU_MBK_26000164",
-    rawCode: "EDU_MBK_26000164",
+    cmuNumber: "EDU_DRB_26000164",
+    adherentCode: "EDU_DRB_26000164",
+    rawCode: "EDU_DRB_26000164",
     firstName: "MAMADOU",
     lastName: "FALL",
     birthDate: "20/07/2013",

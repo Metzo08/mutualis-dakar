@@ -114,7 +114,7 @@ function checkPhoto(photoUrl) {
 
 // ── Format attendu du code CSU : PREFIXE_CHIFFRES(.suffixe) ────────────────
 // Accepte aussi les codes scolaires officiels MSDD Dakar à deux segments
-// (« EDU_DKR_26000163 », « EDU_MBK_26000164 » — cartes CMU-Élèves / CMU-Daara).
+// (« EDU_DKR_26000163 », « EDU_DRB_26000164 » — cartes CMU-Élèves / CMU-Daara).
 const CODE_FORMAT = /^[A-Z]{2,6}[-_][A-Z0-9][A-Z0-9_-]*\d{2,}(\.(0|[1-9][0-9]*|M[0-9]+|1[0-9]+))?$/;
 
 // ── Audit ───────────────────────────────────────────────────────────────────
