@@ -1833,8 +1833,8 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   <span className="small text-muted fw-bold text-uppercase" style={{ letterSpacing: '0.04em', fontSize: '0.78rem' }}>Demandes reçues (Région)</span>
                   <span style={{ fontSize: '1.4rem' }}>📊</span>
                 </div>
-                <h3 className="fw-extrabold mb-1 text-primary" style={{ fontSize: '2.1rem' }}>1 840</h3>
-                <small className="text-muted d-block" style={{ fontSize: '0.8rem' }}>Sur les 24 mutuelles de Dakar</small>
+                <h3 className="fw-extrabold mb-1 text-primary" style={{ fontSize: '2.1rem' }}>{visibleLetters.length.toLocaleString('fr-FR')}</h3>
+                <small className="text-muted d-block" style={{ fontSize: '0.8rem' }}>Demandes de garantie chargées</small>
               </div>
             </div>
             <div className="col-lg-3 col-sm-6 col-12">
@@ -1863,7 +1863,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   <span className="small text-muted fw-bold text-uppercase" style={{ letterSpacing: '0.04em', fontSize: '0.78rem' }}>Total garanti UNAMUSC</span>
                   <span style={{ fontSize: '1.4rem' }}>💰</span>
                 </div>
-                <h3 className="fw-extrabold mb-1 text-success" style={{ fontSize: '1.75rem' }}>16 640 000 FCFA</h3>
+                <h3 className="fw-extrabold mb-1 text-success" style={{ fontSize: '1.75rem' }}>{citizenTotalAmount.toLocaleString('fr-FR')} FCFA</h3>
                 <small className="text-success fw-bold d-block" style={{ fontSize: '0.8rem' }}>Engagements certifiés</small>
               </div>
             </div>
@@ -2794,7 +2794,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
         {(() => {
           const pageSize = 10;
           const citizenTotalAmount = visibleLetters.reduce((sum, l) => sum + (Number(l.max_amount || l.unamusc_amount || (l.estimated_amount * 0.8)) || 0), 0);
-          const totalVolume = isCitizen ? visibleLetters.length : 1840;
+          const totalVolume = visibleLetters.length;
           const totalPages = Math.max(1, Math.ceil(totalVolume / pageSize));
           const safePage = Math.min(letterPage, totalPages);
           const startItem = totalVolume === 0 ? 0 : (safePage - 1) * pageSize + 1;
@@ -2820,7 +2820,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   </>
                 ) : (
                   <>
-                    Affichage de <strong style={{ color: 'var(--text-main)' }}>{startItem.toLocaleString('fr-FR')}</strong> à <strong style={{ color: 'var(--text-main)' }}>{endItem.toLocaleString('fr-FR')}</strong> sur <strong style={{ color: '#059669' }}>1 840 demandes de garantie</strong> (16 640 000 FCFA garantis)
+                    Affichage de <strong style={{ color: 'var(--text-main)' }}>{startItem.toLocaleString('fr-FR')}</strong> à <strong style={{ color: 'var(--text-main)' }}>{endItem.toLocaleString('fr-FR')}</strong> sur <strong style={{ color: '#059669' }}>{visibleLetters.length.toLocaleString('fr-FR')} demandes de garantie</strong> ({citizenTotalAmount.toLocaleString('fr-FR')} FCFA garantis)
                   </>
                 )}
               </div>
