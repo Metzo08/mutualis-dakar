@@ -1072,15 +1072,17 @@ p {
   opacity: 0.98 !important;
 }
 
-/* Enforce generous, spacious margins between view sections, rows, and cards */
-.view-container section,
-.view-container .card,
-.view-container .table-responsive,
-.view-container .row,
-.view-container .grid,
-.view-container .mb-4,
-.view-container .mb-5 {
-  margin-bottom: 3.5rem !important;
+/* Rythme vertical des sections de premier niveau uniquement.
+   ASSAINISSEMENT : cette règle appliquait auparavant
+   `margin-bottom: 3.5rem !important` à TOUS les descendants
+   (.card, .row, .grid, .mb-4, .mb-5), ce qui écrasait les utilitaires
+   d'espacement, déformait les grilles et empêchait toute mise en page
+   multi-colonnes de respirer correctement. */
+.view-container > section,
+.view-container > .card,
+.view-container > .grid,
+.view-container > .table-responsive {
+  margin-bottom: 2rem;
 }
 
 /* ============================================================================
@@ -1209,16 +1211,16 @@ select.form-control, select.form-select, select.input {
    (qui ont leurs propres styles et sinon se superposent à cause du min-height).
    ═════════════════════════════════════════════════════════════════════ */
 
-/* 1. BOUTONS — minimum d'aération, SAUF dans les heroes/bannières */
+/* 1. BOUTONS — hauteur de ligne homogène uniquement.
+   ASSAINISSEMENT : cette règle imposait auparavant
+   `padding-top/bottom: .55rem !important` + `min-height: 40/46px !important`
+   à TOUS les boutons de la plateforme. Elle neutralisait donc les utilitaires
+   py-*, les variantes .btn-sm / .btn-xs et les barres d'actions compactes des
+   tableaux (GuaranteeLetters, PurchaseOrders, MaternalHealth…). L'aération est
+   désormais assurée par la classe .btn et par les utilitaires d'espacement. */
 button:not([style*="backdrop"]):not([style*="linear-gradient"]):not(.portal-switch-btn):not(.btn-close):not(.top-navbar-icon-btn),
-.btn:not(.btn-sm):not([style*="backdrop"]) {
-  padding-top: 0.55rem !important;
-  padding-bottom: 0.55rem !important;
-  min-height: 40px !important;
+.btn {
   line-height: 1.35 !important;
-}
-.btn:not(.btn-sm) {
-  min-height: 46px !important;
 }
 
 /* 2. PETITS TEXTES — relèvement du plancher de lisibilité (pas sous 0.8rem) */
@@ -1295,15 +1297,13 @@ code, kbd {
   letter-spacing: 0.01em !important;
 }
 
-/* 11. TITRES DE CARTES & SECTIONS — air au-dessus */
-h1, h2, h3, h4, h5, h6 {
-  margin-bottom: 0.6rem !important;
-}
-
-/* 12. PARAGRAPHES & SPANS — respiration verticale */
-p {
-  margin-bottom: 0.7rem !important;
-}
+/* 11 & 12. RYTHME DES TITRES & PARAGRAPHES
+   ASSAINISSEMENT : ces marges étaient forcées en !important
+   (`h1..h6 { margin-bottom:.6rem !important }` et `p { margin-bottom:.7rem !important }`),
+   ce qui rendait inopérants les utilitaires mb-0 / mb-1 / mb-2 : impossible
+   d'obtenir un titre ou un paragraphe collé à son bloc.
+   Le rythme de base est désormais déclaré SANS !important dans
+   styles/utilities.css, donc librement surchargeable par les utilitaires. */
 
 /* ═════════════════════════════════════════════════════════════════════
    13. BANNIÈRES HERO — image thématique conservée + overlay VERT CLAIR LÉGER
@@ -1354,11 +1354,12 @@ div[class][style*="url"][style*="linear-gradient"] > *,
   z-index: 1;
 }
 
-/* Suppression des backdrop-filter (verre dépoli) qui masquaient les textes */
-[style*="backdrop-filter"], [style*="backdropFilter"] {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
+/* ASSAINISSEMENT — la règle précédente supprimait TOUS les backdrop-filter
+   (verre dépoli) de la plateforme, y compris ceux explicitement voulus par les
+   vues (en-têtes Télémédecine, hub de vérification de carte, bandeaux). Elle a
+   été retirée : le flou d'arrière-plan fait partie du langage visuel de
+   MUTUALIS DAKAR. La lisibilité est portée par les opacités de fond (>= 0.42)
+   définies dans les vues. */
 
 /* 14. CASSE UNIVERSELLE DES TEXTES — Règle : Première lettre en majuscule, reste en minuscule
    Neutralise les text-transform: uppercase sur toute la plateforme (titres, boutons, badges, labels, formulaires) */
@@ -1381,66 +1382,59 @@ code, kbd, .font-monospace, .code-id, .cmu-number, .csu-code {
   text-transform: uppercase !important;
 }
 
-/* 15. Aération des conteneurs flex-wrap dans les heroes */
-.d-flex.flex-wrap[style*="gap-3"],
-.d-flex.gap-3.flex-wrap,
-.d-flex.gap-2.flex-wrap {
-  gap: 0.75rem !important;
-}
+/* ASSAINISSEMENT — suppression de l'override de `gap` sur les conteneurs
+   flex-wrap. La règle précédente (`gap: .75rem !important`) écrasait les
+   utilitaires .gap-2 / .gap-3 / .gap-4 des vues. Les gouttières sont
+   désormais pilotées par les classes .gap-* de styles/utilities.css. */
 
-/* 16. Suppression des traits verticaux décoratifs (border-left) sur les
-   formulaires et cartes de contenu — ces traits créent un effet déséquilibré.
-   On les garde UNIQUEMENT sur les alertes (danger/warning/success) et nav active. */
-.card[style*="borderLeft"]:not(.alert),
-.card[style*="border-left"]:not(.alert),
-div[style*="borderLeft"][style*="padding"]:not(.alert):not([role="alert"]) {
-  border-left: none !important;
-}
+/* ASSAINISSEMENT — suppression du retrait forcé des bordures gauches.
+   La règle précédente supprimait `border-left` sur toute .card portant un
+   style inline `borderLeft` : les vues qui utilisent volontairement un liseré
+   d'accent coloré (alertes, cartes de statut) étaient donc neutralisées. */
 
 /* 17. ESPACEMENT UNIVERSEL HAUT DE GAMME — FORMULAIRES & BOUTONS AÉRÉS
    Garantit que tous les boutons, champs de saisie, groupes d'action et modales
    bénéficient d'une aération irréprochable et ne soient jamais collés. */
 
-/* Espacement horizontal et vertical automatique dans tous les conteneurs de boutons */
-.btn-group,
-.modal-footer,
-.form-actions,
-.d-flex.gap-1,
-.d-flex.gap-2,
-.d-flex.gap-3,
-.d-flex.gap-4,
-.d-flex.flex-wrap:has(> .btn),
-.d-flex.flex-wrap:has(> button) {
-  gap: 0.85rem !important;
-  row-gap: 0.85rem !important;
-  column-gap: 0.85rem !important;
+/* Conteneurs de boutons : aération garantie là où aucune gouttière explicite
+   n'est demandée. `:where()` annule la spécificité pour que les utilitaires
+   .gap-1 … .gap-5 (déclarés dans styles/utilities.css) restent prioritaires. */
+:where(.btn-group, .modal-footer, .form-actions,
+       .d-flex.flex-wrap:has(> .btn), .d-flex.flex-wrap:has(> button)) {
+  gap: 0.85rem;
+  row-gap: 0.85rem;
+  column-gap: 0.85rem;
 }
 
-/* Espacement entre champs et labels dans les formulaires */
+/* Espacement entre champs et labels dans les formulaires
+   (sans !important : un mb-0 explicite doit pouvoir coller le label) */
 .form-label, label {
   display: inline-block;
-  margin-bottom: 0.55rem !important;
+  margin-bottom: 0.55rem;
   font-weight: 600;
 }
 
-/* Marge de sécurité entre groupes de champs consécutifs */
-.form-group, form > .mb-2, form > .mb-3, form > .mb-4 {
-  margin-bottom: 1.35rem !important;
+/* Marge de sécurité entre groupes de champs consécutifs
+   (sans !important : les utilitaires mb-* gardent la main) */
+:where(.form-group, form > .mb-2, form > .mb-3, form > .mb-4) {
+  margin-bottom: 1.35rem;
 }
 
-/* Aération confortable pour les boutons standards */
+/* Aération confortable pour les boutons standards.
+   ASSAINISSEMENT : les overrides `padding-left/right: 1.25rem !important` et
+   `display: inline-flex !important` neutralisaient les utilitaires px-*, p-*
+   ainsi que les boutons pleine largeur (w-100). */
 .btn {
-  padding-left: 1.25rem !important;
-  padding-right: 1.25rem !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 0.5rem !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
-/* Colonnes d'actions dans les tableaux */
-td .d-flex {
-  gap: 0.65rem !important;
+/* Colonnes d'actions dans les tableaux — spécificité annulée
+   pour que les utilitaires gap-* restent maîtres */
+:where(td .d-flex) {
+  gap: 0.65rem;
 }
 
 
@@ -1755,6 +1749,106 @@ body.dark-theme .cni-physical-card-preview {
   padding: 0.75rem 1.4rem;
   border-radius: 14px;
   font-weight: 700;
+}
+
+/* Studio cartes : chaque face conserve son canevas d'impression 520 × 328 px,
+   mais devient visuellement fluide afin que le recto et le verso ne puissent
+   jamais se chevaucher dans une colonne trop étroite. */
+.studio-card-surface {
+  width: min(520px, 100%) !important;
+  max-width: 520px;
+  aspect-ratio: 520 / 328;
+  height: auto !important;
+  flex: 0 0 auto;
+}
+
+/* ── Cartes scolaires (CMU-Élèves / CMU-Daara) : anti-débordement strict ── */
+.school-card-watermark {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-repeat: no-repeat;
+}
+
+/* Chaque face scolaire est une colonne fermée : aucun enfant ne peut
+   dépasser la carte (520 × 328px), quel que soit le contenu. */
+.studio-card-surface .school-card-header,
+.studio-card-surface .school-card-program-bar,
+.studio-card-surface .school-card-front-content,
+.studio-card-surface .school-card-back-content,
+.studio-card-surface .school-card-tricolor {
+  position: relative;
+  z-index: 1;
+  max-width: 100%;
+}
+
+.school-card-header { display: grid; grid-template-columns: 64px 1fr 64px; align-items: center; gap: 8px; min-height: 48px; }
+.school-card-brand { max-width: 58px; max-height: 44px; width: auto; height: auto; object-fit: contain; justify-self: center; }
+.school-card-government { display: flex; flex-direction: column; align-items: center; color: #065f46; font-size: .46rem; line-height: 1.05; text-align: center; text-transform: uppercase; min-width: 0; }
+.school-card-government strong, .school-card-government b { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.school-card-government b { color: #059669; font-size: .58rem; }
+.school-card-tricolor { height: 3px; margin: 3px 0 6px; border-radius: 99px; background: linear-gradient(90deg, #00853f 0%, #fdef42 50%, #e31b23 100%); }
+.school-card-program-bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 5px 9px; border: 2px solid #a7f3d0; border-radius: 10px; background: rgba(236,253,245,.88); color: #065f46; font-size: .62rem; font-weight: 900; min-width: 0; }
+.school-card-program-bar > strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.school-card-program-bar span { padding: 3px 7px; border-radius: 7px; background: #e0f2fe; color: #0284c7; white-space: nowrap; flex-shrink: 0; }
+
+/* Recto : colonne gauche élastique + photo fixe, contenu borné au-dessus du pied */
+.school-card-front-content { display: grid; grid-template-columns: minmax(0, 1fr) 100px; gap: 10px; padding: 6px 2px 26px; min-height: 0; }
+.school-card-details { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 5px 10px; min-width: 0; align-content: start; }
+.school-card-details > div { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.school-card-details span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.school-card-details strong { font-size: .8rem !important; line-height: 1.15; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.school-card-wide { grid-column: 1 / -1; }
+.school-card-photo { width: 100px; height: 132px; overflow: hidden; border: 3px solid #059669; border-radius: 12px; background: #f1f5f9; display: grid; place-items: center; color: #64748b; text-align: center; font-size: .55rem; font-weight: 800; }
+.school-card-photo img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Pied de carte : réserve verticale garantie (24px) + textes tronqués
+   — plus jamais de chevauchement avec le tuteur ou les détails.
+   NB : !important requis pour battre la règle typographique globale
+   `span:not(.badge):not(.tag) { font-size: clamp(0.875rem…) }`. */
+.studio-card-surface .school-card-footer > span,
+.studio-card-surface .school-card-government,
+.studio-card-surface .school-card-government strong,
+.studio-card-surface .school-card-government b,
+.studio-card-surface .school-card-back-info,
+.studio-card-surface .school-card-back-info > span,
+.studio-card-surface .school-card-health-box,
+.studio-card-surface .school-card-health-box b,
+.studio-card-surface .school-card-health-box strong,
+.studio-card-surface .school-card-photo {
+  font-size: inherit;
+}
+.studio-card-surface .school-card-footer { font-size: .43rem !important; }
+.studio-card-surface .school-card-footer > span { font-size: .43rem !important; }
+.studio-card-surface .school-card-government { font-size: .46rem !important; }
+.studio-card-surface .school-card-government b { font-size: .58rem !important; }
+.studio-card-surface .school-card-back-info { font-size: .55rem !important; }
+.studio-card-surface .school-card-back-info > span { font-size: .55rem !important; }
+.studio-card-surface .school-card-health-box { font-size: .52rem !important; }
+.studio-card-surface .school-card-photo { font-size: .55rem !important; }
+.studio-card-surface .school-card-program-bar { font-size: .62rem !important; }
+.studio-card-surface .school-card-program-bar span { font-size: .58rem !important; }
+.school-card-footer { position: absolute; left: 14px; right: 14px; bottom: 6px; padding-top: 4px; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; align-items: center; gap: 8px; color: #0f172a; font-size: .43rem; font-weight: 900; white-space: nowrap; background: transparent; z-index: 6; }
+.school-card-footer > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: .43rem; }
+
+/* Tailles explicites des spans du verso (sinon une règle globale les force à 16px) */
+.school-card-back-info { font-size: .55rem; }
+.school-card-back-info > span { font-size: .55rem; }
+
+/* Verso : QR à taille fixe + infos élastiques, borné au-dessus du pied */
+.school-card-back-content { display: grid; grid-template-columns: 132px minmax(0, 1fr); align-items: center; gap: 14px; min-height: 0; padding: 6px 8px 26px; }
+.school-card-qr { width: 126px; height: 126px; border: 4px solid #0f172a; border-radius: 14px; padding: 5px; background: #fff; display: grid; place-items: center; flex-shrink: 0; }
+.school-card-qr img { width: 100%; height: 100%; object-fit: contain; }
+.school-card-back-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; color: #64748b; font-size: .55rem; font-weight: 800; }
+.school-card-back-info > strong { color: #0f172a; font-size: .95rem; line-height: 1.05; overflow-wrap: anywhere; }
+.school-card-back-info > b { color: #0f172a; font-family: monospace; font-size: .82rem; }
+.school-card-health-box { margin-top: 4px; padding: 6px 9px; border: 1px solid #cbd5e1; border-radius: 10px; background: rgba(248,250,252,.92); display: grid; grid-template-columns: 1fr 1fr; gap: 4px; color: #047857; font-size: .52rem; min-width: 0; }
+.school-card-health-box b:first-child { color: #dc2626; }.school-card-health-box strong { grid-column: 1 / -1; color: #64748b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.school-card-health-box em { color: #0f172a; font-style: normal; }
+.school-card-back-footer { flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: #0284c7; font-size: .4rem; bottom: 5px; padding-top: 3px; }
+
+@media (max-width: 575px) {
+  .studio-card-surface { transform-origin: top center; }
 }
 
 /* ==========================================================================

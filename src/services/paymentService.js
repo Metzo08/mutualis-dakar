@@ -5,15 +5,19 @@
  * ============================================================
  *
  *  Ce service centralise tous les appels de paiement.
- *  Il tourne actuellement en mode MOCK (simulation).
- *
- *  ✅ POUR BRANCHER UNE API RÉELLE :
- *     1. Remplacer la fonction `mockPaymentCall` par l'appel HTTP correspondant
- *     2. Renseigner les clés API dans les variables d'environnement (.env)
- *     3. Configurer le webhook de confirmation côté serveur
- *
+ *  ✅ BRANCHEMENT BACKEND : le frontend délègue l'initiation au backend
+ *     (/api/payments/initiate) qui gère les passerelles réelles Wave Checkout
+ *     et Orange Money WebPayment (clés d'environnement). Réponse :
+ *       { reference, checkoutUrl, isReal }
+ *       - isReal=true  → ouvrir checkoutUrl puis suivre /api/payments/:reference
+ *                        (le webhook serveur /api/payments/webhook/:provider
+ *                        confirme la transaction et applique les effets métier)
+ *       - isReal=false → simulation serveur (aucune clé API configurée)
+ *     Repli : backend injoignable (hors-ligne) → simulation locale mock.
  * ============================================================
  */
+
+import { apiFetch } from '../utils/api';
 
 // ─── Générateur de Référence Transaction ────────────────────────────────────
 export function generateTransactionRef(provider) {
@@ -54,7 +58,10 @@ export function validatePhoneForProvider(phone, provider) {
   return { valid: true };
 }
 
-// ─── Mock : simulation d'un paiement (à remplacer par vraie API) ─────────────
+// ─── Mapping frontend → backend ('orange_money' | 'wave') ───────────────────
+const PROVIDER_TO_BACKEND = { orange: 'orange_money', wave: 'wave', free: 'wave' };
+
+// ─── Mock : repli local (backend injoignable / hors-ligne) ─────────────
 async function mockPaymentCall({ provider, phone, amount, ref }) {
   // Simule un délai réseau réaliste (2 à 3 secondes)
   await new Promise(resolve => setTimeout(resolve, 2500));
@@ -70,6 +77,7 @@ async function mockPaymentCall({ provider, phone, amount, ref }) {
       provider,
       phone: formatSenegalPhone(phone),
       amount,
+      mode: 'local-mock',
       message: `Paiement de ${amount.toLocaleString('fr-FR')} FCFA confirmé via ${
         provider === 'orange' ? 'Orange Money' : provider === 'wave' ? 'Wave' : 'Free Money'
       }.`,
@@ -83,45 +91,91 @@ async function mockPaymentCall({ provider, phone, amount, ref }) {
   }
 }
 
-// ─── Orange Money Sénégal ────────────────────────────────────────────────────
-async function payWithOrangeMoney({ phone, amount, ref, orderId }) {
-  // TODO: Remplacer par l'API Orange Money Sénégal
-  // Endpoint: POST https://api.orange.com/orange-money-webpay/dev/v1/webpayment
-  // Headers: { Authorization: `Bearer ${process.env.VITE_ORANGE_MONEY_TOKEN}` }
-  // Body: { merchant_key, currency: "OUV", order_id, amount, return_url, cancel_url, notif_url, reference, lang }
-  //
-  // Docs: https://developer.orange.com/apis/orange-money-senegal
-  // Sandbox: https://api.orange.com/orange-money-webpay/sn/v1
-
-  console.info('[PaymentService] Orange Money — Mode MOCK actif. TODO: brancher API réelle.');
-  return mockPaymentCall({ provider: 'orange', phone, amount, ref });
+// ─── Appel backend : initiation + suivi du statut ───────────────────────
+export async function checkPaymentStatus(reference, { timeoutMs = 60000, intervalMs = 3000 } = {}) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try {
+      const res = await apiFetch(`/api/payments/${encodeURIComponent(reference)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.status === 'success' || data.status === 'failed') {
+          return { success: data.status === 'success', status: data.status, payment: data };
+        }
+      }
+    } catch { /* backend momentanément injoignable : on réessaie */ }
+    await new Promise((r) => setTimeout(r, intervalMs));
+  }
+  return { success: false, status: 'timeout', payment: null };
 }
 
-// ─── Wave Sénégal ────────────────────────────────────────────────────────────
-async function payWithWave({ phone, amount, ref, orderId }) {
-  // TODO: Remplacer par l'API Wave Sénégal
-  // Endpoint: POST https://api.wave.com/v1/checkout/sessions
-  // Headers: { Authorization: `Bearer ${process.env.VITE_WAVE_API_KEY}` }
-  // Body: { currency: "XOF", amount, error_url, success_url, client_reference }
-  //
-  // Docs: https://docs.wave.com/reference/create-checkout-session
-  // Wave envoie un lien de paiement que l'utilisateur confirme sur son app Wave
+// ─── Appel réel : initiation via le backend ─────────────────────────────
+async function backendPaymentCall({ provider, phone, amount, orderId, purpose = 'cotisation' }) {
+  const backendProvider = PROVIDER_TO_BACKEND[provider] || 'wave';
 
-  console.info('[PaymentService] Wave — Mode MOCK actif. TODO: brancher API réelle.');
-  return mockPaymentCall({ provider: 'wave', phone, amount, ref });
-}
+  const res = await apiFetch('/api/payments/initiate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      beneficiaryId: orderId || null,
+      phone: formatSenegalPhone(phone),
+      provider: backendProvider,
+      amount,
+      purpose,
+    }),
+  });
 
-// ─── Free Money Sénégal ──────────────────────────────────────────────────────
-async function payWithFreeMoney({ phone, amount, ref, orderId }) {
-  // TODO: Remplacer par l'API Free Money Sénégal (Expresso)
-  // Endpoint: POST https://paywithfreemoney.com/api/payment
-  // Headers: { Authorization: `Bearer ${process.env.VITE_FREE_MONEY_API_KEY}` }
-  // Body: { phone, amount, currency: "XOF", reference, callback_url }
-  //
-  // Docs: Contacter Free Sénégal / Expresso pour accès sandbox
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `Backend ${res.status}`);
+  }
 
-  console.info('[PaymentService] Free Money — Mode MOCK actif. TODO: brancher API réelle.');
-  return mockPaymentCall({ provider: 'free', phone, amount, ref });
+  const data = await res.json();
+
+  // Cas 1 : passerelle réelle (clés API configurées) → redirection + polling
+  if (data.isReal && data.checkoutUrl) {
+    if (typeof window !== 'undefined') {
+      window.open(data.checkoutUrl, '_blank', 'noopener');
+    }
+    const outcome = await checkPaymentStatus(data.reference);
+    if (outcome.success) {
+      return {
+        success: true,
+        transactionRef: data.reference,
+        timestamp: new Date().toISOString(),
+        provider,
+        phone: formatSenegalPhone(phone),
+        amount,
+        mode: 'backend-real',
+        checkoutUrl: data.checkoutUrl,
+        message: `Paiement de ${amount.toLocaleString('fr-FR')} FCFA confirmé via ${
+          provider === 'orange' ? 'Orange Money' : 'Wave'
+        }.`,
+      };
+    }
+    return {
+      success: false,
+      error: outcome.status === 'timeout' ? 'TIMEOUT' : 'FAILED',
+      message:
+        outcome.status === 'timeout'
+          ? "Le paiement n'a pas été confirmé à temps. Vérifiez votre application Mobile Money."
+          : 'Le paiement a été refusé par la passerelle. Réessayez.',
+    };
+  }
+
+  // Cas 2 : simulation backend (aucune clé API configurée) → confirmation démo
+  return {
+    success: true,
+    transactionRef: data.reference,
+    timestamp: new Date().toISOString(),
+    provider,
+    phone: formatSenegalPhone(phone),
+    amount,
+    mode: 'backend-simulation',
+    message: `Paiement de ${amount.toLocaleString('fr-FR')} FCFA simulé (démo) via ${
+      provider === 'orange' ? 'Orange Money' : 'Wave'
+    }. Référence ${data.reference}.`,
+  };
 }
 
 // ─── Point d'entrée principal (router automatique) ───────────────────────────
@@ -132,34 +186,33 @@ async function payWithFreeMoney({ phone, amount, ref, orderId }) {
  * @param {'orange'|'wave'|'free'} params.provider  Opérateur sélectionné
  * @param {string}  params.phone    Numéro de téléphone (format local ou +221)
  * @param {number}  params.amount   Montant en FCFA (ex: 2500)
- * @param {string}  params.orderId  Identifiant commande côté app (ex: CMU-DKR-2026-8812)
+ * @param {string}  params.orderId  Identifiant commande / bénéficiaire côté app
+ * @param {string}  [params.purpose='cotisation'] 'cotisation' | 'donation' | 'adhesion'
  *
  * @returns {Promise<{success, transactionRef?, timestamp?, message, error?}>}
  */
-export async function initiatePayment({ provider, phone, amount, orderId }) {
-  const ref = generateTransactionRef(provider);
-
-  // Validation préliminaire
+export async function initiatePayment({ provider, phone, amount, orderId, purpose = 'cotisation' }) {
   const validation = validatePhoneForProvider(phone, provider);
   if (!validation.valid) {
     return { success: false, error: 'INVALID_PHONE', message: validation.error };
   }
 
   try {
-    switch (provider) {
-      case 'orange': return await payWithOrangeMoney({ phone, amount, ref, orderId });
-      case 'wave':   return await payWithWave({ phone, amount, ref, orderId });
-      case 'free':   return await payWithFreeMoney({ phone, amount, ref, orderId });
-      default:
-        return { success: false, error: 'UNKNOWN_PROVIDER', message: 'Opérateur non reconnu.' };
-    }
+    // 1. Tentative via le backend (passerelles réelles ou simulation serveur)
+    return await backendPaymentCall({ provider, phone, amount, orderId, purpose });
   } catch (err) {
-    console.error('[PaymentService] Erreur inattendue:', err);
-    return {
-      success: false,
-      error: 'NETWORK_ERROR',
-      message: 'Erreur réseau. Vérifiez votre connexion et réessayez.',
-    };
+    // 2. Backend injoignable (hors-ligne) → repli simulation locale
+    console.warn('[PaymentService] Backend injoignable, repli simulation locale :', err.message);
+    try {
+      return await mockPaymentCall({ provider, phone, amount, ref: generateTransactionRef(provider) });
+    } catch (mockErr) {
+      console.error('[PaymentService] Erreur inattendue:', mockErr);
+      return {
+        success: false,
+        error: 'NETWORK_ERROR',
+        message: 'Erreur réseau. Vérifiez votre connexion et réessayez.',
+      };
+    }
   }
 }
 

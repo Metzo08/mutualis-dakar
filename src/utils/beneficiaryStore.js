@@ -104,6 +104,7 @@ export const demoProfiles = [
     id: "MEM-DEMO-001",
     cmuNumber: "CSU-DKR-2026-8812.2",
     adherentCode: "CSU-DKR-2026-8812",
+    departmentUnionId: "DKR",
     firstName: "AMADOU",
     lastName: "SOW",
     birthDate: "14/08/1992",
@@ -123,6 +124,7 @@ export const demoProfiles = [
     id: "MEM-DEMO-002",
     cmuNumber: "CMU-DKR-2026-4401",
     adherentCode: "CMU-DKR-2026-4401",
+    departmentUnionId: "DKR",
     firstName: "FATOU",
     lastName: "DIOP",
     birthDate: "05/11/1994",
@@ -150,10 +152,122 @@ export const demoProfiles = [
       }
     ]
   },
+  // Cartes modèles officielles — données exactes de modele_eleves_cmu.xlsx,
+  // reproduites à l'identique des PNG de référence (CMU-Élèves / CMU-Daara).
+  // Le logo de la Mairie de Dakar (logo_mairie_dakar.png) parraine ces cartes.
+  {
+    id: "MEM-EDU-004812",
+    cmuNumber: "SN-INE-2025-004812",
+    adherentCode: "SN-INE-2025-004812",
+    rawCode: "SN-INE-2025-004812",
+    firstName: "AMINATA",
+    lastName: "SARR",
+    birthDate: "12/03/2015",
+    birthPlace: "Dakar",
+    gender: "F",
+    bloodGroup: "O+",
+    address: "GRAND DAKAR",
+    commune: "Dakar",
+    departmentUnionId: "DKR",
+    mutuelleOrigine: "Mutuelle de Santé Départementale de Dakar",
+    phone: "771234567",
+    tuteurName: "Fatou SARR",
+    tuteurPhone: "77 123 45 67",
+    package: "CMU-Élèves 100%",
+    cardTypeLabel: "CMU-Élèves",
+    cardProgram: "CMU_ELEVES",
+    academicData: {
+      academicYear: "2025-2026",
+      classLevel: "CM2",
+      schoolName: "École élémentaire Grand-Dakar",
+      ia: "IA de Dakar",
+      ief: "IEF Grand-Dakar"
+    },
+    photoUrl: "/msd_photos/aminata_sarr_ine_004812.png",
+    hasOfficialPhoto: true,
+    photoStatus: "OFFICIAL",
+    verificationStatus: "VERIFIED",
+    allergies: "Aucune connue",
+    antecedents: "Bilan de santé scolaire à jour",
+    dependents: []
+  },
+  {
+    id: "MEM-EDU-009341",
+    cmuNumber: "SN-INE-2025-009341",
+    adherentCode: "SN-INE-2025-009341",
+    rawCode: "SN-INE-2025-009341",
+    firstName: "MOUSSA",
+    lastName: "DIOP",
+    birthDate: "05/09/2010",
+    birthPlace: "Thiès",
+    gender: "M",
+    bloodGroup: "O+",
+    address: "GRAND DAKAR",
+    commune: "Dakar",
+    departmentUnionId: "DKR",
+    mutuelleOrigine: "Mutuelle de Santé Départementale de Dakar",
+    phone: "769876543",
+    tuteurName: "Ousmane DIOP",
+    tuteurPhone: "76 987 65 43",
+    package: "CMU-Élèves 100%",
+    cardTypeLabel: "CMU-Élèves",
+    cardProgram: "CMU_ELEVES",
+    academicData: {
+      academicYear: "2025-2026",
+      classLevel: "3ème",
+      schoolName: "Lycée Blaise Diagne (Dakar)",
+      ia: "IA de Dakar",
+      ief: "IEF Dakar Plateau"
+    },
+    photoUrl: "/msd_photos/moussa_diop_ine_009341.jpg",
+    hasOfficialPhoto: true,
+    photoStatus: "OFFICIAL",
+    verificationStatus: "VERIFIED",
+    allergies: "Aucune connue",
+    antecedents: "Bilan de santé scolaire à jour",
+    dependents: []
+  },
+  {
+    id: "MEM-DAARA-0078",
+    cmuNumber: "DAARA-2025-0078",
+    adherentCode: "DAARA-2025-0078",
+    rawCode: "DAARA-2025-0078",
+    firstName: "MAMADOU",
+    lastName: "FALL",
+    birthDate: "20/07/2013",
+    birthPlace: "Touba",
+    gender: "M",
+    bloodGroup: "O+",
+    address: "DAARA SERIGNE SALIOU MBACKÉ, TOUBA",
+    commune: "Touba",
+    departmentUnionId: "DRB",
+    mutuelleOrigine: "Mutuelle de Santé Départementale de Mbacké",
+    phone: "705551234",
+    tuteurName: "Serigne Modou MBACKE",
+    tuteurPhone: "70 555 12 34",
+    package: "CMU-Daara 100%",
+    cardTypeLabel: "CMU-Daara",
+    cardProgram: "CMU_DAARA",
+    academicData: {
+      academicYear: "2025-2026",
+      classLevel: "Niveau 2 (Coran)",
+      schoolName: "Daara Serigne Saliou Mbacké (Touba)",
+      ia: "IA de Diourbel",
+      ief: "IEF Mbacké"
+    },
+    photoUrl: "/msd_photos/mamadou_fall_daara_0078.jpg",
+    hasOfficialPhoto: true,
+    photoStatus: "OFFICIAL",
+    verificationStatus: "VERIFIED",
+    allergies: "Aucune connue",
+    antecedents: "Bilan de santé daara à jour",
+    dependents: []
+  },
   {
     id: "MEM-DEMO-003",
     cmuNumber: "SN-DK-GUE-4401",
     adherentCode: "SN-DK-GUE-4401",
+    departmentUnionId: "GDW",
     firstName: "SOKHNA",
     lastName: "KANE",
     birthDate: "20/06/1988",
@@ -188,8 +302,20 @@ export const demoProfiles = [
   }
 ];
 
+// Dédoublonnage strict par adherentCode : si un adhérent démo existe déjà dans
+// le jeu officiel MSD Dakar (même CMU), c'est la version officielle (Excel MSD)
+// qui prime — évite toute collision de scan QR entre profils de démonstration
+// et données réelles (ex : DKR_2600011.0 Bineta Sow, DKR_2600027.0 Ursule Diame).
+const seenAdherentCodes = new Set(
+  msdDakarMembers.map((m) => (m.adherentCode || (m.cmuNumber || '').replace(/\.0$/, '')).trim().toUpperCase())
+);
+const uniqueDemoProfiles = demoProfiles.filter((m) => {
+  const code = (m.adherentCode || (m.cmuNumber || '').replace(/\.0$/, '')).trim().toUpperCase();
+  return !seenAdherentCodes.has(code);
+});
+
 export const defaultMembers = [
-  ...demoProfiles,
+  ...uniqueDemoProfiles,
   ...msdDakarMembers
 ];
 

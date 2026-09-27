@@ -47,6 +47,9 @@ import { syncOutbox, outboxCount, cacheSet, cacheGet } from './utils/offline';
 import './index.css';
 import './styles/components.css';
 import './styles/views.css';
+// Socle utilitaire (compatibilité Bootstrap 5) — DOIT rester en dernier
+// pour pouvoir corriger les correctifs !important hérités de index.css.
+import './styles/utilities.css';
 
 class ErrorBoundary extends Component {
   constructor(props) {

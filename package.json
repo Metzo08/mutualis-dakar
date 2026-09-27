@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:scans": "node scripts/audit-beneficiary-scans.js"
+    "test:scans": "node scripts/audit-beneficiary-scans.js",
+    "audit:css": "node scripts/audit-css-classes.mjs",
+    "audit:css:strict": "node scripts/audit-css-classes.mjs --strict"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.101.2",

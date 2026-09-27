@@ -235,6 +235,33 @@ const cotisationCreateSchema = z.object({
   periodEnd: z.string().min(1, 'Date de fin requise.')
 });
 
+// --- Schémas personnalisation des cartes (logo du parrain) ---
+
+// Taille maximale du logo encodé en base64 (~500 Ko de fichier binaire).
+const SPONSOR_LOGO_MAX_BYTES = 500 * 1024;
+
+// Le logo du parrain peut être :
+//  - une data URL image issue d'un upload (data:image/png;base64,...)
+//  - un chemin public déjà présent sur le serveur (ex. /logo_partner_patisen.png)
+//  - une chaîne vide (réinitialisation du logo)
+const sponsorLogoSchema = z.object({
+  logoUrl: z
+    .string()
+    .max(750000, 'Logo trop volumineux (500 Ko maximum).')
+    .refine(
+      (v) => v === '' || v.startsWith('/') || /^data:image\/(png|jpe?g|webp|gif|svg\+xml);base64,[A-Za-z0-9+/=\s]+$/.test(v),
+      { message: 'Format de logo invalide (image PNG/JPEG/WEBP/GIF/SVG ou chemin public attendu).' }
+    )
+    .refine(
+      (v) => {
+        if (!v.startsWith('data:')) return true;
+        const base64 = v.split(',')[1] || '';
+        return Math.floor((base64.replace(/\s/g, '').length * 3) / 4) <= SPONSOR_LOGO_MAX_BYTES;
+      },
+      { message: 'Logo trop volumineux (500 Ko maximum).' }
+    )
+});
+
 const partnerLoginSchema = z.object({
   username: z.string().min(1, 'Identifiant requis.').max(150),
   password: z.string().min(1, 'Mot de passe requis.').max(255)
@@ -285,6 +312,7 @@ module.exports = {
   csuProgramCreateSchema,
   notificationSendSchema,
   cotisationCreateSchema,
+  sponsorLogoSchema,
   partnerLoginSchema,
   partnerStructureCreateSchema,
   tierPayantDeclareSchema

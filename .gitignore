@@ -36,3 +36,8 @@ backend/.env.*
 *.xlsx
 dev-dist/
 
+
+# Modeles de reference locaux (images lourdes, hors application)
+modele cartes cmu-eleves et daara/
+modele_eleves_cmu.xlsx
+scripts/_qa_*.png

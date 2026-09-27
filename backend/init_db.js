@@ -120,6 +120,7 @@ const createTablesQuery = `
     photo_url TEXT,
     sponsor_phone VARCHAR(50),
     school_name VARCHAR(255),
+    sponsor_logo TEXT,
     department VARCHAR(100) DEFAULT 'Dakar',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );

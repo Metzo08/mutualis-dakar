@@ -1941,6 +1941,8 @@ app.use((err, req, res, next) => {
     await query('CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs(created_at DESC)');
     await query('ALTER TABLE complaints ADD COLUMN IF NOT EXISTS resolution_notes TEXT');
     await query('ALTER TABLE complaints ADD COLUMN IF NOT EXISTS resolved_by VARCHAR(100)');
+    // Personnalisation des cartes : logo du parrain apposé sur les cartes parrainées
+    await query('ALTER TABLE beneficiaries ADD COLUMN IF NOT EXISTS sponsor_logo TEXT');
     console.log('Indexation PostgreSQL et schéma vérifiés avec succès.');
   } catch (err) {
     console.warn('Vérification du schéma PostgreSQL reportée (les tables ne sont peut-être pas encore initialisées) :', err.message);

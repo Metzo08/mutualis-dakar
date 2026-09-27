@@ -10,7 +10,8 @@ const {
   claimCreateSchema,
   claimStatusSchema,
   csuProgramCreateSchema,
-  notificationSendSchema
+  notificationSendSchema,
+  sponsorLogoSchema
 } = require('./validators');
 
 const router = express.Router();
@@ -567,7 +568,7 @@ router.get('/api/parrainages/demo-sponsors', async (req, res) => {
   try {
     const result = await query(
       `SELECT b.id, b.first_name, b.last_name, b.phone, b.cmu_number, b.mutuelle_name,
-              b.package_type, b.status, b.created_at,
+              b.package_type, b.status, b.created_at, b.sponsor_logo,
               COUNT(f.id) AS filleul_count
        FROM beneficiaries b
        LEFT JOIN beneficiaries f ON f.sponsor_phone = b.phone AND f.package_type != 'parrainage'
@@ -585,6 +586,7 @@ router.get('/api/parrainages/demo-sponsors', async (req, res) => {
       packageType: r.package_type,
       status: r.status,
       created_at: r.created_at,
+      sponsorLogo: r.sponsor_logo || null,
       filleulCount: parseInt(r.filleul_count)
     })));
   } catch (err) {
@@ -644,6 +646,7 @@ router.get('/api/parrainages/sponsors', authenticateToken, requireRole('agent', 
 
       sponsors.push({
         ...sponsor,
+        sponsorLogo: sponsor.sponsor_logo || null,
         filleulsCount: count,
         parrainageType: detectedType,
         totalAmount: amount
@@ -681,5 +684,91 @@ router.get('/api/parrainages/sponsors/:phone/filleuls', authenticateToken, requi
     res.status(500).json({ error: 'Erreur interne du serveur' });
   }
 });
+
+// ============================================================================
+// PERSONNALISATION DES CARTES — LOGO DU PARRAIN
+// Le parrain (beneficiaries.package_type = 'parrainage') peut apposer son logo
+// sur les cartes des bénéficiaires qu'il a parrainés. Le logo est stocké dans
+// beneficiaries.sponsor_logo : data URL image (upload) ou chemin public.
+// Lecture publique (studio des cartes) — écriture réservée agent & admin.
+// ============================================================================
+
+// GET /api/parrainages/sponsors/:phone/logo (PUBLIC)
+router.get('/api/parrainages/sponsors/:phone/logo', async (req, res) => {
+  try {
+    const { phone } = req.params;
+    const result = await query(
+      "SELECT phone, first_name, last_name, sponsor_logo FROM beneficiaries WHERE phone = $1 AND package_type = 'parrainage' LIMIT 1",
+      [phone]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Parrain introuvable.' });
+    }
+    const sponsor = result.rows[0];
+    res.json({
+      phone: sponsor.phone,
+      sponsorName: `${sponsor.first_name} ${sponsor.last_name}`.trim(),
+      sponsorLogo: sponsor.sponsor_logo || null
+    });
+  } catch (err) {
+    console.error('Erreur lecture logo parrain :', err);
+    res.status(500).json({ error: 'Erreur interne du serveur' });
+  }
+});
+
+// PUT /api/parrainages/sponsors/:phone/logo (agent & admin)
+// Body : { logoUrl } — data URL image (500 Ko max) ou chemin public.
+router.put(
+  '/api/parrainages/sponsors/:phone/logo',
+  authenticateToken,
+  requireRole('agent', 'admin'),
+  validate(sponsorLogoSchema),
+  async (req, res) => {
+    try {
+      const { phone } = req.params;
+      const { logoUrl } = req.body;
+      const result = await query(
+        "UPDATE beneficiaries SET sponsor_logo = $1 WHERE phone = $2 AND package_type = 'parrainage' RETURNING id, first_name, last_name",
+        [logoUrl ? logoUrl : null, phone]
+      );
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Parrain introuvable pour ce numéro.' });
+      }
+      const sponsor = result.rows[0];
+      res.json({
+        success: true,
+        phone,
+        sponsorName: `${sponsor.first_name} ${sponsor.last_name}`.trim(),
+        sponsorLogo: logoUrl ? logoUrl : null
+      });
+    } catch (err) {
+      console.error('Erreur enregistrement logo parrain :', err);
+      res.status(500).json({ error: 'Erreur interne du serveur' });
+    }
+  }
+);
+
+// DELETE /api/parrainages/sponsors/:phone/logo (agent & admin)
+router.delete(
+  '/api/parrainages/sponsors/:phone/logo',
+  authenticateToken,
+  requireRole('agent', 'admin'),
+  async (req, res) => {
+    try {
+      const { phone } = req.params;
+      const result = await query(
+        "UPDATE beneficiaries SET sponsor_logo = NULL WHERE phone = $1 AND package_type = 'parrainage' RETURNING id",
+        [phone]
+      );
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Parrain introuvable pour ce numéro.' });
+      }
+      res.json({ success: true, phone, sponsorLogo: null });
+    } catch (err) {
+      console.error('Erreur suppression logo parrain :', err);
+      res.status(500).json({ error: 'Erreur interne du serveur' });
+    }
+  }
+);
 
 module.exports = router;
