@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
+import { getStoredMembers } from '../utils/beneficiaryStore';
 import DeleteModal from '../components/DeleteModal';
 
 // Design Premium Haut de Gamme — Dossier Médical & Radiographies Certifiées
@@ -30,31 +31,65 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
   // Ancien alias pour rétro-compatibilité des blocs existants
   const isDoctorOrAgent = canEditMedical || isSuperAdmin;
 
+  // ═══════════════════════════════════════════════════════
+  // Registre des patients — données RÉELLES uniquement
+  // ═══════════════════════════════════════════════════════
+  // Aucun patient n'est inventé. Le registre croise les bénéficiaires
+  // réellement enregistrés (store local, synchronisé serveur) avec les
+  // examens RÉELLEMENT saisis par les praticiens (localStorage).
+  // Un patient sans examen n'apparaît pas : un dossier médical fictif
+  // (diagnostic, médecin, date) est un risque sanitaire et juridique.
+  const [realMembers, setRealMembers] = useState([]);
+
+  useEffect(() => {
+    const load = () => {
+      try {
+        setRealMembers(getStoredMembers());
+      } catch (e) {
+        setRealMembers([]);
+      }
+    };
+    load();
+    window.addEventListener('unamusc_store_change', load);
+    return () => window.removeEventListener('unamusc_store_change', load);
+  }, []);
+
+  /** Examens réellement saisis pour un bénéficiaire. */
+  const getRealExams = (cmuNumber) => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const raw = localStorage.getItem(`cmu-exams-${cmuNumber}`);
+      if (!raw) return [];
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+    } catch (e) {
+      return [];
+    }
+  };
+
+  const facilityPatients = useMemo(
+    () =>
+      realMembers
+        .map((m) => {
+          const exams = getRealExams(m.cmuNumber);
+          if (exams.length === 0) return null;
+          const last = exams[exams.length - 1] || {};
+          return {
+            cmuNumber: m.cmuNumber,
+            firstName: m.firstName,
+            lastName: m.lastName,
+            packageType: m.package || '—',
+            examCount: exams.length,
+            lastExam: last.type || last.examType || 'Examen',
+            doctor: last.doctor || last.doctorName || '—',
+            location: last.facility || last.location || '—'
+          };
+        })
+        .filter(Boolean),
+    [realMembers]
+  );
+
   // Liste des dossiers patients suivis dans la structure / établissement
-  const facilityPatients = [
-    { cmuNumber: 'CMU-DKR-2026-4401', firstName: 'Fatou', lastName: 'Diop', packageType: '100% Gratuité BSF', examCount: 6, lastExam: 'Radiographie pulmonaire & Scanner DICOM', doctor: 'Dr. Ousmane Sow (Hôpital Fann)', location: 'Dakar Plateau' },
-    { cmuNumber: 'CSU-DKR-2026-8812.2', firstName: 'Amadou', lastName: 'Sow', packageType: '80% UNAMUSC', examCount: 5, lastExam: 'Bilan sanguin complet & Sérologies HD', doctor: 'Dr. Cheikh Anta Diop (Abass Ndao)', location: 'Pikine Technopole' },
-    { cmuNumber: 'CMU-DKR-2026-3302', firstName: 'Awa', lastName: 'Ndiaye', packageType: '100% CSU Gratuit', examCount: 4, lastExam: 'Échographie pelvienne 3D (32 SA)', doctor: 'Dr. Mariama Ba (Gynécologie Fann)', location: 'Guédiawaye' },
-    { cmuNumber: 'SN-DK-MED-8472', firstName: 'Modou', lastName: 'Diop', packageType: '80% UNAMUSC', examCount: 6, lastExam: 'Scanner lombaire post-traumatique', doctor: 'Dr. Cheikh Anta Diop (Ortopédie)', location: 'Médina Dakar' },
-    { cmuNumber: 'CSU-UCAD-2026-9012', firstName: 'Ibrahima', lastName: 'Sarr', packageType: 'Scolaire / Étudiant UCAD', examCount: 5, lastExam: 'Radiographie thoracique UCAD', doctor: 'Dr. Ousmane Sow (Centre COUD)', location: 'Fann Résidence' },
-    { cmuNumber: 'CMU-THS-2026-1102', firstName: 'Mamadou', lastName: 'Ndiaye', packageType: '80% UNAMUSC', examCount: 4, lastExam: 'Bilan de contrôle cardiologique ECG', doctor: 'Dr. Abdoulaye Camara (Thiès)', location: 'Thiès Dixième' },
-    { cmuNumber: 'CMU-DKR-2026-5520', firstName: 'Aminata', lastName: 'Sow', packageType: '100% Gratuité BSF', examCount: 5, lastExam: 'Bilan prénatal biologique CPN 3', doctor: 'Dr. Fatou Bintou Ndiaye (Fann)', location: 'Rufisque Nord' },
-    { cmuNumber: 'CMU-STL-2026-3344', firstName: 'Ibrahima', lastName: 'Fall', packageType: '80% UNAMUSC', examCount: 4, lastExam: 'Mammographie de dépistage numérique', doctor: 'Dr. Khadija Camara (Saint-Louis)', location: 'Saint-Louis Sor' },
-    { cmuNumber: 'CMU-KLK-2026-8811', firstName: 'Coumba', lastName: 'Ndiaye', packageType: '80% UNAMUSC', examCount: 3, lastExam: 'Scanner abdominal avec produit de contraste', doctor: 'Dr. Papa Samba Kane (Kaolack)', location: 'Kaolack Medina' },
-    { cmuNumber: 'CMU-ZIG-2026-4499', firstName: 'Ousmane', lastName: 'Ba', packageType: '100% CSU Gratuit', examCount: 5, lastExam: 'Radiographie osseuse tibia droit', doctor: 'Dr. Saliou Wade (Ziguinchor)', location: 'Ziguinchor Tilène' },
-    { cmuNumber: 'CMU-DKR-2026-7781', firstName: 'Awa', lastName: 'Sylla', packageType: '80% UNAMUSC', examCount: 4, lastExam: 'Échographie obstétricale T2', doctor: 'Dr. Mariama Ba (Grand Yoff)', location: 'Grand Yoff' },
-    { cmuNumber: 'CMU-DKR-2026-2299', firstName: 'Cheikh Tidiane', lastName: 'Diop', packageType: '80% UNAMUSC', examCount: 6, lastExam: 'Scanner cérébral de contrôle CT-2', doctor: 'Dr. Cheikh Anta Diop (Fann)', location: 'Fann Hock' },
-    { cmuNumber: 'CMU-MBR-2026-5540', firstName: 'Babacar', lastName: 'Diagne', packageType: '80% UNAMUSC', examCount: 3, lastExam: 'Bilan lipidique & hémoglobine glyquée HbA1c', doctor: 'Dr. Ousmane Sow (Mbour)', location: 'Mbour Saly' },
-    { cmuNumber: 'CMU-DKR-2026-9904', firstName: 'Mariama', lastName: 'Cissé', packageType: '100% Gratuité BSF', examCount: 5, lastExam: 'Échographie pelvienne BSF (24 SA)', doctor: 'Dr. Fatou Bintou Ndiaye (Gynéco)', location: 'Parcelles Assainies' },
-    { cmuNumber: 'CMU-DKR-2026-1042', firstName: 'Papa Samba', lastName: 'Kane', packageType: '80% UNAMUSC', examCount: 4, lastExam: 'Radiographie pulmonaire de contrôle', doctor: 'Dr. Abdoulaye Camara (Pneumo)', location: 'Ngor Virage' },
-    { cmuNumber: 'CMU-FTK-2026-3390', firstName: 'Saliou', lastName: 'Wade', packageType: '80% UNAMUSC', examCount: 3, lastExam: 'Bilan rénal complet (Créatinine & Urée)', doctor: 'Dr. Khadija Camara (Fatick)', location: 'Fatick Escale' },
-    { cmuNumber: 'CMU-DKR-2026-4480', firstName: 'Khadija', lastName: 'Camara', packageType: '100% CSU Gratuit', examCount: 5, lastExam: 'Scanner rachis cervical DICOM', doctor: 'Dr. Cheikh Anta Diop (Hôpital Fann)', location: 'Yoff Océan' },
-    { cmuNumber: 'CMU-KLD-2026-7788', firstName: 'Ndèye Fatou', lastName: 'Fall', packageType: '80% UNAMUSC', examCount: 4, lastExam: 'NFS & Bilan martial sérique', doctor: 'Dr. Papa Samba Kane (Kolda)', location: 'Kolda Centre' },
-    { cmuNumber: 'CMU-DKR-2026-6655', firstName: 'Abdoulaye', lastName: 'Sy', packageType: '80% UNAMUSC', examCount: 4, lastExam: 'Radiographie du rachis lombaire L1-L5', doctor: 'Dr. Ousmane Sow (Médecine Phys.)', location: 'Ouakam' },
-    { cmuNumber: 'CMU-DKR-2026-3321', firstName: 'Astou', lastName: 'Gueye', packageType: '100% Gratuité BSF', examCount: 5, lastExam: 'Bilan biologique du 3ème trimestre CPN 4', doctor: 'Dr. Mariama Ba (Maternité Fann)', location: 'Mermoz' },
-    { cmuNumber: 'CMU-DIO-2026-9911', firstName: 'Omar', lastName: 'Faye', packageType: '80% UNAMUSC', examCount: 3, lastExam: 'Échographie abdominale générale', doctor: 'Dr. Saliou Wade (Diourbel)', location: 'Diourbel Escale' },
-    { cmuNumber: 'CMU-DKR-2026-1122', firstName: 'Seynabou', lastName: 'Diop', packageType: '80% UNAMUSC', examCount: 5, lastExam: 'Mammographie numérique 3D', doctor: 'Dr. Fatou Bintou Ndiaye (Onco-Radio)', location: 'Hann Maristes' }
-  ];
 
   const [selectedPatientCmu, setSelectedPatientCmu] = useState(() => {
     if (isCitizen && (citizenUser?.cmuNumber || citizenUser?.cmu_number)) {

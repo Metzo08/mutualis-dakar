@@ -17,6 +17,7 @@ const dynamicRoutes = require('./dynamicRoutes');
 const { router: advancedRoutes, awardPoints } = require('./advancedRoutes');
 const extendedRoutes = require('./extendedRoutes');
 const kadevRoutes = require('./kadevRoutes');
+const clinicalRoutes = require('./clinicalRoutes');
 const {
   citizenLoginSchema,
   agentLoginSchema,
@@ -1875,6 +1876,12 @@ app.use('/api', extendedRoutes);
 // l'agrégateur est enregistrée à part et n'est jamais prélevée sur la MSD.
 // ============================================================================
 app.use(kadevRoutes);
+
+// ============================================================================
+// ASSISTANT CLINIQUE IA — aide à la décision pour les professionnels de santé.
+// ⚠️ Ne pose pas de diagnostic : la validation clinique reste obligatoire.
+// ============================================================================
+app.use(clinicalRoutes);
 
 // ============================================================================
 // API PHARMACIES AGRÉÉES — Source : ARP (arp.sn)
