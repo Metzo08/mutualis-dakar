@@ -5,7 +5,9 @@ import {
   fetchSponsorsWithLogos,
   saveSponsorLogo,
   deleteSponsorLogo,
-  readImageFileAsDataUrl,
+  readLogoFileOptimized,
+  formatBytes,
+  LOGO_MAX_DIMENSION,
   getLocalSponsorLogo,
   getCardSponsorAssignments,
   assignSponsorToCard,
@@ -109,11 +111,9 @@ function SchoolCardFront({ cardData, currentUnion, getMsdLogo, customLogo = null
     </div>
     <div className="school-card-tricolor" />
     <div className="school-card-program-bar" style={{ borderColor: `${cardData.cardDesign.accentColor}55` }}>
-      {/* L'année scolaire et la classe ne figurent PAS sur le recto : ces
-          données changent chaque année. Elles sont portées par le QR code
-          (scannable par l'agent) — voir academicQrData dans l'effet QR. */}
+      {/* Aucun badge ni donnée annuelle ici : l'année scolaire et la classe
+          vivent dans le QR code (voir academicQrData dans l'effet QR). */}
       <strong>{program.frontBanner}</strong>
-      <span>{program.frontBadge}</span>
     </div>
     <div className="school-card-front-content">
       <div className="school-card-details">
@@ -161,8 +161,10 @@ function SchoolCardBack({ cardData, qrCodeDataUrl, customLogo = null }) {
     <div className="school-card-tricolor" />
     <div className="school-card-back-content">
       <div className="school-card-qr-block">
+        {/* Zone de silence (« quiet zone ») généreuse autour du QR : c'est
+            la première cause d'échec sur les téléphones d'entrée de gamme.
+            Aucun texte ni motif ne doit entourer le code. */}
         <div className="school-card-qr">{qrCodeDataUrl ? <img src={qrCodeDataUrl} alt="QR code de vérification" /> : 'QR'}</div>
-        <span className="school-card-qr-caption">🧮 Scannez pour ouvrir le carnet de santé de l'enfant</span>
       </div>
       <div className="school-card-back-info">
         <span>Bénéficiaire</span><strong>{cardData.fullName}</strong>
@@ -659,12 +661,16 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
 
     setQrCodePayload(payloadObj);
 
-    // Générer l'image du QR Code avec NOIR PUR (#000000) et contraste ISO maximal
+    // Générer l'image du QR Code avec NOIR PUR (#000000) et contraste ISO maximal.
+    // Correction d'erreur « M » et non « H » : le niveau H ajoute ~30 % de
+    // redondance, donc beaucoup plus de modules, donc des pixels plus fins —
+    // illisibles sur les téléphones d'entrée de gamme. Le niveau M reste
+    // très robuste (≈7 % de redondance) tout en scannant nettement mieux.
     QRCode.toDataURL(verifyUrl, {
-      margin: 2,
-      width: 480,
+      margin: 3,
+      width: 720,
       color: { dark: '#000000', light: '#FFFFFF' },
-      errorCorrectionLevel: 'H'
+      errorCorrectionLevel: 'M'
     })
       .then(url => setQrCodeDataUrl(url))
       .catch((err) => console.error('Erreur génération QR Code:', err));
@@ -930,7 +936,16 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
   const handleSponsorLogoFile = async (file) => {
     setSponsorLogoBusy(true);
     try {
-      const dataUrl = await readImageFileAsDataUrl(file);
+      // Le logo est RÉDUIT et COMPRESSÉ avant stockage : un fichier de
+      // plusieurs mégaoctets est accepté, il ne reste que quelques dizaines
+      // de kilo-octets en base (localStorage comme backend).
+      const optimized = await readLogoFileOptimized(file);
+      const dataUrl = optimized.dataUrl;
+      const saved = optimized.finalBytes < optimized.originalBytes
+        ? ` (${formatBytes(optimized.originalBytes)} → ${formatBytes(optimized.finalBytes)} après compression)`
+        : '';
+      const dims = optimized.width ? ` · ${optimized.width}×${optimized.height} px ${optimized.format}` : ' · SVG';
+
       if (currentSponsorPhone) {
         const result = await saveSponsorLogo(currentSponsorPhone, dataUrl);
         setSponsors(prev => prev.map(s => (s.phone === currentSponsorPhone ? { ...s, sponsorLogo: result.sponsorLogo } : s)));
@@ -942,13 +957,16 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
         setSponsorNotice({
           type: result.warning ? 'warning' : 'success',
           text: result.warning
-            ? `${result.warning} Le logo est néanmoins apposé sur ${spread || 1} carte(s).`
-            : `✅ Logo du parrain enregistré et appliqué automatiquement à ses ${spread} carte(s) sans sélection individuelle.`
+            ? `${result.warning} Logo compressé${saved} et appliqué à ${spread || 1} carte(s).`
+            : `✅ Logo enregistré${saved}${dims} et appliqué automatiquement à ses ${spread} carte(s), sans sélection individuelle.`
         });
       } else {
         setCardLogo(cardCmuNumber, dataUrl);
         setCardLogoState(dataUrl);
-        setSponsorNotice({ type: 'success', text: 'Logo personnalisé apposé sur cette carte (stocké localement, disponible hors-ligne).' });
+        setSponsorNotice({
+          type: 'success',
+          text: `Logo personnalisé apposé sur cette carte${saved}${dims}.`
+        });
       }
     } catch (err) {
       setSponsorNotice({ type: 'error', text: err.message || 'Import du logo impossible.' });
@@ -1847,7 +1865,7 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
 
           {/* Logo du parrain : aperçu + téléversement + retrait */}
           <div className="studio-form-group">
-            <label>Logo du parrain (PNG/JPEG/SVG — {Math.round(SPONSOR_LOGO_MAX_BYTES / 1024)} Ko max) :</label>
+            <label>Logo du parrain (PNG/JPEG/SVG — {Math.round(SPONSOR_LOGO_MAX_BYTES / 1024)} Ko max après compression) :</label>
             <div className="d-flex align-items-center gap-3 flex-wrap">
               <div style={{ width: '120px', height: '66px', borderRadius: '12px', border: '1.5px dashed var(--border-color)', background: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
                 {currentSponsorLogo ? (
@@ -1896,6 +1914,9 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
               {currentSponsorPhone
                 ? `✅ Le logo s'applique automatiquement à ses ${sponsoredCardCount} carte(s) : plus besoin de les ouvrir une par une.`
                 : 'Sélectionnez un parrain ci-dessus pour que son logo se réplique automatiquement sur toutes ses cartes.'}
+            </small>
+            <small className="text-muted d-block mt-1" style={{ fontSize: '0.76rem' }}>
+              💾 Toute taille de fichier est acceptée : le logo est automatiquement réduit à {LOGO_MAX_DIMENSION} px et compressé avant enregistrement, afin de ne pas alourdir la base. Le message de confirmation indique le poids final.
             </small>
             <small className="text-muted d-block mt-1" style={{ fontSize: '0.76rem' }}>
               Le logo est enregistré dans la base (colonne <code>beneficiaries.sponsor_logo</code>) et mis en cache localement : il reste disponible même sans connexion.

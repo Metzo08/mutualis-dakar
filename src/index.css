@@ -1848,16 +1848,14 @@ body.dark-theme .cni-physical-card-preview {
 .school-card-back-info { font-size: .55rem; }
 .school-card-back-info > span { font-size: .55rem; }
 
-/* Verso : QR agrandi + infos élastiques, borné au-dessus du pied.
-   Le QR occupe la totalité de la colonne gauche (pas de grille
-   contraignante) : sur les téléphones d'entrée de gamme, un module
-   trop petit est la première cause d'échec de scan. */
-.school-card-back-content { display: grid; grid-template-columns: 150px minmax(0, 1fr); align-items: center; gap: 14px; min-height: 0; padding: 6px 8px 26px; }
-.school-card-qr { width: 150px; height: 150px; border: 4px solid #0f172a; border-radius: 14px; padding: 5px; background: #fff; display: grid; place-items: center; flex-shrink: 0; }
+/* Verso : QR agrandi, zone de silence généreuse, infos élastiques.
+   Les téléphones d'entrée de gamme lisent mal les petits modules : le QR
+   occupe donc la colonne gauche en entier, entouré d'une marge blanche
+   (quiet zone) et d'un liseré noir épais qui aide à la mise au point. */
+.school-card-back-content { display: grid; grid-template-columns: 168px minmax(0, 1fr); align-items: center; gap: 14px; min-height: 0; padding: 6px 8px 26px; }
+.school-card-qr { width: 168px; height: 168px; border: 5px solid #0f172a; border-radius: 16px; padding: 9px; background: #fff; display: grid; place-items: center; flex-shrink: 0; box-shadow: 0 0 0 3px #fff; }
 .school-card-qr img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
-/* Bloc QR du verso : le QR reste à taille fixe et la consigne « Scannez pour
-   ouvrir le carnet de santé de l'enfant » s'affiche juste en dessous (modèle). */
-.school-card-qr-block { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; }
+.school-card-qr-block { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 0; }
 .school-card-qr-caption { color: #0284c7; font-size: .46rem; font-weight: 900; text-align: center; line-height: 1.2; white-space: normal; }
 .studio-card-surface .school-card-qr-caption { font-size: .46rem !important; }
 .school-card-back-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; color: #64748b; font-size: .55rem; font-weight: 800; }

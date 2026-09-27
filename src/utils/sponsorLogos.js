@@ -133,27 +133,153 @@ export const resolveEffectiveCardLogo = (cmuNumber, sponsorPhone) => {
   return getCardLogo(cmuNumber);
 };
 
-// --- Lecture d'un fichier image --------------------------------------------
+// --- Lecture, redimensionnement et compression d'un logo -------------------
+//
+// Un logo de parrain peut faire plusieurs mégaoctets (scan haute résolution,
+// export d'un graphiste). Le conserver tel quel alourdirait le localStorage du
+// navigateur ET la colonne beneficiaries.sponsor_logo en base.
+//
+// On applique donc systématiquement, AVANT stockage :
+//   1. un redimensionnement à 512 px sur son plus grand côté ;
+//   2. une compression JPEG progressive, avec repli WebP si nécessaire.
+// Résultat : quelques dizaines de kilo-octets, quel que soit le fichier source.
 
-export const readImageFileAsDataUrl = (file) =>
+/** Côté maximal retenu pour un logo de parrain (en pixels). */
+export const LOGO_MAX_DIMENSION = 512;
+/** Côté minimal du repli si la compression JPEG ne suffit pas. */
+const LOGO_MIN_DIMENSION = 192;
+/** Paliers de qualité JPEG essayés dans l'ordre. */
+const LOGO_QUALITY_STEPS = [0.92, 0.85, 0.78, 0.7, 0.6, 0.5];
+
+/** Poids réel (en octets) d'une data URL — la charge utile est en base64. */
+export const dataUrlBytes = (dataUrl) => {
+  if (!dataUrl) return 0;
+  const base64 = dataUrl.slice(dataUrl.indexOf(',') + 1);
+  return Math.ceil((base64.length * 3) / 4);
+};
+
+/** Formate un poids en octets pour l'affichage. */
+export const formatBytes = (bytes) => {
+  const kb = bytes / 1024;
+  if (kb < 1024) return `${Math.round(kb)} Ko`;
+  return `${(kb / 1024).toFixed(1).replace('.', ',')} Mo`;
+};
+
+const readFileAsDataUrl = (file) =>
   new Promise((resolve, reject) => {
-    if (!file) {
-      reject(new Error('Aucun fichier sélectionné.'));
-      return;
-    }
-    if (!/^image\//.test(file.type)) {
-      reject(new Error('Le fichier doit être une image (PNG, JPEG, WEBP ou SVG).'));
-      return;
-    }
-    if (file.size > SPONSOR_LOGO_MAX_BYTES) {
-      reject(new Error(`Logo trop volumineux : ${Math.round(file.size / 1024)} Ko (500 Ko maximum).`));
-      return;
-    }
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result || ''));
     reader.onerror = () => reject(new Error('Lecture du fichier impossible.'));
     reader.readAsDataURL(file);
   });
+
+const loadImage = (src) =>
+  new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('Image illisible ou corrompue.'));
+    img.src = src;
+  });
+
+/** Redimensionne une image dans un canvas (fond blanc : un PNG transparent
+    deviendrait noir une fois encodé en JPEG). */
+const drawScaled = (img, maxDimension) => {
+  const scale = Math.min(1, maxDimension / Math.max(img.width || 1, img.height || 1));
+  const width = Math.max(1, Math.round((img.width || 1) * scale));
+  const height = Math.max(1, Math.round((img.height || 1) * scale));
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Compression impossible sur cet appareil.');
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, width, height);
+  ctx.drawImage(img, 0, 0, width, height);
+  return canvas;
+};
+
+/** Encode un canvas en descendant les paliers de qualité jusqu'à tenir
+    dans le budget, avec rétrécissement puis WebP en dernier recours. */
+const encodeUnderBudget = (canvas, maxBytes) => {
+  for (const quality of LOGO_QUALITY_STEPS) {
+    const jpeg = canvas.toDataURL('image/jpeg', quality);
+    if (dataUrlBytes(jpeg) <= maxBytes) return jpeg;
+  }
+  // JPEG insuffisant : on rétrécit franchement, puis on réessaie.
+  const small = document.createElement('canvas');
+  const factor = LOGO_MIN_DIMENSION / Math.max(1, canvas.width, canvas.height);
+  small.width = Math.max(1, Math.round(canvas.width * factor));
+  small.height = Math.max(1, Math.round(canvas.height * factor));
+  const ctx = small.getContext('2d');
+  if (ctx) {
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, small.width, small.height);
+    ctx.drawImage(canvas, 0, 0, small.width, small.height);
+    for (const quality of [0.5, 0.4, 0.3]) {
+      const jpeg = small.toDataURL('image/jpeg', quality);
+      if (dataUrlBytes(jpeg) <= maxBytes) return jpeg;
+    }
+    // Dernier recours : WebP, bien plus dense à qualité égale.
+    const webp = small.toDataURL('image/webp', 0.6);
+    if (dataUrlBytes(webp) <= maxBytes) return webp;
+    return small.toDataURL('image/jpeg', 0.25);
+  }
+  return canvas.toDataURL('image/jpeg', 0.3);
+};
+
+/**
+ * Lit un fichier logo, le RÉDUIT et le COMPRESSE avant de le renvoyer.
+ * Toute taille de fichier est acceptée : la limite de 500 Ko porte sur le
+ * RÉSULTAT, plus jamais sur le fichier source.
+ *
+ * @returns {Promise<{dataUrl: string, originalBytes: number, finalBytes: number,
+ *                    width: number, height: number, format: string}>}
+ */
+export const readLogoFileOptimized = async (file) => {
+  if (!file) throw new Error('Aucun fichier sélectionné.');
+  if (!/^image\//.test(file.type)) {
+    throw new Error('Le fichier doit être une image (PNG, JPEG, WEBP ou SVG).');
+  }
+
+  const originalBytes = file.size;
+
+  // Le SVG est déjà vectoriel et léger : conservé intact pour la netteté.
+  if (file.type === 'image/svg+xml') {
+    if (originalBytes > SPONSOR_LOGO_MAX_BYTES) {
+      throw new Error(`Logo SVG trop volumineux : ${formatBytes(originalBytes)} (${formatBytes(SPONSOR_LOGO_MAX_BYTES)} maximum).`);
+    }
+    return {
+      dataUrl: await readFileAsDataUrl(file),
+      originalBytes,
+      finalBytes: originalBytes,
+      width: 0,
+      height: 0,
+      format: 'SVG'
+    };
+  }
+
+  const source = await readFileAsDataUrl(file);
+  const img = await loadImage(source);
+  const canvas = drawScaled(img, LOGO_MAX_DIMENSION);
+  const dataUrl = encodeUnderBudget(canvas, SPONSOR_LOGO_MAX_BYTES);
+
+  return {
+    dataUrl,
+    originalBytes,
+    finalBytes: dataUrlBytes(dataUrl),
+    width: canvas.width,
+    height: canvas.height,
+    format: dataUrl.startsWith('data:image/webp') ? 'WEBP' : 'JPEG'
+  };
+};
+
+/** Variante simplifiée : renvoie directement la data URL compressée. */
+export const readImageFileAsDataUrl = async (file) =>
+  (await readLogoFileOptimized(file)).dataUrl;
 
 const normalizeSponsor = (sponsor) => ({
   id: sponsor.id ?? null,

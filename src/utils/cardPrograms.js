@@ -29,9 +29,6 @@ export const CARD_PROGRAMS = {
     id: 'CMU_ELEVES',
     label: 'CMU-Élèves',
     frontBanner: '🎓 Carte scolaire — CMU-Élèves',
-    // Le bandeau ne porte aucune donnée annuelle (l'année et la classe
-    // vivent dans le QR code) : c'est un rappel de programme, statique.
-    frontBadge: 'Établissement public',
     frontFooter: 'CARTE SCOLAIRE OFFICIELLE — CMU-ÉLÈVES SÉNÉGAL',
     backBanner: 'CARTE SANITAIRE — CMU-ÉLÈVES',
     backCodeLabel: 'Code bénéficiaire CMU-Élèves',
@@ -49,7 +46,6 @@ export const CARD_PROGRAMS = {
     id: 'CMU_DAARA',
     label: 'CMU-Daara',
     frontBanner: '🕌 Carte scolaire — CMU-Daara',
-    frontBadge: 'Daara (école coranique)',
     frontFooter: 'CARTE SCOLAIRE OFFICIELLE — CMU-DAARA SÉNÉGAL',
     backBanner: 'CARTE SANITAIRE — CMU-DAARA',
     backCodeLabel: 'Code bénéficiaire CMU-Daara',
