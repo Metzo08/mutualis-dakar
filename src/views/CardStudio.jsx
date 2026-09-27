@@ -11,6 +11,8 @@ import {
   assignSponsorToCard,
   getCardLogo,
   setCardLogo,
+  getCardsSponsoredBy,
+  applySponsorLogoToAllCards,
   SPONSOR_LOGO_MAX_BYTES
 } from '../utils/sponsorLogos';
 import React, { useState, useEffect, useRef } from 'react';
@@ -19,6 +21,15 @@ import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
 // Armoiries vectorielles de la Ville de Dakar (filigrane des cartes scolaires)
 import DakarCoatOfArms from '../components/DakarCoatOfArms';
+// Programmes de cartes + coordonnées par MSD (source de vérité des libellés)
+import {
+  CARD_PROGRAMS,
+  DEPARTMENTAL_UNIONS,
+  buildContactLines,
+  resolveCardProgram,
+  resolveUnion,
+  SOLUTION_PHONE
+} from '../utils/cardPrograms';
 
 // Vecteur SVG officiel du Drapeau du Sénégal (Vert, Jaune avec étoile verte, Rouge)
 const SenegalFlagSvg = ({ style }) => (
@@ -41,12 +52,6 @@ const SenegalFlagSvg = ({ style }) => (
     <polygon points="450,210 476,290 560,290 492,340 518,420 450,370 382,420 408,340 340,290 424,290" fill="#00853f"/>
   </svg>
 );
-
-const CARD_PROGRAMS = {
-  CLASSIC: { label: 'Carte classique', accent: '#059669' },
-  CMU_ELEVES: { label: 'CMU-Élèves', accent: '#2563eb' },
-  CMU_DAARA: { label: 'CMU-Daara', accent: '#b45309' }
-};
 
 const getDefaultAcademicYear = () => {
   const year = new Date().getFullYear();
@@ -72,10 +77,11 @@ const saveCardDesign = (cardNumber, design) => {
 };
 
 function SchoolCardFront({ cardData, currentUnion, getMsdLogo, customLogo = null }) {
-  // Modèle officiel MSDD Dakar (dossier « modele cartes cmu-eleves et daara ») :
-  // le recto est COMMUN aux cartes scolaires CMU-Élèves et CMU-Daara — mêmes
-  // en-têtes ministériels, même barre de programme verte, mêmes 6 champs et
-  // même pied de carte. Seules les données du bénéficiaire changent.
+  // Les libellés proviennent du programme de la carte (CMU-Élèves ou
+  // CMU-Daara) : une carte Daara ne peut donc plus afficher « CMU-Élèves ».
+  const program = resolveCardProgram(cardData.cardProgram);
+  const showIef = Boolean(program.showIef);
+  const idValue = cardData.academicData.ine || cardData.cmuNumber;
   // Filigrane : logo du parrain / de la carte s'il a été choisi, sinon les
   // armoiries de la Ville de Dakar (comme sur les cartes modèles).
   const watermarkStyle = customLogo ? {
@@ -103,7 +109,7 @@ function SchoolCardFront({ cardData, currentUnion, getMsdLogo, customLogo = null
     </div>
     <div className="school-card-tricolor" />
     <div className="school-card-program-bar" style={{ borderColor: `${cardData.cardDesign.accentColor}55` }}>
-      <strong>🎓 Carte scolaire — CMU-Élèves</strong>
+      <strong>{program.frontBanner}</strong>
       <span>Année {cardData.academicData.academicYear || 'à renseigner'}</span>
     </div>
     <div className="school-card-front-content">
@@ -111,21 +117,30 @@ function SchoolCardFront({ cardData, currentUnion, getMsdLogo, customLogo = null
         <div><span style={labelStyle}>Prénom(s)</span><strong style={valueStyle}>{cardData.firstName}</strong></div>
         <div><span style={labelStyle}>Nom</span><strong style={valueStyle}>{cardData.lastName}</strong></div>
         <div className="school-card-wide"><span style={labelStyle}>🎂 Né(e) le & Lieu • Sexe</span><strong style={valueStyle}>{cardData.birthDate} à {cardData.birthPlace} • {cardData.gender === 'F' ? 'Féminin' : 'Masculin'}</strong></div>
-        <div className="school-card-wide"><span style={labelStyle}>N° INE / IEN (Identifiant Élève)</span><strong style={valueStyle}>{cardData.academicData.ine || cardData.cmuNumber}</strong></div>
+        <div className="school-card-wide"><span style={labelStyle}>{program.idLabel}</span><strong style={valueStyle}>{idValue}</strong></div>
         <div><span style={labelStyle}>Classe / Niveau</span><strong style={valueStyle}>{cardData.academicData.classLevel || 'À renseigner'}</strong></div>
-        <div><span style={labelStyle}>Établissement</span><strong style={valueStyle}>{cardData.academicData.schoolName || cardData.mutuelleOrigine}</strong></div>
-        <div className="school-card-wide"><span style={labelStyle}>IA / IEF</span><strong style={valueStyle}>{cardData.academicData.ia || 'IA à renseigner'} — {cardData.academicData.ief || 'IEF à renseigner'}</strong></div>
-        <div className="school-card-wide"><span style={labelStyle}>👤 Tuteur / Responsable</span><strong style={valueStyle}>{cardData.tuteurName || cardData.sponsorName || cardData.fullName} • {cardData.tuteurPhone || cardData.phone || 'téléphone à renseigner'}</strong></div>
+        <div><span style={labelStyle}>{program.schoolWord}</span><strong style={valueStyle}>{cardData.academicData.schoolName || cardData.mutuelleOrigine}</strong></div>
+        {/* IA / IEF : uniquement pour les élèves de l'école publique.
+            Les daaras ne relèvent pas de ce circuit — le champ est masqué
+            et ne doit pas laisser de trou sur la carte. */}
+        {showIef && (
+          <div className="school-card-wide"><span style={labelStyle}>IA / IEF</span><strong style={valueStyle}>{cardData.academicData.ia || 'IA à renseigner'} — {cardData.academicData.ief || 'IEF à renseigner'}</strong></div>
+        )}
+        <div className="school-card-wide"><span style={labelStyle}>👤 {program.referralLabel}</span><strong style={valueStyle}>{cardData.tuteurName || cardData.sponsorName || cardData.fullName} • {cardData.tuteurPhone || cardData.phone || 'téléphone à renseigner'}</strong></div>
       </div>
       <div className="school-card-photo">
         {cardData.photoUrl ? <img src={cardData.photoUrl} alt={cardData.fullName} /> : <span>Photo<br />à importer</span>}
       </div>
     </div>
-    <div className="school-card-footer"><span>CARTE SCOLAIRE OFFICIELLE — CMU-ÉLÈVES SÉNÉGAL</span><span>DÉLIVRÉE PAR LA MSD DE {currentUnion.region.toUpperCase()}</span></div>
+    <div className="school-card-footer"><span>{program.frontFooter}</span><span>DÉLIVRÉE PAR LA MSD DE {currentUnion.region.toUpperCase()}</span></div>
   </>;
 }
 
 function SchoolCardBack({ cardData, qrCodeDataUrl, customLogo = null }) {
+  const program = resolveCardProgram(cardData.cardProgram);
+  // Coordonnées de la MSD émettrice uniquement : une carte de la MSD de
+  // Diourbel ne doit jamais afficher les numéros du siège de Dakar.
+  const contactLines = buildContactLines(cardData.unionCode, cardData.msdContacts);
   const watermarkStyle = customLogo ? {
     backgroundImage: `url(${customLogo})`,
     opacity: cardData.cardDesign.watermarkOpacity,
@@ -138,7 +153,7 @@ function SchoolCardBack({ cardData, qrCodeDataUrl, customLogo = null }) {
     </div>
     <div className="school-card-header school-card-back-header">
       <img src="/logo_unamusc.png" alt="UNAMUSC" className="school-card-brand" />
-      <div className="school-card-government"><SenegalFlagSvg style={{ width: '28px', height: '18px', marginBottom: '2px' }} /><strong>Couverture Sanitaire Universelle</strong><b>CARTE SANITAIRE — CMU-ÉLÈVES</b></div>
+      <div className="school-card-government"><SenegalFlagSvg style={{ width: '28px', height: '18px', marginBottom: '2px' }} /><strong>Couverture Sanitaire Universelle</strong><b>{program.backBanner}</b></div>
       <img src="/sencsu_logo.png" alt="SEN-CSU" className="school-card-brand" onError={(e) => { e.currentTarget.src = '/logo_csu_official.png'; }} />
     </div>
     <div className="school-card-tricolor" />
@@ -149,12 +164,18 @@ function SchoolCardBack({ cardData, qrCodeDataUrl, customLogo = null }) {
       </div>
       <div className="school-card-back-info">
         <span>Bénéficiaire</span><strong>{cardData.fullName}</strong>
-        <span>Code bénéficiaire CMU-Élèves</span><b>{cardData.cmuNumber}</b>
+        <span>{program.backCodeLabel}</span><b>{cardData.cmuNumber}</b>
         <span>Mutuelle de santé</span><strong>{cardData.unionName}</strong>
-        <div className="school-card-health-box"><b>🚑 Samu : 15</b><b>📞 33 820 21 11</b><strong>Permanence MSD : <em>76 845 54 99 • 77 742 90 73</em></strong></div>
+        <div className="school-card-health-box">
+          {contactLines.map((line) => (
+            <b key={line.kind} className={`school-card-contact school-card-contact-${line.kind}`}>
+              {line.label} : <em>{line.value}</em>
+            </b>
+          ))}
+        </div>
       </div>
     </div>
-    <div className="school-card-footer school-card-back-footer"><span>Solution développée par <b>Sen-E-Carte : 77 602 67 83</b></span></div>
+    <div className="school-card-footer school-card-back-footer"><span>Solution développée par <b>Sen-E-Carte : {SOLUTION_PHONE}</b></span></div>
   </>;
 }
 
@@ -170,18 +191,8 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
   const photosInputRef = useRef(null);
   const pendingPhotosRef = useRef(null); // FileList gardée entre les 2 sélections
   // Unions Départementales des Mutuelles de Santé du Sénégal (UNAMUSC)
-  const departmentalUnions = [
-    { id: 'DKR', name: 'Mutuelle de Santé Départementale de Dakar', region: 'Dakar', codePrefix: 'DKR' },
-    { id: 'PKN', name: 'Mutuelle de Santé Départementale de Pikine', region: 'Dakar', codePrefix: 'PKN' },
-    { id: 'GDW', name: 'Mutuelle de Santé Départementale de Guédiawaye', region: 'Dakar', codePrefix: 'GDW' },
-    { id: 'RFS', name: 'Mutuelle de Santé Départementale de Rufisque', region: 'Dakar', codePrefix: 'RFS' },
-    { id: 'THS', name: 'Mutuelle de Santé Départementale de Thiès', region: 'Thiès', codePrefix: 'THS' },
-    { id: 'MBR', name: 'Mutuelle de Santé Départementale de Mbour', region: 'Thiès', codePrefix: 'MBR' },
-    { id: 'STL', name: 'Mutuelle de Santé Départementale de Saint-Louis', region: 'Saint-Louis', codePrefix: 'STL' },
-    { id: 'KLC', name: 'Mutuelle de Santé Départementale de Kaolack', region: 'Kaolack', codePrefix: 'KLC' },
-    { id: 'ZGC', name: 'Mutuelle de Santé Départementale de Ziguinchor', region: 'Ziguinchor', codePrefix: 'ZGC' },
-    { id: 'DRB', name: 'Mutuelle de Santé Départementale de Diourbel', region: 'Diourbel', codePrefix: 'DRB' }
-  ];
+  // Source de vérité + coordonnées : src/utils/cardPrograms.js
+  const departmentalUnions = DEPARTMENTAL_UNIONS;
 
   // Logos officiels des Mutuelles de Santé Départementales (MSD) émettrices.
   // Chaque MSD délivre SES cartes : le logo du recto s'adapte automatiquement
@@ -403,7 +414,12 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
   const currentMajorDependent = isMajorDependentSelected ? currentMember.dependents.filter(d => d.isMajor)[majorDependentIndex] : null;
 
   // Obtenir l'Union Départementale courante
-  const currentUnion = departmentalUnions.find(u => u.id === (editForm.departmentUnionId || currentMember.departmentUnionId)) || departmentalUnions[0];
+  const currentUnion = resolveUnion(editForm.departmentUnionId || currentMember.departmentUnionId);
+
+  // Coordonnées de la MSD émettrice (permanence, standard) : elles suivent
+  // l'union départementale du bénéficiaire et ne sont jamais partagées
+  // d'une MSD à l'autre. Saisies MSD stockées par carte (design persisté).
+  const msdContacts = (getStoredCardDesign(cardCmuNumber) || {}).msdContacts || null;
 
   const getValidPhone = (primaryPhone, secondaryPhone, defaultFallback = '77 631 71 73') => {
     const isInvalid = (val) => !val || String(val).trim() === '' || String(val).trim() === '—' || String(val).trim() === '-';
@@ -549,6 +565,7 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
     minorDependents: currentMember.dependents.filter(d => !d.isMajor),
     unionName: currentUnion.name,
     unionCode: currentUnion.id,
+    msdContacts,
     cardProgram,
     academicData,
     cardDesign
@@ -568,6 +585,9 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
       origin = `http://${effectiveIp}:${currentPort}`;
     }
 
+    // Le QR porte TOUJOURS l'année scolaire et la classe : ces deux données
+    // changent chaque année et doivent rester lisibles par un agent (contrôle
+    // de scolarité) même si la page web est inaccessible.
     const academicQrData = new URLSearchParams({
       otp: String(studioOtp),
       cardProgram: cardData.cardProgram,
@@ -576,8 +596,11 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
       schoolName: cardData.academicData.schoolName || ''
     });
     if (cardData.academicData.ine) academicQrData.set('ine', cardData.academicData.ine);
-    academicQrData.set('ia', cardData.academicData.ia || '');
-    academicQrData.set('ief', cardData.academicData.ief || '');
+    // IA / IEF : circuit de l'école publique uniquement (absent sur CMU-Daara).
+    if (resolveCardProgram(cardData.cardProgram).showIef) {
+      academicQrData.set('ia', cardData.academicData.ia || '');
+      academicQrData.set('ief', cardData.academicData.ief || '');
+    }
     let verifyUrl = `${origin}/#/verify/${cardData.cmuNumber}?${academicQrData.toString()}`;
 
     if (qrTargetMode === 'HTTPS') {
@@ -611,8 +634,13 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
       academicYear: cardData.academicData.academicYear || 'N/A',
       classLevel: cardData.academicData.classLevel || 'N/A',
       schoolName: cardData.academicData.schoolName || 'N/A',
-      ia: cardData.academicData.ia || 'N/A',
-      ief: cardData.academicData.ief || 'N/A',
+      // IA / IEF : seulement pour le circuit école publique.
+      ...(resolveCardProgram(cardData.cardProgram).showIef
+        ? {
+          ia: cardData.academicData.ia || 'N/A',
+          ief: cardData.academicData.ief || 'N/A'
+        }
+        : {}),
       ine: cardData.academicData.ine || 'N/A',
       minorDependents: cardData.minorDependents.map(d => ({
         code: `${cardData.cmuNumber.replace(/\.0$/, '')}${d.codeSuffix}`,
@@ -646,6 +674,7 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
     cardData.address,
     cardData.phone,
     cardData.unionName,
+    cardData.unionCode,
     cardData.mutuelleOrigine,
     cardData.sponsorCmu,
     cardData.sponsorName,
@@ -900,9 +929,16 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
       if (currentSponsorPhone) {
         const result = await saveSponsorLogo(currentSponsorPhone, dataUrl);
         setSponsors(prev => prev.map(s => (s.phone === currentSponsorPhone ? { ...s, sponsorLogo: result.sponsorLogo } : s)));
+        // Le logo d'un parrain doit apparaître sur TOUTES les cartes qu'il
+        // parraine : on le réplique ici, sans ouvrir chaque carte une à une.
+        const logo = result.sponsorLogo || dataUrl;
+        const spread = applySponsorLogoToAllCards(currentSponsorPhone, logo);
+        if (spread > 0) setCardLogoState(logo);
         setSponsorNotice({
           type: result.warning ? 'warning' : 'success',
-          text: result.warning ? `${result.warning} Le logo est néanmoins apposé sur la carte.` : 'Logo du parrain enregistré et apposé sur la carte.'
+          text: result.warning
+            ? `${result.warning} Le logo est néanmoins apposé sur ${spread || 1} carte(s).`
+            : `✅ Logo du parrain enregistré et appliqué automatiquement à ses ${spread} carte(s) sans sélection individuelle.`
         });
       } else {
         setCardLogo(cardCmuNumber, dataUrl);
@@ -916,6 +952,10 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
       if (sponsorLogoInputRef.current) sponsorLogoInputRef.current.value = '';
     }
   };
+
+  // Nombre de cartes déjà parrainées par le parrain sélectionné — affiché
+  // dans le panneau pour rendre visible la portée du logo.
+  const sponsoredCardCount = currentSponsorPhone ? getCardsSponsoredBy(currentSponsorPhone).length : 0;
 
   // Supprimer le logo du parrain sélectionné
   const handleRemoveSponsorLogo = async () => {
@@ -1729,9 +1769,16 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
           <div className="studio-form-group"><label>{cardProgram === 'CMU_DAARA' ? 'Daara' : 'Établissement'} *</label><input className="form-control fw-bold" value={academicData.schoolName} onChange={(e) => updateAcademicData({ schoolName: e.target.value })} placeholder={cardProgram === 'CMU_DAARA' ? 'Daara Serigne...' : 'Lycée / école...'} /></div>
           {/* N° INE / IEN : identifiant scolaire imprimé au recto (il peut différer
               du code bénéficiaire CMU porté au verso, ex. SN-INE-2025-009341). */}
-          <div className="studio-form-group"><label>N° INE / IEN (Identifiant Élève)</label><input className="form-control fw-bold" value={academicData.ine} onChange={(e) => updateAcademicData({ ine: e.target.value })} placeholder={cardProgram === 'CMU_DAARA' ? 'DAARA-2025-0078' : 'SN-INE-2025-009341'} /></div>
-          <div className="studio-form-group"><label>IA</label><input className="form-control fw-bold" value={academicData.ia} onChange={(e) => updateAcademicData({ ia: e.target.value })} placeholder={cardProgram === 'CMU_DAARA' ? 'IA de Diourbel' : 'IA de Dakar'} /></div>
-          <div className="studio-form-group"><label>IEF</label><input className="form-control fw-bold" value={academicData.ief} onChange={(e) => updateAcademicData({ ief: e.target.value })} placeholder={cardProgram === 'CMU_DAARA' ? 'IEF Mbacké' : 'IEF Dakar Plateau'} /></div>
+          <div className="studio-form-group"><label>{resolveCardProgram(cardProgram).idLabel}</label><input className="form-control fw-bold" value={academicData.ine} onChange={(e) => updateAcademicData({ ine: e.target.value })} placeholder={cardProgram === 'CMU_DAARA' ? 'DAARA-2025-0078' : 'SN-INE-2025-009341'} /></div>
+          {/* IA / IEF : circuit de l'école publique. Les daaras ne relèvent
+              pas de ce réseau — les champs sont retirés du formulaire pour
+              éviter de saisir une donnée qui ne sera jamais imprimée. */}
+          {resolveCardProgram(cardProgram).showIef && (
+            <>
+              <div className="studio-form-group"><label>IA</label><input className="form-control fw-bold" value={academicData.ia} onChange={(e) => updateAcademicData({ ia: e.target.value })} placeholder="IA de Dakar" /></div>
+              <div className="studio-form-group"><label>IEF</label><input className="form-control fw-bold" value={academicData.ief} onChange={(e) => updateAcademicData({ ief: e.target.value })} placeholder="IEF Dakar Plateau" /></div>
+            </>
+          )}
         </div>}
       </div>
 
@@ -1841,6 +1888,11 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
               </div>
             </div>
             <small className="text-muted d-block mt-2" style={{ fontSize: '0.76rem' }}>
+              {currentSponsorPhone
+                ? `✅ Le logo s'applique automatiquement à ses ${sponsoredCardCount} carte(s) : plus besoin de les ouvrir une par une.`
+                : 'Sélectionnez un parrain ci-dessus pour que son logo se réplique automatiquement sur toutes ses cartes.'}
+            </small>
+            <small className="text-muted d-block mt-1" style={{ fontSize: '0.76rem' }}>
               Le logo est enregistré dans la base (colonne <code>beneficiaries.sponsor_logo</code>) et mis en cache localement : il reste disponible même sans connexion.
             </small>
           </div>

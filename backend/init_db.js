@@ -341,6 +341,47 @@ const createTablesQuery = `
   CREATE INDEX IF NOT EXISTS idx_payments_status ON payments(status);
   CREATE INDEX IF NOT EXISTS idx_payments_beneficiary ON payments(beneficiary_id);
 
+  -- ── Encaissement multi-MSD via l'agrégateur Kadev Pay ─────────────────────
+  -- Chaque MSD (Dakar, Diourbel, Thiès…) est un COMMERCANT INDEPENDANT :
+  -- elle encaisse ses propres cotisations, renouvellements, dons et
+  -- parrainages sur SON compte Kadev. Les clés du compte de l'agrégateur
+  -- (plateforme) ne servent qu'à initier la transaction ; l'argent est
+  -- crédité au compte marchand de la MSD émettrice.
+  -- La commission de l'agrégateur est enregistrée à part (platform_fee)
+  -- et n'est jamais prélevée sur le reversement de la MSD.
+  CREATE TABLE IF NOT EXISTS merchant_accounts (
+    id SERIAL PRIMARY KEY,
+    union_code VARCHAR(10) UNIQUE NOT NULL,   -- 'DKR', 'DRB', 'THS'…
+    union_name VARCHAR(200) NOT NULL,
+    region VARCHAR(100),
+    provider VARCHAR(50) NOT NULL DEFAULT 'kadev', -- 'kadev' ( Wave / Orange )
+    -- Clés du MARCHAND (une par MSD). La clé secrète n'est jamais renvoyée
+    -- au frontend : elle reste côté serveur.
+    public_key VARCHAR(255),
+    secret_key VARCHAR(255),
+    account_number VARCHAR(100),               -- RIB / numéro de compte reversé
+    bank_name VARCHAR(150),
+    commission_bps INTEGER NOT NULL DEFAULT 0, -- commission en centièmes de % (100 bps = 1 %)
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    is_default BOOLEAN NOT NULL DEFAULT FALSE, -- compte utilisé si aucune MSD n'est fournie
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_merchant_accounts_union ON merchant_accounts(union_code);
+
+  -- Paiements rattachés à leur MSD émettrice (+ répartition des fonds)
+  ALTER TABLE payments ADD COLUMN IF NOT EXISTS union_code VARCHAR(10);
+  ALTER TABLE payments ADD COLUMN IF NOT EXISTS merchant_account_id INTEGER REFERENCES merchant_accounts(id) ON DELETE SET NULL;
+  ALTER TABLE payments ADD COLUMN IF NOT EXISTS gross_amount INTEGER;   -- montant total payé
+  ALTER TABLE payments ADD COLUMN IF NOT EXISTS platform_fee INTEGER;    -- commission agrégateur
+  ALTER TABLE payments ADD COLUMN IF NOT EXISTS net_amount INTEGER;      -- reversé à la MSD
+  CREATE INDEX IF NOT EXISTS idx_payments_union ON payments(union_code);
+
+  -- Un seul compte marchand par défaut (repli si union_code absent/inconnu)
+  INSERT INTO merchant_accounts (union_code, union_name, region, is_default, provider)
+  VALUES ('AGG', 'Compte agrégateur MUTUALIS DAKAR', 'National', TRUE, 'kadev')
+  ON CONFLICT (union_code) DO NOTHING;
+
   -- File d'attente de synchronisation pour le mode hors-ligne (actions reportées)
   CREATE TABLE IF NOT EXISTS sync_queue (
     id SERIAL PRIMARY KEY,

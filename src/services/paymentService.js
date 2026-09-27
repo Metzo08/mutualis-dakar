@@ -14,6 +14,13 @@
  *                        confirme la transaction et applique les effets métier)
  *       - isReal=false → simulation serveur (aucune clé API configurée)
  *     Repli : backend injoignable (hors-ligne) → simulation locale mock.
+ *
+ *  ✅ KADEV PAY (agrégateur multi-MSD) : passerelle `kadev`. Chaque MSD
+ *     encaisse ses cotisations / renouvellements / dons / parrainages sur
+ *     SON propre compte marchand ; la commission de l'agrégateur est à la
+ *     charge de la plateforme et n'est jamais déduite du reversement MSD.
+ *     Les endpoints serveur : /api/kadev/initiate, /api/kadev/:reference,
+ *     /api/kadev/webhook.
  * ============================================================
  */
 
@@ -92,11 +99,16 @@ async function mockPaymentCall({ provider, phone, amount, ref }) {
 }
 
 // ─── Appel backend : initiation + suivi du statut ───────────────────────
-export async function checkPaymentStatus(reference, { timeoutMs = 60000, intervalMs = 3000 } = {}) {
+export async function checkPaymentStatus(reference, { timeoutMs = 60000, intervalMs = 3000, provider } = {}) {
+  // Kadev possède son propre endpoint de statut ; Wave / Orange utilisent
+  // la route historique /api/payments/:reference.
+  const statusPath = provider === 'kadev'
+    ? `/api/kadev/${encodeURIComponent(reference)}`
+    : `/api/payments/${encodeURIComponent(reference)}`;
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     try {
-      const res = await apiFetch(`/api/payments/${encodeURIComponent(reference)}`);
+      const res = await apiFetch(statusPath);
       if (res.ok) {
         const data = await res.json();
         if (data.status === 'success' || data.status === 'failed') {
@@ -109,8 +121,81 @@ export async function checkPaymentStatus(reference, { timeoutMs = 60000, interva
   return { success: false, status: 'timeout', payment: null };
 }
 
+// ─── Kadev Pay : encaissement sur le compte de la MSD ────────────────────
+// L'adhérent paie SA MSD (Dakar, Diourbel, Thiès…) via l'agrégateur
+// Kadev. La commission de l'agrégateur reste à la charge de la
+// plateforme : le frontend n'a rien à calculer, le serveur renvoie
+// déjà la répartition (platformFee / netToMsd).
+//
+// @param {string} unionCode  code de la MSD émettrice ('DKR', 'DRB'…)
+async function kadevPaymentCall({ phone, amount, orderId, purpose = 'cotisation', unionCode }) {
+  const res = await apiFetch('/api/kadev/initiate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      unionCode: unionCode || null,
+      phone: formatSenegalPhone(phone),
+      amount,
+      beneficiaryId: orderId || null,
+      purpose,
+    }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || err.error || `Backend ${res.status}`);
+  }
+
+  const data = await res.json();
+
+  if (data.isReal && data.checkoutUrl) {
+    if (typeof window !== 'undefined') {
+      window.open(data.checkoutUrl, '_blank', 'noopener');
+    }
+    const outcome = await checkPaymentStatus(data.reference, { provider: 'kadev' });
+    return {
+      success: outcome.success,
+      status: outcome.status,
+      transactionRef: data.reference,
+      provider: 'kadev',
+      unionCode: data.unionCode,
+      unionName: data.unionName,
+      platformFee: data.platformFee,
+      netToMsd: data.netToMsd,
+      amount,
+      phone: formatSenegalPhone(phone),
+      timestamp: new Date().toISOString(),
+      mode: 'kadev-real',
+      message: outcome.success
+        ? `Paiement confirmé. Reverse ${data.netToMsd?.toLocaleString('fr-FR')} FCFA à la ${data.unionName || data.unionCode}.`
+        : "Le paiement n'a pas été confirmé. Vérifiez votre application Mobile Money.",
+      error: outcome.success ? undefined : (outcome.status === 'timeout' ? 'TIMEOUT' : 'FAILED'),
+    };
+  }
+
+  // Mode démonstration : pas de clé Kadev exploitable pour cette MSD.
+  return {
+    success: true,
+    transactionRef: data.reference,
+    provider: 'kadev',
+    unionCode: data.unionCode,
+    unionName: data.unionName,
+    platformFee: data.platformFee,
+    netToMsd: data.netToMsd,
+    amount,
+    phone: formatSenegalPhone(phone),
+    timestamp: new Date().toISOString(),
+    mode: 'kadev-simulation',
+    message: `Paiement Kadev simulé (démo). Référence ${data.reference}.`,
+  };
+}
+
 // ─── Appel réel : initiation via le backend ─────────────────────────────
 async function backendPaymentCall({ provider, phone, amount, orderId, purpose = 'cotisation' }) {
+  // Kadev Pay : encaissement direct sur le compte de la MSD émettrice.
+  if (provider === 'kadev') {
+    return kadevPaymentCall({ phone, amount, orderId, purpose });
+  }
   const backendProvider = PROVIDER_TO_BACKEND[provider] || 'wave';
 
   const res = await apiFetch('/api/payments/initiate', {
@@ -191,15 +276,19 @@ async function backendPaymentCall({ provider, phone, amount, orderId, purpose = 
  *
  * @returns {Promise<{success, transactionRef?, timestamp?, message, error?}>}
  */
-export async function initiatePayment({ provider, phone, amount, orderId, purpose = 'cotisation' }) {
-  const validation = validatePhoneForProvider(phone, provider);
-  if (!validation.valid) {
-    return { success: false, error: 'INVALID_PHONE', message: validation.error };
+export async function initiatePayment({ provider, phone, amount, orderId, purpose = 'cotisation', unionCode = null }) {
+  // Kadev accepte aussi les numéros Wave/Orange : la validation du
+  // préfixe opérateur n'a donc pas lieu d'être appliquée.
+  if (provider !== 'kadev') {
+    const validation = validatePhoneForProvider(phone, provider);
+    if (!validation.valid) {
+      return { success: false, error: 'INVALID_PHONE', message: validation.error };
+    }
   }
 
   try {
     // 1. Tentative via le backend (passerelles réelles ou simulation serveur)
-    return await backendPaymentCall({ provider, phone, amount, orderId, purpose });
+    return await backendPaymentCall({ provider, phone, amount, orderId, purpose, unionCode });
   } catch (err) {
     // 2. Backend injoignable (hors-ligne) → repli simulation locale
     console.warn('[PaymentService] Backend injoignable, repli simulation locale :', err.message);
@@ -222,6 +311,8 @@ export function getProviderInfo(provider) {
     orange: { name: 'Orange Money', logo: '/logo_orange_money.png', color: '#ff7900', bgColor: 'rgba(255,121,0,0.12)', borderColor: '#ff7900' },
     wave:   { name: 'Wave',         logo: '/logo_wave.png',         color: '#1dc4ff', bgColor: 'rgba(29,196,255,0.12)', borderColor: '#1dc4ff' },
     free:   { name: 'Free Money',   logo: '/logo_free_money.svg',   color: '#e11d48', bgColor: 'rgba(225,29,72,0.12)',  borderColor: '#e11d48' },
+    // Agrégateur : encaisse au nom de la MSD émettrice de l'adhérent.
+    kadev:  { name: 'Kadev Pay (MSD)', logo: null,                   color: '#047857', bgColor: 'rgba(4,120,87,0.12)',  borderColor: '#047857' },
   };
   return map[provider] || map['orange'];
 }

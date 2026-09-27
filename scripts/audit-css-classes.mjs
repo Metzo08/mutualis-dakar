@@ -51,6 +51,9 @@ const WHITELIST = new Set([
   'bg-opacity-20', 'text-emerald-900', 'text-emerald-100', 'text-warning-emphasis',
   'webrtc-hide-mobile',
   'school-card-back-header', // combiné à .school-card-header (base déjà stylée)
+  // Préfixe des contacts de carte : construit dynamiquement
+  // (`school-card-contact-${kind}`) — les variantes concrètes sont déclarées.
+  'school-card-contact-',
   'tab-modal', 'modal-header', 'modal-lg', 'modal-title',
   'text-md-end',
   // Vues / portails : crochets de contexte de page

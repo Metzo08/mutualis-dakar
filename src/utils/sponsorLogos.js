@@ -95,6 +95,44 @@ export const setCardLogo = (cmuNumber, logoUrl) => {
   writeStore(CARD_LOGO_STORE_KEY, store);
 };
 
+// --- Propagation automatique du logo à toutes les cartes du parrain ---------
+// Un parrain (sponsor) parraine souvent plusieurs dizaines d'élèves :
+// choisir son logo une seule fois doit suffire. Dès qu'un logo est
+// enregistré pour un téléphone de parrain, il est répliqué sur TOUTES les
+// cartes qui lui sont attribuées — sans jamais ouvrir chaque carte.
+
+/** Toutes les cartes (numéros CMU) attribuées à un parrain. */
+export const getCardsSponsoredBy = (phone) => {
+  const key = normalizePhoneKey(phone);
+  if (!key) return [];
+  const assignments = getCardSponsorAssignments();
+  return Object.keys(assignments)
+    .filter((cmu) => normalizePhoneKey(assignments[cmu]) === key);
+};
+
+/**
+ * Réplique un logo sur toutes les cartes d'un parrain.
+ * @returns {number} nombre de cartes mises à jour
+ */
+export const applySponsorLogoToAllCards = (phone, logoUrl) => {
+  const cards = getCardsSponsoredBy(phone);
+  if (!logoUrl) return 0;
+  const store = readStore(CARD_LOGO_STORE_KEY, {});
+  cards.forEach((cmu) => { store[String(cmu)] = logoUrl; });
+  if (cards.length > 0) writeStore(CARD_LOGO_STORE_KEY, store);
+  return cards.length;
+};
+
+/**
+ * Logo effectif d'une carte : logo d'un parrain explicitement attribué,
+ * sinon logo personnalisé de la carte. Ne dépend JAMAIS de la MSD.
+ */
+export const resolveEffectiveCardLogo = (cmuNumber, sponsorPhone) => {
+  const sponsorLogo = sponsorPhone ? getLocalSponsorLogo(sponsorPhone) : null;
+  if (sponsorLogo) return sponsorLogo;
+  return getCardLogo(cmuNumber);
+};
+
 // --- Lecture d'un fichier image --------------------------------------------
 
 export const readImageFileAsDataUrl = (file) =>

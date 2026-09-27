@@ -16,6 +16,7 @@ const additionalRoutes = require('./additionalRoutes');
 const dynamicRoutes = require('./dynamicRoutes');
 const { router: advancedRoutes, awardPoints } = require('./advancedRoutes');
 const extendedRoutes = require('./extendedRoutes');
+const kadevRoutes = require('./kadevRoutes');
 const {
   citizenLoginSchema,
   agentLoginSchema,
@@ -1867,6 +1868,13 @@ app.use(dynamicRoutes);
 // ============================================================================
 app.use(advancedRoutes);
 app.use('/api', extendedRoutes);
+
+// ============================================================================
+// ENCAISSEMENT MULTI-MSD — passerelle agrégateur Kadev Pay
+// Chaque MSD encaisse sur son propre compte marchand ; la commission de
+// l'agrégateur est enregistrée à part et n'est jamais prélevée sur la MSD.
+// ============================================================================
+app.use(kadevRoutes);
 
 // ============================================================================
 // API PHARMACIES AGRÉÉES — Source : ARP (arp.sn)

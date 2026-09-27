@@ -41,6 +41,43 @@ L'application permet aux citoyens d'adhérer à une mutuelle, de payer leur coti
 
 ## 🎯 Aperçu fonctionnel
 
+### 💳 Encaissement multi-MSD (agrégateur Kadev Pay)
+
+Chaque **MSD** (Mutuelle de Santé Départementale : Dakar, Diourbel, Thiès…)
+est un commerçant indépendant. Elle encaisse **ses** cotisations, renouvellements,
+dons et parrainages sur **son propre compte marchand**.
+
+```
+Adhérent ──▶ MSD émettrice ──▶ compte marchand Kadev de CETTE MSD
+                                    │
+                                    └─▶ commission agrégateur (plateforme)
+```
+
+- La **commission de l'agrégateur est à la charge de la plateforme** : elle est
+  enregistrée dans `payments.platform_fee` et n'est **jamais** déduite du
+  reversement de la MSD (`payments.net_amount`).
+- Répartition conservée à la perfection : `platform_fee + net_amount = gross`.
+- Un **webhook unique** (`POST /api/kadev/webhook`) est routé vers la bonne MSD
+  grâce à la référence (`KDV-<UNION>-…`) et au secret de cette MSD.
+- Vérification des webhooks par **HMAC-SHA256** (comparaison à temps constant).
+
+**Configuration** (dans `backend/.env`, jamais versionné — voir `.env.example`) :
+
+```bash
+KADEV_PUBLIC_KEY=…        # clé publique de l'agrégateur
+KADEV_SECRET_AGG=…        # clé secrète de l'agrégateur
+KADEV_SECRET_DKR=…        # une paire de clés par MSD (DKR, DRB, THS…)
+KADEV_API_BASE=…          # URL de l'API Kadev
+```
+
+Les comptes marchands (RIB, commission, activation) se gèrent via
+`GET /api/merchants` et `PUT /api/merchants/:unionCode` (rôle `admin`).
+Les clés secrètes ne sont **jamais** renvoyées par l'API.
+
+> ⚠️ Les endpoints `/v1/payments` et les en-têtes `X-Signature` sont centralisés
+> dans `backend/kadevRoutes.js` : vérifiez-les contre la documentation Kadev de
+> votre compte avant la mise en production.
+
 ### Espace citoyen 🇸🇳
 - Adhésion en ligne (Individuel, Familial, Parrainage Solidaire, CSU Élèves/Daaras)
 - Renouvellement de cotisation via Orange Money / Wave

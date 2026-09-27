@@ -1848,10 +1848,13 @@ body.dark-theme .cni-physical-card-preview {
 .school-card-back-info { font-size: .55rem; }
 .school-card-back-info > span { font-size: .55rem; }
 
-/* Verso : QR à taille fixe + infos élastiques, borné au-dessus du pied */
-.school-card-back-content { display: grid; grid-template-columns: 132px minmax(0, 1fr); align-items: center; gap: 14px; min-height: 0; padding: 6px 8px 26px; }
-.school-card-qr { width: 126px; height: 126px; border: 4px solid #0f172a; border-radius: 14px; padding: 5px; background: #fff; display: grid; place-items: center; flex-shrink: 0; }
-.school-card-qr img { width: 100%; height: 100%; object-fit: contain; }
+/* Verso : QR agrandi + infos élastiques, borné au-dessus du pied.
+   Le QR occupe la totalité de la colonne gauche (pas de grille
+   contraignante) : sur les téléphones d'entrée de gamme, un module
+   trop petit est la première cause d'échec de scan. */
+.school-card-back-content { display: grid; grid-template-columns: 150px minmax(0, 1fr); align-items: center; gap: 14px; min-height: 0; padding: 6px 8px 26px; }
+.school-card-qr { width: 150px; height: 150px; border: 4px solid #0f172a; border-radius: 14px; padding: 5px; background: #fff; display: grid; place-items: center; flex-shrink: 0; }
+.school-card-qr img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
 /* Bloc QR du verso : le QR reste à taille fixe et la consigne « Scannez pour
    ouvrir le carnet de santé de l'enfant » s'affiche juste en dessous (modèle). */
 .school-card-qr-block { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; }
@@ -1860,8 +1863,15 @@ body.dark-theme .cni-physical-card-preview {
 .school-card-back-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; color: #64748b; font-size: .55rem; font-weight: 800; }
 .school-card-back-info > strong { color: #0f172a; font-size: .95rem; line-height: 1.05; overflow-wrap: anywhere; }
 .school-card-back-info > b { color: #0f172a; font-family: monospace; font-size: .82rem; }
-.school-card-health-box { margin-top: 4px; padding: 6px 9px; border: 1px solid #cbd5e1; border-radius: 10px; background: rgba(248,250,252,.92); display: grid; grid-template-columns: 1fr 1fr; gap: 4px; color: #047857; font-size: .52rem; min-width: 0; }
-.school-card-health-box b:first-child { color: #dc2626; }.school-card-health-box strong { grid-column: 1 / -1; color: #64748b; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.school-card-health-box em { color: #0f172a; font-style: normal; }
+/* Contacts de la MSD émettrice : une ligne par coordonnée réellement
+   renseignée pour CETTE MSD (SAMU, permanence, standard). */
+.school-card-health-box { margin-top: 4px; padding: 6px 9px; border: 1px solid #cbd5e1; border-radius: 10px; background: rgba(248,250,252,.92); display: flex; flex-direction: column; gap: 3px; color: #047857; font-size: .52rem; min-width: 0; }
+.school-card-health-box b { display: flex; justify-content: space-between; gap: 6px; min-width: 0; color: #047857; font-weight: 800; }
+.school-card-health-box em { color: #0f172a; font-style: normal; font-weight: 900; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.school-card-contact { display: flex; justify-content: space-between; gap: 6px; min-width: 0; font-weight: 800; }
+.school-card-contact-samu em { color: #dc2626; }
+.school-card-contact-permanence em { color: #0f172a; }
+.school-card-contact-switchboard em { color: #0f172a; }
 .school-card-back-footer { flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: #0284c7; font-size: .4rem; bottom: 5px; padding-top: 3px; }
 
 @media (max-width: 575px) {
