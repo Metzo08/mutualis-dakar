@@ -625,6 +625,55 @@ export const buildBeneficiaryIndex = (members) => {
   return map;
 };
 
+/**
+ * ============================================================
+ *  Alias de codes NICE / CMU
+ * ============================================================
+ *
+ *  Le code imprimé sur une carte fait foi. Or un code peut être corrigé
+ * après coup — ici, le préfixe désignait Mbour (MBK) alors que le
+ * bénéficiaire relève de la MSD de Diourbel (DRB).
+ *
+ *  Sans alias, les cartes DÉJÀ IMPRIMÉES deviendraient orphelines : leur QR
+ *  pointerait vers un code introuvable. Chaque ancien code est donc déclaré
+ *  ici et redirigé vers le code canonique. La correspondance est
+ *  conservatrice : le suffixe d'ayant droit (`.M1`, `.0`…) est reporté.
+ *
+ *  Format : { ancienCode : codeActuel }
+ */
+export const CODE_ALIASES = {
+  // Préfixe MBK (Mbour) remplacé par DRB (Diourbel) — cf. Mamadou FALL.
+  'EDU_MBK_26000164': 'EDU_DRB_26000164'
+};
+
+/**
+ * Traduit un ancien code vers son code canonique.
+ * Renvoie la valeur d'origine si le code n'est pas un alias.
+ *
+ * @param {string} code
+ * @returns {string}
+ */
+export const resolveCodeAlias = (code) => {
+  const raw = String(code || '').trim();
+  if (!raw) return raw;
+  const upper = raw.toUpperCase();
+  const legacy = Object.keys(CODE_ALIASES).find(
+    (old) => upper === old || upper.startsWith(`${old}.`)
+  );
+  if (!legacy) return raw;
+  // Le suffixe d'ayant droit éventuel est conservé (« .M1 », « .0 »…).
+  const suffix = upper.slice(legacy.length);
+  return CODE_ALIASES[legacy] + suffix;
+};
+
+/** Le code correspond-il à un ancien code corrigé depuis ? */
+export const isLegacyCode = (code) => {
+  const upper = String(code || '').trim().toUpperCase();
+  return Object.keys(CODE_ALIASES).some(
+    (old) => upper === old || upper.startsWith(`${old}.`)
+  );
+};
+
 export const getCardByCode = (cmuCode) => {
   const members = getStoredMembers();
   let cleanCode = (cmuCode || '').trim();
@@ -644,6 +693,11 @@ export const getCardByCode = (cmuCode) => {
   if (cleanCode.includes('?')) {
     cleanCode = cleanCode.split('?')[0].trim();
   }
+
+  // Redirection d'un ancien code vers le code canonique AVANT toute
+  // recherche : une carte déjà imprimée avec l'ancien préfixe doit
+  // retrouver sa fiche réelle, et non déclencher un faux résultat.
+  cleanCode = resolveCodeAlias(cleanCode);
 
   const upperCode = cleanCode.toUpperCase();
   const index = buildBeneficiaryIndex(members);

@@ -1,4 +1,4 @@
-import { getCardByCode } from '../utils/beneficiaryStore';
+import { getCardByCode, resolveCodeAlias, isLegacyCode } from '../utils/beneficiaryStore';
 import jsQR from 'jsqr';
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
@@ -35,6 +35,9 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
   // CMU-Daara). Elles ne sont PLUS imprimées sur le recto : l'agent les
   // lit ici, après scan. Absentes sur les cartes classiques.
   const [scannedAcademic, setScannedAcademic] = useState(null);
+  // Le code scanné est un ancien code, corrigé depuis : on prévient l'agent
+  // que la carte physique porte une référence antérieure.
+  const [aliasNotice, setAliasNotice] = useState(null); // { from, to }
   const [showAdModal, setShowAdModal] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
   const [showCameraScanner, setShowCameraScanner] = useState(false);
@@ -598,6 +601,16 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
 
     if (target.includes('?')) {
       target = target.split('?')[0].trim();
+    }
+
+    // Ancien code (carte déjà imprimée) → code canonique. Sans cela, un code
+    // périmé tomberait dans le repli « résultat fabriqué » et afficherait un
+    // faux bénéficiaire au lieu de la vraie fiche.
+    const scannedCode = target;
+    const scannedIsLegacy = isLegacyCode(target);
+    target = resolveCodeAlias(target);
+    if (scannedIsLegacy) {
+      setAliasNotice({ from: scannedCode, to: target });
     }
 
     if (!target || target.toUpperCase().includes('PAYMENTS') || target.toUpperCase() === 'VERIFY' || target.toUpperCase().endsWith('/VERIFY')) {
@@ -1665,6 +1678,26 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
                     🏥 {result.mutuelleName ? result.mutuelleName : 'Mutuelle de santé départementale de Dakar'}
                   </span>
                 </div>
+
+                {/* ⚠️ Ancien code détecté : la carte physique porte une
+                    référence corrigée depuis. La fiche affichée est bien la
+                    bonne, mais l'agent doit le savoir. */}
+                {aliasNotice && (
+                  <div className="p-3 mt-3 rounded-4 border" style={{ background: 'rgba(245, 158, 11, 0.10)', borderColor: 'rgba(245, 158, 11, 0.35)' }}>
+                    <div className="d-flex align-items-start gap-2">
+                      <span style={{ fontSize: '1.05rem' }}>⚠️</span>
+                      <div>
+                        <strong style={{ fontSize: '0.9rem', color: '#b45309', display: 'block', marginBottom: '0.2rem' }}>
+                          Ancien code détecté
+                        </strong>
+                        <span style={{ fontSize: '0.86rem' }}>
+                          Cette carte porte le code <code className="font-monospace fw-bold">{aliasNotice.from}</code>, remplacé depuis par{' '}
+                          <code className="font-monospace fw-bold">{aliasNotice.to}</code>. La fiche affichée est la bonne — pensez à réimprimer la carte.
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* 📚 DONNÉES SCOLAIRES lues dans le QR code de la carte.
                     Elles ne figurent plus sur le recto (elles changent chaque
