@@ -42,6 +42,23 @@ modele cartes cmu-eleves et daara/
 modele_eleves_cmu.xlsx
 scripts/_qa_*.png
 
+# Photos d'assures (portraits nominatifs). Donnees personnelles ET lourdes :
+# elles restent sur le poste de travail et ne sont jamais versionnees. Le
+# registre ne reference que le NOM du fichier (`photo_url`), l'image etant
+# servie par le dossier statique de l'application.
+"ASS LONASE/"
+"MSD de Grand Yoff/"
+public/import-photos/
+
 # Donnees runtime du repli fichier du backend (recreees automatiquement,
 # contiennent les adhesions/cotisations saisies — jamais versionnees)
 backend/data/
+
+# Fichiers de travail temporaires (extraits de debogage, dumps intermediaires)
+c.txt
+d.txt
+fz.txt
+pr.txt
+probe.txt
+*_dump.csv
+scripts/_*.mjs

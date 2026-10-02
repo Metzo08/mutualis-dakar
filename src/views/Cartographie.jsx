@@ -939,7 +939,7 @@ export default function Cartographie({ lang }) {
                             padding: '0.5rem 0.6rem',
                             borderRadius: '8px',
                             border: isActive ? '1.5px solid var(--primary)' : '1px solid var(--border-color)',
-                            backgroundColor: isActive ? 'rgba(0, 102, 204, 0.08)' : 'var(--card-bg-subtle)',
+                            backgroundColor: isActive ? 'rgba(5, 150, 105, 0.1)' : 'var(--card-bg-subtle)',
                             color: isActive ? 'var(--primary)' : 'var(--text-main)',
                             cursor: 'pointer',
                             fontSize: '0.78rem',
@@ -1047,7 +1047,7 @@ export default function Cartographie({ lang }) {
                             padding: '0.85rem',
                             borderRadius: '10px',
                             border: isSelected ? '2px solid var(--primary)' : '1px solid var(--border-color)',
-                            backgroundColor: isSelected ? 'rgba(0, 102, 204, 0.03)' : 'var(--bg-card)',
+                            backgroundColor: isSelected ? 'rgba(5, 150, 105, 0.05)' : 'var(--bg-card)',
                             cursor: 'pointer',
                             transition: 'all 0.2s ease',
                             display: 'flex',
@@ -1253,7 +1253,7 @@ export default function Cartographie({ lang }) {
                               padding: '0.4rem 0.5rem',
                               borderRadius: '6px',
                               border: isActive ? '1px solid var(--primary)' : '1px solid var(--border-color)',
-                              backgroundColor: isActive ? 'rgba(0, 102, 204, 0.08)' : 'var(--card-bg-subtle)',
+                              backgroundColor: isActive ? 'rgba(5, 150, 105, 0.1)' : 'var(--card-bg-subtle)',
                               color: isActive ? 'var(--primary)' : 'var(--text-main)',
                               cursor: 'pointer',
                               fontSize: '0.72rem',
@@ -1299,7 +1299,7 @@ export default function Cartographie({ lang }) {
                                 padding: '0.5rem 0.65rem',
                                 borderRadius: '6px',
                                 border: isSelected ? '1.5px solid var(--primary)' : '1px solid var(--border-color)',
-                                backgroundColor: isSelected ? 'rgba(0, 102, 204, 0.03)' : 'var(--bg-card)'
+                                backgroundColor: isSelected ? 'rgba(5, 150, 105, 0.05)' : 'var(--bg-card)'
                               }}
                             >
                               <div style={{ fontWeight: '800', fontSize: '0.78rem', color: 'var(--text-main)' }}>{loc.name}</div>
@@ -1324,7 +1324,7 @@ export default function Cartographie({ lang }) {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '0.75rem' }}>
                       <div>
                         <span style={{ 
-                          backgroundColor: 'rgba(0, 102, 204, 0.1)', 
+                          backgroundColor: 'rgba(5, 150, 105, 0.12)', 
                           color: 'var(--primary)', 
                           padding: '3px 8px', 
                           borderRadius: '4px', 
@@ -1430,13 +1430,13 @@ export default function Cartographie({ lang }) {
                         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                           {selectedItem.services.split(',').map((service, idx) => (
                             <span key={idx} style={{ 
-                              backgroundColor: 'rgba(0, 102, 204, 0.05)', 
+                              backgroundColor: 'rgba(5, 150, 105, 0.08)', 
                               color: 'var(--primary)', 
                               padding: '4px 10px', 
                               borderRadius: '20px', 
                               fontSize: '0.8rem', 
                               fontWeight: '500',
-                              border: '1px solid rgba(0, 102, 204, 0.1)'
+                              border: '1px solid rgba(5, 150, 105, 0.12)'
                             }}>
                               {service.trim()}
                             </span>
@@ -1505,7 +1505,7 @@ export default function Cartographie({ lang }) {
                 </div>
 
                 {/* Right side clinic image */}
-                <div style={{ flex: '1', minWidth: '220px', minHeight: '180px', borderRadius: '16px', overflow: 'hidden', border: '3px solid rgba(0, 102, 204, 0.15)', boxShadow: 'var(--shadow-sm)' }}>
+                <div style={{ flex: '1', minWidth: '220px', minHeight: '180px', borderRadius: '16px', overflow: 'hidden', border: '3px solid rgba(5, 150, 105, 0.2)', boxShadow: 'var(--shadow-sm)' }}>
                   <img src={
                     selectedItem.type === 'office' || selectedItem.type === 'mutuelle'
                       ? 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=400&q=80'
@@ -1539,7 +1539,7 @@ export default function Cartographie({ lang }) {
           gap: '8px',
           padding: '0.75rem 1.5rem',
           borderRadius: '50px',
-          boxShadow: '0 4px 20px rgba(0, 102, 204, 0.4)',
+          boxShadow: '0 4px 20px rgba(5, 150, 105, 0.4)',
           fontWeight: '800',
           fontSize: '0.95rem'
         }}
@@ -1549,3 +1549,4 @@ export default function Cartographie({ lang }) {
     </div>
   );
 }
+

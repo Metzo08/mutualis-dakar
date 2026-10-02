@@ -459,9 +459,16 @@ router.post('/api/sync/process', authenticateToken, requireRole('agent', 'admin'
             await query("UPDATE beneficiaries SET status = 'active' WHERE id = $1", [item.beneficiary_id]);
           }
         } else if (item.action === 'adhesion') {
-          const randNum = Math.floor(1000 + Math.random() * 9000);
-          const mSh = (payload.mutuelleName || 'CMU').split(' ').pop().substring(0, 3).toUpperCase();
-          const cmuNumber = payload.cmuNumber || `SN-DK-${mSh}-${randNum}`;
+          // Matricule séquentiel par MSD : un adhésion rejouée depuis la file
+          // hors-ligne ne peut plus tomber sur un code déjà attribué.
+          const { generateCmuNumber } = require('./fallbackStore');
+          const cmuNumber = payload.cmuNumber || await generateCmuNumber({
+            query,
+            program: payload.packageType === 'csu_eleves' ? 'ELEVES'
+              : payload.packageType === 'csu_daara' ? 'DAARA'
+              : 'CLASSIC',
+            mutuelleName: payload.mutuelleName || 'MSD Dakar'
+          });
           
           const pinCode = payload.pinCode || '1234';
           const salt = await require('bcrypt').genSalt(10);

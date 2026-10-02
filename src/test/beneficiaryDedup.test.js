@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { dedupeMembers, getStoredMembers } from '../utils/beneficiaryStore';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { dedupeMembers, getStoredMembers, saveStoredMembers } from '../utils/beneficiaryStore';
 import { resolveUnion, resolveCardProgram } from '../utils/cardPrograms';
 
 /**
@@ -7,33 +7,56 @@ import { resolveUnion, resolveCardProgram } from '../utils/cardPrograms';
  * Touba : il relève de la MSD de Diourbel. Il était à tort rattaché à celle
  * de Dakar, ce qui désignait la mauvaise MSD émettrice sur sa carte et le
  * mauvais compte de paiement Kadev.
+ *
+ * Le registre n'étant plus embarqué, la fiche est injectée dans le localStorage :
+ * le test porte sur la LOGIQUE de rattachement, pas sur la présence d'une
+ * ligne dans un fichier figé du dépôt.
  */
 describe('Rattachement de MAMADOU FALL', () => {
-  const mamadou = getStoredMembers().find(
-    (m) => String(m.cmuNumber || '').includes('26000164') || (m.lastName === 'FALL' && m.firstName === 'MAMADOU')
-  );
+  const FICHE = {
+    id: 'MEM-TEST-164',
+    cmuNumber: 'EDU_DRB_26000164',
+    adherentCode: 'EDU_DRB_26000164',
+    rawCode: 'EDU_DRB_26000164',
+    firstName: 'MAMADOU',
+    lastName: 'FALL',
+    birthDate: '20/07/2013',
+    departmentUnionId: 'DRB',
+    mutuelleOrigine: 'Mutuelle de Santé Départementale de Diourbel',
+    cardProgram: 'CMU_DAARA',
+    dependents: []
+  };
 
-  it('la fiche existe dans le store', () => {
-    expect(mamadou).toBeDefined();
+  beforeEach(() => {
+    localStorage.clear();
+    saveStoredMembers([FICHE]);
+  });
+
+  // ⚠️ La fiche est relue À CHAQUE TEST : elle était résolue une seule fois,
+  // au chargement du module — donc avant le beforeEach, sur un registre vide.
+  const getMamadou = () => getStoredMembers().find((m) => m.cmuNumber === 'EDU_DRB_26000164');
+
+  it('la fiche est lisible depuis le registre', () => {
+    expect(getMamadou()).toBeDefined();
   });
 
   it('est rattaché à la MSD de Diourbel et non à celle de Dakar', () => {
-    expect(mamadou.departmentUnionId).toBe('DRB');
-    expect(mamadou.departmentUnionId).not.toBe('DKR');
+    expect(getMamadou().departmentUnionId).toBe('DRB');
+    expect(getMamadou().departmentUnionId).not.toBe('DKR');
   });
 
   it('porte la bonne dénomination de mutuelle', () => {
-    expect(mamadou.mutuelleOrigine).toBe('Mutuelle de Santé Départementale de Diourbel');
+    expect(getMamadou().mutuelleOrigine).toBe('Mutuelle de Santé Départementale de Diourbel');
   });
 
   it('sa MSD émettrice est bien Diourbel', () => {
-    const union = resolveUnion(mamadou.departmentUnionId);
+    const union = resolveUnion(getMamadou().departmentUnionId);
     expect(union.id).toBe('DRB');
     expect(union.region).toBe('Diourbel');
   });
 
   it('reste une carte CMU-Daara (pas de circuit IA/IEF)', () => {
-    const program = resolveCardProgram(mamadou.cardProgram);
+    const program = resolveCardProgram(getMamadou().cardProgram);
     expect(program.id).toBe('CMU_DAARA');
     expect(program.showIef).toBe(false);
   });
@@ -49,12 +72,14 @@ describe('Rattachement de MAMADOU FALL', () => {
   it('porte un code préfixé par le code de sa MSD émettrice', () => {
     // Le préfixe du code doit désigner la MSD : DRB pour Diourbel. Il ne doit
     // plus porter MBK (Mbour), incohérent avec l'union déclarée.
+    const mamadou = getMamadou();
     expect(mamadou.cmuNumber).toBe('EDU_DRB_26000164');
     expect(mamadou.cmuNumber.startsWith(`EDU_${mamadou.departmentUnionId}_`)).toBe(true);
     expect(mamadou.cmuNumber).not.toContain('MBK');
   });
 
   it('aligne adherentCode et rawCode sur le nouveau code', () => {
+    const mamadou = getMamadou();
     expect(mamadou.adherentCode).toBe(mamadou.cmuNumber);
     expect(mamadou.rawCode).toBe(mamadou.cmuNumber);
   });
@@ -146,3 +171,4 @@ describe('Déduplication des fiches bénéficiaires', () => {
     expect(members).toHaveLength(2);
   });
 });
+

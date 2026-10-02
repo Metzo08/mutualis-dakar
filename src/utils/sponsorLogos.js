@@ -28,12 +28,17 @@ const readStore = (key, fallback) => {
   }
 };
 
+// @returns {boolean} true si l'écriture a abouti. Un quota dépassé ou un
+//   stockage indisponible renvoie false : l'appelant DOIT le savoir, sinon il
+//   afficherait « logo appliqué » alors que rien n'a été enregistré.
 const writeStore = (key, value) => {
-  if (typeof window === 'undefined' || !window.localStorage) return;
+  if (typeof window === 'undefined' || !window.localStorage) return false;
   try {
     localStorage.setItem(key, JSON.stringify(value));
+    return true;
   } catch {
-    /* stockage indisponible ou saturé : le backend reste la source de vérité */
+    // Stockage indisponible ou saturé : le backend reste la source de vérité.
+    return false;
   }
 };
 
@@ -88,6 +93,9 @@ export const assignSponsorToCard = (cmuNumber, phone) => {
 // --- Logo personnalisé par carte (fonctionne même sans parrain enregistré) -
 
 const CARD_LOGO_STORE_KEY = 'cmu-card-logos';
+// Logo partagé par un lot entier : une seule entrée, quel que soit le nombre
+// de cartes du lot (le quota localStorage est vite atteint sinon).
+const LOT_LOGO_STORE_KEY = 'cmu-lot-logos';
 
 export const getCardLogo = (cmuNumber) => {
   if (!cmuNumber) return null;
@@ -138,6 +146,28 @@ export const resolveEffectiveCardLogo = (cmuNumber, sponsorPhone) => {
   const sponsorLogo = sponsorPhone ? getLocalSponsorLogo(sponsorPhone) : null;
   if (sponsorLogo) return sponsorLogo;
   return getCardLogo(cmuNumber);
+};
+
+// --- Logo de LOT ------------------------------------------------------------
+// Une campagne (Grand Yoff, une MSD, une classe) porte souvent le même logo
+// sur TOUTES ses cartes. L'écrire carte par carte en base64 dépasserait le quota
+// localStorage (211 cartes × 30 Ko ≈ 6 Mo). On le stocke donc une seule fois
+// sous la clé du lot, et les cartes de ce lot le reprennent.
+
+/** Logo attribué à un lot (identifiant de lot). */
+export const getLotLogo = (lotId) => {
+  if (!lotId || lotId === 'ALL') return null;
+  const store = readStore(LOT_LOGO_STORE_KEY, {});
+  return store[normalizePhoneKey(lotId)] || null;
+};
+
+/** Enregistre le logo d'un lot. Un logo vide retire celui-ci. */
+export const setLotLogo = (lotId, logoUrl) => {
+  if (!lotId || lotId === 'ALL') return false;
+  const store = readStore(LOT_LOGO_STORE_KEY, {});
+  if (logoUrl) store[normalizePhoneKey(lotId)] = logoUrl;
+  else delete store[normalizePhoneKey(lotId)];
+  return writeStore(LOT_LOGO_STORE_KEY, store);
 };
 
 // --- Lecture, redimensionnement et compression d'un logo -------------------

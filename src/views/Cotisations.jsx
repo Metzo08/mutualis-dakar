@@ -62,22 +62,16 @@ export default function Cotisations({ lang, portalMode, citizenUser, agentUser }
     daysLeft: 'fan ci yërmaale'
   };
 
-  const defaultCotisations = [
-    { id: 101, cmu_number: 'SN-DK-MED-1001', adherent_name: 'Modou Diop', phone: '771234567', amount: 10500, payment_method: 'Wave', status: 'active', period_start: '2026-01-01', period_end: '2026-12-31', created_at: '2026-01-04T10:15:00Z', mutuelle_name: 'Mutuelle de la Médina' },
-    { id: 102, cmu_number: 'SN-DK-PIK-9001', adherent_name: 'Awa Ndiaye', phone: '779876543', amount: 14000, payment_method: 'Orange Money', status: 'active', period_start: '2026-01-01', period_end: '2026-12-31', created_at: '2026-01-05T11:20:00Z', mutuelle_name: 'Mutuelle de Pikine Ouest' },
-    { id: 103, cmu_number: 'SN-DK-PIK-9021', adherent_name: 'Moustapha Ndiaye', phone: '779876543', amount: 7000, payment_method: 'Wave', status: 'active', period_start: '2026-01-01', period_end: '2026-12-31', created_at: '2026-01-06T09:00:00Z', mutuelle_name: 'Mutuelle de Pikine Ouest' },
-    { id: 104, cmu_number: 'SN-DK-MED-1164', adherent_name: 'Amadou Sow', phone: '764551122', amount: 10500, payment_method: 'Free Money', status: 'pending', period_start: '2026-02-01', period_end: '2027-01-31', created_at: '2026-02-01T08:30:00Z', mutuelle_name: 'Mutuelle de la Médina' },
-    { id: 105, cmu_number: 'SN-DK-BSF-9901', adherent_name: 'Fatou Diallo', phone: '778901234', amount: 0, payment_method: 'Gratuité BSF', status: 'active', period_start: '2026-01-01', period_end: '2026-12-31', created_at: '2026-01-02T14:10:00Z', mutuelle_name: 'Mutuelle de Pikine Ouest' },
-    { id: 106, cmu_number: 'SN-DK-UCAD-1012', adherent_name: 'Ibrahima Sarr', phone: '774443322', amount: 3500, payment_method: 'Wave', status: 'active', period_start: '2026-01-01', period_end: '2026-12-31', created_at: '2026-01-10T16:45:00Z', mutuelle_name: 'Mutuelle de Fann / UCAD' },
-    { id: 107, cmu_number: 'SN-DK-GUE-4401', adherent_name: 'Sokhna Kane', phone: '772233445', amount: 17500, payment_method: 'Wizall Money', status: 'active', period_start: '2026-01-01', period_end: '2026-12-31', created_at: '2026-01-12T12:00:00Z', mutuelle_name: 'Mutuelle de Guédiawaye' },
-    { id: 108, cmu_number: 'SN-DK-RUF-2024', adherent_name: 'Ousmane Ba', phone: '777114997', amount: 10500, payment_method: 'Orange Money', status: 'active', period_start: '2026-01-01', period_end: '2026-12-31', created_at: '2026-01-14T09:15:00Z', mutuelle_name: 'Mutuelle de Rufisque Est' },
-    { id: 109, cmu_number: 'SN-DK-YEU-3100', adherent_name: 'Aminata Fall', phone: '773322110', amount: 7000, payment_method: 'Wave', status: 'active', period_start: '2026-01-01', period_end: '2026-12-31', created_at: '2026-01-15T15:30:00Z', mutuelle_name: 'Mutuelle de Yeumbeul' },
-    { id: 110, cmu_number: 'SN-DK-KM-5510', adherent_name: 'Cheikh Seck', phone: '776554433', amount: 10500, payment_method: 'Virement bancaire', status: 'pending', period_start: '2026-02-01', period_end: '2027-01-31', created_at: '2026-02-02T10:00:00Z', mutuelle_name: 'Mutuelle de Keur Massar Nord' },
-    { id: 111, cmu_number: 'SN-DK-SAN-8801', adherent_name: 'Mariama Cissé', phone: '777777755', amount: 21000, payment_method: 'Wave', status: 'active', period_start: '2026-01-01', period_end: '2026-12-31', created_at: '2026-01-18T11:00:00Z', mutuelle_name: 'Mutuelle de Sangalkam' },
-    { id: 112, cmu_number: 'SN-DK-GUE-9144', adherent_name: 'Moussa Ndiaye', phone: '776574315', amount: 10500, payment_method: 'Espèces Guichet', status: 'expired', period_start: '2025-01-01', period_end: '2025-12-31', created_at: '2025-01-05T09:00:00Z', mutuelle_name: 'Mutuelle de Guédiawaye' },
-    { id: 113, cmu_number: 'SN-DK-MED-2200', adherent_name: 'Mamadou Ndiaye', phone: '771112233', amount: 42000, payment_method: 'Sponsoring Solidaire', status: 'active', period_start: '2026-01-01', period_end: '2026-12-31', created_at: '2026-01-03T08:00:00Z', mutuelle_name: 'Mutuelle de la Médina' },
-    { id: 114, cmu_number: 'SN-DK-PIK-3300', adherent_name: 'Ousmane Sow', phone: '774445566', amount: 87500, payment_method: 'Sponsoring Scolaire', status: 'active', period_start: '2026-01-01', period_end: '2026-12-31', created_at: '2026-01-05T14:00:00Z', mutuelle_name: 'Mutuelle de Pikine Ouest' }
-  ];
+  // ────────────────────────────────────────────────────────────────────
+  //  AUCUN RELEVÉ DE COTISATION DE DÉMONSTRATION.
+  //  Les 14 lignes ci-dessous portaient des noms de personnes réelles
+  //  (Modou Diop, Fatou Diallo, Moussa Ndiaye, Mariama Cissé…) avec des
+  //  montants et des périodes : dès que l'API des cotisations était
+  //  injoignable, un agent lisait un registre financier plausible, et un
+  //  citoyen pouvait voir « sa » cotisation calculée depuis une ligne
+  //  qu'il n'a jamais réglée — y compris sa date d'expiration. Le registre
+  //  doit être vide tant que la base ne répond pas.
+  // ────────────────────────────────────────────────────────────────────
 
   const fetchCotisations = (p = 1) => {
     setLoading(true);
@@ -88,12 +82,13 @@ export default function Cotisations({ lang, portalMode, citizenUser, agentUser }
       .then((res) => res.json())
       .then((payload) => {
         const list = Array.isArray(payload) ? payload : payload.data || [];
-        setCotisations(list.length > 0 ? list : defaultCotisations);
+        // Une réponse vide est une réponse vide : aucune ligne de remplacement.
+        setCotisations(list);
         if (payload.pagination) { setPagination(payload.pagination); setPage(payload.pagination.page); }
         setLoading(false);
       })
       .catch(() => {
-        setCotisations(defaultCotisations);
+        setCotisations([]);
         setLoading(false);
       });
   };

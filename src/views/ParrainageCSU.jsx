@@ -25,17 +25,20 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
   }, [initialPackage]);
 
   const generateSponsorReceiptPDF = ({ sponsor, filleuls, dateStr }) => {
+    // Un reçu officiel ne doit porter NI numéro inventé NI identité inventée :
+    // si une donnée manque, le reçu le dit au lieu de la combler.
+    const sponsorCmu = sponsor?.cmuNumber || 'NON RENSEIGNÉ';
     generateOfficialPdf({
-      filename: `recu_parrainage_${sponsor?.cmuNumber || 'SN-DK-SPN-1001'}.pdf`,
+      filename: `recu_parrainage_${sponsor?.phone || 'parrain'}.pdf`,
       docType: 'REÇU OFFICIEL DE PARRAINAGE SOLIDAIRE',
       title: 'Reçu de Cotisation & Parrainage CSU',
       referenceNo: `REC-SPN-${Date.now().toString().slice(-6)}`,
-      beneficiaryName: `${sponsor?.firstName || 'Assuré'} ${sponsor?.lastName || 'Parrain'}`,
-      cmuNumber: sponsor?.cmuNumber || 'SN-DK-SPN-1001',
+      beneficiaryName: `${sponsor?.firstName || ''} ${sponsor?.lastName || ''}`.trim() || 'Parrain non renseigné',
+      cmuNumber: sponsorCmu,
       structureName: sponsor?.mutuelleName || 'Union Régionale des Mutuelles de Santé de Dakar',
       details: [
-        { label: 'Sponsor / Parrain', value: `${sponsor?.firstName || 'Assuré'} ${sponsor?.lastName || 'Parrain'}` },
-        { label: 'Téléphone', value: sponsor?.phone || '+221 77 000 00 00' },
+        { label: 'Sponsor / Parrain', value: `${sponsor?.firstName || ''} ${sponsor?.lastName || ''}`.trim() || 'Non renseigné' },
+        { label: 'Téléphone', value: sponsor?.phone || 'Non renseigné' },
         { label: 'Paiement', value: 'Wave Pay / Orange Money' },
         { label: 'Nombre de bénéficiaires', value: `${(filleuls || []).length} personnes parrainées` },
         { label: 'Statut', value: 'Cotisation validée 100% UNAMUSC' }
@@ -44,13 +47,14 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
     });
   };
 
-  const defaultDemoSponsors = [
-    { id: 1, firstName: 'El Hadji Mamadou', lastName: 'Ndiaye', name: 'El Hadji Mamadou Ndiaye', phone: '771112233', email: 'mamadou.ndiaye@dakar.sn', cmuNumber: 'SN-DK-SPN-1001', mutuelleName: 'UDMS Dakar Plateau', department: 'Dakar', parrainageType: 'menages', status: 'Actif', created_at: '2026-04-10', filleulCount: 12, totalAmount: 43000 },
-    { id: 2, firstName: 'Ousmane', lastName: 'Sow', name: 'Ousmane Sow', phone: '774445566', email: 'ousmane.sow@pikine.sn', cmuNumber: 'SN-DK-SPN-1002', mutuelleName: 'UDMS Pikine', department: 'Pikine', parrainageType: 'eleves', status: 'Actif', created_at: '2026-04-12', filleulCount: 25, totalAmount: 25000 },
-    { id: 3, firstName: 'Dr. Cheikh Anta', lastName: 'Diop', name: 'Dr. Cheikh Anta Diop', phone: '776543210', email: 'cheikh.diop@fann.sn', cmuNumber: 'SN-DK-SPN-1003', mutuelleName: 'UDMS Fann / UCAD', department: 'Fann', parrainageType: 'collectif', status: 'Actif', created_at: '2026-04-15', filleulCount: 40, totalAmount: 40000 },
-    { id: 4, firstName: 'Mariama', lastName: 'Ba', name: 'Mariama Ba', phone: '773302211', email: 'mariama.ba@guediawaye.sn', cmuNumber: 'SN-DK-SPN-1004', mutuelleName: 'UDMS Guédiawaye', department: 'Guédiawaye', parrainageType: 'individuel', status: 'Actif', created_at: '2026-04-18', filleulCount: 3, totalAmount: 13500 },
-    { id: 5, firstName: 'Fatou', lastName: 'Sow', name: 'Fatou Sow', phone: '765554433', email: 'fatou.sow@rufisque.sn', cmuNumber: 'SN-DK-SPN-1005', mutuelleName: 'UDMS Rufisque', department: 'Rufisque', parrainageType: 'menages', status: 'Actif', created_at: '2026-04-20', filleulCount: 8, totalAmount: 29000 }
-  ];
+  // ────────────────────────────────────────────────────────────────────
+  //  AUCUN PARRAIN DE DÉMONSTRATION.
+  //  Les 5 profils (El Hadji Mamadou Ndiaye, Ousmane Sow, Dr. Cheikh Anta
+  //  Diop, Mariama Ba, Fatou Sow) n'existaient dans aucune table. Ils
+  //  s'affichaient dès que l'API ne répondait pas — donc, en cas de panne
+  //  réseau, un agent dressait des reçus « officiels » de parrainage pour
+  //  des personnes fictives. On affiche un état vide et l'erreur.
+  // ────────────────────────────────────────────────────────────────────
 
   const fetchSponsors = () => {
     setSponsorsLoading(true);
@@ -58,11 +62,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
     fetch(`${window.API_BASE_URL}/api/parrainages/demo-sponsors`)
       .then(res => { if (!res.ok) throw new Error('Public endpoint failed'); return res.json(); })
       .then(data => {
-        if (Array.isArray(data) && data.length > 0) {
-          setSponsors(data);
-        } else {
-          setSponsors(defaultDemoSponsors);
-        }
+        setSponsors(Array.isArray(data) ? data : []);
         setSponsorsLoading(false);
       })
       .catch(() => {
@@ -75,15 +75,12 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
             return res.json();
           })
           .then(d => {
-            if (Array.isArray(d) && d.length > 0) {
-              setSponsors(d);
-            } else {
-              setSponsors(defaultDemoSponsors);
-            }
+            setSponsors(Array.isArray(d) ? d : []);
             setSponsorsLoading(false);
           })
           .catch(() => {
-            setSponsors(defaultDemoSponsors);
+            setSponsors([]);
+            setSponsorsError('Parrainages indisponibles : registre national injoignable. Aucune donnée affichée.');
             setSponsorsLoading(false);
           });
       });
@@ -93,55 +90,15 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
     fetchSponsors();
   }, [isAgent, showWizard]);
 
-  const mockFilleulsBySponsorPhone = {
-    '771112233': [
-      { id: 101, firstName: 'Modou', lastName: 'Ndiaye', cmuNumber: 'SN-DK-HH-1001-1', schoolName: 'Ménage Ndiaye (Chef)', mutuelleName: 'UDMS Dakar Plateau', department: 'Dakar' },
-      { id: 102, firstName: 'Aminata', lastName: 'Ndiaye', cmuNumber: 'SN-DK-HH-1001-2', schoolName: 'Conjointe', mutuelleName: 'UDMS Dakar Plateau', department: 'Dakar' },
-      { id: 103, firstName: 'Cheikh', lastName: 'Ndiaye', cmuNumber: 'SN-DK-HH-1001-3', schoolName: 'Collège Lamine Guèye (4ème)', mutuelleName: 'UDMS Dakar Plateau', department: 'Dakar' },
-      { id: 104, firstName: 'Fatou', lastName: 'Ndiaye', cmuNumber: 'SN-DK-HH-1001-4', schoolName: 'École Berthe Maubert (CM2)', mutuelleName: 'UDMS Dakar Plateau', department: 'Dakar' },
-      { id: 105, firstName: 'Babacar', lastName: 'Ndiaye', cmuNumber: 'SN-DK-HH-1001-5', schoolName: 'École Berthe Maubert (CE1)', mutuelleName: 'UDMS Dakar Plateau', department: 'Dakar' },
-      { id: 106, firstName: 'Mariama', lastName: 'Ndiaye', cmuNumber: 'SN-DK-HH-1001-6', schoolName: 'École Maternelle Médina', mutuelleName: 'UDMS Dakar Plateau', department: 'Dakar' },
-      { id: 107, firstName: 'Ousmane', lastName: 'Ndiaye', cmuNumber: 'SN-DK-HH-1001-7', schoolName: 'Lycée Blaise Diagne (2nde)', mutuelleName: 'UDMS Dakar Plateau', department: 'Dakar' },
-      { id: 108, firstName: 'Aïssatou', lastName: 'Ndiaye', cmuNumber: 'SN-DK-HH-1001-8', schoolName: 'Collège Kléber (3ème)', mutuelleName: 'UDMS Dakar Plateau', department: 'Dakar' },
-      { id: 109, firstName: 'Ibrahima', lastName: 'Ndiaye', cmuNumber: 'SN-DK-HH-1001-9', schoolName: 'École Primaire Rebeuss', mutuelleName: 'UDMS Dakar Plateau', department: 'Dakar' },
-      { id: 110, firstName: 'Khadija', lastName: 'Ndiaye', cmuNumber: 'SN-DK-HH-1001-10', schoolName: 'Ayant droit', mutuelleName: 'UDMS Dakar Plateau', department: 'Dakar' },
-      { id: 111, firstName: 'Sidy', lastName: 'Ndiaye', cmuNumber: 'SN-DK-HH-1001-11', schoolName: 'Ayant droit', mutuelleName: 'UDMS Dakar Plateau', department: 'Dakar' },
-      { id: 112, firstName: 'Adama', lastName: 'Ndiaye', cmuNumber: 'SN-DK-HH-1001-12', schoolName: 'Ayant droit', mutuelleName: 'UDMS Dakar Plateau', department: 'Dakar' }
-    ],
-    '774445566': Array.from({ length: 25 }, (_, i) => ({
-      id: 200 + i,
-      firstName: ['Moussa', 'Awa', 'Adama', 'Ousmane', 'Fatou', 'Moustapha', 'Khady', 'Babacar', 'Sidi', 'Ndèye'][i % 10],
-      lastName: 'Sow',
-      cmuNumber: `SN-DK-EDU-2002-${i + 1}`,
-      schoolName: `École El Hadji Malick Sy (Classe ${['CM2', 'CM1', '6ème', '5ème', 'CE2'][i % 5]})`,
-      mutuelleName: 'UDMS Pikine',
-      department: 'Pikine'
-    })),
-    '776543210': Array.from({ length: 40 }, (_, i) => ({
-      id: 300 + i,
-      firstName: ['Talibé Aliou', 'Talibé Ibrahim', 'Talibé Souleymane', 'Talibé Mamadou', 'Talibé Cheikh', 'Talibé Bilal'][i % 6],
-      lastName: `Ndiaye ${i + 1}`,
-      cmuNumber: `SN-DK-COL-3003-${i + 1}`,
-      schoolName: 'Daara Serigne Fallou (Fann)',
-      mutuelleName: 'UDMS Fann / UCAD',
-      department: 'Fann'
-    })),
-    '773302211': [
-      { id: 401, firstName: 'Fanta', lastName: 'Ba', cmuNumber: 'SN-DK-IND-4004-1', schoolName: 'Lycée Seydina Limamou Laye', mutuelleName: 'UDMS Guédiawaye', department: 'Guédiawaye' },
-      { id: 402, firstName: 'Abdou', lastName: 'Ba', cmuNumber: 'SN-DK-IND-4004-2', schoolName: 'CEM Guédiawaye', mutuelleName: 'UDMS Guédiawaye', department: 'Guédiawaye' },
-      { id: 403, firstName: 'Khadija', lastName: 'Ba', cmuNumber: 'SN-DK-IND-4004-3', schoolName: 'École Primaire Guédiawaye', mutuelleName: 'UDMS Guédiawaye', department: 'Guédiawaye' }
-    ],
-    '765554433': [
-      { id: 501, firstName: 'Sidy', lastName: 'Sow', cmuNumber: 'SN-DK-HH-5005-1', schoolName: 'Chef de Ménage', mutuelleName: 'UDMS Rufisque', department: 'Rufisque' },
-      { id: 502, firstName: 'Kadiatou', lastName: 'Sow', cmuNumber: 'SN-DK-HH-5005-2', schoolName: 'Ayant droit', mutuelleName: 'UDMS Rufisque', department: 'Rufisque' },
-      { id: 503, firstName: 'Ibrahima', lastName: 'Sow', cmuNumber: 'SN-DK-HH-5005-3', schoolName: 'Lycée Abdoulaye Sadji', mutuelleName: 'UDMS Rufisque', department: 'Rufisque' },
-      { id: 504, firstName: 'Awa', lastName: 'Sow', cmuNumber: 'SN-DK-HH-5005-4', schoolName: 'CEM Rufisque', mutuelleName: 'UDMS Rufisque', department: 'Rufisque' },
-      { id: 505, firstName: 'Mariama', lastName: 'Sow', cmuNumber: 'SN-DK-HH-5005-5', schoolName: 'École Primaire Rufisque', mutuelleName: 'UDMS Rufisque', department: 'Rufisque' },
-      { id: 506, firstName: 'Cheikh', lastName: 'Sow', cmuNumber: 'SN-DK-HH-5005-6', schoolName: 'Ayant droit', mutuelleName: 'UDMS Rufisque', department: 'Rufisque' },
-      { id: 507, firstName: 'Aminata', lastName: 'Sow', cmuNumber: 'SN-DK-HH-5005-7', schoolName: 'Ayant droit', mutuelleName: 'UDMS Rufisque', department: 'Rufisque' },
-      { id: 508, firstName: 'Mamadou', lastName: 'Sow', cmuNumber: 'SN-DK-HH-5005-8', schoolName: 'Ayant droit', mutuelleName: 'UDMS Rufisque', department: 'Rufisque' }
-    ]
-  };
+  // ────────────────────────────────────────────────────────────────────
+  //  AUCUN FILLEUL DE DÉMONSTRATION.
+  //  Les 88 personnes ci-dessous (ménages Ndiaye/Sow, talibés, élèves de
+  //  Pikine et Fann) étaient générées par Array.from() et servaient de
+  //  repli : dès que l'API des filleuls échouait, l'agent voyait ces
+  //  noms et pouvait éditer/imprimer un reçu de parrainage « officiel »
+  //  pour des personnes qui n'ont jamais existé. Le repli est supprimé :
+  //  un registre injoignable s'affiche vide et le signale.
+  // ────────────────────────────────────────────────────────────────────
 
   const handleViewFiche = (sponsor) => {
     setSelectedSponsor(sponsor);
@@ -156,15 +113,12 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
         return res.json();
       })
       .then(data => {
-        if (Array.isArray(data) && data.length > 0) {
-          setFilleuls(data);
-        } else {
-          setFilleuls(mockFilleulsBySponsorPhone[sponsor.phone] || mockFilleulsBySponsorPhone['771112233']);
-        }
+        setFilleuls(Array.isArray(data) ? data : []);
         setFilleulsLoading(false);
       })
       .catch(() => {
-        setFilleuls(mockFilleulsBySponsorPhone[sponsor.phone] || mockFilleulsBySponsorPhone['771112233']);
+        setFilleuls([]);
+        setSponsorsError('Filleuls indisponibles pour ce parrain : registre injoignable. Aucun filleul n\'est affiché.');
         setFilleulsLoading(false);
       });
   };
@@ -636,11 +590,19 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
           {/* Statistics summary */}
           {(() => {
             const getFilleulsCount = (s) => s.filleulCount ?? s.filleulsCount ?? s.filleuls_count ?? (s.filleuls ? s.filleuls.length : 0);
-            const getTotalAmount = (s) => s.totalAmount ?? s.amount ?? (getFilleulsCount(s) > 0 ? getFilleulsCount(s) * 3500 + 1000 : 4500);
+            // Montant : affiché uniquement s'il figure réellement à la source.
+            // Auparavant, un montant absent était recalculé (filleuls × 3 500 +
+            // 1 000) : le total affiché ne correspondait à aucun règlement.
+            const getTotalAmount = (s) => s.totalAmount ?? s.amount ?? null;
 
             const totalSponsors = sponsors.length;
             const totalFilleuls = sponsors.reduce((acc, curr) => acc + getFilleulsCount(curr), 0);
-            const totalFunds = sponsors.reduce((acc, curr) => acc + getTotalAmount(curr), 0);
+            // Seuls les montants réellement connus entrent dans le total ; les
+            // parrains sans montant enregistré ne sont pas comptés comme 0 FCFA
+            // (sinon le total affiché laisse croire à un relevé exhaustif).
+            const knownAmounts = sponsors.map(getTotalAmount).filter((v) => typeof v === 'number' && !Number.isNaN(v));
+            const totalFunds = knownAmounts.reduce((acc, v) => acc + v, 0);
+            const missingAmounts = sponsors.length - knownAmounts.length;
 
             return (
               <div className="grid grid-3" style={{ gap: '1rem', marginBottom: '2rem' }}>
@@ -656,8 +618,15 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                 </div>
                 <div className="card text-left" style={{ padding: '1.25rem', borderLeft: '4px solid #10b981', background: 'var(--bg-card)' }}>
                   <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🪙</div>
-                  <div style={{ fontSize: '1.5rem', fontWeight: '800', color: '#10b981' }}>{new Intl.NumberFormat('fr-FR').format(totalFunds)} FCFA</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: '800', color: '#10b981' }}>
+                    {knownAmounts.length === 0 ? '—' : new Intl.NumberFormat('fr-FR').format(totalFunds) + ' FCFA'}
+                  </div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{lang === 'fr' ? 'Fonds mobilisés' : 'Xalis parrainage'}</div>
+                  {missingAmounts > 0 && (
+                    <div style={{ fontSize: '0.68rem', color: 'var(--text-sub)', marginTop: '0.35rem' }}>
+                      ⚠️ {missingAmounts} parrain(s) sans montant enregistré — total partiel
+                    </div>
+                  )}
                 </div>
               </div>
             );

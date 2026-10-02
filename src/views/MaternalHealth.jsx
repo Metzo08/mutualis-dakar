@@ -689,45 +689,18 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
     }
   ]);
 
-  // Données CPN
-  const [cpnVisits, setCpnVisits] = useState([
-    {
-      id: 1,
-      title: 'CPN 1 (1er trimestre - Datation & sérologies)',
-      desc: 'Grossesse intra-utérine évolutive 8 SA. Bilan biologique initial normal, groupe O+.',
-      date: '10/04/2026',
-      doctor: 'Sage-femme Fatou Kiné Diop',
-      status: 'CPN 1 - Confirmée',
-      completed: true
-    },
-    {
-      id: 2,
-      title: 'CPN 2 (2ème trimestre - Morphologie & VAT 1)',
-      desc: 'Hauteur utérine 21 cm. Bruit du cœur fœtal régulier (145 bpm). Injection VAT 1 réalisée.',
-      date: '05/06/2026',
-      doctor: 'Dr. Mariama Ba (Gynécologue)',
-      status: 'CPN 2 - Confirmée',
-      completed: true
-    },
-    {
-      id: 3,
-      title: 'CPN 3 (28-32 SA - Dépistage anémie & TPI-SP 1)',
-      desc: 'Prévue : Contrôle hémoglobine, 1ère dose TPI-SP (Prévention Paludisme) & VAT 2.',
-      date: '12/08/2026',
-      doctor: 'Sage-femme Fatou Kiné Diop',
-      status: 'CPN 3 - À venir',
-      completed: false
-    },
-    {
-      id: 4,
-      title: 'CPN 4+ (36-38 SA - Préparation accouchement 100% gratuit)',
-      desc: 'Prévue : Présentation céphalique, vérification bassin maternel & fiche de liaison.',
-      date: '25/09/2026',
-      doctor: 'Dr. Mariama Ba (Gynécologue)',
-      status: 'CPN 4 - À venir',
-      completed: false
-    }
-  ]);
+  // ────────────────────────────────────────────────────────────────────
+  //  AUCUN SUIVI DE GROSSESSE FABRIQUÉ.
+  //  Ces 4 CPN annonçaient pour une patiente réelle : grossesse
+  //  « évolutive 8 SA », hauteur utérine 21 cm, « bruit du cœur fœtal
+  //  régulier 145 bpm », VAT 1 « réalisée », signées « Sage-femme Fatou
+  //  Kiné Diop » et « Dr. Mariama Ba ». Ces examens de suivi n'ont jamais
+  //  eu lieu. Un dossier de suivi généré depuis un prénom générique était lu
+  //  comme un suivi réel, et les CPN « à venir » produisaient des rappels
+  //  pour des dates arbitraires. Le calendrier de CPN se saisit ; il ne se
+  //  pré-remplit pas.
+  // ────────────────────────────────────────────────────────────────────
+  const [cpnVisits, setCpnVisits] = useState([]);
   // Édition CPN (médecin / sage-femme / superadmin)
   const [editingCpnId, setEditingCpnId] = useState(null);
   const [editCpnForm, setEditCpnForm] = useState({ title: '', desc: '', date: '', doctor: '', status: '', completed: false });

@@ -13,8 +13,14 @@ import {
   parseRowsToRecords,
   filterValidRecords,
   matchPhotosToRows,
-  parseExcelFile
+  parseExcelFile,
+  generateUniqueCmuCode,
+  beneficiaryIdentity,
+  collectIdentities,
+  buildStudioMembers,
+  migrateLegacyCodes
 } from '../utils/bulkImport';
+import { isLegacyGeneratedCode, isOfficialCode } from '../utils/cmuCode';
 
 /** Faux fichier : parseExcelFile n'utilise que .name et .arrayBuffer(). */
 const fakeFile = (buffer, name = 'test.xlsx') => ({ name, arrayBuffer: async () => buffer });
@@ -111,14 +117,207 @@ describe('parseRowsToRecords', () => {
     expect(pickColumn(null, ['code'])).toBe('');
   });
 
-  it('filterValidRecords écarte les lignes sans nom ou sans code', () => {
+  it('filterValidRecords écarte seulement les lignes sans nom', () => {
     const rows = parseRowsToRecords([
       { CODE: 'A-1', PRENOM: 'Awa' },
-      { CODE: '', PRENOM: 'Sans code' },
-      { CODE: 'A-2', PRENOM: '' }
+      { CODE: '', PRENOM: 'Sans code' },   // plus filtrée : matricule généré
+      { CODE: 'A-2', PRENOM: '' }           // aucun nom : inexploitable
     ]);
-    expect(filterValidRecords(rows)).toHaveLength(1);
-    expect(filterValidRecords(rows)[0].codeBeneficiaire).toBe('A-1');
+    expect(filterValidRecords(rows)).toHaveLength(2);
+    expect(filterValidRecords(rows).map(r => r.prenom)).toEqual(['Awa', 'Sans code']);
+  });
+});
+
+describe('generateUniqueCmuCode', () => {
+  it('attribue un matricule REGION-MSD-ANNEE-SEQUENCE', () => {
+    expect(generateUniqueCmuCode([], 'DKR', 2026)).toBe('DKR-DKR-2026-0001');
+  });
+
+  it('reprend la séquence au-dessus du maximum déjà attribué', () => {
+    expect(generateUniqueCmuCode(['DKR-DKR-2026-0001', 'DKR-DKR-2026-0002'], 'DKR', 2026))
+      .toBe('DKR-DKR-2026-0003');
+  });
+
+  it('ne réutilise jamais un code déjà pris', () => {
+    const pris = new Set(['DKR-DKR-2026-0001', 'DKR-DKR-2026-0002', 'DKR-DKR-2026-0003']);
+    expect(generateUniqueCmuCode(pris, 'DKR', 2026)).toBe('DKR-DKR-2026-0004');
+  });
+
+  it('démarre une nouvelle séquence à chaque année', () => {
+    expect(generateUniqueCmuCode(['DKR-DKR-2026-0042'], 'DKR', 2027)).toBe('DKR-DKR-2027-0001');
+  });
+
+  it('encode la région ET le département de la MSD', () => {
+    // Pikine est dans la région de Dakar : même région, département différent.
+    expect(generateUniqueCmuCode([], 'PKN', 2026)).toBe('DKR-PKN-2026-0001');
+  });
+});
+
+describe('migrateLegacyCodes — non-régression des cartes imprimées', () => {
+  const registre = [
+    // Carte DÉJÀ imprimée : ne doit JAMAIS bouger.
+    { cmuNumber: 'DKR_2600027.0', adherentCode: 'DKR_2600027', firstName: 'URSULE', lastName: 'DIAME' },
+    { cmuNumber: 'EDU_DKR_26000163', adherentCode: 'EDU_DKR_26000163', firstName: 'A', lastName: 'B' },
+    // Fiches ASS LONASE : ancien motif généré → à migrer.
+    {
+      cmuNumber: 'DKR-2600001',
+      adherentCode: 'DKR-2600001',
+      firstName: 'PAPA IBRAHIMA',
+      lastName: 'SEYE',
+      dependents: [{ cmuNumber: 'DKR-2600002', firstName: 'E', lastName: 'SEYE' }]
+    }
+  ];
+
+  it('ne touche pas aux cartes déjà imprimées', () => {
+    const { members } = migrateLegacyCodes(registre, { unionId: 'DKR', year: 2026 });
+    expect(members[0].cmuNumber).toBe('DKR_2600027.0');
+    expect(members[1].cmuNumber).toBe('EDU_DKR_26000163');
+  });
+
+  it('recode les fiches ASS LONASE au format officiel', () => {
+    const { members, migrated } = migrateLegacyCodes(registre, { unionId: 'DKR', year: 2026 });
+    expect(migrated).toBe(2);                                   // le titre + son ayant droit
+    expect(members[2].cmuNumber).toBe('DKR-DKR-2026-0001');
+    expect(members[2].dependents[0].cmuNumber).toBe('DKR-DKR-2026-0002');
+  });
+
+  it('ne réattribue pas un code déjà pris', () => {
+    const avecExistant = [
+      ...registre,
+      { cmuNumber: 'DKR-DKR-2026-0001', firstName: 'X', lastName: 'Y' }
+    ];
+    const { members } = migrateLegacyCodes(avecExistant, { unionId: 'DKR', year: 2026 });
+    const nouveau = members[2].cmuNumber;
+    expect(nouveau).not.toBe('DKR-DKR-2026-0001');
+    expect(nouveau).toMatch(/^DKR-DKR-2026-\d{4}$/);
+  });
+
+  it('est idempotent : une seconde passe ne change plus rien', () => {
+    const une = migrateLegacyCodes(registre, { unionId: 'DKR', year: 2026 });
+    const deux = migrateLegacyCodes(une.members, { unionId: 'DKR', year: 2026 });
+    expect(deux.migrated).toBe(0);
+    expect(deux.members.map(m => m.cmuNumber)).toEqual(une.members.map(m => m.cmuNumber));
+  });
+});
+
+describe('purge avant réimport (MSD de Grand Yoff)', () => {
+  /** Reproduit le prédicat utilisé par le Studio (handlePurgeLegacyCards). */
+  const purgeable = (m) => {
+    if (!m || !m.cmuNumber) return false;
+    if (isOfficialCode(m.cmuNumber)) return false;
+    const id = String(m.id || '');
+    if (id.startsWith('IMP-') || id.startsWith('SRV-')) return true;
+    return isLegacyGeneratedCode(m.cmuNumber);
+  };
+
+  it('cible les imports Grand Yoff, quel que soit leur ancien format', () => {
+    // Import avec code provisoire généré
+    expect(purgeable({ id: 'IMP-a-0', cmuNumber: 'DKR-2600172' })).toBe(true);
+    // Import avec le code repris du fichier
+    expect(purgeable({ id: 'IMP-b-1', cmuNumber: 'DKR_2600111' })).toBe(true);
+    // Fiche restaurée depuis la base
+    expect(purgeable({ id: 'SRV-42', cmuNumber: 'DKR-2600999' })).toBe(true);
+  });
+
+  it('épargne les cartes DÉJÀ imprimées', () => {
+    expect(purgeable({ id: 'MEM-MSD-001', cmuNumber: 'DKR_260001.0' })).toBe(false);
+    expect(purgeable({ id: 'MEM-MSD-010', cmuNumber: 'EDU_DKR_26000163' })).toBe(false);
+    expect(purgeable({ id: 'MEM-MSD-011', cmuNumber: 'DAARA-2025-0078' })).toBe(false);
+  });
+
+  it('épargne ASS LONASE, déjà migré au format officiel', () => {
+    expect(purgeable({ id: 'IMP-c-0', cmuNumber: 'DKR-DKR-2026-0001' })).toBe(false);
+    expect(purgeable({ id: 'IMP-c-1', cmuNumber: 'DKR-DKR-2026-0002' })).toBe(false);
+  });
+});
+
+describe('identité stable (déduplication entre imports)', () => {
+  it('reconnaît la même personne malgré un matricule différent', () => {
+    const avant = { firstName: 'PAPA IBRAHIMA', lastName: 'SEYE', birthDate: '1970-01-01' };
+    const apres = { firstName: 'papa ibrahima', lastName: 'Seye', birthDate: '1970-01-01', cmuNumber: 'DKR-2609999' };
+    expect(beneficiaryIdentity(avant)).toBe(beneficiaryIdentity(apres));
+  });
+
+  it('distingue deux personnes différentes', () => {
+    const a = { firstName: 'Awa', lastName: 'FALL', birthDate: '1990-01-01' };
+    const b = { firstName: 'Awa', lastName: 'FALL', birthDate: '1991-01-01' };
+    expect(beneficiaryIdentity(a)).not.toBe(beneficiaryIdentity(b));
+  });
+
+  it('privilégie le NIN quand il existe', () => {
+    const a = { firstName: 'A', lastName: 'B', birthDate: '1990-01-01', nin: '123456789' };
+    const b = { firstName: 'Z', lastName: 'Y', birthDate: '1975-05-05', nin: '123456789' };
+    expect(beneficiaryIdentity(a)).toBe(beneficiaryIdentity(b));
+  });
+
+  it('collectIdentities indexe tout un registre', () => {
+    const ids = collectIdentities([
+      { firstName: 'Awa', lastName: 'FALL', birthDate: '1990-01-01' },
+      { firstName: 'Moussa', lastName: 'DIOP', birthDate: '1985-02-02' }
+    ]);
+    expect(ids.size).toBe(2);
+  });
+});
+
+describe('buildStudioMembers — matricules générés par le système', () => {
+  const lignes = parseRowsToRecords([
+    { CODE_BENEFICIAIRE: 'DKR_2600111.0', NUMERO_ADHERENT: 'DKR_010126', PRENOM: 'Chef', NOM: 'FALL', DATE_NAISSANCE: '1980-01-01' },
+    { CODE_BENEFICIAIRE: 'DKR_2600111.1', NUMERO_ADHERENT: 'DKR_010126', PRENOM: 'Epouse', NOM: 'FALL', DATE_NAISSANCE: '1982-01-01' },
+    { CODE_BENEFICIAIRE: 'DKR_2600111.2', NUMERO_ADHERENT: 'DKR_010126', PRENOM: 'Enfant', NOM: 'FALL', DATE_NAISSANCE: '2012-01-01' }
+  ]);
+
+  it('regroupe le ménage sur la base du code du FICHIER', async () => {
+    const members = await buildStudioMembers(lignes);
+    expect(members).toHaveLength(1);
+    expect(members[0].dependents).toHaveLength(2);
+  });
+
+  it('attribue un matricule DIFFÉRENT à chaque personne', async () => {
+    const [chef] = await buildStudioMembers(lignes);
+    const codes = [chef.cmuNumber, ...chef.dependents.map(d => d.cmuNumber)];
+    expect(new Set(codes).size).toBe(3);
+    codes.forEach(c => expect(c).toMatch(/^DKR-DKR-\d{4}-\d{4}$/));
+  });
+
+  it("n'emprunte jamais le code du fichier", async () => {
+    const [chef] = await buildStudioMembers(lignes);
+    expect(chef.cmuNumber).not.toBe('DKR_2600111');
+    expect(chef.sourceCode).toBe('DKR_2600111');
+  });
+
+  it('poursuit la numérotation après les codes déjà attribués', async () => {
+    const [a] = await buildStudioMembers(lignes, { existingCodes: ['DKR-DKR-2026-0042'] });
+    const codes = [a.cmuNumber, ...a.dependents.map(d => d.cmuNumber)];
+    expect(codes[0]).toBe('DKR-DKR-2026-0043');
+    expect(new Set(codes).size).toBe(codes.length);
+  });
+
+  it('importe aussi une personne sans code dans le fichier', async () => {
+    const [seul] = await buildStudioMembers(parseRowsToRecords([{ PRENOM: 'Sans', NOM: 'Code' }]));
+    expect(seul.cmuNumber).toMatch(/^DKR-DKR-\d{4}-\d{4}$/);
+    expect(seul.dependents).toHaveLength(0);
+  });
+
+  it('ne confond pas deux homonymes de codes différents', async () => {
+    const homonymes = parseRowsToRecords([
+      { CODE_BENEFICIAIRE: 'DKR_2600001.0', PRENOM: 'Awa', NOM: 'FALL', DATE_NAISSANCE: '1990-01-01' },
+      { CODE_BENEFICIAIRE: 'DKR_2600002.0', PRENOM: 'Awa', NOM: 'FALL', DATE_NAISSANCE: '1990-01-01' }
+    ]);
+    const members = await buildStudioMembers(homonymes);
+    expect(members).toHaveLength(2);
+    expect(members[0].cmuNumber).not.toBe(members[1].cmuNumber);
+  });
+
+  it('donne un champ `name` aux ayants droit (le Studio en dépend)', async () => {
+    // Régression : le Studio faisait `currentMajorDependent.name.split(' ')`,
+    // ce qui plantait au rendu sur toute fiche importée.
+    const [chef] = await buildStudioMembers(lignes);
+    for (const d of chef.dependents) {
+      expect(typeof d.name).toBe('string');
+      expect(d.name.length).toBeGreaterThan(0);
+    }
+    // L'import normalise les noms en majuscules (usage carte).
+    expect(chef.dependents[0].name).toBe('EPOUSE FALL');
   });
 });
 

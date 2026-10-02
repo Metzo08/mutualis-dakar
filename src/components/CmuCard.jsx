@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
-import { detectLanIp, getCachedLanIp } from '../utils/lanIp';
+import { detectLanIp, getCachedLanIp, isValidLanIp } from '../utils/lanIp';
 
 // Carte CSU numérique : affiche les informations de l'assuré + QR code vérifiable haute définition.
 // Le QR code encode une URL de vérification publique (/api/cmu-card/:cmuNumber).
@@ -34,11 +34,9 @@ export default function CmuCard({ citizen }) {
       // Si la page tourne sur localhost/127.0.0.1 (PC), remplacer par l'IP Wi-Fi réseau si disponible
       if (currentHost === 'localhost' || currentHost === '127.0.0.1') {
         const detected = lanIp || getCachedLanIp();
-        let serverIp = localStorage.getItem('cmu-server-ip') || localStorage.getItem('cmu-wifi-ip') || detected || '192.168.1.42';
-        if (serverIp === '192.168.1.3' || serverIp === '192.168.1.5' || serverIp === '192.168.1.13' || serverIp === '192.168.1.64') {
-          serverIp = '192.168.1.42';
-        }
-        if (serverIp && serverIp !== 'localhost' && serverIp !== '127.0.0.1') {
+        const serverIp = [localStorage.getItem('cmu-server-ip'), localStorage.getItem('cmu-wifi-ip'), detected]
+          .find((candidate) => isValidLanIp(candidate));
+        if (serverIp) {
           origin = `http://${serverIp}:${currentPort}`;
         }
       }
@@ -244,7 +242,7 @@ export default function CmuCard({ citizen }) {
         >
           {/* En-tête Verso */}
           <div className="d-flex justify-content-between align-items-center w-100 px-1">
-            <span style={{ fontSize: '0.70rem', fontWeight: '850', color: '#064e3b', letterSpacing: '0.2px' }}>
+            <span style={{ fontSize: '0.70rem', fontWeight: '850', color: '#000000', letterSpacing: '0.2px' }}>
               UNAMUSC SENEGAL - CARTE NATIONALE D’ASSURANCE SANTÉ
             </span>
             <span className="badge" style={{ backgroundColor: '#059669', color: '#ffffff', fontSize: '0.72rem', borderRadius: '10px', padding: '0.3rem 0.65rem', fontWeight: '800' }}>

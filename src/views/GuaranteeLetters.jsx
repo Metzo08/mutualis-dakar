@@ -50,66 +50,15 @@ export function getEmergencyIssuanceStatus() {
 }
 
 export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, partnerUser = null, setView = null }) {
-  const defaultLetters = [
-    { id: 201, first_name: 'Amadou', last_name: 'Sow', cmu_number: 'CSU-DKR-2026-8812.2', ipp_number: 'IPP-FANN-2026-8812', hospital_name: 'Hôpital Universitaire de Fann (Dakar)', medical_act: 'Intervention chirurgicale ORL — (Hôpital Universitaire de Fann)', estimated_amount: 250000, guaranteed_percentage: 80, unamusc_amount: 200000, sesame_amount: 0, max_amount: 200000, patient_rest: 50000, status: 'pending', validation_code: 'GAR-2026-FANN-88', created_at: new Date().toISOString(), agent_note: 'Dossier complet. Devis d\'hospitalisation vérifié conforme au barème national UNAMUSC (80% mutuelle, 20% ticket modérateur).' },
-    { id: 202, first_name: 'Fatou', last_name: 'Diop', cmu_number: 'CMU-DKR-2026-4401', ipp_number: 'IPP-DANTEC-2026-4401', hospital_name: 'Hôpital Aristide Le Dantec', medical_act: 'Hospitalisation soins intensifs 5 jours — (Hôpital Aristide Le Dantec)', estimated_amount: 450000, guaranteed_percentage: 100, unamusc_amount: 450000, sesame_amount: 0, max_amount: 450000, patient_rest: 0, status: 'approved', validation_code: 'GAR-2026-DANTEC-12', created_at: new Date(Date.now() - 86400000 * 2).toISOString(), agent_note: 'Accordé à 100% au titre de la gratuité hospitalière maternité & soins d\'urgence (UNAMUSC).' },
-    { id: 203, first_name: 'Moustapha', last_name: 'Ndiaye', cmu_number: 'SN-DK-PIK-9021', ipp_number: 'IPP-PRINC-2026-9021', hospital_name: 'Hôpital Principal de Dakar', medical_act: 'Chirurgie orthopédique d’urgence & Rééducation', estimated_amount: 320000, guaranteed_percentage: 80, unamusc_amount: 256000, sesame_amount: 0, max_amount: 256000, patient_rest: 64000, status: 'approved', validation_code: 'GAR-2026-PRINC-44', created_at: new Date(Date.now() - 86400000 * 3).toISOString(), agent_note: 'Homologué par le médecin conseil UNAMUSC.' },
-    { id: 204, first_name: 'Khadija', last_name: 'Ndiaye', cmu_number: 'SN-DK-MED-1001.2', ipp_number: 'IPP-MED-2026-1001', hospital_name: 'Centre Hospitalier Abass Ndao', medical_act: 'Suivi prénatal & Accouchement césarienne', estimated_amount: 180000, guaranteed_percentage: 100, unamusc_amount: 180000, sesame_amount: 0, max_amount: 180000, patient_rest: 0, status: 'approved', validation_code: 'GAR-2026-ABASS-09', created_at: new Date(Date.now() - 86400000 * 4).toISOString(), agent_note: 'Programme Maternité Gratuité Régionale.' },
-    { id: 205, first_name: 'Abdoulaye', last_name: 'Ndiaye', cmu_number: 'SN-DK-PIK-9001.3', ipp_number: 'IPP-ROYER-2026-9001', hospital_name: 'Hôpital d’Enfants Albert Royer', medical_act: 'Soins pédiatriques intensifs (72h)', estimated_amount: 150000, guaranteed_percentage: 80, unamusc_amount: 120000, sesame_amount: 0, max_amount: 120000, patient_rest: 30000, status: 'approved', validation_code: 'GAR-2026-ROYER-17', created_at: new Date(Date.now() - 86400000 * 5).toISOString(), agent_note: 'Prise en charge validée.' },
-    { id: 206, first_name: 'Ibrahima', last_name: 'Sarr', cmu_number: 'SN-DK-UCAD-1012', ipp_number: 'IPP-DALAL-2026-1012', hospital_name: 'Hôpital Dalal Jamm (Guédiawaye)', medical_act: 'Examen IRM Cérébral & Neurologie', estimated_amount: 140000, guaranteed_percentage: 80, unamusc_amount: 112000, sesame_amount: 0, max_amount: 112000, patient_rest: 28000, status: 'pending', validation_code: 'GAR-2026-DALAL-55', created_at: new Date(Date.now() - 86400000 * 6).toISOString(), agent_note: 'En cours d’instruction par l’agent.' },
-    { id: 207, first_name: 'Sokhna', last_name: 'Kane', cmu_number: 'SN-DK-GUE-4401', ipp_number: 'IPP-BAUD-2026-4401', hospital_name: 'Hôpital Roi Baudouin de Guédiawaye', medical_act: 'Soins néonataux & couveuse 5 jours', estimated_amount: 220000, guaranteed_percentage: 100, unamusc_amount: 220000, sesame_amount: 0, max_amount: 220000, patient_rest: 0, status: 'approved', validation_code: 'GAR-2026-BAUD-81', created_at: new Date(Date.now() - 86400000 * 7).toISOString(), agent_note: 'Gratuité totale Nouveau-Né.' },
-    { id: 208, first_name: 'Modou', last_name: 'Diop', cmu_number: 'SN-DK-MED-1001.1', ipp_number: 'IPP-MED-2026-1002', hospital_name: 'Polyclinique de la Médina', medical_act: 'Chirurgie Herniaire & Anesthésie', estimated_amount: 210000, guaranteed_percentage: 80, unamusc_amount: 168000, sesame_amount: 0, max_amount: 168000, patient_rest: 42000, status: 'approved', validation_code: 'GAR-2026-MED-92', created_at: new Date(Date.now() - 86400000 * 8).toISOString(), agent_note: 'Accordé à 80% UNAMUSC.' },
-    { id: 209, first_name: 'Ousmane', last_name: 'Ba', cmu_number: 'SN-DK-RUF-2024', ipp_number: 'IPP-RUF-2026-2024', hospital_name: 'Centre Hospitalier de Rufisque', medical_act: 'Hospitalisation Pneumologie & Oxygénothérapie', estimated_amount: 195000, guaranteed_percentage: 80, unamusc_amount: 156000, sesame_amount: 0, max_amount: 156000, patient_rest: 39000, status: 'approved', validation_code: 'GAR-2026-RUF-04', created_at: new Date(Date.now() - 86400000 * 9).toISOString(), agent_note: 'Validation du devis.' },
-    { id: 210, first_name: 'Aminata', last_name: 'Fall', cmu_number: 'SN-DK-YEU-3100', ipp_number: 'IPP-YEU-2026-3100', hospital_name: 'Hôpital de Pikine (Camp Thiaroye)', medical_act: 'Soins Cardiologie & Échographie Trans-œsophagienne', estimated_amount: 280000, guaranteed_percentage: 80, unamusc_amount: 224000, sesame_amount: 0, max_amount: 224000, patient_rest: 56000, status: 'pending', validation_code: 'GAR-2026-YEU-11', created_at: new Date(Date.now() - 86400000 * 10).toISOString(), agent_note: 'Instruction en cours par la mutuelle.' },
-    // Cas 1 : Personne âgée de 60 ans et plus (Plan SESAME — 100% prise en charge avec 80% UNAMUSC + 20% SESAME)
-    { 
-      id: 211, 
-      first_name: 'Moussa', 
-      last_name: 'Diagne', 
-      cmu_number: 'SN-DK-MED-2600.1', 
-      ipp_number: 'IPP-PRINC-2026-2600', 
-      hospital_name: 'Hôpital Général Idrissa Pouye (Grand Yoff)', 
-      medical_act: 'Chirurgie de la cataracte & Bilan gériatrique complet', 
-      estimated_amount: 280000, 
-      guaranteed_percentage: 100, 
-      unamusc_percentage: 80, 
-      sesame_percentage: 20, 
-      unamusc_amount: 224000, 
-      sesame_amount: 56000, 
-      max_amount: 280000, 
-      patient_rest: 0, 
-      is_sesame: true, 
-      is_senior: true, 
-      status: 'approved', 
-      validation_code: 'GAR-2026-SESAME-60', 
-      created_at: new Date().toISOString(), 
-      agent_note: '🧓 Bénéficiaire Plan SESAME (60 ans et +). Prise en charge intégrale UNAMUSC (224 000 FCFA / 80%) + Contrepartie Plan SESAME État du Sénégal (56 000 FCFA / 20%). Reste à charge patient : 0 FCFA.' 
-    },
-    // Cas 2 : Lettre délivrée d'urgence pendant les heures de garde / week-end (Continuité 7j/7)
-    { 
-      id: 212, 
-      first_name: 'Awa', 
-      last_name: 'Seck', 
-      cmu_number: 'SN-DK-PIK-2600.2', 
-      ipp_number: 'IPP-BAUD-2026-2600', 
-      hospital_name: 'Hôpital Roi Baudouin de Guédiawaye', 
-      medical_act: 'Soins d\'urgences médicales de garde & Perfusion', 
-      estimated_amount: 140000, 
-      guaranteed_percentage: 80, 
-      unamusc_percentage: 80, 
-      sesame_percentage: 0, 
-      unamusc_amount: 112000, 
-      sesame_amount: 0, 
-      max_amount: 112000, 
-      patient_rest: 28000, 
-      is_emergency_issuance: true, 
-      emergency_period: 'night', 
-      status: 'emergency_issued', 
-      validation_code: 'GAR-2026-URG-89', 
-      created_at: new Date().toISOString(), 
-      agent_note: '🌙 Délivrée d\'urgence par la structure sanitaire conventionnée en permanence de garde (17h00 - 07h59). Soins autorisés immédiatement. En attente de régularisation par l\'agent le prochain jour ouvrable dès 08h00.' 
-    }
-  ];
+  // ────────────────────────────────────────────────────────────────────
+  //  AUCUNE LETTRE DE GARANTIE DE DÉMONSTRATION.
+  //  Les 12 engagements ci-dessous (2 478 000 FCFA garantis) portaient des
+  //  noms de personnes réelles, des codes de validation homologués
+  //  (GAR-2026-FANN-88, GAR-2026-DANTEC-12…) et des mentions d'homologation
+  //  UNAMUSC. Un hôpital recevait ces documents comme des prises en charge
+  //  réelles. Un engagement financier ne se simule pas. Le registre affiché
+  //  ne contient donc que des garanties réellement enregistrées en base.
+  // ────────────────────────────────────────────────────────────────────
 
   const [letterPage, setLetterPage] = useState(1);
 
@@ -310,50 +259,15 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
   const activeFirstName = citizenUser?.first_name || citizenUser?.firstName || 'Modou';
   const activeLastName = citizenUser?.last_name || citizenUser?.lastName || 'Diop';
 
-  const isStudent = (citizenUser?.packageType === 'scolaire' || (citizenUser?.firstName || '').toLowerCase().includes('ibrahima'));
-  const isBsf = (citizenUser?.packageType === 'gratuité' || (citizenUser?.firstName || '').toLowerCase().includes('fatou'));
-
-  const userLetters = [
-    {
-      id: 101,
-      first_name: activeFirstName,
-      last_name: activeLastName,
-      cmu_number: getBeneficiaryCode(activeCmuNumber, 1),
-      ipp_number: `IPP-DKR-${getAdherentCode(activeCmuNumber).slice(-4)}`,
-      hospital_name: isStudent ? 'Centre Médical Universitaire UCAD / Hôpital Fann' : isBsf ? 'Hôpital Aristide Le Dantec (Dakar)' : 'Polyclinique de la Médina',
-      medical_act: isStudent ? 'Consultation & soins de santé étudiants — (Gratuité CSU Jeunes)' : isBsf ? 'Prise en charge d\'urgence & soins généraux — (Bourse Sécurité Familiale)' : 'Intervention chirurgicale ORL & consultation spécialisée',
-      estimated_amount: isStudent ? 120000 : isBsf ? 350000 : 250000,
-      guaranteed_percentage: isStudent ? 100 : isBsf ? 100 : 80,
-      max_amount: isStudent ? 120000 : isBsf ? 350000 : 200000,
-      patient_rest: isStudent ? 0 : isBsf ? 0 : 50000,
-      status: 'approved',
-      validation_code: `GAR-2026-${getAdherentCode(activeCmuNumber).slice(-4)}`,
-      created_at: new Date().toISOString(),
-      agent_note: isStudent 
-        ? 'Prise en charge 100% accordée au titre de la gratuité CSU Jeunes & Étudiants (UNAMUSC).' 
-        : isBsf 
-        ? 'Prise en charge 100% accordée au titre du filet social Bourse de Sécurité Familiale (BSF).' 
-        : 'Prise en charge 80% validée sous le système de Tiers-payant UNAMUSC Dakar.'
-    },
-    {
-      id: 102,
-      first_name: 'Amadou',
-      last_name: 'Sow',
-      cmu_number: getBeneficiaryCode(activeCmuNumber, 2),
-      ipp_number: `IPP-FANN-${getAdherentCode(activeCmuNumber).slice(-4)}`,
-      hospital_name: 'Hôpital Universitaire de Fann (Dakar)',
-      medical_act: 'Intervention chirurgicale ORL — (Hôpital Universitaire de Fann)',
-      estimated_amount: 250000,
-      guaranteed_percentage: 80,
-      max_amount: 200000,
-      patient_rest: 50000,
-      status: 'pending',
-      validation_code: `GAR-2026-FANN-88`,
-      created_at: new Date(Date.now() - 3600000 * 4).toISOString(),
-      agent_note: 'Dossier en cours d\'instruction par l\'agent UNAMUSC.'
-    },
-    ...defaultLetters
-  ];
+  // ────────────────────────────────────────────────────────────────────
+  //  AUCUNE LETTRE DE GARANTIE INJECTÉE DANS LE DOSSIER DU CITOYEN.
+  //  Ces 2 lignes étaient présentées comme les garanties de l'assuré
+  //  connecté : un devis de 250 000 FCFA, un « accord UNAMUSC 80 %
+  //  validé », un code GAR-2026-xxxx homologué. Un assuré pouvait donc
+  //  montrer à un hôpital un engagement financier qu'il n'a jamais contracté.
+  //  Les garanties réelles arrivent de l'API ; s'il n'y en a pas, la liste
+  //  reste vide.
+  // ────────────────────────────────────────────────────────────────────
 
   const [letters, setLetters] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -402,14 +316,15 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
     try {
       const res = await fetch('/api/guarantees');
       const json = await res.json();
-      if (json.success && json.data && json.data.length > 0) {
+      // Une réponse vide est une réponse vide : aucune ligne de remplacement.
+      if (json.success && Array.isArray(json.data)) {
         setLetters(json.data);
       } else {
-        setLetters(citizenUser ? userLetters : defaultLetters);
+        setLetters([]);
       }
     } catch (err) {
-      console.warn('Utilisation des garanties de démonstration:', err);
-      setLetters(citizenUser ? userLetters : defaultLetters);
+      console.warn('Registre des garanties injoignable — registre affiché vide:', err);
+      setLetters([]);
     } finally {
       setLoading(false);
     }
@@ -1843,8 +1758,17 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   <span className="small text-muted fw-bold text-uppercase" style={{ letterSpacing: '0.04em', fontSize: '0.78rem' }}>En instruction agent</span>
                   <span style={{ fontSize: '1.4rem' }}>⏳</span>
                 </div>
-                <h3 className="fw-extrabold mb-1 text-warning" style={{ fontSize: '2.1rem' }}>310</h3>
-                <small className="text-warning fw-bold d-block" style={{ fontSize: '0.8rem' }}>Dossiers sous 48h</small>
+                {/* Compteurs réels : calculés sur le registre affiché.
+                    Les valeurs 310 (« dossiers sous 48h ») et 1 420
+                    (« homologuées ») étaient des constantes écrites en
+                    dur. Elles annonçaient 1 420 prises en charge financière
+                    accordées alors que le registre était vide — un Super
+                    Admin pouvait donc croire à une activité régionale
+                    existante et arbitrer des dossiers sur cette base. */}
+                <h3 className="fw-extrabold mb-1 text-warning" style={{ fontSize: '2.1rem' }}>
+                  {visibleLetters.filter(l => l.status === 'pending').length}
+                </h3>
+                <small className="text-warning fw-bold d-block" style={{ fontSize: '0.8rem' }}>En cours d'instruction</small>
               </div>
             </div>
             <div className="col-lg-3 col-sm-6 col-12">
@@ -1853,8 +1777,10 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   <span className="small text-muted fw-bold text-uppercase" style={{ letterSpacing: '0.04em', fontSize: '0.78rem' }}>Lettres accordées</span>
                   <span style={{ fontSize: '1.4rem' }}>✅</span>
                 </div>
-                <h3 className="fw-extrabold mb-1 text-success" style={{ fontSize: '2.1rem' }}>1 420</h3>
-                <small className="text-success fw-bold d-block" style={{ fontSize: '0.8rem' }}>Homologuées 80% / 100%</small>
+                <h3 className="fw-extrabold mb-1 text-success" style={{ fontSize: '2.1rem' }}>
+                  {visibleLetters.filter(l => l.status === 'approved').length}
+                </h3>
+                <small className="text-success fw-bold d-block" style={{ fontSize: '0.8rem' }}>Accordées 80% / 100%</small>
               </div>
             </div>
             <div className="col-lg-3 col-sm-6 col-12">

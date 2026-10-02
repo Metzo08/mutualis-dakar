@@ -78,9 +78,9 @@ router.get('/api/cotisations', authenticateToken, async (req, res) => {
       whereSql += ` AND (beneficiary_id = $${paramIdx} OR phone = $${paramIdx + 1})`;
       params.push(req.user.id, req.user.phone || '');
       paramIdx += 2;
-    } else if (req.user && req.user.role !== 'Super Admin' && req.user.department) {
+    } else if (req.user && req.user.role !== 'Super Admin' && req.user.msdCode) {
       whereSql += ` AND beneficiary_id IN (SELECT id FROM beneficiaries WHERE department = $${paramIdx})`;
-      params.push(req.user.department);
+      params.push(req.user.msdCode);
       paramIdx++;
     }
     if (status) {
@@ -390,45 +390,48 @@ router.get('/api/dashboard/regional-comparison', authenticateToken, requireRole(
     // 2. Fetch all regions from regional_coverage
     const regionsRes = await query("SELECT * FROM regional_coverage ORDER BY id ASC");
     
-    const byRegion = [];
-    const claimsByRegion = [];
+    // ── Agrégats RÉELS par région ──────────────────────────────────────────
+    //
+    // Auparavant, ce endpoint FABAIT des chiffres : il estimait les prises en
+    // charge à 5 % des assurés (baseAssures * 0.05) et le remboursement à
+    // 15 000 FCFA par acte (baseClaims * 15000). La gouvernance y lisait des
+    // montants qui n'existaient nulle part en base — et qui servent à
+    // décider des enveloppes budgétaires.
+    //
+    // On ne renvoie désormais QUE ce qui est mesuré réellement. Les régions
+    // sans donnée sont absentes du résultat : une liste vide est préférable
+    // à une liste mensongère.
+    const [claimAgg, byRegionRes] = await Promise.all([
+      query(`SELECT COALESCE(b.region, 'Non renseignée') AS region,
+                    COUNT(*)::int AS claims,
+                    COALESCE(SUM(c.reimbursed_amount), 0)::bigint AS reimbursed
+               FROM claims c
+               JOIN beneficiaries b ON b.id = c.beneficiary_id
+              GROUP BY 1
+              ORDER BY 1 ASC`),
+      query(`SELECT COALESCE(region, 'Non renseignée') AS region,
+                    COUNT(*)::int AS total,
+                    COUNT(*) FILTER (WHERE status = 'active')::int AS active,
+                    COUNT(DISTINCT mutuelle_name)::int AS mutuelles
+               FROM beneficiaries
+              GROUP BY 1
+              ORDER BY 1 ASC`)
+    ]);
 
-    regionsRes.rows.forEach(r => {
-      // Parse assures count from '1 240 000' -> 1240000
-      let baseAssures = parseInt(r.assures.replace(/\s/g, '')) || 0;
-      
-      // If region is Dakar, add our local database test users to it!
-      if (r.id === 'dakar') {
-        baseAssures += dbBenefTotal;
-      }
+    const claimsByRegionMap = new Map(
+      (claimAgg.rows || []).map(r => [r.region, { claims: r.claims || 0, reimbursed: r.reimbursed || 0 }])
+    );
 
-      // Calculate active
-      let activeCount = Math.round(baseAssures * (r.couv / 100));
-      if (r.id === 'dakar') {
-        activeCount = Math.round((baseAssures - dbBenefTotal) * (r.couv / 100)) + dbBenefActive;
-      }
+    const byRegion = (byRegionRes.rows || []).map(r => ({
+      region: r.region,
+      beneficiaries: r.total,
+      mutuelles: r.mutuelles,
+      active: r.active
+    }));
 
-      byRegion.push({
-        region: r.name,
-        beneficiaries: baseAssures,
-        mutuelles: r.mutuelles,
-        active: activeCount
-      });
-
-      // Claims: base claims proportional to assures
-      let baseClaims = Math.round(baseAssures * 0.05);
-      let baseReimbursed = Math.round(baseClaims * 15000);
-
-      if (r.id === 'dakar') {
-        baseClaims += dbClaimsCount;
-        baseReimbursed += dbClaimsReimbursed;
-      }
-
-      claimsByRegion.push({
-        region: r.name,
-        claims: baseClaims,
-        reimbursed: baseReimbursed
-      });
+    const claimsByRegion = (byRegionRes.rows || []).map(r => {
+      const agg = claimsByRegionMap.get(r.region) || { claims: 0, reimbursed: 0 };
+      return { region: r.region, claims: agg.claims, reimbursed: agg.reimbursed };
     });
 
     // 3. Taux de pénétration par commune (top 20)
@@ -441,29 +444,18 @@ router.get('/api/dashboard/regional-comparison', authenticateToken, requireRole(
        GROUP BY m.commune ORDER BY beneficiaries DESC LIMIT 20`
     );
 
-    const communeList = penetrationByCommune.rows.length > 0 ? penetrationByCommune.rows : [
-      { commune: 'Dakar Plateau', beneficiaries: 1240 + dbBenefTotal, mutuelles: 3 },
-      { commune: 'Médina', beneficiaries: 980, mutuelles: 2 },
-      { commune: 'Grand-Yoff', beneficiaries: 850, mutuelles: 2 },
-      { commune: 'Yoff', beneficiaries: 720, mutuelles: 2 },
-      { commune: 'Pikine', beneficiaries: 640, mutuelles: 2 },
-      { commune: 'Guédiawaye', beneficiaries: 590, mutuelles: 2 },
-      { commune: 'Rufisque', beneficiaries: 510, mutuelles: 1 },
-      { commune: 'Mbour', beneficiaries: 480, mutuelles: 2 },
-      { commune: 'Thiès Commune', beneficiaries: 420, mutuelles: 2 },
-      { commune: 'Saint-Louis', beneficiaries: 380, mutuelles: 1 }
-    ];
+    // AUCUNE liste de repli fictive : si la base ne contient aucune donnée,
+    // on renvoie un tableau VIDE. Injecter « 1 240 bénéficiaires à Dakar
+    // Plateau » quand la réalité en compte 3 fait croire à la gouvernance
+    // qu'un déploiement a eu lieu alors qu'il n'y a rien.
+    const communeList = penetrationByCommune.rows;
 
     // 4. Cotisations par statut
     const cotisationsByStatusRes = await query(
       `SELECT status, COUNT(*) AS count, COALESCE(SUM(amount),0) AS total
        FROM cotisations GROUP BY status`
     );
-    const cotisationsByStatus = cotisationsByStatusRes.rows.length > 0 ? cotisationsByStatusRes.rows : [
-      { status: 'paid', count: 124, total: 558000 },
-      { status: 'pending', count: 45, total: 202500 },
-      { status: 'overdue', count: 18, total: 81000 }
-    ];
+    const cotisationsByStatus = cotisationsByStatusRes.rows;
 
     // 5. Top 10 mutuelles par nombre d'adhérents (avec région)
     const topMutuellesRes = await query(
@@ -472,14 +464,9 @@ router.get('/api/dashboard/regional-comparison', authenticateToken, requireRole(
        GROUP BY m.name, m.region, m.commune
        ORDER BY beneficiaries DESC LIMIT 10`
     );
-    const topMutuelles = topMutuellesRes.rows.filter(m => parseInt(m.beneficiaries) > 0).length > 0 ? topMutuellesRes.rows : [
-      { name: 'Mutuelle de Dakar Plateau', region: 'Dakar', commune: 'Dakar Plateau', beneficiaries: 1240 + dbBenefTotal },
-      { name: 'Mutuelle de la Médina', region: 'Dakar', commune: 'Médina', beneficiaries: 980 },
-      { name: 'Mutuelle de Grand-Yoff', region: 'Dakar', commune: 'Grand-Yoff', beneficiaries: 850 },
-      { name: 'Mutuelle de Mbour', region: 'Thiès', commune: 'Mbour', beneficiaries: 480 },
-      { name: 'Mutuelle de Thiès', region: 'Thiès', commune: 'Thiès', beneficiaries: 420 },
-      { name: 'Mutuelle de Saint-Louis', region: 'Saint-Louis', commune: 'Saint-Louis', beneficiaries: 380 }
-    ];
+    // Idem : aucun classement inventé. La liste reste vide tant qu'aucun
+    // adhérent n'est rattaché à une mutuelle dans la base.
+    const topMutuelles = topMutuellesRes.rows.filter(m => parseInt(m.beneficiaries) > 0);
 
     res.json({
       byRegion,

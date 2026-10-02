@@ -135,9 +135,9 @@ router.get('/api/claims', authenticateToken, async (req, res) => {
       whereSql += ` AND beneficiary_id = $${paramIdx}`;
       params.push(req.user.id);
       paramIdx++;
-    } else if (req.user && req.user.role !== 'Super Admin' && req.user.department) {
-      whereSql += ` AND beneficiary_id IN (SELECT id FROM beneficiaries WHERE department = $${paramIdx})`;
-      params.push(req.user.department);
+    } else if (req.user && req.user.role !== 'Super Admin' && req.user.msdCode) {
+      whereSql += ` AND beneficiary_id IN (SELECT id FROM beneficiaries WHERE msd_code = $${paramIdx})`;
+      params.push(req.user.msdCode);
       paramIdx++;
     }
     if (status) {
@@ -240,9 +240,9 @@ router.get('/api/notifications', authenticateToken, async (req, res) => {
       whereSql += ` AND beneficiary_id = $${paramIdx}`;
       params.push(req.user.id);
       paramIdx++;
-    } else if (req.user && req.user.role !== 'Super Admin' && req.user.department) {
-      whereSql += ` AND beneficiary_id IN (SELECT id FROM beneficiaries WHERE department = $${paramIdx})`;
-      params.push(req.user.department);
+    } else if (req.user && req.user.role !== 'Super Admin' && req.user.msdCode) {
+      whereSql += ` AND beneficiary_id IN (SELECT id FROM beneficiaries WHERE msd_code = $${paramIdx})`;
+      params.push(req.user.msdCode);
       paramIdx++;
     }
     const countRes = await query(`SELECT COUNT(*) FROM notifications${whereSql}`, params);
@@ -364,59 +364,59 @@ router.get('/api/dashboard/stats', authenticateToken, requireRole('agent', 'admi
   try {
     const isAgent = ['agent', 'admin'].includes(req.user.role);
     const isSuperAdmin = req.user.role === 'Super Admin';
-    const dept = (isAgent && !isSuperAdmin && req.user.department) ? req.user.department : null;
+    const dept = (isAgent && !isSuperAdmin && req.user.msdCode) ? req.user.msdCode : null;
 
     let totalBeneficiaries, activeBeneficiaries, pendingBeneficiaries, totalMutuelles, totalDonations, totalCotisations;
     let claimsByStatus, claimsTotal, claimsAmount, byPackage, byMutuelle, byCommune, adhesionsTrend, complaintsByStatus;
 
     if (dept) {
       // Filtré par département
-      totalBeneficiaries = await query('SELECT COUNT(*) FROM beneficiaries WHERE department = $1', [dept]);
-      activeBeneficiaries = await query("SELECT COUNT(*) FROM beneficiaries WHERE status = 'active' AND department = $1", [dept]);
-      pendingBeneficiaries = await query("SELECT COUNT(*) FROM beneficiaries WHERE status = 'pending' AND department = $1", [dept]);
+      totalBeneficiaries = await query('SELECT COUNT(*) FROM beneficiaries WHERE msd_code = $1', [dept]);
+      activeBeneficiaries = await query("SELECT COUNT(*) FROM beneficiaries WHERE status = 'active' AND msd_code = $1", [dept]);
+      pendingBeneficiaries = await query("SELECT COUNT(*) FROM beneficiaries WHERE status = 'pending' AND msd_code = $1", [dept]);
       totalMutuelles = await query('SELECT COUNT(*) FROM mutuelles');
       totalDonations = await query('SELECT COALESCE(SUM(amount),0) AS sum FROM donations');
       totalCotisations = await query(
         `SELECT COALESCE(SUM(c.amount),0) AS sum 
          FROM cotisations c 
          JOIN beneficiaries b ON c.beneficiary_id = b.id 
-         WHERE c.status = 'paid' AND b.department = $1`,
+         WHERE c.status = 'paid' AND b.msd_code = $1`,
         [dept]
       );
 
       claimsByStatus = await query(
-        `SELECT c.status, COUNT(*) AS count FROM claims c JOIN beneficiaries b ON c.beneficiary_id = b.id WHERE b.department = $1 GROUP BY c.status ORDER BY count DESC`,
+        `SELECT c.status, COUNT(*) AS count FROM claims c JOIN beneficiaries b ON c.beneficiary_id = b.id WHERE b.msd_code = $1 GROUP BY c.status ORDER BY count DESC`,
         [dept]
       );
-      claimsTotal = await query('SELECT COUNT(*) FROM claims c JOIN beneficiaries b ON c.beneficiary_id = b.id WHERE b.department = $1', [dept]);
+      claimsTotal = await query('SELECT COUNT(*) FROM claims c JOIN beneficiaries b ON c.beneficiary_id = b.id WHERE b.msd_code = $1', [dept]);
       claimsAmount = await query(
-        "SELECT COALESCE(SUM(c.reimbursed_amount),0) AS sum FROM claims c JOIN beneficiaries b ON c.beneficiary_id = b.id WHERE c.status IN ('approved','paid') AND b.department = $1",
+        "SELECT COALESCE(SUM(c.reimbursed_amount),0) AS sum FROM claims c JOIN beneficiaries b ON c.beneficiary_id = b.id WHERE c.status IN ('approved','paid') AND b.msd_code = $1",
         [dept]
       );
 
       byPackage = await query(
-        `SELECT package_type, COUNT(*) AS count FROM beneficiaries WHERE department = $1 GROUP BY package_type ORDER BY count DESC`,
+        `SELECT package_type, COUNT(*) AS count FROM beneficiaries WHERE msd_code = $1 GROUP BY package_type ORDER BY count DESC`,
         [dept]
       );
       byMutuelle = await query(
-        `SELECT mutuelle_name, COUNT(*) AS count FROM beneficiaries WHERE department = $1 GROUP BY mutuelle_name ORDER BY count DESC LIMIT 10`,
+        `SELECT mutuelle_name, COUNT(*) AS count FROM beneficiaries WHERE msd_code = $1 GROUP BY mutuelle_name ORDER BY count DESC LIMIT 10`,
         [dept]
       );
       byCommune = await query(
         `SELECT m.commune, COUNT(b.id) AS count
          FROM beneficiaries b LEFT JOIN mutuelles m ON b.mutuelle_name = m.name
-         WHERE b.department = $1
+         WHERE b.msd_code = $1
          GROUP BY m.commune ORDER BY count DESC LIMIT 10`,
         [dept]
       );
       adhesionsTrend = await query(
         `SELECT DATE(created_at) AS date, COUNT(*) AS count
-         FROM beneficiaries WHERE created_at >= NOW() - INTERVAL '30 days' AND department = $1
+         FROM beneficiaries WHERE created_at >= NOW() - INTERVAL '30 days' AND msd_code = $1
          GROUP BY DATE(created_at) ORDER BY date ASC`,
         [dept]
       );
       complaintsByStatus = await query(
-        `SELECT c.status, COUNT(*) AS count FROM complaints c JOIN beneficiaries b ON c.phone = b.phone WHERE b.department = $1 GROUP BY c.status`,
+        `SELECT c.status, COUNT(*) AS count FROM complaints c JOIN beneficiaries b ON c.phone = b.phone WHERE b.msd_code = $1 GROUP BY c.status`,
         [dept]
       );
     } else {
@@ -462,9 +462,9 @@ router.get('/api/dashboard/stats', authenticateToken, requireRole('agent', 'admi
     const sponsoredParams = [];
     
     if (dept) {
-      sponsorsQuery += " AND department = $1";
+      sponsorsQuery += " AND msd_code = $1";
       sponsorsParams.push(dept);
-      sponsoredQuery += " AND department = $1";
+      sponsoredQuery += " AND msd_code = $1";
       sponsoredParams.push(dept);
     }
     
@@ -529,11 +529,29 @@ router.get('/api/dashboard/stats', authenticateToken, requireRole('agent', 'admi
         sponsoredCount,
         totalAmount: parrainageTotalAmount
       },
-      byPackage: byPackage.rows,
-      byMutuelle: byMutuelle.rows,
-      byCommune: byCommune.rows,
-      adhesionsTrend: adhesionsTrend.rows,
-      complaintsByStatus: complaintsByStatus.rows
+      // Ces agrégats sont des TABLEAUX d'objets. Ne jamais renvoyer les
+      // lignes SQL brutes : le frontend appelle .map() dessus, et un objet
+      // { package_type, count } non normalisé ferait planter React.
+      byPackage: byPackage.rows.map(r => ({
+        package: r.package_type || 'Non spécifié',
+        count: parseInt(r.count || 0, 10)
+      })),
+      byMutuelle: byMutuelle.rows.map(r => ({
+        name: r.mutuelle_name || 'Non spécifié',
+        count: parseInt(r.count || 0, 10)
+      })),
+      byCommune: byCommune.rows.map(r => ({
+        commune: r.commune || 'Non spécifié',
+        count: parseInt(r.count || 0, 10)
+      })),
+      adhesionsTrend: adhesionsTrend.rows.map(r => ({
+        date: r.date,
+        count: parseInt(r.count || 0, 10)
+      })),
+      complaintsByStatus: complaintsByStatus.rows.map(r => ({
+        status: r.status,
+        count: parseInt(r.count || 0, 10)
+      }))
     });
   } catch (err) {
     console.error('Erreur dashboard stats :', err);
@@ -600,12 +618,12 @@ router.get('/api/parrainages/sponsors', authenticateToken, requireRole('agent', 
   try {
     const isAgent = ['agent', 'admin'].includes(req.user.role);
     const isSuperAdmin = req.user.role === 'Super Admin';
-    const dept = (isAgent && !isSuperAdmin && req.user.department) ? req.user.department : null;
+    const dept = (isAgent && !isSuperAdmin && req.user.msdCode) ? req.user.msdCode : null;
 
     let sponsorsSql = "SELECT * FROM beneficiaries WHERE package_type = 'parrainage'";
     const params = [];
     if (dept) {
-      sponsorsSql += " AND department = $1";
+      sponsorsSql += " AND msd_code = $1";
       params.push(dept);
     }
     sponsorsSql += " ORDER BY id DESC";

@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import './index.css';
 import App from './App.jsx';
+import { isValidLanIp, rememberLanIp } from './utils/lanIp';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -15,17 +16,19 @@ const queryClient = new QueryClient({
   }
 });
 
-// Tentative silencieuse d'apprentissage IP du serveur backend pour QR Codes
+// Apprentissage silencieux de l'IP LAN du PC (QR codes des cartes CSU).
+// Tant que le backend n'a pas répondu, src/utils/lanIp.js interroge
+// lui-même /api/lan-ip — cette requête est donc un simple préchauffage.
 try {
-  const hostname = window.location.hostname;
-  const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
-  const apiBase = isLocal ? `${window.API_BASE_URL}` : `http://${hostname}:5000`;
+  const apiBase = (typeof window !== 'undefined' && window.API_BASE_URL) || '';
 
-  fetch(`${apiBase}/api/server-ip`)
+  fetch(`${apiBase}/api/lan-ip`)
     .then(res => (res && res.ok) ? res.json() : null)
     .then(data => {
-      if (data && data.ip) {
-        localStorage.setItem('cmu-server-ip', data.ip);
+      // On n'écrit que si le backend renvoie une vraie adresse : y mettre
+      // 'localhost' ou null produirait un QR illisible sur le téléphone.
+      if (data && isValidLanIp(data.ip)) {
+        rememberLanIp(data.ip);
       }
     })
     .catch(() => {});

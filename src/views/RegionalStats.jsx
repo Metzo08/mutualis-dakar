@@ -3,85 +3,101 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   Legend, PieChart, Pie, Cell, AreaChart, Area 
 } from 'recharts';
+import { getStoredMembers } from '../utils/beneficiaryStore';
+import { DEPARTMENTAL_UNIONS } from '../utils/cardPrograms';
 
-// 1. BASE DE DONNÉES RÉGIONALE DÉTAILLÉE DU SÉNÉGAL (14 RÉGIONS + 5 DÉPARTEMENTS DE DAKAR)
-const FULL_REGIONS_DATA = [
-  // DAKAR (DÉTAILLÉ EN SES 5 DÉPARTEMENTS QUAND DAKAR EST SÉLECTIONNÉ)
-  { id: 'dakar', region: 'Dakar', zone: 'dakar', departement: 'Dakar Centre', beneficiaries: 380000, mutuelles: 110, active: 355000, claims: 24500, reimbursed: 365000000, rate: 93.4 },
-  { id: 'pikine', region: 'Dakar', zone: 'dakar', departement: 'Pikine', beneficiaries: 320000, mutuelles: 85, active: 288000, claims: 16800, reimbursed: 242000000, rate: 90.0 },
-  { id: 'guediawaye', region: 'Dakar', zone: 'dakar', departement: 'Guédiawaye', beneficiaries: 210000, mutuelles: 60, active: 189000, claims: 11200, reimbursed: 165000000, rate: 90.0 },
-  { id: 'rufisque', region: 'Dakar', zone: 'dakar', departement: 'Rufisque', beneficiaries: 195000, mutuelles: 55, active: 172000, claims: 9800, reimbursed: 138000000, rate: 88.2 },
-  { id: 'keur-massar', region: 'Dakar', zone: 'dakar', departement: 'Keur Massar', beneficiaries: 135000, mutuelles: 40, active: 116000, claims: 6100, reimbursed: 75000000, rate: 85.9 },
+/**
+ * ═══════════════════════════════════════════════════════════════
+ *  Statistiques RÉGIONALES — données réelles uniquement
+ * ═══════════════════════════════════════════════════════════════
+ *  Les anciens jeux de données annonçaient plus de 5 millions
+ *  d'assurés, 20 millions de FCFA remboursés et 140 mutuelles par
+ *  région : aucun de ces chiffres ne provenait de la base. Ils
+ *  sont remplacés par une projection du registre RÉEL des
+ *  bénéficiaires, agrégé par MSD (chaque MSD connaît sa région).
+ *
+ *  Aucune région sans fiches réelles n'apparaît : un graphique
+ *  régional rempli de projections inventées conduit directement à
+ *  une erreur d'implantation des mutuelles.
+ */
+const buildRegionalData = (members) => {
+  const byUnion = new Map();
+  members.forEach((m) => {
+    const union = DEPARTMENTAL_UNIONS.find((u) => u.id === m.departmentUnionId);
+    if (!union) return;
+    const key = union.id;
+    if (!byUnion.has(key)) {
+      byUnion.set(key, {
+        id: union.id,
+        region: union.region,
+        zone: union.region === 'Dakar' ? 'dakar' : 'national',
+        departement: union.name.replace('Mutuelle de Santé Départementale de ', ''),
+        beneficiaries: 0,
+        active: 0,
+        mutuelles: 1
+      });
+    }
+    const entry = byUnion.get(key);
+    entry.beneficiaries += 1;
+    if (['active', 'actif'].includes(String(m.status).toLowerCase())) entry.active += 1;
+  });
 
-  // CENTRE-OUEST (THIÈS & DIOURBEL)
-  { id: 'thies', region: 'Thiès', zone: 'centre-ouest', departement: 'Thiès / Mbour', beneficiaries: 820000, mutuelles: 140, active: 710000, claims: 42100, reimbursed: 540000000, rate: 86.5 },
-  { id: 'diourbel', region: 'Diourbel', zone: 'centre-ouest', departement: 'Diourbel / Touba', beneficiaries: 650000, mutuelles: 95, active: 540000, claims: 31500, reimbursed: 395000000, rate: 83.1 },
-
-  // ZONE NORD
-  { id: 'saint-louis', region: 'Saint-Louis', zone: 'nord', departement: 'Saint-Louis / Podor', beneficiaries: 510000, mutuelles: 80, active: 430000, claims: 26800, reimbursed: 310000000, rate: 84.3 },
-  { id: 'louga', region: 'Louga', zone: 'nord', departement: 'Louga / Linguère', beneficiaries: 340000, mutuelles: 50, active: 270000, claims: 15100, reimbursed: 175000000, rate: 79.4 },
-  { id: 'matam', region: 'Matam', zone: 'nord', departement: 'Matam / Kanel', beneficiaries: 240000, mutuelles: 38, active: 190000, claims: 9800, reimbursed: 115000000, rate: 79.1 },
-
-  // ZONE CENTRE
-  { id: 'kaolack', region: 'Kaolack', zone: 'centre', departement: 'Kaolack / Nioro', beneficiaries: 480000, mutuelles: 75, active: 390000, claims: 23400, reimbursed: 275000000, rate: 81.2 },
-  { id: 'fatick', region: 'Fatick', zone: 'centre', departement: 'Fatick / Gossas', beneficiaries: 390000, mutuelles: 60, active: 320000, claims: 18900, reimbursed: 215000000, rate: 82.0 },
-  { id: 'kaffrine', region: 'Kaffrine', zone: 'centre', departement: 'Kaffrine / Koungheul', beneficiaries: 220000, mutuelles: 35, active: 175000, claims: 8900, reimbursed: 98000000, rate: 79.5 },
-
-  // ZONE SUD & EST
-  { id: 'ziguinchor', region: 'Ziguinchor', zone: 'sud', departement: 'Ziguinchor / Oussouye', beneficiaries: 360000, mutuelles: 55, active: 290000, claims: 16200, reimbursed: 190000000, rate: 80.5 },
-  { id: 'tambacounda', region: 'Tambacounda', zone: 'est', departement: 'Tambacounda / Bakel', beneficiaries: 280000, mutuelles: 45, active: 220000, claims: 12400, reimbursed: 145000000, rate: 78.5 },
-  { id: 'kolda', region: 'Kolda', zone: 'sud', departement: 'Kolda / Vélingara', beneficiaries: 260000, mutuelles: 40, active: 200000, claims: 11200, reimbursed: 130000000, rate: 76.9 },
-  { id: 'sedhiou', region: 'Sédhiou', zone: 'sud', departement: 'Sédhiou / Goudomp', beneficiaries: 190000, mutuelles: 30, active: 150000, claims: 7400, reimbursed: 82000000, rate: 78.9 },
-  { id: 'kedougou', region: 'Kédougou', zone: 'est', departement: 'Kédougou / Saraya', beneficiaries: 130000, mutuelles: 22, active: 105000, claims: 5200, reimbursed: 58000000, rate: 80.7 }
-];
-
-const FULL_MUTUELLES_DATA = [
-  { name: 'MSD Dakar Plateau', region: 'Dakar', zone: 'dakar', departement: 'Dakar Centre', beneficiaries: 12450, claims: 3420, reimbursed: 52000000 },
-  { name: 'MSD Grand-Dakar', region: 'Dakar', zone: 'dakar', departement: 'Dakar Centre', beneficiaries: 10820, claims: 2890, reimbursed: 44000000 },
-  { name: 'MSD Guédiawaye Centre', region: 'Dakar', zone: 'dakar', departement: 'Guédiawaye', beneficiaries: 9430, claims: 2450, reimbursed: 37500000 },
-  { name: 'MSD Pikine Nord', region: 'Dakar', zone: 'dakar', departement: 'Pikine', beneficiaries: 8760, claims: 2180, reimbursed: 33000000 },
-  { name: 'MSD Rufisque Centre', region: 'Dakar', zone: 'dakar', departement: 'Rufisque', beneficiaries: 7910, claims: 1950, reimbursed: 29800000 },
-  { name: 'MSD Médina', region: 'Dakar', zone: 'dakar', departement: 'Dakar Centre', beneficiaries: 7340, claims: 1820, reimbursed: 27500000 },
-  { name: 'MSD Keur Massar Sud', region: 'Dakar', zone: 'dakar', departement: 'Keur Massar', beneficiaries: 6920, claims: 1710, reimbursed: 25400000 },
-  { name: 'MSD Thiès Urbaine', region: 'Thiès', zone: 'centre-ouest', departement: 'Thiès', beneficiaries: 6890, claims: 1650, reimbursed: 24500000 },
-  { name: 'MSD Mbour Littoral', region: 'Thiès', zone: 'centre-ouest', departement: 'Mbour', beneficiaries: 6210, claims: 1480, reimbursed: 22000000 },
-  { name: 'MSD Saint-Louis Nord', region: 'Saint-Louis', zone: 'nord', departement: 'Saint-Louis', beneficiaries: 5870, claims: 1340, reimbursed: 19800000 },
-  { name: 'MSD Touba Mosquée', region: 'Diourbel', zone: 'centre-ouest', departement: 'Diourbel', beneficiaries: 5420, claims: 1250, reimbursed: 18200000 },
-  { name: 'MSD Kaolack Centre', region: 'Kaolack', zone: 'centre', departement: 'Kaolack', beneficiaries: 4950, claims: 1100, reimbursed: 16400000 },
-  { name: 'MSD Ziguinchor Ville', region: 'Ziguinchor', zone: 'sud', departement: 'Ziguinchor', beneficiaries: 4520, claims: 980, reimbursed: 14500000 },
-  { name: 'MSD Louga Centre', region: 'Louga', zone: 'nord', departement: 'Louga', beneficiaries: 4120, claims: 890, reimbursed: 13200000 },
-  { name: 'MSD Tambacounda Ouest', region: 'Tambacounda', zone: 'est', departement: 'Tambacounda', beneficiaries: 3840, claims: 790, reimbursed: 11600000 }
-];
-
-const FULL_COMMUNES_DATA = [
-  { commune: 'Dakar Plateau', region: 'Dakar', zone: 'dakar', departement: 'Dakar Centre', beneficiaries: 12450, mutuelles: 3, taux: 94.2 },
-  { commune: 'Médina', region: 'Dakar', zone: 'dakar', departement: 'Dakar Centre', beneficiaries: 9800, mutuelles: 2, taux: 91.5 },
-  { commune: 'Grand-Yoff', region: 'Dakar', zone: 'dakar', departement: 'Dakar Centre', beneficiaries: 8500, mutuelles: 2, taux: 88.7 },
-  { commune: 'Pikine Est', region: 'Dakar', zone: 'dakar', departement: 'Pikine', beneficiaries: 7600, mutuelles: 2, taux: 86.4 },
-  { commune: 'Guédiawaye', region: 'Dakar', zone: 'dakar', departement: 'Guédiawaye', beneficiaries: 6900, mutuelles: 2, taux: 87.2 },
-  { commune: 'Rufisque Ouest', region: 'Dakar', zone: 'dakar', departement: 'Rufisque', beneficiaries: 6200, mutuelles: 2, taux: 85.0 },
-  { commune: 'Yoff', region: 'Dakar', zone: 'dakar', departement: 'Dakar Centre', beneficiaries: 5800, mutuelles: 2, taux: 89.3 },
-  { commune: 'Keur Massar Sud', region: 'Dakar', zone: 'dakar', departement: 'Keur Massar', beneficiaries: 5300, mutuelles: 2, taux: 84.1 },
-  { commune: 'Parcelles Assainies', region: 'Dakar', zone: 'dakar', departement: 'Dakar Centre', beneficiaries: 4900, mutuelles: 2, taux: 88.0 },
-  { commune: 'Mbour', region: 'Thiès', zone: 'centre-ouest', departement: 'Mbour', beneficiaries: 4400, mutuelles: 2, taux: 82.5 },
-  { commune: 'Thiès Nord', region: 'Thiès', zone: 'centre-ouest', departement: 'Thiès', beneficiaries: 4100, mutuelles: 2, taux: 83.9 },
-  { commune: 'Saint-Louis', region: 'Saint-Louis', zone: 'nord', departement: 'Saint-Louis', beneficiaries: 3800, mutuelles: 2, taux: 84.8 },
-  { commune: 'Touba', region: 'Diourbel', zone: 'centre-ouest', departement: 'Diourbel', beneficiaries: 3500, mutuelles: 2, taux: 81.2 },
-  { commune: 'Kaolack', region: 'Kaolack', zone: 'centre', departement: 'Kaolack', beneficiaries: 3200, mutuelles: 2, taux: 80.4 },
-  { commune: 'Ziguinchor', region: 'Ziguinchor', zone: 'sud', departement: 'Ziguinchor', beneficiaries: 2900, mutuelles: 2, taux: 81.0 },
-  { commune: 'Louga', region: 'Louga', zone: 'nord', departement: 'Louga', beneficiaries: 2600, mutuelles: 2, taux: 79.5 },
-  { commune: 'Tambacounda', region: 'Tambacounda', zone: 'est', departement: 'Tambacounda', beneficiaries: 2400, mutuelles: 2, taux: 78.0 },
-  { commune: 'Kolda', region: 'Kolda', zone: 'sud', departement: 'Kolda', beneficiaries: 2200, mutuelles: 2, taux: 77.5 }
-];
-
-const PERIOD_MULTIPLIERS = {
-  '2026': { benef: 1.0, claims: 1.0, cotisPaidRate: 0.76, label: 'Année 2026 (En cours)' },
-  '2025': { benef: 0.88, claims: 0.84, cotisPaidRate: 0.72, label: 'Année 2025' },
-  'Q1_2026': { benef: 0.28, claims: 0.25, cotisPaidRate: 0.82, label: '1er Trimestre 2026' },
-  'Q2_2026': { benef: 0.31, claims: 0.28, cotisPaidRate: 0.79, label: '2e Trimestre 2026' },
-  'MONTH': { benef: 0.09, claims: 0.085, cotisPaidRate: 0.85, label: 'Mois en cours (Août 2026)' },
-  'ALL': { benef: 1.25, claims: 1.35, cotisPaidRate: 0.74, label: 'Historique Global (Cumul)' }
+  const regions = Array.from(byUnion.values());
+  // Taux de couverture = part d'assurés actifs, calculé et non supposé.
+  regions.forEach((r) => {
+    r.rate = r.beneficiaries > 0 ? Number(((r.active / r.beneficiaries) * 100).toFixed(1)) : 0;
+  });
+  return regions;
 };
+
+const buildMutuellesData = (members) => {
+  const byUnion = new Map();
+  members.forEach((m) => {
+    const union = DEPARTMENTAL_UNIONS.find((u) => u.id === m.departmentUnionId);
+    if (!union) return;
+    if (!byUnion.has(union.id)) {
+      byUnion.set(union.id, {
+        name: union.name,
+        region: union.region,
+        zone: union.region === 'Dakar' ? 'dakar' : 'national',
+        departement: union.name.replace('Mutuelle de Santé Départementale de ', ''),
+        beneficiaries: 0,
+        claims: 0,
+        reimbursed: 0
+      });
+    }
+    byUnion.get(union.id).beneficiaries += 1;
+  });
+  return Array.from(byUnion.values());
+};
+
+const buildCommunesData = (members) => {
+  const byCommune = new Map();
+  members.forEach((m) => {
+    const commune = (m.commune || '').trim();
+    if (!commune) return;
+    if (!byCommune.has(commune)) {
+      byCommune.set(commune, {
+        commune,
+        region: (DEPARTMENTAL_UNIONS.find((u) => u.id === m.departmentUnionId) || {}).region || '—',
+        zone: 'national',
+        departement: '—',
+        beneficiaries: 0,
+        mutuelles: 1,
+        taux: 0
+      });
+    }
+    byCommune.get(commune).beneficiaries += 1;
+  });
+  const list = Array.from(byCommune.values());
+  list.forEach((c) => {
+    c.taux = c.beneficiaries > 0 ? 100 : 0;
+  });
+  return list;
+};
+
+
+
 
 export default function RegionalStats({ lang }) {
   const [selectedPeriod, setSelectedPeriod] = useState('2026');
@@ -92,6 +108,42 @@ export default function RegionalStats({ lang }) {
   const [selectedRegionDetail, setSelectedRegionDetail] = useState(null);
   const [localDbCount, setLocalDbCount] = useState(0);
   const [loading, setLoading] = useState(false);
+
+  // Agrégats réels, dérivés du registre des bénéficiaires (et non de
+  // projections nationales inventées).
+  const [realMembers, setRealMembers] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    // Les statistiques doivent reposer sur le registre RÉEL de la base, pas
+    // sur un extrait figé embarqué dans le bundle : sans cette synchronisation
+    // les graphiques ne comptaient qu'une quarantaine de fiches.
+    import('../utils/beneficiarySync')
+      .then(({ syncBeneficiariesFromServer, getLiveMembers }) =>
+        syncBeneficiariesFromServer().then(() => getLiveMembers())
+      )
+      .then((synced) => {
+        if (!cancelled) setRealMembers(synced);
+      })
+      .catch(() => {
+        if (!cancelled) setRealMembers(getStoredMembers());
+      });
+
+    // Le store peut changer ensuite (import, suppression) : on se recharge.
+    const load = () => {
+      try {
+        setRealMembers(getStoredMembers());
+      } catch (e) {
+        console.warn('Lecture du registre des bénéficiaires :', e);
+        setRealMembers([]);
+      }
+    };
+    window.addEventListener('unamusc_store_change', load);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('unamusc_store_change', load);
+    };
+  }, []);
 
   // Charger les adhérents réels enregistrés localement
   useEffect(() => {
@@ -110,6 +162,19 @@ export default function RegionalStats({ lang }) {
     } catch (e) {
       console.warn("Lecture locale des membres :", e);
     }
+  }, []);
+
+  const FULL_REGIONS_DATA = useMemo(() => buildRegionalData(realMembers), [realMembers]);
+  const FULL_MUTUELLES_DATA = useMemo(() => buildMutuellesData(realMembers), [realMembers]);
+  const FULL_COMMUNES_DATA = useMemo(() => buildCommunesData(realMembers), [realMembers]);
+  // Périodes : plus aucun multiplicateur artifiel (0,88 / 0,72 / 1,25…).
+  const PERIOD_MULTIPLIERS = useMemo(() => {
+    const now = new Date();
+    return {
+      '2026': { benef: 1.0, claims: 1.0, cotisPaidRate: 1.0, label: 'Données réelles' },
+      ALL: { benef: 1.0, claims: 1.0, cotisPaidRate: 1.0, label: 'Données réelles' },
+      [String(now.getFullYear())]: { benef: 1.0, claims: 1.0, cotisPaidRate: 1.0, label: `Année ${now.getFullYear()}` }
+    };
   }, []);
 
   const t = lang === 'fr' ? {
@@ -169,23 +234,12 @@ export default function RegionalStats({ lang }) {
   const dynamicData = useMemo(() => {
     const mult = PERIOD_MULTIPLIERS[selectedPeriod] || PERIOD_MULTIPLIERS['2026'];
 
-    // If ALL is selected: consolidate Dakar's 5 departments into 1 "Dakar" entry for national chart
+    // Vue nationale : les entrées Dakar sont déjà agrégées par MSD dans
+    // FULL_REGIONS_DATA, il n'y a donc plus rien à consolider ni à gonfler.
+    // (Anciennement : « + localDbCount * 10 » et un taux figé à 90,3 %.)
     let rawRegions = [];
     if (selectedZone === 'ALL') {
-      const dakarDepts = FULL_REGIONS_DATA.filter(r => r.region === 'Dakar');
-      const dakarConsolidated = {
-        id: 'dakar',
-        region: 'Dakar',
-        zone: 'dakar',
-        beneficiaries: dakarDepts.reduce((sum, d) => sum + d.beneficiaries, 0) + (localDbCount * 10),
-        active: dakarDepts.reduce((sum, d) => sum + d.active, 0) + localDbCount,
-        mutuelles: dakarDepts.reduce((sum, d) => sum + d.mutuelles, 0),
-        claims: dakarDepts.reduce((sum, d) => sum + d.claims, 0),
-        reimbursed: dakarDepts.reduce((sum, d) => sum + d.reimbursed, 0),
-        rate: 90.3
-      };
-      const otherRegions = FULL_REGIONS_DATA.filter(r => r.region !== 'Dakar');
-      rawRegions = [dakarConsolidated, ...otherRegions];
+      rawRegions = FULL_REGIONS_DATA.map((r) => ({ ...r }));
     } else if (selectedZone === 'dakar') {
       // Zoom into Dakar's 5 departments
       rawRegions = FULL_REGIONS_DATA.filter(r => r.zone === 'dakar').map(d => ({
@@ -251,18 +305,19 @@ export default function RegionalStats({ lang }) {
     const totalMutuelles = calculatedRegions.reduce((sum, r) => sum + r.mutuelles, 0);
     const avgRate = totalBenef > 0 ? ((totalActive / totalBenef) * 100).toFixed(1) : 0;
 
-    // Cotisations by status dynamically calculated
-    const totalCotisCount = Math.round(totalBenef * 0.002);
-    const totalCotisAmount = Math.round(totalReimbursed * 0.35);
-    const paidRate = mult.cotisPaidRate || 0.76;
-    const pendingRate = 0.17;
-    const overdueRate = 1 - (paidRate + pendingRate);
-
-    const cotisationsByStatus = [
-      { name: 'Payées', count: Math.round(totalCotisCount * paidRate), total: Math.round(totalCotisAmount * paidRate), color: '#10b981' },
-      { name: 'En attente', count: Math.round(totalCotisCount * pendingRate), total: Math.round(totalCotisAmount * pendingRate), color: '#3b82f6' },
-      { name: 'En retard', count: Math.round(totalCotisCount * overdueRate), total: Math.round(totalCotisAmount * overdueRate), color: '#f59e0b' }
-    ];
+    // ────────────────────────────────────────────────────────────────────
+    //  Cotisations par statut : AUCUNE DONNÉE SOUCHE N'EST CONNECTÉE.
+    //  Ces trois barres étaient produites par des ratios purement
+    //  arbitraires : nombre de cotisations = 0,2 % des assurés, montant
+    //  total = 35 % des remboursements, 76 % payées / 17 % en attente.
+    //  Aucun de ces chiffres ne correspondait à une ligne de la table
+    //  « cotisations » : un graphique financier national entièrement
+    //  fabriqué. Le registre des bénéficiaires, lui, est réel — mais il
+    //  ne dit rien des règlements. On affiche donc un état vide explicite
+    //  plutôt qu'un graphique qui « a l'air juste ».
+    // ────────────────────────────────────────────────────────────────────
+    const cotisationsByStatus = [];
+    const cotisationsDataAvailable = false;
 
     // Scope label for 4th KPI
     let scopeLabel = '14 Régions';
@@ -277,6 +332,7 @@ export default function RegionalStats({ lang }) {
       mutuelles: calculatedMutuelles,
       communes: calculatedCommunes,
       cotisations: cotisationsByStatus,
+      cotisationsDataAvailable,
       kpis: {
         totalBenef,
         totalActive,
@@ -701,17 +757,17 @@ export default function RegionalStats({ lang }) {
           {/* Graphique 4 : Cotisations par statut */}
           <div className="card p-4 rounded-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '24px' }}>
             <h3 style={{ fontSize: '1.05rem', fontWeight: '800', marginBottom: '1rem' }}>💰 {t.cotisations}</h3>
-            {dynamicData.cotisations.length > 0 ? (
+            {dynamicData.cotisationsDataAvailable && dynamicData.cotisations.length > 0 ? (
               <ResponsiveContainer width="100%" height={380}>
                 <PieChart>
-                  <Pie 
-                    data={dynamicData.cotisations} 
-                    dataKey="count" 
-                    nameKey="name" 
-                    cx="50%" 
-                    cy="50%" 
-                    innerRadius={65} 
-                    outerRadius={110} 
+                  <Pie
+                    data={dynamicData.cotisations}
+                    dataKey="count"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={65}
+                    outerRadius={110}
                     paddingAngle={4}
                     label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                   >
@@ -723,7 +779,23 @@ export default function RegionalStats({ lang }) {
                   <Legend wrapperStyle={{ fontSize: '0.8rem', paddingTop: '10px' }} />
                 </PieChart>
               </ResponsiveContainer>
-            ) : <Empty />}
+            ) : (
+              <div
+                className="text-center py-5 px-3"
+                style={{ border: '1.5px dashed var(--border-color)', borderRadius: '18px', color: 'var(--text-sub)' }}
+              >
+                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📭</div>
+                <div style={{ fontSize: '0.9rem', fontWeight: '700', marginBottom: '0.35rem' }}>
+                  Aucune donnée de cotisation disponible
+                </div>
+                <div style={{ fontSize: '0.8rem', lineHeight: 1.55 }}>
+                  Cette répartition n'est pas affichée car aucun relevé de cotisations
+                  n'est connecté à cette vue. Les graphiques voisins (effectifs par
+                  région, par commune) restent, eux, calculés sur le registre réel
+                  des assurés.
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

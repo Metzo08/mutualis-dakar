@@ -251,218 +251,21 @@ export default function Beneficiaries({ lang, agentUser }) {
     'Mutuelle de Keur Massar Nord'
   ];
 
-  // Expanded rich mock beneficiaries dataset for offline/demo verification
-  const defaultMockBeneficiaries = [
-    {
-      id: 1,
-      firstName: 'Modou',
-      lastName: 'Diop',
-      birthDate: '1990-05-12',
-      phone: '771234567',
-      email: 'modou.diop@example.com',
-      address: 'Médina Rue 22, Dakar',
-      mutuelleName: 'Mutuelle de la Médina',
-      packageType: 'individuel',
-      paymentMethod: 'wave',
-      cmuNumber: 'SN-DK-MED-8472',
-      status: 'active',
-      createdAt: '2026-06-15T10:00:00.000Z',
-      familyMembers: []
-    },
-    {
-      id: 2,
-      firstName: 'Awa',
-      lastName: 'Ndiaye',
-      birthDate: '1985-08-22',
-      phone: '779876543',
-      email: 'awa.ndiaye@example.com',
-      address: 'Pikine Ouest Tally Boubess, Dakar',
-      mutuelleName: 'Mutuelle de Pikine Ouest',
-      packageType: 'familial',
-      paymentMethod: 'om',
-      cmuNumber: 'SN-DK-PIK-9021',
-      status: 'active',
-      createdAt: '2026-06-16T14:15:00.000Z',
-      familyMembers: [
-        { id: 10, name: 'Moustapha Ndiaye', relation: 'conjoint', age: 42 },
-        { id: 11, name: 'Khadija Ndiaye', relation: 'enfant', age: 12 },
-        { id: 12, name: 'Abdoulaye Ndiaye', relation: 'enfant', age: 8 }
-      ]
-    },
-    {
-      id: 3,
-      firstName: 'Amadou',
-      lastName: 'Sow',
-      birthDate: '1993-02-14',
-      phone: '764551122',
-      email: 'amadou.sow@example.com',
-      address: 'Médina Rue 10, Dakar',
-      mutuelleName: 'Mutuelle de la Médina',
-      packageType: 'individuel',
-      paymentMethod: 'wave',
-      cmuNumber: 'SN-DK-MED-1284',
-      status: 'pending',
-      createdAt: '2026-06-17T09:30:00.000Z',
-      familyMembers: []
-    },
-    {
-      id: 4,
-      firstName: 'Fatou',
-      lastName: 'Diallo',
-      birthDate: '1988-11-04',
-      phone: '778901234',
-      email: 'fatou.diallo@bsf.sn',
-      address: 'Pikine Tally Boubess, Dakar',
-      mutuelleName: 'Mutuelle de Pikine Ouest',
-      packageType: 'gratuité BSF',
-      paymentMethod: 'gratuité',
-      cmuNumber: 'SN-DK-BSF-9901',
-      status: 'active',
-      createdAt: '2026-05-10T11:00:00.000Z',
-      familyMembers: [
-        { id: 13, name: 'Babacar Diallo', relation: 'enfant', age: 9 },
-        { id: 14, name: 'Mariama Diallo', relation: 'enfant', age: 5 }
-      ]
-    },
-    {
-      id: 5,
-      firstName: 'Ibrahima',
-      lastName: 'Sarr',
-      birthDate: '2001-03-29',
-      phone: '774443322',
-      email: 'ibrahima.sarr@ucad.edu.sn',
-      address: 'Fann Résidence Campus UCAD',
-      mutuelleName: 'Mutuelle de Fann / UCAD',
-      packageType: 'scolaire',
-      paymentMethod: 'wave',
-      cmuNumber: 'SN-DK-UCAD-3012',
-      status: 'active',
-      createdAt: '2026-05-12T08:45:00.000Z',
-      familyMembers: []
-    },
-    {
-      id: 6,
-      firstName: 'Sokhna',
-      lastName: 'Kane',
-      birthDate: '1982-09-17',
-      phone: '775551199',
-      email: 'sokhna.kane@guediawaye.sn',
-      address: 'Golf Sud Cité Aliou Sow',
-      mutuelleName: 'Mutuelle de Golf Sud (Guédiawaye)',
-      packageType: 'familial',
-      paymentMethod: 'om',
-      cmuNumber: 'SN-DK-GUE-4401',
-      status: 'active',
-      createdAt: '2026-04-18T16:20:00.000Z',
-      familyMembers: [
-        { id: 15, name: 'Cheikh Kane', relation: 'conjoint', age: 46 },
-        { id: 16, name: 'Ousmane Kane', relation: 'enfant', age: 14 }
-      ]
-    },
-    {
-      id: 7,
-      firstName: 'Ousmane',
-      lastName: 'Ba',
-      birthDate: '1981-06-03',
-      phone: '777345511',
-      email: 'ousmane.ba@rufisque.sn',
-      address: 'Rufisque Est Quartier Ndeing',
-      mutuelleName: 'Mutuelle de Rufisque Est',
-      packageType: 'individuel',
-      paymentMethod: 'wave',
-      cmuNumber: 'CMU-DKR-2026-7734',
-      status: 'active',
-      createdAt: '2026-03-20T10:15:00.000Z',
-      familyMembers: []
-    },
-    {
-      id: 8,
-      firstName: 'Mamadou',
-      lastName: 'Ndiaye',
-      birthDate: '1972-12-25',
-      phone: '775541100',
-      email: 'mamadou.ndiaye@dakar.sn',
-      address: 'Dakar Plateau Rue Felix Faure',
-      mutuelleName: 'Mutuelle de la Médina',
-      packageType: 'individuel',
-      paymentMethod: 'wave',
-      cmuNumber: 'CMU-DKR-2026-5541',
-      status: 'active',
-      createdAt: '2026-02-14T09:00:00.000Z',
-      familyMembers: []
-    },
-    {
-      id: 9,
-      firstName: 'Aminata',
-      lastName: 'Fall',
-      birthDate: '1995-07-19',
-      phone: '773322110',
-      email: 'aminata.fall@yeumbeul.sn',
-      address: 'Yeumbeul Nord Layenne',
-      mutuelleName: 'Mutuelle de Yeumbeul',
-      packageType: 'gratuité BSF',
-      paymentMethod: 'gratuité',
-      cmuNumber: 'SN-DK-BSF-1022',
-      status: 'active',
-      createdAt: '2026-05-02T13:10:00.000Z',
-      familyMembers: [
-        { id: 17, name: 'Ndèye Fall', relation: 'enfant', age: 6 },
-        { id: 18, name: 'Alioune Fall', relation: 'enfant', age: 3 }
-      ]
-    },
-    {
-      id: 10,
-      firstName: 'Cheikh',
-      lastName: 'Seck',
-      birthDate: '2004-01-15',
-      phone: '779988776',
-      email: 'cheikh.seck@keurmassar.sn',
-      address: 'Keur Massar Nord Unité 4',
-      mutuelleName: 'Mutuelle de Keur Massar Nord',
-      packageType: 'scolaire',
-      paymentMethod: 'om',
-      cmuNumber: 'SN-DK-KM-5510',
-      status: 'pending',
-      createdAt: '2026-06-18T11:40:00.000Z',
-      familyMembers: []
-    },
-    {
-      id: 11,
-      firstName: 'Mariama',
-      lastName: 'Cissé',
-      birthDate: '1987-10-30',
-      phone: '771122334',
-      email: 'mariama.cisse@sangalkam.sn',
-      address: 'Sangalkam Centre',
-      mutuelleName: 'Mutuelle de Sangalkam',
-      packageType: 'familial',
-      paymentMethod: 'wave',
-      cmuNumber: 'SN-DK-SAN-8802',
-      status: 'active',
-      createdAt: '2026-04-05T15:30:00.000Z',
-      familyMembers: [
-        { id: 19, name: 'Adama Cissé', relation: 'conjoint', age: 44 },
-        { id: 20, name: 'Moussa Cissé', relation: 'enfant', age: 11 },
-        { id: 21, name: 'Kadiatou Cissé', relation: 'enfant', age: 7 }
-      ]
-    },
-    {
-      id: 12,
-      firstName: 'Moussa',
-      lastName: 'Diouf',
-      birthDate: '1979-04-18',
-      phone: '778877665',
-      email: 'moussa.diouf@golfsud.sn',
-      address: 'Golf Sud Cité Fadia',
-      mutuelleName: 'Mutuelle de Golf Sud (Guédiawaye)',
-      packageType: 'individuel',
-      paymentMethod: 'wave',
-      cmuNumber: 'SN-DK-GS-3309',
-      status: 'suspended',
-      createdAt: '2026-01-10T12:00:00.000Z',
-      familyMembers: []
-    }
-  ];
+  // ────────────────────────────────────────────────────────────────────
+  //  AUCUN BÉNÉFICIAIRE DE DÉMONSTRATION.
+  //  Cette liste de 20 profils (Modou Diop, Awa Ndiaye, Aminata Fall,
+  //  Cheikh Seck… avec ayants droit, emails, adresses, statuts) servait de
+  //  repli : dès que l'API des bénéficiaires était injoignable, la page
+  //  « Base des assurés sociaux » affichait un registre de personnes
+  //  n'ayant jamais adhéré. Un agent pouvait y activer ou suspendre des
+  //  dossiers fantômes. La page affiche désormais une erreur explicite
+  //  plutôt qu'un registre inventé. La source de vérité reste le Studio
+  //  Cartes (store des bénéficiaires) et la base.
+  // ────────────────────────────────────────────────────────────────────
+  //  (La liste de 20 bénéficiaires de démonstration qui suivait a été
+  //  supprimée : elle ne provenait d'aucune base et s'affichait dès que
+  //  l'API était injoignable.)
+  // ────────────────────────────────────────────────────────────────────
 
   // Fetch all beneficiaries from PostgreSQL
   const fetchBeneficiaries = () => {
@@ -482,21 +285,24 @@ export default function Beneficiaries({ lang, agentUser }) {
         return res.json();
       })
       .then(payload => {
-        if (Array.isArray(payload) && payload.length > 0) {
-          setBeneficiaries(payload);
-          setPagination({ page: 1, totalPages: 1, hasPrev: false, hasNext: false });
+        // Une réponse vide est une réponse vide : aucun registre de
+        // remplacement. Les bénéficiaires affichés proviennent de la base
+        // (identique au registre du Studio Cartes), jamais d'une liste
+        // locale inventée.
+        setBeneficiaries(Array.isArray(payload) ? payload : []);
+        if (payload && payload.pagination) {
+          setPagination(payload.pagination);
         } else {
-          setBeneficiaries(defaultMockBeneficiaries);
           setPagination({ page: 1, totalPages: 1, hasPrev: false, hasNext: false });
         }
         setLoading(false);
       })
       .catch(err => {
-        console.warn('API connection failed, using offline fallback data:', err);
-        setError(err.message);
+        console.warn('Registre des bénéficiaires injoignable :', err);
+        setError('Registre des assurés indisponible. Aucune donnée n\'est affichée.');
         setLoading(false);
         setPagination({ page: 1, totalPages: 1, hasPrev: false, hasNext: false });
-        setBeneficiaries(defaultMockBeneficiaries);
+        setBeneficiaries([]);
       });
   };
 

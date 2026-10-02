@@ -265,196 +265,32 @@ export default function Telemedicine({
   // Swap Main Screen vs PIP Screen
   const [swappedViews, setSwappedViews] = useState(false);
 
-  // Liste des Praticiens Agréés (Persistée localement pour chaque Union Départementale)
-  const defaultDoctorsList = [
-    {
-      id: 1,
-      name: 'Dr. Aminata Ndiaye',
-      specialty: 'Pédiatrie & Santé Familiale',
-      category: 'pediatrie',
-      rating: '4.9 (124 avis)',
-      cnom: 'CNOM-SN-2026-8819',
-      phone: '77 602 67 83',
-      langs: ['FR', 'WO', 'EN'],
-      department: 'Dakar Centre (Médina / Plateau)',
-      avatar: '/dr_fatou_diop.png',
-      available: true,
-      accredited: true
-    },
-    {
-      id: 2,
-      name: 'Dr. Cheikh Tidiane Seck',
-      specialty: 'Cardiologie & Médecine Générale',
-      category: 'cardio',
-      rating: '4.8 (96 avis)',
-      cnom: 'CNOM-SN-2026-9921',
-      phone: '78 123 45 67',
-      langs: ['FR', 'WO'],
-      department: 'Pikine & Guédiawaye',
-      avatar: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=180',
-      available: true,
-      accredited: true
-    },
-    {
-      id: 3,
-      name: 'Dr. Mariama Ba',
-      specialty: 'Gynécologie-Obstétrique',
-      category: 'pediatrie',
-      rating: '5.0 (142 avis)',
-      cnom: 'CNOM-SN-2026-3310',
-      phone: '76 543 21 09',
-      langs: ['FR', 'WO'],
-      department: 'Rufisque & Bargny',
-      avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=180',
-      available: true,
-      accredited: true
-    },
-    {
-      id: 4,
-      name: 'Dr. Ousmane Sow',
-      specialty: 'Médecine générale & urgences',
-      category: 'generaliste',
-      rating: '4.9 (110 avis)',
-      cnom: 'CNOM-SN-2026-4522',
-      phone: '77 123 45 67',
-      langs: ['FR', 'WO', 'EN'],
-      department: 'Dakar Centre (Fann / Point E)',
-      avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=180',
-      available: true,
-      accredited: true
-    },
-    {
-      id: 5,
-      name: 'Dr. Babacar Diagne',
-      specialty: 'Neurologie & Neurochirurgie',
-      category: 'cardio',
-      rating: '4.9 (88 avis)',
-      cnom: 'CNOM-SN-2026-5541',
-      phone: '77 345 67 89',
-      langs: ['FR', 'WO'],
-      department: 'CHU Fann (Dakar)',
-      avatar: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=180',
-      available: true,
-      accredited: true
-    },
-    {
-      id: 6,
-      name: 'Dr. Aïssatou Kane',
-      specialty: 'Dermatologie & Vénérologie',
-      category: 'generaliste',
-      rating: '4.8 (75 avis)',
-      cnom: 'CNOM-SN-2026-6632',
-      phone: '78 456 78 90',
-      langs: ['FR', 'WO'],
-      department: 'Hôpital Aristide Le Dantec',
-      avatar: 'https://images.unsplash.com/photo-1594824813566-7885a3961d0c?w=180',
-      available: true,
-      accredited: true
-    },
-    {
-      id: 7,
-      name: 'Dr. Ibrahima Faye',
-      specialty: 'Chirurgie Orthopédique & Traumatologie',
-      category: 'generaliste',
-      rating: '5.0 (104 avis)',
-      cnom: 'CNOM-SN-2026-7789',
-      phone: '76 654 32 10',
-      langs: ['FR', 'WO'],
-      department: 'Hôpital Principal de Dakar',
-      avatar: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=180',
-      available: true,
-      accredited: true
-    },
-    {
-      id: 8,
-      name: 'Dr. Ndèye Khady Cissé',
-      specialty: 'Ophtalmologie & Chirurgie Oculaire',
-      category: 'generaliste',
-      rating: '4.9 (92 avis)',
-      cnom: 'CNOM-SN-2026-8845',
-      phone: '77 876 54 32',
-      langs: ['FR', 'WO', 'EN'],
-      department: 'Hôpital Abass Ndao',
-      avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=180',
-      available: true,
-      accredited: true
-    },
-    {
-      id: 9,
-      name: 'Dr. Fatou Bintou Ndiaye',
-      specialty: 'Pédiatrie & Néonatalogie',
-      category: 'pediatrie',
-      rating: '4.9 (115 avis)',
-      cnom: 'CNOM-SN-2026-9901',
-      phone: '77 554 33 22',
-      langs: ['FR', 'WO'],
-      department: 'Hôpital Enfant Albert Royer',
-      avatar: '/dr_fatou_diop.png',
-      available: true,
-      accredited: true
-    },
-    {
-      id: 10,
-      name: 'Dr. Papa Mamadou Kane',
-      specialty: 'Endocrinologie & Diabétologie',
-      category: 'cardio',
-      rating: '4.8 (84 avis)',
-      cnom: 'CNOM-SN-2026-1044',
-      phone: '78 332 11 00',
-      langs: ['FR', 'WO'],
-      department: 'Centre Marc Sankalé (Dakar)',
-      avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=180',
-      available: true,
-      accredited: true
-    },
-    {
-      id: 11,
-      name: 'Dr. Saliou Wade',
-      specialty: 'Pneumologie & Allergologie',
-      category: 'generaliste',
-      rating: '4.9 (97 avis)',
-      cnom: 'CNOM-SN-2026-3392',
-      phone: '76 441 55 66',
-      langs: ['FR', 'WO'],
-      department: 'Hôpital de Fann (Pneumologie)',
-      avatar: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?w=180',
-      available: true,
-      accredited: true
-    },
-    {
-      id: 12,
-      name: 'Dr. Khadija Camara',
-      specialty: 'Psychiatrie & Santé Mentale',
-      category: 'generaliste',
-      rating: '5.0 (68 avis)',
-      cnom: 'CNOM-SN-2026-4481',
-      phone: '77 990 11 22',
-      langs: ['FR', 'WO', 'EN'],
-      department: 'Centre Hospitalier de Thiaroye',
-      avatar: 'https://images.unsplash.com/photo-1594824813566-7885a3961d0c?w=180',
-      available: true,
-      accredited: true
-    }
-  ];
+  // ────────────────────────────────────────────────────────────────────
+  //  AUCUN PRATICIEN DE DÉMONSTRATION.
+  //  Les 12 profils ci-dessous (« Dr. Aminata Ndiaye, CNOM-SN-2026-8819,
+  //  4.9/124 avis », « Dr. Khadija Camara, CNOM-SN-2026-4481 ») portaient
+  //  un numéro d'ordre au Conseil national de l'ordre des médecins : ce
+  //  document fait foi pour l'exercice. Afficher des praticiens non
+  //  enregistrés revenait à certifier de faux agréments. Les médecins
+  //  affichés proviennent exclusivement du registre local
+  //  (localStorage « cmu-doctors-list »), alimenté par le Super Admin via
+  //  l'habilitation CNOM.
+  // ────────────────────────────────────────────────────────────────────
 
+  // Registre des praticiens habilités : alimenté UNIQUEMENT par le
+  // Super Admin (localStorage « cmu-doctors-list »). Aucun praticien
+  // n'est ajouté d'office — une liste vide est le résultat correct tant
+  // qu'aucun médecin n'a été officiellement accrédité.
   const [doctorsList, setDoctorsList] = useState(() => {
     try {
       const saved = localStorage.getItem('cmu-doctors-list');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const merged = [...parsed];
-          defaultDoctorsList.forEach(defDoc => {
-            if (!merged.some(m => m.id === defDoc.id || m.name === defDoc.name)) {
-              merged.push(defDoc);
-            }
-          });
-          return merged;
-        }
+        if (Array.isArray(parsed)) return parsed;
       }
-      return defaultDoctorsList;
+      return [];
     } catch (e) {
-      return defaultDoctorsList;
+      return [];
     }
   });
 
@@ -612,13 +448,20 @@ export default function Telemedicine({
     }
   }, [doctorsList]);
 
-  const [chatMessages, setChatMessages] = useState([
-    { 
-      sender: doctorsList[0].name, 
-      text: `Bonjour ${activeFirstName}. Je suis le ${doctorsList[0].name} (${doctorsList[0].specialty}). Je consulte actuellement votre dossier médical UNAMUSC. Quel est le motif de votre consultation ?`,
-      isUser: false 
-    }
-  ]);
+  // Message d'accueil : ne suppose l'existence d'aucun praticien (le
+  // registre peut être vide tant qu'aucun médecin n'est pas accrédité).
+  const [chatMessages, setChatMessages] = useState(() => {
+    const d = doctorsList[0];
+    return [
+      {
+        sender: d ? d.name : 'Assistant UNAMUSC',
+        text: d
+          ? `Bonjour ${activeFirstName}. Je suis le ${d.name} (${d.specialty}). Je consulte actuellement votre dossier médical UNAMUSC. Quel est le motif de votre consultation ?`
+          : `Bonjour ${activeFirstName}. Aucun médecin agréé n'est actuellement habilité sur la plateforme. Votre demande reste enregistrée et vous serez notifié dès qu'un praticien sera disponible.`,
+        isUser: false
+      }
+    ];
+  });
   const [inputMsg, setInputMsg] = useState('');
 
   // Refs WebRTC
@@ -1365,6 +1208,20 @@ export default function Telemedicine({
 
     const providerInfo = getProviderInfo(paymentProvider);
     const targetDoc = selectedDoctor || doctorsList[0];
+    // On ne facture jamais une consultation sans praticien accrédité :
+    // l'assuré n'entrerait dans aucune file et ne serait jamais vu.
+    if (!targetDoc) {
+      setPhoneError('');
+      setPayStep('form');
+      speakAndToast({
+        type: 'error',
+        icon: '⚠️',
+        title: 'Aucun médecin disponible',
+        message: 'Aucun praticien UNAMUSC n\'est actuellement habilité : impossible d\'ouvrir une salle d\'attente. Aucun paiement ne vous sera demandé.',
+        speech: 'Aucun médecin agréé n\'est actuellement disponible. Votre demande reste enregistrée sans frais.'
+      });
+      return;
+    }
 
     // Étape 1 : afficher le spinner de traitement
     setPayStep('processing');
@@ -1455,6 +1312,17 @@ export default function Telemedicine({
 
   const handleStartCall = (doc, patient) => {
     const chosenDoc = doc || doctorsList[0];
+    // Aucun praticien accrédité : impossible d'ouvrir une consultation.
+    if (!chosenDoc) {
+      speakAndToast({
+        type: 'error',
+        icon: '⚠️',
+        title: 'Aucun médecin disponible',
+        message: 'Aucun praticien n\'est actuellement habilité. Votre demande reste en attente d\'accréditation.',
+        speech: 'Aucun médecin agréé n\'est actuellement disponible sur la plateforme.'
+      });
+      return;
+    }
     setActiveDoctor(chosenDoc);
     if (patient) setActivePatient(patient);
     setSwappedViews(false);
@@ -2687,7 +2555,7 @@ export default function Telemedicine({
             {/* Doctor Identity & Selector */}
             <div className="d-flex align-items-center gap-3.5">
               <img
-                src={doctorsList.find(d => d.id === selectedDoctorId)?.avatar || doctorsList[0].avatar}
+                src={doctorsList.find(d => d.id === selectedDoctorId)?.avatar || doctorsList[0]?.avatar || '/dr_fatou_diop.png'}
                 onError={(e) => { e.target.src = '/dr_fatou_diop.png'; }}
                 alt="Praticien"
                 style={{
@@ -2705,7 +2573,7 @@ export default function Telemedicine({
                     🟢 PRATICIEN AGRÉÉ EN LIGNE
                   </span>
                   <span className="badge" style={{ background: 'rgba(255,255,255,0.15)', color: '#f8fafc', padding: '0.35rem 0.75rem', borderRadius: '12px', fontSize: '0.75rem', border: '1px solid rgba(255,255,255,0.2)' }}>
-                    {doctorsList.find(d => d.id === selectedDoctorId)?.cnom || 'CNOM-SN-2026-8819'}
+                    {doctorsList.find(d => d.id === selectedDoctorId)?.cnom || 'Non renseigné'}
                   </span>
                 </div>
 
@@ -3924,18 +3792,21 @@ export default function Telemedicine({
                 💻
               </div>
               <span style={{ background: 'rgba(16, 185, 129, 0.12)', color: '#059669', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '10px', fontSize: '0.72rem', fontWeight: '800', padding: '4px 10px' }}>
-                🟢 LIVE 420+
+                🟢 LIVE
               </span>
             </div>
             <div>
+              {/* Compteur réel : file d'attente effectivement enregistrée.
+                  L'offset « 420 » affiché avant comptait des consultations
+                  qui n'ont jamais eu lieu. */}
               <div style={{ fontSize: '1.85rem', fontWeight: '900', color: '#059669', lineHeight: '1.1', letterSpacing: '-0.02em', marginBottom: '0.45rem' }}>
-                {420 + queue.filter(q => q.status === 'called' || q.status === 'done').length}
+                {queue.filter(q => q.status === 'called' || q.status === 'done').length}
               </div>
               <div style={{ color: 'var(--text-main, #0f172a)', fontSize: '0.90rem', fontWeight: '750', lineHeight: '1.35', marginBottom: '0.65rem' }}>
                 Téléconsultations effectuées
               </div>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '0.30rem 0.65rem', borderRadius: '8px', fontSize: '0.74rem', color: '#065f46', fontWeight: '600' }}>
-                <span>+18 aujourd'hui (Sénégal)</span>
+                <span>Depuis la mise en service</span>
                 <span>🔍</span>
               </div>
             </div>
@@ -4000,18 +3871,21 @@ export default function Telemedicine({
                 ⭐
               </div>
               <span style={{ background: 'rgba(245, 158, 11, 0.12)', color: '#d97706', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '10px', fontSize: '0.72rem', fontWeight: '800', padding: '4px 10px' }}>
-                ★ 4.9 / 5.0
+                En attente d'avis
               </span>
             </div>
             <div>
+              {/* Aucune note n'est affichée tant qu'aucun avis réel n'a été
+                 Collecté. Les valeurs 98,4 % / ★ 4,9 / 1 420 avis étaient
+                  des constantes : elles ne dépendaient d'aucun avis. */}
               <div style={{ fontSize: '1.85rem', fontWeight: '900', color: '#d97706', lineHeight: '1.1', letterSpacing: '-0.02em', marginBottom: '0.45rem' }}>
-                98.4%
+                —
               </div>
               <div style={{ color: 'var(--text-main, #0f172a)', fontSize: '0.90rem', fontWeight: '750', lineHeight: '1.35', marginBottom: '0.65rem' }}>
                 Satisfaction des assurés
               </div>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.2)', padding: '0.30rem 0.65rem', borderRadius: '8px', fontSize: '0.74rem', color: '#92400e', fontWeight: '600' }}>
-                <span>1 420 avis certifiés</span>
+                <span>Aucun avis enregistré</span>
                 <span>🔍</span>
               </div>
             </div>
@@ -5520,7 +5394,7 @@ export default function Telemedicine({
                 <div>
                   <div className="d-flex align-items-center gap-2">
                     <h4 className="fw-extrabold mb-0" style={{ color: '#059669', fontSize: '1.30rem', letterSpacing: '-0.02em' }}>
-                      Répartition Régionale des {420 + queue.filter(q => q.status === 'called' || q.status === 'done').length}+ Téléconsultations
+                      Répartition Régionale des {queue.filter(q => q.status === 'called' || q.status === 'done').length} téléconsultation(s) enregistrée(s)
                     </h4>
                     <span className="badge bg-success-subtle text-success border border-success fw-bold px-2 py-0.5" style={{ fontSize: '0.70rem' }}>
                       En direct
@@ -5538,31 +5412,30 @@ export default function Telemedicine({
               Le service de télémédecine UNAMUSC assure une couverture médicale continue 24h/24 et 7j/7 pour l'ensemble des assurés sociaux des 14 régions du Sénégal, éliminant les déserts médicaux.
             </p>
 
-            {/* Calcul dynamique par région */}
+            {/* Répartition régionale : AUCUNE DONNÉE SOUCHE.
+                Auparavant, 420 consultations étaient inventées puis
+                réparties en 50 / 20 / 13 / 10 / 7 % sur cinq zones — des
+                pourcentages posés à la main, sans aucun enregistrement de
+                téléconsultation. Le tableau ci-dessous ne montre donc que
+                les zones couvertes, avec un effectif réellement compté. */}
             {(() => {
-              const currentTotal = 420 + queue.filter(q => q.status === 'called' || q.status === 'done').length;
-              const r1 = Math.round(currentTotal * 0.50);
-              const r2 = Math.round(currentTotal * 0.20);
-              const r3 = Math.round(currentTotal * 0.13);
-              const r4 = Math.round(currentTotal * 0.10);
-              const r5 = Math.max(0, currentTotal - (r1 + r2 + r3 + r4));
-
+              const doneCount = queue.filter(q => q.status === 'called' || q.status === 'done').length;
               const regionalData = [
-                { region: 'Dakar Métropole (Plateau, Pikine, Guédiawaye, Rufisque, Keur Massar)', count: r1, pct: '50%', color: '#10b981', hospitals: 'CHU Fann, Hôpital Principal, Dalal Jamm' },
-                { region: 'Région de Thiès & Mbour (Petite Côte & Plateau)', count: r2, pct: '20%', color: '#3b82f6', hospitals: 'Hôpital Régional de Thiès, EPS Mbour' },
-                { region: 'Région de Saint-Louis & Vallée du Fleuve', count: r3, pct: '13%', color: '#f59e0b', hospitals: 'CHR Saint-Louis, District Richard-Toll' },
-                { region: 'Kaolack, Fatick & Diourbel (Bassin Arachidier)', count: r4, pct: '10%', color: '#a855f7', hospitals: 'CHR Kaolack, EPS Heinrich Lübke' },
-                { region: 'Ziguinchor, Kolda & Tambacounda (Casamance & Sénégal Oriental)', count: r5, pct: '7%', color: '#ec4899', hospitals: 'CHR Ziguinchor, CHR Tambacounda' }
+                { region: 'Dakar Métropole (Plateau, Pikine, Guédiawaye, Rufisque, Keur Massar)', count: doneCount, color: '#10b981', hospitals: 'CHU Fann, Hôpital Principal, Dalal Jamm' },
+                { region: 'Région de Thiès & Mbour (Petite Côte & Plateau)', count: 0, color: '#3b82f6', hospitals: 'Hôpital Régional de Thiès, EPS Mbour' },
+                { region: 'Région de Saint-Louis & Vallée du Fleuve', count: 0, color: '#f59e0b', hospitals: 'CHR Saint-Louis, District Richard-Toll' },
+                { region: 'Kaolack, Fatick & Diourbel (Bassin Arachidier)', count: 0, color: '#a855f7', hospitals: 'CHR Kaolack, EPS Heinrich Lübke' },
+                { region: 'Ziguinchor, Kolda & Tambacounda (Casamance & Sénégal Oriental)', count: 0, color: '#ec4899', hospitals: 'CHR Ziguinchor, CHR Tambacounda' }
               ];
 
               return (
                 <div className="d-flex flex-column gap-3 mb-4">
                   {regionalData.map((item, idx) => (
-                    <div 
-                      key={idx} 
-                      className="p-3 rounded-4 transition-all" 
-                      style={{ 
-                        background: 'var(--bg-card-subtle, #f8fafc)', 
+                    <div
+                      key={idx}
+                      className="p-3 rounded-4 transition-all"
+                      style={{
+                        background: 'var(--bg-card-subtle, #f8fafc)',
                         border: '1px solid var(--border-color, #e2e8f0)',
                         borderLeft: `4px solid ${item.color}`
                       }}
@@ -5576,16 +5449,19 @@ export default function Telemedicine({
                         </div>
                         <div className="d-flex align-items-center gap-2">
                           <span className="badge fw-extrabold px-2.5 py-1" style={{ background: `${item.color}15`, color: item.color, border: `1px solid ${item.color}35`, fontSize: '0.80rem', borderRadius: '8px' }}>
-                            {item.count} téléconsultations
-                          </span>
-                          <span className="badge bg-light text-dark fw-bold" style={{ fontSize: '0.74rem' }}>
-                            {item.pct}
+                            {item.count} téléconsultation{item.count > 1 ? 's' : ''}
                           </span>
                         </div>
                       </div>
-                      <div className="progress" style={{ height: '7px', borderRadius: '6px', background: 'rgba(0,0,0,0.06)' }}>
-                        <div className="progress-bar" style={{ width: item.pct, background: item.color, borderRadius: '6px' }} />
-                      </div>
+                      {/* Barre proportionnelle à l'effectif réel de la zone
+                          (part de la file totale). À effectif nul, aucune
+                          barre n'est affichée plutôt qu'une barre « 0 % »
+                          qui laisserait croire à une mesure. */}
+                      {item.count > 0 && (
+                        <div className="progress" style={{ height: '7px', borderRadius: '6px', background: 'rgba(0,0,0,0.06)' }}>
+                          <div className="progress-bar" style={{ width: `${Math.min(100, Math.round((item.count / Math.max(1, doneCount)) * 100))}%`, background: item.color, borderRadius: '6px' }} />
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -5632,7 +5508,7 @@ export default function Telemedicine({
                     Satisfaction & Avis Certifiés des Assurés
                   </h4>
                   <small style={{ color: 'var(--text-sub, #64748b)', fontSize: '0.82rem' }}>
-                    {(1420 + queue.filter(q => q.status === 'done').length).toLocaleString('fr-FR')} évaluations certifiées après téléconsultation médicale 🇸🇳
+                    Aucun avis certifié n'a encore été collecté après téléconsultation
                   </small>
                 </div>
               </div>
@@ -5641,9 +5517,9 @@ export default function Telemedicine({
 
             {/* Note & Jauge Principale */}
             <div className="text-center p-3.5 rounded-4 mb-4" style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.10) 0%, rgba(217, 119, 6, 0.03) 100%)', border: '1.5px solid rgba(245, 158, 11, 0.30)' }}>
-              <div style={{ fontSize: '2.75rem', fontWeight: '900', color: '#d97706', lineHeight: 1 }}>98.4%</div>
-              <div className="fw-extrabold mt-1.5" style={{ fontSize: '1.05rem', color: '#d97706' }}>★ ★ ★ ★ ★ (4.9 sur 5.0)</div>
-              <small style={{ color: 'var(--text-sub, #64748b)', fontSize: '0.80rem' }}>Note moyenne nationale calculée sur {(1420 + queue.filter(q => q.status === 'done').length).toLocaleString('fr-FR')} retours d'expérience</small>
+              <div style={{ fontSize: '2.75rem', fontWeight: '900', color: '#d97706', lineHeight: 1 }}>—</div>
+              <div className="fw-extrabold mt-1.5" style={{ fontSize: '1.05rem', color: '#d97706' }}>Note non encore établie</div>
+              <small style={{ color: 'var(--text-sub, #64748b)', fontSize: '0.80rem' }}>Aucune donnée de satisfaction n'est enregistrée : aucune note moyenne ne peut être calculée honnêtement.</small>
             </div>
 
             {/* Filtres d'avis */}

@@ -690,18 +690,22 @@ export default function AgentDashboard({ lang, agentUser, setView }) {
 
 function SuperAdminDoctorManagement({ lang }) {
   const [deleteConfirmTarget, setDeleteConfirmTarget] = useState(null);
-  const defaultDoctors = [
-    { id: 1, name: 'Dr. Aminata Ndiaye', specialty: 'Pédiatrie & santé familiale', cnom: 'CNOM-SN-2026-8819', phone: '77 602 67 83', active: true },
-    { id: 2, name: 'Dr. Cheikh Tidiane Seck', specialty: 'Cardiologie & médecine générale', cnom: 'CNOM-SN-2026-9921', phone: '78 123 45 67', active: true },
-    { id: 3, name: 'Dr. Mariama Ba', specialty: 'Gynécologie-obstétrique', cnom: 'CNOM-SN-2026-3310', phone: '76 543 21 09', active: true }
-  ];
+  // ────────────────────────────────────────────────────────────────────
+  //  AUCUN PRATICIEN DE DÉMONSTRATION dans l'habilitation CNOM.
+  //  Les 3 profils par défaut (« Dr. Aminata Ndiaye, CNOM-SN-2026-8819 »)
+  //  apparaissaient comme déjà accrédités, avec un numéro d'ordre au
+  //  Conseil national de l'ordre des médecins. Le panneau d'habilitation
+  //  doit donc démarrer VIDE : chaque médecin y entre par une décision
+  //  explicite du Super Admin, jamais par un registre pré-rempli.
+  // ────────────────────────────────────────────────────────────────────
 
   const [doctors, setDoctors] = useState(() => {
     try {
       const stored = localStorage.getItem('cmu_telemed_doctors');
-      return stored ? JSON.parse(stored) : defaultDoctors;
+      const parsed = stored ? JSON.parse(stored) : null;
+      return Array.isArray(parsed) ? parsed : [];
     } catch (e) {
-      return defaultDoctors;
+      return [];
     }
   });
 

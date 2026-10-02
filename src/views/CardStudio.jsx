@@ -1,6 +1,10 @@
 import { calculateAge, getAgeLabel } from '../utils/csuFormatter';
-import { getStoredMembers, saveStoredMembers, resetToDefaultMembers, purgeDuplicateMembers } from '../utils/beneficiaryStore';
-import { detectLanIp, getCachedLanIp } from '../utils/lanIp';
+import { getStoredMembers, saveStoredMembers, purgeDuplicateMembers } from '../utils/beneficiaryStore';
+// Détection du format ANCIEN des cartes à purger (cf. handlePurgeLegacyCards).
+// Importé depuis `cmuCode` et NON depuis `bulkImport` : ce dernier charge la
+// librairie `xlsx` (≈ 350 Ko) et la ferait entrer dans le bundle initial.
+import { isLegacyGeneratedCode, isOfficialCode } from '../utils/cmuCode';
+import { detectLanIp, getCachedLanIp, isValidLanIp, clearLanIpCache } from '../utils/lanIp';
 import {
   fetchSponsorsWithLogos,
   saveSponsorLogo,
@@ -15,12 +19,15 @@ import {
   setCardLogo,
   getCardsSponsoredBy,
   applySponsorLogoToAllCards,
+  getLotLogo,
+  setLotLogo,
   SPONSOR_LOGO_MAX_BYTES
 } from '../utils/sponsorLogos';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
+import DeleteModal from '../components/DeleteModal';
 // Armoiries vectorielles de la Ville de Dakar (filigrane des cartes scolaires)
 import DakarCoatOfArms from '../components/DakarCoatOfArms';
 // Programmes de cartes + coordonnées par MSD (source de vérité des libellés)
@@ -54,6 +61,41 @@ const SenegalFlagSvg = ({ style }) => (
     <polygon points="450,210 476,290 560,290 492,340 518,420 450,370 382,420 408,340 340,290 424,290" fill="#00853f"/>
   </svg>
 );
+
+/**
+ * Style du FILIGRANE (logo du parrain / partenaire), partagé par TOUTES les
+ * familles de cartes — classique, CMU-Élèves et CMU-Daara.
+ *
+ * Le logo n'est plus un petit picto figé dans un coin : il est piloté par
+ * les réglages « Personnalisation complète de la carte »
+ * (Position / Opacité / Taille du filigrane), qui n'existaient jusqu'ici
+ * que pour les cartes scolaires. La carte classique les ignorait et
+ * affichait une image de 20 px, décentrée, collée au texte « Mutuelle
+ * d'origine » — d'où l'impression que le logo était « en bas ».
+ *
+ * @param {string|null} logo — data URL ou chemin public
+ * @param {object} design — { watermarkPosition, watermarkOpacity, watermarkScale }
+ * @returns {object|null} style CSS, ou null si aucun logo
+ */
+const buildWatermarkStyle = (logo, design = {}) => {
+  if (!logo) return null;
+  const position = design.watermarkPosition === 'TOP'
+    ? 'center 24%'
+    : design.watermarkPosition === 'BOTTOM'
+      ? 'center 76%'
+      : 'center 50%';
+  const scale = Number(design.watermarkScale) || 56;
+  const opacity = Number(design.watermarkOpacity);
+  return {
+    backgroundImage: `url(${logo})`,
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: position,
+    backgroundSize: `${scale}%`,
+    // Plafond à 45 % : au-delà, le logo masquerait la photo et les données
+    // de l'assuré. La valeur reste celle choisie dans le panneau.
+    opacity: Math.min(0.45, Number.isFinite(opacity) ? opacity : 0.12)
+  };
+};
 
 const getDefaultAcademicYear = () => {
   const year = new Date().getFullYear();
@@ -207,11 +249,19 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
   };
   const getMsdLogo = (unionId) => msdLogos[unionId] || '/logo_unamusc.png';
 
-  // Liste des membres exemples réels UNAMUSC
+  // Registre des bénéficiaires. Source de vérité : la BASE (voir utils/
+  // beneficiarySync). Au premier rendu on lit le registre local — il peut
+  // être vide si le navigateur n'a jamais rien stocké — puis la synchronisation
+  // avec le serveur le remplit et rafraîchit la liste.
   const initialMembers = getStoredMembers();
 
   const [members, setMembers] = useState(initialMembers);
-  const [selectedMemberId, setSelectedMemberId] = useState(initialMembers[0].id);
+  // `initialMembers[0].id` lèverait sur un registre vide (poste neuf, ou
+  // après purge) : l'écran de carte resterait en blanc.
+  const [selectedMemberId, setSelectedMemberId] = useState(
+    initialMembers.length > 0 ? initialMembers[0].id : null
+  );
+  const [isSyncingRegister, setIsSyncingRegister] = useState(false);
   const [selectedCardType, setSelectedCardType] = useState('PRINCIPAL');
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState('');
   const [qrCodePayload, setQrCodePayload] = useState(null);
@@ -227,6 +277,8 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
   const [sponsorLogoBusy, setSponsorLogoBusy] = useState(false);
   const [sponsorNotice, setSponsorNotice] = useState(null); // { type: 'success'|'warning'|'error', text }
   const sponsorLogoInputRef = useRef(null);
+  // Entrée de fichier dédiée à l'application d'un logo sur TOUT un lot.
+  const lotLogoInputRef = useRef(null);
   const [cardProgram, setCardProgram] = useState('CLASSIC');
   const [academicData, setAcademicData] = useState({
     academicYear: getDefaultAcademicYear(),
@@ -268,34 +320,725 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
   });
   const [customWifiIp, setCustomWifiIp] = useState(() => {
     const cached = typeof window !== 'undefined' ? localStorage.getItem('cmu-wifi-ip') : null;
-    if (cached && cached !== '192.168.1.13' && cached !== '192.168.1.5' && cached !== '192.168.1.64') return cached;
+    if (isValidLanIp(cached)) return cached;
     // Si l'app est déjà ouverte via l'IP LAN, c'est la bonne
-    if (typeof window !== 'undefined' && window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    if (typeof window !== 'undefined' && isValidLanIp(window.location.hostname)) {
       return window.location.hostname;
     }
-    return getCachedLanIp() || '192.168.1.42';
+    return getCachedLanIp() || '';
   });
 
-  // Détection AUTOMATIQUE de l'IP LAN réelle du PC (backend /api/lan-ip)
+  // Détection AUTOMATIQUE de l'IP LAN réelle du PC (backend /api/lan-ip).
+  // `force: true` : au montage on ignore un cache issu d'un autre réseau
+  // (le PC a pu changer de Wi-Fi entre deux sessions).
   useEffect(() => {
     let cancelled = false;
-    detectLanIp().then((ip) => {
+    detectLanIp({ force: true }).then((ip) => {
       if (cancelled || !ip) return;
       localStorage.setItem('cmu-wifi-ip', ip);
-      // Ne pas écraser une IP saisie manuellement par l'utilisateur
-      setCustomWifiIp((prev) => (prev && prev !== '192.168.1.5' && prev !== '192.168.1.13' && prev !== '192.168.1.64' ? prev : ip));
+      // Ne pas écraser une IP saisie manuellement par l'utilisateur :
+      // on ne remplace que si le champ est vide ou contient l'ancienne IP
+      // mémorisée (donc non saisie).
+      setCustomWifiIp((prev) => (isValidLanIp(prev) && prev !== ip ? prev : ip));
     });
     return () => { cancelled = true; };
   }, []);
 
-  // Formulaire d'édition directe
-  const [editForm, setEditForm] = useState(initialMembers[0]);
+  // ── Suppression d'une fiche (registre local + base) ──────────────────
+  // Fiche(s) en attente de confirmation de suppression (tableau : 1 ou N).
+  // Une fiche peut être erronée : mauvais appariement de photo, code
+  // décalé, import raté. Elle doit pouvoir être retirée sans aller dans
+  // la console du navigateur, et sans laisser de trace côté base.
+  const [deleteTargets, setDeleteTargets] = useState([]);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+  // Cases cochées dans le panneau de suppression multiple
+  const [checkedIds, setCheckedIds] = useState(() => new Set());
+  const [showMultiDelete, setShowMultiDelete] = useState(false);
+  const [multiSearch, setMultiSearch] = useState('');
+
+  /**
+   * Action groupée sur la sélection : rattache les fiches à un LOT de
+   * campagne, puis les recode au format officiel REGION-MSD-ANNEE-SEQUENCE.
+   *
+   * C'est la seule voie de recodage en masse, et elle passe par une
+   * sélection EXPLICITE de l'agent : aucune carte déjà imprimée ne peut donc
+   * être touchée par mégarde.
+   *
+   * @param {Array<object>} targets — fiches cochées dans le panneau
+   * @param {string} [unionId] — MSD émettrice
+   */
+  const handleAssignLotAndRecode = async (targets, unionId = 'DKR') => {
+    const list = (Array.isArray(targets) ? targets : [targets]).filter(Boolean);
+    if (list.length === 0) return;
+
+    setDeleteBusy(true);
+    try {
+      const {
+        createCampaignLot, buildStructuredCode, lastSequenceFor,
+        regionCodeFor, currentCampaignYear
+      } = await import('../utils/bulkImport');
+      const { resolveUnion } = await import('../utils/cardPrograms');
+
+      const lot = await createCampaignLot({
+        label: `Recodage manuel — ${list.length} dossier(s)`,
+        unionId,
+        count: list.length
+      });
+
+      // 1. Isoler la sélection du reste du registre.
+      const all = getStoredMembers();
+      const ids = new Set(list.map((m) => m.id));
+      const others = all.filter((m) => !ids.has(m.id));
+      const selection = all.filter((m) => ids.has(m.id));
+
+      // 2. Recenser les codes déjà pris (reste du registre inclus) pour
+      //    qu'aucun matricule ne puisse être réattribué.
+      const used = new Set();
+      [...others, ...selection].forEach((m) => {
+        if (m.cmuNumber) used.add(String(m.cmuNumber).toUpperCase());
+        (m.dependents || []).forEach((d) => { if (d.cmuNumber) used.add(String(d.cmuNumber).toUpperCase()); });
+      });
+
+      const region = regionCodeFor(unionId);
+      const union = resolveUnion(unionId).id;
+      const year = currentCampaignYear();
+      let seq = lastSequenceFor(used, { region, unionId: union, year });
+      const nextCode = () => {
+        for (let i = 1; i <= 20000; i++) {
+          const c = buildStructuredCode({ region, unionId: union, year, seq: seq + i });
+          if (!used.has(c)) { used.add(c); seq += i; return c; }
+        }
+        return null;
+      };
+
+      // Une fiche déjà au format officiel n'est PAS recodée une seconde fois.
+      const OFFICIAL_RE = /^[A-Z]{3}-[A-Z]{3}-\d{4}-\d{4}$/;
+      const reformat = (person) => {
+        if (!person.cmuNumber) return person;
+        if (OFFICIAL_RE.test(String(person.cmuNumber).toUpperCase())) return person;
+        const c = nextCode();
+        return c ? { ...person, cmuNumber: c, adherentCode: c } : person;
+      };
+
+      let recoded = 0;
+      const recodedMembers = selection.map((m) => {
+        const before = m.cmuNumber;
+        const after = reformat(m);
+        if (after.cmuNumber !== before) recoded++;
+        return {
+          ...after,
+          lotCode: lot.code,
+          dependents: (m.dependents || []).map((d) => {
+            const db = d.cmuNumber;
+            const da = reformat(d);
+            if (da.cmuNumber !== db) recoded++;
+            // L'ayant droit appartient au même lot que son titulaire.
+            return { ...da, lotCode: lot.code };
+          })
+        };
+      });
+
+      const next = [...others, ...recodedMembers];
+      const saved = saveStoredMembers(next);
+      if (!saved.ok) {
+        setBulkNotice({ type: 'error', text: `❌ ${saved.error} Aucune modification enregistrée.` });
+        return;
+      }
+      setMembers(next);
+      setCheckedIds(new Set());
+
+      // Rattachement en base : le lot doit suivre les fiches dans PostgreSQL,
+      // sinon un autre agent ne verra pas la provenance de ces cartes.
+      const { assignCardsToLotOnServer } = await import('../utils/bulkImport');
+      const serverCodes = [];
+      recodedMembers.forEach((m) => {
+        if (m.cmuNumber) serverCodes.push(m.cmuNumber);
+        (m.dependents || []).forEach((d) => { if (d.cmuNumber) serverCodes.push(d.cmuNumber); });
+      });
+      const persisted = await assignCardsToLotOnServer(lot.code, serverCodes);
+
+      setBulkNotice({
+        type: 'success',
+        text: `🔢 Lot ${lot.code} attribué · ${recoded} carte(s) recodée(s) au format REGION-MSD-ANNEE-SEQUENCE sur ${list.length} dossier(s).${persisted ? ' Provenance enregistrée en base.' : ' Base indisponible : provenance conservée sur ce poste uniquement.'}`
+      });
+    } catch (e) {
+      setBulkNotice({ type: 'error', text: `❌ Recodage impossible : ${e.message}` });
+    } finally {
+      setDeleteBusy(false);
+    }
+  };
+
+  /**
+   * Fiches à purger avant réimport : celles issues d'un import Excel
+   * (MSD de Grand Yoff) qui ne sont PAS encore au format officiel.
+   *
+   * Deux cas sont couverts, car Grand Yoff a été importé à deux époques :
+   *  1. code provisoire généré  → `DKR-2600172` ;
+   *  2. code repris du fichier   → `DKR_2600111` (import antérieur au
+   *     générateur de matricules).
+   *
+   * ⚠️ Garde-fou ABSOLU : une fiche n'est retenue que si elle a été
+   * *créée par un import* (`id` commençant par `IMP-` ou `SRV-`) ET qu'elle
+   * n'est pas déjà au format officiel. Les cartes historiques du jeu
+   * `msdDakarMembers` portent des identifiants `MEM-MSD-…` :
+   *   - elles sont exclues par le test d'identifiant ;
+   *   - et même si un jour on renumérotait leur id, leur code est
+   *     volontairement conservé par la non-régression.
+   */
+  const isPurgeableImport = (m) => {
+    if (!m || !m.cmuNumber) return false;
+    // Déjà au format officiel : une carte migrée est sauvée (c'est le cas
+    // du fichier ASS LONASE, qui ne doit PAS disappear).
+    if (isOfficialCode(m.cmuNumber)) return false;
+    const id = String(m.id || '');
+    const createdByImport = id.startsWith('IMP-') || id.startsWith('SRV-');
+    if (createdByImport) return true;
+    // Code provisoire généré : signature unique de l'ancien générateur,
+    // jamais présente sur une carte imprimée.
+    return isLegacyGeneratedCode(m.cmuNumber);
+  };
+
+  const findLegacyGeneratedMembers = (list) => (list || []).filter(isPurgeableImport);
+
+  /** Fiches concernées, ayants droit inclus (affichage du décompte). */
+  const countLegacyCards = (list) => {
+    const legacy = findLegacyGeneratedMembers(list);
+    return legacy.reduce((n, m) => n + 1 + (m.dependents || []).length, 0);
+  };
+
+  const handlePurgeLegacyCards = async (targets) => {
+    const list = (Array.isArray(targets) ? targets : [targets]).filter(Boolean);
+    if (list.length === 0) return;
+    setDeleteBusy(true);
+    try {
+      // 1. Base de données (uniquement les fiches réellement présentes).
+      let serverDone = 0;
+      try {
+        const { apiFetch } = await import('../utils/api');
+        for (const m of list) {
+          const srvId = String(m.id || '').startsWith('SRV-') ? String(m.id).slice(4) : null;
+          if (!srvId) continue;
+          try {
+            const res = await apiFetch(`/api/beneficiaries/${srvId}`, { method: 'DELETE' });
+            if (res && res.ok) serverDone++;
+          } catch { /* la fiche partira de toute façon du registre local */ }
+        }
+      } catch { /* API injoignable : purge locale uniquement */ }
+
+      // 2. Registre local.
+      const ids = new Set(list.map((m) => m.id));
+      const remaining = getStoredMembers().filter((m) => !ids.has(m.id));
+      const saved = saveStoredMembers(remaining);
+      if (!saved.ok) {
+        setBulkNotice({ type: 'error', text: `❌ ${saved.error} La purge n'a pas été enregistrée.` });
+        return;
+      }
+      setMembers(remaining);
+      setCheckedIds(new Set());
+      if (remaining.length > 0) {
+        const stillThere = remaining.some((m) => m.id === selectedMemberId);
+        const nextSel = stillThere ? selectedMemberId : remaining[0].id;
+        setSelectedMemberId(nextSel);
+        setEditForm({ ...remaining.find((m) => m.id === nextSel) });
+      }
+      const people = list.reduce((n, m) => n + 1 + (m.dependents || []).length, 0);
+      setBulkNotice({
+        type: 'success',
+        text: `🧹 ${list.length} dossier(s) / ${people} carte(s) purgé(s) à l'ancien format.${serverDone ? ` ${serverDone} retiré(s) de la base.` : ''} Réimportez le fichier Excel et le dossier de photos : toutes les cartes repartiront au format officiel REGION-MSD-ANNEE-SEQUENCE.`
+      });
+    } catch (e) {
+      setBulkNotice({ type: 'error', text: `❌ Purge impossible : ${e.message}` });
+    } finally {
+      setDeleteBusy(false);
+      setDeleteTargets([]);
+    }
+  };
+
+  // Stratégie de codage du prochain lot importé. FILE par défaut : un
+  // classeur qui porte un code décrit des cartes déjà imprimées, et ce code
+  // ne doit JAMAIS être remplacé (cf. DEFAULT_CODE_STRATEGY).
+  // Stratégie de codage du prochain lot importé.
+  //
+  // ⚠️ Elle est MÉMORISÉE : le rappel silencieux de « 📄 code du fichier » à
+  // chaque rechargement a fait échouer plusieurs imports — les cartes
+  // restaient en DKR_2600118 au lieu du matricule officiel, sans que rien ne
+  // le signale. On se souvient donc du dernier choix.
+  const [importCodeStrategy, setImportCodeStrategy] = useState(() => {
+    try {
+      return localStorage.getItem('unamusc_import_code_strategy') === 'SYSTEM' ? 'SYSTEM' : 'FILE';
+    } catch { return 'FILE'; }
+  });
+
+  // Garde-fou : conserver les codes d'un fichier n'a de sens que pour un lot
+  // DÉJÀ IMPRIMÉ. Sur un nouveau lot, cela produit des cartes sans matricule
+  // officiel — la confirmation doit donc être explicite.
+  const [printLotConfirmed, setPrintLotConfirmed] = useState(false);
+
+  const chooseStrategy = (value) => {
+    setImportCodeStrategy(value);
+    try { localStorage.setItem('unamusc_import_code_strategy', value); } catch { /* sans stockage */ }
+    if (value === 'SYSTEM') setPrintLotConfirmed(false);
+  };
+
+  // ── FILTRAGE PAR LOT DE CAMPAGNE ───────────────────────────────────────
+  // Chaque import ouvre un lot (LOT-2026-001, LOT-2026-002…). Le filtre
+  // permet de retrouver d'un coup d'œil les cartes d'une même campagne
+  // d'enrôlement, et de n'agir que sur elle.
+  const [lotFilter, setLotFilter] = useState('ALL');
+
+  // Lots présents dans le registre, avec leur effectif réel (compte de
+  // personnes, ayants droit compris).
+  const lotList = useMemo(() => {
+    const map = new Map();
+    for (const m of members) {
+      const code = m.lotCode || 'HORS-LOT';
+      if (!map.has(code)) {
+        map.set(code, { code, dossiers: 0, people: 0, fichiers: new Set() });
+      }
+      const e = map.get(code);
+      e.dossiers += 1;
+      e.people += 1 + (m.dependents || []).length;
+      if (m.sourceCode) e.fichiers.add(String(m.sourceCode).split('_')[0]);
+    }
+    return [...map.values()].sort((a, b) => a.code.localeCompare(b.code));
+  }, [members]);
+
+  // Membres visibles après application du filtre de lot.
+  const membersByLot = useMemo(
+    () => (lotFilter === 'ALL' ? members : members.filter((m) => (m.lotCode || 'HORS-LOT') === lotFilter)),
+    [members, lotFilter]
+  );
+
+  // La liste déroulante suit le filtre, sinon elle proposerait des fiches
+  // invisibles à l'écran — et l'agent ne verrait pas d'où vient sa sélection.
+  const memberOptions = useMemo(
+    () => (lotFilter === 'ALL' ? members : membersByLot),
+    [members, membersByLot, lotFilter]
+  );
+
+  // Fiches affichées dans le panneau de suppression multiple : on ne propose
+  // QUE les fiches du lot sélectionné, pour qu'une suppression de masse ne
+  // déborde jamais sur une autre campagne d'enrôlement.
+  const multiFiltered = useMemo(() => {
+    const q = (multiSearch || '').trim().toLowerCase();
+    if (!q) return memberOptions;
+    return memberOptions.filter((m) => `${m.firstName || ''} ${m.lastName || ''} ${m.cmuNumber || ''}`
+      .toLowerCase().includes(q));
+  }, [memberOptions, multiSearch]);
+
+  /**
+   * Applique un logo à TOUTES les fiches du lot affiché, en un clic.
+   *
+   * Le logo du parrain existe déjà par le circuit « parrain → logo » : il faut
+   * attribuer le parrain carte par carte. Pour une campagne entière — le cas
+   * de la MSD de Grand Yoff, dont les cartes ne sont pas encore imprimées —
+   * on veut appliquer le logo au LOT entier sans 141 manipulations.
+   */
+  const handleApplyLogoToVisibleLot = async (file) => {
+    if (!file || memberOptions.length === 0) return;
+    setSponsorLogoBusy(true);
+    try {
+      const { readLogoFileOptimized } = await import('../utils/sponsorLogos');
+      const { dataUrl, width, height, format } = await readLogoFileOptimized(file);
+      if (!dataUrl) {
+        setSponsorNotice({ type: 'error', text: '❌ Image illisible ou format non supporté.' });
+        return;
+      }
+
+      // Le logo est identique pour tout le lot : on ne le stocke QU'UNE fois,
+      // sous la clé du lot. L'écrire sur les 211 cartes consommerait plus de
+      // 6 Mo en base64 et ferait échouer l'enregistrement (quota localStorage).
+      const scope = lotFilter === 'ALL' ? 'tout le registre' : `le lot ${lotFilter}`;
+      if (lotFilter === 'ALL') {
+        // Aucun lot sélectionné : il n'y a pas de clé de regroupement, on
+        // retombe sur un logo par carte.
+        memberOptions.forEach((m) => {
+          if (m.cmuNumber) setCardLogo(m.cmuNumber, dataUrl);
+          (m.dependents || []).forEach((d) => { if (d.cmuNumber) setCardLogo(d.cmuNumber, dataUrl); });
+        });
+      } else {
+        // setLotLogo renvoie false si le navigateur refuse l'écriture (quota
+        // atteint) : mieux vaut le dire que laisser croire à un logo posé.
+        if (!setLotLogo(lotFilter, dataUrl)) {
+          setSponsorNotice({
+            type: 'error',
+            text: '❌ Stockage du navigateur saturé : le logo n\'a pas été enregistré. Libérez de l\'espace (purge d\'un autre lot) puis réessayez.'
+          });
+          return;
+        }
+      }
+
+      // Le registre NE doit PAS porter le logo : la carte affichée le lit via
+      // getCardLogo(cmuNumber) / getLotLogo(lot). Écrire le base64 dans les
+      // 141 fiches ferait exploser le quota localStorage sans aucun effet.
+      const touches = memberOptions.reduce((n, m) => n + 1 + (m.dependents || []).length, 0);
+      setLotLogoRevision((r) => r + 1);
+      setSponsorNotice({
+        type: 'success',
+        text: `🏷️ Logo appliqué à ${scope} : ${touches} carte(s) (${memberOptions.length} dossier(s)).${width ? ` ${width}×${height} px ${format}.` : ''} Le filigrane apparaît sur les cartes — réglez sa position et sa taille dans « 🎨 Personnalisation complète de la carte ».`
+      });
+    } catch (e) {
+      setSponsorNotice({ type: 'error', text: `❌ Logo non appliqué : ${e.message}` });
+    } finally {
+      setSponsorLogoBusy(false);
+      if (sponsorLogoInputRef.current) sponsorLogoInputRef.current.value = '';
+    }
+  };
+
+    /**
+   * Retire le logo appliqué au lot affiché — le « bouton miroir ».
+   *
+   * On ne fait QUE ça : supprimer l'entrée de lot. Aucune fiche, aucune photo
+   * et aucun code n'est touché, ce qui rend l'opération réversible — on peut
+   * réappliquer un logo différents immédiatement après.
+   */
+  const handleRemoveLogoFromVisibleLot = () => {
+    if (lotFilter === 'ALL') {
+      // Aucun lot = aucun regroupement : il faut retirer le logo carte par carte.
+      const codes = new Set();
+      memberOptions.forEach((m) => {
+        if (m.cmuNumber) codes.add(String(m.cmuNumber));
+        (m.dependents || []).forEach((d) => { if (d.cmuNumber) codes.add(String(d.cmuNumber)); });
+      });
+      codes.forEach((c) => setCardLogo(c, ''));
+      setLotLogoRevision((r) => r + 1);
+      setSponsorNotice({ type: 'success', text: `🗑️ Logo retiré de ${codes.size} carte(s) du registre.` });
+      return;
+    }
+
+    setLotLogo(lotFilter, '');
+    setLotLogoRevision((r) => r + 1);
+    const touches = memberOptions.reduce((n, m) => n + 1 + (m.dependents || []).length, 0);
+    setSponsorNotice({
+      type: 'success',
+      text: `🗑️ Logo retiré du lot ${lotFilter} : ${touches} carte(s) retrouve(nt) leur apparence d'origine. Les fiches, photos et matricules sont intacts.`
+    });
+  };
+
+  // Fiches portant un ancien code provisoire (DKR-2600172) : candidates
+  // naturelles à la purge, puisqu'un réimport les régénère au bon format.
+  const legacyList = useMemo(() => findLegacyGeneratedMembers(members), [members]);
+  const legacyCount = useMemo(() => countLegacyCards(legacyList), [legacyList]);
+
+  // La purge des cartes à l'ancien code passe par une confirmation dédiée :
+  // elle est massive et non annulable comme une suppression classique.
+  const [purgeConfirmOpen, setPurgeConfirmOpen] = useState(false);
+
+  /**
+   * Vide ENTIÈREMENT le lot affiché, en un clic.
+   *
+   * ⚠️ Indispensable avant un réimport : la déduplication par identité saute
+   * toute personne déjà présente. Sans cette purge, réimporter un fichier ne
+   * change RIEN — les anciennes cartes, avec leurs anciens codes, restent en
+   * place et le message affiche « déjà présent(s) ignoré(s) ». C'est ce qui
+   * a produit plusieurs imports successifs sans effet.
+   */
+  const handlePurgeVisibleLot = async () => {
+    const list = memberOptions;
+    if (list.length === 0) return;
+    setDeleteBusy(true);
+    try {
+      let serverDone = 0;
+      try {
+        const { apiFetch } = await import('../utils/api');
+        for (const m of list) {
+          const srvId = String(m.id || '').startsWith('SRV-') ? String(m.id).slice(4) : null;
+          try {
+            const res = srvId
+              ? await apiFetch(`/api/beneficiaries/${srvId}`, { method: 'DELETE' })
+              : (m.cmuNumber
+                ? await apiFetch(`/api/beneficiaries/by-code/${encodeURIComponent(m.cmuNumber)}`, { method: 'DELETE' })
+                : null);
+            if (res && res.ok) serverDone++;
+          } catch { /* la fiche part de toute façon du registre local */ }
+        }
+      } catch { /* API injoignable : purge locale uniquement */ }
+
+      const ids = new Set(list.map((m) => m.id));
+      const remaining = getStoredMembers().filter((m) => !ids.has(m.id));
+      const saved = saveStoredMembers(remaining);
+      if (!saved.ok) {
+        setBulkNotice({ type: 'error', text: `❌ ${saved.error} Le lot n'a pas été vidé.` });
+        return;
+      }
+      setMembers(remaining);
+      setCheckedIds(new Set());
+      setLotFilter('ALL');
+      setSelectedMemberId(remaining.length > 0 ? remaining[0].id : '');
+      const people = list.reduce((n, m) => n + 1 + (m.dependents || []).length, 0);
+      setBulkNotice({
+        type: 'success',
+        text: `🧹 Lot ${lotFilter === 'ALL' ? '(tous)' : lotFilter} vidé : ${list.length} dossier(s) / ${people} carte(s) supprimés.${serverDone ? ` ${serverDone} retiré(s) de la base.` : ''} Vous pouvez maintenant réimporter le fichier : les matricules officiels seront appliqués.`
+      });
+    } catch (e) {
+      setBulkNotice({ type: 'error', text: `❌ Purge impossible : ${e.message}` });
+    } finally {
+      setDeleteBusy(false);
+    }
+  };
+
+  const toggleChecked = (id) => {
+    setCheckedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  /**
+   * Supprime une ou plusieurs fiches : registre local TOUJOURS, base de
+   * données UNIQUEMENT pour les fiches qui y existent réellement (identifiant
+   * « SRV-<id> »). On n'annonce jamais une suppression en base qui n'a pas
+   * eu lieu.
+   *
+   * @param {Array<object>} list — fiches à retirer
+   */
+  const handleDeleteMembers = async (list) => {
+    const targets = (Array.isArray(list) ? list : [list]).filter(Boolean);
+    if (targets.length === 0) return;
+
+    setDeleteBusy(true);
+    let serverDone = 0;
+    const serverFailed = [];
+
+    // 1. Base de données.
+    //
+    // ⚠️ Deux voies, car les fiches importées portent un identifiant LOCAL
+    // (`IMP-…`) et non serveur : sans suppression PAR CODE, la ligne
+    // PostgreSQL subsisterait et la fusion du démarrage réinjecterait les
+    // fiches supprimées — avec leurs mauvais codes — au rechargement.
+    try {
+      const { apiFetch } = await import('../utils/api');
+      for (const member of targets) {
+        const srvId = String(member.id || '').startsWith('SRV-')
+          ? String(member.id).slice(4)
+          : null;
+        try {
+          const res = srvId
+            ? await apiFetch(`/api/beneficiaries/${srvId}`, { method: 'DELETE' })
+            : (member.cmuNumber
+              ? await apiFetch(`/api/beneficiaries/by-code/${encodeURIComponent(member.cmuNumber)}`, { method: 'DELETE' })
+              : null);
+          if (res && res.ok) serverDone++;
+          else if (member.cmuNumber) serverFailed.push(member.cmuNumber);
+        } catch {
+          if (member.cmuNumber) serverFailed.push(member.cmuNumber);
+        }
+      }
+    } catch {
+      // API injoignable : rien n'est retiré de la base, on le signale.
+    }
+
+    // 2. Registre local (source d'affichage du studio)
+    const idsToRemove = new Set(targets.map((m) => m.id));
+    const remaining = getStoredMembers().filter((m) => !idsToRemove.has(m.id));
+    saveStoredMembers(remaining);
+    setMembers(remaining);
+    setCheckedIds((prev) => {
+      const next = new Set(prev);
+      idsToRemove.forEach((id) => next.delete(id));
+      return next;
+    });
+    if (remaining.length > 0) {
+      const stillThere = remaining.some((m) => m.id === selectedMemberId);
+      const nextSel = stillThere ? selectedMemberId : remaining[0].id;
+      setSelectedMemberId(nextSel);
+      setEditForm({ ...remaining.find((m) => m.id === nextSel) });
+    }
+
+    const serverInfo = serverDone > 0
+      ? ` ${serverDone} retirée(s) également de la base de données.`
+      : ' Aucune n\'était présente en base de données (fiches importées localement).';
+    const failInfo = serverFailed.length
+      ? ` ⚠️ ${serverFailed.length} suppression(s) en base ont échoué : ${serverFailed.slice(0, 5).join(', ')}.`
+      : '';
+
+    setDeleteTargets([]);
+    setDeleteBusy(false);
+    setBulkNotice({
+      type: 'success',
+      text: `🗑️ ${targets.length} fiche(s) supprimée(s).${serverInfo}${failInfo} ${remaining.length} assuré(s) restant(s).`
+    });
+  };
+
+  // Synchronisation avec la base de données (source de vérité)
+  //
+  // Le localStorage n'est qu'un cache : le vider fait perdre les fiches
+  // importées. Au démarrage du Studio, on relit donc PostgreSQL et on
+  // fusionne : les fiches serveur S'AJOUTENT au registre local, elle ne le
+  // remplacent jamais (une édition faite au studio, avec photo personnalisée,
+  // doit survivre). La base gagne sur les champs qu'elle connaît ; le local
+  // garde ce qu'il seul possède (photo importée, design de carte,-logo).
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      // ── 0. Recodage ASS LONASE, AVANT tout appel réseau ──────────────
+      //    Indépendant du backend : si PostgreSQL est injoignable, le
+      //    recodage doit tout de même avoir lieu, sinon les codes
+      //    resteraient dans l'ancien format.
+      let migrated = 0;
+      let repaired = 0;
+      try {
+        const { migrateLegacyCodes, repairDependentCodeSuffix } = await import('../utils/bulkImport');
+        if (!cancelled) {
+          const { members: recoded, migrated: n } = migrateLegacyCodes(getStoredMembers(), { unionId: 'DKR' });
+          migrated = n;
+          // Réparation des rangs d'ayants droit : le codeSuffix doit
+          // reproduire le rang du matricule, sinon la carte affiche
+          // « …-2151.1.3 » au lieu de « …-2151.3 ».
+          const { members: repares, repaired: r } = repairDependentCodeSuffix(recoded);
+          repaired = r;
+          if (n > 0 || r > 0) {
+            saveStoredMembers(repares);
+            setMembers(repares);
+          }
+        }
+      } catch { /* migration sans effet : le registre reste utilisable */ }
+
+      try {
+        const { fetchServerBeneficiaries } = await import('../utils/bulkImport');
+        const fromServer = await fetchServerBeneficiaries();
+        if (cancelled || !fromServer || fromServer.length === 0) {
+          if (migrated > 0) {
+            setBulkNotice({
+              type: 'success',
+              text: `🔢 ${migrated} carte(s) ASS LONASE recodée(s) au format officiel REGION-MSD-ANNEE-SEQUENCE.`
+            });
+          }
+          return;
+        }
+
+        setMembers(() => {
+          const existing = getStoredMembers();
+          const byCode = new Map();
+          existing.forEach((m) => { if (m.cmuNumber) byCode.set(String(m.cmuNumber), m); });
+
+          // Index d'IDENTITÉ en plus de l'index de code.
+          //
+          // ⚠️ Indispensable : après un recodage, la fiche locale porte
+          // « DKR-DKR-2026-0001 » alors que PostgreSQL peut encore servir
+          // « DKR-2600172 » pour la MÊME personne. Avec un simple index de
+          // code, la ligne serveur était considérée comme inconnue et
+          // réinjectée comme une carte supplémentaire : les anciens codes
+          // « réapparaissaient » à côté des nouveaux, en doublon.
+          //
+          // On reconnaît donc la personne (NIN, sinon prénom + nom +
+          // naissance), pas seulement son matricule.
+          const byIdentity = new Map();
+          const keyOf = (m) => {
+            if (!m) return '';
+            const nin = String(m.nin || '').trim();
+            if (nin) return `n${nin.toUpperCase()}`;
+            const first = String(m.firstName || '').toUpperCase().replace(/[^A-Z]/g, '');
+            const last = String(m.lastName || '').toUpperCase().replace(/[^A-Z]/g, '');
+            if (!first && !last) return '';
+            return `${first}|${last}|${String(m.birthDate || '').slice(0, 10)}`;
+          };
+          existing.forEach((m) => { const k = keyOf(m); if (k && !byIdentity.has(k)) byIdentity.set(k, m); });
+
+          let added = 0;
+          let recodedFromServer = 0;
+          let staleServerCodes = 0;
+          fromServer.forEach((s) => {
+            const key = String(s.cmuNumber);
+            let local = byCode.get(key);
+            let isNewIdentity = false;
+
+            if (!local) {
+              // Peut-on reconnaître la personne malgré un matricule différent ?
+              const idKey = keyOf(s);
+              local = idKey ? byIdentity.get(idKey) : null;
+              if (local) isNewIdentity = true;
+            }
+
+            if (!local) {
+              // Fiche absente du poste : on l'ajoute (elle vient de la base)
+              existing.push(s);
+              byCode.set(key, s);
+              const idKey = keyOf(s);
+              if (idKey && !byIdentity.has(idKey)) byIdentity.set(idKey, s);
+              added++;
+              return;
+            }
+
+            if (isNewIdentity) {
+              // Même personne, matricule différent.
+              //
+              // ⚠️ LA BASE NE DOIT PAS ÉCRASER UN CODE DÉJÀ RECODÉ. Si elle
+              // sert encore un ancien matricule (`DKR-2600172`), c'est
+              // qu'elle n'a pas été migrée : la valeur locale, déjà au
+              // format officiel, reste la bonne. Sans cette garde, le
+              // recodage local était annulé à chaque rechargement — c'est
+              // exactement le symptôme « ça ne change pas ».
+              const serverCode = String(s.cmuNumber || '').toUpperCase();
+              const serverIsLegacy = /^[A-Z]{3}-26\d{5}$/.test(serverCode);
+              if (!serverIsLegacy) {
+                local.cmuNumber = s.cmuNumber;
+                local.adherentCode = s.cmuNumber;
+                byCode.set(key, local);
+                recodedFromServer++;
+              } else {
+                staleServerCodes++;
+              }
+            }
+
+            if (!local.photoUrl && s.photoUrl) {
+              // La base connaît une photo que le cache local n'a pas
+              local.photoUrl = s.photoUrl;
+              local.hasOfficialPhoto = true;
+              local.photoStatus = 'OFFICIAL';
+            }
+          });
+
+          if (added > 0 || migrated > 0 || recodedFromServer > 0 || staleServerCodes > 0) {
+            saveStoredMembers(existing);
+            // La base sert encore des matricules au format ancien : elle
+            // doit être migrée (redémarrage du backend) pour que le
+            // problème disparaisse définitivement.
+            const staleInfo = staleServerCodes > 0
+              ? ` ⚠️ ${staleServerCodes} matricule(s) périmés subsistent en base : redémarrez le backend pour appliquer la migration, sinon ils réapparaîtront au prochain rechargement.`
+              : '';
+            setBulkNotice({
+              type: staleServerCodes > 0 ? 'warning' : 'success',
+              text: `☁️ ${added} bénéficiaire(s) restauré(s) depuis la base de données.${migrated > 0 ? ` ${migrated} carte(s) recodée(s) au format officiel REGION-MSD-ANNEE-SEQUENCE.` : ''}${repaired > 0 ? ` 🔧 ${repaired} rang(s) d'ayant droit réparé(s) (les codes affichés ne portent plus de double suffixe).` : ''}${recodedFromServer > 0 ? ` ${recodedFromServer} code(s) recadré(s) sur la valeur de la base (aucun doublon créé).` : ''}${staleInfo}`
+            });
+          }
+          return existing;
+        });
+      } catch {
+        /* Backend injoignable : le registre local reste inchangé. */
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Formulaire d'édition directe.
+  //
+  // ⚠️ Ne JAMAIS `useState(initialMembers[0])` : le registre est vide tant que la
+  // synchronisation avec la base n'a pas répondu (poste neuf, purge, backend
+  // éteint). `initialMembers[0]` valait alors `undefined`, `editForm` aussi, et
+  // le premier accès `editForm.departmentUnionId` faisait tomber la vue sur
+  // « TypeError: Cannot read properties of undefined ». On démarre donc sur un
+  // objet vide, jamais sur `undefined`.
+  const [editForm, setEditForm] = useState(() => ({ ...(initialMembers[0] || {}) }));
 
   const rectoRef = useRef(null);
   const versoRef = useRef(null);
 
-  // Membre principal sélectionné
-  const currentMember = members.find(m => m.id === selectedMemberId) || members[0];
+  // Membre principal sélectionné.
+  //
+  // ⚠️ Doit TOUJOURS être un objet, même sans fiche : le registre est vide
+  // tant que la synchronisation avec la base n'a pas répondu (poste neuf,
+  // backend éteint, ou compte sans périmètre). `members[0]` valait alors
+  // `undefined`, et le premier accès `currentMember.departmentUnionId` faisait
+  // tomber toute la vue sur « TypeError: Cannot read properties of undefined ».
+  // On garde donc un objet vide stable : les champs s'affichent vides, l'écran
+  // reste lisible, et la fiche réelle arrive dès que la base répond.
+  const EMPTY_MEMBER = useMemo(() => ({
+    id: '', cmuNumber: '', firstName: '', lastName: '', dependents: [], mergedCodes: []
+  }), []);
+  const currentMember = members.find(m => m.id === selectedMemberId) || members[0] || EMPTY_MEMBER;
 
   // Sélection automatique d'un nouveau membre généré depuis l'Adhésion en ligne
   useEffect(() => {
@@ -347,65 +1090,47 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
     return () => { cancelled = true; };
   }, []);
 
-  // Hydratation ZÉRO PERTE : récupère au démarrage les bénéficiaires conservés
-  // côté serveur (fichier secours backend/data/store.json quand PostgreSQL est
-  // éteint) et les fusionne dans le store du studio — les adhésions importées,
-  // en ligne ou en masse, et les cartes déjà imprimées ne sont jamais perdues.
+  // Synchronisation avec la base : le studio affiche le registre RÉELLEMENT
+  // enregistré, pas un extrait figé. C'est ce qui manquait pour que les 1 003
+  // bénéficiaires de la base soient imprimables en carte.
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      try {
-        const { hydrateFromServerFallback } = await import('../utils/bulkImport');
-        const { apiFetch } = await import('../utils/api');
-        const res = await apiFetch('/api/beneficiaries/fallback');
-        if (!res.ok || cancelled) return;
-        const data = await res.json();
-        const records = (data && data.records) || [];
-        if (records.length === 0 || cancelled) return;
-        const existing = getStoredMembers();
-        const existingCodes = new Set(existing.map(m => (m.cmuNumber || '').toString()));
-        const missing = records
-          .filter(r => r.cmuNumber && !existingCodes.has(r.cmuNumber.toString()))
-          .map((r, i) => ({
-            id: `FB-${Date.now().toString(36)}-${i}`,
-            cmuNumber: r.cmuNumber,
-            adherentCode: r.numeroAdherent || String(r.cmuNumber).replace(/\.\d+$/, ''),
-            firstName: String(r.prenom || r.firstName || '').toUpperCase(),
-            lastName: String(r.nom || r.lastName || '').toUpperCase(),
-            birthDate: r.birthDate || '',
-            birthPlace: '',
-            gender: (r.sexe || 'M').toUpperCase().startsWith('F') ? 'F' : 'M',
-            bloodGroup: 'O+',
-            address: r.address || 'Dakar',
-            commune: 'Dakar',
-            departmentUnionId: 'DKR',
-            mutuelleOrigine: r.mutuelleName || 'Mutuelle de santé départementale de Dakar',
-            phone: r.telephone || r.phone || '',
-            package: 'UNAMUSC 80%',
-            cardTypeLabel: 'Import Excel',
-            photoUrl: r.photoUrl || '',
-            hasOfficialPhoto: !!r.photoUrl,
-            photoStatus: r.photoUrl ? 'OFFICIAL' : 'PENDING_UPLOAD',
-            verificationStatus: 'FALLBACK_HYDRATION',
-            allergies: 'Aucune connue',
-            antecedents: 'À compléter',
-            dependents: []
-          }));
-        if (missing.length > 0 && !cancelled) {
-          const next = [...missing, ...existing];
-          saveStoredMembers(next);
-          setMembers(next);
+      const { syncBeneficiariesFromServer } = await import('../utils/beneficiarySync');
+      const synced = await syncBeneficiariesFromServer();
+      if (cancelled) return;
+
+      if (!synced) {
+        // Backend éteint ou session expirée : le registre local reste
+        // affiché tel quel, sans jamais être vidé.
+        if (getStoredMembers().length === 0) {
           setBulkNotice({
-            type: 'success',
-            text: `☁️ ${missing.length} bénéficiaire(s) conservé(s) côté serveur ont été restaurés automatiquement dans le studio (adhésions/importations précédentes jamais perdues).`
+            type: 'warning',
+            text: '⚠️ Aucun bénéficiaire disponible : le registre serveur est injoignable et aucune fiche n\'est enregistrée sur ce poste. Démarrez le backend et reconnectez-vous pour importer les 1 003 dossiers réels.'
           });
         }
-      } catch {
-        /* backend injoignable : le store local actuel reste la source */
+        return;
       }
+
+      setMembers(synced);
+      setSelectedMemberId((prev) => {
+        // Garde la fiche affichée si elle existe toujours, sinon première
+        // fiche du registre réel.
+        if (prev && synced.some((m) => m.id === prev)) return prev;
+        return synced.length > 0 ? synced[0].id : null;
+      });
     })();
     return () => { cancelled = true; };
   }, []);
+
+  // ⚠️ L'ancienne « hydratation ZÉRO PERTE » est supprimée.
+  //
+  // Elle relisait le fichier de secours et recréait des fiches en INVENTANT
+  // des valeurs absentes des données réelles : groupe sanguin « O+ » et
+  // commune « Dakar » pour tout le monde, package « UNAMUSC 80% ».
+  // Sur une carte imprimée, un groupe sanguin inventé n'est pas anodin.
+  // La synchronisation ci-dessus remonte la BASE, qui est la seule source
+  // acceptable : champ vide à l'écran plutôt que valeur plausible et fausse.
 
   // Synchroniser le formulaire d'édition
   useEffect(() => {
@@ -442,8 +1167,15 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
 
   // --- Personnalisation parrain : logo apposé sur la carte en cours ---------
   // Numéro CSU de la carte affichée (titulaire ou ayant droit majeur sélectionné)
+  //
+  // ⚠️ Un ayant droit IMPORTÉ porte son PROPRE matricule, déjà complet
+  // (« DKR-DKR-2026-2151.3 »). Le recomposer à partir du code du parent
+  // (« …-2151.1 ») + un suffixe produisait un double point :
+  // « DKR-DKR-2026-2151.1.3 ». On n'utilise donc le calcul historique que
+  // pour les fiches sans matricule propre (jeu de données d'origine).
   const cardCmuNumber = currentMajorDependent
-    ? `${(editForm.cmuNumber || currentMember.cmuNumber).replace(/\.0$/, '')}${currentMajorDependent.codeSuffix}`
+    ? (currentMajorDependent.cmuNumber
+      || `${(editForm.cmuNumber || currentMember.cmuNumber).replace(/\.0$/, '')}${currentMajorDependent.codeSuffix || ''}`)
     : (editForm.cmuNumber || currentMember.cmuNumber);
 
   // Coordonnées de la MSD émettrice (permanence, standard) : elles suivent
@@ -515,18 +1247,47 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
   useEffect(() => {
     setCardLogoState(getCardLogo(cardCmuNumber));
   }, [cardCmuNumber]);
-  const effectiveSponsorLogo = currentSponsorLogo || cardLogo || (isSchoolCard ? '/logo_mairie_dakar.png' : null);
+  // Le logo du LOT précède le logo de carte : un logo de campagne prime sur un
+  // réglage ponctuel, puis on retombe sur le logo du parrain / de la carte.
+  // Relu via lotLogoRevision : appliquer un logo sur un lot doit rafraîchir
+  // la carte affichée sans changer de dossier.
+  const [lotLogoRevision, setLotLogoRevision] = useState(0);
+  const lotLogo = useMemo(
+    () => (currentMember ? getLotLogo(currentMember.lotCode) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [currentMember, lotLogoRevision]
+  );
+  const effectiveSponsorLogo = currentSponsorLogo || lotLogo || cardLogo || (isSchoolCard ? '/logo_mairie_dakar.png' : null);
+  // Filigrane de la carte CLASSIQUE : mêmes réglages (position / opacité /
+  // taille) que les cartes Élèves et Daara. Sans ce calque, la carte
+  // classique ignorait le panneau « Personnalisation complète de la carte »
+  // et affichait un logo de 20 px en bas de la colonne de gauche.
+  const classicWatermarkStyle = buildWatermarkStyle(effectiveSponsorLogo, cardDesign);
   // Tuteur (élève / talibé) : champ dédié du dossier, repli sur le parrain.
   const tuteurName = (editForm.tuteurName || currentMember.tuteurName) || null;
   const tuteurPhone = (editForm.tuteurPhone || currentMember.tuteurPhone) || null;
 
   // Données complètes calculées
+  // ⚠️ Les fiches n'ont pas toutes la même forme :
+  //  - le jeu de données historique (msdDakarMembers) stocke l'ayant droit
+  //    sous `name` : « ASSI SECK » ;
+  //  - l'import Excel stocke `firstName` / `lastName` en champs séparés.
+  //
+  // ⚠️ `currentMajorDependent` vaut NULL pour la carte du titulaire : ce
+  // calcul doit donc être protégé (`?.`), sinon le rendu plante sur
+  // « null.name » avant même d'atteindre le ternaire ci-dessous.
+  const dependentFullName = ((currentMajorDependent
+    && (currentMajorDependent.name
+      || `${currentMajorDependent.firstName || ''} ${currentMajorDependent.lastName || ''}`.trim()))
+    || '').toString().trim();
+
   const cardData = currentMajorDependent ? {
     isPrincipal: false,
-    firstName: currentMajorDependent.name.split(' ')[0] || currentMajorDependent.name,
-    lastName: currentMajorDependent.name.split(' ').slice(1).join(' ') || '',
-    fullName: currentMajorDependent.name,
-    cmuNumber: `${(editForm.cmuNumber || currentMember.cmuNumber).replace(/\.0$/, '')}${currentMajorDependent.codeSuffix}`,
+    firstName: dependentFullName.split(' ')[0] || dependentFullName,
+    lastName: dependentFullName.split(' ').slice(1).join(' ') || '',
+    fullName: dependentFullName,
+    cmuNumber: currentMajorDependent.cmuNumber
+      || `${(editForm.cmuNumber || currentMember.cmuNumber).replace(/\.0$/, '')}${currentMajorDependent.codeSuffix || ''}`,
     birthDate: currentMajorDependent.birthDate,
     birthPlace: currentMajorDependent.birthPlace || editForm.birthPlace || 'Dakar',
     gender: currentMajorDependent.gender,
@@ -569,7 +1330,7 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
     package: editForm.package || currentMember.package,
     cardTypeLabel: editForm.cardTypeLabel || currentMember.cardTypeLabel,
     photoUrl: editForm.photoUrl || currentMember.photoUrl,
-    minorDependents: currentMember.dependents.filter(d => !d.isMajor),
+    minorDependents: (currentMember.dependents || []).filter(d => !d.isMajor),
     unionName: currentUnion.name,
     unionCode: currentUnion.id,
     msdContacts,
@@ -581,14 +1342,17 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
   // Encodage dynamique du QR Code scannable à 100% (Supporte l'URL courante, HTTPS/Public, IP Local Wi-Fi et Code Brut)
   useEffect(() => {
     const currentPort = (typeof window !== 'undefined' && window.location.port) ? window.location.port : '5173';
-    let effectiveIp = customWifiIp || (typeof window !== 'undefined' ? localStorage.getItem('cmu-wifi-ip') : null) || getCachedLanIp() || '192.168.1.42';
-    if (effectiveIp === '192.168.1.3' || effectiveIp === '192.168.1.5' || effectiveIp === '192.168.1.13' || effectiveIp === '192.168.1.64') {
-      effectiveIp = '192.168.1.42';
-    }
+    // IP retenue pour le QR : saisie par l'agent, sinon IP mémorisée, sinon
+    // celle de l'URL courante si l'app est déjà ouverte via le LAN.
+    // Aucune valeur par défaut : sans IP exploitable, on affiche l'URL
+    // courante plutôt qu'une adresse fausse qui échouerait au scan.
+    const storedIp = typeof window !== 'undefined' ? localStorage.getItem('cmu-wifi-ip') : null;
+    const effectiveIp = [customWifiIp, storedIp, getCachedLanIp()]
+      .find((candidate) => isValidLanIp(candidate)) || '';
     let origin = window.location.origin;
 
-    // Si le PC navigue sur localhost/127.0.0.1, utiliser l'IP IPv4 réelle du PC (192.168.1.42)
-    if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    // Si le PC navigue sur localhost/127.0.0.1, utiliser l'IP IPv4 réelle du PC
+    if (effectiveIp && typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
       origin = `http://${effectiveIp}:${currentPort}`;
     }
 
@@ -615,7 +1379,10 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
       verifyUrl = `${publicBase}/#/verify/${cardData.cmuNumber}?${academicQrData.toString()}`;
     } else if (qrTargetMode === 'WIFI_IP') {
       if (customWifiIp) localStorage.setItem('cmu-wifi-ip', customWifiIp);
-      verifyUrl = `http://${effectiveIp}:${currentPort}/#/verify/${cardData.cmuNumber}?${academicQrData.toString()}`;
+      // Sans IP exploitable, on retombe sur l'URL courante plutôt que d'encoder
+      // une adresse inventée : le scan échouerait sur le téléphone.
+      const wifiOrigin = effectiveIp ? `http://${effectiveIp}:${currentPort}` : origin;
+      verifyUrl = `${wifiOrigin}/#/verify/${cardData.cmuNumber}?${academicQrData.toString()}`;
     } else if (qrTargetMode === 'RAW_CODE') {
       verifyUrl = cardData.cmuNumber;
     }
@@ -709,186 +1476,188 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
   };
 
   // --- Import en masse : Excel MSD Dakar + appariement photos ---------------
-
-  /** Normalisation identique à bulkImport.js (accents/espaces supprimés) */
-  const norm = (v) => (v || '').toString().trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]/g, '');
+  //
+  // AUCUNE règle de lecture ici : tout est délégué à src/utils/bulkImport.js
+  // (source unique de vérité, testable hors navigateur). Une correction
+  // apportée à la librairie s'applique immédiatement ici ET à tout import
+  // réalisé ailleurs dans la plateforme.
 
   /**
-   * Importe le fichier Excel, apparie les photos (dossier sélectionné juste
-   * avant ou à cette étape), ajoute les bénéficiaires au store local du studio
-   * puis pousse le tout vers le backend (mode secours fichier si base off).
+   * Importe le classeur, apparie les photos (dossier sélectionné juste avant),
+   * ajoute les fiches au store local du studio puis pousse le tout vers le
+   * backend (mode secours fichier si la base est indisponible).
    */
   const handleBulkImport = async (excelFile) => {
     if (!excelFile) return;
     setBulkImporting(true);
-    setBulkNotice({ type: 'info', text: '⏳ Lecture du fichier Excel en cours…' });
+    setBulkNotice({ type: 'info', text: '⏳ Lecture du fichier Excel et appariement des photos…' });
     try {
-      const XLSX = await import('xlsx');
-      const buffer = await excelFile.arrayBuffer();
-      const workbook = XLSX.read(buffer, { type: 'array', cellDates: true });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const raw = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-      if (raw.length === 0) throw new Error('Aucune ligne trouvée dans le fichier.');
-
-      // Lecture UNIQUE et normalisée : mêmes règles que src/utils/bulkImport.js.
-      // → codes canoniques sans décimale parasite (« DKR_2600011.0 » devient
-      //   « DKR_2600011 » : plus aucun doublon de carte ni collision de scan) ;
-      // → dates de naissance sérielles Excel converties en AAAA-MM-JJ ;
-      // → colonne « PHOTO » du classeur exploitée pour l'appariement.
-      const { parseRowsToRecords } = await import('../utils/bulkImport');
-      const records = parseRowsToRecords(raw);
-
-      const photoFiles = Array.from(pendingPhotosRef.current || []).filter(f => f.type.startsWith('image/'));
-      const photoIndex = photoFiles.map(f => {
-        const base = f.name.replace(/\.[^.]+$/, '');
-        return { file: f, nameNorm: norm(base), phoneNorm: (base || '').replace(/[^0-9]/g, '') };
+      // Pipeline UNIQUE (src/utils/bulkImport.js) : lecture du classeur,
+      // appariement des photos (colonne PHOTO, nom, prénom, téléphone, code),
+      // compression, puis construction des fiches. Aucune règle dupliquée ici.
+      const { runExcelImport, createCampaignLot } = await import('../utils/bulkImport');
+      // Chaque import ouvre un LOT de campagne : c'est la provenance de la
+      // carte, la seule information qui dise si elle a déjà été imprimée.
+      const lot = await createCampaignLot({
+        sourceFile: excelFile.name || '',
+        codeStrategy: importCodeStrategy,
+        // Un lot qui conserve les codes du classeur décrit des cartes
+        // DÉJÀ imprimées : il est marqué comme tel dès l'import.
+        printed: importCodeStrategy === 'FILE',
+        count: 0
       });
-      const usedPhotos = new Set();
-      const findPhoto = (r) => {
-        const hint = norm(String(r.photoHint || '').replace(/\.[^.]+$/, ''));
-        const fullName = norm(`${r.prenom || ''}${r.nom || ''}`);
-        const first = norm(r.prenom || '');
-        const phone = (r.telephone || '').toString().replace(/[^0-9]/g, '');
-        const code = norm(r.codeBeneficiaire || '');
-        return (hint && photoIndex.find(p => !usedPhotos.has(p.file.name) && p.nameNorm === hint))
-          || photoIndex.find(p => !usedPhotos.has(p.file.name) && p.nameNorm === fullName)
-          || photoIndex.find(p => !usedPhotos.has(p.file.name) && first && p.nameNorm === first)
-          || photoIndex.find(p => !usedPhotos.has(p.file.name) && phone && p.phoneNorm === phone)
-          || photoIndex.find(p => !usedPhotos.has(p.file.name) && code && p.nameNorm === code);
-      };
+      // Les matricules déjà attribués sont transmis : les nouveaux codes sont
+      // générés AU-DELÀ du dernier, jamais par-dessus un code existant.
+      const alreadyCoded = getStoredMembers().map(m => (m.cmuNumber || '').toString());
+      const { members, totalPeople, matchedPhotos, degradedPhotos, merged, dupGroups } = await runExcelImport(
+        excelFile,
+        pendingPhotosRef.current,
+        alreadyCoded,
+        { lotCode: lot.code, codeStrategy: importCodeStrategy }
+      );
 
-      // Détection des membres du même ménage (NUMERO_ADHERENT partagé)
-      const household = {};
-      const members = [];
-      for (const r of records) {
-        if (!r.prenom && !r.nom) continue; // ligne vide
-        r.sexe = r.sexe || 'M';
-
-        // Photo appariée → lecture en data-URL (max 500 Ko compressés en 300px)
-        const photo = findPhoto(r);
-        let photoUrl = '';
-        if (photo) {
-          usedPhotos.add(photo.file.name);
-          photoUrl = await new Promise((resolve) => {
-            const img = new Image();
-            const reader = new FileReader();
-            reader.onload = () => {
-              img.onload = () => {
-                const max = 300;
-                const scale = Math.min(1, max / Math.max(img.width, img.height));
-                const canvas = document.createElement('canvas');
-                canvas.width = Math.round(img.width * scale);
-                canvas.height = Math.round(img.height * scale);
-                canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                resolve(canvas.toDataURL('image/jpeg', 0.82));
-              };
-              img.onerror = () => resolve('');
-              img.src = reader.result;
-            };
-            reader.readAsDataURL(photo.file);
-          });
-        }
-
-        const age = r.birthDate ? new Date().getFullYear() - parseInt(r.birthDate.slice(0, 4), 10) : 30;
-
-        members.push({
-          id: `IMP-${Date.now().toString(36)}-${members.length}`,
-          cmuNumber: r.codeBeneficiaire || r.numeroAdherent,
-          adherentCode: r.numeroAdherent || (r.codeBeneficiaire || '').replace(/\.\d+$/, ''),
-          rawCode: r.codeBeneficiaire,
-          firstName: (r.prenom || '').toUpperCase(),
-          lastName: (r.nom || '').toUpperCase(),
-          birthDate: r.birthDate || '',
-          birthPlace: '',
-          gender: r.sexe,
-          bloodGroup: 'O+',
-          address: r.address || 'Dakar',
-          commune: 'Dakar',
-          departmentUnionId: 'DKR',
-          mutuelleOrigine: 'Mutuelle de santé départementale de Dakar',
-          phone: r.telephone || '',
-          package: 'UNAMUSC 80%',
-          cardTypeLabel: 'Import Excel',
-          photoUrl,
-          hasOfficialPhoto: !!photoUrl,
-          photoStatus: photoUrl ? 'OFFICIAL' : 'PENDING_UPLOAD',
-          verificationStatus: 'IMPORT_EXCEL_MSD_DAKAR',
-          allergies: 'Aucune connue',
-          antecedents: 'À compléter',
-          isMajor: age >= 18,
-          dependents: []
-        });
-
-        // Regroupement par ménage : les membres partageant NUMERO_ADHERENT
-        // deviennent ayant-droit du chef de ménage (lignes 1 = chef).
-        if (r.numeroAdherent) {
-          if (!household[r.numeroAdherent]) household[r.numeroAdherent] = [];
-          household[r.numeroAdherent].push(members[members.length - 1]);
-        }
-      }
-
-      // Les membres du même ménage au-delà du 1er deviennent dependents du chef
-      const principals = [];
-      for (const group of Object.values(household)) {
-        const [chef, ...deps] = group;
-        chef.dependents = deps.map((d, i) => ({
-          ...d,
-          isMajor: true,
-          codeSuffix: `.${i + 1}`,
-          bloodGroup: d.bloodGroup || 'O+',
-          allergies: d.allergies || 'Aucune connue',
-          vaccines: d.vaccines || 'Vaccination à jour',
-          antecedents: d.antecedents || 'À compléter'
-        }));
-        principals.push(chef);
-      }
-      // Membres sans numéro d'adhérent → principaux individuels
-      for (const m of members) {
-        if (!household[m.adherentCode]) principals.push(m);
-      }
-
-      if (principals.length === 0) throw new Error('Aucun bénéficiaire exploitable trouvé dans le fichier.');
-
-      // 1. Ajout au store local du studio (immédiatement imprimable)
+      // 1. Ajout au store local du studio (immédiatement imprimable).
+      //    Un assuré déjà connu n'est JAMAIS réimporté : zéro doublon. La
+      //    reconnaissance se fait sur l'IDENTITÉ (NIN, ou prénom + nom +
+      //    naissance) et plus sur le matricule — celui-ci étant désormais
+      //    généré par le système, il change à chaque import.
+      const { collectIdentities, beneficiaryIdentity } = await import('../utils/bulkImport');
       const existing = getStoredMembers();
       const existingCodes = new Set(existing.map(m => (m.cmuNumber || '').toString()));
-      const fresh = principals.filter(m => !existingCodes.has((m.cmuNumber || '').toString()));
-      const nextMembers = [...fresh, ...existing];
-      saveStoredMembers(nextMembers);
-      setMembers(nextMembers);
-
-      // 2. Push backend (mode secours fichier automatique si base off)
+      const existingIds = collectIdentities(existing);
+      const seenInFile = new Set();
+      const fresh = [];
+      let duplicates = 0;
+      for (const m of members) {
+        const key = beneficiaryIdentity(m);
+        if ((key && (existingIds.has(key) || seenInFile.has(key)))
+          || existingCodes.has((m.cmuNumber || '').toString())) {
+          duplicates++;
+          continue;
+        }
+        if (key) seenInFile.add(key);
+        fresh.push(m);
+      }
+      // 1b. Écriture locale — SAISIR LE RÉSULTAT.
+      // Une fiche affichée mais non écrite disparaît au rechargement : on
+      // refuse donc d'annoncer un succès si l'enregistrement a échoué.
+      let saved = { ok: true, quotaExceeded: false, bytes: 0 };
+      if (fresh.length > 0) {
+        const nextMembers = [...fresh, ...existing];
+        saved = saveStoredMembers(nextMembers);
+        setMembers(nextMembers);
+      }
+      // 2. Push backend — la BASE est la source de vérité : les photos
+      //    y sont conservées, ce qui soulage le localStorage (plafonné à
+      //    ~5 Mo) et fait survivre le registre au changement de poste.
+      //    Envoi par lots : un corps de plusieurs mégaoctets se fait
+      //    refuser par les proxys.
       let serverInfo = '';
       try {
         const { apiFetch } = await import('../utils/api');
-        const res = await apiFetch('/api/beneficiaries/bulk', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ rows: fresh.map(m => ({
-            codeBeneficiaire: m.cmuNumber,
-            numeroAdherent: m.adherentCode,
-            prenom: m.firstName,
-            nom: m.lastName,
-            birthDate: m.birthDate,
-            sexe: m.gender,
-            telephone: m.phone,
-            address: m.address,
-            schoolName: m.schoolName || null
-          })) })
-        });
-        if (res.ok) {
+        const BATCH = 40;
+        let inserted = 0;
+        let updated = 0;
+        let failed = 0;
+        for (let i = 0; i < fresh.length; i += BATCH) {
+          const batch = fresh.slice(i, i + BATCH);
+          const res = await apiFetch('/api/beneficiaries/bulk', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              rows: batch.flatMap(m => [
+                {
+                  codeBeneficiaire: m.cmuNumber,
+                  numeroAdherent: m.adherentCode,
+                  sourceCode: m.sourceCode || null,
+                  lotCode: m.lotCode || lot.code,
+                  prenom: m.firstName,
+                  nom: m.lastName,
+                  birthDate: m.birthDate,
+                  birthPlace: m.birthPlace,
+                  nin: m.nin || null,
+                  sexe: m.gender,
+                  bloodGroup: m.bloodGroup,
+                  telephone: m.phone,
+                  address: m.address,
+                  schoolName: m.schoolName || null,
+                  photoUrl: m.photoUrl || null
+                },
+                // Les ayants droit sont des personnes à part entière : ils
+                // ont leur PROPRE matricule et doivent être enregistrés
+                // eux aussi, sinon le.scan de leur carte ne trouve rien.
+                ...(m.dependents || []).map(d => ({
+                  codeBeneficiaire: d.cmuNumber,
+                  numeroAdherent: m.cmuNumber,
+                  sourceCode: d.sourceCode || null,
+                  lotCode: d.lotCode || m.lotCode || lot.code,
+                  prenom: d.firstName,
+                  nom: d.lastName,
+                  birthDate: d.birthDate,
+                  birthPlace: d.birthPlace,
+                  nin: d.nin || null,
+                  sexe: d.gender,
+                  bloodGroup: d.bloodGroup,
+                  telephone: d.phone,
+                  address: d.address,
+                  photoUrl: d.photoUrl || null
+                }))
+              ])
+            })
+          });
+          if (!res || !res.ok) {
+            failed++;
+            // On ne casse pas la boucle : les lots suivants sont
+            // indépendants et peuvent aboutir.
+            continue;
+          }
           const data = await res.json();
-          serverInfo = data.mode === 'fallback-file'
-            ? ' · Base indisponible : conservés dans le fichier secours serveur (flush automatique à la reconnexion).'
-            : ` · ${data.inserted} enregistrés en base de données.`;
+          inserted += Number(data.inserted) || 0;
+          updated += Number(data.updated) || 0;
+          if (data.mode === 'fallback-file') {
+            serverInfo = ' · Base indisponible : conservés dans le fichier secours serveur (flush automatique à la reconnexion).';
+          }
         }
+        const failInfo = failed > 0 ? ` ⚠️ ${failed} lot(s) non enregistrés en base.` : '';
+        serverInfo += ` · ${inserted} créé(s) et ${updated} mis à jour en base.${failInfo}`;
       } catch {
         serverInfo = ' · Backend injoignable : bénéficiaires conservés localement (store studio).';
       }
 
+      const dupInfo = duplicates > 0
+        ? ` ${duplicates} déjà présent(s) ignoré(s) — aucun doublon créé.`
+        : '';
+      const photoInfo = degradedPhotos > 0
+        ? ` ${degradedPhotos} photo(s) ont été compressées plus fortement pour tenir dans l'espace de stockage du poste.`
+        : '';
+      // Doublons réellement fusionnés : l'agent doit savoir que des lignes de
+      // son fichier ont été regroupées, et lesquelles.
+      const mergedInfo = merged > 0
+        ? ` 🔗 ${merged} doublon(s) fusionné(s) : ${dupGroups.map((g) => `${g.nom} (${g.code})`).join(', ')}.`
+        : '';
+      // La stratégie de codage APPLIQUÉE est rappelée explicitement : c'est
+      // l'information qui manque quand une carte ne porte pas le code
+      // attendu, et elle se lit mieux que le menu déroulant.
+      const strategyInfo = importCodeStrategy === 'SYSTEM'
+        ? ' 🔢 Codage : matricule officiel attribué (REGION-MSD-ANNEE-SEQUENCE).'
+        : ' 📄 Codage : code du FICHIER conservé tel quel.';
+
+      // ⚠️ L'import n'est annoncé « réussi » que s'il est RÉELLEMENT
+      // enregistré. Sinon on dit exactement pourquoi — et ce qui se passe
+      // au rechargement de la page.
+      if (!saved.ok) {
+        setBulkNotice({
+          type: 'error',
+          text: saved.quotaExceeded
+            ? `⚠️ ${fresh.length} dossier(s) affichés mais NON enregistrés : ${saved.error} Les fiches disparîtront au rechargement de la page. Réimportez par lots plus petits, ou faites porter les photos par la base de données (POST /api/beneficiaries/bulk).${serverInfo}`
+            : `⚠️ ${fresh.length} dossier(s) affichés mais NON enregistrés : ${saved.error} Les fiches disparîtront au rechargement de la page.${serverInfo}`
+        });
+        return;
+      }
+
       setBulkNotice({
-        type: 'success',
-        text: `✅ ${fresh.length} bénéficiaires importés (${members.length} personnes au total, photos appariées : ${usedPhotos.size}).${serverInfo} Sélectionnez-les dans la liste ci-dessus pour générer leurs cartes.`
+        type: importCodeStrategy === 'SYSTEM' ? 'success' : 'warning',
+        text: `✅ ${fresh.length} dossier(s) importé(s) (${totalPeople} personnes au total, photos appariées : ${matchedPhotos}).${strategyInfo}${dupInfo}${mergedInfo}${photoInfo} Lot de campagne : ${lot.code}.${serverInfo} Sélectionnez-les dans la liste pour générer leurs cartes.`
       });
       if (fresh.length > 0) setSelectedMemberId(fresh[0].id);
     } catch (err) {
@@ -1276,9 +2045,11 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
               <span>📥</span> 0. Import en masse — création de cartes à partir d'un fichier Excel
             </h5>
             <p className="text-sub small mb-0" style={{ fontSize: '0.88rem' }}>
-              Chargez le fichier MSD Dakar (ex : <strong>Ville de Dakar msd Dakar.xlsx</strong>) puis le dossier de photos.
-              Les photos sont appariées automatiquement par <strong>nom, code bénéficiaire ou téléphone</strong>.
-              Chaque ménage (même NUMERO_ADHERENT) est regroupé : le chef reçoit les ayants droit.
+              Chargez le fichier MSD Dakar (ex : <strong>MSD de Grand Yoff.xlsx</strong>) puis le dossier de photos.
+              Les photos sont appariées automatiquement par <strong>nom, code du fichier ou téléphone</strong>.
+              Les colonnes <strong>NUMERO_ADHERENT</strong> et <strong>CODE_BENEFICIAIRE</strong> ne sont pas reprises comme matricule :
+              chaque assuré reçoit un <strong>code unique généré par le système</strong> (aucun doublon possible).
+              Les personnes partageant une même base de code dans le fichier sont regroupées : le chef reçoit ses ayants droit.
             </p>
           </div>
           <div className="d-flex gap-2 flex-wrap">
@@ -1295,7 +2066,22 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
               type="file"
               accept=".xlsx,.xls,.csv"
               className="d-none"
-              onChange={(e) => { const f = e.target.files && e.target.files[0]; if (f) handleBulkImport(f); }}
+              onChange={(e) => {
+                const f = e.target.files && e.target.files[0];
+                if (!f) return;
+                // Blocage explicite : en mode « code du fichier », on exige
+                // une confirmation. C'est la cause des imports répétés avec
+                // des cartes restées en DKR_2600118.
+                if (importCodeStrategy === 'FILE' && !printLotConfirmed) {
+                  setBulkNotice({
+                    type: 'error',
+                    text: '⛔ Import bloqué : le codage est réglé sur « Conserver le code du fichier ». Si ce lot est DÉJÀ IMPRIMÉ, cochez la confirmation ci-dessus. Sinon, choisissez « 🆕 Attribuer un matricule officiel » — c\'est le système qui génère désormais les codes.'
+                  });
+                  if (excelInputRef.current) excelInputRef.current.value = '';
+                  return;
+                }
+                handleBulkImport(f);
+              }}
             />
             <button
               type="button"
@@ -1319,6 +2105,61 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
                 <>📊 2️⃣ Importer le fichier Excel…</>
               )}
             </button>
+          </div>
+
+          {/* Stratégie de codage du lot — décision EXPLICITE, jamais un hasard.
+              Un lot déjà imprimé doit conserver les codes de son classeur :
+              les remplacer détacherait chaque fiche du PVC correspondant. */}
+          <div className="mt-3">
+            <label className="form-label text-sub fw-extrabold" style={{ fontSize: '0.85rem' }}>
+              🔢 Codage de ce lot d'import
+            </label>
+            <select
+              className="form-select"
+              value={importCodeStrategy}
+              onChange={(e) => chooseStrategy(e.target.value)}
+              disabled={bulkImporting}
+              style={{
+                background: 'var(--bg-card-subtle)', color: 'var(--text-main)',
+                border: '1.5px solid var(--border-color)', borderRadius: '14px',
+                fontSize: '0.86rem', fontWeight: '700', minHeight: '46px'
+              }}
+            >
+              <option value="FILE">📄 Conserver le code du fichier — lot DÉJÀ IMPRIMÉ</option>
+              <option value="SYSTEM">🆕 Attribuer un matricule officiel — nouveau lot</option>
+            </select>
+            <small className="text-muted d-block mt-1" style={{ fontSize: '0.75rem', lineHeight: 1.45 }}>
+              {importCodeStrategy === 'FILE'
+                ? 'Le code du classeur est conservé à l’identique (ex. DKR_2600040.1) : c’est celui imprimé sur la carte.'
+                : 'Le système attribue un matricule REGION-MSD-ANNEE-SEQUENCE.RANG (ex. DKR-DKR-2026-0001.1). C’est le mode à utiliser pour un nouveau lot.'}
+            </small>
+
+            {/* Confirmation obligatoire pour le mode « code du fichier ».
+                C'est cette absence qui a laissé passer plusieurs imports
+                produisant des cartes en DKR_2600118 au lieu du matricule
+                officiel, sans le moindre signal. */}
+            {importCodeStrategy === 'FILE' && (
+              <label
+                className="d-flex align-items-start gap-2 mt-2 p-2"
+                style={{ borderRadius: '12px', background: 'rgba(180,83,9,0.10)', border: '1.5px solid #f59e0b', cursor: 'pointer' }}
+              >
+                <input
+                  type="checkbox"
+                  checked={printLotConfirmed}
+                  onChange={(e) => setPrintLotConfirmed(e.target.checked)}
+                  style={{ marginTop: '3px' }}
+                />
+                <span style={{ fontSize: '0.78rem', color: '#b45309', fontWeight: '700', lineHeight: 1.45 }}>
+                  Je confirme que les cartes de ce lot sont DÉJÀ IMPRIMÉES et que
+                  leurs codes doivent être conservés à l’identique.
+                  <span className="d-block text-muted" style={{ fontWeight: '600' }}>
+                    Sans cette confirmation, l’import est refusé. Pour un lot dont
+                    les cartes ne sont pas encore sorties, choisissez plutôt
+                    « 🆕 Attribuer un matricule officiel ».
+                  </span>
+                </span>
+              </label>
+            )}
           </div>
         </div>
 
@@ -1382,24 +2223,150 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
                   className="btn btn-sm text-white fw-extrabold px-3.5 py-2 shadow-sm hover-lift"
                   style={{ borderRadius: '12px', fontSize: '0.82rem', background: '#059669', border: '1.5px solid #10b981' }}
                   onClick={() => {
-                    const fresh = resetToDefaultMembers();
-                    setMembers(fresh);
-                    if (fresh.length > 0) setSelectedMemberId(fresh[0].id);
+                    // RELIRE le registre, sans jamais l'écraser.
+                    //
+                    // ⚠️ Ce bouton appelait resetToDefaultMembers(), qui
+                    // REMPLAÇAIT tout le store par les 41 profils par
+                    // défaut : les 122 fiches importées du fichier
+                    // ASS LONASE disparaissaient d'un clic. « Recharger »
+                    // doit.reload, pas .reset — getStoredMembers() ne fait
+                    // que lire le localStorage.
+                    const stored = getStoredMembers();
+                    setMembers(stored);
+                    if (stored.length > 0) {
+                      const stillThere = stored.some((m) => m.id === selectedMemberId);
+                      if (!stillThere) setSelectedMemberId(stored[0].id);
+                      else setEditForm({ ...stored.find((m) => m.id === selectedMemberId) });
+                    }
+                    setSponsorNotice({
+                      type: 'success',
+                      text: `✅ ${stored.length} assuré(s) rechargé(s) depuis le registre local.`
+                    });
                   }}
                 >
-                  {/* ⚠️ Ne jamais appeler resetToDefaultMembers() ici : cette
-                      fonction écrit dans le localStorage et dispatche un
-                      événement, ce qui provoquerait une boucle de rendu
-                      infinie (« Too many re-renders »). On affiche le nombre
-                      courant, sans effet de bord. */}
                   🔄 Recharger les {members.length} assurés
                 </button>
+                <button
+                  type="button"
+                  className="btn btn-sm text-white fw-extrabold px-3.5 py-2 shadow-sm hover-lift"
+                  style={{ borderRadius: '12px', fontSize: '0.82rem', background: '#dc2626', border: '1.5px solid #ef4444' }}
+                  onClick={() => setDeleteTargets([currentMember])}
+                  title="Retirer définitivement la fiche affichée (registre local et base)"
+                >
+                  🗑️ Supprimer la fiche affichée
+                </button>
+                {legacyCount > 0 && (
+                  <button
+                    type="button"
+                    className="btn btn-sm text-white fw-extrabold px-3.5 py-2 shadow-sm hover-lift"
+                    style={{ borderRadius: '12px', fontSize: '0.82rem', background: '#b45309', border: '1.5px solid #f59e0b' }}
+                    onClick={() => setPurgeConfirmOpen(true)}
+                    disabled={deleteBusy}
+                    title="Retirer toutes les fiches porteuses d'un ancien code provisoire (DKR-2600172). Un réimport les recrée au format officiel. Les cartes déjà imprimées ne sont jamais concernées."
+                  >
+                    🧹 Purger les {legacyCount} cartes à l'ancien code
+                  </button>
+                )}
               </div>
+            </div>
+
+            {/* ── FILTRE PAR LOT DE CAMPAGNE ─────────────────────────────
+                Retrouver d'un coup d'œil toutes les cartes d'un même import,
+                et n'agir que sur elles. */}
+            <div className="studio-form-group mb-3">
+              {/* Titre de la zone : agrandi, elle regroupe les actions sensibles. */}
+              <label className="form-label text-sub fw-extrabold d-flex align-items-center gap-2" style={{ fontSize: '1rem' }}>
+                <span>📦 Lot de campagne d'enrôlement</span>
+              </label>
+              <select
+                className="form-select py-2.5 px-3 fw-extrabold"
+                value={lotFilter}
+                onChange={(e) => setLotFilter(e.target.value)}
+                style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid #a7f3d0', borderRadius: '14px', fontSize: '0.95rem', minHeight: '52px' }}
+              >
+                <option value="ALL">🌐 Tous les lots ({members.length} dossier(s))</option>
+                {lotList.map(l => (
+                  <option key={l.code} value={l.code}>
+                    {l.code} — {l.dossiers} dossier(s) / {l.people} personne(s)
+                    {l.fichiers.size ? ` · ${[...l.fichiers].join(', ')}` : ''}
+                  </option>
+                ))}
+              </select>
+              <small className="text-muted d-block mt-1" style={{ fontSize: '0.82rem' }}>
+                {lotFilter === 'ALL'
+                  ? 'Chaque import ouvre un lot : il indique d’où vient chaque carte.'
+                  : `Lot ${lotFilter} sélectionné — seules ses fiches sont proposées ci-dessous.`}
+              </small>
+              {/* Purge en un clic du lot affiché : obligatoire avant un
+                  réimport, sinon la déduplication saute toutes les personnes
+                  déjà présentes et le fichier n'est jamais réappliqué. */}
+              <button
+                type="button"
+                className="btn btn-sm fw-extrabold mt-2 w-100"
+                style={{
+                  borderRadius: '12px', fontSize: '0.92rem', color: '#fff',
+                  background: '#b91c1c', border: '1.5px solid #ef4444', minHeight: '50px'
+                }}
+                onClick={handlePurgeVisibleLot}
+                disabled={memberOptions.length === 0 || deleteBusy}
+                title="Supprime toutes les fiches affichées (registre local ET base) afin de pouvoir réimporter le fichier avec les matricules officiels"
+              >
+                🧹 Vider {lotFilter === 'ALL' ? 'tout le registre' : `le lot ${lotFilter}`} ({memberOptions.length})
+              </button>
+              {lotFilter === 'ALL' && memberOptions.length > 0 && (
+                <small className="d-block mt-1" style={{ fontSize: '0.72rem', color: '#b91c1c', fontWeight: '700' }}>
+                  ⚠️ Voulez-vous retirer les cartes DÉJÀ IMPRIMÉES ? Choisissez d’abord leur lot dans la liste ci-dessus.
+                </small>
+              )}
+
+              {/* Logo appliqué à tout le lot affiché. Utilisable SANS
+                  parrain enregistré : utile pour une campagne dont les cartes
+                  ne sont pas encore imprimées (MSD de Grand Yoff). */}
+              <input
+                ref={lotLogoInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml"
+                className="d-none"
+                onChange={(e) => {
+                  const f = e.target.files && e.target.files[0];
+                  if (f) handleApplyLogoToVisibleLot(f);
+                }}
+              />
+              <button
+                type="button"
+                className="btn btn-sm fw-extrabold mt-2 w-100"
+                style={{
+                  borderRadius: '12px', fontSize: '0.92rem', color: '#fff',
+                  background: '#0d9488', border: '1.5px solid #14b8a6', minHeight: '50px'
+                }}
+                onClick={() => lotLogoInputRef.current && lotLogoInputRef.current.click()}
+                disabled={memberOptions.length === 0 || sponsorLogoBusy}
+                title="Applique le logo en filigrane sur toutes les cartes du lot affiché"
+              >
+                🏷️ Appliquer un logo à {lotFilter === 'ALL' ? 'tout le registre' : `le lot ${lotFilter}`} ({memberOptions.length})
+              </button>
+
+              {/* Bouton miroir : annule le logo du lot. Indispensable quand le
+                  placement ou la taille ne conviennent pas — on ne repart pas
+                  de zéro, on retire le calque et on réessaie. */}
+              <button
+                type="button"
+                className="btn btn-sm fw-extrabold mt-2 w-100"
+                style={{
+                  borderRadius: '12px', fontSize: '0.92rem', color: '#fff',
+                  background: '#334155', border: '1.5px solid #64748b', minHeight: '50px'
+                }}
+                onClick={handleRemoveLogoFromVisibleLot}
+                disabled={memberOptions.length === 0 || sponsorLogoBusy}
+                title="Retire le logo appliqué à ce lot et restaure les cartes d'origine"
+              >
+                🗑️ Retirer le logo de {lotFilter === 'ALL' ? 'tout le registre' : `ce lot`}
+              </button>
             </div>
 
             <div className="studio-form-group mb-4">
               <label className="form-label text-sub fw-extrabold" style={{ fontSize: '0.9rem' }}>
-                🏛️ Sélectionner l'adhérent MSD Dakar ({members.length} familles au total) :
+                🏛️ Sélectionner l'adhérent MSD Dakar ({memberOptions.length} dossier(s){lotFilter === 'ALL' ? '' : ` du lot ${lotFilter}`}) :
               </label>
               <select
                 className="form-select py-3 px-3.5 fw-extrabold"
@@ -1410,12 +2377,93 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
                   setSelectedCardType('PRINCIPAL');
                 }}
               >
-                {members.map(m => (
+                {memberOptions.map(m => (
                   <option key={m.id} value={m.id}>
-                    {m.firstName} {m.lastName} ({m.cmuNumber}) — {m.mutuelleOrigine}
+                    {m.lotCode ? `[${m.lotCode}] ` : ''}{m.firstName} {m.lastName} ({m.cmuNumber}) — {m.mutuelleOrigine}
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* ── Suppression multiple ────────────────────────────────────
+                Permet de retirer plusieurs fiches d'un coup, avec un filtre
+                (par exemple tous les codes d'un import erroné). */}
+            <div className="studio-form-group mb-4">
+              <button
+                type="button"
+                className="btn btn-sm fw-extrabold px-3.5 py-2 shadow-sm hover-lift"
+                style={{ borderRadius: '12px', fontSize: '0.82rem', background: showMultiDelete ? '#7f1d1d' : '#b91c1c', color: '#fff', border: '1.5px solid #ef4444' }}
+                onClick={() => setShowMultiDelete(v => !v)}
+              >
+                {showMultiDelete ? '✖️ Fermer la sélection multiple' : '🗑️ Supprimer plusieurs fiches'}
+              </button>
+
+              {showMultiDelete && (
+                <div className="mt-3 p-3" style={{ background: 'var(--bg-card-subtle)', border: '1.5px solid #ef4444', borderRadius: '16px' }}>
+                  <input
+                    type="text"
+                    className="form-control mb-2"
+                    placeholder="Filtrer par nom, prénom ou code…"
+                    value={multiSearch}
+                    onChange={(e) => setMultiSearch(e.target.value)}
+                    style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '12px' }}
+                  />
+                  <div className="d-flex flex-wrap gap-2 mb-2">
+                    <button type="button" className="btn btn-sm fw-bold" onClick={() => setCheckedIds(new Set(multiFiltered.map(m => m.id)))}>
+                      ✅ Tout cocher ({multiFiltered.length})
+                    </button>
+                    <button type="button" className="btn btn-sm fw-bold" onClick={() => setCheckedIds(new Set())}>
+                      ⬜ Tout décocher
+                    </button>
+                    <span className="align-self-center fw-extrabold" style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>
+                      {checkedIds.size} sélectionnée(s)
+                    </span>
+                  </div>
+                  <div style={{ maxHeight: '260px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    {multiFiltered.length === 0 && (
+                      <p className="mb-0" style={{ fontSize: '0.82rem', color: 'var(--text-sub)' }}>Aucune fiche ne correspond à ce filtre.</p>
+                    )}
+                    {multiFiltered.map(m => (
+                      <label
+                        key={m.id}
+                        className="d-flex align-items-center gap-2 px-2 py-1"
+                        style={{ borderRadius: '8px', cursor: 'pointer', fontSize: '0.82rem', background: checkedIds.has(m.id) ? 'rgba(220,38,38,0.12)' : 'transparent' }}
+                      >
+                        <input type="checkbox" checked={checkedIds.has(m.id)} onChange={() => toggleChecked(m.id)} />
+                        <span className="fw-bold">{m.firstName} {m.lastName}</span>
+                        <span className="text-muted">{m.cmuNumber}</span>
+                        <span className="text-muted">· {(m.dependents || []).length} ayants droit</span>
+                        {m.lotCode && (
+                          <span className="badge" style={{ background: 'rgba(5,150,105,0.12)', color: '#047857', fontSize: '0.62rem' }}>
+                            {m.lotCode}
+                          </span>
+                        )}
+                      </label>
+                    ))}
+                  </div>
+                  <div className="d-flex flex-wrap gap-2 mt-3">
+                    <button
+                      type="button"
+                      className="btn btn-sm text-white fw-extrabold"
+                      style={{ borderRadius: '12px', fontSize: '0.82rem', background: '#0d9488', border: '1.5px solid #14b8a6' }}
+                      disabled={checkedIds.size === 0 || deleteBusy}
+                      title="Rattache la sélection à un lot de campagne puis la recode au format REGION-MSD-ANNEE-SEQUENCE"
+                      onClick={() => handleAssignLotAndRecode(members.filter(m => checkedIds.has(m.id)))}
+                    >
+                      🔢 Attribuer un lot + recoder ({checkedIds.size})
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-sm text-white fw-extrabold"
+                      style={{ borderRadius: '12px', fontSize: '0.82rem', background: '#dc2626', border: '1.5px solid #ef4444' }}
+                      disabled={checkedIds.size === 0 || deleteBusy}
+                      onClick={() => setDeleteTargets(members.filter(m => checkedIds.has(m.id)))}
+                    >
+                      🗑️ Supprimer la sélection ({checkedIds.size})
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Cible du QR Code pour test scan mobile Wi-Fi */}
@@ -1501,13 +2549,13 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
               {qrTargetMode === 'WIFI_IP' && (
                 <div className="mt-3.5 pt-1">
                   <label className="form-label text-sub fw-bold mb-2.5 d-block" style={{ fontSize: '0.82rem' }}>
-                    📶 Adresse IP Wi-Fi locale de votre PC ({customWifiIp || '192.168.1.42'}) :
+                    📶 Adresse IP Wi-Fi locale de votre PC ({customWifiIp || 'non détectée'}) :
                   </label>
                   <div className="d-flex gap-2.5 mb-2 flex-wrap">
                     <input
                       type="text"
                       className="form-control fw-mono fw-bold py-2.5 px-3 flex-grow-1"
-                      placeholder="ex: 192.168.1.42"
+                      placeholder="ex: 192.168.1.100"
                       style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '12px', minHeight: '46px', minWidth: '180px' }}
                       value={customWifiIp}
                       onChange={(e) => {
@@ -1519,11 +2567,15 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
                       type="button"
                       className="btn btn-outline-secondary fw-bold px-3.5 py-2.5 hover-lift"
                       style={{ borderRadius: '12px', fontSize: '0.82rem', minHeight: '46px' }}
+                      title="Relire les interfaces réseau du PC (après un changement de Wi-Fi, de routeur ou de partage de connexion)"
                       onClick={() => {
-                        detectLanIp().then((ip) => {
-                          const detected = ip || '192.168.1.42';
-                          setCustomWifiIp(detected);
-                          localStorage.setItem('cmu-wifi-ip', detected);
+                        // force=true : on repart d'une interrogation réelle du
+                        // backend, le cache pouvant venir d'un autre réseau.
+                        clearLanIpCache();
+                        detectLanIp({ force: true }).then((ip) => {
+                          if (!ip) return;
+                          setCustomWifiIp(ip);
+                          localStorage.setItem('cmu-wifi-ip', ip);
                         });
                       }}
                     >
@@ -1531,7 +2583,11 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
                     </button>
                   </div>
                   <small className="text-muted d-block mt-1" style={{ fontSize: '0.76rem' }}>
-                    💡 Votre smartphone ouvrira directement <code>http://{customWifiIp || '192.168.1.42'}:{typeof window !== 'undefined' && window.location.port ? window.location.port : '5173'}/#/verify/{cardData.cmuNumber}</code> lorsqu'il est connecté au même réseau Wi-Fi !
+                    {isValidLanIp(customWifiIp) ? (
+                      <>💡 Votre smartphone ouvrira directement <code>http://{customWifiIp}:{typeof window !== 'undefined' && window.location.port ? window.location.port : '5173'}/#/verify/{cardData.cmuNumber}</code> lorsqu'il est connecté au même réseau Wi-Fi !</>
+                    ) : (
+                      <>⚠️ Aucune IP Wi-Fi exploitable détectée : le QR encodera l'adresse courante du PC, qui <strong>ne sera pas joignable depuis un téléphone</strong>. Vérifiez que le backend est démarré, cliquez sur « ⚡ Actualiser IP », ou saisissez l'IP manuellement (tapez <code>ipconfig</code> sur le PC).</>
+                    )}
                   </small>
                 </div>
               )}
@@ -1539,7 +2595,7 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
               <div className="alert alert-warning p-3.5 mt-3.5 mb-0 rounded-4 border-0" style={{ fontSize: '0.82rem', background: 'rgba(245, 158, 11, 0.15)', color: '#d97706', lineHeight: '1.55' }}>
                 <strong>💡 Pour scanner sur Wi-Fi local :</strong>
                 <div className="mt-1">
-                  Vérifiez que votre PC et votre smartphone sont sur le même réseau Wi-Fi avec l'IP <strong>{customWifiIp || '192.168.1.42'}</strong>. Pour scanner depuis <strong>n'importe quel réseau Wi-Fi ou en 4G/5G</strong>, utilisez le mode <strong>🌐 URL web / Tunnel</strong> ci-dessus !
+                  Vérifiez que votre PC et votre smartphone sont sur le même réseau Wi-Fi avec l'IP <strong>{isValidLanIp(customWifiIp) ? customWifiIp : 'non détectée'}</strong>. Pour scanner depuis <strong>n'importe quel réseau Wi-Fi ou en 4G/5G</strong>, utilisez le mode <strong>🌐 URL web / Tunnel</strong> ci-dessus !
                 </div>
               </div>
             </div>
@@ -2321,10 +3377,34 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
                 boxSizing: 'border-box'
               }}
             >
+              {/* FILIGRANE — logo du parrain / partenaire, posé en fond et
+                  piloté par « Personnalisation complète de la carte ». C'est
+                  ce calque qui remplace l'ancien picto de 20 px affiché en
+                  bas de la colonne de gauche. Le contenu passe au-dessus
+                  (zIndex 1) : le filigrane ne peut donc pas masquer ni la
+                  photo ni les données de l'assuré. */}
+              {classicWatermarkStyle && (
+                <div
+                  data-sponsor-watermark
+                  aria-hidden="true"
+                  style={{
+                    position: 'absolute',
+                    inset: '0',
+                    pointerEvents: 'none',
+                    zIndex: 0,
+                    ...classicWatermarkStyle
+                  }}
+                />
+              )}
               {cardProgram !== 'CLASSIC' ? (
                 <SchoolCardFront cardData={cardData} currentUnion={currentUnion} getMsdLogo={getMsdLogo} customLogo={currentSponsorLogo || cardLogo} />
               ) : (
-                <>
+                // Le contenu doit se superposer au filigrane (zIndex 0). Le
+                // conteneur garde EXACTEMENT la hauteur de la zone imprimable :
+                // le pied de carte est en position absolue, il doit donc
+                // continuer de s'ancrer au bas de la carte, pas au bas du
+                // contenu (qui est plus court).
+                <div style={{ position: 'relative', zIndex: 1, height: '100%' }}>
               {/* En-tête Officiel Recto : Logo MSD ÉMETTRICE (GAUCHE, dynamique) | Drapeau + République du Sénégal + Union (CENTRE) | Logo SEN-CSU (DROITE) */}
               <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: '4px', minHeight: '38px' }}>
                 {/* Bloc GAUCHE : Logo de la MSD émettrice (dynamique selon le département du bénéficiaire) */}
@@ -2444,24 +3524,6 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
                     </div>
                   )}
 
-                  {/* Logo du parrain / Mairie apposé sur le recto (toutes les familles de cartes) */}
-                  {cardData.sponsorLogo && (
-                    <div style={{ marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <img
-                        src={cardData.sponsorLogo}
-                        alt="Logo du parrain"
-                        style={{ height: '20px', width: 'auto', maxWidth: '72px', objectFit: 'contain', display: 'block', flexShrink: 0 }}
-                        onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
-                      />
-                      <div style={{ minWidth: 0 }}>
-                        <span style={{ fontSize: '0.44rem', color: '#64748b', fontWeight: '800', display: 'block', lineHeight: 1, textTransform: 'uppercase' }}>Parrainé par</span>
-                        <strong style={{ fontSize: '0.60rem', fontWeight: '900', color: '#047857', display: 'block', lineHeight: 1.15, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {cardData.sponsorName || currentSponsorName}
-                        </strong>
-                      </div>
-                    </div>
-                  )}
-
                   {/* Téléphone — formaté + 100% visible et dégagé au-dessus du pied de carte */}
                   <div style={{ marginBottom: '2px' }}>
                     <span style={{ fontSize: '0.48rem', color: '#64748b', fontWeight: '800', display: 'block', lineHeight: 1, textTransform: 'uppercase' }}>Téléphone</span>
@@ -2497,14 +3559,14 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
                   Fond blanc opaque + zIndex : aucun champ (téléphone, adresse…) ne peut
                   jamais se superposer aux textes du pied, quelle que soit la carte. */}
               <div style={{ position: 'absolute', bottom: '8px', left: '16px', right: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', paddingTop: '5px', borderTop: '1px dashed #cbd5e1', background: '#ffffff', zIndex: 6 }}>
-                <div style={{ fontSize: '0.50rem', color: '#064e3b', fontWeight: '800', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 1 }}>
+                <div style={{ fontSize: '0.50rem', color: '#000000', fontWeight: '800', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 1 }}>
                   UNAMUSC SENEGAL - CARTE NATIONALE D’ASSURANCE SANTÉ
                 </div>
                 <div style={{ fontSize: '0.48rem', color: '#64748b', fontWeight: '700', whiteSpace: 'nowrap', flexShrink: 0 }}>
                   {`DÉLIVRÉE PAR LE MSD DE ${currentUnion.region.toUpperCase()}`}
                 </div>
               </div>
-                </>
+                </div>
               )}
             </div>
           </div>
@@ -2719,6 +3781,34 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
         </div>
       </div>
 
+      {/* MODALE DE SUPPRESSION (1 ou N fiches : registre local + base) */}
+      <DeleteModal
+        isOpen={deleteTargets.length > 0}
+        title={
+          deleteTargets.length === 1
+            ? `${deleteTargets[0].firstName || ''} ${deleteTargets[0].lastName || ''} (${deleteTargets[0].cmuNumber || deleteTargets[0].id})`.trim()
+            : `${deleteTargets.length} fiches sélectionnées`
+        }
+        itemType={deleteTargets.length === 1 ? 'Fiche assuré CSU' : `Lot de ${deleteTargets.length} fiches assuré`}
+        onConfirm={() => { if (!deleteBusy) handleDeleteMembers(deleteTargets); }}
+        onClose={() => { if (!deleteBusy) setDeleteTargets([]); }}
+      />
+
+      {/* MODALE DE PURGE — fiches à l'ancien code provisoire.
+          Message volontairement explicite : la purge est massive, et
+          l'agent doit comprendre qu'un réimport s'IMPOSE ensuite. */}
+      <DeleteModal
+        isOpen={purgeConfirmOpen && legacyList.length > 0}
+        title={`${legacyCount} carte(s) au format ancien (DKR-2600172)`}
+        itemType={`Purge de ${legacyList.length} dossier(s) — à remplacer par un réimport`}
+        onConfirm={() => {
+          if (deleteBusy) return;
+          setPurgeConfirmOpen(false);
+          handlePurgeLegacyCards(legacyList);
+        }}
+        onClose={() => { if (!deleteBusy) setPurgeConfirmOpen(false); }}
+      />
+
       {/* MODALE D'INSPECTION DU QR CODE */}
       {showQrInspector && qrCodePayload && (
         <div className="modal-backdrop fade show" style={{ backgroundColor: 'rgba(0,0,0,0.6)', zIndex: 1050 }}>
@@ -2742,7 +3832,7 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
                         <div><strong>URL encodée :</strong> <code className="text-emerald">{qrCodePayload.verifyUrl}</code></div>
                         <div><strong>Code CSU :</strong> <code>{qrCodePayload.cmuNumber}</code></div>
                         <div><strong>Bénéficiaire :</strong> {qrCodePayload.fullName}</div>
-                        <div><strong>Né(e) le / à :</strong> {qrCodePayload.birthDate} à {qrCodePayload.birthPlace}</div>
+                        <div><strong>Né(e) le / à :</strong> {qrCodePayload.birthDate}{qrCodePayload.birthPlace ? ` à ${qrCodePayload.birthPlace}` : ''}</div>
                         <div><strong>Union départementale :</strong> {qrCodePayload.unionDepartementale}</div>
                         <div><strong>Mutuelle origine :</strong> {qrCodePayload.mutuelleOrigine}</div>
                         <div><strong>Groupe sanguin :</strong> <span className="badge bg-danger">{qrCodePayload.bloodGroup}</span></div>

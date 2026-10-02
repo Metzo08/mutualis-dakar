@@ -27,13 +27,15 @@ const STRICT = process.argv.includes('--strict');
 
 // ── Chargement du store (module ESM du frontend, sans bundler) ──────────────
 // beneficiaryStore.js est écrit pour le navigateur (localStorage) : on l'évalue
-// dans un contexte minimal où window/localStorage sont absents, ce qui renvoie
-// directement `defaultMembers`.
+// dans un contexte minimal où window/localStorage sont absents.
+//
+// Depuis la v18 du store, `defaultMembers` est VIDE : le registre provient de
+// la base (src/utils/beneficiarySync.js). Cet audit porte donc sur le
+// « surcoît » local — fichier de secours du backend — et non plus sur un jeu
+// embarqué. Un audit de couverture complet se fait sur la base via
+// `node backend/audit-db-real.cjs`.
 function loadDefaultMembers() {
-  const dataSrc = readFileSync(join(ROOT, 'src/data/msdDakarMembers.js'), 'utf8')
-    .replace('export const msdDakarMembers', 'const msdDakarMembers');
   const storeSrc = readFileSync(join(ROOT, 'src/utils/beneficiaryStore.js'), 'utf8')
-    .replace(/import[\s\S]*?from[\s\S]*?;/, dataSrc)
     .replace(/export const defaultMembers/m, 'const defaultMembers')
     .replace(/export const demoProfiles/m, 'const demoProfiles')
     .replace(/export const (\w+)/g, 'const $1');
@@ -73,7 +75,13 @@ function buildBeneficiaryIndex(members) {
     for (const [idx, d] of (m.dependents || []).entries()) {
       if (!d) continue;
       const suffix = (d.codeSuffix || (d.isMajor ? `.1${idx + 1}` : `.M${idx + 1}`)).trim();
-      const depKeys = [...new Set([`${mAdherent}${suffix}`, `${mCmu}${suffix}`, `${mBase}${suffix}`])]
+      const ownCmu = (d.cmuNumber || '').trim();
+      // Matricule PROPRE de l'ayant droit (attribué par le système) + les
+      // alias « parent + suffixe » des cartes imprimées avant ce changement.
+      const depKeys = [...new Set([
+        ownCmu,
+        `${mAdherent}${suffix}`, `${mCmu}${suffix}`, `${mBase}${suffix}`
+      ])]
         .filter((k) => k && !k.startsWith('undefined'))
         .map((k) => k.toUpperCase());
       for (const key of depKeys) {
@@ -151,9 +159,10 @@ for (const m of members) {
 
   for (const [idx, d] of (m.dependents || []).entries()) {
     totalDependents++;
-    const depLabel = d.name || `ayant droit #${idx + 1}`;
+    const depLabel = d.name || `${d.firstName || ''} ${d.lastName || ''}`.trim() || `ayant droit #${idx + 1}`;
     const suffix = d.codeSuffix || (d.isMajor ? `.1${idx + 1}` : `.M${idx + 1}`);
-    const fullCode = `${(m.adherentCode || (m.cmuNumber || '').replace('.0', ''))}${suffix}`;
+    // Le matricule propre s'il existe, sinon l'ancien code « parent + suffixe ».
+    const fullCode = d.cmuNumber || `${(m.adherentCode || (m.cmuNumber || '').replace('.0', ''))}${suffix}`;
 
     const resolved = resolveScan(index, fullCode);
     if (!resolved) errors.push(`[${depLabel}] Scan QR introuvable pour le code ${fullCode}`);

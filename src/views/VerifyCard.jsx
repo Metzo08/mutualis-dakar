@@ -449,140 +449,22 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
     return () => window.removeEventListener('hashchange', handleCheckHash);
   }, []);
 
-  const demoCards = {
-    'SN-DK-BSF-9901': {
-      valid: true,
-      status: 'active',
-      firstName: 'Fatou',
-      lastName: 'Diallo',
-      birthDate: '1992-06-15',
-      phone: '+221 77 555 44 33',
-      mutuelleName: 'Union Départementale des Mutuelles de Santé de Dakar (UDMS)',
-      packageType: 'Bourse de sécurité familiale (BSF) — Gratuité 100% UNAMUSC',
-      cmuNumber: 'SN-DK-BSF-9901',
-      ippNumber: 'IPP-DANTEC-2026-9901',
-      photoUrl: '/csu_bsf_real.png',
-      bloodGroup: 'B Rhésus positif (B+)',
-      allergies: 'Aucune connue',
-      chronicConditions: 'Aucune',
-      familyMembers: [
-        { name: 'Moussa Diallo', relation: 'Enfant', age: 4 }
-      ],
-      checkedAt: new Date().toISOString()
-    },
-    'CMU-DKR-2026-4401': {
-      valid: true,
-      status: 'active',
-      firstName: 'Fatou',
-      lastName: 'Diop',
-      birthDate: '1993-02-18',
-      phone: '+221 77 888 99 00',
-      mutuelleName: 'Mutuelle de santé de Dakar-Plateau',
-      packageType: 'Tiers-payant hospitalier 100% UNAMUSC',
-      cmuNumber: 'CMU-DKR-2026-4401',
-      ippNumber: 'IPP-DANTEC-2026-4401',
-      photoUrl: '/dr_fatou_diop.png',
-      bloodGroup: 'O Rhésus positif (O+)',
-      allergies: 'Aucune',
-      chronicConditions: 'Aucune',
-      familyMembers: [],
-      checkedAt: new Date().toISOString()
-    },
-    'SN-DK-MED-8472': {
-      valid: true,
-      status: 'active',
-      firstName: 'Amadou',
-      lastName: 'Sow',
-      birthDate: '1988-04-12',
-      phone: '+221 77 450 12 34',
-      mutuelleName: 'Mutuelle de santé de Dakar-Plateau',
-      packageType: 'Formule familiale intégrale UNAMUSC (80% à 100%)',
-      cmuNumber: 'SN-DK-MED-8472',
-      ippNumber: 'IPP-FANN-2026-8472',
-      photoUrl: '/csu_profile_hero_real.png',
-      bloodGroup: 'O Rhésus positif (O+)',
-      allergies: 'Pénicilline, Aspirine',
-      chronicConditions: 'Hypertension artérielle (HTA)',
-      familyMembers: [
-        { name: 'Fatou Sow', relation: 'Épouse', age: 32 },
-        { name: 'Moussa Sow', relation: 'Enfant', age: 6 }
-      ],
-      checkedAt: new Date().toISOString()
-    },
-    'CMU-DKR-2026-8812': {
-      valid: true,
-      status: 'active',
-      firstName: 'Awa',
-      lastName: 'Ndiaye',
-      birthDate: '1990-08-25',
-      phone: '+221 78 123 45 67',
-      mutuelleName: 'Union départementale des mutuelles de Dakar',
-      packageType: 'Tiers-payant hospitalier UNAMUSC (80%)',
-      cmuNumber: 'CMU-DKR-2026-8812',
-      ippNumber: 'IPP-DANTEC-2026-8812',
-      photoUrl: '/csu_bsf_real.png',
-      bloodGroup: 'O Rhésus positif (O+)',
-      allergies: 'Aucune connue',
-      chronicConditions: 'Aucune',
-      familyMembers: [
-        { name: 'Amadou Sow', relation: 'Conjoint', age: 34 },
-        { name: 'Fatou Sow', relation: 'Enfant', age: 6 }
-      ],
-      checkedAt: new Date().toISOString()
-    }
-  };
+  // ──────────────────────────────────────────────────────────────────────
+  //  AUCUNE CARTE DE DÉMONSTRATION N'EST RECONNUE.
+  //  Les 4 fiches qui figuraient ici (Fatou Diallo, Fatou Diop, Amadou
+  //  Sow, Awa Ndiaye) n'existaient dans aucune base : scanner « SN-DK-BSF-9901 »
+  //  renvoyait un dossier complet marqué « actif » et ouvrait le hub de
+  //  prise en charge. Une vérification de droits ne peut pas être un jeu
+  //  d'essai. Seul le registre réel (store local + API) fait foi — et un
+  //  code absent est refusé, jamais complété (cf. branche 3 de verify()).
+  // ──────────────────────────────────────────────────────────────────────
 
-  // Base de données officielle de vérification des Lettres de Garantie & Documents UNAMUSC
-  const demoDocuments = {
-    'GAR-2026-FANN-88': {
-      valid: true,
-      docType: 'LETTRE DE GARANTIE HOSPITALIÈRE HABILITÉE (80%)',
-      title: 'Attestation Officielle de Prise en Charge Hospitalière UNAMUSC',
-      referenceNo: 'GAR-2026-FANN-88',
-      beneficiaryName: 'Fatou Diallo',
-      cmuNumber: 'SN-DK-BSF-9901',
-      hospitalName: 'Hôpital Universitaire de Fann (Dakar)',
-      medicalAct: 'Intervention chirurgicale ORL — (Hôpital Universitaire de Fann)',
-      estimatedAmount: '250 000 FCFA',
-      guaranteedAmount: '200 000 FCFA (80% UNAMUSC)',
-      patientRest: '50 000 FCFA (Ticket Modérateur)',
-      status: 'VALIDÉ & HOMOLOGUÉ — PRISE EN CHARGE ACTIVE',
-      cryptoHash: 'SHA256-FANN-8812-UNAMUSC-SN',
-      notes: 'Dossier complet. Devis d\'hospitalisation vérifié conforme au barème national par l\'UNAMUSC.'
-    },
-    'GAR-2026-8812': {
-      valid: true,
-      docType: 'LETTRE DE GARANTIE HOSPITALIÈRE HABILITÉE (80%)',
-      title: 'Attestation Officielle de Prise en Charge Hospitalière UNAMUSC',
-      referenceNo: 'GAR-2026-8812',
-      beneficiaryName: 'Awa Ndiaye',
-      cmuNumber: 'CMU-DKR-2026-8812',
-      hospitalName: 'Hôpital Universitaire de Fann (Dakar)',
-      medicalAct: 'Hospitalisation & Soins Spécialisés',
-      estimatedAmount: '250 000 FCFA',
-      guaranteedAmount: '200 000 FCFA (80% UNAMUSC)',
-      patientRest: '50 000 FCFA',
-      status: 'VALIDÉ & HOMOLOGUÉ — PRISE EN CHARGE ACTIVE',
-      cryptoHash: 'SHA256-UNAMUSC-8812-SN',
-      notes: 'L\'UNAMUSC s\'engage à régler directement le montant garanti sous présentation de la facture conforme.'
-    },
-    'GAR-MAT-2026-9910': {
-      valid: true,
-      docType: 'LETTRE DE GARANTIE ACCOUCHEMENT 100% UNAMUSC',
-      title: 'Prise en Charge Maternité & Néonatale',
-      referenceNo: 'GAR-MAT-2026-9910',
-      beneficiaryName: 'Fatou Diallo',
-      cmuNumber: 'SN-DK-BSF-9901',
-      hospitalName: 'Centre Hospitalier Universitaire de Fann (Dakar)',
-      medicalAct: 'Accouchement simple / Césarienne & Soins néonataux',
-      estimatedAmount: '300 000 FCFA',
-      guaranteedAmount: '300 000 FCFA (100%)',
-      patientRest: '0 FCFA (Tiers-Payant Intégral)',
-      status: 'VALIDÉ & HOMOLOGUÉ — GRATUITÉ 100% UNAMUSC',
-      cryptoHash: 'SHA256-MAT-9910-UNAMUSC-SN',
-      notes: 'La présente lettre de garantie dispense l\'assurée de toute avance de frais d\'hospitalisation.'
-    }
-  };
+  // Base de vérification des Lettres de Garantie & Documents UNAMUSC.
+  // AUCUN document de démonstration : une lettre de garantie fictive
+  // « validée » pour un patient réel engagerait la responsabilité de
+  // l'établissement. Seuls les documents réellement enregistrés sont
+  // reconnus ; à défaut, la vérification échoue proprement.
+  const demoDocuments = {};
 
   const verify = async (num) => {
     let target = (num || cmuNumber || '').trim();
@@ -603,9 +485,7 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
       target = target.split('?')[0].trim();
     }
 
-    // Ancien code (carte déjà imprimée) → code canonique. Sans cela, un code
-    // périmé tomberait dans le repli « résultat fabriqué » et afficherait un
-    // faux bénéficiaire au lieu de la vraie fiche.
+    // Ancien code (carte déjà imprimée) → code canonique.
     const scannedCode = target;
     const scannedIsLegacy = isLegacyCode(target);
     target = resolveCodeAlias(target);
@@ -625,7 +505,7 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
       }
       if (!fallbackCode && activeId) fallbackCode = activeId;
       if (!fallbackCode && citizenUser) fallbackCode = citizenUser.cmuNumber || citizenUser.cmuId || citizenUser.id;
-      target = fallbackCode || 'DKR_2600027.0';
+      target = fallbackCode || '';
     }
 
     setLoading(true);
@@ -635,28 +515,19 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
 
     const upperTarget = target.toUpperCase();
 
-    // Vérifier si c'est un code de document (Lettre de garantie, Bon de commande, Reçu)
-    const isDocCode = upperTarget.startsWith('GAR-') || upperTarget.startsWith('ORD-') || upperTarget.startsWith('REC-') || upperTarget.startsWith('MAT-') || upperTarget.startsWith('CARNET-');
+    // Code de document (lettre de garantie, bon de commande, reçu)
+    const isDocCode = upperTarget.startsWith('GAR-') || upperTarget.startsWith('ORD-') ||
+      upperTarget.startsWith('REC-') || upperTarget.startsWith('MAT-') || upperTarget.startsWith('CARNET-');
 
     if (isDocCode) {
-      const docMatch = demoDocuments[upperTarget] || {
-        valid: true,
-        docType: 'LETTRE DE GARANTIE HOSPITALIÈRE HABILITÉE (80% à 100%)',
-        title: 'Attestation Officielle de Prise en Charge Hospitalière UNAMUSC',
-        referenceNo: upperTarget,
-        beneficiaryName: citizenUser?.firstName ? `${citizenUser.firstName} ${citizenUser.lastName}` : 'Fatou Diallo',
-        cmuNumber: citizenUser?.cmuNumber || 'SN-DK-BSF-9901',
-        hospitalName: 'Hôpital Aristide Le Dantec (Dakar)',
-        medicalAct: 'Hospitalisation soins intensifs & intervention chirurgicale',
-        estimatedAmount: '450 000 FCFA',
-        guaranteedAmount: '450 000 FCFA (100% Prise en charge UNAMUSC)',
-        patientRest: '0 FCFA (Tiers-Payant Intégral)',
-        status: 'VALIDÉ & HOMOLOGUÉ — PRISE EN CHARGE ACTIVE PAR L\'UNAMUSC',
-        cryptoHash: `SHA256-${upperTarget.slice(-6)}-UNAMUSC-SN-2026`,
-        notes: 'Document officiel certifié conforme par le Bureau National UNAMUSC. Garantit le paiement direct à la structure hospitalière.'
-      };
-
-      setDocResult(docMatch);
+      // Seuls les documents RÉELLEMENT enregistrés sont reconnus.
+      const docMatch = demoDocuments[upperTarget] || null;
+      if (docMatch) {
+        setDocResult(docMatch);
+        setLoading(false);
+        return;
+      }
+      setError("Document non reconnu. Aucune lettre de garantie n'est enregistrée sous cette référence : ne pas engager de prise en charge.");
       setLoading(false);
       return;
     }
@@ -722,50 +593,20 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
       return;
     }
 
-    // 3. Fallback de démonstration et recherche locale de Carte CSU
-    const matchedKey = Object.keys(demoCards).find(k => 
-      k.toUpperCase() === upperTarget || 
-      k.toUpperCase().includes(upperTarget) || 
-      upperTarget.includes(k.toUpperCase())
+    // ────────────────────────────────────────────────────────────────────
+    //  3. Code non retrouvé dans le registre → REFUS EXPLICITE.
+    //  Auparavant, toute saisie de 3 caractères et plus était « complétée »
+    //  en une fausse fiche (nom « Fatou Diallo », groupe B+, IPP calculé)
+    //  avec le statut par défaut « active ». Un pharmacien obtenait donc
+    //  une prise en charge valable pour un code écrit à la main : c'était
+    //  une faille d'authentification, pas une commodité de démonstration.
+    //  Un code inconnu doit maintenant échouer, et échouer visiblement.
+    // ────────────────────────────────────────────────────────────────────
+    setError(
+      'Carte non reconnue : le code « ' + (target || '—') + ' » ne correspond à aucun assuré enregistré. ' +
+      'Ne délivrez AUCUNE prise en charge. Vérifiez la saisie, ou scannez la carte physique sans la plier.'
     );
-    
-    if (matchedKey) {
-      const cardData = demoCards[matchedKey];
-      const storedOverride = localStorage.getItem(`cmu-status-${matchedKey}`);
-      const finalStatus = isGlobalSuspended ? 'suspended' : (storedOverride || 'active');
-      const finalValid = (finalStatus === 'active');
-      setResult({
-        ...cardData,
-        status: finalStatus,
-        valid: finalValid
-      });
-    } else if (target.length >= 3) {
-      const cleanTarget = target.toUpperCase();
-      const storedOverride = localStorage.getItem(`cmu-status-${cleanTarget}`);
-      const finalStatus = isGlobalSuspended ? 'suspended' : (storedOverride || 'active');
-      const finalValid = (finalStatus === 'active');
-      setResult({
-        valid: finalValid,
-        status: finalStatus,
-        firstName: citizenUser?.firstName || 'Fatou',
-        lastName: citizenUser?.lastName || 'Diallo',
-        phone: citizenUser?.phone || '+221 77 555 44 33',
-        mutuelleName: 'Union Départementale des Mutuelles de Santé de Dakar (UDMS)',
-        packageType: 'Formule Tiers-payant UNAMUSC (100%)',
-        cmuNumber: cleanTarget,
-        ippNumber: `IPP-DKR-${cleanTarget.slice(-4)}`,
-        photoUrl: '/csu_bsf_real.png',
-        bloodGroup: 'B Rhésus positif (B+)',
-        allergies: 'Aucune connue',
-        chronicConditions: 'Aucune',
-        familyMembers: [
-          { name: 'Moussa Diallo', relation: 'Enfant', age: 4 }
-        ],
-        checkedAt: new Date().toISOString()
-      });
-    } else {
-      setError('Numéro de carte ou code document non reconnu. Veuillez vérifier la saisie.');
-    }
+    setResult(null);
 
     setLoading(false);
   };

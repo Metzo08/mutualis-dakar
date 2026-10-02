@@ -117,12 +117,12 @@
 
 .nav-link:hover {
   color: var(--primary);
-  background-color: rgba(0, 102, 204, 0.05);
+  background-color: rgba(5, 150, 105, 0.08);
 }
 
 .nav-link.active {
   color: var(--primary);
-  background-color: rgba(0, 102, 204, 0.1);
+  background-color: rgba(5, 150, 105, 0.14);
 }
 
 /* Footer Component Styles */
@@ -257,7 +257,7 @@
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
   color: #ffffff;
   border: none;
-  box-shadow: 0 4px 20px rgba(0, 102, 204, 0.4);
+  box-shadow: 0 8px 24px rgba(5, 150, 105, 0.4);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -275,7 +275,7 @@
 
 .chatbot-toggle:hover {
   transform: scale(1.08) rotate(5deg);
-  box-shadow: 0 6px 24px rgba(0, 102, 204, 0.5);
+  box-shadow: 0 10px 28px rgba(5, 150, 105, 0.55);
 }
 
 .chatbot-toggle .notification-dot {
@@ -291,9 +291,9 @@
 }
 
 @keyframes pulse {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 127, 17, 0.7); }
-  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(255, 127, 17, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(255, 127, 17, 0); }
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(5, 150, 105, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
 }
 
 .chatbot-window {
@@ -431,7 +431,7 @@
   color: #ffffff;
   align-self: flex-end;
   border-bottom-right-radius: 4px;
-  box-shadow: 0 4px 10px rgba(0, 102, 204, 0.15);
+  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);
 }
 
 .chatbot-suggestions {
@@ -561,7 +561,7 @@
 }
 
 .chatbot-msg-speak:hover {
-  background-color: rgba(0, 102, 204, 0.1);
+  background-color: rgba(5, 150, 105, 0.12);
 }
 
 /* Typing indicator animation */
@@ -626,9 +626,9 @@
 }
 
 @keyframes audioPulse {
-  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 102, 204, 0.4); }
-  70% { transform: scale(1.05); box-shadow: 0 0 0 8px rgba(0, 102, 204, 0); }
-  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 102, 204, 0); }
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.4); }
+  70% { transform: scale(1.05); box-shadow: 0 0 0 8px rgba(5, 150, 105, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
 }
 
 /* Audio tooltip */

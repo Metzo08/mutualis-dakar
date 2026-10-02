@@ -123,7 +123,26 @@ const agentCreateSchema = z.object({
   firstName: z.string().max(100).optional().nullable(),
   lastName: z.string().max(100).optional().nullable(),
   role: z.enum(['Admin Régional', 'Super Admin', 'agent', 'admin'], { message: 'Rôle invalide.' }),
-  photoUrl: z.string().max(100000).optional().nullable()
+  photoUrl: z.string().max(100000).optional().nullable(),
+  // MSD de rattachement (code de 3 lettres). Obligatoire pour un agent non
+  // Super Admin : c'est ce code qui détermine les données qu'il peut voir.
+  msdCode: z.string().regex(/^[A-Z]{3}$/, 'Code MSD invalide (3 lettres majuscules).').optional().nullable()
+});
+
+/**
+ * Réinitialisation du mot de passe d'un agent. Réservé au Super Admin :
+ * un agent ne réinitialise que le sien, via son profil.
+ */
+const agentPasswordResetSchema = z.object({
+  password: z.string().min(8, 'Le mot de passe doit faire au moins 8 caractères.').max(255)
+});
+
+/** Changement de profil d'un agent : rôle, MSD, identité. */
+const agentUpdateSchema = z.object({
+  firstName: z.string().max(100).optional().nullable(),
+  lastName: z.string().max(100).optional().nullable(),
+  role: z.enum(['Admin Régional', 'Super Admin', 'agent', 'admin']).optional(),
+  msdCode: z.string().regex(/^[A-Z]{3}$/, 'Code MSD invalide (3 lettres majuscules).').optional().nullable()
 });
 
 const messageCreateSchema = z.object({
@@ -305,6 +324,8 @@ module.exports = {
   complaintCreateSchema,
   beneficiaryStatusSchema,
   agentCreateSchema,
+  agentPasswordResetSchema,
+  agentUpdateSchema,
   messageCreateSchema,
   chatbotSchema,
   claimCreateSchema,

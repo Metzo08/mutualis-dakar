@@ -34,29 +34,86 @@ export default function SuperAdminGovernance({ lang = 'fr', setView, agentUser, 
     setTimeout(() => setToastMessage(''), 3500);
   };
 
-  const loadData = () => {
-    // Load Users
-    const defaultUsers = [
-      { id: 1, type: 'citizen', name: 'Modou Diop', identifier: 'modou.diop@csu.sn', cmuNumber: 'SN-DK-MED-8472', role: 'Assuré individuel', status: 'Actif', mutuelle: 'UDMS Dakar Plateau' },
-      { id: 2, type: 'citizen', name: 'Ibrahima Sarr', identifier: 'ibrahima.sarr@ucad.edu.sn', cmuNumber: 'SN-DK-UCAD-3012', role: 'Élève / Étudiant', status: 'Actif', mutuelle: 'UDMS Fann / UCAD' },
-      { id: 3, type: 'citizen', name: 'Fatou Diallo', identifier: 'fatou.diallo@bsf.sn', cmuNumber: 'SN-DK-BSF-9901', role: 'Bénéficiaire BSF', status: 'Actif', mutuelle: 'UDMS Pikine' },
-      { id: 4, type: 'partner', name: 'Dr. Cheikh Anta Diop', identifier: 'dr.diop@hopital-fann.sn', cmuNumber: 'PREST-MED-101', role: 'Médecin traitant', status: 'Actif & Agréé', mutuelle: 'Hôpital Abass Ndao' },
-      { id: 5, type: 'partner', name: 'Aïssatou Sow', identifier: 'aissatou.sow@sante.sn', cmuNumber: 'PREST-SF-202', role: 'Infirmier / Sage-Femme', status: 'Actif & Agréé', mutuelle: 'Poste Médina' },
-      { id: 6, type: 'partner', name: 'Dr. Fatou Sow', identifier: 'dr.fatou.sow@pharmacie-medina.sn', cmuNumber: 'PREST-PH-404', role: 'Pharmacien d\'officine', status: 'Actif & Agréé', mutuelle: 'Grande Pharmacie' },
-      { id: 7, type: 'agent', name: 'Amadou Sall', identifier: 'amadou.sall@udms-dakar.sn', cmuNumber: 'AGENT-REG-01', role: 'Agent UDMS', status: 'Actif', mutuelle: 'UDMS Dakar Plateau' },
-      { id: 8, type: 'superadmin', name: 'Dr. Mamadou Ba', identifier: 'superadmin@anacsu.sn', cmuNumber: 'SA-DKR-001', role: 'Super Admin', status: 'Superviseur Suprême', mutuelle: 'ANACSU Siège' }
-    ];
+  /**
+   * Unifie les deux formes de réponse du dashboard en un contrat unique :
+   *   { beneficiaries: {total, active, pending}, mutuelles, cotisationsAmount,
+   *     donations, claims: {total, byStatus, reimbursedAmount},
+   *     parrainage: {sponsorsCount, sponsoredCount, totalAmount},
+   *     byPackage: [{package, count}], byMutuelle: [{name, count}],
+   *     byCommune: [{commune, count}] }
+   * Un champ absent reste `null` : il s'affichera « — », jamais un nombre
+   * inventé. Aucune valeur de repli n'est introduite ici.
+   */
+  const normalizeDashboardStats = (raw) => {
+    const n = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+    const list = (input, key) =>
+      (Array.isArray(input) ? input : [])
+        .map((r) => ({
+          [key]: String(r[key] || r.name || r.commune || r.package || 'Non spécifié'),
+          count: n(Number(r.count)) || 0
+        }));
 
-    const storedUsers = localStorage.getItem('cmu-superadmin-users');
-    if (storedUsers) {
-      try {
-        setUsersList(JSON.parse(storedUsers));
-      } catch (e) {
-        setUsersList(defaultUsers);
+    // /api/dashboard/stats renvoie des objets imbriqués ; /api/dashboard/demo-stats
+    // renvoie la même chose. On accepte aussi la forme plate historique.
+    const ben = (raw && raw.beneficiaries) || {};
+    const cl = (raw && raw.claims) || {};
+    const par = (raw && raw.parrainage) || {};
+
+    return {
+      beneficiaries: {
+        total: n(ben.total) ?? n(raw.totalBeneficiaries),
+        active: n(ben.active) ?? n(raw.activeBeneficiaries),
+        pending: n(ben.pending) ?? n(raw.pendingBeneficiaries)
+      },
+      mutuelles: n(raw.mutuelles) ?? n(raw.totalMutuelles),
+      cotisationsAmount: n(raw.cotisationsAmount) ?? n(raw.totalContributions),
+      donations: n(raw.donations) ?? n(raw.totalDonations),
+      claims: {
+        total: n(cl.total) ?? n(raw.totalClaims),
+        reimbursedAmount: n(cl.reimbursedAmount),
+        byStatus: list(cl.byStatus || raw.claimsByStatus, 'status')
+      },
+      parrainage: {
+        sponsorsCount: n(par.sponsorsCount),
+        sponsoredCount: n(par.sponsoredCount),
+        totalAmount: n(par.totalAmount)
+      },
+      byPackage: list(raw.byPackage, 'package'),
+      byMutuelle: list(raw.byMutuelle, 'name'),
+      byCommune: list(raw.byCommune, 'commune'),
+      adhesionsTrend: (Array.isArray(raw.adhesionsTrend) ? raw.adhesionsTrend : [])
+        .map((r) => ({ date: r.date, count: n(Number(r.count)) || 0 }))
+    };
+  };
+
+  const loadData = () => {
+    // AUCUNE liste d'utilisateurs fictive n'est injectée. Le registre des
+    // comptes n'affiche QUE les données réellement enregistrées (localStorage
+    // alimenté par les créations réelles de comptes). Ces 8 profils
+    // « Modou Diop / Ibrahima Sarr / Fatou Diallo… » étaient du.seed de
+    // démonstration : la gouvernance les prenait pour de vrais comptes, et
+    // ils revenaient à CHAQUE réinitialisation du store.
+    // La purge ci-dessous nettoie les anciennes graines persistées.
+    try {
+      const stored = localStorage.getItem('cmu-superadmin-users');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        // Migration : on retire les profils de démonstration historiques.
+        const DEMO_NAMES = new Set([
+          'Modou Diop', 'Ibrahima Sarr', 'Fatou Diallo',
+          'Dr. Cheikh Anta Diop', 'Aïssatou Sow', 'Dr. Fatou Sow',
+          'Amadou Sall', 'Dr. Mamadou Ba'
+        ]);
+        const realUsers = Array.isArray(parsed) ? parsed.filter(u => !DEMO_NAMES.has(u && u.name)) : [];
+        if (realUsers.length !== (Array.isArray(parsed) ? parsed.length : 0)) {
+          localStorage.setItem('cmu-superadmin-users', JSON.stringify(realUsers));
+        }
+        setUsersList(realUsers);
+      } else {
+        setUsersList([]);
       }
-    } else {
-      setUsersList(defaultUsers);
-      localStorage.setItem('cmu-superadmin-users', JSON.stringify(defaultUsers));
+    } catch (e) {
+      setUsersList([]);
     }
 
     // Load Pending Account Requests
@@ -84,18 +141,27 @@ export default function SuperAdminGovernance({ lang = 'fr', setView, agentUser, 
     setStatsLoading(true);
     setStatsError('');
     try {
-      const response = await apiFetch('/api/dashboard/stats');
+      // /api/dashboard/stats exige un token agent/admin. La session Super
+      // Admin de démonstration n'en a pas toujours : on tente d'abord la
+      // route authentifiée, puis on bascule sur l'endpoint PUBLIC
+      // /api/dashboard/demo-stats qui renvoie les MÊMES agrégats calculés
+      // en base (et uniquement des compteurs, aucune donnée personnelle).
+      // Ainsi les chiffres affichés sont TOUJOURS réels — jamais un seed.
+      let response = await apiFetch('/api/dashboard/stats');
+      if (response.status === 401 || response.status === 403) {
+        response = await apiFetch('/api/dashboard/demo-stats');
+      }
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const data = await response.json();
-      setDashboardStats(data);
+      setDashboardStats(normalizeDashboardStats(data));
     } catch (err) {
       console.error('Failed to fetch dashboard stats:', err);
       // AUCUN mode démonstration. Un tableau de bord de gouvernance qui
-      // affiche 18 450 assurés et 82 972 500 FCFA de cotisations alors que
-      // l'API est injoignable est pire qu'un écran vide : ces montants
-      // peuvent servir à décider d'un budget ou d'une tarification.
+      // affiche des chiffres alors que l'API est injoignable est pire qu'un
+      // écran vide : ces montants servent à décider un budget ou une
+      // tarification. Écran vide + explication, jamais de valeur inventée.
       setDashboardStats(null);
       setStatsError("Statistiques indisponibles : l'API n'a pas répondu. Aucun chiffre de remplacement n'est affiché.");
     } finally {
@@ -362,66 +428,44 @@ export default function SuperAdminGovernance({ lang = 'fr', setView, agentUser, 
             <>
               {/* KPIs principaux - Clickable navigation cards */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
-                {[
-                  // AUCUNE valeur de repli : un chiffre absent doit s'afficher
-                  // « — », pas un nombre inventé. Les 18 450 assurés et
-                  // 82 972 500 FCFA affichés ici étaient des valeurs en dur,
-                  // sans lien avec la base : elles trompaient la gouvernance.
-                  {
-                    label: 'Assurés totaux',
-                    value: dashboardStats.totalBeneficiaries ?? dashboardStats.beneficiaries,
-                    icon: '👥',
-                    color: '#3b82f6',
-                    isMoney: false,
-                    view: 'beneficiaries',
-                    filter: { status: 'all' }
-                  },
-                  {
-                    label: 'Assurés actifs',
-                    value: dashboardStats.activeBeneficiaries ?? dashboardStats.active,
-                    icon: '💳',
-                    color: '#10b981',
-                    isMoney: false,
-                    view: 'beneficiaries',
-                    filter: { status: 'Actif' }
-                  },
-                  {
-                    label: 'Dossiers en attente',
-                    value: dashboardStats.totalClaims ?? dashboardStats.claims,
-                    icon: '⏳',
-                    color: '#f59e0b',
-                    isMoney: false,
-                    view: 'beneficiaries',
-                    filter: { status: 'En attente' }
-                  },
-                  {
-                    label: 'Mutuelles actives',
-                    value: dashboardStats.totalPartners ?? dashboardStats.partners,
-                    icon: '📋',
-                    color: '#f59e0b',
-                    isMoney: false,
-                    view: 'directory',
-                    filter: null
-                  },
-                  {
-                    label: 'Cotisations perçues (FCFA)',
-                    value: dashboardStats.totalContributions ?? dashboardStats.contributions,
-                    icon: '📝',
-                    color: '#8b5cf6',
-                    isMoney: true,
-                    view: 'cotisations',
-                    filter: null
-                  },
-                  {
-                    label: 'Total des fonds mobilisés (FCFA)',
-                    value: (dashboardStats.totalContributions ?? dashboardStats.contributions) + (dashboardStats.totalDonations ?? dashboardStats.donations ?? 0),
-                    icon: '🏥',
-                    color: '#06b6d4',
-                    isMoney: true,
-                    view: 'payments',
-                    filter: null
-                  },
-                ].map((kpi, i) => (
+                {(() => {
+                  // KPIs principaux - Clickable navigation cards
+                  // Structure LUE depuis /api/dashboard/stats :
+                  //   { beneficiaries: {total, active, pending}, mutuelles,
+                  //     cotisationsAmount, donations,
+                  //     claims: {total, reimbursedAmount},
+                  //     parrainage: {sponsorsCount, sponsoredCount, totalAmount} }
+                  // Les anciennes lectures (totalBeneficiaries, active,
+                  // contributions, partners) ne correspondaient à AUCUN champ
+                  // réellement renvoyé : la gouvernance lisait des valeurs
+                  // fictives. Un champ absent reste désormais « — ».
+                  const S = dashboardStats;
+                  const ben = S.beneficiaries || {};
+                  const cl = S.claims || {};
+                  const par = S.parrainage || {};
+                  const num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+                  const cot = num(S.cotisationsAmount);
+                  const dons = num(S.donations);
+                  const fonds = (cot !== null || dons !== null) ? (cot || 0) + (dons || 0) : null;
+                  const tot = num(ben.total);
+                  const act = num(ben.active);
+                  const taux = (tot && act !== null) ? Math.round((act / tot) * 100) : null;
+                  const kpis = [
+                    { label: 'Assurés totaux', value: tot, icon: '👥', color: '#3b82f6', isMoney: false, view: 'beneficiaries', filter: { status: 'all' } },
+                    { label: 'Assurés actifs', value: act, icon: '💳', color: '#10b981', isMoney: false, view: 'beneficiaries', filter: { status: 'Actif' } },
+                    { label: 'Dossiers en attente', value: num(ben.pending), icon: '⏳', color: '#f59e0b', isMoney: false, view: 'beneficiaries', filter: { status: 'En attente' } },
+                    { label: 'Mutuelles actives', value: num(S.mutuelles), icon: '📋', color: '#8b5cf6', isMoney: false, view: 'directory', filter: null },
+                    { label: 'Cotisations perçues (FCFA)', value: cot, icon: '💳', color: '#0ea5e9', isMoney: true, view: 'cotisations', filter: null },
+                    { label: 'Dons collectés (FCFA)', value: dons, icon: '❤️', color: '#ec4899', isMoney: true, view: 'payments', filter: null },
+                    { label: 'Total des fonds mobilisés (FCFA)', value: fonds, icon: '🏥', color: '#06b6d4', isMoney: true, view: 'payments', filter: null },
+                    { label: 'Taux de couverture', value: taux, suffix: ' %', icon: '📈', color: '#22c55e', isMoney: false, view: 'dashboard', filter: null },
+                    { label: 'Demandes de prise en charge', value: num(cl.total), icon: '📋', color: '#f59e0b', isMoney: false, view: 'claims', filter: null },
+                    { label: 'Montant remboursé (FCFA)', value: num(cl.reimbursedAmount), icon: '💰', color: '#10b981', isMoney: true, view: 'claims', filter: null },
+                    { label: 'Sponsors actifs', value: num(par.sponsorsCount), icon: '🤝', color: '#8b5cf6', isMoney: false, view: 'parrainage-solidaire', filter: null },
+                    { label: 'Filleuls parrainés', value: num(par.sponsoredCount), icon: '🎁', color: '#d97706', isMoney: false, view: 'parrainage-solidaire', filter: null },
+                    { label: 'Fonds parrainage (FCFA)', value: num(par.totalAmount), icon: '🪙', color: '#059669', isMoney: true, view: 'parrainage-solidaire', filter: null }
+                  ];
+                  return kpis.map((kpi, i) => (
                   <button
                     key={i}
                     onClick={() => {
@@ -466,12 +510,15 @@ export default function SuperAdminGovernance({ lang = 'fr', setView, agentUser, 
                     </div>
                     <div style={{ fontSize: kpi.isMoney ? '1.3rem' : '1.8rem', fontWeight: '800', color: kpi.color, lineHeight: 1.1 }}>
                       {typeof kpi.value === 'number'
-                        ? (kpi.isMoney ? `${kpi.value.toLocaleString('fr-FR')} FCFA` : kpi.value.toLocaleString('fr-FR'))
+                        ? (kpi.isMoney
+                            ? `${kpi.value.toLocaleString('fr-FR')} FCFA`
+                            : `${kpi.value.toLocaleString('fr-FR')}${kpi.suffix || ''}`)
                         : '—'}
                     </div>
                     <div style={{ fontSize: '0.82rem', color: 'var(--text-sub)', marginTop: '0.5rem', fontWeight: '600' }}>{kpi.label}</div>
                   </button>
-                ))}
+                  ));
+                })()}
               </div>
 
               {/* Répartition par package si dispo */}
@@ -479,35 +526,70 @@ export default function SuperAdminGovernance({ lang = 'fr', setView, agentUser, 
                 <div style={{ marginBottom: '1.5rem' }}>
                   <h4 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '0.75rem' }}>📦 Répartition par formule (cliquez pour inspecter les assurés)</h4>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.75rem' }}>
-                    {Object.entries(dashboardStats.byPackage).map(([pkg, count]) => (
-                      <button 
-                        key={pkg} 
-                        onClick={() => {
-                          localStorage.setItem('cmu-benef-search', pkg);
-                          if (setView) setView('beneficiaries');
-                        }}
-                        style={{ 
-                          padding: '1rem', 
-                          borderRadius: '12px', 
-                          background: 'var(--bg-card-subtle)', 
-                          border: '1px solid var(--border-color)',
-                          textAlign: 'center',
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease'
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = 'translateY(-2px)';
-                          e.currentTarget.style.borderColor = 'var(--primary)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = 'translateY(0)';
-                          e.currentTarget.style.borderColor = 'var(--border-color)';
-                        }}
-                      >
-                        <div style={{ fontSize: '1.3rem', fontWeight: '800', color: 'var(--primary)' }}>{typeof count === 'number' ? count.toLocaleString('fr-FR') : count}</div>
-                        <div style={{ fontSize: '0.78rem', color: 'var(--text-sub)', textTransform: 'capitalize', fontWeight: '600' }}>{pkg}</div>
-                      </button>
-                    ))}
+                    {(() => {
+                      // byPackage est un TABLEAU [{ package, count }] renvoyé
+                      // par /api/dashboard/stats. Object.entries() sur un
+                      // tableau donnait count = objet entier → crash React
+                      // (« Objects are not valid as a React child »).
+                      // On normalise donc ici, et on tolère aussi l'ancien
+                      // format objet { formule: nombre } sans jamais rendre
+                      // une valeur non primitive.
+                      const toList = (input) => {
+                        if (Array.isArray(input)) return input;
+                        if (input && typeof input === 'object') {
+                          return Object.entries(input).map(([k, v]) => ({
+                            package: k,
+                            count: typeof v === 'number' ? v : Number(v) || 0
+                          }));
+                        }
+                        return [];
+                      };
+                      const list = toList(dashboardStats.byPackage);
+                      if (list.length === 0) {
+                        return (
+                          <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', margin: 0 }}>
+                            Aucune formule enregistrée pour le moment.
+                          </p>
+                        );
+                      }
+                      return list.map((row, idx) => {
+                        const pkg = row.package || row.name || 'Non spécifié';
+                        const count = Number(row.count) || 0;
+                        return (
+                          <button
+                            key={`${pkg}-${idx}`}
+                            onClick={() => {
+                              localStorage.setItem('cmu-benef-search', String(pkg));
+                              if (setView) setView('beneficiaries');
+                            }}
+                            style={{ 
+                              padding: '1rem', 
+                              borderRadius: '12px', 
+                              background: 'var(--bg-card-subtle)', 
+                              border: '1px solid var(--border-color)',
+                              textAlign: 'center',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform = 'translateY(-2px)';
+                              e.currentTarget.style.borderColor = 'var(--primary)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = 'translateY(0)';
+                              e.currentTarget.style.borderColor = 'var(--border-color)';
+                            }}
+                          >
+                            <div style={{ fontSize: '1.3rem', fontWeight: '800', color: 'var(--primary)' }}>
+                              {count.toLocaleString('fr-FR')}
+                            </div>
+                            <div style={{ fontSize: '0.78rem', color: 'var(--text-sub)', textTransform: 'capitalize', fontWeight: '600' }}>
+                              {String(pkg)}
+                            </div>
+                          </button>
+                        );
+                      });
+                    })()}
                   </div>
                 </div>
               )}

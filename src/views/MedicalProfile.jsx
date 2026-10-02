@@ -42,6 +42,20 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
   const [realMembers, setRealMembers] = useState([]);
 
   useEffect(() => {
+    let cancelled = false;
+    // La liste des patients vient de la BASE : sans cette synchronisation,
+    // le dossier médical ne montrait que les ~41 fiches figées du bundle.
+    import('../utils/beneficiarySync')
+      .then(({ syncBeneficiariesFromServer, getLiveMembers }) =>
+        syncBeneficiariesFromServer().then(() => getLiveMembers())
+      )
+      .then((synced) => {
+        if (!cancelled) setRealMembers(synced);
+      })
+      .catch(() => {
+        if (!cancelled) setRealMembers(getStoredMembers());
+      });
+
     const load = () => {
       try {
         setRealMembers(getStoredMembers());
@@ -49,9 +63,11 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
         setRealMembers([]);
       }
     };
-    load();
     window.addEventListener('unamusc_store_change', load);
-    return () => window.removeEventListener('unamusc_store_change', load);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('unamusc_store_change', load);
+    };
   }, []);
 
   /** Examens réellement saisis pour un bénéficiaire. */
@@ -105,25 +121,29 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
     if (citizenUser?.cmuNumber || citizenUser?.cmu_number) {
       return citizenUser.cmuNumber || citizenUser.cmu_number;
     }
-    return 'CMU-DKR-2026-4401'; // Default for Lab/Doctor is Fatou Diop
+    // Aucun patient n'est supposé : ni code CMU, ni identité, ni package.
+    // Choisir un « patient par défaut » (autrefois « Fatou Diop,
+    // CMU-DKR-2026-4401 ») faisait porter à un utilisateur non identifié
+    // le dossier médical d'une personne réelle, antécédents compris.
+    return '';
   });
 
   const [showPatientDirectoryModal, setShowPatientDirectoryModal] = useState(false);
 
-  // Résolution dynamique du patient actif (Verrouillage strict si citoyen connecté)
+  // Résolution dynamique du patient actif. Sans patient sélectionné
+  // (ni citizenUser, ni entrée du registre), aucun dossier n'est constitué :
+  // les champs restent vides plutôt que remplis avec une identité inventée.
   const currentPatientObj = isCitizen && citizenUser ? {
-    firstName: citizenUser.firstName || citizenUser.first_name || 'Ibrahima',
-    lastName: citizenUser.lastName || citizenUser.last_name || 'Sarr',
-    cmuNumber: citizenUser.cmuNumber || citizenUser.cmu_number || 'SN-DK-UCAD-1012',
-    packageType: citizenUser.packageType || 'Scolaire / Étudiant UCAD',
-    doctor: citizenUser.doctor || 'Dr. Ousmane Sow (Centre COUD / Fann)',
-    location: citizenUser.mutuelleName || 'Mutuelle UCAD Dakar',
-    examCount: 5,
-    lastExam: 'Bilan de santé & consultation de suivi'
+    firstName: citizenUser.firstName || citizenUser.first_name || '',
+    lastName: citizenUser.lastName || citizenUser.last_name || '',
+    cmuNumber: citizenUser.cmuNumber || citizenUser.cmu_number || '',
+    packageType: citizenUser.packageType || '',
+    doctor: citizenUser.doctor || '',
+    location: citizenUser.mutuelleName || ''
   } : (facilityPatients.find(p => p.cmuNumber === selectedPatientCmu) || {
-    firstName: citizenUser?.firstName || citizenUser?.first_name || 'Fatou',
-    lastName: citizenUser?.lastName || citizenUser?.last_name || 'Diop',
-    cmuNumber: selectedPatientCmu
+    firstName: citizenUser?.firstName || citizenUser?.first_name || '',
+    lastName: citizenUser?.lastName || citizenUser?.last_name || '',
+    cmuNumber: selectedPatientCmu || ''
   });
 
   const activeFirstName = currentPatientObj.firstName;
@@ -217,60 +237,44 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
     }
   };
 
-  // Générateurs de données médicales propres et distinctes à chaque assuré
-  const getAntecedentsForUser = (cmuNum, isStud, isBsfUser, fName) => {
-    const name = (fName || '').toLowerCase();
-    if (name.includes('amadou') || cmuNum === 'CSU-DKR-2026-8812.2') {
-      return {
-        bloodGroup: 'A+',
-        rhesus: 'positif',
-        allergies: 'Aucune allergie médicamenteuse connue',
-        chronicConditions: 'Traumatisme osseux membre inférieur droit (Facture tibia)',
-        surgeries: 'Ostéosynthèse / Pose de plâtre (2026)',
-        emergencyContact: 'Aminata Sow (Épouse) : +221 77 555 12 34'
-      };
-    }
-    if (name.includes('awa') || cmuNum === 'CMU-DKR-2026-3302') {
-      return {
-        bloodGroup: 'O+',
-        rhesus: 'positif',
-        allergies: 'Aspirine (Légère urticaire)',
-        chronicConditions: 'Suivi préventif bilan lipidique & sénologie',
-        surgeries: 'Aucune chirurgie antérieure',
-        emergencyContact: 'Cheikh Ndiaye (Frère) : +221 77 444 88 99'
-      };
-    }
-    if (name.includes('ibrahima') || cmuNum === 'CSU-UCAD-2026-9012' || isStud) {
-      return {
-        bloodGroup: 'O+',
-        rhesus: 'positif',
-        allergies: 'Aucune allergie connue (Bilan médical UCAD 2026)',
-        chronicConditions: 'Aucune affection de longue durée : Aptitude sportive UCAD validée',
-        surgeries: 'Aucune chirurgie antérieure',
-        emergencyContact: 'Papa Sarr (Père) : +221 77 654 32 10'
-      };
-    }
-    if (name.includes('fatou') || cmuNum === 'CMU-DKR-2026-4401' || isBsfUser) {
-      return {
-        bloodGroup: 'B+',
-        rhesus: 'positif',
-        allergies: 'Pénicilline (Modérée)',
-        chronicConditions: 'Hypertension artérielle (Suivi programme gratuité BSF)',
-        surgeries: 'Césarienne (2018)',
-        emergencyContact: 'Mamadou Diallo (Époux) : +221 77 123 99 88'
-      };
-    }
-    return {
-      bloodGroup: 'AB+',
-      rhesus: 'positif',
-      allergies: 'Pollen de graminées (Médina)',
-      chronicConditions: 'Discopathie lombo-sacrée L4-L5',
-      surgeries: 'Appendicectomie (2021)',
-      emergencyContact: 'Sokhna Diop (Épouse) : +221 77 987 65 43'
-    };
-  };
+  // ────────────────────────────────────────────────────────────────────
+  //  AUCUN ANTÉCÉDENT MÉDICAL FABRIQUÉ.
+  //  Ce générateur tranchait sur le PRÉNOM : « Fatou » → groupe B+,
+  //  pénicilline, césarienne 2018, HTA, contact d'urgence « Mamadou
+  //  Diallo » ; « Amadou » → fracture du tibia ; « Ibrahima » → étudiant
+  //  UCAD. Aucun de ces éléments n'a jamais été saisi par un soignant :
+  //  c'était une fonction d'invention produisant un dossier médical
+  //  plausible, ensuite présenté comme « certifié UNAMUSC » et exportable
+  //  en PDF officiel.
+  //  Un antécédent allergique ou une chirurgie inventés peuvent tuer un
+  //  patient : une Ordonnance de pénicilline presrite sur la base de ce
+  //  dossier serait criminelle. Un dossier médical ne se devine jamais.
+  // ────────────────────────────────────────────────────────────────────
+  const getAntecedentsForUser = () => ({
+    bloodGroup: '',
+    rhesus: '',
+    allergies: '',
+    chronicConditions: '',
+    surgeries: '',
+    emergencyContact: '',
+    notRecorded: true
+  });
 
-  const getExamsForUser = (cmuNum, isStud, isBsfUser, fName) => {
+  // ────────────────────────────────────────────────────────────────────
+  //  AUCUN EXAMEN D'IMAGERIE FABRIQUÉ.
+  //  Ce générateur produisait 4 à 5 examens DICOM avec comptes-rendus
+  //  « certifiés » selon le prénom (« Fatou » → échographie 32 SA,
+  //  scanner lombaire ; « Amadou » → fracture, IRM rachis…). Les images
+  //  provenaient même de fichiers d'illustration (dicom_bone_fracture.jpg),
+  //  et le dossier était présenté à l'écran comme « Certifié CNOM &
+  //  UNAMUSC Sénégal », exportable en PDF. Un médecin qui se fie à une
+  //  « échographie 32 SA » pour un homme prend une décision clinique sur
+  //  une image qui n'a jamais existé. Un examen n'existe que s'il a été
+  //  importé par le professionnel qui l'a réalisé.
+  // ────────────────────────────────────────────────────────────────────
+  const getExamsForUser = () => {
+    return [];
+    /* eslint-disable no-unreachable */
     const name = (fName || '').toLowerCase();
 
     // 1. Amadou Sow : Fracture Os Cassé, Bilan Sanguin, IRM Rachis, Radio Thorax, Echocardiographie
@@ -602,7 +606,15 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
     ];
   };
 
-  const getHistoryForUser = (cmuNum, isStud, isBsfUser, fName) => {
+  // ────────────────────────────────────────────────────────────────────
+  //  AUCUN HISTORIQUE DE SOINS FABRIQUÉ.
+  //  Mêmes géniteurs par prénom, produisant des actes « Dr. Ousmane Sow
+  //  (Hôpital Fann) » avec comptes-rendus rédigés. Aucune de ces
+  //  consultations n'a eu lieu.
+  // ────────────────────────────────────────────────────────────────────
+  const getHistoryForUser = () => {
+    return [];
+    /* eslint-disable no-unreachable */
     const name = (fName || '').toLowerCase();
     if (name.includes('amadou') || cmuNum === 'CSU-DKR-2026-8812.2') {
       return [
@@ -735,8 +747,14 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
     alert('✅ Entrée ajoutée à l\'historique médical !');
   };
 
-  // Résultats Laboratoire Persistés & Isolés par assuré
-  const getLabResultsForUser = (cmuNum, isStud, isBsfUser, fName) => {
+  // Résultats de laboratoire : aucun résultat n'est produit par défaut.
+  //  Une glycémie « 0,95 g/L (normal) » ou une créatininémie « 9,2 mg/L »
+  //  générées depuis un prénom constituent un résultat biologique fictif :
+  //  c'est la base d'un diagnostic. Seuls les dosages réellement saisis
+  //  par un laboratoire sont affichés.
+  const getLabResultsForUser = () => {
+    return [];
+    /* eslint-disable no-unreachable */
     const name = (fName || '').toLowerCase();
     if (name.includes('amadou') || cmuNum === 'CSU-DKR-2026-8812.2') {
       return [
@@ -1682,30 +1700,38 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
             <div className="col-lg-4 col-12">
               <div className="d-flex flex-column" style={{ gap: '2.75rem' }}>
                 
-                {/* Groupe sanguin Card */}
+                {/* Groupe sanguin — affiché uniquement s'il a été
+                    réellement saisi. Un groupe sanguin deviné à partir
+                    d'un prénom, puis présenté comme « certifié par le
+                    laboratoire Bio24 », peut provoquer une transfusion
+                    incompatible. */}
                 <div style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '26px', padding: '2.25rem 2rem', boxShadow: '0 12px 35px rgba(0,0,0,0.08)' }}>
                   <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
-                    <div className="d-flex align-items-center gap-3 text-danger">
+                    <div className="d-flex align-items-center gap-3">
                       <span style={{ fontSize: '1.6rem' }}>🩸</span>
                       <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.2rem' }}>Groupe sanguin</h6>
                     </div>
-                    <span style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1.5px solid rgba(239, 68, 68, 0.35)', padding: '0.45rem 1rem', borderRadius: '14px', fontSize: '0.82rem', fontWeight: '800' }}>Urgent</span>
+                    <span style={{ background: 'rgba(100,116,139,0.15)', color: 'var(--text-sub)', border: '1.5px solid var(--border-color)', padding: '0.45rem 1rem', borderRadius: '14px', fontSize: '0.82rem', fontWeight: '800' }}>Non renseigné</span>
                   </div>
 
-                  <div className="d-flex align-items-center justify-content-center gap-4 my-4 p-4 rounded-4" style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1.5px solid rgba(239, 68, 68, 0.22)', borderRadius: '22px', padding: '1.75rem' }}>
-                    <h1 className="fw-black text-danger mb-0" style={{ fontSize: '3.8rem', letterSpacing: '-0.03em', lineHeight: 1 }}>{antecedents.bloodGroup}</h1>
-                    <div>
-                      <div className="fw-bold" style={{ color: 'var(--text-main)', fontSize: '1.15rem', marginBottom: '0.4rem' }}>Rhésus {antecedents.rhesus}</div>
-                      <small style={{ color: 'var(--text-sub)', fontSize: '0.88rem', fontWeight: '600' }}>Groupe sanguin certifié</small>
+                  {antecedents.bloodGroup ? (
+                    <div className="d-flex align-items-center justify-content-center gap-4 my-4 p-4 rounded-4" style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1.5px solid rgba(239, 68, 68, 0.22)', borderRadius: '22px', padding: '1.75rem' }}>
+                      <h1 className="fw-black text-danger mb-0" style={{ fontSize: '3.8rem', letterSpacing: '-0.03em', lineHeight: 1 }}>{antecedents.bloodGroup}</h1>
+                      <div>
+                        <div className="fw-bold" style={{ color: 'var(--text-main)', fontSize: '1.15rem', marginBottom: '0.4rem' }}>Rhésus {antecedents.rhesus}</div>
+                        <small style={{ color: 'var(--text-sub)', fontSize: '0.88rem', fontWeight: '600' }}>Saisi par un professionnel de santé</small>
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="d-flex align-items-center gap-3 pt-3 border-top" style={{ borderColor: 'var(--border-color)' }}>
-                    <span style={{ fontSize: '1.3rem' }}>🏥</span>
-                    <small style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}>
-                      Certifié par : <strong style={{ color: 'var(--text-main)' }}>Laboratoire Bio24, Dakar</strong>
-                    </small>
-                  </div>
+                  ) : (
+                    <div className="text-center py-4 px-3 my-3" style={{ background: 'var(--bg-card-subtle)', border: '1.5px dashed var(--border-color)', borderRadius: '22px' }}>
+                      <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>🩸</div>
+                      <div style={{ fontSize: '0.9rem', fontWeight: '700', marginBottom: '0.3rem' }}>Groupe sanguin non renseigné</div>
+                      <small style={{ color: 'var(--text-sub)', fontSize: '0.82rem', lineHeight: 1.55 }}>
+                        Aucun groupe sanguin n'a été saisi pour cet assuré. Il doit être
+                        enregistré par un professionnel lors d'une prise de sang.
+                      </small>
+                    </div>
+                  )}
                 </div>
 
                 {/* Allergies & alertes Card */}
@@ -1810,34 +1836,33 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                   )}
                 </div>
 
-                {/* Interopérabilité Card */}
+                {/* Interopérabilité DHIS2
+                    Aucune liaison DHIS2 n'est implémentée : il n'existe
+                    aucun jeton d'API, aucun appel réseau et aucun mapping
+                    de patients. Les identifiants « FANN-77291 » et
+                    « LD-091823 » étaient des chaînes littérales, et la
+                    mention « ✓ Synchronisé » était un texte fixe : la
+                    plateforme affichait une certification d'échange avec
+                    le système national du Ministère de la Santé qui
+                    n'a jamais eu lieu. C'est rappelé explicitement plutôt
+                    que simulé. */}
                 <div style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '26px', padding: '2.25rem 2rem', boxShadow: '0 12px 35px rgba(0,0,0,0.08)' }}>
-                  <div className="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+                  <div className="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
                     <span style={{ fontSize: '1.6rem' }}>🌐</span>
                     <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.2rem' }}>Interopérabilité DHIS2</h6>
                   </div>
 
-                  <div className="d-flex flex-column" style={{ gap: '1.5rem' }}>
-                    <div className="d-flex align-items-center justify-content-between flex-wrap gap-3" style={{ background: 'var(--bg-card-subtle)', border: '1.5px solid var(--border-color)', borderRadius: '20px', padding: '1.35rem 1.5rem' }}>
-                      <div className="d-flex align-items-center gap-3.5">
-                        <div style={{ width: '46px', height: '46px', background: '#059669', color: '#ffffff', fontWeight: '800', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', flexShrink: 0, boxShadow: '0 4px 14px rgba(5,150,105,0.35)' }}>F</div>
-                        <div>
-                          <strong className="d-block text-main fw-bold" style={{ color: 'var(--text-main)', fontSize: '1.02rem', marginBottom: '0.3rem' }}>Hôpital Fann</strong>
-                          <span className="fw-semibold text-muted d-block" style={{ fontSize: '0.86rem' }}>ID DHIS2 : FANN-77291</span>
-                        </div>
+                  <div className="d-flex flex-column" style={{ gap: '1rem' }}>
+                    <div className="d-flex align-items-start gap-3.5" style={{ background: 'var(--bg-card-subtle)', border: '1.5px solid var(--border-color)', borderRadius: '20px', padding: '1.35rem 1.5rem' }}>
+                      <div style={{ width: '46px', height: '46px', background: 'var(--text-sub)', color: '#ffffff', fontWeight: '800', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', flexShrink: 0 }}>🌐</div>
+                      <div>
+                        <strong className="d-block text-main fw-bold" style={{ color: 'var(--text-main)', fontSize: '1.02rem', marginBottom: '0.3rem' }}>Connexion DHIS2 non configurée</strong>
+                        <span className="fw-semibold text-muted d-block" style={{ fontSize: '0.88rem', lineHeight: 1.6 }}>
+                          Aucun identifiant de patient n'a été attribué dans le Système national
+                          d'information sanitaire. Les données de ce dossier ne sont ni
+                          transmises ni stockées côté Ministère de la Santé.
+                        </span>
                       </div>
-                      <span style={{ background: 'rgba(16,185,129,0.15)', color: '#10b981', border: '1.5px solid rgba(16,185,129,0.35)', borderRadius: '12px', padding: '0.5rem 1.1rem', fontSize: '0.84rem', fontWeight: '800' }}>✓ Synchronisé</span>
-                    </div>
-
-                    <div className="d-flex align-items-center justify-content-between flex-wrap gap-3" style={{ background: 'var(--bg-card-subtle)', border: '1.5px solid var(--border-color)', borderRadius: '20px', padding: '1.35rem 1.5rem' }}>
-                      <div className="d-flex align-items-center gap-3.5">
-                        <div style={{ width: '46px', height: '46px', background: '#dc2626', color: '#ffffff', fontWeight: '800', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', flexShrink: 0, boxShadow: '0 4px 14px rgba(220,38,38,0.35)' }}>LD</div>
-                        <div>
-                          <strong className="d-block text-main fw-bold" style={{ color: 'var(--text-main)', fontSize: '1.02rem', marginBottom: '0.3rem' }}>Le Dantec</strong>
-                          <span className="fw-semibold text-muted d-block" style={{ fontSize: '0.86rem' }}>ID DHIS2 : LD-091823</span>
-                        </div>
-                      </div>
-                      <span style={{ background: 'rgba(16,185,129,0.15)', color: '#10b981', border: '1.5px solid rgba(16,185,129,0.35)', borderRadius: '12px', padding: '0.5rem 1.1rem', fontSize: '0.84rem', fontWeight: '800' }}>✓ Synchronisé</span>
                     </div>
                   </div>
                 </div>

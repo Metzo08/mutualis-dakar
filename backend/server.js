@@ -33,6 +33,58 @@ const {
 
 const app = express();
 const port = process.env.PORT || 5000;
+const os = require('os');
+
+// ── Détection de l'IP LAN du serveur ────────────────────────────────────────
+// Les QR codes des cartes CSU encodent une URL qui doit être joignable depuis
+// les smartphones du réseau Wi-Fi (ex. http://192.168.1.100:5173/#/verify/…).
+// Depuis le PC en localhost, le navigateur ne connaît pas sa propre adresse
+// réseau : le backend la publie via /api/lan-ip et /api/server-ip.
+//
+// Aucune valeur de repli n'est renvoyée : mieux vaut `null` (le frontend
+// invitera l'agent à saisir son IP) qu'une adresse inventée, qui produirait
+// des QR pointant vers un hôte inexistant et un « site inaccessible » au scan.
+
+// Interfaces virtuelles : leur IP n'est joignable ni par un téléphone du Wi-Fi
+// ni par les autres postes. On les écarte pour ne pas renvoyer, par exemple,
+// l'adresse du pont WSL / Hyper-V / Docker (souvent 172.x ou 192.168.x).
+const VIRTUAL_IFACE = /vethernet|wsl|hyper-v|virtual|vmware|vbox|docker|vpn|tunnel|tap-|bluetooth|loopback/i;
+const PHYSICAL_IFACE = /wi-?fi|wireless|ethernet|local area connection/i;
+
+const isPrivateIpv4 = (ip) => {
+  const m = String(ip).match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (!m) return false;
+  const [a, b] = [Number(m[1]), Number(m[2])];
+  if (m.slice(1).some((part) => Number(part) > 255)) return false;
+  if (a === 127 || a === 0) return false;
+  return a === 10 || (a === 192 && b === 168) || (a === 172 && b >= 16 && b <= 31);
+};
+
+/**
+ * Adresse IPv4 privée réellement joignable depuis le réseau local.
+ * Priorité aux interfaces physiques (Wi-Fi / Ethernet) : c'est par elles que
+ * les smartphones se connectent.
+ * @returns {string|null}
+ */
+function detectLanIp() {
+  const nets = os.networkInterfaces() || {};
+  const physical = [];
+  const other = [];
+
+  for (const name of Object.keys(nets)) {
+    if (VIRTUAL_IFACE.test(name)) continue;
+    const isPhysical = PHYSICAL_IFACE.test(name);
+    for (const net of nets[name] || []) {
+      // Node ≥ 18 expose family sous forme numérique (4) : les deux formes.
+      if (net.family !== 'IPv4' && net.family !== 4) continue;
+      if (net.internal) continue;
+      if (!isPrivateIpv4(net.address)) continue;
+      (isPhysical ? physical : other).push(net.address);
+    }
+  }
+
+  return physical[0] || other[0] || null;
+}
 
 // JWT_SECRET obligatoire : aucune valeur par défaut faible en production
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -317,7 +369,17 @@ app.post('/api/auth/agent/login', validate(agentLoginSchema), async (req, res) =
     }
 
     // Generate JWT (access token)
-    const agentPayload = { id: agent.id, role: agent.role, username: agent.username, department: agent.department };
+    // Le jeton porte la MSD de rattachement (`msd_code`) : c'est CE CODE qui
+    // cloisonne les données, pas le libellé de département. Le libellé reste
+    // pour l'affichage ; le code est la clé de filtre, stable et sans ambiguïté.
+    // Un Super Admin n'a pas de `msd_code` : il supervise toutes les MSD.
+    const agentPayload = {
+      id: agent.id,
+      role: agent.role,
+      username: agent.username,
+      department: agent.department,
+      msdCode: agent.msd_code || null
+    };
     const token = jwt.sign(agentPayload, EFFECTIVE_JWT_SECRET, { expiresIn: ACCESS_TOKEN_TTL.agent });
     // Émet un refresh token
     const refreshToken = await issueRefreshToken(agentPayload);
@@ -325,7 +387,7 @@ app.post('/api/auth/agent/login', validate(agentLoginSchema), async (req, res) =
     // Log successful login
     await query(
       `INSERT INTO audit_logs (action, actor, details) VALUES ($1, $2, $3)`,
-      ['CONNEXION_AGENT', username, `Connexion réussie de l'agent ${agent.first_name} ${agent.last_name} (${agent.role}).`]
+      ['CONNEXION_AGENT', username, `Connexion réussie de l'agent ${agent.first_name} ${agent.last_name} (${agent.role}${agent.msd_code ? ' / MSD ' + agent.msd_code : ''}).`]
     );
 
     res.json({
@@ -339,7 +401,8 @@ app.post('/api/auth/agent/login', validate(agentLoginSchema), async (req, res) =
         lastName: agent.last_name,
         role: agent.role,
         photoUrl: agent.photo_url,
-        department: agent.department
+        department: agent.department,
+        msdCode: agent.msd_code || null
       }
     });
   } catch (err) {
@@ -437,24 +500,10 @@ app.get('/api/mutuelles', async (req, res) => {
 });
 
 // 2. Get Locations for Leaflet Map
+// IP du serveur pour les QR codes. Même source que /api/lan-ip : renvoyer
+// 'localhost' ici faisait écrire une URL illisible sur les cartes imprimées.
 app.get('/api/server-ip', (req, res) => {
-  try {
-    const os = require('os');
-    const interfaces = os.networkInterfaces();
-    let serverIp = 'localhost';
-    for (const name of Object.keys(interfaces)) {
-      for (const iface of interfaces[name]) {
-        if (iface.family === 'IPv4' && !iface.internal) {
-          serverIp = iface.address;
-          break;
-        }
-      }
-      if (serverIp !== 'localhost') break;
-    }
-    res.json({ ip: serverIp });
-  } catch (err) {
-    res.json({ ip: 'localhost' });
-  }
+  res.json({ ip: detectLanIp() });
 });
 
 app.get('/api/locations', async (req, res) => {
@@ -513,16 +562,30 @@ app.post('/api/adhesions', validate(adhesionSchema), async (req, res) => {
 
     // La validation zod a déjà vérifié les champs obligatoires
 
-    // Generate simulated CMU number
-    const randNum = Math.floor(1000 + Math.random() * 9000);
-    const mSh = mutuelleName.split(' ').pop().substring(0, 3).toUpperCase();
-    const cmuNumber = `SN-DK-${mSh}-${randNum}`;
+    // Matricule CMU unique et séquentiel par MSD (remplace le tirage
+    // Math.random() qui produisait des collisions sur 9 000 valeurs).
+    const cmuNumber = await fallbackStore.generateCmuNumber({
+      query,
+      program:
+        packageType === 'csu_eleves' ? 'ELEVES'
+        : packageType === 'csu_daara' ? 'DAARA'
+        : packageType === 'adhesion_masse' ? 'GROUPE'
+        : 'CLASSIC',
+      mutuelleName
+    });
 
     await client.query('BEGIN');
 
-    // Génère un code PIN aléatoire à 4 chiffres pour le nouvel adhérent
-    // (en production, ce PIN serait envoyé par SMS ; ici retourné dans la réponse pour démo)
-    const generatedPin = String(Math.floor(1000 + Math.random() * 9000));
+    // PIN à 4 chiffres, unique par adhérent : on rejette les PIN déjà
+    // attribués (sinon deux familles partagent le même code d'accès).
+    let generatedPin = null;
+    for (let attempt = 0; attempt < 10 && !generatedPin; attempt++) {
+      const candidatePin = String(Math.floor(1000 + Math.random() * 9000));
+      const taken = await client.query('SELECT 1 FROM beneficiaries WHERE pin_code = $1 LIMIT 1', [candidatePin]);
+      if (!taken.rows.length) generatedPin = candidatePin;
+    }
+    // Filet de sécurité : suffixe temporel (le PIN est haché après).
+    if (!generatedPin) generatedPin = String(Date.now()).slice(-4);
     const pinSalt = await bcrypt.genSalt(10);
     const hashedPin = await bcrypt.hash(generatedPin, pinSalt);
 
@@ -556,8 +619,9 @@ app.post('/api/adhesions', validate(adhesionSchema), async (req, res) => {
       if (parrainageType === 'menages' && sponsoredHouseholds && sponsoredHouseholds.length > 0) {
         for (const hh of sponsoredHouseholds) {
           // Create separate family/household account
-          const chefRand = Math.floor(1000 + Math.random() * 9000);
-          const chefCmu = `SN-DK-HH-${chefRand}`;
+          const chefCmu = await fallbackStore.generateCmuNumber({
+            query, program: 'MENAGES', mutuelleName
+          });
           const nameParts = hh.chefName.trim().split(' ');
           const fName = nameParts[0] || 'Chef';
           const lName = nameParts.slice(1).join(' ') || 'Ménage';
@@ -582,11 +646,10 @@ app.post('/api/adhesions', validate(adhesionSchema), async (req, res) => {
       } else if (familyMembers && familyMembers.length > 0) {
         // Individual or students parrainage
         for (const member of familyMembers) {
-          const bRand = Math.floor(1000 + Math.random() * 9000);
-          const prefix = parrainageType === 'eleves' ? 'SN-DK-EDU' :
-                         parrainageType === 'collectif' ? 'SN-DK-COL' :
-                         'SN-DK-SPN';
-          const bCmu = `${prefix}-${bRand}`;
+          const program = parrainageType === 'eleves' ? 'ELEVES'
+            : parrainageType === 'collectif' ? 'COLLECTIF'
+            : 'PARRAINAGE';
+          const bCmu = await fallbackStore.generateCmuNumber({ query, program, mutuelleName });
           const nameParts = member.name.trim().split(' ');
           const fName = nameParts[0] || (parrainageType === 'eleves' ? 'Élève' : parrainageType === 'collectif' ? 'Bénéficiaire' : 'Filleul');
           const lName = nameParts.slice(1).join(' ') || (parrainageType === 'eleves' ? 'Scolaire' : parrainageType === 'collectif' ? 'Collectif' : 'Parrainé');
@@ -610,9 +673,10 @@ app.post('/api/adhesions', validate(adhesionSchema), async (req, res) => {
 
           if (packageType === 'csu_eleves' || packageType === 'csu_daara' || packageType === 'adhesion_masse') {
             // Create separate account for member/student
-            const bRand = Math.floor(1000 + Math.random() * 9000);
-            const prefix = packageType === 'adhesion_masse' ? 'SN-DK-GRP' : 'SN-DK-EDU';
-            const bCmu = `${prefix}-${bRand}`;
+            const program = packageType === 'adhesion_masse' ? 'GROUPE'
+              : packageType === 'csu_daara' ? 'DAARA'
+              : 'ELEVES';
+            const bCmu = await fallbackStore.generateCmuNumber({ query, program, mutuelleName });
             const nameParts = member.name.trim().split(' ');
             const fName = nameParts[0] || (packageType === 'adhesion_masse' ? 'Membre' : 'Élève');
             const lName = nameParts.slice(1).join(' ') || (packageType === 'adhesion_masse' ? 'Collectif' : 'Scolaire');
@@ -1292,31 +1356,54 @@ app.get('/api/beneficiaries', authenticateToken, requireRole('agent', 'admin'), 
     const params = [];
     let paramIdx = 1;
 
-    // Union Départementale logic: restrict to their department if not Super Admin
-    if (req.user && req.user.role !== 'Super Admin' && req.user.department) {
-      whereSql += ` AND department = $${paramIdx}`;
-      params.push(req.user.department);
+    // ── Cloisonnement par MSD ──────────────────────────────────────────────────
+    // Une MSD ne voit QUE ses propres données : ses assurés, leurs cartes, ses
+    // cotisations, ses garanties, ses statistiques.
+    //
+    // On filtre sur `beneficiaries.msd_code` — le CODE de MSD — et non sur le
+    // libellé de département. Le libellé était inutilisable : `department` ne
+    // contenait que « Dakar », « Pikine », « Rufisque » alors que les assurés
+    // relèvent de dix MSD, et les comptes d'agents portaient des libellés sans
+    // rapport (« UDMS Dakar »). Résultat, un agent se retrouvait privé de ses
+    // propres assurés, ou avec les fichiers d'une autre MSD.
+    //
+    // Le Super Admin (`msdCode` absent du jeton) n'est PAS filtré : il
+    // supervise toutes les MSD, c'est son rôle.
+    if (req.user && req.user.role !== 'Super Admin' && req.user.msdCode) {
+      whereSql += ' AND b.msd_code = $' + paramIdx;
+      params.push(req.user.msdCode);
       paramIdx++;
     }
 
     if (mutuelle && mutuelle !== 'all') {
-      whereSql += ` AND mutuelle_name = $${paramIdx}`;
+      whereSql += ` AND b.mutuelle_name = $${paramIdx}`;
       params.push(mutuelle);
       paramIdx++;
     }
 
     if (q) {
-      whereSql += ` AND (first_name ILIKE $${paramIdx} OR last_name ILIKE $${paramIdx} OR phone ILIKE $${paramIdx} OR cmu_number ILIKE $${paramIdx})`;
+      whereSql += ` AND (b.first_name ILIKE $${paramIdx} OR b.last_name ILIKE $${paramIdx} OR b.phone ILIKE $${paramIdx} OR b.cmu_number ILIKE $${paramIdx})`;
       params.push(`%${q}%`);
       paramIdx++;
     }
 
-    // Compte total (pour la métadonnée de pagination)
-    const countRes = await query(`SELECT COUNT(*) FROM beneficiaries${whereSql}`, params);
+    // Registre consolidé : une seule ligne par personne.
+// `merged_into` pointe vers le code canonique d'une fiche absorbée lors d'un
+// ré-import. La ligne reste en base (traçabilité, réversibilité) mais sort du
+// studio : sinon une personne apparaîtrait plusieurs fois et le nombre de
+// cartes annoncé serait supérieur au nombre d'assurés. Son code reste
+// résolvable via beneficiary_code_aliases — une carte déjà imprimée avec
+// l'ancien code retrouve toujours la bonne fiche.
+const whereSqlBase = whereSql + ' AND b.merged_into IS NULL';
+
+// Compte total (pour la métadonnée de pagination)
+    const countRes = await query(
+      `SELECT COUNT(*) FROM beneficiaries b${whereSqlBase}`, params
+    );
     const total = parseInt(countRes.rows[0].count || '0', 10);
 
     // Requête paginée
-    const dataSql = `SELECT * FROM beneficiaries${whereSql} ORDER BY id DESC LIMIT $${paramIdx} OFFSET $${paramIdx + 1}`;
+    const dataSql = `SELECT b.* FROM beneficiaries b${whereSqlBase} ORDER BY b.id DESC LIMIT $${paramIdx} OFFSET $${paramIdx + 1}`;
     const bRes = await query(dataSql, [...params, limit, offset]);
 
     // Récupère les family_members uniquement pour les bénéficiaires de la page courante
@@ -1338,23 +1425,74 @@ app.get('/api/beneficiaries', authenticateToken, requireRole('agent', 'admin'), 
       }
     }
 
+    // Codes historiques absorbés par la consolidation, rattachés à la fiche
+    // canonique. C'est ce qui permet à une carte DÉJÀ IMPRIMÉE (code
+    // `DKR_2600098.0`, aujourd'hui fusionné) de retrouver son porteur au scan.
+    let aliasMap = new Map();
+    if (bRes.rows.length > 0) {
+      const codes = bRes.rows.map((b) => String(b.cmu_number || '').trim()).filter(Boolean);
+      if (codes.length > 0) {
+        const aRes = await query(
+          `SELECT alias_code, canonical_code FROM beneficiary_code_aliases
+           WHERE canonical_code = ANY($1::text[])`,
+          [codes]
+        ).catch(() => ({ rows: [] }));
+        for (const a of aRes.rows) {
+          const list = aliasMap.get(a.canonical_code) || [];
+          list.push(a.alias_code);
+          aliasMap.set(a.canonical_code, list);
+        }
+      }
+    }
+
+    // Champs exposés au studio cartes et aux statistiques. Toute colonne
+    // ajoutée ici devient disponible côté UI sans nouvelle requête : le
+    // studio doit pouvoir imprimer une carte COMPLÈTE (photo, INE, classe,
+    // tuteur) à partir du seul registre des bénéficiaires.
     const beneficiaries = bRes.rows.map((b) => {
+      const code = String(b.cmu_number || '').trim();
       return {
         id: b.id,
         firstName: b.first_name,
         lastName: b.last_name,
         birthDate: b.birth_date,
+        birthPlace: b.birth_place,
+        gender: b.gender,
+        bloodGroup: b.blood_group,
         phone: b.phone,
         email: b.email,
         address: b.address,
+        nin: b.nin,
         mutuelleName: b.mutuelle_name,
+        department: b.department,
+        // MSD de rattachement : c'est elle qui détermine à qui la fiche
+        // appartient, et donc quel agent MSD est habilité à la voir.
+        msdCode: b.msd_code,
+        numeroAdherent: b.numero_adherent,
         packageType: b.package_type,
         paymentMethod: b.payment_method,
         cmuNumber: b.cmu_number,
         status: b.status,
         createdAt: b.created_at,
+        photoUrl: b.photo_url,
         sponsorPhone: b.sponsor_phone,
+        sponsorLogo: b.sponsor_logo,
+        // Dossier scolaire (CMU-Élèves / CMU-Daara)
         schoolName: b.school_name,
+        studentType: b.student_type,
+        schoolClass: b.school_class,
+        academicYear: b.academic_year,
+        ine: b.ine,
+        iaIef: b.ia_ief,
+        tutorName: b.tutor_name,
+        tutorPhone: b.tutor_phone,
+        // Traçabilité de l'import
+        sourceCode: b.source_code,
+        lotCode: b.lot_code,
+        // Codes historiques fusionnés → cette fiche (scan des cartes
+        // déjà imprimées). Sans eux, une carte émise avant la consolidation
+        // ne retrouverait plus son porteur.
+        mergedCodes: aliasMap.get(code) || [],
         familyMembers: familyMap.get(b.id) || []
       };
     });
@@ -1372,6 +1510,117 @@ app.get('/api/beneficiaries', authenticateToken, requireRole('agent', 'admin'), 
     });
   } catch (err) {
     console.error('Erreur lors de la récupération des bénéficiaires :', err);
+    res.status(500).json({ error: 'Erreur interne du serveur' });
+  }
+});
+
+// ============================================================================
+// MSD — REGISTRE DES MUTUELLES DE SANTÉ DÉPARTEMENTALES
+// ============================================================================
+//
+// Modèle : une MSD = une région du Sénégal, avec ses propres assurés, ses
+// propres cartes et ses propres statistiques. Chaque agent MSD est cloisonné
+// sur la sienne (voir `beneficiaries.msd_code`). Le Super Admin, lui, supervise
+// toutes les MSD et est le SEUL habilité à en enregistrer une nouvelle.
+//
+// `merchant_accounts` sert déjà de registre (union_code) : on ne crée pas de
+// table concurrente, on l'étend.
+
+/** Liste des MSD avec leur effectif réel. Réservé au Super Admin. */
+app.get('/api/msds', authenticateToken, requireRole('admin'), async (req, res) => {
+  try {
+    const isSuperAdmin = req.user.role === 'Super Admin';
+    // Un agent de MSD ne voit que la sienne — et encore, le détail des autres
+    // MSD ne le concerne pas.
+    const rows = await query(`
+      SELECT m.union_code,
+             m.union_name,
+             m.region,
+             m.is_active,
+             COALESCE(b.total, 0)::int AS total_beneficiaries,
+             COALESCE(b.active, 0)::int AS active_beneficiaries,
+             COALESCE(b.with_photo, 0)::int AS with_photo,
+             COALESCE(a.agents, 0)::int AS agent_count
+      FROM merchant_accounts m
+      LEFT JOIN (
+        SELECT msd_code,
+               COUNT(*) AS total,
+               COUNT(*) FILTER (WHERE status = 'active') AS active,
+               COUNT(*) FILTER (WHERE photo_url IS NOT NULL AND btrim(photo_url) <> '') AS with_photo
+        FROM beneficiaries
+        WHERE merged_into IS NULL AND msd_code IS NOT NULL
+        GROUP BY msd_code
+      ) b ON b.msd_code = m.union_code
+      LEFT JOIN (
+        SELECT msd_code, COUNT(*) AS agents FROM agents
+        WHERE msd_code IS NOT NULL GROUP BY msd_code
+      ) a ON a.msd_code = m.union_code
+      ORDER BY m.union_code
+    `);
+
+    // Le compte de l'agrégateur n'est pas une MSD : on l'écarte de la liste.
+    let list = rows.rows.filter((r) => r.union_code !== 'AGG');
+    if (!isSuperAdmin) {
+      list = list.filter((r) => r.union_code === req.user.msdCode);
+    }
+
+    const totals = list.reduce(
+      (acc, r) => ({
+        msds: acc.msds + 1,
+        beneficiaries: acc.beneficiaries + r.total_beneficiaries,
+        active: acc.active + r.active_beneficiaries
+      }),
+      { msds: 0, beneficiaries: 0, active: 0 }
+    );
+
+    res.json({ success: true, scope: isSuperAdmin ? 'all' : (req.user.msdCode || null), totals, msds: list });
+  } catch (err) {
+    console.error('Erreur lecture registre MSD :', err);
+    res.status(500).json({ error: 'Erreur interne du serveur' });
+  }
+});
+
+/** Enregistrement d'une nouvelle MSD. STRICTEMENT réservé au Super Admin. */
+app.post('/api/msds', authenticateToken, requireRole('admin'), async (req, res) => {
+  try {
+    // Garde-fou explicite : `requireRole('admin')` laisse passer un « Admin
+    // Régional », or créer une MSD est un acte de gouvernance réservé au
+    // Super Admin. Sans ce test, n'importe quel agent de MSD pourrait
+    // enregistrer une nouvelle mutuelle et donc ouvrir un nouveau périmètre.
+    if (req.user.role !== 'Super Admin') {
+      return res.status(403).json({ error: 'Seul le Super Admin peut enregistrer une nouvelle MSD.' });
+    }
+
+    const code = String((req.body && req.body.unionCode) || '').trim().toUpperCase();
+    const name = String((req.body && req.body.unionName) || '').trim();
+    const region = String((req.body && req.body.region) || '').trim();
+
+    if (!/^[A-Z]{3}$/.test(code)) {
+      return res.status(400).json({ error: 'Code MSD invalide : 3 lettres majuscules attendues (ex. KOL).' });
+    }
+    if (name.length < 3) {
+      return res.status(400).json({ error: 'Intitulé de la MSD obligatoire.' });
+    }
+
+    const exists = await query('SELECT 1 FROM merchant_accounts WHERE upper(union_code) = $1', [code]);
+    if (exists.rows.length > 0) {
+      return res.status(409).json({ error: `La MSD ${code} existe déjà.` });
+    }
+
+    await query(
+      `INSERT INTO merchant_accounts (union_code, union_name, region, provider, commission_bps, is_active, is_default)
+       VALUES ($1, $2, $3, 'kadev', 0, TRUE, FALSE)`,
+      [code, name, region || null]
+    );
+
+    await query(
+      `INSERT INTO audit_logs (action, actor, details) VALUES ($1, $2, $3)`,
+      ['CREATION_MSD', req.user.username, `MSD ${code} — ${name} enregistrée.`]
+    );
+
+    res.status(201).json({ success: true, msd: { unionCode: code, unionName: name, region } });
+  } catch (err) {
+    console.error('Erreur création MSD :', err);
     res.status(500).json({ error: 'Erreur interne du serveur' });
   }
 });
@@ -1669,11 +1918,11 @@ app.get('/api/complaints', authenticateToken, requireRole('agent', 'admin'), asy
     let whereSql = '';
     const params = [];
 
-    if (req.user && req.user.role !== 'Super Admin' && req.user.department) {
+    if (req.user && req.user.role !== 'Super Admin' && req.user.msdCode) {
       countSql = 'SELECT COUNT(*) FROM complaints c JOIN beneficiaries b ON c.phone = b.phone';
       dataSql = 'SELECT c.* FROM complaints c JOIN beneficiaries b ON c.phone = b.phone';
-      whereSql = ' WHERE b.department = $1';
-      params.push(req.user.department);
+      whereSql = ' WHERE b.msd_code = $1';
+      params.push(req.user.msdCode);
     }
 
     const countRes = await query(`${countSql}${whereSql}`, params);
@@ -1933,39 +2182,7 @@ app.get('/api/pharmacies/regions', (req, res) => {
 // IP locale (LAN) du serveur — utilisée par les QR codes des cartes CSU pour
 // que les smartphones du réseau Wi-Fi atteignent la page de vérification.
 app.get('/api/lan-ip', (req, res) => {
-  const os = require('os');
-  const nets = os.networkInterfaces();
-  let lanIp = null;
-  
-  for (const name of Object.keys(nets)) {
-    const lower = name.toLowerCase();
-    if (lower.includes('vethernet') || lower.includes('wsl') || lower.includes('hyper-v') || lower.includes('virtual') || lower.includes('bluetooth') || lower.includes('loopback')) {
-      continue;
-    }
-    for (const net of nets[name] || []) {
-      if (net.family === 'IPv4' && !net.internal && net.address.startsWith('192.168.')) {
-        lanIp = net.address;
-        break;
-      }
-    }
-    if (lanIp) break;
-  }
-
-  if (!lanIp) {
-    for (const name of Object.keys(nets)) {
-      const lower = name.toLowerCase();
-      if (lower.includes('vethernet') || lower.includes('wsl') || lower.includes('hyper-v') || lower.includes('virtual') || lower.includes('bluetooth')) continue;
-      for (const net of nets[name] || []) {
-        if (net.family === 'IPv4' && !net.internal && (net.address.startsWith('192.168.') || net.address.startsWith('10.'))) {
-          lanIp = net.address;
-          break;
-        }
-      }
-      if (lanIp) break;
-    }
-  }
-
-  res.json({ ip: lanIp || '192.168.1.42' });
+  res.json({ ip: detectLanIp() });
 });
 
 // ============================================================
@@ -1986,26 +2203,72 @@ app.post('/api/beneficiaries/bulk', async (req, res) => {
     try {
       await client.query('BEGIN');
       let inserted = 0;
+      let updated = 0;
       let skipped = 0;
       for (const r of rows) {
         const cmu = (r.codeBeneficiaire || r.cmuNumber || '').toString().trim();
         if (!cmu) { skipped++; continue; }
-        // Idempotent : le même code bénéficiaire n'est jamais importé deux fois
-        const exists = await client.query('SELECT id FROM beneficiaries WHERE cmu_number = $1 LIMIT 1', [cmu]);
-        if (exists.rows.length > 0) { skipped++; continue; }
+        const photoUrl = (r.photoUrl || '').toString().trim() || null;
+        const nin = (r.nin || '').toString().trim() || null;
+        // Idempotence à DEUX niveaux :
+        //  1. même matricule → mise à jour (une réimportation enrichit la
+        //     fiche au lieu de créer un doublon) ;
+        //  2. même NIN sous un AUTRE matricule → on rattache à la ligne
+        //     existante. Sans cela, réimporter le même classeur (qui génère
+        //     de nouveaux matricules) créait une seconde personne.
+        const existing = await client.query(
+          `SELECT id FROM beneficiaries
+            WHERE cmu_number = $1
+               OR ($2::text IS NOT NULL AND nin = $2)
+            LIMIT 1`,
+          [cmu, nin]
+        );
+        if (existing.rows.length > 0) {
+          await client.query(
+            `UPDATE beneficiaries SET
+                first_name      = COALESCE(NULLIF($2,''), first_name),
+                last_name       = COALESCE(NULLIF($3,''), last_name),
+                birth_date      = COALESCE(NULLIF($4,''), birth_date),
+                birth_place     = COALESCE(NULLIF($5,''), birth_place),
+                gender          = COALESCE(NULLIF($6,''), gender),
+                blood_group     = COALESCE(NULLIF($7,''), blood_group),
+                phone           = COALESCE(NULLIF($8,''), phone),
+                address         = COALESCE(NULLIF($9,''), address),
+                school_name     = COALESCE(NULLIF($10,''), school_name),
+                nin             = COALESCE(nin, $11),
+                numero_adherent = COALESCE(NULLIF($12,''), numero_adherent),
+                photo_url       = COALESCE($13, photo_url),
+                lot_code        = COALESCE(NULLIF($14,''), lot_code)
+              WHERE id = $1`,
+            [existing.rows[0].id,
+              r.prenom || r.firstName || '', r.nom || r.lastName || '',
+              r.birthDate || '', r.birthPlace || '', r.sexe || r.gender || '',
+              r.bloodGroup || '', r.telephone || r.phone || '', r.address || '',
+              r.schoolName || '', nin, r.numeroAdherent || null, photoUrl,
+              r.lotCode || null]
+          );
+          updated++;
+          continue;
+        }
         await client.query(
-          `INSERT INTO beneficiaries (first_name, last_name, birth_date, phone, email, address, mutuelle_name, package_type, payment_method, cmu_number, status, school_name, sponsor_phone)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
-          [r.prenom || r.firstName || '', r.nom || r.lastName || '', r.birthDate || '', r.telephone || r.phone || '',
-           r.email || '', r.address || '', r.mutuelleName || 'MSD Dakar', r.packageType || 'individuel', r.paymentMethod || 'excel_import',
-           cmu, r.status || 'active', r.schoolName || null, r.sponsorPhone || null]
+          `INSERT INTO beneficiaries (first_name, last_name, birth_date, birth_place, gender, blood_group,
+              phone, email, address, mutuelle_name, package_type, payment_method, cmu_number, status,
+              school_name, sponsor_phone, photo_url, nin, numero_adherent, source_code, lot_code)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`,
+          [r.prenom || r.firstName || '', r.nom || r.lastName || '', r.birthDate || '',
+           r.birthPlace || '', r.sexe || r.gender || '', r.bloodGroup || '',
+           r.telephone || r.phone || '', r.email || '', r.address || '',
+           r.mutuelleName || 'MSD Dakar', r.packageType || 'individuel', r.paymentMethod || 'excel_import',
+           cmu, r.status || 'active', r.schoolName || null, r.sponsorPhone || null,
+           photoUrl, nin, r.numeroAdherent || null, r.sourceCode || null, r.lotCode || null]
         );
         inserted++;
       }
       await client.query('COMMIT');
       await query(`INSERT INTO audit_logs (action, actor, details) VALUES ($1, $2, $3)`,
-        ['IMPORT_MASSE', 'card-studio', `Import en masse de ${inserted} bénéficiaires (${skipped} ignorés/doublons).`]);
-      return res.status(201).json({ success: true, mode: 'database', inserted, skipped, total: rows.length });
+        ['IMPORT_MASSE', 'card-studio',
+         `Import en masse : ${inserted} créés, ${updated} mis à jour, ${skipped} ignorés.`]);
+      return res.status(201).json({ success: true, mode: 'database', inserted, updated, skipped, total: rows.length });
     } finally {
       client.release();
     }
@@ -2021,10 +2284,14 @@ app.post('/api/beneficiaries/bulk', async (req, res) => {
       fallbackStore.addRecord('beneficiaries', {
         cmuNumber: cmu,
         numeroAdherent: r.numeroAdherent || null,
+        sourceCode: r.sourceCode || null,
         prenom: r.prenom || r.firstName || '',
         nom: r.nom || r.lastName || '',
         birthDate: r.birthDate || '',
-        sexe: r.sexe || '',
+        birthPlace: r.birthPlace || '',
+        nin: r.nin || null,
+        sexe: r.sexe || r.gender || '',
+        bloodGroup: r.bloodGroup || '',
         telephone: r.telephone || r.phone || '',
         address: r.address || '',
         mutuelleName: r.mutuelleName || 'MSD Dakar',
@@ -2041,6 +2308,124 @@ app.post('/api/beneficiaries/bulk', async (req, res) => {
       total: rows.length,
       message: 'Base indisponible : les bénéficiaires sont conservés dans le fichier secours (backend/data/store.json) et seront rejoués automatiquement.'
     });
+  }
+});
+
+// ── Lots de campagne d'enrôlement ───────────────────────────────────────────
+// La provenance des cartes vit en base : plusieurs agents doivent voir le
+// même historique de campagnes, ce que le localStorage ne peut pas garantir.
+// Lecture ouverte à tout agent authentifié ; écriture réservée à l'agent/admin.
+/**
+ * Suppression par CODE bénéficiaire.
+ *
+ * ⚠️ Indispensable pour réparer un lot : les fiches importées portent un
+ * identifiant local (`IMP-…`) et non serveur. Les effacer du registre local
+ * ne suffirait pas — la ligne PostgreSQL subsisterait, et la fusion du
+ * démarrage la réinjecterait avec ses mauvais codes au rechargement.
+ */
+app.delete('/api/beneficiaries/by-code/:code', authenticateToken, requireRole('agent', 'admin'), async (req, res) => {
+  const code = String(req.params.code || '').trim();
+  if (!code) return res.status(400).json({ error: 'Code manquant.' });
+  try {
+    const del = await query('DELETE FROM beneficiaries WHERE cmu_number = $1', [code]);
+    res.json({ success: true, deleted: del.rowCount || 0, code });
+  } catch (dbErr) {
+    // Base indisponible : le fichier secours est traité de la même façon.
+    try {
+      const store = fallbackStore.listRecords('beneficiaries');
+      const kept = store.filter((b) => (b.cmuNumber || '') !== code);
+      const removed = store.length - kept.length;
+      fallbackStore.replaceCollection('beneficiaries', kept);
+      res.json({ success: true, deleted: removed, code, mode: 'fallback-file' });
+    } catch {
+      res.status(500).json({ error: dbErr.message });
+    }
+  }
+});
+
+app.get('/api/campaign-lots', authenticateToken, async (req, res) => {
+  try {
+    const r = await query(
+      `SELECT l.*, COUNT(b.id) AS real_count
+         FROM campaign_lots l
+         LEFT JOIN beneficiaries b ON b.lot_code = l.code
+        GROUP BY l.id
+        ORDER BY l.created_at DESC`
+    );
+    res.json(r.rows);
+  } catch (err) {
+    console.error('[Lots] lecture impossible :', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/campaign-lots', authenticateToken, requireRole('agent', 'admin'), async (req, res) => {
+  const { code, label, sourceFile, unionId, cardCount } = req.body || {};
+  if (!code || !/^LOT-\d{4}-\d{3,}$/.test(String(code))) {
+    return res.status(400).json({ error: 'Code de lot invalide (attendu : LOT-AAAA-NNN).' });
+  }
+  try {
+    const r = await query(
+      `INSERT INTO campaign_lots (code, label, source_file, union_id, card_count)
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (code) DO UPDATE
+         SET label = EXCLUDED.label,
+             source_file = EXCLUDED.source_file,
+             card_count = EXCLUDED.card_count
+       RETURNING *`,
+      [code, label || null, sourceFile || null, unionId || 'DKR', Number(cardCount) || 0]
+    );
+    res.status(201).json(r.rows[0]);
+  } catch (err) {
+    console.error('[Lots] création impossible :', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * Rattache des fiches à un lot. C'est l'acte de PROVENANCE : une carte qui
+ * reçoit un lot devient, par construction, une carte de campagne — donc
+ * encore recodable tant qu'elle n'est pas marquée imprimée.
+ */
+app.post('/api/campaign-lots/:code/assign', authenticateToken, requireRole('agent', 'admin'), async (req, res) => {
+  const { code } = req.params;
+  const codes = Array.isArray(req.body && req.body.cmuNumbers) ? req.body.cmuNumbers : [];
+  if (codes.length === 0) return res.status(400).json({ error: 'Aucune fiche à rattacher.' });
+  try {
+    await query(
+      `UPDATE beneficiaries SET lot_code = $1 WHERE cmu_number = ANY($2::text[])`,
+      [code, codes]
+    );
+    const r = await query(
+      `UPDATE campaign_lots SET card_count = (
+         SELECT COUNT(*) FROM beneficiaries b WHERE b.lot_code = $1
+       ) WHERE code = $1 RETURNING *`,
+      [code]
+    );
+    res.json({ success: true, lot: r.rows[0] || null, assigned: codes.length });
+  } catch (err) {
+    console.error('[Lots] rattachement impossible :', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * Marque un lot comme IMPRIMÉ. Verrou de sécurité : un lot imprimé ne doit
+ * plus jamais passer par un recodage de masse.
+ */
+app.post('/api/campaign-lots/:code/print', authenticateToken, requireRole('agent', 'admin'), async (req, res) => {
+  const { code } = req.params;
+  try {
+    const r = await query(
+      `UPDATE campaign_lots SET printed = TRUE, printed_at = CURRENT_TIMESTAMP
+        WHERE code = $1 RETURNING *`,
+      [code]
+    );
+    if (r.rows.length === 0) return res.status(404).json({ error: 'Lot inconnu.' });
+    res.json({ success: true, lot: r.rows[0] });
+  } catch (err) {
+    console.error('[Lots] marquage impression impossible :', err.message);
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -2088,6 +2473,120 @@ app.use((err, req, res, next) => {
     await query('ALTER TABLE complaints ADD COLUMN IF NOT EXISTS resolved_by VARCHAR(100)');
     // Personnalisation des cartes : logo du parrain apposé sur les cartes parrainées
     await query('ALTER TABLE beneficiaries ADD COLUMN IF NOT EXISTS sponsor_logo TEXT');
+    // Import MSD : le fichier porte des informations que l'ancien schéma
+    // ignorait purement et simplement. Sans ces colonnes, elles étaient
+    // LUES puis jetées — la carte affichait un lieu de naissance vide et le
+    // sexe par défaut, et la déduplication entre deux imports était
+    // impossible faute de NIN.
+    await query('ALTER TABLE beneficiaries ADD COLUMN IF NOT EXISTS birth_place VARCHAR(150)');
+    await query('ALTER TABLE beneficiaries ADD COLUMN IF NOT EXISTS gender VARCHAR(10)');
+    await query('ALTER TABLE beneficiaries ADD COLUMN IF NOT EXISTS blood_group VARCHAR(10)');
+    await query('ALTER TABLE beneficiaries ADD COLUMN IF NOT EXISTS nin VARCHAR(60)');
+    await query('ALTER TABLE beneficiaries ADD COLUMN IF NOT EXISTS numero_adherent VARCHAR(100)');
+    await query('ALTER TABLE beneficiaries ADD COLUMN IF NOT EXISTS source_code VARCHAR(120)');
+    // Lot de campagne d'enrôlement : la provenance de la carte. C'est la
+    // seule information qui distingue un PVC déjà imprimé d'une fiche encore
+    // recodable — un simple numéro de séquence ne le dit pas.
+    await query(`
+      CREATE TABLE IF NOT EXISTS campaign_lots (
+        id SERIAL PRIMARY KEY,
+        code VARCHAR(32) UNIQUE NOT NULL,
+        label VARCHAR(255),
+        source_file VARCHAR(255),
+        union_id VARCHAR(10) DEFAULT 'DKR',
+        card_count INTEGER DEFAULT 0,
+        printed BOOLEAN DEFAULT FALSE,
+        printed_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `).catch(() => { /* base absente : la migration sera rejouée au prochain démarrage */ });
+    // Chaque fiche porte le code de son lot : NULL = carte historique,
+    // antérieure au dispositif de lots (donc jamais recodable).
+    await query('ALTER TABLE beneficiaries ADD COLUMN IF NOT EXISTS lot_code VARCHAR(32)');
+    await query('CREATE INDEX IF NOT EXISTS idx_beneficiaries_lot ON beneficiaries(lot_code) WHERE lot_code IS NOT NULL').catch(() => {});
+    await query('CREATE INDEX IF NOT EXISTS idx_campaign_lots_code ON campaign_lots(code)').catch(() => {});
+    // Index sur le NIN : clé d'identité stable, elle rend la réimportation
+    // idempotente même quand le matricule change.
+    await query('CREATE INDEX IF NOT EXISTS idx_beneficiaries_nin ON beneficiaries(nin) WHERE nin IS NOT NULL AND nin <> \'\'').catch(() => {});
+
+    // ── Recodage des cartes ASS LONASE ──────────────────────────────────
+    // Format officiel : REGION-MSD-ANNEE-SEQUENCE (ex. DKR-DKR-2026-0001).
+    //
+    // ⚠️ NON-RÉGRESSION : le motif `^[A-Z]{3}-26[0-9]{5}$` n'a été produit que
+    // par le générateur séquentiel précédent, jamais par les fichiers MSD. Les
+    // cartes déjà imprimées portent `_` (DKR_2600027.0) ou un préfixe de
+    // programme (EDU_DKR_26000163) : elles restent INTACTES.
+    //
+    // La migration est idempotente : une fois les codes convertis, le motif
+    // ne correspond plus, donc le bloc ne refait rien au démarrage suivant.
+    try {
+      const { rows: legacy } = await query(
+        `SELECT id, cmu_number FROM beneficiaries
+          WHERE cmu_number ~ '^[A-Z]{3}-26[0-9]{5}$'
+          ORDER BY cmu_number ASC`
+      );
+      if (legacy.length > 0) {
+        const year = new Date().getFullYear();
+        const unionCode = String(legacy[0].cmu_number || 'DKR-').slice(0, 3).toUpperCase();
+        // Région : le préfixe historique identifie déjà la région d'émission
+        // (DKR → région de Dakar). Le format officiel la rend explicite.
+        const region = unionCode;
+        const { rows: already } = await query(
+          `SELECT cmu_number FROM beneficiaries
+            WHERE cmu_number ~ '^[A-Z]{3}-[A-Z]{3}-[0-9]{4}-[0-9]{4}$'`
+        );
+        const used = new Set(already.map((r) => r.cmu_number));
+        const re = new RegExp(`^${region}-${unionCode}-${year}-(\\d{4})$`);
+        let seq = 0;
+        for (const c of used) {
+          const m = c.match(re);
+          if (m) seq = Math.max(seq, Number(m[1]));
+        }
+        for (const row of legacy) {
+          let code = null;
+          for (let i = 1; i <= 20000; i++) {
+            const candidate = `${region}-${unionCode}-${year}-${String(seq + i).padStart(4, '0')}`;
+            if (!used.has(candidate)) { code = candidate; used.add(candidate); seq += i; break; }
+          }
+          if (!code) continue;
+          await query('UPDATE beneficiaries SET cmu_number = $1, numero_adherent = $2 WHERE id = $3',
+            [code, code, row.id]);
+        }
+        console.log(`[Migration] ${legacy.length} matricule(s) ASS LONASE recodé(s) au format REGION-MSD-${year}-SEQ.`);
+      }
+    } catch (e) {
+      console.warn('[Migration] Recodage ASS LONASE reporté :', e.message);
+    }
+    // Unicité du matricule CMU : le générateur séquentiel (fallbackStore
+    // .generateCmuNumber) garantit déjà l'absence de collision, mais la
+    // contrainte en base est le dernier rempart contre une insertion
+    // concurrente ou un import massif. Les doublons historiques sont
+    // d'abord neutralisés (suffixe -DUP<n>) : la contrainte ne peut
+    // jamais faire échouer le démarrage du serveur.
+    await query(`
+      DO $$
+      DECLARE
+        d RECORD;
+        n INTEGER := 0;
+      BEGIN
+        FOR d IN
+          SELECT cmu_number
+            FROM beneficiaries
+           WHERE cmu_number IS NOT NULL
+           GROUP BY cmu_number
+          HAVING COUNT(*) > 1
+        LOOP
+          n := n + 1;
+          UPDATE beneficiaries
+             SET cmu_number = d.cmu_number || '-DUP' || n
+           WHERE cmu_number = d.cmu_number;
+        END LOOP;
+      END $$;
+    `).catch(() => { /* base absente : la migration sera rejouée au prochain démarrage */ });
+    await query(`
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_beneficiaries_cmu_number
+        ON beneficiaries(cmu_number) WHERE cmu_number IS NOT NULL
+    `).catch(() => { /* contrainte déjà en place ou base absente */ });
     console.log('Indexation PostgreSQL et schéma vérifiés avec succès.');
   } catch (err) {
     console.warn('Vérification du schéma PostgreSQL reportée (les tables ne sont peut-être pas encore initialisées) :', err.message);

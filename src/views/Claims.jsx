@@ -30,26 +30,17 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
     };
   }, [showDetailModal]);
 
-  // Demandes enrichies (3 421 demandes de prises en charge sur la région de Dakar)
-  const [claims, setClaims] = useState([
-    { id: 'GAR-2026-8812', care_type: 'hospitalisation', beneficiary_name: citizenUser ? `${citizenUser.firstName} ${citizenUser.lastName}` : 'Modou Diop', structure_name: 'Hôpital Universitaire de Fann (Dakar)', amount: 45000, reimbursed_amount: 36000, status: 'approved', submitted_at: '12/10/2026', coverage_rate: 80, desc: 'Intervention chirurgicale herniaire & hospitalisation 48h' },
-    { id: 'BON-2026-9041', care_type: 'pharmacie', beneficiary_name: citizenUser ? `${citizenUser.firstName} ${citizenUser.lastName}` : 'Awa Ndiaye', structure_name: 'Pharmacie Cheikh Anta Diop', amount: 12500, reimbursed_amount: 6250, status: 'pending', submitted_at: '08/10/2026', coverage_rate: 50, desc: 'Ordonnance antibiotiques & anti-inflammatoires' },
-    { id: 'GAR-2026-9102', care_type: 'hospitalisation', beneficiary_name: 'Moustapha Ndiaye', structure_name: 'Hôpital Principal de Dakar', amount: 120000, reimbursed_amount: 96000, status: 'approved', submitted_at: '05/10/2026', coverage_rate: 80, desc: 'Prise en charge urgence traumatologie' },
-    { id: 'BON-2026-9155', care_type: 'pharmacie', beneficiary_name: 'Khadija Ndiaye', structure_name: 'Pharmacie de la Médina', amount: 8500, reimbursed_amount: 4250, status: 'approved', submitted_at: '04/10/2026', coverage_rate: 50, desc: 'Produits pédiatriques & vitamines' },
-    { id: 'GAR-2026-9210', care_type: 'hospitalisation', beneficiary_name: 'Abdoulaye Ndiaye', structure_name: 'Hôpital Abass Ndao (Pikine)', amount: 65000, reimbursed_amount: 52000, status: 'approved', submitted_at: '02/10/2026', coverage_rate: 80, desc: 'Hospitalisation médecine interne' },
-    { id: 'GAR-2026-9244', care_type: 'hospitalisation', beneficiary_name: 'Amadou Sow', structure_name: 'Centre de Santé Gaspard Kamara', amount: 28000, reimbursed_amount: 0, status: 'pending', submitted_at: '01/10/2026', coverage_rate: 80, desc: 'Consultation spécialisée & Bilan sanguin' },
-    { id: 'BON-2026-9289', care_type: 'pharmacie', beneficiary_name: 'Fatou Diallo', structure_name: 'Pharmacie Pikine Tally Boubess', amount: 14200, reimbursed_amount: 7100, status: 'approved', submitted_at: '28/09/2026', coverage_rate: 50, desc: 'Prescription prénatale Gratuité BSF' },
-    { id: 'GAR-2026-9301', care_type: 'hospitalisation', beneficiary_name: 'Babacar Diallo', structure_name: 'Hôpital Roi Baudouin de Guédiawaye', amount: 55000, reimbursed_amount: 44000, status: 'approved', submitted_at: '25/09/2026', coverage_rate: 80, desc: 'Maternité & Césarienne d’urgence' },
-    { id: 'BON-2026-9340', care_type: 'pharmacie', beneficiary_name: 'Mariama Diallo', structure_name: 'Pharmacie Guédiawaye Marché', amount: 9800, reimbursed_amount: 4900, status: 'approved', submitted_at: '22/09/2026', coverage_rate: 50, desc: 'Traitements antipaludéens' },
-    { id: 'GAR-2026-9388', care_type: 'hospitalisation', beneficiary_name: 'Ibrahima Sarr', structure_name: 'Hôpital Dalal Jamm (Guédiawaye)', amount: 180000, reimbursed_amount: 144000, status: 'approved', submitted_at: '20/09/2026', coverage_rate: 80, desc: 'Scanner cérébral & Réanimation' },
-    { id: 'GAR-2026-9412', care_type: 'hospitalisation', beneficiary_name: 'Sokhna Kane', structure_name: 'Centre de Santé de Yeumbeul', amount: 32000, reimbursed_amount: 25600, status: 'approved', submitted_at: '18/09/2026', coverage_rate: 80, desc: 'Soins pédiatriques d’urgence' },
-    { id: 'BON-2026-9450', care_type: 'pharmacie', beneficiary_name: 'Cheikh Kane', structure_name: 'Pharmacie Yeumbeul Nord', amount: 6400, reimbursed_amount: 0, status: 'pending', submitted_at: '15/09/2026', coverage_rate: 50, desc: 'Ordonnance ophtalmologique' },
-    { id: 'GAR-2026-9500', care_type: 'hospitalisation', beneficiary_name: 'Ousmane Ba', structure_name: 'Hôpital de Rufisque', amount: 75000, reimbursed_amount: 60000, status: 'approved', submitted_at: '12/09/2026', coverage_rate: 80, desc: 'Chirurgie orthopédique' },
-    { id: 'BON-2026-9530', care_type: 'pharmacie', beneficiary_name: 'Mamadou Ndiaye', structure_name: 'Pharmacie Rufisque Centre', amount: 11000, reimbursed_amount: 5500, status: 'approved', submitted_at: '10/09/2026', coverage_rate: 50, desc: 'Traitement chronique hypertension' },
-    { id: 'GAR-2026-9580', care_type: 'hospitalisation', beneficiary_name: 'Aminata Fall', structure_name: 'Hôpital d’Enfants Albert Royer', amount: 48000, reimbursed_amount: 38400, status: 'approved', submitted_at: '08/09/2026', coverage_rate: 80, desc: 'Hospitalisation pédiatrique 72h' },
-    { id: 'BON-2026-9610', care_type: 'pharmacie', beneficiary_name: 'Ndèye Fall', structure_name: 'Pharmacie Fass Delorme', amount: 7800, reimbursed_amount: 3900, status: 'approved', submitted_at: '05/09/2026', coverage_rate: 50, desc: 'Soins dermatologiques' },
-    { id: 'GAR-2026-9650', care_type: 'hospitalisation', beneficiary_name: 'Cheikh Seck', structure_name: 'District Sanitaire Keur Massar', amount: 42000, reimbursed_amount: 0, status: 'rejected', submitted_at: '01/09/2026', coverage_rate: 80, desc: 'Demande non conforme au protocole' }
-  ]);
+  // ────────────────────────────────────────────────────────────────────
+  //  AUCUNE DEMANDE DE PRISE EN CHARGE DE DÉMONSTRATION.
+  //  Ces 18 lignes annonçaient « 3 421 demandes sur la région de Dakar »
+  //  alors qu'il s'agissait d'une liste figée de 18 montants. Elles
+  //  portaient des noms de personnes réelles (Moustapha Ndiaye, Sokhna
+  //  Kane, Ibrahima Sarr…) avec des remboursements de 144 000 FCFA
+  //  « approuvés ». Un agent instruisait donc des dossiers financiers
+  //  qui n'existaient pas, et un assuré n'y trouvait pas sa demande.
+  //  Le registre est vide tant que l'API ne le renseigne pas.
+  // ────────────────────────────────────────────────────────────────────
+  const [claims, setClaims] = useState([]);
   
   const [claimPage, setClaimPage] = useState(1);
   const [uploadedFile, setUploadedFile] = useState(null);
