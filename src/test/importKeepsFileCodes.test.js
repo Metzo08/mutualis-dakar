@@ -51,6 +51,59 @@ describe('Import d\'un fichier sans titulaire (structure ASS LONASE)', () => {
 });
 
 /**
+ * Structure RÉELLE du fichier « Ville de Dakar » (AMEVI) : le code comporte
+ * SIX chiffres (`DKR_260001.0`), là où Grand Yoff en porte SEPT
+ * (`DKR_2600111.0`). Un parseur réglé sur 7 chiffres lit le premier et perd le
+ * second : le code arrive vide, l'import bascule alors sur la génération d'un
+ * matricule, et Moustapha NDIONE se retrouve avec `DKR-DKR-2026-0001.1` au
+ * lieu de `DKR_260001.0` — un code absent de sa carte.
+ */
+describe('Import du fichier Ville de Dakar (AMEVI) — codes à 6 chiffres', () => {
+  const lignes = parseRowsToRecords([
+    { CODE_BENEFICIAIRE: 'DKR_260001.0', NUMERO_ADHERENT: 'DKR_260326', PRENOM: 'MOUSTAPHA NDIONE', NOM: 'NDIONE', DATE_NAISSANCE: '1972-01-03' },
+    { CODE_BENEFICIAIRE: 'DKR_260001.1', NUMERO_ADHERENT: 'DKR_260326', PRENOM: 'ASSI', NOM: 'SECK', DATE_NAISSANCE: '1976-11-24' },
+    { CODE_BENEFICIAIRE: 'DKR_260001.2', NUMERO_ADHERENT: 'DKR_260326', PRENOM: 'FAMILLE', NOM: 'NDIONE', DATE_NAISSANCE: '2005-06-02' },
+    { CODE_BENEFICIAIRE: 'DKR_260002.0', NUMERO_ADHERENT: 'DKR_260327', PRENOM: 'AWA', NOM: 'SECK', DATE_NAISSANCE: '1980-05-11' }
+  ]);
+
+  it('lit le code du fichier et ne fabrique aucun matricule', async () => {
+    const members = await buildStudioMembers(lignes);
+    const all = [];
+    members.forEach((m) => {
+      all.push(m.cmuNumber);
+      (m.dependents || []).forEach((d) => all.push(d.cmuNumber || `${m.cmuNumber}${d.codeSuffix || ''}`));
+    });
+    // Aucun matricule calculé : c'est le symptôme du bug.
+    expect(all.filter((c) => /DKR-DKR-/.test(c))).toEqual([]);
+  });
+
+  it('donne à MOUSTAPHA NDIONE le code de sa carte', async () => {
+    const members = await buildStudioMembers(lignes);
+    const moustapha = members.find((m) => m.firstName.includes('MOUSTAPHA'));
+    expect(moustapha).toBeDefined();
+    // `DKR_260001` : le « .0 » du chef est normalisé, la recherche par code
+    // résout les deux écritures (scan du PVC compris).
+    expect(moustapha.cmuNumber).toBe('DKR_260001');
+    expect(moustapha.sourceCode).toBe('DKR_260001');
+  });
+
+  it('regroupe le ménage DKR_260001 avec ses ayants droit', async () => {
+    const members = await buildStudioMembers(lignes);
+    expect(members).toHaveLength(2);          // deux ménages
+    const moustapha = members.find((m) => m.firstName.includes('MOUSTAPHA'));
+    expect(moustapha.dependents).toHaveLength(2);
+  });
+
+  it('conserve le suffixe des ayants droit', async () => {
+    const members = await buildStudioMembers(lignes);
+    const moustapha = members.find((m) => m.firstName.includes('MOUSTAPHA'));
+    const codes = moustapha.dependents.map((d) => d.cmuNumber);
+    expect(codes).toContain('DKR_260001.1');
+    expect(codes).toContain('DKR_260001.2');
+  });
+});
+
+/**
  * Cas nominal : un ménage complet, chef `.0` et ayants `.1`/`.2`.
  * Le code du chef est normalisé (`.0` retiré) car la recherche par code résout
  * les deux écritures — mais les ayants droit gardent leur suffixe, qui est ce

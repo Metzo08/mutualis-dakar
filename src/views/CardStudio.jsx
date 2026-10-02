@@ -554,31 +554,30 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
     }
   };
 
-  // Stratégie de codage du prochain lot importé. FILE par défaut : un
-  // classeur qui porte un code décrit des cartes déjà imprimées, et ce code
-  // ne doit JAMAIS être remplacé (cf. DEFAULT_CODE_STRATEGY).
   // Stratégie de codage du prochain lot importé.
-  //
-  // ⚠️ Elle est MÉMORISÉE : le rappel silencieux de « 📄 code du fichier » à
-  // chaque rechargement a fait échouer plusieurs imports — les cartes
-  // restaient en DKR_2600118 au lieu du matricule officiel, sans que rien ne
-  // le signale. On se souvient donc du dernier choix.
-  const [importCodeStrategy, setImportCodeStrategy] = useState(() => {
-    try {
-      return localStorage.getItem('unamusc_import_code_strategy') === 'SYSTEM' ? 'SYSTEM' : 'FILE';
-    } catch { return 'FILE'; }
-  });
+//
+// ⚠️ FORCÉE À « FILE », ET PLUS JAMAIS RESTAURÉE DEPUIS LE NAVIGATEUR.
+//
+// Toutes les cartes des assurés sont DÉJÀ IMPRIMÉES : le code gravé sur le
+// PVC est celui de la colonne CODE_BENEFICIAIRE du classeur. Le mode
+// « SYSTEM », qui FABRIQUE un matricule (`DKR-DKR-2026-0001.1`), ne peut
+// donc produire qu'une fiche détachée de sa carte.
+//
+// Ce mode était pourtant proposé dans un sélecteur ET mémorisé dans le
+// localStorage : un agent l'ayant choisi une fois voyait cette valeur
+// restaurée à chaque session, sans que rien ne le signale. C'est ainsi que
+// MOUSTAPHA NDIONE s'est retrouvé avec `DKR-DKR-2026-0001.1` au lieu de
+// `DKR_260001.0`. Le réglage est donc figé côté interface ; la capacité
+// technique reste dans bulkImport.js si un jour un lot réellement inédit
+// doit être enregistré (il faudra alors lever ce garde-fou, explicitement).
+const [importCodeStrategy] = useState(() => {
+  try { localStorage.removeItem('unamusc_import_code_strategy'); } catch { /* sans stockage */ }
+  return 'FILE';
+});
 
-  // Garde-fou : conserver les codes d'un fichier n'a de sens que pour un lot
-  // DÉJÀ IMPRIMÉ. Sur un nouveau lot, cela produit des cartes sans matricule
-  // officiel — la confirmation doit donc être explicite.
-  const [printLotConfirmed, setPrintLotConfirmed] = useState(false);
-
-  const chooseStrategy = (value) => {
-    setImportCodeStrategy(value);
-    try { localStorage.setItem('unamusc_import_code_strategy', value); } catch { /* sans stockage */ }
-    if (value === 'SYSTEM') setPrintLotConfirmed(false);
-  };
+// Garde-fou : conserver les codes d'un fichier n'a de sens que pour un lot
+// DÉJÀ IMPRIMÉ. La confirmation reste exigée — elle documente le lot.
+const [printLotConfirmed, setPrintLotConfirmed] = useState(false);
 
   // ── FILTRAGE PAR LOT DE CAMPAGNE ───────────────────────────────────────
   // Chaque import ouvre un lot (LOT-2026-001, LOT-2026-002…). Le filtre
@@ -2125,21 +2124,24 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
             <select
               className="form-select"
               value={importCodeStrategy}
-              onChange={(e) => chooseStrategy(e.target.value)}
-              disabled={bulkImporting}
+              disabled
               style={{
                 background: 'var(--bg-card-subtle)', color: 'var(--text-main)',
                 border: '1.5px solid var(--border-color)', borderRadius: '14px',
                 fontSize: '0.86rem', fontWeight: '700', minHeight: '46px'
               }}
             >
-              <option value="FILE">📄 Conserver le code du fichier — lot DÉJÀ IMPRIMÉ</option>
-              <option value="SYSTEM">🆕 Attribuer un matricule officiel — nouveau lot</option>
+              {/* « Attribuer un matricule officiel » a été retiré : toutes les
+                  cartes sont déjà imprimées, et ce mode produisait des
+                  matricules DKR-DKR-2026-… absents des PVC. Le code du
+                  classeur est désormais le seul comportement possible. */}
+              <option value="FILE">📄 Code du fichier — conservé à l'identique</option>
             </select>
             <small className="text-muted d-block mt-1" style={{ fontSize: '0.75rem', lineHeight: 1.45 }}>
-              {importCodeStrategy === 'FILE'
-                ? 'Le code du classeur est conservé à l’identique (ex. DKR_2600040.1) : c’est celui imprimé sur la carte.'
-                : 'Le système attribue un matricule REGION-MSD-ANNEE-SEQUENCE.RANG (ex. DKR-DKR-2026-0001.1). C’est le mode à utiliser pour un nouveau lot.'}
+              Le code du classeur est conservé tel quel (ex. DKR_260001.0) : c'est celui imprimé sur la carte.
+              <span className="d-block" style={{ fontWeight: '700' }}>
+                La génération d'un matricule automatique est désactivée : elle produisait des codes absents des PVC.
+              </span>
             </small>
 
             {/* Confirmation obligatoire pour le mode « code du fichier ».
