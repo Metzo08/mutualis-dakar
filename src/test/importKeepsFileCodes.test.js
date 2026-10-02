@@ -104,6 +104,45 @@ describe('Import du fichier Ville de Dakar (AMEVI) — codes à 6 chiffres', () 
 });
 
 /**
+ * Nom de famille recopié dans la colonne prénom.
+ *
+ * Sur le fichier « Ville de Dakar », deux lignes portent
+ * PRENOM_BENEFICIAIRE = « MOUSTAPHA NDIONE » pour NOM_BENEFICIAIRE = « NDIONE ».
+ * La carte affichait « Prénom(s) : MOUSTAPHA NDIONE » et « Nom : NDIONE ».
+ *
+ * Le code est celui du PVC : une saisie fautive ne doit pas se propager
+ * jusqu'à la carte imprimée.
+ */
+describe('Prénom contenant le nom de famille', () => {
+  const lignes = parseRowsToRecords([
+    { CODE_BENEFICIAIRE: 'DKR_260001.0', PRENOM: 'MOUSTAPHA NDIONE', NOM: 'NDIONE', DATE_NAISSANCE: '1972-01-03' },
+    { CODE_BENEFICIAIRE: 'DKR_260002.0', PRENOM: 'MOUHAMED YORO THIAM', NOM: 'THIAM', DATE_NAISSANCE: '1980-05-11' },
+    { CODE_BENEFICIAIRE: 'DKR_260003.0', PRENOM: 'MOUSTAPHA', NOM: 'NDIONE', DATE_NAISSANCE: '1975-02-02' }
+  ]);
+
+  it('retire le nom répété et ne garde que le prénom', async () => {
+    const members = await buildStudioMembers(lignes);
+    const moustapha = members.find((m) => m.cmuNumber === 'DKR_260001.0');
+    expect(moustapha.firstName).toBe('MOUSTAPHA');
+    expect(moustapha.lastName).toBe('NDIONE');
+  });
+
+  it('conserve un prénom composé quand le nom ne le répète pas', async () => {
+    const members = await buildStudioMembers(lignes);
+    const thiam = members.find((m) => m.cmuNumber === 'DKR_260002.0');
+    expect(thiam.firstName).toBe('MOUHAMED YORO');
+    expect(thiam.lastName).toBe('THIAM');
+  });
+
+  it('laisse intact un prénom qui ne répète pas le nom', async () => {
+    const members = await buildStudioMembers(lignes);
+    const simple = members.find((m) => m.cmuNumber === 'DKR_260003.0');
+    expect(simple.firstName).toBe('MOUSTAPHA');
+    expect(simple.lastName).toBe('NDIONE');
+  });
+});
+
+/**
  * Cas nominal : un ménage complet, chef `.0` et ayants `.1`/`.2`.
  * Le code du chef est normalisé (`.0` retiré) car la recherche par code résout
  * les deux écritures — mais les ayants droit gardent leur suffixe, qui est ce

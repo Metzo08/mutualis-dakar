@@ -984,6 +984,44 @@ export const describeCodeStrategy = (s) => (
  * @param {number} [opts.seqFloor=0] — premier numéro de séquence en mode SYSTEM
  * @returns {Promise<Array>} fiches (une par dossier principal)
  */
+/**
+ * Retrait du nom de famille répété dans le prénom.
+ *
+ * Certains classeurs recopient le nom dans la colonne prénom :
+ *   PRENOM_BENEFICIAIRE = « MOUSTAPHA NDIONE », NOM_BENEFICIAIRE = « NDIONE »
+ * La carte affichait alors « Prénom(s) : MOUSTAPHA NDIONE » et « Nom : NDIONE ».
+ * C'est une erreur de saisie à la source, mais elle se propage au PVC
+ * imprimé : inutile de la laisser passer.
+ *
+ * On ne retire que le nom LORSQU'IL EST RÉELLEMENT RÉPÉTÉ, et seulement
+ * s'il reste un prénom : « MOUSTAPHA NDIONE » → « MOUSTAPHA », tandis que
+ * « MOUSTAPHA » reste « MOUSTAPHA ». Un prénom composé est conservé tel
+ * quel (« FATOU BINTA » ne perd rien si son nom est « SOW »).
+ */
+const splitFullName = (prenom, nom) => {
+  const p = String(prenom || '').trim().toUpperCase();
+  const n = String(nom || '').trim().toUpperCase();
+
+  if (!p) return { firstName: '', lastName: n };
+  if (!n) return { firstName: p, lastName: '' };
+
+  // Comparaison insensible aux accents, à la casse et à la ponctuation :
+  // « NDIONE » et « N'DIONE » doivent être reconnus comme le même nom.
+  const norm = (s) => s.toLowerCase().normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]/g, '');
+  const np = norm(p);
+  const nn = norm(n);
+
+  if (nn && np !== nn && np.endsWith(nn)) {
+    const cut = p.length - [...n].length; // retire le nom à sa longueur réelle
+    const first = p.slice(0, cut).trim().replace(/[\s,'-]+$/, '');
+    // Il doit RESTER un prénom : sinon on ne touche à rien.
+    if (first.length >= 2) return { firstName: first, lastName: n };
+  }
+  return { firstName: p, lastName: n };
+};
+
 export const buildStudioMembers = async (records, opts = {}) => {
   const {
     photoUrls = new Map(),
@@ -1098,8 +1136,8 @@ export const buildStudioMembers = async (records, opts = {}) => {
       sourceCode: r.codeBeneficiaire || '',
       adherentCode: householdKey || '',
       rawCode: r.codeBeneficiaire || '',
-      firstName: (r.prenom || '').toUpperCase(),
-      lastName: (r.nom || '').toUpperCase(),
+      firstName: splitFullName(r.prenom, r.nom).firstName,
+      lastName: splitFullName(r.prenom, r.nom).lastName,
       birthDate: r.birthDate || '',
       // Lieu de naissance : lu dans la colonne LIEU_NAISSANCE du classeur
       // (DAKAR, SAINT LOUIS, LOME…). Il était écrasé par une chaîne vide,
