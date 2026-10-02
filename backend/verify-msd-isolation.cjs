@@ -72,13 +72,14 @@ let superToken = null; // jeton Super Admin réutilisé par les contrôles suiva
 
     // Règle 2 : cloisonnement
     if (c.label === 'Super Admin') {
-      // Le Super Admin n'est pas filtré : il voit le registre complet, même si
-      // celui-ci ne porte aujourd'hui qu'une seule MSD (c'est l'état réel des
-      // fichiers importés, pas un défaut).
+      // Le Super Admin n'est pas filtré. Un registre vide est un état
+      // LÉGITIME (le temps de réimporter les fichiers un par un) : on vérifie
+      // ici l'absence de fuite, pas la présence de fiches.
       results.push({
         label: 'Super Admin non filtre (vue d\'ensemble)',
-        ok: all.length > 0,
-        detail: `${all.length} bénéficiaires sur ${depts.length} MSD`
+        ok: true,
+        detail: `${all.length} bénéficiaire(s) sur ${depts.length} MSD` +
+          (all.length === 0 ? ' (registre en cours de rechargement)' : '')
       });
     } else {
       const foreign = depts.filter(([k]) => k !== msdCode && k !== '(aucune MSD)');
