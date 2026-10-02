@@ -110,6 +110,22 @@ const SOURCES = [
         console.log(`     adherents : ${r.adherents}`);
       });
     }
+    console.log('\n=== DATES DE NAISSANCE ILLISIBLES ===');
+    const badDates = await query(`
+      select cmu_number, first_name, last_name, birth_date
+      from beneficiaries
+      where birth_date is null or btrim(birth_date) = ''
+      order by cmu_number
+    `);
+    if (!badDates.rows.length) {
+      console.log('  aucune');
+    } else {
+      badDates.rows.forEach((r) => {
+        console.log(`  ${r.cmu_number.padEnd(18)} ${r.first_name} ${r.last_name}`);
+      });
+      console.log(`  => ${badDates.rows.length} fiche(s) sans date lisible`);
+    }
+
     await pool.end();
   } catch (err) {
     console.log('ERREUR :', err.message);

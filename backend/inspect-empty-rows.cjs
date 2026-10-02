@@ -65,5 +65,32 @@ const { query, pool } = require('./db');
       }
     }
   }
+  console.log('\n=== VALEURS BRUTES DES DATES ILLISIBLES ===');
+  const CODES = ['DKR_2600069.1', 'DKR_2600085.1', 'DKR_2600201.0', 'DKR_2600202.0',
+    'DKR_2600210.0', 'DKR_2600217.0', 'DKR_2600218.0', 'DKR_2600220.0', 'DKR_2600221.0'];
+  for (const [label, file] of FILES) {
+    const w = XLSX.readFile(file, { cellDates: true });
+    const rs = XLSX.utils.sheet_to_json(w.Sheets[w.SheetNames[0]], { defval: '' });
+    for (const r of rs) {
+      const code = String(r.CODE_BENEFICIAIRE || '').trim().toUpperCase();
+      if (!CODES.includes(code)) continue;
+      const v = r.DATE_NAISSANCE;
+      console.log(`  ${code.padEnd(16)} ${label.padEnd(12)} type=${v instanceof Date ? 'Date' : typeof v} valeur=${JSON.stringify(v)}`);
+    }
+  }
+
+  console.log('\n=== DERNIERES DATES NON PARSEES ===');
+  const LAST = ['DKR_2600085.1', 'KRM_2600105.1', 'DKR_2600069.1'];
+  for (const [label, file] of FILES) {
+    const w = XLSX.readFile(file, { cellDates: true });
+    const rs = XLSX.utils.sheet_to_json(w.Sheets[w.SheetNames[0]], { defval: '' });
+    for (const r of rs) {
+      const code = String(r.CODE_BENEFICIAIRE || '').trim().toUpperCase();
+      if (!LAST.includes(code)) continue;
+      const v = r.DATE_NAISSANCE;
+      console.log(`  ${code.padEnd(16)} ${label.padEnd(12)} type=${v instanceof Date ? 'Date' : typeof v} valeur=${JSON.stringify(v)}`);
+    }
+  }
+
   await pool.end();
 })();

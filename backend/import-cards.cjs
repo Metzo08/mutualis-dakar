@@ -60,15 +60,26 @@ const toIsoDate = (v) => {
   }
   const s = clean(v);
   if (!s) return '';
-  // JJ/MM/AAAA ou MM/JJ/AAAA — le jour trade français (séparateur « / »,
-  // premier champ ≥ 13 quand il s'agit d'un mois).
-  const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+  // Date mal saisie dans le fichier source : le séparateur entre le mois et
+  // l'année manque. « 20/081979 » = 20/08/1979. Ces cellules échouaient au
+  // parsing et laissaient la date vide sur la carte.
+  const tirets = s.match(/^(\d{1,2})\/(\d{1,2})(\d{4})$/);
+  if (tirets) {
+    const day = Number(tirets[1]);
+    const month = Number(tirets[2]);
+    const year = Number(tirets[3]);
+    if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+      return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    }
+  }
+  // JJ/MM/AAAA ou MM/JJ/AAAA
+  const m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
   if (m) {
     let [, a, b, y] = m.map(Number);
     if (y < 100) y += y < 50 ? 2000 : 1900;
     let day = a, month = b;
-    if (a > 12 && b <= 12) { day = a; month = b; }        // JJ/MM
-    else if (a <= 12 && b > 12) { day = b; month = a; } // MM/JJ
+    if (a > 12 && b <= 12) { day = a; month = b; }
+    else if (a <= 12 && b > 12) { day = b; month = a; }
     if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
       return `${y}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     }
@@ -83,12 +94,20 @@ const toIsoDate = (v) => {
 const normName = (v) =>
   clean(v).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, '');
 
-/** Champs renseignés : arbitre les doublons internes. */
+/**
+ * Champs renseignés : arbitre les doublons internes.
+ *
+ * Une date DE NAISSANCE lisible vaut plus qu'un champ vide : le fichier source
+ * contient la même personne en double avec, d'un côté, une date correcte et de
+ * l'autre une date mal saisie. Sans ce point bonus, la ligne malformée pouvait
+ * l'emporter et la carte s'afficherait sans date.
+ */
 const richness = (r) =>
   ['PRENOM_BENEFICIAIRE', 'NOM_BENEFICIAIRE', 'DATE_NAISSANCE', 'LIEU_NAISSANCE',
     'NIN', 'SEXE', 'ADRESSE', 'CONTACT', 'EMAIL', 'GROUPE_SANGUIN',
     'VALIDITE_CARTE_DEBUT', 'VALIDITE_CARTE_FIN', 'TYPE_CARTE'
-  ].reduce((n, f) => n + (clean(r[f]) !== '' ? 1 : 0), 0);
+  ].reduce((n, f) => n + (clean(r[f]) !== '' ? 1 : 0), 0)
+  + (toIsoDate(r.DATE_NAISSANCE) ? 5 : 0);
 
 /**
  * Indexe les photos d'un dossier : par CODE quand il figure dans le nom de

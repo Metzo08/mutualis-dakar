@@ -1209,9 +1209,15 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
       ief: storedDesign.ief || memberAcademic.ief || '',
       ine: storedDesign.ine || memberAcademic.ine || currentMember.ine || ''
     });
+    // La clé peut venir d'une donnée importée ou d'un ancien cache local : si
+// elle est inconnue, on retombe sur CLASSIC. Sans ce repli,
+// `CARD_PROGRAMS[cle].accent` lève « Cannot read properties of undefined » et
+// fait tomber toute la vue du studio.
+const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
+    if (!CARD_PROGRAMS[nextProgram]) setCardProgram(safeProgram);
     setCardDesign({
-      accentColor: storedDesign.accentColor || CARD_PROGRAMS[nextProgram].accent,
-      borderColor: storedDesign.borderColor || CARD_PROGRAMS[nextProgram].accent,
+      accentColor: storedDesign.accentColor || CARD_PROGRAMS[safeProgram].accent,
+      borderColor: storedDesign.borderColor || CARD_PROGRAMS[safeProgram].accent,
       watermarkOpacity: Number(storedDesign.watermarkOpacity ?? 0.12),
       watermarkScale: Number(storedDesign.watermarkScale ?? 56),
       watermarkPosition: storedDesign.watermarkPosition || 'CENTER'
@@ -1231,6 +1237,8 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
   };
 
   const updateCardProgram = (program) => {
+    // Idem : un identifiant inconnu ne doit pas faire tomber le rendu.
+    if (!CARD_PROGRAMS[program]) return;
     setCardProgram(program);
     const accent = CARD_PROGRAMS[program].accent;
     const nextDesign = { ...cardDesign, accentColor: accent, borderColor: accent };

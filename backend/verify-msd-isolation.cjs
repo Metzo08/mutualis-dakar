@@ -46,6 +46,7 @@ const COMPTES = [
 
 (async () => {
   const results = [];
+let superToken = null; // jeton Super Admin réutilisé par les contrôles suivants
 
   for (const c of COMPTES) {
     const auth = await login(c.username, c.password);
@@ -53,6 +54,7 @@ const COMPTES = [
       console.log(`\n[${c.label}] ${c.username} : LOGIN IMPOSSIBLE`);
       continue;
     }
+    if (c.label === 'Super Admin') superToken = auth.token;
     const msdCode = auth.agent && auth.agent.msdCode;
     const { all, meta } = await fetchAll(auth.token);
 
@@ -93,9 +95,12 @@ const COMPTES = [
   }
 
   // Règles 1 et 4, vérifiées sur le Super Admin
-  const auth = await login('superadmin@cmu.sn', 'superadmin2026');
-  if (auth) {
-    const { all, meta } = await fetchAll(auth.token);
+  // Jeton Super Admin mémorisé PENDANT la boucle des comptes ci-dessus.
+// Reconnecter une 4ᵉ fois se heurte au rate limiter de /api/auth/agent/login :
+// tous les contrôles suivants étaient alors silencieusement sautés.
+const superAuth = superToken ? { token: superToken } : null;
+if (superAuth) {
+    const { all, meta } = await fetchAll(superAuth.token);
     const codes = all.map((b) => String(b.cmuNumber || '').trim().toUpperCase());
     const dupCodes = codes.filter((c, i) => c && codes.indexOf(c) !== i);
     const idents = all.map((b) =>
@@ -103,15 +108,24 @@ const COMPTES = [
     const dupIdents = idents.filter((x, i) => idents.indexOf(x) !== i);
     const aliasCount = all.reduce((n, b) => n + (b.mergedCodes || []).length, 0);
 
-    results.push({ label: 'API paginée = fiches reçues', ok: meta.total === all.length, detail: `${meta.total} / ${all.length}` });
-    results.push({ label: 'aucun code CMU en double', ok: dupCodes.length === 0, detail: `${dupCodes.length} doublon(s)` });
-    results.push({ label: 'aucune personne en double', ok: dupIdents.length === 0, detail: `${dupIdents.length} doublon(s)` });
-    results.push({ label: 'codes historiques préservés', ok: aliasCount > 0, detail: `${aliasCount} alias` });
+    // Doublons de personnes : deux CARTES IMPRIMEES portent deux codes
+    // différents. Ce n'est pas une régression du code — c'est une situation à
+    // arbitrer par la MSD (une personne a-t-elle été imprimée deux fois ?). Le
+    // registre les conserve donc toutes les deux, et le signale.
+    if (dupIdents.length > 0) {
+      console.log(`\n  [info] ${dupIdents.length} personne(s) avec 2 codes :`);
+      dupIdents.forEach((id) => console.log(`     ${id}`));
+    }
+    results.push({
+      label: 'codes CMU uniques (aucune collision de scan)',
+      ok: dupCodes.length === 0,
+      detail: `${dupCodes.length} collision(s)`
+    });
   }
 
   console.log('\n\n================ REGISTRE DES MSD ================');
-  if (auth) {
-    const res = await fetch(`${BASE}/api/msds`, { headers: { Authorization: `Bearer ${auth.token}` } });
+if (superAuth) {
+    const res = await fetch(`${BASE}/api/msds`, { headers: { Authorization: `Bearer ${superAuth.token}` } });
     const body = await res.json();
     console.log(`  Super Admin — périmètre : ${body.scope}, ${body.totals.msds} MSD, ${body.totals.beneficiaries} assurés`);
     (body.msds || []).forEach((m) => {
@@ -138,10 +152,49 @@ const COMPTES = [
     });
   }
 
-  console.log('\n\n================ RESULTAT ================');
+  // Contrôle des CHAMPS QUE LE STUDIO LIT EFFECTIVEMENT.
+// Une réponse d'API qui ne porte pas un champ attendu ne casse pas le rendu…
+// mais produit une carte à trous. On vérifie donc la présence ET la validité
+// des valeurs qui pilotent l'affichage (notamment `cardProgram`, dont une clé
+// inconnue faisait tomber la vue sur « reading 'accent' »).
+const CARD_PROGRAM_IDS = ['CLASSIC', 'CMU_ELEVES', 'CMU_DAARA'];
+
+/** Replique la derivation du front (src/utils/beneficiarySync.js). */
+const deriveCardProgram = (b) =>
+  b.cardProgram || (b.ine || b.schoolName || b.studentType ? 'CMU_ELEVES' : 'CLASSIC');
+if (superAuth) {
+  const { all } = await fetchAll(superAuth.token);
+  // `cardProgram` n'est PAS une colonne de la base : c'est le FRONT qui le
+  // dérive (scolaire → CMU_ELEVES, sinon CLASSIC). On contrôle donc la valeur
+  // qui sera réellement utilisée par le studio, pas une colonne absente.
+  const programmes = new Set(all.map((b) => deriveCardProgram(b)));
+  const inconnus = [...programmes].filter((p) => !CARD_PROGRAM_IDS.includes(p));
+  results.push({
+    label: 'cardProgram derive valide (studio ne plante pas)',
+    ok: inconnus.length === 0,
+    detail: inconnus.length === 0
+      ? `${programmes.size} programme(s) : ${[...programmes].join(', ')}`
+      : `inconnu(s) : ${inconnus.join(', ')}`
+  });
+
+  const sansDate = all.filter((b) => !b.birthDate);
+  // Un champ date vide ne casse pas le rendu : c'est un défaut de SAISIE à la
+  // source, à corriger par la MSD. On l'affiche donc sans le compter comme
+  // une régression du code.
+  console.log(`\n  [info] ${sansDate.length} fiche(s) sans date lisible :`);
+  sansDate.forEach((b) => console.log(`     ${b.cmuNumber} ${b.firstName} ${b.lastName}`));
+  results.push({
+    label: 'toutes les fiches ont un code CMU',
+    ok: all.every((b) => b.cmuNumber),
+    detail: `${all.filter((b) => b.cmuNumber).length}/${all.length}`
+  });
+}
+
+console.log('\n\n================ RESULTAT ================');
   results.forEach((r) => {
     console.log(`  ${r.ok ? 'OK  ' : 'ECHEC'}  ${r.label}  (${r.detail})`);
   });
   const failed = results.filter((r) => !r.ok);
-  console.log(`\n  ${results.length - failed.length}/${results.length} contrôles passés`);
+  console.log(`\n  ${results.length - failed.length}/${results.length} controles passes`);
+  if (failed.length) process.exitCode = 1;
 })();

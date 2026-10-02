@@ -63,7 +63,7 @@ const fromApi = (b) => {
     phone: b.phone || '',
     package: packageType,
     cardTypeLabel: b.cardTypeLabel || packageType,
-    cardProgram: b.cardProgram || (isSchool ? 'CMU_ELEVES' : 'CMU_CLASSIQUE'),
+    cardProgram: b.cardProgram || (isSchool ? 'CMU_ELEVES' : 'CLASSIC'),
     academicData: isSchool
       ? {
           academicYear: b.academicYear || '',
