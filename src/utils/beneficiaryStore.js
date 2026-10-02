@@ -20,17 +20,17 @@
 // La purge v17 → v18 vide les anciens registres : sans elle, le navigateur
 // reparirait avec les 41 fiches figées à l'ouverture, avant même que la
 // synchronisation ne s'exécute.
-// v19 — registre vidé avec le contenu à réimporter.
+// v20 - registre remis a zero, reimporte fichier par fichier depuis le Studio.
 //
 // Les fiches `DKR_DKR_2026-…` portaient des matricules FABRIQUÉS par la
 // plateforme, absents des cartes imprimées. Le registre repart des fichiers
 // Excel. Le bump de version vide les anciens registres du navigateur : sans
 // lui, le poste rouvrirait avec les 546 fiches obsolètes avant même que la
 // synchronisation ne s'exécute.
-const STORAGE_KEY = 'unamusc_beneficiaries_store_v19';
-// Nettoyage one-shot des anciennes générations de cache (v1 → v18).
+const STORAGE_KEY = 'unamusc_beneficiaries_store_v20';
+// Nettoyage one-shot des anciennes générations de cache (v1 → v19).
 try {
-  for (let i = 1; i <= 18; i++) {
+  for (let i = 1; i <= 19; i++) {
     localStorage.removeItem(`unamusc_beneficiaries_store_v${i}`);
   }
 } catch (e) { /* stockage indisponible */ }

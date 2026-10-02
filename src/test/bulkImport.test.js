@@ -259,7 +259,20 @@ describe('identité stable (déduplication entre imports)', () => {
   });
 });
 
-describe('buildStudioMembers — matricules générés par le système', () => {
+/**
+ * Import d'un lot DÉJÀ IMPRIMÉ : le code du fichier fait foi.
+ *
+ * Régression majeure. L'import appliquait par défaut la stratégie « SYSTEM »,
+ * qui FABRIQUE un matricule (`DKR-DKR-2026-XXXX`) au lieu de reprendre celui du
+ * classeur. Sur le lot ASS LONASE, les 122 cartes avaient alors reçu un code
+ * qui ne figure sur aucun PVC — la carte devenait introuvable au scan, et le
+ * code réel de la personne était perdu.
+ *
+ * La règle est donc inverse : tant que la carte existe, on conserve son code.
+ * Un matricule n'est attribué que lorsqu'il n'y a RIEN à préserver (ligne sans
+ * code dans le fichier).
+ */
+describe('buildStudioMembers — conservation du code du fichier', () => {
   const lignes = parseRowsToRecords([
     { CODE_BENEFICIAIRE: 'DKR_2600111.0', NUMERO_ADHERENT: 'DKR_010126', PRENOM: 'Chef', NOM: 'FALL', DATE_NAISSANCE: '1980-01-01' },
     { CODE_BENEFICIAIRE: 'DKR_2600111.1', NUMERO_ADHERENT: 'DKR_010126', PRENOM: 'Epouse', NOM: 'FALL', DATE_NAISSANCE: '1982-01-01' },
@@ -272,29 +285,40 @@ describe('buildStudioMembers — matricules générés par le système', () => {
     expect(members[0].dependents).toHaveLength(2);
   });
 
-  it('attribue un matricule DIFFÉRENT à chaque personne', async () => {
+  it('reprend le code du fichier, suffixe compris', async () => {
     const [chef] = await buildStudioMembers(lignes);
-    const codes = [chef.cmuNumber, ...chef.dependents.map(d => d.cmuNumber)];
-    expect(new Set(codes).size).toBe(3);
-    codes.forEach(c => expect(c).toMatch(/^DKR-DKR-\d{4}-\d{4}$/));
-  });
-
-  it("n'emprunte jamais le code du fichier", async () => {
-    const [chef] = await buildStudioMembers(lignes);
-    expect(chef.cmuNumber).not.toBe('DKR_2600111');
+    // Aucun matricule fabriqué : le préfixe est celui du fichier.
+    expect(chef.cmuNumber).not.toMatch(/DKR-DKR-/);
     expect(chef.sourceCode).toBe('DKR_2600111');
+    // Le suffixe « .0 » du chef est normalisé en code de base — la recherche
+    // par code résout les deux écritures, y compris le scan du PVC.
+    expect(chef.cmuNumber).toBe('DKR_2600111');
+    // Les ayants droit, eux, conservent leur suffixe : c'est ce qui les
+    // distingue sur la carte du ménage.
+    const dependents = chef.dependents.map((d) => d.cmuNumber);
+    expect(dependents).toEqual(['DKR_2600111.1', 'DKR_2600111.2']);
   });
 
-  it('poursuit la numérotation après les codes déjà attribués', async () => {
-    const [a] = await buildStudioMembers(lignes, { existingCodes: ['DKR-DKR-2026-0042'] });
-    const codes = [a.cmuNumber, ...a.dependents.map(d => d.cmuNumber)];
-    expect(codes[0]).toBe('DKR-DKR-2026-0043');
-    expect(new Set(codes).size).toBe(codes.length);
+  it('attribue un code DISTINCT à chaque personne', async () => {
+    const [chef] = await buildStudioMembers(lignes);
+    const codes = [chef.cmuNumber, ...chef.dependents.map((d) => d.cmuNumber)];
+    expect(new Set(codes).size).toBe(3);
   });
 
-  it('importe aussi une personne sans code dans le fichier', async () => {
+  it('conserve le code même lorsqu\'il entre en collision avec un autre lot', async () => {
+    // Le code du PVC prime : c'est lui qui est présenté au guichet. On ne
+    // remplace jamais le code d'une carte déjà imprimée par un matricule
+    // calculé — la déduplication du registre traite le doublon à la lecture.
+    const [chef] = await buildStudioMembers(lignes, { existingCodes: ['DKR_2600111'] });
+    expect(chef.cmuNumber).toBe('DKR_2600111');
+  });
+
+  it('n\'attribue un matricule que si le fichier n\'en porte aucun', async () => {
+    // Une personne sans code n'a rien à perdre : c'est le seul cas où la
+    // génération d'un matricule est légitime.
     const [seul] = await buildStudioMembers(parseRowsToRecords([{ PRENOM: 'Sans', NOM: 'Code' }]));
-    expect(seul.cmuNumber).toMatch(/^DKR-DKR-\d{4}-\d{4}$/);
+    // Format « DKR-DKR-AAAA-NNNN », avec un éventuel suffixe d'ayant droit.
+    expect(seul.cmuNumber).toMatch(/^DKR-DKR-\d{4}-\d{4}(\.\d+)?$/);
     expect(seul.dependents).toHaveLength(0);
   });
 
