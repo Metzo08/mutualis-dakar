@@ -83,8 +83,8 @@ describe('Import du fichier Ville de Dakar (AMEVI) — codes à 6 chiffres', () 
     expect(moustapha).toBeDefined();
     // `DKR_260001` : le « .0 » du chef est normalisé, la recherche par code
     // résout les deux écritures (scan du PVC compris).
-    expect(moustapha.cmuNumber).toBe('DKR_260001');
-    expect(moustapha.sourceCode).toBe('DKR_260001');
+    expect(moustapha.cmuNumber).toBe('DKR_260001.0');
+    expect(moustapha.sourceCode).toBe('DKR_260001.0');
   });
 
   it('regroupe le ménage DKR_260001 avec ses ayants droit', async () => {

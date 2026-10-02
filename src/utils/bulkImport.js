@@ -230,22 +230,26 @@ export const normalizePhone = (value) =>
   (value || '').toString().replace(/[^0-9]/g, '');
 
 /**
- * Code bénéficiaire / adhérent canonique.
+ * Code bénéficiaire tel qu'il figure dans le classeur.
  *
- * Le suffixe n'est retiré que lorsqu'il vaut « .0 » :
- *  • Fichier « Ville de Dakar msd Dakar » : DKR_2600011.0 désigne le
- *    CHEF DE MÉNAGE — le « .0 » est un suffixe de rôle, pas d'identifiant.
- *    Le retirer garantit une seule fiche par ménage (sinon doublons).
- *  • Fichier « ASS LONASE » : DKR_2600040.1 désigne CETTE personne, et
- *    « DKR_2600041.1 » la suivante. Le « .1 » y fait partie du code
- *    imprimé sur la carte physique. Le supprimer décalait toutes les
- *    cartes d'une unité par rapport aux documents déjà en circulation.
+ * ⚠️ Le code est désormais conservé À L'IDENTIQUE, suffixe « .0 » compris.
  *
- * On ne retire donc que « .0 », et jamais « .1 », « .2 », « .3 »…
+ * Il portait auparavant un retrait du « .0 » (DKR_260001.0 → DKR_260001).
+ * Raison alors invoquée : le « .0 » est un suffixe de rôle, et le retirer
+ * garantissait une seule fiche par ménage. C'est vrai, mais ce n'est pas le
+ * code IMPRIMÉ sur le PVC : l'agent lisait « DKR_260001 » sur sa fiche et
+ * « DKR_260001.0 » sur la carte du patient, sans raison apparente.
+ *
+ * Or le classeur est la source de vérité et la fiche doit porter exactement
+ * ce qui est gravé, au caractère près. Une fiche et sa carte ne peuvent pas
+ * diverger.
+ *
+ * Le regroupement en ménage n'est pas affecté : il repose sur la BASE du code
+ * (`baseFromCode`), où le suffixe est retiré de toute façon.
  */
 export const canonicalCode = (code) => {
   if (code === null || code === undefined) return '';
-  return code.toString().trim().replace(/\.0$/, '');
+  return code.toString().trim();
 };
 
 /**
@@ -1168,7 +1172,23 @@ export const buildStudioMembers = async (records, opts = {}) => {
     chef.cmuNumber = chefCode;
     chef.adherentCode = chefCode;
     chef.dependents = deps.map((d, i) => {
-      const depCode = rankCode(i + 2, d.rawCode || d.sourceCode);
+      const fileCode = d.rawCode || d.sourceCode;
+      const depCode = rankCode(i + 2, fileCode);
+      // Le rang dans le foyer doit être celui du CODE RÉEL de la personne.
+      //
+      // Auparavant il valait toujours « .(rang + 2) », calculé sur la position
+      // dans la liste. Or, en mode FILE, le code vient du classeur : un ayant
+      // droit peut porter « .1 » alors qu'il est le premier de la liste. Le
+      // Studio recomposant parfois l'identifiant affiché à partir de « code du
+      // parent + codeSuffix », il produisait alors « DKR_260001.0.2 » pour une
+      // carte qui porte « DKR_260001.1 ».
+      //
+      // On lit donc le suffixe réel dans le code du fichier ; à défaut (pas de
+      // code), on garde le rang calculé.
+      const suffixeReel = String(depCode || '').match(/\.(\d+)$/);
+      const codeSuffix = suffixeReel
+        ? `.${suffixeReel[1]}`
+        : `.${i + 2}`;
       // Champ `name` en PLUS de firstName/lastName : le jeu de données
       // historique (msdDakarMembers) ne stocke que `name`, et plusieurs vues
       // (VerifyCard, audit des scans, Studio) le lisaient directement. Sans
@@ -1186,7 +1206,7 @@ export const buildStudioMembers = async (records, opts = {}) => {
         // le Studio recompose parfois l'identifiant affiché à partir de
         // « code du parent + codeSuffix ». Un suffixe décalé d'un cran
         // produisait « DKR-DKR-2026-2151.1.3 » au lieu de « …-2151.3 ».
-        codeSuffix: `.${i + 2}`,
+        codeSuffix,
         householdCode: withHouseholdRank(chefCode, 1),
         isMajor: d.isMajor !== false,
         bloodGroup: d.bloodGroup || 'O+',

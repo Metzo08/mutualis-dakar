@@ -37,9 +37,11 @@ describe('normalisations', () => {
     expect(normalizePhone('')).toBe('');
   });
 
-  it('canonicalCode retire la décimale parasite des codes Excel', () => {
-    expect(canonicalCode('DKR_2600011.0')).toBe('DKR_2600011');
-    expect(canonicalCode('2600011.0')).toBe('2600011');
+  it('canonicalCode conserve le code tel quel et ne fait que le trimming', () => {
+    // Le code imprimé sur la carte est repris AU CARACTÈRE PRÈS, suffixe « .0 »
+    // compris : la fiche et le PVC ne peuvent pas diverger.
+    expect(canonicalCode('DKR_2600011.0')).toBe('DKR_2600011.0');
+    expect(canonicalCode('2600011.0')).toBe('2600011.0');
     expect(canonicalCode(' DAARA-2025-0078 ')).toBe('DAARA-2025-0078');
     expect(canonicalCode(null)).toBe('');
   });
@@ -86,8 +88,8 @@ describe('parseRowsToRecords', () => {
         PHOTO: 'moussa_diop.jpg'
       }
     ]);
-    expect(r.codeBeneficiaire).toBe('EDU_DKR_26000163');
-    expect(r.numeroAdherent).toBe('EDU_DKR_26000163');
+    expect(r.codeBeneficiaire).toBe('EDU_DKR_26000163.0');
+    expect(r.numeroAdherent).toBe('EDU_DKR_26000163.0');
     expect(r.prenom).toBe('Moussa');
     expect(r.nom).toBe('DIOP');
     expect(r.birthDate).toBe(toIsoDate('40517'));
@@ -157,7 +159,7 @@ describe('migrateLegacyCodes — non-régression des cartes imprimées', () => {
   const registre = [
     // Carte DÉJÀ imprimée : ne doit JAMAIS bouger.
     { cmuNumber: 'DKR_2600027.0', adherentCode: 'DKR_2600027', firstName: 'URSULE', lastName: 'DIAME' },
-    { cmuNumber: 'EDU_DKR_26000163', adherentCode: 'EDU_DKR_26000163', firstName: 'A', lastName: 'B' },
+    { cmuNumber: 'EDU_DKR_26000163.0', adherentCode: 'EDU_DKR_26000163.0', firstName: 'A', lastName: 'B' },
     // Fiches ASS LONASE : ancien motif généré → à migrer.
     {
       cmuNumber: 'DKR-2600001',
@@ -171,7 +173,7 @@ describe('migrateLegacyCodes — non-régression des cartes imprimées', () => {
   it('ne touche pas aux cartes déjà imprimées', () => {
     const { members } = migrateLegacyCodes(registre, { unionId: 'DKR', year: 2026 });
     expect(members[0].cmuNumber).toBe('DKR_2600027.0');
-    expect(members[1].cmuNumber).toBe('EDU_DKR_26000163');
+    expect(members[1].cmuNumber).toBe('EDU_DKR_26000163.0');
   });
 
   it('recode les fiches ASS LONASE au format officiel', () => {
@@ -221,7 +223,7 @@ describe('purge avant réimport (MSD de Grand Yoff)', () => {
 
   it('épargne les cartes DÉJÀ imprimées', () => {
     expect(purgeable({ id: 'MEM-MSD-001', cmuNumber: 'DKR_260001.0' })).toBe(false);
-    expect(purgeable({ id: 'MEM-MSD-010', cmuNumber: 'EDU_DKR_26000163' })).toBe(false);
+    expect(purgeable({ id: 'MEM-MSD-010', cmuNumber: 'EDU_DKR_26000163.0' })).toBe(false);
     expect(purgeable({ id: 'MEM-MSD-011', cmuNumber: 'DAARA-2025-0078' })).toBe(false);
   });
 
@@ -289,12 +291,12 @@ describe('buildStudioMembers — conservation du code du fichier', () => {
     const [chef] = await buildStudioMembers(lignes);
     // Aucun matricule fabriqué : le préfixe est celui du fichier.
     expect(chef.cmuNumber).not.toMatch(/DKR-DKR-/);
-    expect(chef.sourceCode).toBe('DKR_2600111');
-    // Le suffixe « .0 » du chef est normalisé en code de base — la recherche
-    // par code résout les deux écritures, y compris le scan du PVC.
-    expect(chef.cmuNumber).toBe('DKR_2600111');
-    // Les ayants droit, eux, conservent leur suffixe : c'est ce qui les
-    // distingue sur la carte du ménage.
+    expect(chef.sourceCode).toBe('DKR_2600111.0');
+    // Le « .0 » du chef est conservé : c'est exactement le code gravé sur le PVC.
+    expect(chef.cmuNumber).toBe('DKR_2600111.0');
+    // Les ayants droit gardent leur suffixe, et il correspond au rang RÉEL
+    // dans le foyer — pas à la position dans la liste.
+    expect(chef.dependents.map((d) => d.codeSuffix)).toEqual(['.1', '.2']);
     const dependents = chef.dependents.map((d) => d.cmuNumber);
     expect(dependents).toEqual(['DKR_2600111.1', 'DKR_2600111.2']);
   });
@@ -310,7 +312,7 @@ describe('buildStudioMembers — conservation du code du fichier', () => {
     // remplace jamais le code d'une carte déjà imprimée par un matricule
     // calculé — la déduplication du registre traite le doublon à la lecture.
     const [chef] = await buildStudioMembers(lignes, { existingCodes: ['DKR_2600111'] });
-    expect(chef.cmuNumber).toBe('DKR_2600111');
+    expect(chef.cmuNumber).toBe('DKR_2600111.0');
   });
 
   it('n\'attribue un matricule que si le fichier n\'en porte aucun', async () => {
@@ -400,9 +402,9 @@ describe("parseExcelFile (chaîne complète)", () => {
     expect(result.fileName).toBe('eleves.xlsx');
     expect(result.columns).toContain('CODE_BENEFICIAIRE');
     expect(result.rows).toHaveLength(2);
-    expect(result.rows[0].codeBeneficiaire).toBe('EDU_DKR_26000163');
+    expect(result.rows[0].codeBeneficiaire).toBe('EDU_DKR_26000163.0');
     expect(result.rows[0].prenom).toBe('Moussa');
     expect(result.rows[0].birthDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(result.rows[1].codeBeneficiaire).toBe('EDU_DRB_26000164');
+    expect(result.rows[1].codeBeneficiaire).toBe('EDU_DRB_26000164.0');
   });
 });
