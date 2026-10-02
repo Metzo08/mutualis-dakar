@@ -1642,12 +1642,10 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
       const mergedInfo = merged > 0
         ? ` 🔗 ${merged} doublon(s) fusionné(s) : ${dupGroups.map((g) => `${g.nom} (${g.code})`).join(', ')}.`
         : '';
-      // La stratégie de codage APPLIQUÉE est rappelée explicitement : c'est
-      // l'information qui manque quand une carte ne porte pas le code
-      // attendu, et elle se lit mieux que le menu déroulant.
-      const strategyInfo = importCodeStrategy === 'SYSTEM'
-        ? ' 🔢 Codage : matricule officiel attribué (REGION-MSD-ANNEE-SEQUENCE).'
-        : ' 📄 Codage : code du FICHIER conservé tel quel.';
+      // Le codage appliqué est rappelé explicitement : c'est l'information qui
+      // manque quand une carte ne porte pas le code attendu. La règle est
+      // unique (code du fichier), il n'y a plus de branche à deux issues.
+      const strategyInfo = ' 📄 Codage : code du FICHIER conservé tel quel.';
 
       // ⚠️ L'import n'est annoncé « réussi » que s'il est RÉELLEMENT
       // enregistré. Sinon on dit exactement pourquoi — et ce qui se passe
@@ -1663,7 +1661,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
       }
 
       setBulkNotice({
-        type: importCodeStrategy === 'SYSTEM' ? 'success' : 'warning',
+        type: 'success',
         text: `✅ ${fresh.length} dossier(s) importé(s) (${totalPeople} personnes au total, photos appariées : ${matchedPhotos}).${strategyInfo}${dupInfo}${mergedInfo}${photoInfo} Lot de campagne : ${lot.code}.${serverInfo} Sélectionnez-les dans la liste pour générer leurs cartes.`
       });
       if (fresh.length > 0) setSelectedMemberId(fresh[0].id);
@@ -2082,7 +2080,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                 if (importCodeStrategy === 'FILE' && !printLotConfirmed) {
                   setBulkNotice({
                     type: 'error',
-                    text: '⛔ Import bloqué : le codage est réglé sur « Conserver le code du fichier ». Si ce lot est DÉJÀ IMPRIMÉ, cochez la confirmation ci-dessus. Sinon, choisissez « 🆕 Attribuer un matricule officiel » — c\'est le système qui génère désormais les codes.'
+                    text: '⛔ Import bloqué : cochez la confirmation ci-dessus pour attester que les cartes de ce lot sont DÉJÀ imprimées et que leurs codes doivent être conservés tels quels. Le code du fichier est la seule règle applicable : aucune génération automatique n\'est proposée.'
                   });
                   if (excelInputRef.current) excelInputRef.current.value = '';
                   return;
@@ -2114,35 +2112,43 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
             </button>
           </div>
 
-          {/* Stratégie de codage du lot — décision EXPLICITE, jamais un hasard.
-              Un lot déjà imprimé doit conserver les codes de son classeur :
-              les remplacer détacherait chaque fiche du PVC correspondant. */}
+          {/* Codage du lot — informatif, VOLONTAIREMENT non interactif.
+
+              Ce bloc était un menu déroulant figé : il s'affichait comme un
+              champ à choisir, mais rien ne se produisait au clic. Un
+              contrôle qui ne répond pas est pire qu'un texte : il donne
+              l'impression d'un bug.
+
+              Il n'y a plus de choix à faire. Toutes les cartes sont déjà
+              imprimées, donc le code du classeur — celui gravé sur le PVC —
+              est le seul comportement possible. L'ancien mode « attribuer
+              un matricule » produisait des codes DKR-DKR-2026-… absents des
+              cartes, ce qui rendait chaque fiche introuvable au scan. */}
           <div className="mt-3">
-            <label className="form-label text-sub fw-extrabold" style={{ fontSize: '0.85rem' }}>
-              🔢 Codage de ce lot d'import
-            </label>
-            <select
-              className="form-select"
-              value={importCodeStrategy}
-              disabled
+            <div
+              className="d-flex align-items-start gap-2 p-3"
               style={{
-                background: 'var(--bg-card-subtle)', color: 'var(--text-main)',
-                border: '1.5px solid var(--border-color)', borderRadius: '14px',
-                fontSize: '0.86rem', fontWeight: '700', minHeight: '46px'
+                borderRadius: '14px',
+                background: 'rgba(5,150,105,0.08)',
+                border: '1.5px solid #059669'
               }}
             >
-              {/* « Attribuer un matricule officiel » a été retiré : toutes les
-                  cartes sont déjà imprimées, et ce mode produisait des
-                  matricules DKR-DKR-2026-… absents des PVC. Le code du
-                  classeur est désormais le seul comportement possible. */}
-              <option value="FILE">📄 Code du fichier — conservé à l'identique</option>
-            </select>
-            <small className="text-muted d-block mt-1" style={{ fontSize: '0.75rem', lineHeight: 1.45 }}>
-              Le code du classeur est conservé tel quel (ex. DKR_260001.0) : c'est celui imprimé sur la carte.
-              <span className="d-block" style={{ fontWeight: '700' }}>
-                La génération d'un matricule automatique est désactivée : elle produisait des codes absents des PVC.
-              </span>
-            </small>
+              <span style={{ fontSize: '1.15rem', lineHeight: 1.2 }} aria-hidden="true">🔢</span>
+              <div>
+                <div style={{ fontSize: '0.86rem', fontWeight: '800', color: '#047857' }}>
+                  Codage du lot : le code du fichier est conservé à l’identique
+                </div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-sub)', lineHeight: 1.45, marginTop: '2px' }}>
+                  Le code de la colonne <code>CODE_BENEFICIAIRE</code> est repris tel quel,
+                  suffixe compris (ex. <code>DKR_260001.0</code>) : c’est exactement celui
+                  imprimé sur la carte de l’assuré.
+                  <br />
+                  <strong>Aucun matricule n’est généré automatiquement.</strong> La plateforme
+                  ne peut plus produire un code absent des PVC — c’est ce qui rendait les
+                  fiches introuvables au scan.
+                </div>
+              </div>
+            </div>
 
             {/* Confirmation obligatoire pour le mode « code du fichier ».
                 C'est cette absence qui a laissé passer plusieurs imports
@@ -2163,9 +2169,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   Je confirme que les cartes de ce lot sont DÉJÀ IMPRIMÉES et que
                   leurs codes doivent être conservés à l’identique.
                   <span className="d-block text-muted" style={{ fontWeight: '600' }}>
-                    Sans cette confirmation, l’import est refusé. Pour un lot dont
-                    les cartes ne sont pas encore sorties, choisissez plutôt
-                    « 🆕 Attribuer un matricule officiel ».
+                    Cette confirmation est obligatoire : l’import est refusé sans elle.
                   </span>
                 </span>
               </label>
