@@ -1,5 +1,51 @@
 import { describe, it, expect } from 'vitest';
-import { parseRowsToRecords, buildStudioMembers } from '../utils/bulkImport';
+import { parseRowsToRecords, buildStudioMembers, matchPhotosToRows } from '../utils/bulkImport';
+
+/**
+ * Nommage des photos du dossier « Photos ville de Dakar » : les fichiers
+ * portent un préfixe de lot et de rang — « 1.0 Adjaratou Ndeye DEME.jpeg »
+ * (1.0 = chef de ménage, 1.1 = premier ayants droit).
+ *
+ * Ce préfixe n'était pas retiré : la clé calculée devenait
+ * « 10adjaratoundeyedeme », qui n'apparaît avec aucune fiche. Résultat :
+ * 0 photo trouvée sur 167 fichiers, et « PHOTO EN ATTENTE » sur toutes les
+ * cartes de la Ville de Dakar.
+ */
+describe('Appariement des photos « lot.rang Prénom NOM »', () => {
+  const rows = parseRowsToRecords([
+    { CODE_BENEFICIAIRE: 'DKR_260001.0', PRENOM: 'MOUSTAPHA NDIONE', NOM: 'NDIONE', DATE_NAISSANCE: '1972-01-03' },
+    { CODE_BENEFICIAIRE: 'DKR_260004.0', PRENOM: 'ADJARATOU', NOM: 'DEME', DATE_NAISSANCE: '1980-02-02' }
+  ]);
+
+  // Faux FileList : l'import ne lit que `name` et `type`.
+  const photo = (name) => ({ name, type: 'image/jpeg' });
+
+  it('reconnaît la photo malgré le préfixe de rang', () => {
+    const out = matchPhotosToRows(rows, [photo('1.0 Adjaratou Ndeye DEME.jpeg')]);
+    expect(out.find((r) => r.nom === 'DEME').photoUrl).toBeTruthy();
+  });
+
+  it('reconnaît la photo quand le prénom contient le nom', () => {
+    const out = matchPhotosToRows(rows, [photo('1.0 Moustapha Ndione.jpeg')]);
+    expect(out.find((r) => r.nom === 'NDIONE').photoUrl).toBeTruthy();
+  });
+
+  it('ne confond pas deux personnes de noms proches', () => {
+    const out = matchPhotosToRows(rows, [
+      photo('1.0 Adjaratou Ndeye DEME.jpeg'),
+      photo('1.1 Awa DIOP.jpeg')
+    ]);
+    expect(out.find((r) => r.nom === 'NDIONE').photoUrl).toBeFalsy();
+  });
+
+  it('reste compatible avec le nommage « CODE Prénom NOM » (ASS LONASE)', () => {
+    const lonase = parseRowsToRecords([
+      { CODE_BENEFICIAIRE: 'DKR_2600040.1', PRENOM: 'PAPA IBRAHIMA', NOM: 'SEYE', DATE_NAISSANCE: '1948-04-25' }
+    ]);
+    const out = matchPhotosToRows(lonase, [photo('DKR_2600040.1 PAPA IBRAHIMA SEYE.jpeg')]);
+    expect(out[0].photoUrl).toBeTruthy();
+  });
+});
 
 /**
  * Le fichier ASS LONASE ne contient QUE des ayants droit : 122 lignes, toutes

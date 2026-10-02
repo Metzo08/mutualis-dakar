@@ -16,7 +16,7 @@ const norm = (v) => clean(v).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, 
 
 const SOURCES = [
   { file: 'c:/Users/hp/Downloads/AMEVI.xlsx', label: 'Ville de Dakar (AMEVI)',
-    photoDir: path.join(__dirname, '..', 'ASS LONASE') },
+    photoDir: path.join('c:\\', 'Users', 'hp', 'Downloads', 'Photos ville de Dakar') },
   { file: 'c:/Users/hp/Downloads/ASS LONASE.xlsx', label: 'ASS LONASE',
     photoDir: path.join(__dirname, '..', 'ASS LONASE') },
   { file: 'c:/Users/hp/Downloads/MSD  de Grand Yoff.xlsx', label: 'MSD de Grand Yoff',
@@ -46,15 +46,17 @@ for (const s of SOURCES) {
   const files = s.photoDir && fs.existsSync(s.photoDir)
     ? fs.readdirSync(s.photoDir).filter((f) => /\.(jpe?g|png)$/i.test(f))
     : [];
+  // Même normalisation que l'import (bulkImport.js) : retrait du préfixe de
+  // RANG « 1.0 » et du nom répété dans le prénom.
+  const normPhoto = (file) => norm(
+    file.replace(/\.[^.]+$/, '').replace(/^\d{1,3}(?:\.\d{1,3})?\s+/, '')
+  );
   const withPhoto = rows.filter((r) => {
-    const code = clean(r.CODE_BENEFICIAIRE).toUpperCase();
-    const nom = norm(`${clean(r.PRENOM_BENEFICIAIRE)} ${clean(r.NOM_BENEFICIAIRE)}`);
-    return files.some((f) => {
-      const base = f.replace(/\.(jpe?g|png)$/i, '');
-      if (base.toUpperCase().startsWith(code)) return true;
-      const key = norm(base.replace(/\s+(né|ne|née)\s+le.*$/i, '').replace(/\s+adresse.*$/i, ''));
-      return key && key === nom;
-    });
+    const p = norm(r.PRENOM_BENEFICIAIRE);
+    const n = norm(r.NOM_BENEFICIAIRE);
+    const first = (n && p !== n && p.endsWith(n)) ? p.slice(0, p.length - n.length) : p;
+    const cible = first + n;
+    return files.some((f) => normPhoto(f) === cible);
   });
   console.log(`  photos disponibles          : ${files.length}`);
   console.log(`  fiches Finds une photo      : ${withPhoto.length} / ${rows.length}`);

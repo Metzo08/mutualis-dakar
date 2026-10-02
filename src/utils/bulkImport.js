@@ -758,6 +758,12 @@ export const matchPhotosToRows = (rows, photoFiles) => {
   // « photos appariées : 0 ».
   const photoIndex = photos.map((f) => {
     const base = f.name.replace(/\.[^.]+$/, '');
+    // Préfixe de RANG en tête de nom : « 1.0 Adjaratou Ndeye DEME ».
+    // C'est le format du dossier « Photos ville de Dakar » : le nombre désigne
+    // le lot et le rang dans le ménage (1.0 = chef, 1.1 = premier ayants
+    // droit…). Sans son retrait, la clé calculée devenait « 10adjaratou… » et
+    // n'appariait avec aucune fiche : 0 photo trouvée sur 167.
+    const sansRang = base.replace(/^\d{1,3}(?:\.\d{1,3})?\s+/, '');
     // Code en tête de nom : DKR_2600040.1, KLK_2600149.1, ZIG_2600155.1…
     const codeMatch = base.match(/^([A-Za-z]{2,4})[_\-\s](\d{4,8})(\.\d+)?/);
     // Deux formes sont indexées car le code dépend du modèle de fichier :
@@ -767,11 +773,13 @@ export const matchPhotosToRows = (rows, photoFiles) => {
     const codeBase = codeMatch ? normalizeName(codeMatch[1] + codeMatch[2]) : '';
     return {
       file: f,
-      nameNorm: normalizeName(base),
+      nameNorm: normalizeName(sansRang),
       codeNorm: codeComplet,
       codeBaseNorm: codeBase,
-      // Nom de personne seul (le code en tête est retiré)
-      personNorm: normalizeName(codeMatch ? base.slice(codeMatch[0].length) : base),
+      // Nom de personne seul (le code et le rang en tête sont retirés)
+      personNorm: normalizeName(
+        codeMatch ? base.slice(codeMatch[0].length) : sansRang
+      ),
       phoneNorm: normalizePhone(base)
     };
   });
@@ -779,8 +787,13 @@ export const matchPhotosToRows = (rows, photoFiles) => {
   const used = new Set();
   return rows.map((r) => {
     if (r.photoUrl) return r;
-    const nameNorm = normalizeName(`${r.prenom || ''}${r.nom || ''}`);
-    const firstNorm = normalizeName(r.prenom || '');
+    // Le prénom est nettoyé de son nom répété AVANT l'appariement : sinon
+    // « MOUSTAPHA NDIONE » chercherait la photo « 1.0 Moustapha Ndione »
+    // et ne la trouverait jamais.
+    const noms = splitFullName(r.prenom, r.nom);
+    const nameNorm = normalizeName(`${noms.firstName}${noms.lastName}`);
+    const firstNorm = normalizeName(noms.firstName);
+    const lastNorm = normalizeName(noms.lastName);
     const phoneNorm = normalizePhone(r.telephone || '');
     const codeNorm = normalizeName(canonicalCode(r.codeBeneficiaire || ''));
     const hintNorm = normalizeName((r.photoHint || '').toString().replace(/\.[^.]+$/, ''));
@@ -798,6 +811,16 @@ export const matchPhotosToRows = (rows, photoFiles) => {
       // (prénom + nom) pour éviter les faux positifs entre homonymes
       // (« Abdoulaye Diallo » ne doit pas matcher « Abdoulaye Diop »).
       (nameNorm.length >= 6 && photoIndex.find((p) => !used.has(p.file.name) && p.personNorm && p.personNorm.startsWith(nameNorm))) ||
+      // Nom composé : le fichier photo porte souvent un second prénom que le
+      // classeur ignore (« Adjaratou Ndeye DEME.jpeg » pour ADJARATOU/DEME).
+      // On exige alors que le nom commence par le prénom ET finisse par le nom,
+      // avec le nom complet de la fiche strictement plus court — sans quoi un
+      // homonyme proche serait capté.
+      (nameNorm.length >= 6 && lastNorm.length >= 2 && photoIndex.find((p) =>
+        !used.has(p.file.name) && p.personNorm &&
+        p.personNorm.startsWith(firstNorm) && p.personNorm.endsWith(lastNorm) &&
+        p.personNorm.length > nameNorm.length
+      )) ||
       (nameNorm.length >= 6 && photoIndex.find((p) => !used.has(p.file.name) && p.personNorm && nameNorm.startsWith(p.personNorm) && p.personNorm.length >= 6)) ||
       photoIndex.find((p) => !used.has(p.file.name) && p.personNorm && p.personNorm === firstNorm) ||
       photoIndex.find((p) => !used.has(p.file.name) && phoneNorm && p.phoneNorm === phoneNorm) ||
