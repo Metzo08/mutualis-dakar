@@ -46,18 +46,19 @@ for (const s of SOURCES) {
   const files = s.photoDir && fs.existsSync(s.photoDir)
     ? fs.readdirSync(s.photoDir).filter((f) => /\.(jpe?g|png)$/i.test(f))
     : [];
-  // Même normalisation que l'import (bulkImport.js) : retrait du préfixe de
-  // RANG « 1.0 » et du nom répété dans le prénom.
-  const normPhoto = (file) => norm(
-    file.replace(/\.[^.]+$/, '').replace(/^\d{1,3}(?:\.\d{1,3})?\s+/, '')
-  );
-  const withPhoto = rows.filter((r) => {
-    const p = norm(r.PRENOM_BENEFICIAIRE);
-    const n = norm(r.NOM_BENEFICIAIRE);
+  // Appariement aligné sur bulkImport.js : par CODE en tête de nom de fichier
+  // (format ASS LONASE : « DKR_2600040.1 PAPA IBRAHIMA SEYE.jpeg »), puis
+  // par nom après retrait du préfixe de rang « 1.0 » (format Ville de Dakar).
+  const matchPhoto = (f, row) => {
+    const base = f.replace(/\.[^.]+$/, '');
+    const code = clean(row.CODE_BENEFICIAIRE).toUpperCase();
+    if (base.toUpperCase().startsWith(code)) return true;
+    const p = norm(row.PRENOM_BENEFICIAIRE);
+    const n = norm(row.NOM_BENEFICIAIRE);
     const first = (n && p !== n && p.endsWith(n)) ? p.slice(0, p.length - n.length) : p;
-    const cible = first + n;
-    return files.some((f) => normPhoto(f) === cible);
-  });
+    return norm(base.replace(/^\d{1,3}(?:\.\d{1,3})?\s+/, '')) === first + n;
+  };
+  const withPhoto = rows.filter((r) => files.some((f) => matchPhoto(f, r)));
   console.log(`  photos disponibles          : ${files.length}`);
   console.log(`  fiches Finds une photo      : ${withPhoto.length} / ${rows.length}`);
 

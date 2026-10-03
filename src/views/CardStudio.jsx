@@ -1660,9 +1660,23 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
         return;
       }
 
+      // ⚠️ Zéro photo appariée doit être signalé en tête de message.
+      //
+      // Les deux sélecteurs sont enchaînés — dossier de photos PUIS fichier
+      // Excel — et `pendingPhotosRef` est vidé après chaque import. Importer un
+      // Excel seul fonctionnait, mais produisait des fiches sans photo : un
+      // échec SILENCIEUX, puisque le compteur « N dossier(s) importé(s) »
+      // restait rassurant et que toutes les cartes affichaient
+      // « PHOTO EN ATTENTE ».
+      const photoWarning = matchedPhotos === 0
+        ? `⚠️ AUCUNE PHOTO IMPORTÉE : le dossier de photos n'a pas été sélectionné avant ce fichier, ou aucun nom ne correspond. Reprenez l'import en cliquant d'abord sur « 🗂️ 1️⃣ Dossier de photos… ». `
+        : (matchedPhotos < totalPeople
+          ? `⚠️ ${totalPeople - matchedPhotos} personne(s) sans photo (nom de fichier non concordant). `
+          : '');
+
       setBulkNotice({
-        type: 'success',
-        text: `✅ ${fresh.length} dossier(s) importé(s) (${totalPeople} personnes au total, photos appariées : ${matchedPhotos}).${strategyInfo}${dupInfo}${mergedInfo}${photoInfo} Lot de campagne : ${lot.code}.${serverInfo} Sélectionnez-les dans la liste pour générer leurs cartes.`
+        type: matchedPhotos === 0 ? 'error' : 'success',
+        text: `${photoWarning}✅ ${fresh.length} dossier(s) importé(s) (${totalPeople} personnes au total, photos appariées : ${matchedPhotos}).${strategyInfo}${dupInfo}${mergedInfo}${photoInfo} Lot de campagne : ${lot.code}.${serverInfo} Sélectionnez-les dans la liste pour générer leurs cartes.`
       });
       if (fresh.length > 0) setSelectedMemberId(fresh[0].id);
     } catch (err) {
