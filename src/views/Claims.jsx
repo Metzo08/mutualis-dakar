@@ -126,6 +126,23 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
 
   const filteredClaims = filterStatus ? accessibleClaims.filter(c => c.status === filterStatus) : accessibleClaims;
 
+  // ────────────────────────────────────────────────────────────────────
+  //  Indicateurs derives des demandes REELLEMENT enregistrees.
+  //  La carte affichait « 02 demandes en cours » et « 125 000 FCFA de
+  //  credit » en dur, pendant que le tableau annoncait « 0 dossier ».
+  //  Un assure lisait donc un solde et un compteur qui ne lui
+  //  appartenaient pas : on ne peut pas deduire d'un plafond de prise
+  //  en charge un credit restant sans le plafond correspondant.
+  // ────────────────────────────────────────────────────────────────────
+  const pendingClaims = accessibleClaims.filter(c => c.status === 'pending');
+  const pendingCount = pendingClaims.length;
+  const pendingTotal = pendingClaims.reduce((sum, c) => sum + (Number(c.reimbursed_amount) || 0), 0);
+
+  // Plafond indicatif de l'annee, uniquement servant d'echelle de lecture :
+  // il ne deduit aucun droit, il rend la barre comprehensible.
+  const CREDIT_ANNUEL_REFERENCE = 500000;
+  const creditUsedPct = Math.min(100, Math.round((pendingTotal / CREDIT_ANNUEL_REFERENCE) * 100));
+
   return (
     <div className="claims-view fade-in-up" style={{ minHeight: '100vh', paddingBottom: '4rem' }}>
       
@@ -158,9 +175,13 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
 
       <div style={{ maxWidth: '1280px', margin: '2rem auto 0 auto', padding: '0 1rem' }}>
         
-        {/* 1. HERO BANNER & KPI STATS ROW */}
+        {/* 1. HERO BANNER & KPI STATS ROW
+            `col-xxl-8` / `col-xxl-4` et non `col-lg-*` : la sidebar (270px)
+            et le padding de `.view-container` (2rem) retirent ~340px de la
+            largeur reellement disponible. Avec `lg` (992px), la carte KPI
+            tombait a ~280px et son contenu debordait. */}
         <div className="row g-4 mb-4">
-          <div className="col-lg-8">
+          <div className="col-xxl-8 col-12">
             <div className="p-4 p-md-5 rounded-4 text-white d-flex flex-column justify-content-center" style={{ 
               background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.45) 0%, rgba(16, 185, 129, 0.22) 100%), url("/csu_claims_hero.png") center/cover no-repeat', 
               minHeight: '220px', 
@@ -180,13 +201,15 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
             </div>
           </div>
 
-          <div className="col-lg-4">
+          <div className="col-xxl-4 col-12">
             <div className="p-4 rounded-4 h-100 d-flex flex-column justify-content-between" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '26px', boxShadow: 'var(--shadow-md)' }}>
               <div>
                 <div className="d-flex justify-content-between align-items-center mb-3">
                   <div>
                     <span className="small d-block fw-bold" style={{ color: 'var(--text-sub)', fontSize: '0.78rem' }}>Demandes en cours</span>
-                    <h3 className="fw-black mb-0" style={{ color: '#10b981', fontSize: '2.2rem', lineHeight: '1.1' }}>02</h3>
+                    <h3 className="fw-black mb-0" style={{ color: pendingCount > 0 ? '#10b981' : 'var(--text-muted)', fontSize: '2.2rem', lineHeight: '1.1' }}>
+                      {String(pendingCount).padStart(2, '0')}
+                    </h3>
                   </div>
                   <div style={{ width: '52px', height: '52px', borderRadius: '16px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem', border: '1.5px solid rgba(16, 185, 129, 0.3)' }}>
                     📑
@@ -206,13 +229,20 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
               </div>
 
               <div className="pt-3 border-top" style={{ borderColor: 'var(--border-color)' }}>
-                <div className="d-flex justify-content-between align-items-center mb-2">
-                  <span className="small fw-bold" style={{ color: 'var(--text-sub)', fontSize: '0.84rem' }}>Crédit disponible restant</span>
-                  <span className="fw-black text-success" style={{ fontSize: '1.2rem' }}>125 000 FCFA</span>
+                <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                  <span className="small fw-bold" style={{ color: 'var(--text-sub)', fontSize: '0.84rem' }}>
+                    {pendingTotal > 0 ? 'Montant pris en charge en attente' : 'Aucune demande en attente'}
+                  </span>
+                  <span className="fw-black" style={{ fontSize: '1.2rem', color: pendingTotal > 0 ? '#10b981' : 'var(--text-muted)' }}>
+                    {formatFCFA(pendingTotal)}
+                  </span>
                 </div>
                 <div style={{ width: '100%', height: '6px', background: 'var(--bg-card-subtle)', borderRadius: '10px', overflow: 'hidden' }}>
-                  <div style={{ width: '75%', height: '100%', background: 'linear-gradient(90deg, #059669 0%, #10b981 100%)', borderRadius: '10px' }} />
+                  <div style={{ width: `${creditUsedPct}%`, height: '100%', background: 'linear-gradient(90deg, #059669 0%, #10b981 100%)', borderRadius: '10px', transition: 'width 0.4s ease' }} />
                 </div>
+                <small style={{ display: 'block', marginTop: '0.5rem', color: 'var(--text-muted)', fontSize: '0.76rem' }}>
+                  {pendingTotal > 0 ? 'En attente de traitement UNAMUSC' : 'Soumettez une demande pour lancer le circuit'}
+                </small>
               </div>
             </div>
           </div>
@@ -221,8 +251,8 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
         {/* 2. MAIN CONTENT GRID (FORMULAIRE & SIDEBAR) */}
         <div className="row g-4 mb-4">
           
-          {/* Main Form Section */}
-          <div className="col-lg-8">
+          {/* Main Form Section — `col-xxl-8`, cf. explication du hero plus haut. */}
+          <div className="col-xxl-8 col-12">
             <div className="p-4 p-md-5 rounded-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '26px' }}>
               
               {/* Header formulaire & Segmented Switcher */}
@@ -488,8 +518,8 @@ export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser
             </div>
           </div>
 
-          {/* Right Sidebar */}
-          <div className="col-lg-4">
+          {/* Right Sidebar — aligné sur le `col-xxl-8` du formulaire. */}
+          <div className="col-xxl-4 col-12">
             <div className="d-flex flex-column gap-4">
               
               {/* Card Informations Importantes (Elevated Modern List) */}

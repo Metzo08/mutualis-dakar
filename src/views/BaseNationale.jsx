@@ -786,9 +786,18 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
       markersGroupRef.current.clearLayers();
     }
 
-    // Call invalidateSize if map is shown to prevent rendering bugs
-    if (showMap && mapRef.current) {
-      setTimeout(() => mapRef.current.invalidateSize(), 100);
+    // `invalidateSize` est differe de 100ms : le conteneur doit avoir fini
+    // sa mise en page. La garde ne peut donc pas etre evaluee avant le
+    // setTimeout — entre les deux, la vue a pu etre demontree et le
+    // cleanup a mis `mapRef.current` a null, ce qui levait
+    // « Cannot read properties of null (reading 'invalidateSize') ».
+    // On teste la ref DANS le callback, et on capture son etat de vie.
+    if (showMap) {
+      setTimeout(() => {
+        if (mapRef.current) {
+          mapRef.current.invalidateSize();
+        }
+      }, 100);
     }
 
     let bounds = [];
@@ -878,7 +887,13 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
           }, 200);
         });
         
-        markersGroupRef.current.addLayer(marker);
+        // Meme raison que pour `invalidateSize` : cet effet reagit a
+        // `filteredData` et peut donc tourner alors que la carte a deja
+        // ete detruite par le cleanup. On ne rajoute des marqueurs que
+        // si le groupe existe encore.
+        if (markersGroupRef.current) {
+          markersGroupRef.current.addLayer(marker);
+        }
         bounds.push([lat, lon]);
       }
     });
@@ -887,7 +902,11 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
       mapRef.current.fitBounds(bounds, { padding: [30, 30] });
     }
 
-  }, [filteredData, communesData]);
+  // `showMap` figure dans les dependances : la carte peut etre masquee
+    // puis reaffichee par l'utilisateur. Leaflet n'ecoute pas les
+    // changements de visibilite, il faut donc lui signaler le
+    // reaffichage pour qu'il recalcule la taille de ses tuiles.
+  }, [filteredData, communesData, showMap]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -1017,7 +1036,16 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
             id="annuaire-map" 
             className="annuaire-map-container"
             style={{ 
-              display: showMap ? 'block' : 'none'
+              // Le conteneur ne doit JAMAIS valoir zero hauteur : Leaflet
+              // mesure ses tuiles au montage, et sur un element masque
+              // (`display: none`) il releve 0x0 — la carte restait grise
+              // meme apres un `invalidateSize`. On le masque donc
+              // visuellement tout en le gardant dans le flux.
+              opacity: showMap ? 1 : 0,
+              height: showMap ? undefined : 0,
+              minHeight: showMap ? undefined : 0,
+              overflow: 'hidden',
+              transition: 'opacity 0.25s ease'
             }}
           ></div>
 

@@ -201,6 +201,13 @@ export default function Medicaments({ lang }) {
             </button>
           </form>
 
+          {/* ── Résultat du simulateur ──────────────────────────────────────────
+            Le reste à charge est le chiffre qui décide si l'assuré
+            peut encore payer : il occupe seul une ligne pleine, avec le
+            montant le plus grand de la page. La part CMU reste
+            secondaire. Auparavant les trois lignes se partageaient la
+            meme taille de police, ce qui rendait le resultat
+            immediat illisible. */}
           {calcResult && (
             <div style={{
               marginTop: '1.5rem',
@@ -213,17 +220,35 @@ export default function Medicaments({ lang }) {
               gap: '0.75rem',
               fontSize: '0.9rem'
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
-                <span>Montant Total :</span>
-                <strong>{calcResult.total.toLocaleString()} FCFA</strong>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem', flexWrap: 'wrap' }}>
+                <span style={{ color: 'var(--text-sub)' }}>Montant total</span>
+                <strong style={{ fontSize: '1.05rem', color: 'var(--text-main)' }}>{calcResult.total.toLocaleString()} FCFA</strong>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--success)', fontWeight: 'bold' }}>
-                <span>{t.calcShareCmu} ({calcResult.rate}%) :</span>
-                <span>{calcResult.cmuShare.toLocaleString()} FCFA</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                <span style={{ color: 'var(--success)', fontWeight: '600' }}>
+                  {t.calcShareCmu} ({calcResult.rate}%)
+                </span>
+                <strong style={{ color: 'var(--success)' }}>{calcResult.cmuShare.toLocaleString()} FCFA</strong>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--secondary)', fontWeight: 'bold' }}>
-                <span>{t.calcShareUser} :</span>
-                <span>{calcResult.userShare.toLocaleString()} FCFA</span>
+
+              {/* Reste à charge — mis en avant, avec son code couleur. */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                gap: '1rem',
+                flexWrap: 'wrap',
+                marginTop: '0.25rem',
+                padding: '0.9rem 1rem',
+                borderRadius: '10px',
+                background: 'rgba(245, 158, 11, 0.12)',
+                border: '1px solid rgba(245, 158, 11, 0.35)'
+              }}>
+                <span style={{ color: 'var(--text-main)', fontWeight: '700' }}>{t.calcShareUser}</span>
+                <strong style={{ fontSize: '1.45rem', color: '#f59e0b', letterSpacing: '-0.01em' }}>
+                  {calcResult.userShare.toLocaleString()}{' '}
+                  <span style={{ fontSize: '0.85rem', fontWeight: '600' }}>FCFA</span>
+                </strong>
               </div>
               
               {calcResult.rate === 80 && (
@@ -303,11 +328,33 @@ export default function Medicaments({ lang }) {
                       <td style={{ padding: '1rem 1.25rem', textAlign: 'left' }}>
                         <span style={{ fontSize: '0.8rem', color: 'var(--text-sub)', fontWeight: '500' }}>{item.category}</span>
                       </td>
-                      <td style={{ padding: '1rem 1.25rem', textAlign: 'left', fontWeight: 'bold' }}>
-                        {item.covered ? `${item.coverage_rate}%` : '0%'}
+                      {/* Le taux est l'information que l'on vient chercher :
+                          il porte donc la couleur, avec un gris lisible
+                          pour le 0% plutot qu'un vide. */}
+                      <td style={{ padding: '1rem 1.25rem', textAlign: 'left' }}>
+                        <span style={{
+                          display: 'inline-block',
+                          padding: '0.25rem 0.6rem',
+                          borderRadius: '8px',
+                          fontWeight: '800',
+                          fontSize: '0.9rem',
+                          color: item.covered ? '#10b981' : 'var(--text-muted)',
+                          background: item.covered ? 'rgba(16, 185, 129, 0.14)' : 'var(--bg-card-subtle)'
+                        }}>
+                          {item.covered ? `${item.coverage_rate}%` : '0%'}
+                        </span>
                       </td>
                       <td style={{ padding: '1rem 1.25rem', textAlign: 'right' }}>
-                        <span className={`badge ${item.covered ? 'badge-success' : 'badge-warning'}`} style={{ fontSize: '0.65rem' }}>
+                        <span style={{
+                          display: 'inline-block',
+                          padding: '0.3rem 0.75rem',
+                          borderRadius: '20px',
+                          fontSize: '0.75rem',
+                          fontWeight: '700',
+                          color: item.covered ? '#10b981' : '#f59e0b',
+                          background: item.covered ? 'rgba(16, 185, 129, 0.14)' : 'rgba(245, 158, 11, 0.14)',
+                          border: `1px solid ${item.covered ? 'rgba(16, 185, 129, 0.35)' : 'rgba(245, 158, 11, 0.35)'}`
+                        }}>
                           {item.covered ? t.statusCovered : t.statusUncovered}
                         </span>
                       </td>

@@ -448,7 +448,20 @@ h1, h2, h3, h4, h5, h6 { line-height: 1.25; }
   gap: 1.5rem;
 }
 
-.grid-2 { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+/* `grid-2` s'adapte a la LARGEUR DU CONTENEUR (`auto-fit`), pas au
+   viewport : c'est le bon principe, et c'est ce qui le distingue des
+   `col-lg-*` qui se declenchaient trop tot. On garde malgre tout une echelle
+   lisible : deux colonnes de 320px minimum demandent ~680px, largeur
+   atteinte des 768px de viewport. Entre 768 et 1600px de viewport la
+   sidebar (270px) + le padding (2rem) amputent la zone utile, et deux
+   colonnes deviennent trop etroites pour le simulateur comme pour le
+   tableau. On n impose donc le deux colonnes qu au-dela de 1600px, le
+   meme seuil que les vues sante. */
+.grid-2 { grid-template-columns: 1fr; }
+
+@media (min-width: 1600px) {
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+}
 .grid-3 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
 .grid-4 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
 
