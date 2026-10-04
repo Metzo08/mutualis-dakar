@@ -234,6 +234,38 @@
   .g-xl-5 { --bs-gutter-x: 3rem; --bs-gutter-y: 3rem; }
 }
 
+/* ── Point de rupture « xxl » (1600px) ─────────────────────────────────────────
+   La sidebar occupe 270px permanents dès 768px de viewport. La largeur utile
+   réelle est donc TOUJOURS inférieure d'environ 340px au viewport (270 de
+   sidebar + le padding 2rem de `.view-container`).
+
+   Conséquence : les grilles « contenu + colonne latérale » (8/4 et 5/7) ne
+   deviennent confortables qu'au-delà de 1600px de viewport. En dessous, le
+   `col-12` de secours les empile en pleine largeur, ce qui évite les titres
+   tronqués et les badges qui débordent.
+   ────────────────────────────────────────────────────────────────────────── */
+@media (min-width: 1600px) {
+  .col-xxl { flex: 1 0 0%; }
+  .col-xxl-auto { flex: 0 0 auto; width: auto; }
+  .col-xxl-1 { flex: 0 0 auto; width: 8.33333333%; }
+  .col-xxl-2 { flex: 0 0 auto; width: 16.66666667%; }
+  .col-xxl-3 { flex: 0 0 auto; width: 25%; }
+  .col-xxl-4 { flex: 0 0 auto; width: 33.33333333%; }
+  .col-xxl-5 { flex: 0 0 auto; width: 41.66666667%; }
+  .col-xxl-6 { flex: 0 0 auto; width: 50%; }
+  .col-xxl-7 { flex: 0 0 auto; width: 58.33333333%; }
+  .col-xxl-8 { flex: 0 0 auto; width: 66.66666667%; }
+  .col-xxl-9 { flex: 0 0 auto; width: 75%; }
+  .col-xxl-10 { flex: 0 0 auto; width: 83.33333333%; }
+  .col-xxl-11 { flex: 0 0 auto; width: 91.66666667%; }
+  .col-xxl-12 { flex: 0 0 auto; width: 100%; }
+  .g-xxl-0 { --bs-gutter-x: 0; --bs-gutter-y: 0; }
+  .g-xxl-2 { --bs-gutter-x: 0.5rem; --bs-gutter-y: 0.5rem; }
+  .g-xxl-3 { --bs-gutter-x: 1rem; --bs-gutter-y: 1rem; }
+  .g-xxl-4 { --bs-gutter-x: 1.5rem; --bs-gutter-y: 1.5rem; }
+  .g-xxl-5 { --bs-gutter-x: 3rem; --bs-gutter-y: 3rem; }
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    3. DISPLAY & FLEXBOX
    Sans ces règles, tous les `d-flex` de la plateforme restaient des blocs :

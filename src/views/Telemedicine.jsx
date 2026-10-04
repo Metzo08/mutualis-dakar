@@ -2192,7 +2192,7 @@ export default function Telemedicine({
         {/* 2. CONTENU DU HUB PHARMACIEN — Téléconsultation */}
         <div className="row g-4 mb-4">
           {/* Panneau d'information des droits RBAC */}
-          <div className="col-lg-5">
+          <div className="col-xxl-5 col-12">
             <div className="p-4 rounded-4 h-100 position-relative overflow-hidden" style={{
               background: 'linear-gradient(145deg, var(--bg-card) 0%, var(--bg-card-subtle) 100%)',
               border: '1.5px solid rgba(16, 185, 129, 0.35)',
@@ -2257,9 +2257,9 @@ export default function Telemedicine({
           </div>
 
           {/* RACCOURCIS PHARMACIE */}
-          <div className="col-lg-7">
+          <div className="col-xxl-7 col-12">
             <div className="row g-3">
-              <div className="col-md-6">
+              <div className="col-xl-6 col-12">
                 <div 
                   className="p-4 rounded-4 h-100 cursor-pointer transition-all position-relative overflow-hidden hover-lift" 
                   style={{ 
@@ -2287,7 +2287,7 @@ export default function Telemedicine({
                 </div>
               </div>
 
-              <div className="col-md-6">
+              <div className="col-xl-6 col-12">
                 <div 
                   className="p-4 rounded-4 h-100 cursor-pointer transition-all position-relative overflow-hidden hover-lift" 
                   style={{ 
@@ -2314,7 +2314,7 @@ export default function Telemedicine({
                 </div>
               </div>
 
-              <div className="col-md-6">
+              <div className="col-xl-6 col-12">
                 <div 
                   className="p-4 rounded-4 h-100 cursor-pointer transition-all position-relative overflow-hidden hover-lift" 
                   style={{ 
@@ -2341,7 +2341,7 @@ export default function Telemedicine({
                 </div>
               </div>
 
-              <div className="col-md-6">
+              <div className="col-xl-6 col-12">
                 <div 
                   className="p-4 rounded-4 h-100 cursor-pointer transition-all position-relative overflow-hidden hover-lift" 
                   style={{ 
@@ -2681,7 +2681,7 @@ export default function Telemedicine({
 
         {/* 4 KPIs Praticien du Jour */}
         <div className="row g-3 mb-4">
-          <div className="col-6 col-lg-3">
+          <div className="col-6 col-xl-3 col-lg-6">
             <div style={{ background: '#0b1120', border: '1.5px solid #10b981', borderRadius: '18px', padding: '1.25rem', color: '#ffffff', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}>
               <div className="d-flex justify-content-between align-items-center mb-1">
                 <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: '700' }}>Patients en attente</span>
@@ -2692,7 +2692,7 @@ export default function Telemedicine({
             </div>
           </div>
 
-          <div className="col-6 col-lg-3">
+          <div className="col-6 col-xl-3 col-lg-6">
             <div style={{ background: '#0b1120', border: '1.5px solid #1e293b', borderRadius: '18px', padding: '1.25rem', color: '#ffffff', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}>
               <div className="d-flex justify-content-between align-items-center mb-1">
                 <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: '700' }}>Temps moyen</span>
@@ -2703,7 +2703,7 @@ export default function Telemedicine({
             </div>
           </div>
 
-          <div className="col-6 col-lg-3">
+          <div className="col-6 col-xl-3 col-lg-6">
             <div style={{ background: '#0b1120', border: '1.5px solid #1e293b', borderRadius: '18px', padding: '1.25rem', color: '#ffffff', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}>
               <div className="d-flex justify-content-between align-items-center mb-1">
                 <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: '700' }}>Actes Réalisés</span>
@@ -2714,7 +2714,7 @@ export default function Telemedicine({
             </div>
           </div>
 
-          <div className="col-6 col-lg-3">
+          <div className="col-6 col-xl-3 col-lg-6">
             <div style={{ background: '#0b1120', border: '1.5px solid #1e293b', borderRadius: '18px', padding: '1.25rem', color: '#ffffff', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}>
               <div className="d-flex justify-content-between align-items-center mb-1">
                 <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: '700' }}>Honoraires Tiers-Payant</span>
@@ -3168,7 +3168,7 @@ export default function Telemedicine({
         {/* Top Hero Banner Assuré */}
         <div className="p-4 p-md-5 rounded-4 mb-5 text-white" style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.4) 0%, rgba(16, 185, 129, 0.2) 100%), url("/csu_digital_health_real.jpg") center/cover no-repeat', padding: '3.5rem 2.5rem', minHeight: '230px', borderRadius: '24px', border: '1px solid rgba(255, 255, 255, 0.45)', boxShadow: '0 14px 40px rgba(0, 0, 0, 0.25)' }}>
           <div className="row align-items-center g-4">
-            <div className="col-lg-8">
+            <div className="col-xxl-8 col-12">
               <span style={{ background: 'rgba(255, 255, 255, 0.25)', color: '#ffffff', padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '700', display: 'inline-block', marginBottom: '0.85rem', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.4)' }}>
                 🇸🇳 SALLE D'ATTENTE VIRTUELLE UNAMUSC
               </span>
@@ -3188,7 +3188,7 @@ export default function Telemedicine({
               </button>
             </div>
 
-            <div className="col-lg-4">
+            <div className="col-xxl-4 col-12">
               <div className="p-4 rounded-4" style={{ background: 'rgba(255, 255, 255, 0.22)', border: '1px solid rgba(255, 255, 255, 0.45)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)', backdropFilter: 'blur(10px)' }}>
                 <div className="d-flex align-items-center justify-content-between gap-2 mb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: '0.6rem' }}>
                   <span className="fw-bold text-white" style={{ fontSize: '0.92rem' }}>
@@ -3216,7 +3216,7 @@ export default function Telemedicine({
 
         {/* Grille des Médecins Agréés Disponibles */}
         <div className="row g-4 mb-4">
-          <div className="col-lg-8">
+          <div className="col-xxl-8 col-12">
             <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
               <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>
                 👨‍⚕️ Choisissez votre Praticien Agréé
@@ -3258,9 +3258,16 @@ export default function Telemedicine({
               </div>
             </div>
 
+            {/* `col-lg-6` et non `col-md-6` : le seuil `md` (768px)
+                déclenchait 2 colonnes alors que la zone de contenu, amputée
+                de la sidebar, ne mesurait qu'environ 500px. Chaque carte
+                tombait a~240px et le bouton "Entrer en salle d'attente"
+                se coupait en deux lignes. `lg` (992px) reserve 2 colonnes
+                au moment ou la place est reellement disponible ; en dessous,
+                les cartes passent pleine largeur. */}
             <div className="row g-3">
               {filteredDoctors.map((doc) => (
-                <div key={doc.id} className="col-md-6">
+                <div key={doc.id} className="col-lg-6">
                   <div className="p-3.5 rounded-4 d-flex flex-column justify-content-between" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
                     <div>
                       <div className="d-flex gap-3 align-items-center mb-3">
@@ -3306,8 +3313,12 @@ export default function Telemedicine({
             </div>
           </div>
 
-          {/* Sidebar Droite Assuré */}
-          <div className="col-lg-4">
+          {/* Sidebar Droite Assuré — `col-xxl-4 col-12` pour rester alignée avec
+              la colonne `col-xxl-8` ci-dessus. Avec `col-lg-4` seul, la
+              sidebar se retrouvait sur une seule ligne alors que la liste
+              des médecins occupait déjà deux lignes, décalant tout le
+              contenu vers le bas. */}
+          <div className="col-xxl-4 col-12">
             <div className="d-flex flex-column gap-4">
               
               {/* Ordonnances */}
@@ -4254,16 +4265,17 @@ export default function Telemedicine({
                 </span>
                 <button
                   type="button"
+                  title="Quitter la salle de téléconsultation"
+                  aria-label="Quitter la salle de téléconsultation"
                   style={{
-                    background: '#dc2626',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '8px',
-                    padding: '0.40rem 0.8rem',
+                    background: 'rgba(220,38,38,0.12)',
+                    color: '#fca5a5',
+                    border: '1.5px solid rgba(220,38,38,0.45)',
+                    borderRadius: '10px',
+                    padding: '0.45rem 0.9rem',
                     fontWeight: '800',
-                    fontSize: '0.75rem',
-                    cursor: 'pointer',
-                    boxShadow: '0 4px 12px rgba(220,38,38,0.40)'
+                    fontSize: '0.78rem',
+                    cursor: 'pointer'
                   }}
                   onClick={() => {
                     stopCamera();
@@ -4280,7 +4292,7 @@ export default function Telemedicine({
             <div className="webrtc-body-container" style={{ flex: 1, display: 'flex', minHeight: 0, flexWrap: 'wrap', overflowY: 'auto' }}>
 
               {/* ── SCÈNE PRINCIPALE VIDÉO ── */}
-              <section className="webrtc-video-section" style={{ flex: '1 1 460px', position: 'relative', minHeight: '360px', overflow: 'hidden', background: '#040d1a', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              <section className="webrtc-video-section" style={{ flex: '1 1 460px', position: 'relative', minHeight: '360px', overflow: 'hidden', background: 'linear-gradient(180deg, #0f172a 0%, #0b1220 100%)', borderRadius: '18px', margin: '0.75rem', border: '1px solid #1f2a3d', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
 
                 {/* 1. VIDÉO RÉELLE DISTANTE dès que la liaison P2P bidirectionnelle est établie */}
                 <video
@@ -4750,163 +4762,172 @@ export default function Telemedicine({
             </div>
 
             {/* ═══ DOCK DE CONTRÔLE — outils propres à CHAQUE espace ═══ */}
-            <footer style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: '0.9rem', padding: '0.7rem 1rem 0.6rem', background: 'linear-gradient(180deg, #0b0f17 0%, #0e1523 100%)', borderTop: '1px solid #1b2433', flexWrap: 'wrap' }}>
-
+{/* ═══ DOCK DE CONTRÔLE — barre doxy.me ═══
+                Une seule grammaire visuelle : boutons ronds, neutres par défaut,
+                rouge quand l'action est coupée, infobulle au survol (title) et
+                aria-label pour les lecteurs d'écran. Plus de libellés empilés sous
+                chaque bouton qui surchargeaient la barre. */}
+            <footer
+              style={{
+                display: 'flex', justifyContent: 'center', alignItems: 'center',
+                gap: '0.6rem', flexWrap: 'wrap',
+                padding: '0.9rem 1rem',
+                background: '#0b1220',
+                borderTop: '1px solid #1f2a3d'
+              }}
+            >
               {/* Micro */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                <button
-                  type="button"
-                  title={isMuted ? 'Réactiver le microphone' : 'Couper le microphone'}
-                  onClick={toggleMute}
-                  style={{
-                    width: '48px', height: '48px', borderRadius: '50%',
-                    background: isMuted ? '#dc2626' : '#059669',
-                    color: '#ffffff',
-                    border: isMuted ? '2px solid #ef4444' : '2px solid #10b981',
-                    fontSize: '1.15rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: isMuted ? '0 4px 14px rgba(220,38,38,0.45)' : '0 4px 14px rgba(5,150,105,0.45)',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  {isMuted ? '🔇' : '🎙️'}
-                </button>
-                <span style={{ fontSize: '0.64rem', color: '#94a3b8', fontWeight: '700' }}>
-                  {isMuted ? 'Réactiver micro' : 'Couper micro'}
-                </span>
-              </div>
+              <button
+                type="button"
+                title={isMuted ? 'Réactiver le microphone' : 'Couper le microphone'}
+                aria-label={isMuted ? 'Réactiver le microphone' : 'Couper le microphone'}
+                onClick={toggleMute}
+                style={{
+                  width: '56px', height: '56px', borderRadius: '50%',
+                  background: isMuted ? '#dc2626' : '#1e293b',
+                  color: '#ffffff',
+                  border: isMuted ? '2px solid #ef4444' : '2px solid #334155',
+                  fontSize: '1.25rem', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: isMuted ? '0 6px 18px rgba(220,38,38,0.4)' : '0 6px 18px rgba(2,6,23,0.6)',
+                  flexShrink: 0
+                }}
+              >
+                {isMuted ? '🔇' : '🎙️'}
+              </button>
 
               {/* Caméra */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+              <button
+                type="button"
+                title={isCamOff ? 'Rallumer la caméra' : 'Couper la caméra'}
+                aria-label={isCamOff ? 'Rallumer la caméra' : 'Couper la caméra'}
+                onClick={toggleCamera}
+                style={{
+                  width: '56px', height: '56px', borderRadius: '50%',
+                  background: isCamOff ? '#dc2626' : '#1e293b',
+                  color: '#ffffff',
+                  border: isCamOff ? '2px solid #ef4444' : '2px solid #334155',
+                  fontSize: '1.25rem', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: isCamOff ? '0 6px 18px rgba(220,38,38,0.4)' : '0 6px 18px rgba(2,6,23,0.6)',
+                  flexShrink: 0
+                }}
+              >
+                {isCamOff ? '🚫' : '📹'}
+              </button>
+{/* Voix du praticien — côté ASSURÉ uniquement */}
+              {!isDoctorSide && (
                 <button
                   type="button"
-                  title={isCamOff ? 'Rallumer la caméra' : 'Couper la caméra'}
-                  onClick={toggleCamera}
+                  title={voiceEnabled ? 'Couper la voix du praticien' : 'Réactiver la voix du praticien'}
+                  aria-label={voiceEnabled ? 'Couper la voix du praticien' : 'Réactiver la voix du praticien'}
+                  onClick={() => {
+                    const next = !voiceEnabled;
+                    setVoiceEnabled(next);
+                    if (!next && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+                  }}
                   style={{
-                    width: '48px', height: '48px', borderRadius: '50%',
-                    background: isCamOff ? '#dc2626' : '#0284c7',
-                    color: '#ffffff',
-                    border: isCamOff ? '2px solid #ef4444' : '2px solid #38bdf8',
-                    fontSize: '1.15rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: isCamOff ? '0 4px 14px rgba(220,38,38,0.45)' : '0 4px 14px rgba(2,132,199,0.45)',
-                    transition: 'all 0.2s ease'
+                    width: '56px', height: '56px', borderRadius: '50%',
+                    background: voiceEnabled ? '#1e293b' : '#0f172a',
+                    color: voiceEnabled ? '#34d399' : '#64748b',
+                    border: '2px solid #334155',
+                    fontSize: '1.25rem', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: '0 6px 18px rgba(2,6,23,0.6)',
+                    flexShrink: 0
                   }}
                 >
-                  {isCamOff ? '🚫' : '📹'}
+                  {voiceEnabled ? '🔊' : '🔇'}
                 </button>
-                <span style={{ fontSize: '0.64rem', color: '#94a3b8', fontWeight: '700' }}>
-                  {isCamOff ? 'Rallumer caméra' : 'Couper caméra'}
-                </span>
-              </div>
-
-              {/* Voix du praticien — côté ASSURÉ uniquement */}
-              {!isDoctorSide && (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                  <button
-                    type="button"
-                    title={voiceEnabled ? 'Couper la voix du praticien' : 'Réactiver la voix du praticien'}
-                    onClick={() => {
-                      const next = !voiceEnabled;
-                      setVoiceEnabled(next);
-                      if (!next && 'speechSynthesis' in window) window.speechSynthesis.cancel();
-                    }}
-                    style={{
-                      width: '48px', height: '48px', borderRadius: '50%',
-                      background: voiceEnabled ? '#1e293b' : '#334155',
-                      color: voiceEnabled ? '#34d399' : '#94a3b8',
-                      border: voiceEnabled ? '2px solid #10b981' : '2px solid #475569',
-                      fontSize: '1.15rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    {voiceEnabled ? '🔊' : '🔇'}
-                  </button>
-                  <span style={{ fontSize: '0.64rem', color: '#94a3b8', fontWeight: '700' }}>
-                    {voiceEnabled ? 'Voix Dr active' : 'Voix Dr muette'}
-                  </span>
-                </div>
               )}
-
-              <span style={{ width: '1px', height: '38px', background: '#1e293b', alignSelf: 'center' }} />
 
               {/* Actions cliniques — côté PRATICIEN uniquement */}
               {isDoctorSide && (
                 <>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                    <button
-                      type="button"
-                      title="Émettre l'ordonnance et le bon de prise en charge 50%"
-                      onClick={() => {
-                        handleDownloadPrescription();
-                        setPrescriptionDelivered(true);
-                      }}
-                      style={{
-                        background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)',
-                        color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.65rem 1.05rem',
-                        fontWeight: '800', fontSize: '0.78rem', cursor: 'pointer', display: 'inline-flex',
-                        alignItems: 'center', gap: '6px', boxShadow: '0 4px 14px rgba(16,185,129,0.4)'
-                      }}
-                    >
-                      💊 Émettre Ordonnance &amp; Bon 50%
-                    </button>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                    <button
-                      type="button"
-                      title="Établir le certificat médical officiel"
-                      onClick={() => {
-                        handleDownloadCertificate();
-                        setCertificateDelivered(true);
-                      }}
-                      style={{
-                        background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-                        color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.65rem 1.05rem',
-                        fontWeight: '800', fontSize: '0.78rem', cursor: 'pointer', display: 'inline-flex',
-                        alignItems: 'center', gap: '6px', boxShadow: '0 4px 14px rgba(2,132,199,0.4)'
-                      }}
-                    >
-                      📄 Certificat Médical
-                    </button>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                    <button
-                      type="button"
-                      title="Établir une demande d'examens complémentaires (labo / imagerie)"
-                      onClick={handleDownloadLabOrder}
-                      style={{
-                        background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
-                        color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.65rem 1.05rem',
-                        fontWeight: '800', fontSize: '0.78rem', cursor: 'pointer', display: 'inline-flex',
-                        alignItems: 'center', gap: '6px', boxShadow: '0 4px 14px rgba(124,58,237,0.4)'
-                      }}
-                    >
-                      🧪 Demande d'Examens
-                    </button>
-                  </div>
-                  <span style={{ width: '1px', height: '38px', background: '#1e293b', alignSelf: 'center' }} />
+                  <span style={{ width: '1px', height: '34px', background: '#1f2a3d', margin: '0 0.35rem', flexShrink: 0 }} />
+
+                  <button
+                    type="button"
+                    title="Émettre l'ordonnance et le bon de prise en charge 50%"
+                    aria-label="Émettre l'ordonnance et le bon de prise en charge 50%"
+                    onClick={() => {
+                      handleDownloadPrescription();
+                      setPrescriptionDelivered(true);
+                    }}
+                    style={{
+                      width: '56px', height: '56px', borderRadius: '50%',
+                      background: '#1e293b', color: '#10b981', border: '2px solid #334155',
+                      fontSize: '1.25rem', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      boxShadow: '0 6px 18px rgba(2,6,23,0.6)',
+                      flexShrink: 0
+                    }}
+                  >
+                    💊
+                  </button>
+
+                  <button
+                    type="button"
+                    title="Établir le certificat médical officiel"
+                    aria-label="Établir le certificat médical officiel"
+                    onClick={() => {
+                      handleDownloadCertificate();
+                      setCertificateDelivered(true);
+                    }}
+                    style={{
+                      width: '56px', height: '56px', borderRadius: '50%',
+                      background: '#1e293b', color: '#38bdf8', border: '2px solid #334155',
+                      fontSize: '1.25rem', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      boxShadow: '0 6px 18px rgba(2,6,23,0.6)',
+                      flexShrink: 0
+                    }}
+                  >
+                    📄
+                  </button>
+
+                  <button
+                    type="button"
+                    title="Établir une demande d'examens complémentaires (labo / imagerie)"
+                    aria-label="Établir une demande d'examens complémentaires"
+                    onClick={handleDownloadLabOrder}
+                    style={{
+                      width: '56px', height: '56px', borderRadius: '50%',
+                      background: '#1e293b', color: '#c084fc', border: '2px solid #334155',
+                      fontSize: '1.25rem', cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      boxShadow: '0 6px 18px rgba(2,6,23,0.6)',
+                      flexShrink: 0
+                    }}
+                  >
+                    🧪
+                  </button>
                 </>
               )}
 
-              {/* Raccrocher */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-                <button
-                  type="button"
-                  title="Terminer la téléconsultation"
-                  onClick={() => {
-                    stopCamera();
-                    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
-                    setActiveModal(null);
-                  }}
-                  style={{
-                    background: '#dc2626',
-                    color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.65rem 1.2rem',
-                    fontWeight: '800', fontSize: '0.78rem', cursor: 'pointer', display: 'inline-flex',
-                    alignItems: 'center', gap: '6px', boxShadow: '0 4px 16px rgba(220,38,38,0.5)'
-                  }}
-                >
-                  📴 {isDoctorSide ? 'Terminer la consultation' : 'Raccrocher'}
-                </button>
-              </div>
+              <span style={{ width: '1px', height: '34px', background: '#1f2a3d', margin: '0 0.35rem', flexShrink: 0 }} />
 
+              {/* Raccrocher */}
+              <button
+                type="button"
+                title="Terminer la téléconsultation"
+                aria-label="Terminer la téléconsultation"
+                onClick={() => {
+                  stopCamera();
+                  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+                  setActiveModal(null);
+                }}
+                style={{
+                  width: '60px', height: '60px', borderRadius: '50%',
+                  background: '#dc2626', color: '#ffffff', border: 'none',
+                  fontSize: '1.35rem', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 8px 24px rgba(220,38,38,0.45)',
+                  flexShrink: 0
+                }}
+              >
+                📴
+              </button>
             </footer>
 
           </div>

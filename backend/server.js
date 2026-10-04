@@ -1,5 +1,8 @@
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
+const XLSX = require('xlsx');
 const { query, pool } = require('./db');
 const fallbackStore = require('./fallbackStore');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
@@ -18,6 +21,65 @@ const { router: advancedRoutes, awardPoints } = require('./advancedRoutes');
 const extendedRoutes = require('./extendedRoutes');
 const kadevRoutes = require('./kadevRoutes');
 const clinicalRoutes = require('./clinicalRoutes');
+const {
+  loadRecordsForCodes,
+  planRepair,
+  applyRepair,
+  formatReport,
+  clean,
+} = require('./photo-repair.cjs');
+
+/**
+ * Sources de photos déclarées côté serveur.
+ *
+ * Deux raisons de figer ces chemins ici plutôt que de les accepter tels quels :
+ *  1. SÉCURITÉ — un agent authentifié ne doit pas pouvoir faire lire un
+ *     dossier arbitraire du disque serveur (C:\, le dossier utilisateur, …).
+ *  2. SÉPARATION DES SOURCES — chaque source a SON classeur, donc SON
+ *     périmètre de codes. Une réparation porte sur une source et une seule :
+ *     les codes des trois sources étant disjoints, la Ville de Dakar ne peut
+ *     pas être affectée par une réparation ASS LONASE.
+ *
+ * Chemins surchargeables par variable d'environnement (déploiement).
+ */
+const PHOTO_SOURCE_DIRS = {
+  'ASS-LONASE': process.env.PHOTOS_ASS_LONASE_DIR
+    || 'C:\\Users\\hp\\Downloads\\ASS LONASE',
+  'VILLE-DE-DAKAR': process.env.PHOTOS_VILLE_DE_DAKAR_DIR
+    || 'C:\\Users\\hp\\Downloads\\Photos ville de Dakar',
+};
+
+/** Classeur (codes DE SOURCE) correspondant à chaque source de photos. */
+const PHOTO_SOURCE_FILES = {
+  'ASS-LONASE': process.env.SOURCE_ASS_LONASE_XLSX
+    || 'C:\\Users\\hp\\Downloads\\ASS LONASE.xlsx',
+  'VILLE-DE-DAKAR': process.env.SOURCE_VILLE_DE_DAKAR_XLSX
+    || 'C:\\Users\\hp\\Downloads\\AMEVI.xlsx',
+};
+
+/**
+ * Codes bénéficiaires d'une source, lus dans SON classeur.
+ *
+ * C'est la définition du périmètre : une fiche hors de cet ensemble ne sera
+ * jamais modifiée par la réparation de cette source.
+ *
+ * @param {string} source — clé de PHOTO_SOURCE_FILES
+ * @returns {Set<string>} codes en majuscules
+ */
+const readSourceCodes = (source) => {
+  const file = PHOTO_SOURCE_FILES[source];
+  if (!file || !fs.existsSync(file)) {
+    throw new Error(`Classeur introuvable pour la source ${source} : ${file || '(non configuré)'}`);
+  }
+  const wb = XLSX.readFile(file, { cellDates: true });
+  const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' });
+  const codes = rows
+    .map((r) => clean(r.CODE_BENEFICIAIRE).toUpperCase())
+    .filter(Boolean);
+  if (codes.length === 0) throw new Error(`Aucun CODE_BENEFICIAIRE dans ${file}.`);
+  return new Set(codes);
+};
+
 const {
   citizenLoginSchema,
   agentLoginSchema,
@@ -1403,8 +1465,38 @@ const whereSqlBase = whereSql + ' AND b.merged_into IS NULL';
     const total = parseInt(countRes.rows[0].count || '0', 10);
 
     // Requête paginée
-    const dataSql = `SELECT b.* FROM beneficiaries b${whereSqlBase} ORDER BY b.id DESC LIMIT $${paramIdx} OFFSET $${paramIdx + 1}`;
-    const bRes = await query(dataSql, [...params, limit, offset]);
+    //
+    // ⚠️ `photo_url` est EXCLU de la liste, volontairement. Il contient la photo
+    // en base64 (≈ 15 Ko par fiche) : sur 200 fiches d'une page, la réponse
+    // dépassait 3 Mo et le studio ne pouvait plus rien écrire dans le
+    // localStorage (plafond ≈ 5 Mo). Symptôme : les cartes s'affichaient puis
+    // disparaissaient au rechargement — « 142 dossier(s) affichés mais NON
+    // enregistrés ».
+    //
+    // La photo est désormais servie à la demande par
+    // `GET /api/beneficiaries/:id/photo` : la liste reste légère, le studio
+    // écrit son registre, l'image se charge à l'affichage de la carte.
+    const listeSql = `SELECT b.id, b.cmu_number, b.source_code, b.numero_adherent,
+                             b.first_name, b.last_name, b.nin, b.birth_date, b.birth_place,
+                             b.gender, b.phone, b.email, b.address, b.blood_group,
+                             b.mutuelle_name, b.department, b.msd_code, b.package_type,
+                             b.payment_method, b.status, b.created_at, b.sponsor_phone,
+                             b.sponsor_logo, b.school_name, b.student_type, b.school_class,
+                             b.academic_year, b.ine, b.ia_ief, b.tutor_name, b.tutor_phone,
+                             b.lot_code, b.merged_into
+                        FROM beneficiaries b${whereSqlBase}
+                        ORDER BY b.id DESC LIMIT $${paramIdx} OFFSET $${paramIdx + 1}`;
+    const bRes = await query(listeSql, [...params, limit, offset]);
+
+    // La photo est signalée par un indicateur, pas par son contenu.
+    const avecPhoto = new Set(bRes.rows.length
+      ? (await query(
+        `SELECT id FROM beneficiaries
+          WHERE id = ANY($1::int[])
+            AND photo_url IS NOT NULL AND photo_url <> ''`,
+        [bRes.rows.map((b) => b.id)]
+      )).rows.map((r) => r.id)
+      : []);
 
     // Récupère les family_members uniquement pour les bénéficiaires de la page courante
     let familyMap = new Map();
@@ -1474,7 +1566,11 @@ const whereSqlBase = whereSql + ' AND b.merged_into IS NULL';
         cmuNumber: b.cmu_number,
         status: b.status,
         createdAt: b.created_at,
-        photoUrl: b.photo_url,
+        // La photo n'est PAS envoyée ici : elle est servie à la demande par
+        // `/api/beneficiaries/:id/photo`. On n'expose qu'une URL et un
+        // indicateur, ce qui rend la liste légère (voir commentaire plus haut).
+        photoUrl: avecPhoto.has(b.id) ? `/api/beneficiaries/${b.id}/photo` : null,
+        hasPhoto: avecPhoto.has(b.id),
         sponsorPhone: b.sponsor_phone,
         sponsorLogo: b.sponsor_logo,
         // Dossier scolaire (CMU-Élèves / CMU-Daara)
@@ -1745,6 +1841,56 @@ app.delete('/api/beneficiaries/:id', authenticateToken, async (req, res) => {
   } catch (err) {
     console.error('Erreur lors de la suppression du bénéficiaire :', err);
     res.status(500).json({ error: 'Erreur interne du serveur' });
+  }
+});
+
+/**
+ * Photo d'un bénéficiaire, servie À LA DEMANDE.
+ *
+ * La liste (`GET /api/beneficiaries`) n'embarque plus le base64 : elle ne
+ * renvoie qu'une URL. C'est cette route qui fournit l'image, au moment où la
+ * carte est affichée. Une page de 200 fiches pèse alors quelques kilo-octets
+ * au lieu de plusieurs mégaoctets, et le studio peut enfin écrire son registre
+ * dans le localStorage.
+ *
+ * Le cloisonnement par MSD s'applique comme sur la liste : un agent ne peut
+ * voir que la photo d'un dossier de SA MSD.
+ */
+app.get('/api/beneficiaries/:id/photo', authenticateToken, requireRole('agent', 'admin'), async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (!Number.isInteger(id) || id < 1) return res.status(400).json({ error: 'Identifiant invalide.' });
+
+    let where = 'id = $1 AND merged_into IS NULL';
+    const params = [id];
+
+    // Mêmes règles de cloisonnement que la liste : Super Admin voit tout, un
+    // agent de MSD ne voit que sa MSD.
+    if (req.user && req.user.role !== 'Super Admin' && req.user.msdCode) {
+      params.push(req.user.msdCode);
+      where += ` AND msd_code = $${params.length}`;
+    }
+
+    const r = await query(
+      `SELECT photo_url FROM beneficiaries WHERE ${where}`,
+      params
+    );
+    const photo = r.rows[0] && r.rows[0].photo_url;
+    if (!photo) return res.status(404).json({ error: 'Aucune photo pour ce dossier.' });
+
+    // Valeur déjà en base64 : on la renvoie telle quelle.
+    if (photo.startsWith('data:')) {
+      const [, mime = 'image/jpeg'] = photo.match(/^data:([^;]+)/) || [];
+      res.set('Content-Type', mime);
+      res.set('Cache-Control', 'private, max-age=86400');
+      return res.send(Buffer.from(photo.split(',')[1] || '', 'base64'));
+    }
+    // Chemin ou URL : le navigateur ira le chercher lui-même.
+    res.set('Cache-Control', 'private, max-age=3600');
+    return res.json({ photoUrl: photo });
+  } catch (err) {
+    console.error('[Photo] lecture impossible :', err.message);
+    res.status(500).json({ error: 'Photo indisponible.' });
   }
 });
 
@@ -2308,6 +2454,101 @@ app.post('/api/beneficiaries/bulk', async (req, res) => {
       total: rows.length,
       message: 'Base indisponible : les bénéficiaires sont conservés dans le fichier secours (backend/data/store.json) et seront rejoués automatiquement.'
     });
+  }
+});
+
+// ── Réparation des photos, limitée à UNE source ─────────────────────────────
+//
+// Pourquoi cette route existe : le navigateur ne peut pas relire seul un
+// dossier du disque (« C:\Users\hp\Downloads\ASS LONASE ») sans que l'agent le
+// resélectionne à chaque import. Les fiches sont alors en base sans photo,
+// alors que les fichiers attendent sur le disque.
+//
+// Elle ne fait qu'un UPDATE de photo_url sur les fiches dont le code figure
+// dans le classeur de la source visée : aucune suppression, aucun
+// ré-import, aucun matricule régénéré. Les codes des sources étant
+// disjoints, la Ville de Dakar ne peut pas être affectée par une
+// réparation ASS LONASE.
+//
+// `dryRun` (défaut : true) renvoie le plan d'appariement complet sans rien
+// écrire : c'est le mode à utiliser pour contrôler avant d'appliquer.
+app.post('/api/photos/repair', authenticateToken, requireRole('admin'), async (req, res) => {
+  const { source, photoDir, dryRun } = req.body || {};
+  const code = clean(source || '').toUpperCase();
+  const dir = String(photoDir || '').trim();
+
+  if (!code) return res.status(400).json({ error: 'Source manquante.' });
+  if (!dir) return res.status(400).json({ error: 'Dossier de photos manquant.' });
+
+  // Liste blanche : le chemin doit être l'un de ceux déclarés côté serveur.
+  // Un agent ne doit pas pouvoir faire lire un dossier arbitraire du disque.
+  const dirReel = path.resolve(dir);
+  if (!PHOTO_SOURCE_DIRS[code]) {
+    return res.status(400).json({
+      error: `Source inconnue. Sources autorisées : ${Object.keys(PHOTO_SOURCE_DIRS).join(', ')}.`,
+    });
+  }
+  if (dirReel.toLowerCase() !== path.resolve(PHOTO_SOURCE_DIRS[code]).toLowerCase()) {
+    return res.status(400).json({
+      error: `Dossier refusé pour « ${code} ». Attendu : ${PHOTO_SOURCE_DIRS[code]}.`,
+    });
+  }
+  if (!fs.existsSync(dirReel)) {
+    return res.status(400).json({ error: `Dossier introuvable : ${dirReel}.` });
+  }
+
+  try {
+    const codeSet = readSourceCodes(code);
+    const records = await loadRecordsForCodes(pool, codeSet);
+    const { plan, sansPhoto, unused, stats } = planRepair({
+      photoDir: dirReel,
+      codeSet,
+      records,
+    });
+
+    if (dryRun !== false) {
+      return res.json({
+        success: true,
+        dryRun: true,
+        source: code,
+        stats,
+        appariements: plan.map((p) => ({
+          code: p.record.code,
+          nom: `${p.record.prenom} ${p.record.nom}`,
+          fichier: p.file,
+          regle: p.rule,
+          action: p.overwrite ? 'ecrire' : 'deja-pourvue',
+        })),
+        sansPhoto: sansPhoto.map((r) => ({
+          code: r.code,
+          nom: `${r.prenom} ${r.nom}`,
+          naissance: r.birthDate || null,
+        })),
+        fichiersNonUtilises: unused,
+        rapport: formatReport({ source: code, photoDir: dirReel, codeSet, plan, sansPhoto, unused, stats }),
+      });
+    }
+
+    const result = await applyRepair({ db: pool, plan, dryRun: false });
+    await query(
+      `INSERT INTO audit_logs (action, actor, details) VALUES ($1, $2, $3)`,
+      ['REPARATION_PHOTOS', req.user && req.user.username ? req.user.username : 'admin',
+        `Source ${code} : ${result.ecrits} photo(s) attachée(s), ${stats.sansPhoto} fiche(s) sans photo, ${unused.length} fichier(s) non utilisé(s).`]
+    );
+    return res.json({
+      success: true,
+      dryRun: false,
+      source: code,
+      stats,
+      ecrits: result.ecrits,
+      ignores: result.ignores,
+      octets: result.octets,
+      sansPhoto: sansPhoto.map((r) => ({ code: r.code, nom: `${r.prenom} ${r.nom}` })),
+      fichiersNonUtilises: unused,
+    });
+  } catch (err) {
+    console.error('[Photos] réparation impossible :', err);
+    return res.status(500).json({ error: err.message });
   }
 });
 

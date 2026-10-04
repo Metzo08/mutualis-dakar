@@ -272,6 +272,9 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
   const [letters, setLetters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('list'); // 'list' | 'new'
+  
+  // 🎯 WIZARD MULTI-ÉTAPES pour création de Lettre de Garantie
+  const [wizardStep, setWizardStep] = useState(1); // 1: Patient Info | 2: Acte & Montant | 3: Révision
 
   // Formulaire de demande (Assuré ou Structure Sanitaire Conventionnée)
   const [applicantFirstName, setApplicantFirstName] = useState(activeFirstName);
@@ -1590,99 +1593,178 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
   return (
     <div className="container py-4 fade-in-up">
-      {/* Banner signature de la plateforme */}
+      <style>{`
+        @keyframes pulse-icon {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.7; transform: scale(0.95); }
+        }
+        @keyframes float-bubble {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-8px); }
+        }
+        .hero-icon-animated {
+          animation: pulse-icon 2s ease-in-out infinite;
+        }
+        .hover-lift:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 12px 32px rgba(5, 150, 105, 0.5) !important;
+        }
+      `}</style>
+
+      {/* 🎨 BANNER HERO MODERNISÉ - Lettres de Garantie */}
       <section 
-        className="banner-mini text-white mb-5 rounded-4 overflow-hidden position-relative text-center"
+        className="position-relative overflow-hidden mb-5"
         style={{
-          background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.38) 0%, rgba(16, 185, 129, 0.18) 100%), url("/csu_bsf_real.png") center/cover no-repeat',
-          padding: '3.75rem 2.5rem',
-          minHeight: '240px',
+          background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.95) 0%, rgba(16, 185, 129, 0.88) 50%, rgba(34, 197, 94, 0.92) 100%), url("/csu_bsf_real.png") center/cover no-repeat',
+          padding: '3rem 2.5rem',
           borderRadius: '24px',
-          boxShadow: '0 14px 40px rgba(0, 0, 0, 0.25)',
-          border: '1px solid rgba(255, 255, 255, 0.45)'
+          boxShadow: '0 20px 45px -10px rgba(5, 150, 105, 0.45)',
+          border: '1.5px solid rgba(255, 255, 255, 0.2)'
         }}
       >
-        <div className="d-flex flex-column align-items-center justify-content-center position-relative text-center mx-auto" style={{ zIndex: 2, maxWidth: '900px' }}>
-          <span 
-            className="badge px-3.5 py-1.5 mb-3 fw-bold d-inline-block text-center"
-            style={{
-              background: 'rgba(255, 255, 255, 0.22)',
-              color: '#ffffff',
-              backdropFilter: 'blur(6px)',
-              borderRadius: '20px',
-              fontSize: '0.85rem',
-              border: '1px solid rgba(255, 255, 255, 0.35)'
-            }}
-          >
-            🇸🇳 UNAMUSC Sénégal : Lettres de garantie (80%) | bons pharmacie (50%)
-          </span>
-          <h1 className="fw-extrabold mb-2 text-white text-center" style={{ fontSize: '2.35rem', letterSpacing: '-0.02em', textShadow: '0 3px 6px rgba(0,0,0,0.4)' }}>
-            {lang === 'wo' ? 'Bons de commande ak bataaxal u garansi' : 'Bons de commande : lettres de garantie'}
-          </h1>
-          <p className="mb-4 text-white-50 text-center mx-auto" style={{ fontSize: '1.05rem', lineHeight: '1.6', textShadow: '0 1px 3px rgba(0,0,0,0.3)', maxWidth: '780px' }}>
-            {lang === 'wo'
-              ? 'Yónnee sa demande ngir joto prise en charge d\'hospitalisation wala chirurgie.'
-              : 'Demandez votre lettre de garantie hospitalière (80%) ou bon de commande pharmacie (50%) en ligne sous le Tiers-payant UNAMUSC.'}
-          </p>
+        {/* Bubbles décoratives flottantes */}
+        <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '220px', height: '220px', background: 'rgba(255,255,255,0.08)', borderRadius: '50%', pointerEvents: 'none', animation: 'float-bubble 6s ease-in-out infinite' }} />
+        <div style={{ position: 'absolute', bottom: '-50px', left: '30%', width: '180px', height: '180px', background: 'rgba(255,255,255,0.05)', borderRadius: '50%', pointerEvents: 'none', animation: 'float-bubble 8s ease-in-out infinite 1s' }} />
 
-          <div className="d-flex justify-content-center align-items-center flex-wrap mt-4 w-100" style={{ gap: '1.75rem', rowGap: '1.25rem', padding: '0.75rem 0' }}>
-            <button
-              type="button"
-              className="hover-lift"
-              style={{
-                background: activeTab === 'list' ? 'linear-gradient(135deg, #059669 0%, #10b981 100%)' : 'rgba(255, 255, 255, 0.15)',
-                color: '#ffffff',
-                border: activeTab === 'list' ? '2.5px solid #ffffff' : '1.5px solid rgba(255, 255, 255, 0.4)',
-                borderRadius: '18px',
-                fontSize: '1rem',
-                fontWeight: '800',
-                lineHeight: '1.4',
-                padding: '1.1rem 2.2rem',
-                boxShadow: activeTab === 'list' ? '0 8px 25px rgba(5, 150, 105, 0.6)' : '0 4px 15px rgba(0,0,0,0.2)',
-                transition: 'all 0.25s ease',
-                cursor: 'pointer',
-                flex: '0 1 auto',
-                minWidth: '290px',
-                minHeight: '56px',
+        <div className="row align-items-center position-relative" style={{ zIndex: 2 }}>
+          <div className="col-lg-8">
+            {/* Badge de certification */}
+            <div className="d-flex align-items-center gap-2 mb-3">
+              <span style={{ 
+                background: 'rgba(255,255,255,0.18)', 
+                backdropFilter: 'blur(10px)', 
+                WebkitBackdropFilter: 'blur(10px)',
+                color: '#ffffff', 
+                padding: '6px 16px', 
+                borderRadius: '20px', 
+                fontSize: '0.8rem', 
+                fontWeight: 700,
                 display: 'inline-flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.75rem'
-              }}
-              onClick={() => setActiveTab('list')}
-            >
-              <span style={{ fontSize: '1.2rem' }}>📋</span> {canInstruire ? `Instructions agent (${letters.length})` : (isDoctor || isMidwife) ? `Dossiers patients (${visibleLetters.length})` : `Mes dossiers : attestations (${visibleLetters.length})`}
-            </button>
+                gap: '8px',
+                border: '1px solid rgba(255,255,255,0.25)'
+              }}>
+                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34d399', display: 'inline-block', boxShadow: '0 0 12px #34d399', animation: 'pulse-icon 1.5s ease-in-out infinite' }} />
+                🇸🇳 UNAMUSC Sénégal • Tiers-payant national
+              </span>
+            </div>
 
-            {(isCitizen || isSuperAdmin) && (
+            {/* Icône animée + Titre */}
+            <div className="d-flex align-items-center gap-3 mb-3">
+              <div className="hero-icon-animated" style={{
+                width: '56px',
+                height: '56px',
+                borderRadius: '16px',
+                background: 'rgba(255, 255, 255, 0.2)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '1.75rem',
+                fontWeight: 'bold',
+                color: '#ffffff',
+                boxShadow: '0 8px 20px rgba(0,0,0,0.2)',
+                border: '2px solid rgba(255,255,255,0.3)'
+              }}>
+                📋
+              </div>
+              <h1 className="fw-extrabold mb-0 text-white" style={{ fontSize: '2.2rem', letterSpacing: '-0.02em', textShadow: '0 3px 8px rgba(0,0,0,0.3)', lineHeight: '1.1' }}>
+                {lang === 'wo' ? 'Bataaxal u garansi & Bons' : 'Lettres de garantie & Bons de commande'}
+              </h1>
+            </div>
+
+            <p className="text-white mb-4" style={{ 
+              fontSize: '1.05rem', 
+              lineHeight: '1.6', 
+              opacity: 0.95,
+              textShadow: '0 1px 3px rgba(0,0,0,0.2)', 
+              maxWidth: '700px' 
+            }}>
+              {lang === 'wo'
+                ? 'Yónnee sa demande ngir joto prise en charge d\'hospitalisation wala chirurgie.'
+                : 'Demandez votre lettre de garantie hospitalière (80%) ou bon pharmacie (50%) en ligne sous le Tiers-payant UNAMUSC • Service 7j/7 avec délivrance d\'urgence garantie'}
+            </p>
+
+            {/* Boutons de navigation */}
+            <div className="d-flex align-items-center flex-wrap gap-3 mt-4">
               <button
                 type="button"
-                className="hover-lift"
+                className="btn hover-lift"
                 style={{
-                  background: activeTab === 'new' ? 'linear-gradient(135deg, #059669 0%, #10b981 100%)' : 'rgba(255, 255, 255, 0.15)',
-                  color: '#ffffff',
-                  border: activeTab === 'new' ? '2.5px solid #ffffff' : '1.5px solid rgba(255, 255, 255, 0.4)',
-                  borderRadius: '18px',
-                  fontSize: '1rem',
-                  fontWeight: '800',
-                  lineHeight: '1.4',
-                  padding: '1.1rem 2.2rem',
-                  boxShadow: activeTab === 'new' ? '0 8px 25px rgba(5, 150, 105, 0.6)' : '0 4px 15px rgba(0,0,0,0.2)',
-                  transition: 'all 0.25s ease',
+                  background: activeTab === 'list' ? 'rgba(255,255,255,0.95)' : 'rgba(255, 255, 255, 0.15)',
+                  color: activeTab === 'list' ? '#059669' : '#ffffff',
+                  border: activeTab === 'list' ? '2px solid #ffffff' : '1.5px solid rgba(255, 255, 255, 0.4)',
+                  borderRadius: '14px',
+                  fontSize: '0.95rem',
+                  fontWeight: '700',
+                  padding: '0.85rem 1.75rem',
+                  boxShadow: activeTab === 'list' ? '0 8px 24px rgba(0,0,0,0.2)' : '0 4px 12px rgba(0,0,0,0.15)',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   cursor: 'pointer',
-                  flex: '0 1 auto',
-                  minWidth: '290px',
-                  minHeight: '56px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.75rem'
+                  backdropFilter: activeTab !== 'list' ? 'blur(10px)' : 'none',
+                  WebkitBackdropFilter: activeTab !== 'list' ? 'blur(10px)' : 'none'
                 }}
-                onClick={() => setActiveTab('new')}
+                onClick={() => setActiveTab('list')}
               >
-                <span style={{ fontSize: '1.2rem' }}>➕</span> {lang === 'wo' ? 'Demande bu bees' : 'Nouvelle demande (garantie / bon)'}
+                <span style={{ fontSize: '1.1rem', marginRight: '8px' }}>📋</span> 
+                {canInstruire ? `Instructions agent (${letters.length})` : (isDoctor || isMidwife) ? `Dossiers patients (${visibleLetters.length})` : `Mes dossiers (${visibleLetters.length})`}
               </button>
-            )}
+
+              {(isCitizen || isSuperAdmin) && (
+                <button
+                  type="button"
+                  className="btn hover-lift"
+                  style={{
+                    background: activeTab === 'new' ? 'rgba(255,255,255,0.95)' : 'rgba(255, 255, 255, 0.15)',
+                    color: activeTab === 'new' ? '#059669' : '#ffffff',
+                    border: activeTab === 'new' ? '2px solid #ffffff' : '1.5px solid rgba(255, 255, 255, 0.4)',
+                    borderRadius: '14px',
+                    fontSize: '0.95rem',
+                    fontWeight: '700',
+                    padding: '0.85rem 1.75rem',
+                    boxShadow: activeTab === 'new' ? '0 8px 24px rgba(0,0,0,0.2)' : '0 4px 12px rgba(0,0,0,0.15)',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    cursor: 'pointer',
+                    backdropFilter: activeTab !== 'new' ? 'blur(10px)' : 'none',
+                    WebkitBackdropFilter: activeTab !== 'new' ? 'blur(10px)' : 'none'
+                  }}
+                  onClick={() => { setActiveTab('new'); setWizardStep(1); }}
+                >
+                  <span style={{ fontSize: '1.1rem', marginRight: '8px' }}>➕</span> 
+                  {lang === 'wo' ? 'Demande bu bees' : 'Nouvelle demande'}
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="col-lg-4 d-none d-lg-block text-center">
+            <div style={{ 
+              background: 'rgba(255,255,255,0.12)', 
+              backdropFilter: 'blur(15px)',
+              WebkitBackdropFilter: 'blur(15px)',
+              borderRadius: '20px', 
+              padding: '1.5rem', 
+              border: '2px solid rgba(255,255,255,0.25)',
+              boxShadow: '0 12px 30px rgba(0,0,0,0.2)'
+            }}>
+              <div className="text-white">
+                <div className="d-flex justify-content-around mb-3">
+                  <div className="text-center">
+                    <h3 className="fw-extrabold mb-0" style={{ fontSize: '2.5rem', color: '#ffffff' }}>80%</h3>
+                    <small style={{ fontSize: '0.78rem', opacity: 0.9 }}>Hôpital</small>
+                  </div>
+                  <div style={{ width: '1px', background: 'rgba(255,255,255,0.3)' }}></div>
+                  <div className="text-center">
+                    <h3 className="fw-extrabold mb-0" style={{ fontSize: '2.5rem', color: '#ffffff' }}>50%</h3>
+                    <small style={{ fontSize: '0.78rem', opacity: 0.9 }}>Pharmacie</small>
+                  </div>
+                </div>
+                <p className="mb-0 small" style={{ fontSize: '0.82rem', opacity: 0.95, lineHeight: '1.4' }}>
+                  Taux de couverture UNAMUSC pour les soins médicaux et médicaments
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -1696,44 +1778,103 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
         if (isCitizen) {
           return (
             <div className="row g-4 mb-5">
+              <style>{`
+                .kpi-card-hover {
+                  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                  cursor: pointer;
+                }
+                .kpi-card-hover:hover {
+                  transform: translateY(-4px);
+                  box-shadow: 0 12px 28px rgba(0,0,0,0.12) !important;
+                }
+                .kpi-icon-animated {
+                  width: 56px;
+                  height: 56px;
+                  border-radius: 16px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-size: 1.75rem;
+                  font-weight: bold;
+                  animation: pulse-icon 2s ease-in-out infinite;
+                }
+              `}</style>
+
               <div className="col-lg-3 col-sm-6 col-12">
-                <div className="card shadow-sm border-0 p-4 rounded-4 h-100" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '20px', transition: 'transform 0.2s ease, box-shadow 0.2s ease' }}>
-                  <div className="d-flex align-items-center justify-content-between mb-2">
-                    <span className="small text-muted fw-bold text-uppercase" style={{ letterSpacing: '0.04em', fontSize: '0.78rem' }}>Mes demandes déposées</span>
-                    <span style={{ fontSize: '1.4rem' }}>📁</span>
+                <div className="card shadow-sm border-0 p-4 h-100 kpi-card-hover" style={{ 
+                  background: 'var(--card-bg)', 
+                  color: 'var(--text-main)', 
+                  borderLeft: '5px solid #3b82f6',
+                  borderRadius: '20px',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+                }}>
+                  <div className="d-flex align-items-center justify-content-between mb-3">
+                    <span className="small text-muted fw-bold text-uppercase" style={{ letterSpacing: '0.04em', fontSize: '0.78rem' }}>Mes demandes</span>
+                    <div className="kpi-icon-animated" style={{ background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(96, 165, 250, 0.25) 100%)', color: '#3b82f6' }}>
+                      📁
+                    </div>
                   </div>
-                  <h3 className="fw-extrabold mb-1 text-primary" style={{ fontSize: '2.1rem', letterSpacing: '-0.02em' }}>{visibleLetters.length}</h3>
-                  <small className="text-muted d-block" style={{ fontSize: '0.8rem', lineHeight: '1.4' }}>Pour moi & mes ayants droit</small>
+                  <h3 className="fw-extrabold mb-1 text-primary" style={{ fontSize: '2.3rem', letterSpacing: '-0.02em' }}>{visibleLetters.length}</h3>
+                  <small className="text-muted d-block fw-semibold" style={{ fontSize: '0.82rem', lineHeight: '1.4' }}>Pour moi & mes ayants droit</small>
                 </div>
               </div>
+
               <div className="col-lg-3 col-sm-6 col-12">
-                <div className="card shadow-sm border-0 p-4 rounded-4 h-100" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '20px', transition: 'transform 0.2s ease, box-shadow 0.2s ease' }}>
-                  <div className="d-flex align-items-center justify-content-between mb-2">
-                    <span className="small text-muted fw-bold text-uppercase" style={{ letterSpacing: '0.04em', fontSize: '0.78rem' }}>En instruction agent</span>
-                    <span style={{ fontSize: '1.4rem' }}>⏳</span>
+                <div className="card shadow-sm border-0 p-4 h-100 kpi-card-hover" style={{ 
+                  background: 'var(--card-bg)', 
+                  color: 'var(--text-main)', 
+                  borderLeft: '5px solid #f59e0b',
+                  borderRadius: '20px',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+                }}>
+                  <div className="d-flex align-items-center justify-content-between mb-3">
+                    <span className="small text-muted fw-bold text-uppercase" style={{ letterSpacing: '0.04em', fontSize: '0.78rem' }}>En instruction</span>
+                    <div className="kpi-icon-animated" style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(251, 191, 36, 0.25) 100%)', color: '#f59e0b' }}>
+                      ⏳
+                    </div>
                   </div>
-                  <h3 className="fw-extrabold mb-1 text-warning" style={{ fontSize: '2.1rem', letterSpacing: '-0.02em' }}>{citizenPendingCount}</h3>
-                  <small className="text-warning fw-bold d-block" style={{ fontSize: '0.8rem', lineHeight: '1.4' }}>Dossiers sous 48h</small>
+                  <h3 className="fw-extrabold mb-1 text-warning" style={{ fontSize: '2.3rem', letterSpacing: '-0.02em' }}>{citizenPendingCount}</h3>
+                  <small className="text-warning fw-bold d-block" style={{ fontSize: '0.82rem', lineHeight: '1.4' }}>Traités sous 48h</small>
                 </div>
               </div>
+
               <div className="col-lg-3 col-sm-6 col-12">
-                <div className="card shadow-sm border-0 p-4 rounded-4 h-100" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '20px', transition: 'transform 0.2s ease, box-shadow 0.2s ease' }}>
-                  <div className="d-flex align-items-center justify-content-between mb-2">
-                    <span className="small text-muted fw-bold text-uppercase" style={{ letterSpacing: '0.04em', fontSize: '0.78rem' }}>Prises en charge accordées</span>
-                    <span style={{ fontSize: '1.4rem' }}>✅</span>
+                <div className="card shadow-sm border-0 p-4 h-100 kpi-card-hover" style={{ 
+                  background: 'var(--card-bg)', 
+                  color: 'var(--text-main)', 
+                  borderLeft: '5px solid #10b981',
+                  borderRadius: '20px',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+                }}>
+                  <div className="d-flex align-items-center justify-content-between mb-3">
+                    <span className="small text-muted fw-bold text-uppercase" style={{ letterSpacing: '0.04em', fontSize: '0.78rem' }}>Accordées</span>
+                    <div className="kpi-icon-animated" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(52, 211, 153, 0.25) 100%)', color: '#10b981' }}>
+                      ✅
+                    </div>
                   </div>
-                  <h3 className="fw-extrabold mb-1 text-success" style={{ fontSize: '2.1rem', letterSpacing: '-0.02em' }}>{citizenApprovedCount}</h3>
-                  <small className="text-success fw-bold d-block" style={{ fontSize: '0.8rem', lineHeight: '1.4' }}>Validées à l'hôpital</small>
+                  <h3 className="fw-extrabold mb-1 text-success" style={{ fontSize: '2.3rem', letterSpacing: '-0.02em' }}>{citizenApprovedCount}</h3>
+                  <small className="text-success fw-bold d-block" style={{ fontSize: '0.82rem', lineHeight: '1.4' }}>Validées à l'hôpital</small>
                 </div>
               </div>
+
               <div className="col-lg-3 col-sm-6 col-12">
-                <div className="card shadow-sm border-0 p-4 rounded-4 h-100" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '20px', transition: 'transform 0.2s ease, box-shadow 0.2s ease' }}>
-                  <div className="d-flex align-items-center justify-content-between mb-2">
-                    <span className="small text-muted fw-bold text-uppercase" style={{ letterSpacing: '0.04em', fontSize: '0.78rem' }}>Montant pris en charge</span>
-                    <span style={{ fontSize: '1.4rem' }}>💰</span>
+                <div className="card shadow-sm border-0 p-4 h-100 kpi-card-hover" style={{ 
+                  background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.08) 0%, rgba(16, 185, 129, 0.12) 100%)', 
+                  color: 'var(--text-main)', 
+                  borderLeft: '5px solid #059669',
+                  borderRadius: '20px',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+                }}>
+                  <div className="d-flex align-items-center justify-content-between mb-3">
+                    <span className="small text-muted fw-bold text-uppercase" style={{ letterSpacing: '0.04em', fontSize: '0.78rem' }}>Montant couvert</span>
+                    <div className="kpi-icon-animated" style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.2) 0%, rgba(16, 185, 129, 0.3) 100%)', color: '#059669' }}>
+                      💰
+                    </div>
                   </div>
-                  <h3 className="fw-extrabold mb-1 text-success" style={{ fontSize: '1.75rem', letterSpacing: '-0.02em' }}>{citizenTotalAmount.toLocaleString('fr-FR')} FCFA</h3>
-                  <small className="text-success fw-bold d-block" style={{ fontSize: '0.8rem', lineHeight: '1.4' }}>Couverture mutuelle UNAMUSC</small>
+                  <h3 className="fw-extrabold mb-1" style={{ fontSize: '1.85rem', letterSpacing: '-0.02em', color: '#059669' }}>
+                    {citizenTotalAmount.toLocaleString('fr-FR')} <span style={{ fontSize: '1.1rem', fontWeight: 600 }}>FCFA</span>
+                  </h3>
+                  <small className="fw-bold d-block" style={{ fontSize: '0.82rem', lineHeight: '1.4', color: '#059669' }}>Couverture UNAMUSC</small>
                 </div>
               </div>
             </div>
@@ -1743,54 +1884,81 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
         return (
           <div className="row g-4 mb-5">
             <div className="col-lg-3 col-sm-6 col-12">
-              <div className="card shadow-sm border-0 p-4 rounded-4 h-100" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '20px' }}>
-                <div className="d-flex align-items-center justify-content-between mb-2">
-                  <span className="small text-muted fw-bold text-uppercase" style={{ letterSpacing: '0.04em', fontSize: '0.78rem' }}>Demandes reçues (Région)</span>
-                  <span style={{ fontSize: '1.4rem' }}>📊</span>
+              <div className="card shadow-sm border-0 p-4 h-100 kpi-card-hover" style={{ 
+                background: 'var(--card-bg)', 
+                color: 'var(--text-main)', 
+                borderLeft: '5px solid #3b82f6',
+                borderRadius: '20px',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+              }}>
+                <div className="d-flex align-items-center justify-content-between mb-3">
+                  <span className="small text-muted fw-bold text-uppercase" style={{ letterSpacing: '0.04em', fontSize: '0.78rem' }}>Demandes reçues</span>
+                  <div className="kpi-icon-animated" style={{ background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(96, 165, 250, 0.25) 100%)', color: '#3b82f6' }}>
+                    📊
+                  </div>
                 </div>
-                <h3 className="fw-extrabold mb-1 text-primary" style={{ fontSize: '2.1rem' }}>{visibleLetters.length.toLocaleString('fr-FR')}</h3>
-                <small className="text-muted d-block" style={{ fontSize: '0.8rem' }}>Demandes de garantie chargées</small>
+                <h3 className="fw-extrabold mb-1 text-primary" style={{ fontSize: '2.3rem', letterSpacing: '-0.02em' }}>{visibleLetters.length.toLocaleString('fr-FR')}</h3>
+                <small className="text-muted d-block fw-semibold" style={{ fontSize: '0.82rem' }}>Demandes de garantie</small>
               </div>
             </div>
             <div className="col-lg-3 col-sm-6 col-12">
-              <div className="card shadow-sm border-0 p-4 rounded-4 h-100" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '20px' }}>
-                <div className="d-flex align-items-center justify-content-between mb-2">
-                  <span className="small text-muted fw-bold text-uppercase" style={{ letterSpacing: '0.04em', fontSize: '0.78rem' }}>En instruction agent</span>
-                  <span style={{ fontSize: '1.4rem' }}>⏳</span>
+              <div className="card shadow-sm border-0 p-4 h-100 kpi-card-hover" style={{ 
+                background: 'var(--card-bg)', 
+                color: 'var(--text-main)', 
+                borderLeft: '5px solid #f59e0b',
+                borderRadius: '20px',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+              }}>
+                <div className="d-flex align-items-center justify-content-between mb-3">
+                  <span className="small text-muted fw-bold text-uppercase" style={{ letterSpacing: '0.04em', fontSize: '0.78rem' }}>En instruction</span>
+                  <div className="kpi-icon-animated" style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(251, 191, 36, 0.25) 100%)', color: '#f59e0b' }}>
+                    ⏳
+                  </div>
                 </div>
-                {/* Compteurs réels : calculés sur le registre affiché.
-                    Les valeurs 310 (« dossiers sous 48h ») et 1 420
-                    (« homologuées ») étaient des constantes écrites en
-                    dur. Elles annonçaient 1 420 prises en charge financière
-                    accordées alors que le registre était vide — un Super
-                    Admin pouvait donc croire à une activité régionale
-                    existante et arbitrer des dossiers sur cette base. */}
-                <h3 className="fw-extrabold mb-1 text-warning" style={{ fontSize: '2.1rem' }}>
+                <h3 className="fw-extrabold mb-1 text-warning" style={{ fontSize: '2.3rem', letterSpacing: '-0.02em' }}>
                   {visibleLetters.filter(l => l.status === 'pending').length}
                 </h3>
-                <small className="text-warning fw-bold d-block" style={{ fontSize: '0.8rem' }}>En cours d'instruction</small>
+                <small className="text-warning fw-bold d-block" style={{ fontSize: '0.82rem' }}>En cours de traitement</small>
               </div>
             </div>
             <div className="col-lg-3 col-sm-6 col-12">
-              <div className="card shadow-sm border-0 p-4 rounded-4 h-100" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '20px' }}>
-                <div className="d-flex align-items-center justify-content-between mb-2">
-                  <span className="small text-muted fw-bold text-uppercase" style={{ letterSpacing: '0.04em', fontSize: '0.78rem' }}>Lettres accordées</span>
-                  <span style={{ fontSize: '1.4rem' }}>✅</span>
+              <div className="card shadow-sm border-0 p-4 h-100 kpi-card-hover" style={{ 
+                background: 'var(--card-bg)', 
+                color: 'var(--text-main)', 
+                borderLeft: '5px solid #10b981',
+                borderRadius: '20px',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+              }}>
+                <div className="d-flex align-items-center justify-content-between mb-3">
+                  <span className="small text-muted fw-bold text-uppercase" style={{ letterSpacing: '0.04em', fontSize: '0.78rem' }}>Accordées</span>
+                  <div className="kpi-icon-animated" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(52, 211, 153, 0.25) 100%)', color: '#10b981' }}>
+                    ✅
+                  </div>
                 </div>
-                <h3 className="fw-extrabold mb-1 text-success" style={{ fontSize: '2.1rem' }}>
+                <h3 className="fw-extrabold mb-1 text-success" style={{ fontSize: '2.3rem', letterSpacing: '-0.02em' }}>
                   {visibleLetters.filter(l => l.status === 'approved').length}
                 </h3>
-                <small className="text-success fw-bold d-block" style={{ fontSize: '0.8rem' }}>Accordées 80% / 100%</small>
+                <small className="text-success fw-bold d-block" style={{ fontSize: '0.82rem' }}>Prises en charge validées</small>
               </div>
             </div>
             <div className="col-lg-3 col-sm-6 col-12">
-              <div className="card shadow-sm border-0 p-4 rounded-4 h-100" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '20px' }}>
-                <div className="d-flex align-items-center justify-content-between mb-2">
-                  <span className="small text-muted fw-bold text-uppercase" style={{ letterSpacing: '0.04em', fontSize: '0.78rem' }}>Total garanti UNAMUSC</span>
-                  <span style={{ fontSize: '1.4rem' }}>💰</span>
+              <div className="card shadow-sm border-0 p-4 h-100 kpi-card-hover" style={{ 
+                background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.08) 0%, rgba(16, 185, 129, 0.12) 100%)', 
+                color: 'var(--text-main)', 
+                borderLeft: '5px solid #059669',
+                borderRadius: '20px',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)'
+              }}>
+                <div className="d-flex align-items-center justify-content-between mb-3">
+                  <span className="small text-muted fw-bold text-uppercase" style={{ letterSpacing: '0.04em', fontSize: '0.78rem' }}>Total garanti</span>
+                  <div className="kpi-icon-animated" style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.2) 0%, rgba(16, 185, 129, 0.3) 100%)', color: '#059669' }}>
+                    💰
+                  </div>
                 </div>
-                <h3 className="fw-extrabold mb-1 text-success" style={{ fontSize: '1.75rem' }}>{citizenTotalAmount.toLocaleString('fr-FR')} FCFA</h3>
-                <small className="text-success fw-bold d-block" style={{ fontSize: '0.8rem' }}>Engagements certifiés</small>
+                <h3 className="fw-extrabold mb-1" style={{ fontSize: '1.85rem', letterSpacing: '-0.02em', color: '#059669' }}>
+                  {totalGuaranteedSum.toLocaleString('fr-FR')} <span style={{ fontSize: '1.1rem', fontWeight: 600 }}>FCFA</span>
+                </h3>
+                <small className="fw-bold d-block" style={{ fontSize: '0.82rem', color: '#059669' }}>Engagements financiers UNAMUSC</small>
               </div>
             </div>
           </div>

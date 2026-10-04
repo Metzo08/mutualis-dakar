@@ -898,108 +898,109 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
 
   return (
     <div className="dashboard-view fade-in-up">
-      {/* Hero Banner Area */}
-      <section className="banner-mini" style={{
-        background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.35) 0%, rgba(16, 185, 129, 0.18) 100%), url("/csu_hero_bg_real.png") center/cover no-repeat',
-        border: '1px solid rgba(255, 255, 255, 0.45)',
-        borderRadius: '24px',
-        padding: '3.75rem 2.5rem',
-        minHeight: '240px',
-        marginBottom: '3.5rem',
-        color: '#fff',
-        boxShadow: '0 14px 40px rgba(0, 0, 0, 0.25)',
-        position: 'relative',
-        overflow: 'hidden',
-        textAlign: 'left'
-      }}>
-        {/* Subtle decorative orb */}
-        <div style={{
-          position: 'absolute',
-          top: '-20%',
-          right: '-5%',
-          width: '280px',
-          height: '280px',
-          background: 'radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, transparent 70%)',
-          pointerEvents: 'none'
-        }}></div>
+      <style>{`
+        @keyframes pulse-home {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.8; transform: scale(0.95); }
+        }
+        @keyframes float-home {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+        .home-icon { animation: pulse-home 2s ease-in-out infinite; }
+        .home-card:hover { transform: translateY(-6px); box-shadow: 0 16px 32px rgba(0,0,0,0.12) !important; }
+      `}</style>
 
-        <div className="container" style={{ position: 'relative', zIndex: 2 }}>
-          <span className="badge badge-info" style={{ marginBottom: '1rem', background: 'rgba(255, 255, 255, 0.15)', color: '#fff', border: '1px solid rgba(255,255,255,0.25)' }}>
-            ✨ Couverture sanitaire universelle
-          </span>
-          <h1 style={{ fontSize: '2.3rem', fontWeight: '800', marginBottom: '1rem', color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
-            {t.heroTitle}
-          </h1>
-          <p style={{ color: 'rgba(255,255,255,0.88)', fontSize: '1.05rem', lineHeight: '1.6', marginBottom: '2rem', maxWidth: '650px', textShadow: '0 1px 2px rgba(0,0,0,0.2)' }}>
+      {/* 🎨 HERO BANNER MODERNISÉ */}
+      <section className="position-relative overflow-hidden mb-5" style={{
+        background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.92) 0%, rgba(16, 185, 129, 0.85) 50%, rgba(34, 197, 94, 0.88) 100%), url("/csu_hero_bg_real.png") center/cover no-repeat',
+        borderRadius: '24px',
+        padding: '3.5rem 2.5rem',
+        color: '#fff',
+        boxShadow: '0 20px 45px -10px rgba(5, 150, 105, 0.45)',
+        border: '1.5px solid rgba(255, 255, 255, 0.2)'
+      }}>
+        <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '220px', height: '220px', background: 'rgba(255,255,255,0.1)', borderRadius: '50%', pointerEvents: 'none', animation: 'float-home 6s ease-in-out infinite' }} />
+        <div style={{ position: 'absolute', bottom: '-50px', left: '30%', width: '180px', height: '180px', background: 'rgba(255,255,255,0.08)', borderRadius: '50%', pointerEvents: 'none', animation: 'float-home 8s ease-in-out infinite 1s' }} />
+
+        <div className="container position-relative" style={{ zIndex: 2 }}>
+          <div className="d-flex align-items-center gap-2 mb-3">
+            <span style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', color: '#ffffff', padding: '6px 16px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '8px', border: '1px solid rgba(255,255,255,0.3)' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34d399', boxShadow: '0 0 12px #34d399', animation: 'pulse-home 1.5s ease-in-out infinite' }} />
+              ✨ Couverture sanitaire universelle - UNAMUSC Sénégal
+            </span>
+          </div>
+
+          <div className="d-flex align-items-center gap-3 mb-3">
+            <div className="home-icon" style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(255, 255, 255, 0.2)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.75rem', fontWeight: 'bold', color: '#ffffff', boxShadow: '0 8px 20px rgba(0,0,0,0.2)', border: '2px solid rgba(255,255,255,0.3)' }}>
+              🏥
+            </div>
+            <h1 style={{ fontSize: '2.3rem', fontWeight: '850', margin: 0, color: '#fff', textShadow: '0 3px 8px rgba(0,0,0,0.3)', letterSpacing: '-0.02em' }}>
+              {t.heroTitle}
+            </h1>
+          </div>
+
+          <p style={{ color: 'rgba(255,255,255,0.95)', fontSize: '1.05rem', lineHeight: '1.6', marginBottom: '2rem', maxWidth: '700px', textShadow: '0 1px 3px rgba(0,0,0,0.2)' }}>
             {t.heroSub}
           </p>
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-            <button className="btn btn-secondary" onClick={() => setView('services')}>
-              <span style={{ fontSize: '1.2rem', marginRight: '0.2rem' }}>+</span> {t.btnNew}
+
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+            <button className="btn" onClick={() => setView('services')} style={{ background: 'rgba(255,255,255,0.95)', color: '#059669', border: '2px solid #ffffff', borderRadius: '14px', fontSize: '0.95rem', fontWeight: '700', padding: '0.85rem 1.75rem', boxShadow: '0 8px 24px rgba(0,0,0,0.2)', transition: 'all 0.3s', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '1.2rem' }}>+</span> {t.btnNew}
             </button>
-            <button className="btn btn-success" style={{ backgroundColor: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.4)', color: '#fff', backdropFilter: 'blur(4px)' }} onClick={() => setView('parrainage-solidaire')}>
-              🤝 {lang === 'fr' ? 'Parrainage solidaire' : 'Dimbalé (parrainage)'}
+            <button className="btn" onClick={() => setView('parrainage-solidaire')} style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', color: '#ffffff', border: '1.5px solid rgba(255,255,255,0.4)', borderRadius: '14px', fontSize: '0.95rem', fontWeight: '700', padding: '0.85rem 1.75rem', transition: 'all 0.3s', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+              🤝 {lang === 'fr' ? 'Parrainage solidaire' : 'Dimbalé'}
             </button>
-            <button className="btn btn-outline" style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.4)', backdropFilter: 'blur(4px)' }} onClick={() => setView('directory')}>
+            <button className="btn" onClick={() => setView('directory')} style={{ background: 'transparent', color: '#ffffff', border: '1.5px solid rgba(255,255,255,0.5)', borderRadius: '14px', fontSize: '0.95rem', fontWeight: '700', padding: '0.85rem 1.75rem', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', transition: 'all 0.3s' }}>
               {lang === 'fr' ? 'Trouver une mutuelle' : 'Mutuelle yi'}
             </button>
           </div>
         </div>
       </section>
 
-      {/* Section : Comment ça marche */}
-      <section style={{ marginBottom: '2.5rem', textAlign: 'left', padding: '0 0.5rem' }}>
-        <h2 style={{ fontSize: '1.4rem', fontWeight: '800', marginBottom: '0.5rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          💡 {lang === 'fr' ? 'Fonctionnement de la plateforme' : 'Naka la plateforme bi di doxé'}
-        </h2>
-        <p style={{ fontSize: '0.9rem', color: 'var(--text-sub)', marginBottom: '1.5rem' }}>
-          {lang === 'fr' 
-            ? 'Découvrez comment Mutualis facilite votre couverture maladie universelle en 4 étapes simples :'
-            : 'Xoolal naka nga mënë amé sa assurance wér-gi-yaram ci 4 étapes yomb :'
-          }
-        </p>
+      {/* 💡 SECTION COMMENT ÇA MARCHE - MODERNISÉE */}
+      <section style={{ marginBottom: '3rem', textAlign: 'left', padding: '0 0.5rem' }}>
+        <div className="d-flex align-items-center gap-3 mb-3">
+          <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.15) 0%, rgba(16, 185, 129, 0.25) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', boxShadow: '0 4px 12px rgba(5,150,105,0.2)' }}>
+            💡
+          </div>
+          <div>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: '850', margin: 0, color: 'var(--text-main)', letterSpacing: '-0.01em' }}>
+              {lang === 'fr' ? 'Fonctionnement de la plateforme' : 'Naka la plateforme bi di doxé'}
+            </h2>
+            <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', margin: '4px 0 0 0' }}>
+              {lang === 'fr' ? 'Découvrez comment Mutualis facilite votre couverture maladie en 4 étapes simples' : 'Xoolal naka nga mënë amé sa assurance'}
+            </p>
+          </div>
+        </div>
 
         <div className="grid grid-4" style={{ gap: '1.25rem' }}>
-          <div className="card" style={{ padding: '1.25rem', borderTop: '4px solid var(--primary)', display: 'flex', flexDirection: 'column', gap: '0.4rem', boxShadow: 'var(--shadow-sm)', transition: 'transform 0.2s' }}>
-            <span style={{ fontSize: '1.5rem' }}>👤</span>
-            <h4 style={{ margin: 0, fontWeight: '700', fontSize: '0.95rem' }}>1. {lang === 'fr' ? 'Choisir son profil' : 'Tann sa profil'}</h4>
-            <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-sub)', lineHeight: '1.4' }}>
-              {lang === 'fr' 
-                ? 'Connectez-vous en tant que citoyen, prestataire de santé ou accédez à l\'espace RSE pour parrainer.'
-                : 'Duggal en tant que citoyen, prestataire de santé walla RSE.'
-              }
-            </p>
-          </div>
-          <div className="card" style={{ padding: '1.25rem', borderTop: '4px solid var(--secondary)', display: 'flex', flexDirection: 'column', gap: '0.4rem', boxShadow: 'var(--shadow-sm)', transition: 'transform 0.2s' }}>
-            <span style={{ fontSize: '1.5rem' }}>🤝</span>
-            <h4 style={{ margin: 0, fontWeight: '700', fontSize: '0.95rem' }}>2. {lang === 'fr' ? 'Enrôler & parrainer' : 'Mbindu & parrainer'}</h4>
-            <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-sub)', lineHeight: '1.4' }}>
-              {lang === 'fr' 
-                ? 'Inscrivez votre famille ou parrainez des talibés (ndongo daaras) et élèves du primaire via l\'espace solidaire.'
-                : 'Mbindal sa njaboot walla parrainél ay élève daara walla école.'
-              }
-            </p>
-          </div>
-          <div className="card" style={{ padding: '1.25rem', borderTop: '4px solid var(--success)', display: 'flex', flexDirection: 'column', gap: '0.4rem', boxShadow: 'var(--shadow-sm)', transition: 'transform 0.2s' }}>
-            <span style={{ fontSize: '1.5rem' }}>💳</span>
-            <h4 style={{ margin: 0, fontWeight: '700', fontSize: '0.95rem' }}>3. {lang === 'fr' ? 'Cotiser en ligne' : 'Fay sa cotisation'}</h4>
-            <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-sub)', lineHeight: '1.4' }}>
-              {lang === 'fr' 
-                ? 'Réglez vos cotisations annuelles instantanément par Wave, Orange Money ou carte bancaire.'
-                : 'Fayal sa cotisation annuelle par Wave walla Orange Money ci sa téléphone.'
-              }
-            </p>
-          </div>
-          <div className="card" style={{ padding: '1.25rem', borderTop: '4px solid var(--warning)', display: 'flex', flexDirection: 'column', gap: '0.4rem', boxShadow: 'var(--shadow-sm)', transition: 'transform 0.2s' }}>
-            <span style={{ fontSize: '1.5rem' }}>🏥</span>
-            <h4 style={{ margin: 0, fontWeight: '700', fontSize: '0.95rem' }}>4. {lang === 'fr' ? 'Soins tiers-payant' : 'Fajj tiers-payant'}</h4>
-            <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-sub)', lineHeight: '1.4' }}>
-              {lang === 'fr' 
-                ? 'Présentez votre carte QR dans les hôpitaux partenaires pour bénéficier d\'une prise en charge immédiate à 80%.'
-                : 'Wane sa carte QR ci hôpital yi ngir gnu fayal la 80% ci sa fajj.'
-              }
-            </p>
-          </div>
+          {[
+            { icon: '👤', color: '#3b82f6', title: lang === 'fr' ? 'Choisir son profil' : 'Tann sa profil', desc: lang === 'fr' ? 'Connectez-vous en tant que citoyen, prestataire ou parrain solidaire' : 'Duggal en tant que citoyen, prestataire walla parrain' },
+            { icon: '🤝', color: '#10b981', title: lang === 'fr' ? 'Enrôler & parrainer' : 'Mbindu & parrainer', desc: lang === 'fr' ? 'Inscrivez votre famille ou parrainez des talibés et élèves via l\'espace solidaire' : 'Mbindal sa njaboot walla parrainél ay élève' },
+            { icon: '💳', color: '#f59e0b', title: lang === 'fr' ? 'Cotiser en ligne' : 'Fay sa cotisation', desc: lang === 'fr' ? 'Réglez instantanément par Wave, Orange Money ou carte bancaire' : 'Fayal par Wave walla Orange Money' },
+            { icon: '🏥', color: '#059669', title: lang === 'fr' ? 'Soins tiers-payant' : 'Fajj tiers-payant', desc: lang === 'fr' ? 'Présentez votre carte QR pour une prise en charge immédiate à 80%' : 'Wane sa carte QR ngir 80% fajj' }
+          ].map((step, i) => (
+            <div key={i} className="card home-card" style={{ padding: '1.5rem', background: `linear-gradient(135deg, ${step.color}08 0%, ${step.color}15 100%)`, border: 'none', borderLeft: `4px solid ${step.color}`, borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 4px 16px rgba(0,0,0,0.06)', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', cursor: 'pointer' }}>
+              <div className="d-flex align-items-center justify-content-between">
+                <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: `${step.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', boxShadow: `0 4px 12px ${step.color}30` }}>
+                  {step.icon}
+                </div>
+                <span style={{ background: `${step.color}15`, color: step.color, padding: '4px 12px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: '800', border: `1px solid ${step.color}30` }}>
+                  Étape {i + 1}
+                </span>
+              </div>
+              <h4 style={{ margin: 0, fontWeight: '800', fontSize: '1rem', color: 'var(--text-main)', letterSpacing: '-0.01em' }}>
+                {step.title}
+              </h4>
+              <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-sub)', lineHeight: '1.5' }}>
+                {step.desc}
+              </p>
+              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '3px', background: `${step.color}30`, borderRadius: '0 0 16px 16px' }}>
+                <div style={{ height: '100%', width: '100%', background: step.color, borderRadius: '0 0 16px 16px' }} />
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 

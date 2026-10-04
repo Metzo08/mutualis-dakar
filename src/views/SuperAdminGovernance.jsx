@@ -319,76 +319,101 @@ export default function SuperAdminGovernance({ lang = 'fr', setView, agentUser, 
 
   return (
     <div className="superadmin-view fade-in-up" style={{ padding: '1rem 0' }}>
-      {/* Super Admin Top Header Banner */}
-      <section className="banner-mini" style={{
-        background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #4338ca 100%)',
-        borderRadius: '20px',
+      <style>{`
+        @keyframes pulse-super {
+          0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+          50% { opacity: 0.8; transform: scale(0.95) rotate(2deg); }
+        }
+        @keyframes float-crown {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-6px); }
+        }
+        @keyframes shimmer {
+          0% { background-position: -1000px 0; }
+          100% { background-position: 1000px 0; }
+        }
+        .super-icon { animation: pulse-super 3s ease-in-out infinite; }
+        .kpi-super:hover { transform: translateY(-4px); box-shadow: 0 12px 28px rgba(0,0,0,0.15) !important; }
+      `}</style>
+
+      {/* 🎨 HEADER PREMIUM MODERNISÉ */}
+      <section className="position-relative overflow-hidden mb-4" style={{
+        background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 90%, #6366f1 100%)',
+        borderRadius: '24px',
         padding: '2.5rem 2rem',
-        marginBottom: '2rem',
         color: '#fff',
-        boxShadow: 'var(--shadow-lg)',
-        border: '1px solid rgba(255, 255, 255, 0.15)'
+        boxShadow: '0 20px 45px -10px rgba(67, 56, 202, 0.5)',
+        border: '1.5px solid rgba(255, 255, 255, 0.2)'
       }}>
-        <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem' }}>
+        <div style={{ position: 'absolute', top: '-30px', right: '-30px', width: '200px', height: '200px', background: 'rgba(99, 102, 241, 0.15)', borderRadius: '50%', pointerEvents: 'none', animation: 'float-crown 6s ease-in-out infinite' }} />
+        <div style={{ position: 'absolute', bottom: '-40px', left: '25%', width: '160px', height: '160px', background: 'rgba(139, 92, 246, 0.12)', borderRadius: '50%', pointerEvents: 'none', animation: 'float-crown 8s ease-in-out infinite 1s' }} />
+
+        <div className="container position-relative" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem', zIndex: 2 }}>
           <div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(255, 255, 255, 0.15)', padding: '0.35rem 0.85rem', borderRadius: '30px', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '0.75rem' }}>
-              <span>👑</span>
-              <span>SUPER ADMIN PLATFORME CMU</span>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255, 255, 255, 0.18)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', padding: '6px 16px', borderRadius: '30px', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '1rem', border: '1px solid rgba(255, 255, 255, 0.25)' }}>
+              <span style={{ animation: 'float-crown 2s ease-in-out infinite' }}>👑</span>
+              <span>SUPER ADMIN PLATEFORME CMU</span>
             </div>
-            <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: '850', margin: 0, textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
-              Gouvernance & Supervision Intégrale
-            </h1>
-            <p style={{ color: '#c7d2fe', fontSize: '0.95rem', margin: '0.5rem 0 0 0', maxWidth: '650px' }}>
-              Contrôle global des rôles, audit des communications privées prestataires et correction intelligente des comptes utilisateurs.
+
+            <div className="d-flex align-items-center gap-3 mb-2">
+              <div className="super-icon" style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(255, 255, 255, 0.2)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.75rem', fontWeight: 'bold', color: '#ffffff', boxShadow: '0 8px 20px rgba(0,0,0,0.25)', border: '2px solid rgba(255,255,255,0.3)' }}>
+                🛡️
+              </div>
+              <h1 style={{ color: '#fff', fontSize: '2.1rem', fontWeight: '850', margin: 0, textShadow: '0 3px 8px rgba(0,0,0,0.4)', letterSpacing: '-0.02em' }}>
+                Gouvernance & Supervision Intégrale
+              </h1>
+            </div>
+
+            <p style={{ color: 'rgba(199, 210, 254, 0.95)', fontSize: '0.98rem', margin: '0.5rem 0 0 0', maxWidth: '700px', lineHeight: '1.5', textShadow: '0 1px 3px rgba(0,0,0,0.2)' }}>
+              Contrôle global des rôles, audit des communications et supervision complète de la plateforme UNAMUSC Sénégal
             </p>
           </div>
           
-          <div style={{ background: 'rgba(255, 255, 255, 0.1)', padding: '1rem 1.5rem', borderRadius: '16px', backdropFilter: 'blur(10px)', border: '1px solid rgba(255, 255, 255, 0.2)', textAlign: 'right' }}>
-            <div style={{ fontSize: '0.75rem', color: '#a5b4fc' }}>Connecté en tant que</div>
-            <div style={{ fontSize: '1rem', fontWeight: 'bold', color: '#fff' }}>Super Administrateur</div>
-            <div style={{ fontSize: '0.75rem', color: '#34d399', fontWeight: 'bold', marginTop: '0.2rem' }}>● Accès Total Illimité</div>
+          <div style={{ background: 'rgba(255, 255, 255, 0.15)', backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)', padding: '1.2rem 1.8rem', borderRadius: '18px', border: '1.5px solid rgba(255, 255, 255, 0.25)', textAlign: 'right', boxShadow: '0 8px 20px rgba(0,0,0,0.15)' }}>
+            <div style={{ fontSize: '0.75rem', color: '#c7d2fe', fontWeight: 600 }}>Connecté en tant que</div>
+            <div style={{ fontSize: '1.05rem', fontWeight: 'bold', color: '#fff', marginTop: '4px' }}>Super Administrateur</div>
+            <div style={{ fontSize: '0.76rem', color: '#34d399', fontWeight: 'bold', marginTop: '6px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34d399', boxShadow: '0 0 12px #34d399', animation: 'pulse-super 1.5s ease-in-out infinite' }} />
+              Accès Total Illimité
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Tabs Bar */}
-      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem', overflowX: 'auto' }}>
-        <button
-          onClick={() => setActiveTab('stats')}
-          className="btn btn-outline"
-          style={{ borderRadius: '10px', fontSize: '0.88rem' }}
-          title="Voir les statistiques et graphiques de la plateforme"
-        >
-          📊 Voir le tableau de bord
-        </button>
-        <button
-          onClick={() => setActiveTab('users')}
-          className={`btn ${activeTab === 'users' ? 'btn-primary' : 'btn-outline'}`}
-          style={{ borderRadius: '10px', fontSize: '0.88rem' }}
-        >
-          👥 Gestion des utilisateurs ({usersList.length})
-        </button>
-        <button
-          onClick={() => setActiveTab('requests')}
-          className={`btn ${activeTab === 'requests' ? 'btn-primary' : 'btn-outline'}`}
-          style={{ borderRadius: '10px', fontSize: '0.88rem' }}
-        >
-          📝 Demandes d'Ouverture de Compte ({pendingRequests.filter(r => r.status === 'pending').length})
-        </button>
-        <button
-          onClick={() => setActiveTab('communications')}
-          className={`btn ${activeTab === 'communications' ? 'btn-primary' : 'btn-outline'}`}
-          style={{ borderRadius: '10px', fontSize: '0.88rem' }}
-        >
-          🔒 Communications Privées ({complaintsList.length})
-        </button>
-        <button
-          onClick={() => setActiveTab('pages')}
-          className={`btn ${activeTab === 'pages' ? 'btn-primary' : 'btn-outline'}`}
-          style={{ borderRadius: '10px', fontSize: '0.88rem' }}
-        >
-          🗺️ Inspection des Pages (32)
-        </button>
+      {/* 🎯 TABS MODERNISÉS */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '2rem', padding: '8px', background: 'var(--bg-card)', borderRadius: '16px', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', overflowX: 'auto', flexWrap: 'wrap' }}>
+        {[
+          { id: 'stats', icon: '📊', label: 'Tableau de bord', count: null },
+          { id: 'users', icon: '👥', label: 'Utilisateurs', count: usersList.length },
+          { id: 'requests', icon: '📝', label: 'Demandes', count: pendingRequests.filter(r => r.status === 'pending').length },
+          { id: 'communications', icon: '🔒', label: 'Communications', count: complaintsList.length },
+          { id: 'pages', icon: '🗺️', label: 'Inspection', count: 32 }
+        ].map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            style={{
+              flex: '0 0 auto', padding: '10px 18px', borderRadius: '12px', fontSize: '0.88rem', fontWeight: '700', border: 'none',
+              background: activeTab === tab.id ? 'linear-gradient(135deg, #4338ca 0%, #6366f1 100%)' : 'transparent',
+              color: activeTab === tab.id ? '#ffffff' : 'var(--text-main)', cursor: 'pointer',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', display: 'inline-flex', alignItems: 'center', gap: '8px',
+              boxShadow: activeTab === tab.id ? '0 4px 12px rgba(67, 56, 202, 0.3)' : 'none', position: 'relative', overflow: 'hidden'
+            }}
+            onMouseEnter={(e) => { if (activeTab !== tab.id) e.currentTarget.style.background = 'rgba(67, 56, 202, 0.08)'; }}
+            onMouseLeave={(e) => { if (activeTab !== tab.id) e.currentTarget.style.background = 'transparent'; }}
+          >
+            <span style={{ fontSize: '1.1rem' }}>{tab.icon}</span>
+            <span>{tab.label}</span>
+            {tab.count !== null && (
+              <span style={{ background: activeTab === tab.id ? 'rgba(255,255,255,0.25)' : 'rgba(67, 56, 202, 0.15)', color: activeTab === tab.id ? '#ffffff' : '#4338ca', padding: '2px 8px', borderRadius: '10px', fontSize: '0.75rem', fontWeight: '800', minWidth: '24px', textAlign: 'center' }}>
+                {tab.count}
+              </span>
+            )}
+            {activeTab === tab.id && (
+              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '3px', background: '#ffffff', borderRadius: '10px 10px 0 0' }} />
+            )}
+          </button>
+        ))}
       </div>
 
       {/* Tab 0: Statistiques générales */}
@@ -426,19 +451,9 @@ export default function SuperAdminGovernance({ lang = 'fr', setView, agentUser, 
 
           {dashboardStats && !statsLoading && (
             <>
-              {/* KPIs principaux - Clickable navigation cards */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.25rem', marginBottom: '2rem' }}>
+              {/* 📊 KPI CARDS MODERNISÉES */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '2.5rem' }}>
                 {(() => {
-                  // KPIs principaux - Clickable navigation cards
-                  // Structure LUE depuis /api/dashboard/stats :
-                  //   { beneficiaries: {total, active, pending}, mutuelles,
-                  //     cotisationsAmount, donations,
-                  //     claims: {total, reimbursedAmount},
-                  //     parrainage: {sponsorsCount, sponsoredCount, totalAmount} }
-                  // Les anciennes lectures (totalBeneficiaries, active,
-                  // contributions, partners) ne correspondaient à AUCUN champ
-                  // réellement renvoyé : la gouvernance lisait des valeurs
-                  // fictives. Un champ absent reste désormais « — ».
                   const S = dashboardStats;
                   const ben = S.beneficiaries || {};
                   const cl = S.claims || {};
@@ -450,73 +465,48 @@ export default function SuperAdminGovernance({ lang = 'fr', setView, agentUser, 
                   const tot = num(ben.total);
                   const act = num(ben.active);
                   const taux = (tot && act !== null) ? Math.round((act / tot) * 100) : null;
+                  
                   const kpis = [
-                    { label: 'Assurés totaux', value: tot, icon: '👥', color: '#3b82f6', isMoney: false, view: 'beneficiaries', filter: { status: 'all' } },
-                    { label: 'Assurés actifs', value: act, icon: '💳', color: '#10b981', isMoney: false, view: 'beneficiaries', filter: { status: 'Actif' } },
-                    { label: 'Dossiers en attente', value: num(ben.pending), icon: '⏳', color: '#f59e0b', isMoney: false, view: 'beneficiaries', filter: { status: 'En attente' } },
-                    { label: 'Mutuelles actives', value: num(S.mutuelles), icon: '📋', color: '#8b5cf6', isMoney: false, view: 'directory', filter: null },
-                    { label: 'Cotisations perçues (FCFA)', value: cot, icon: '💳', color: '#0ea5e9', isMoney: true, view: 'cotisations', filter: null },
-                    { label: 'Dons collectés (FCFA)', value: dons, icon: '❤️', color: '#ec4899', isMoney: true, view: 'payments', filter: null },
-                    { label: 'Total des fonds mobilisés (FCFA)', value: fonds, icon: '🏥', color: '#06b6d4', isMoney: true, view: 'payments', filter: null },
-                    { label: 'Taux de couverture', value: taux, suffix: ' %', icon: '📈', color: '#22c55e', isMoney: false, view: 'dashboard', filter: null },
-                    { label: 'Demandes de prise en charge', value: num(cl.total), icon: '📋', color: '#f59e0b', isMoney: false, view: 'claims', filter: null },
-                    { label: 'Montant remboursé (FCFA)', value: num(cl.reimbursedAmount), icon: '💰', color: '#10b981', isMoney: true, view: 'claims', filter: null },
-                    { label: 'Sponsors actifs', value: num(par.sponsorsCount), icon: '🤝', color: '#8b5cf6', isMoney: false, view: 'parrainage-solidaire', filter: null },
-                    { label: 'Filleuls parrainés', value: num(par.sponsoredCount), icon: '🎁', color: '#d97706', isMoney: false, view: 'parrainage-solidaire', filter: null },
-                    { label: 'Fonds parrainage (FCFA)', value: num(par.totalAmount), icon: '🪙', color: '#059669', isMoney: true, view: 'parrainage-solidaire', filter: null }
+                    { label: 'Assurés totaux', value: tot, icon: '👥', color: '#3b82f6', bgGradient: 'linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(96, 165, 250, 0.18) 100%)', isMoney: false, view: 'beneficiaries', filter: { status: 'all' } },
+                    { label: 'Assurés actifs', value: act, icon: '💳', color: '#10b981', bgGradient: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(52, 211, 153, 0.18) 100%)', isMoney: false, view: 'beneficiaries', filter: { status: 'Actif' } },
+                    { label: 'Dossiers en attente', value: num(ben.pending), icon: '⏳', color: '#f59e0b', bgGradient: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(251, 191, 36, 0.18) 100%)', isMoney: false, view: 'beneficiaries', filter: { status: 'En attente' } },
+                    { label: 'Mutuelles actives', value: num(S.mutuelles), icon: '📋', color: '#8b5cf6', bgGradient: 'linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(167, 139, 250, 0.18) 100%)', isMoney: false, view: 'directory', filter: null },
+                    { label: 'Cotisations', value: cot, icon: '💳', color: '#0ea5e9', bgGradient: 'linear-gradient(135deg, rgba(14, 165, 233, 0.12) 0%, rgba(56, 189, 248, 0.18) 100%)', isMoney: true, view: 'cotisations', filter: null },
+                    { label: 'Dons', value: dons, icon: '❤️', color: '#ec4899', bgGradient: 'linear-gradient(135deg, rgba(236, 72, 153, 0.12) 0%, rgba(244, 114, 182, 0.18) 100%)', isMoney: true, view: 'payments', filter: null },
+                    { label: 'Fonds mobilisés', value: fonds, icon: '🏥', color: '#06b6d4', bgGradient: 'linear-gradient(135deg, rgba(6, 182, 212, 0.12) 0%, rgba(34, 211, 238, 0.18) 100%)', isMoney: true, view: 'payments', filter: null },
+                    { label: 'Taux couverture', value: taux, suffix: ' %', icon: '📈', color: '#22c55e', bgGradient: 'linear-gradient(135deg, rgba(34, 197, 94, 0.12) 0%, rgba(74, 222, 128, 0.18) 100%)', isMoney: false, view: 'dashboard', filter: null },
+                    { label: 'Prises en charge', value: num(cl.total), icon: '📋', color: '#f59e0b', bgGradient: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(251, 191, 36, 0.18) 100%)', isMoney: false, view: 'claims', filter: null },
+                    { label: 'Remboursements', value: num(cl.reimbursedAmount), icon: '💰', color: '#10b981', bgGradient: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(52, 211, 153, 0.18) 100%)', isMoney: true, view: 'claims', filter: null },
+                    { label: 'Sponsors actifs', value: num(par.sponsorsCount), icon: '🤝', color: '#8b5cf6', bgGradient: 'linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(167, 139, 250, 0.18) 100%)', isMoney: false, view: 'parrainage-solidaire', filter: null },
+                    { label: 'Filleuls', value: num(par.sponsoredCount), icon: '🎁', color: '#d97706', bgGradient: 'linear-gradient(135deg, rgba(217, 119, 6, 0.12) 0%, rgba(245, 158, 11, 0.18) 100%)', isMoney: false, view: 'parrainage-solidaire', filter: null },
+                    { label: 'Fonds parrainage', value: num(par.totalAmount), icon: '🪙', color: '#059669', bgGradient: 'linear-gradient(135deg, rgba(5, 150, 105, 0.12) 0%, rgba(16, 185, 129, 0.18) 100%)', isMoney: true, view: 'parrainage-solidaire', filter: null }
                   ];
+                  
                   return kpis.map((kpi, i) => (
-                  <button
-                    key={i}
-                    onClick={() => {
-                      if (kpi.filter) {
-                        localStorage.setItem('superadminKpiFilter', JSON.stringify(kpi.filter));
-                        localStorage.setItem('cmu-benef-filter', kpi.filter.status || 'all');
-                      }
-                      if (setView && kpi.view) {
-                        setView(kpi.view);
-                      }
-                    }}
-                    style={{
-                      padding: '1.5rem',
-                      borderRadius: '14px',
-                      background: 'var(--bg-card-subtle)',
-                      border: '1px solid var(--border-color)',
-                      borderLeft: `4px solid ${kpi.color}`,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      textAlign: 'left',
-                      position: 'relative',
-                      overflow: 'hidden'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = 'var(--bg-card)';
-                      e.currentTarget.style.borderColor = kpi.color;
-                      e.currentTarget.style.transform = 'translateY(-3px)';
-                      e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.15)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'var(--bg-card-subtle)';
-                      e.currentTarget.style.borderColor = 'var(--border-color)';
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ fontSize: '1.8rem', marginBottom: '0.5rem' }}>{kpi.icon}</div>
-                      <span style={{ fontSize: '0.72rem', padding: '2px 8px', borderRadius: '12px', background: `${kpi.color}15`, color: kpi.color, fontWeight: '700' }}>
-                        👉 Cliquez pour voir
-                      </span>
-                    </div>
-                    <div style={{ fontSize: kpi.isMoney ? '1.3rem' : '1.8rem', fontWeight: '800', color: kpi.color, lineHeight: 1.1 }}>
-                      {typeof kpi.value === 'number'
-                        ? (kpi.isMoney
-                            ? `${kpi.value.toLocaleString('fr-FR')} FCFA`
-                            : `${kpi.value.toLocaleString('fr-FR')}${kpi.suffix || ''}`)
-                        : '—'}
-                    </div>
-                    <div style={{ fontSize: '0.82rem', color: 'var(--text-sub)', marginTop: '0.5rem', fontWeight: '600' }}>{kpi.label}</div>
-                  </button>
+                    <button key={i} onClick={() => { if (kpi.filter) { localStorage.setItem('superadminKpiFilter', JSON.stringify(kpi.filter)); localStorage.setItem('cmu-benef-filter', kpi.filter.status || 'all'); } if (setView && kpi.view) { setView(kpi.view); } }} className="kpi-super" style={{ padding: '1.5rem', borderRadius: '20px', background: kpi.bgGradient, border: 'none', borderLeft: `5px solid ${kpi.color}`, cursor: 'pointer', textAlign: 'left', position: 'relative', overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.06)', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}>
+                      <div className="d-flex justify-content-between align-items-start mb-3">
+                        <div style={{ width: '52px', height: '52px', borderRadius: '14px', background: `${kpi.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem', boxShadow: `0 4px 12px ${kpi.color}30` }}>
+                          {kpi.icon}
+                        </div>
+                        <span style={{ fontSize: '0.7rem', padding: '4px 10px', borderRadius: '12px', background: `${kpi.color}15`, color: kpi.color, fontWeight: '700', border: `1px solid ${kpi.color}30` }}>
+                          👉 Cliquer
+                        </span>
+                      </div>
+                      <div style={{ fontSize: kpi.isMoney ? '1.4rem' : '2.2rem', fontWeight: '800', color: kpi.color, lineHeight: 1.1, marginBottom: '8px', letterSpacing: '-0.02em' }}>
+                        {typeof kpi.value === 'number' ? (kpi.isMoney ? `${kpi.value.toLocaleString('fr-FR')}` : `${kpi.value.toLocaleString('fr-FR')}${kpi.suffix || ''}`) : '—'}
+                      </div>
+                      {kpi.isMoney && typeof kpi.value === 'number' && (
+                        <div style={{ fontSize: '0.8rem', fontWeight: 600, color: kpi.color, marginBottom: '6px' }}>FCFA</div>
+                      )}
+                      <div style={{ fontSize: '0.82rem', color: 'var(--text-sub)', fontWeight: '600', lineHeight: '1.3' }}>
+                        {kpi.label}
+                      </div>
+                      {typeof kpi.value === 'number' && (
+                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '4px', background: `${kpi.color}40`, borderRadius: '0 0 20px 20px' }}>
+                          <div style={{ height: '100%', width: '100%', background: kpi.color, borderRadius: '0 0 20px 20px', animation: 'shimmer 3s infinite linear', backgroundSize: '1000px 100%' }} />
+                        </div>
+                      )}
+                    </button>
                   ));
                 })()}
               </div>

@@ -22,15 +22,22 @@
 // synchronisation ne s'exécute.
 // v20 - registre remis a zero, reimporte fichier par fichier depuis le Studio.
 //
-// Les fiches `DKR_DKR_2026-…` portaient des matricules FABRIQUÉS par la
-// plateforme, absents des cartes imprimées. Le registre repart des fichiers
-// Excel. Le bump de version vide les anciens registres du navigateur : sans
-// lui, le poste rouvrirait avec les 546 fiches obsolètes avant même que la
+// La plateforme n'invente JAMAIS de matricule : les
+// `DKR_DKR_2026-…` qu'elle avait générés ne figuraient sur aucune carte et ont
+// été supprimés avec le registre. Le registre repart des fichiers Excel.
+//
+// Le bump de version vide les anciens registres du navigateur : sans lui, le
+// poste rouvrirait avec les fiches obsolètes AVANT même que la
 // synchronisation ne s'exécute.
-const STORAGE_KEY = 'unamusc_beneficiaries_store_v20';
-// Nettoyage one-shot des anciennes générations de cache (v1 → v19).
+//
+// v21 : après le renommage des lots, un poste pouvait rouvrir sur un registre
+// figé (160 fiches d'un ancien import, un seul lot). La base en compte 257
+// répartis sur deux lots : le studio affichait une séparation inexistante.
+// Vider le cache force la relecture de la base, seule source de vérité.
+const STORAGE_KEY = 'unamusc_beneficiaries_store_v21';
+// Nettoyage one-shot des anciennes générations de cache (v1 → v20).
 try {
-  for (let i = 1; i <= 19; i++) {
+  for (let i = 1; i <= 20; i++) {
     localStorage.removeItem(`unamusc_beneficiaries_store_v${i}`);
   }
 } catch (e) { /* stockage indisponible */ }
@@ -234,8 +241,37 @@ export const resetToDefaultMembers = () => {
  * @param {Array} members
  * @returns {{ok: boolean, error: string|null, quotaExceeded: boolean, bytes: number}}
  */
+/** Vrai si la valeur est une image embarquée (base64) plutôt qu'une URL. */
+const isEmbeddedPhoto = (v) => typeof v === 'string' && v.startsWith('data:image/');
+
+/**
+ * Copie profonde superficielle d'une fiche, photos base64 vidées.
+ * Récursif : les ayants droit (dependents) portent aussi une photo.
+ */
+const stripEmbeddedPhotos = (input) => {
+  // saveStoredMembers reçoit une LISTE de fiches : il faut mapper. Sinon
+  // l'épandrement {...liste} produit un objet indexé, les photos restent
+  // intactes et le quota échoue toujours.
+  if (Array.isArray(input)) return input.map(stripEmbeddedPhotos);
+  const out = { ...input };
+  if (isEmbeddedPhoto(out.photoUrl)) out.photoUrl = '';
+  if (Array.isArray(out.dependents)) {
+    out.dependents = out.dependents.map((d) => {
+      if (!d || typeof d !== 'object') return d;
+      return isEmbeddedPhoto(d.photoUrl) ? { ...d, photoUrl: '' } : d;
+    });
+  }
+  return out;
+};
+
 export const saveStoredMembers = (members) => {
-  const payload = JSON.stringify(members);
+  // Assainissement avant écriture : les photos en base64 sont retirées.
+  // Elles vivent désormais en base et se relisent via /api/beneficiaries/:id/photo.
+  // Sans ce garde-fou, le poste qui a déjà importé des photos conserve son
+  // stock de 2-3 Mo et TOUTE écriture ultérieure échoue, y compris après un
+  // correctif : l'agent revoit un quota saturé sans cause visible.
+  const light = stripEmbeddedPhotos(members);
+  const payload = JSON.stringify(light);
   const bytes = payload.length;
   if (typeof window === 'undefined' || !window.localStorage) {
     return { ok: false, error: 'Stockage local indisponible.', quotaExceeded: false, bytes };

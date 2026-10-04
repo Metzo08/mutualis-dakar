@@ -442,9 +442,22 @@ export const parseRowsToRecords = (rawRows) =>
     // 'code' est placé EN DERNIER : il ne peut pas entrer en collision avec
     // « PRENOM_BENEFICIAIRE », « NUMERO ORDRE » ni « NUMERO_ADHERENT »,
     // et reste nécessaire pour les classeurs qui ont une simple colonne CODE.
-    const codeBenef = (pickColumn(row, ['codebeneficiaire', 'codebenef', 'cmu']) || '').toString().trim()
-      || (pickColumnExact(row, ['code', 'cmu', 'codecarte', 'carte']) || '').toString().trim();
-    const numeroAdh = (pickColumn(row, ['numeroadherent', 'numerodossier', 'adherentcode']) || '').toString().trim();
+    // ⚠️ `NUMERO_ADHERENT` et `CODE_BENEFICIAIRE` sont lus SÉPARÉMENT, jamais
+    // par correspondance partielle : sur « MSD de Grand Yoff », les deux colonnes
+    // existent et un repérage approximatif capturait la mauvaise — le code
+    // bénéficiaire était alors perdu, remplacé par un matricule calculé, et le
+    // regroupement en ménage s'effondrait (207 fiches au lieu de 154).
+    //
+    // La priorité est explicite : correspondance exacte d'abord, puis un motif
+    // assez discriminant pour ne pas confondre avec NUMERO_ADHERENT.
+    const codeBenefExact = pickColumnExact(row, ['codebeneficiaire', 'codebenef', 'cmu', 'codecarte']);
+    const codeBenef = (codeBenefExact || '').toString().trim()
+      || (pickColumn(row, ['codebeneficiaire', 'codebenef']) || '').toString().trim()
+      || (pickColumnExact(row, ['code', 'codecarte']) || '').toString().trim();
+
+    // Le numéro d'adhérent exclut explicitement tout motif « code » : il ne doit
+    // jamais hériter de CODE_BENEFICIAIRE.
+    const numeroAdh = (pickColumnExact(row, ['numeroadherent', 'numerodossier', 'adherentcode', 'numeroadhent']) || '').toString().trim();
 
     const sexeRaw = (pickColumn(row, ['sexe', 'gender']) || '').toString().trim().toUpperCase();
 
@@ -522,6 +535,56 @@ const campaignYear = () => new Date().getFullYear();
 /** Tous les lots connus, du plus récent au plus ancien. */
 export const getCampaignLots = () =>
   readLots().slice().sort((a, b) => String(b.code).localeCompare(String(a.code)));
+
+/**
+ * Fusionne les libellés connus de la BASE dans le cache local.
+ *
+ * ⚠️ Pourquoi c'est nécessaire : `readLots()` ne lit que le localStorage, or un
+ * lot peut n'exister QUE côté serveur (import réalisé depuis un autre poste, ou
+ * lot renommé par un script de maintenance). Sans cette fusion, le studio
+ * n'affichait que « LOT-2026-011 — 120 dossier(s) », sans jamais indiquer la
+ * provenance : impossible de distinguer deux lots à l'identique.
+ *
+ * Le cache local reste la référence pour l'ordre d'affichage ; la base n'apporte
+ * que ce qui manque (libellé, fichier source, effectif). Une réponse en échec
+ * n'efface jamais le cache.
+ *
+ * @returns {Promise<Array>} lots fusionnés (du plus récent au plus ancien)
+ */
+export const syncCampaignLotsFromServer = async () => {
+  const local = getCampaignLots();
+  if (typeof window === 'undefined') return local;
+  try {
+    const { apiFetch } = await import('./api');
+    const res = await apiFetch('/api/campaign-lots');
+    if (!res || !res.ok) return local;
+    const rows = await res.json().catch(() => null);
+    if (!Array.isArray(rows) || rows.length === 0) return local;
+
+    const merged = new Map(local.map((l) => [String(l.code), l]));
+    rows.forEach((r) => {
+      const code = String(r.code || '').trim();
+      if (!code) return;
+      const label = String(r.label || '').trim();
+      // Le libellé générique « Campagne d'enrôlement … » n'apporte rien :
+      // on le remplace dès que la base propose mieux.
+      const generique = !label || /^Campagne d'enr/i.test(label);
+      merged.set(code, {
+        ...(merged.get(code) || { code }),
+        code,
+        ...(generique ? {} : { label }),
+        ...(r.source_file ? { sourceFile: r.source_file } : {}),
+        ...(r.printed !== undefined ? { printed: r.printed } : {}),
+      });
+    });
+
+    const next = [...merged.values()].sort((a, b) => String(b.code).localeCompare(String(a.code)));
+    writeLots(next);
+    return next;
+  } catch {
+    return local;
+  }
+};
 
 /**
  * Crée un lot d'enrôlement, en base ET en cache local.

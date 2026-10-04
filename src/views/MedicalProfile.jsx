@@ -658,6 +658,18 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
 
   const [antecedents, setAntecedents] = useState(() => getAntecedentsForUser(activeCmuNumber, isStudent, isBsf, activeFirstName));
   const [exams, setExams] = useState(() => getExamsForUser(activeCmuNumber, isStudent, isBsf, activeFirstName));
+
+  // Examens d imagerie filtres par la barre de recherche du bandeau.
+  // Source UNIQUE : la carte de synthese de Vue d ensemble et la grille de
+  // l onglet Radios & Imagerie partagent la MEME regle — sinon la
+  // recherche ne filtrait que la grille et pas l onglet.
+  const visibleExams = exams.filter((ex) => {
+    if (!searchTerm.trim()) return true;
+    const q = searchTerm.trim().toLowerCase();
+    return [ex.title, ex.exam_type, ex.facility, ex.doctor]
+      .filter(Boolean)
+      .some((v) => String(v).toLowerCase().includes(q));
+  });
   const [historyEntries, setHistoryEntries] = useState(() => getHistoryForUser(activeCmuNumber, isStudent, isBsf, activeFirstName));
 
   useEffect(() => {
@@ -690,6 +702,13 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
     } catch (e) {}
   };
 
+  // Suppression reellement persistee : handleUpdateExams ecrit dans la cle
+  // `cmu-exams-${activeCmuNumber}`, celle RELUE au rechargement (useEffect).
+  // Ecrire uniquement dans la cle globale `cmu-medical-exams` faisait
+  // reapparaitre l examen supprime au prochain rafraichissement.
+  const handleDeleteExam = (exam) => {
+    handleUpdateExams(exams.filter((e) => e.id !== exam.id));
+  };
   const handleUpdateHistory = (updatedHistory) => {
     setHistoryEntries(updatedHistory);
     try {
@@ -939,7 +958,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
         {/* 2. CONTENU DU HUB PHARMACIEN */}
         <div className="row g-4 mb-4">
           {/* Panneau d'information des droits RBAC */}
-          <div className="col-lg-5">
+          <div className="col-xxl-5 col-12">
             <div className="p-4 rounded-4 h-100 position-relative overflow-hidden" style={{
               background: 'var(--bg-card)',
               border: '1.5px solid rgba(16, 185, 129, 0.3)',
@@ -1004,9 +1023,9 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
           </div>
 
           {/* RACCOURCIS PHARMACIE */}
-          <div className="col-lg-7">
+          <div className="col-xxl-7 col-12">
             <div className="row g-3">
-              <div className="col-md-6">
+              <div className="col-xl-6 col-12">
                 <div 
                   className="p-4 rounded-4 h-100 cursor-pointer transition-all position-relative overflow-hidden" 
                   style={{ 
@@ -1034,7 +1053,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                 </div>
               </div>
 
-              <div className="col-md-6">
+              <div className="col-xl-6 col-12">
                 <div 
                   className="p-4 rounded-4 h-100 cursor-pointer transition-all position-relative overflow-hidden" 
                   style={{ 
@@ -1061,7 +1080,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                 </div>
               </div>
 
-              <div className="col-md-6">
+              <div className="col-xl-6 col-12">
                 <div 
                   className="p-4 rounded-4 h-100 cursor-pointer transition-all position-relative overflow-hidden" 
                   style={{ 
@@ -1088,7 +1107,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                 </div>
               </div>
 
-              <div className="col-md-6">
+              <div className="col-xl-6 col-12">
                 <div 
                   className="p-4 rounded-4 h-100 cursor-pointer transition-all position-relative overflow-hidden" 
                   style={{ 
@@ -1413,11 +1432,17 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
       {/* Subnav Header Bar */}
       <div style={{ borderBottom: '1px solid var(--border-color)', background: 'var(--bg-card-subtle)', padding: '1.25rem 2.5rem', marginBottom: '1rem' }}>
         <div style={{ maxWidth: '1440px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.75rem', rowGap: '1.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.1rem', flexWrap: 'wrap', minWidth: 0 }}>
             <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.2rem' }}>Dossier médical partagé 🇸🇳</h5>
             <span className="d-none d-md-inline-block" style={{ height: '24px', width: '1.5px', background: 'var(--border-color)' }} />
             
-            <div className="d-flex align-items-center flex-wrap" style={{ gap: '1rem', rowGap: '1rem', background: 'var(--bg-card)', padding: '0.65rem 0.95rem', borderRadius: '20px', border: '1.5px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
+            {/* `flexWrap: 'wrap'` + gap resserré : à ~1000px de viewport la
+                barre passait sous son conteneur et l'onglet « Spécialités &
+                pathologies suivies » tombait seul sur une 2e ligne, visuellement
+                détaché du groupe. Le gap horizontal passe de 1.5rem à 1.1rem
+                et le padding des onglets de 1.55rem à 1.15rem pour que les
+                4 onglets tiennent sur une ligne jusqu'à ~992px. */}
+            <div className="d-flex align-items-center flex-wrap" style={{ gap: '0.5rem', rowGap: '0.5rem', background: 'var(--bg-card)', padding: '0.65rem 0.95rem', borderRadius: '20px', border: '1.5px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
               <button 
                 type="button"
                 className="hover-lift"
@@ -1426,7 +1451,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                   color: activeTab === 'overview' ? '#ffffff' : 'var(--text-sub)', 
                   border: 'none', 
                   borderRadius: '14px', 
-                  padding: '0.7rem 1.55rem', 
+                  padding: '0.7rem 1.15rem', 
                   fontWeight: '750', 
                   fontSize: '0.92rem',
                   cursor: 'pointer',
@@ -1447,7 +1472,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                   color: activeTab === 'history' ? '#ffffff' : 'var(--text-sub)', 
                   border: 'none', 
                   borderRadius: '14px', 
-                  padding: '0.7rem 1.55rem', 
+                  padding: '0.7rem 1.15rem', 
                   fontWeight: '750', 
                   fontSize: '0.92rem',
                   cursor: 'pointer',
@@ -1464,21 +1489,25 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                 type="button"
                 className="hover-lift"
                 style={{ 
-                  background: activeTab === 'lab' ? 'linear-gradient(135deg, #059669 0%, #10b981 100%)' : 'transparent', 
+                  background: activeTab === 'lab' ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' : 'transparent', 
                   color: activeTab === 'lab' ? '#ffffff' : 'var(--text-sub)', 
                   border: 'none', 
                   borderRadius: '14px', 
-                  padding: '0.7rem 1.55rem', 
+                  padding: '0.7rem 1.15rem', 
                   fontWeight: '750', 
                   fontSize: '0.92rem',
                   cursor: 'pointer',
                   margin: 0,
-                  boxShadow: activeTab === 'lab' ? '0 4px 14px rgba(16, 185, 129, 0.35)' : 'none',
-                  transition: 'all 0.2s ease'
+                  boxShadow: activeTab === 'lab' ? '0 4px 14px rgba(139, 92, 246, 0.4)' : 'none',
+                  transition: 'all 0.2s ease',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
                 }} 
                 onClick={() => setActiveTab('lab')}
               >
-                Laboratoire
+                <span style={{ fontSize: '1.1rem' }}>🩻</span>
+                Radios & Imagerie
               </button>
 
               {/* Boutons adaptés selon le sexe du patient */}
@@ -1535,7 +1564,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                     color: activeTab === 'maternity_pathology' ? '#ffffff' : 'var(--text-sub)', 
                     border: 'none', 
                     borderRadius: '14px', 
-                    padding: '0.7rem 1.55rem', 
+                    padding: '0.7rem 1.15rem', 
                     fontWeight: '750', 
                     fontSize: '0.92rem',
                     cursor: 'pointer',
@@ -1651,17 +1680,6 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                   </button>
                 )}
 
-                {/* Ajouter un examen — médecin, laboratoire, sage-femme, superadmin */}
-                {canAddLabExam && (
-                  <button
-                    type="button"
-                    className="hover-lift"
-                    style={{ background: 'rgba(255,255,255,0.22)', color: '#ffffff', border: '1.5px solid rgba(255,255,255,0.5)', borderRadius: '14px', padding: '1rem 1.75rem', fontWeight: '800', fontSize: '0.94rem', cursor: 'pointer', backdropFilter: 'blur(6px)', display: 'inline-flex', alignItems: 'center', gap: '0.6rem', margin: 0 }}
-                    onClick={() => setShowAddExamModal(true)}
-                  >
-                    ➕ Ajouter un examen DICOM / rapport PDF
-                  </button>
-                )}
 
                 {/* Badge de rôle */}
                 {isCitizen && (
@@ -1696,8 +1714,17 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
         {activeTab === 'overview' && (
           <div className="row g-4 mb-5" style={{ rowGap: '3rem' }}>
             
-            {/* Left Column Cards */}
-            <div className="col-lg-4 col-12">
+            {/* Colonne gauche — `col-xxl-4` et non `col-lg-4`/`col-xl-4`.
+                Les points de rupture se basent sur le viewport, pas sur la
+                zone de contenu : la sidebar (270px) et le padding de
+                `.view-container` (2rem) retirent ~340px. À 1300px de
+                viewport il ne restait que ~280px pour cette colonne ; les
+                paddings des cartes (2.25rem/2rem), l'icône (46px) et le
+                gap ne laissaient qu'une trentaine de pixels de texte :
+                les mots se coupaient caractère par caractère. `xxl`
+                (1600px) garantit une colonne confortable ; en dessous,
+                `col-12` empile en pleine largeur. */}
+            <div className="col-xxl-4 col-12">
               <div className="d-flex flex-column" style={{ gap: '2.75rem' }}>
                 
                 {/* Groupe sanguin — affiché uniquement s'il a été
@@ -1705,9 +1732,9 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                     d'un prénom, puis présenté comme « certifié par le
                     laboratoire Bio24 », peut provoquer une transfusion
                     incompatible. */}
-                <div style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '26px', padding: '2.25rem 2rem', boxShadow: '0 12px 35px rgba(0,0,0,0.08)' }}>
-                  <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
-                    <div className="d-flex align-items-center gap-3">
+                <div style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '26px', padding: '1.75rem 1.5rem', boxShadow: '0 12px 35px rgba(0,0,0,0.08)' }}>
+                  <div className="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-3 border-bottom" style={{ gap: '0.75rem', borderColor: 'var(--border-color)' }}>
+                    <div className="d-flex align-items-center gap-3" style={{ minWidth: 0 }}>
                       <span style={{ fontSize: '1.6rem' }}>🩸</span>
                       <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.2rem' }}>Groupe sanguin</h6>
                     </div>
@@ -1735,9 +1762,9 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                 </div>
 
                 {/* Allergies & alertes Card */}
-                <div style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '26px', padding: '2.25rem 2rem', boxShadow: '0 12px 35px rgba(0,0,0,0.08)' }}>
-                  <div className="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
-                    <div className="d-flex align-items-center gap-3 text-warning">
+                <div style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '26px', padding: '1.75rem 1.5rem', boxShadow: '0 12px 35px rgba(0,0,0,0.08)' }}>
+                  <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 pb-3 border-bottom" style={{ gap: '0.75rem', borderColor: 'var(--border-color)' }}>
+                    <div className="d-flex align-items-center gap-3 text-warning" style={{ minWidth: 0 }}>
                       <span style={{ fontSize: '1.6rem' }}>⚠️</span>
                       <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.2rem' }}>Allergies & alertes</h6>
                     </div>
@@ -1846,16 +1873,16 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                     le système national du Ministère de la Santé qui
                     n'a jamais eu lieu. C'est rappelé explicitement plutôt
                     que simulé. */}
-                <div style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '26px', padding: '2.25rem 2rem', boxShadow: '0 12px 35px rgba(0,0,0,0.08)' }}>
+                <div style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '26px', padding: '1.75rem 1.5rem', boxShadow: '0 12px 35px rgba(0,0,0,0.08)' }}>
                   <div className="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
                     <span style={{ fontSize: '1.6rem' }}>🌐</span>
                     <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.2rem' }}>Interopérabilité DHIS2</h6>
                   </div>
 
                   <div className="d-flex flex-column" style={{ gap: '1rem' }}>
-                    <div className="d-flex align-items-start gap-3.5" style={{ background: 'var(--bg-card-subtle)', border: '1.5px solid var(--border-color)', borderRadius: '20px', padding: '1.35rem 1.5rem' }}>
+                    <div className="d-flex align-items-start gap-3.5" style={{ background: 'var(--bg-card-subtle)', border: '1.5px solid var(--border-color)', borderRadius: '20px', padding: '1.1rem 1.25rem' }}>
                       <div style={{ width: '46px', height: '46px', background: 'var(--text-sub)', color: '#ffffff', fontWeight: '800', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', flexShrink: 0 }}>🌐</div>
-                      <div>
+                      <div style={{ minWidth: 0 }}>
                         <strong className="d-block text-main fw-bold" style={{ color: 'var(--text-main)', fontSize: '1.02rem', marginBottom: '0.3rem' }}>Connexion DHIS2 non configurée</strong>
                         <span className="fw-semibold text-muted d-block" style={{ fontSize: '0.88rem', lineHeight: 1.6 }}>
                           Aucun identifiant de patient n'a été attribué dans le Système national
@@ -1870,159 +1897,62 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
               </div>
             </div>
 
-            {/* Right Column: Radiographies & examens certifiés Grid */}
-            <div className="col-lg-8 col-12">
+{/* Colonne droite : synthèse imagerie uniquement.
+                La liste complète des examens vit dans l'onglet « Radios & Imagerie »
+                : la dupliquer ici affichait le même dossier à deux endroits, avec
+                deux designs concurrents et deux blocs de suppression divergents. */}
+            <div className="col-xxl-8 col-12">
               <div style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '28px', padding: '2.5rem 2.25rem', boxShadow: '0 12px 35px rgba(0,0,0,0.08)' }}>
-                
-                <div className="d-flex justify-content-between align-items-center mb-4 pb-3.5 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+                <div className="d-flex justify-content-between align-items-center mb-4 pb-3.5 border-bottom flex-wrap gap-3" style={{ borderColor: 'var(--border-color)' }}>
                   <div className="d-flex align-items-center gap-3.5">
                     <span style={{ fontSize: '1.75rem' }}>🩻</span>
                     <div>
-                      <h5 className="fw-bold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.35rem' }}>Radiographies & examens certifiés</h5>
-                      <small className="text-muted" style={{ fontSize: '0.88rem' }}>Imagerie médicale HD, examens DICOM 3.0 & comptes-rendus certifiés</small>
+                      <h5 className="fw-bold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.35rem' }}>Imagerie & examens certifiés</h5>
+                      <small className="text-muted" style={{ fontSize: '0.88rem' }}>Radiographies, scanners, IRM & échographies — liste complète dans l'onglet « Radios & Imagerie »</small>
                     </div>
                   </div>
+                  <span className="badge px-3 py-2" style={{ background: 'rgba(139, 92, 246, 0.15)', color: '#7c3aed', borderRadius: '12px', fontSize: '0.82rem', fontWeight: '800' }}>
+                    {exams.length} examen{exams.length > 1 ? 's' : ''}
+                  </span>
                 </div>
 
-                {/* Exam Cards Grid */}
-                <div className="row g-4" style={{ rowGap: '2.5rem' }}>
-                  {exams.filter(ex => {
-                    if (!searchTerm.trim()) return true;
-                    const q = searchTerm.toLowerCase();
-                    return ex.title.toLowerCase().includes(q) || ex.exam_type.toLowerCase().includes(q) || ex.facility.toLowerCase().includes(q) || (ex.doctor && ex.doctor.toLowerCase().includes(q));
-                  }).map(ex => (
-                    <div key={ex.id} className="col-md-6 mb-4">
-                      <div className="h-100 d-flex flex-column justify-content-between hover-lift shadow-sm" style={{ background: 'var(--bg-card-subtle)', border: '1.5px solid var(--border-color)', borderRadius: '26px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.06)', transition: 'all 0.25s ease' }}>
-                        
-                        {/* Image Thumbnail Banner */}
-                        <div style={{ height: '210px', position: 'relative', overflow: 'hidden', background: '#0b1120' }}>
-                          <img src={ex.preview} alt={ex.title} onError={(e) => { e.target.src = '/csu_digital_health_real.jpg'; }} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.6) 100%)', pointerEvents: 'none' }} />
-                          <span style={{ background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', color: '#ffffff', border: '1.5px solid rgba(255,255,255,0.4)', padding: '0.5rem 1.15rem', borderRadius: '16px', fontSize: '0.82rem', fontWeight: '800', position: 'absolute', top: '14px', right: '14px', boxShadow: '0 4px 15px rgba(0,0,0,0.4)' }}>
-                            {ex.badge}
-                          </span>
-                          <span style={{ background: 'rgba(15, 23, 42, 0.85)', color: '#38bdf8', border: '1px solid rgba(56, 189, 248, 0.4)', backdropFilter: 'blur(8px)', padding: '0.4rem 0.95rem', borderRadius: '12px', fontSize: '0.78rem', fontWeight: '750', position: 'absolute', bottom: '14px', left: '14px' }}>
-                            📅 {ex.date}
-                          </span>
-                        </div>
-
-                        <div className="p-4 flex-grow-1" style={{ padding: '2rem 1.75rem' }}>
-                          <div className="d-flex align-items-center justify-content-between mb-2">
-                            <span className="badge" style={{ background: 'rgba(14, 165, 233, 0.12)', color: '#0284c7', border: '1px solid rgba(14, 165, 233, 0.3)', padding: '0.35rem 0.85rem', borderRadius: '10px', fontSize: '0.76rem', fontWeight: '750' }}>
-                              {ex.exam_type}
-                            </span>
-                            <small className="text-muted fw-bold" style={{ fontSize: '0.8rem' }}>{ex.cliches} cliché{ex.cliches > 1 ? 's' : ''} HD</small>
+                {exams.length === 0 ? (
+                  <div className="text-center py-4 px-3" style={{ background: 'var(--bg-card-subtle)', border: '1.5px dashed var(--border-color)', borderRadius: '22px' }}>
+                    <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>🩻</div>
+                    <div style={{ fontSize: '0.9rem', fontWeight: '700', marginBottom: '0.4rem' }}>Aucun examen d'imagerie enregistré</div>
+                    <small className="text-muted" style={{ fontSize: '0.82rem', lineHeight: 1.55 }}>Les examens sont ajoutés puis certifiés par un professionnel de santé.</small>
+                  </div>
+                ) : (
+                  <>
+                    <div className="d-flex flex-column" style={{ gap: '0.75rem' }}>
+                      {visibleExams.slice(0, 3).map((ex) => (
+                        <div key={ex.id} className="d-flex align-items-center gap-3.5" style={{ background: 'var(--bg-card-subtle)', border: '1.5px solid var(--border-color)', borderRadius: '18px', padding: '1rem 1.25rem' }}>
+                          <span style={{ fontSize: '1.35rem' }}>🩻</span>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <strong className="d-block fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>{ex.title}</strong>
+                            <small className="text-muted d-block fw-semibold" style={{ fontSize: '0.82rem' }}>{ex.date} · {ex.facility}</small>
                           </div>
-                          <h6 className="fw-extrabold mb-2" style={{ color: 'var(--text-main)', fontSize: '1.2rem', lineHeight: '1.45' }}>{ex.title}</h6>
-                          <small className="text-muted d-block mb-3.5" style={{ fontSize: '0.88rem' }}>🏥 {ex.facility} • 🩺 {ex.doctor}</small>
-                          <div style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '18px', padding: '1.25rem 1.45rem' }}>
-                            <small className="fw-bold text-muted d-block mb-1" style={{ fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Conclusion clinique certifiée :</small>
-                            <p className="mb-0 fw-semibold" style={{ fontSize: '0.92rem', lineHeight: '1.65', color: 'var(--text-main)' }}>{ex.conclusion}</p>
-                          </div>
+                          <span className="badge flex-shrink-0" style={{ background: 'rgba(99, 102, 241, 0.12)', color: '#6366f1', borderRadius: '10px', fontSize: '0.74rem', fontWeight: '800' }}>{ex.badge}</span>
                         </div>
-
-                        <div className="border-top d-flex align-items-center justify-content-between flex-wrap" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-card)', padding: '1.35rem 1.75rem', gap: '1rem', rowGap: '0.85rem' }}>
-                          <div className="d-flex align-items-center flex-wrap" style={{ gap: '0.85rem' }}>
-                            <button 
-                              type="button" 
-                              className="btn fw-bold hover-lift text-white"
-                              style={{ background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', border: 'none', borderRadius: '14px', fontSize: '0.88rem', padding: '0.75rem 1.35rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)' }}
-                              onClick={() => setViewingExam(ex)}
-                            >
-                              🩻 Visionner Cliché DICOM
-                            </button>
-                            
-                            <button 
-                              type="button" 
-                              className="btn fw-bold hover-lift"
-                              style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', padding: '0.75rem 1.25rem', fontSize: '0.88rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
-                              onClick={() => handleDownloadExam(ex)}
-                              title="Télécharger le rapport certifié PDF (🇸🇳)"
-                            >
-                              📥 Rapport PDF
-                            </button>
-                          </div>
-
-                          {canAddLabExam && (
-                            <div className="d-flex align-items-center" style={{ gap: '0.65rem' }}>
-                              <button 
-                                type="button" 
-                                className="btn btn-sm btn-outline-primary fw-bold hover-lift"
-                                style={{ borderRadius: '12px', fontSize: '0.84rem', padding: '0.6rem 0.95rem' }}
-                                onClick={() => setEditingExamTarget({ ...ex })}
-                                title="Modifier l'examen / DICOM"
-                              >
-                                ✏️ Éditer
-                              </button>
-                              
-                              <button 
-                                type="button" 
-                                className="btn btn-sm fw-bold hover-lift"
-                                style={{ 
-                                  background: 'rgba(239, 68, 68, 0.12)', 
-                                  color: '#ef4444', 
-                                  border: '1.5px solid rgba(239, 68, 68, 0.35)', 
-                                  borderRadius: '12px', 
-                                  padding: '0.6rem 0.95rem', 
-                                  fontSize: '0.84rem', 
-                                  cursor: 'pointer'
-                                }}
-                                onClick={() => setDeleteConfirmTarget({
-                                  title: ex.title,
-                                  itemType: "l'examen certifié / cliché DICOM",
-                                  onConfirm: () => {
-                                    const updated = exams.filter(e => e.id !== ex.id);
-                                    setExams(updated);
-                                    try { localStorage.setItem('cmu-medical-exams', JSON.stringify(updated)); } catch (err) {}
-                                    setDeleteConfirmTarget(null);
-                                  }
-                                })}
-                                title="Supprimer cet examen"
-                              >
-                                🗑️ Supprimer
-                              </button>
-                            </div>
-                          )}
-                        </div>
-
-                      </div>
+                      ))}
                     </div>
-                  ))}
+                    {visibleExams.length < exams.length && (
+                      <small className="text-muted d-block mt-3" style={{ fontSize: '0.82rem' }}>
+                        … {exams.length - visibleExams.length} autre(s) examen(s) masqué(s) par votre recherche.
+                      </small>
+                    )}
+                  </>
+                )}
 
-                  {/* Add New Exam Card — Médecin, Laborantin, Sage-femme, SuperAdmin */}
-                  {canAddLabExam && (
-                    <div className="col-md-6 mb-3">
-                      <div 
-                        className="h-100 d-flex flex-column align-items-center justify-content-center text-center hover-lift"
-                        style={{ 
-                          background: 'var(--bg-card-subtle)', 
-                          border: '2.5px dashed #10b981', 
-                          borderRadius: '24px',
-                          cursor: 'pointer',
-                          minHeight: '300px',
-                          padding: '3.25rem 2rem',
-                          gap: '1.5rem',
-                          transition: 'all 0.2s ease'
-                        }}
-                        onClick={() => setShowAddExamModal(true)}
-                      >
-                        <div style={{ width: '68px', height: '68px', borderRadius: '22px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.9rem', fontWeight: '700', boxShadow: '0 6px 20px rgba(16,185,129,0.25)' }}>
-                          ➕
-                        </div>
-                        <div className="d-flex flex-column align-items-center gap-2 text-center">
-                          <strong className="fw-extrabold d-block" style={{ color: 'var(--text-main)', fontSize: '1.2rem' }}>
-                            Ajouter un examen DICOM / rapport PDF
-                          </strong>
-                          <span className="small text-muted d-block fw-semibold" style={{ fontSize: '0.94rem' }}>
-                            (Cliché radio, IRM, scanner ou bilan labo)
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                </div>
-
+                <button
+                  type="button"
+                  className="btn fw-bold text-white hover-lift w-100"
+                  style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', border: 'none', borderRadius: '16px', fontSize: '0.95rem', padding: '0.9rem 1.5rem', boxShadow: '0 6px 20px rgba(139, 92, 246, 0.3)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', marginTop: '1.75rem' }}
+                  onClick={() => setActiveTab('lab')}
+                >
+                  <span style={{ fontSize: '1.05rem' }}>🩻</span>
+                  Voir les radios &amp; l'imagerie ({exams.length})
+                </button>
               </div>
             </div>
 
@@ -2071,7 +2001,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                               setDeleteConfirmTarget({
                                 title: h.acte,
                                 itemType: 'Historique médical',
-                                onConfirm: () => setHistoryEntries(historyEntries.filter(item => item.id !== h.id))
+                                onConfirm: () => handleUpdateHistory(historyEntries.filter(item => item.id !== h.id))
                               });
                             }}
                           >
@@ -2090,71 +2020,426 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
           </div>
         )}
 
-        {/* TAB 3: LABORATOIRE */}
+        {/* TAB 3: RADIOS & IMAGERIE DICOM */}
         {activeTab === 'lab' && (
-          <div className="p-4 rounded-4 mb-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-            <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-              <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>🧪 Résultats d'analyses biologiques</h5>
-              {canEditMedical && (
+          <div className="fade-in-up">
+            {/* En-tête de la section */}
+            <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap" style={{ gap: '1.5rem' }}>
+              <div className="d-flex align-items-center gap-3">
+                <div style={{ 
+                  width: '60px', 
+                  height: '60px', 
+                  borderRadius: '18px', 
+                  background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%)', 
+                  color: '#8b5cf6', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  fontSize: '1.8rem',
+                  border: '2px solid rgba(139, 92, 246, 0.2)',
+                  boxShadow: '0 4px 15px rgba(139, 92, 246, 0.15)'
+                }}>
+                  🩻
+                </div>
+                <div>
+                  <h3 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.5rem' }}>
+                    Radios & Imagerie DICOM
+                  </h3>
+                  <p className="text-muted mb-0" style={{ fontSize: '0.92rem' }}>
+                    Examens d'imagerie médicale certifiés • Scanner • IRM • Échographies • Radiographies
+                  </p>
+                </div>
+              </div>
+
+              {/* Bouton d'ajout pour les professionnels */}
+              {canAddLabExam && (
                 <button 
                   type="button" 
-                  style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontWeight: '800', fontSize: '0.82rem', cursor: 'pointer' }}
-                  onClick={() => setShowAddLabModal(true)}
+                  className="btn fw-bold text-white hover-lift px-4 py-3"
+                  style={{ 
+                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', 
+                    border: 'none', 
+                    borderRadius: '16px', 
+                    fontSize: '0.92rem',
+                    boxShadow: '0 6px 20px rgba(139, 92, 246, 0.3)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.6rem'
+                  }}
+                  onClick={() => setShowAddExamModal(true)}
                 >
-                  ➕ Ajouter un résultat
+                  <span style={{ fontSize: '1.1rem' }}>➕</span>
+                  Ajouter un examen DICOM
                 </button>
               )}
             </div>
-            <div className="table-responsive">
-              <table className="table align-middle mb-0" style={{ background: 'transparent' }}>
-                <thead>
-                  <tr className="small border-bottom" style={{ color: 'var(--text-sub)', borderColor: 'var(--border-color)' }}>
-                    <th style={{ textTransform: 'none', letterSpacing: '0.02em' }}>Examen</th>
-                    <th style={{ textTransform: 'none', letterSpacing: '0.02em' }}>Résultat</th>
-                    <th style={{ textTransform: 'none', letterSpacing: '0.02em' }}>Valeurs de référence</th>
-                    <th style={{ textTransform: 'none', letterSpacing: '0.02em' }}>Statut</th>
-                    {canEditMedical && <th className="text-end" style={{ textTransform: 'none', letterSpacing: '0.02em' }}>Action</th>}
-                  </tr>
-                </thead>
-                <tbody>
-                  {labResults.map(lr => (
-                    <tr key={lr.id} className="border-bottom" style={{ borderColor: 'var(--border-color)' }}>
-                      <td className="fw-bold" style={{ color: 'var(--text-main)' }}>{lr.examen}</td>
-                      <td className={lr.statut === 'Normal' ? 'text-success fw-bold' : 'text-danger fw-bold'}>{lr.resultat}</td>
-                      <td style={{ color: 'var(--text-sub)' }}>{lr.reference}</td>
-                      <td>
-                        <span style={{ 
-                          background: lr.statut === 'Normal' ? 'rgba(16,185,129,0.2)' : lr.statut === 'Élevé' ? 'rgba(239,68,68,0.2)' : 'rgba(245,158,11,0.2)', 
-                          color: lr.statut === 'Normal' ? '#10b981' : lr.statut === 'Élevé' ? '#ef4444' : '#f59e0b', 
-                          padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '700' 
-                        }}>
-                          {lr.statut}
-                        </span>
-                      </td>
-                      {canEditMedical && (
-                        <td className="text-end">
-                          <button 
-                            type="button" 
-                            style={{ background: 'rgba(239, 68, 68, 0.12)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '10px', padding: '0.35rem 0.75rem', fontSize: '0.78rem', fontWeight: '700', cursor: 'pointer' }}
-                            onClick={() => {
-                              setDeleteConfirmTarget({
-                                title: lr.examen,
-                                itemType: 'Résultat d\'analyse laboratoire',
-                                onConfirm: () => setLabResults(labResults.filter(item => item.id !== lr.id))
-                              });
-                            }}
-                          >
-                            🗑️ Supprimer
-                          </button>
-                        </td>
-                      )}
-                    </tr>
+
+            {/* Statistiques rapides */}
+            <div className="row g-3 mb-5">
+              <div className="col-xl-3 col-lg-6 col-md-6">
+                <div className="p-4 rounded-4 hover-lift" style={{ 
+                  background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(139, 92, 246, 0.05) 100%)', 
+                  border: '1.5px solid rgba(139, 92, 246, 0.2)',
+                  height: '100%'
+                }}>
+                  <div className="d-flex align-items-center justify-content-between mb-2">
+                    <span style={{ fontSize: '2rem' }}>🔬</span>
+                    <span className="badge px-3 py-1.5" style={{ 
+                      background: 'rgba(139, 92, 246, 0.15)', 
+                      color: '#8b5cf6', 
+                      fontSize: '0.75rem', 
+                      fontWeight: '800',
+                      borderRadius: '10px'
+                    }}>
+                      Total
+                    </span>
+                  </div>
+                  <h4 className="fw-extrabold mb-1" style={{ color: '#8b5cf6', fontSize: '2rem' }}>
+                    {exams.length}
+                  </h4>
+                  <p className="text-muted mb-0" style={{ fontSize: '0.88rem', fontWeight: '600' }}>
+                    Examens d'imagerie
+                  </p>
+                </div>
+              </div>
+
+              <div className="col-xl-3 col-lg-6 col-md-6">
+                <div className="p-4 rounded-4 hover-lift" style={{ 
+                  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(5, 150, 105, 0.05) 100%)', 
+                  border: '1.5px solid rgba(16, 185, 129, 0.2)',
+                  height: '100%'
+                }}>
+                  <div className="d-flex align-items-center justify-content-between mb-2">
+                    <span style={{ fontSize: '2rem' }}>📸</span>
+                    <span className="badge px-3 py-1.5" style={{ 
+                      background: 'rgba(16, 185, 129, 0.15)', 
+                      color: '#10b981', 
+                      fontSize: '0.75rem', 
+                      fontWeight: '800',
+                      borderRadius: '10px'
+                    }}>
+                      Clichés
+                    </span>
+                  </div>
+                  <h4 className="fw-extrabold mb-1" style={{ color: '#10b981', fontSize: '2rem' }}>
+                    {exams.reduce((sum, ex) => sum + (ex.cliches || 0), 0)}
+                  </h4>
+                  <p className="text-muted mb-0" style={{ fontSize: '0.88rem', fontWeight: '600' }}>
+                    Clichés HD disponibles
+                  </p>
+                </div>
+              </div>
+
+              <div className="col-xl-3 col-lg-6 col-md-6">
+                <div className="p-4 rounded-4 hover-lift" style={{ 
+                  background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(220, 38, 38, 0.05) 100%)', 
+                  border: '1.5px solid rgba(239, 68, 68, 0.2)',
+                  height: '100%'
+                }}>
+                  <div className="d-flex align-items-center justify-content-between mb-2">
+                    <span style={{ fontSize: '2rem' }}>🏥</span>
+                    <span className="badge px-3 py-1.5" style={{ 
+                      background: 'rgba(239, 68, 68, 0.15)', 
+                      color: '#ef4444', 
+                      fontSize: '0.75rem', 
+                      fontWeight: '800',
+                      borderRadius: '10px'
+                    }}>
+                      Structures
+                    </span>
+                  </div>
+                  <h4 className="fw-extrabold mb-1" style={{ color: '#ef4444', fontSize: '2rem' }}>
+                    {new Set(exams.map(ex => ex.facility)).size}
+                  </h4>
+                  <p className="text-muted mb-0" style={{ fontSize: '0.88rem', fontWeight: '600' }}>
+                    Établissements différents
+                  </p>
+                </div>
+              </div>
+
+              <div className="col-xl-3 col-lg-6 col-md-6">
+                <div className="p-4 rounded-4 hover-lift" style={{ 
+                  background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.05) 100%)', 
+                  border: '1.5px solid rgba(245, 158, 11, 0.2)',
+                  height: '100%'
+                }}>
+                  <div className="d-flex align-items-center justify-content-between mb-2">
+                    <span style={{ fontSize: '2rem' }}>📅</span>
+                    <span className="badge px-3 py-1.5" style={{ 
+                      background: 'rgba(245, 158, 11, 0.15)', 
+                      color: '#f59e0b', 
+                      fontSize: '0.75rem', 
+                      fontWeight: '800',
+                      borderRadius: '10px'
+                    }}>
+                      Récent
+                    </span>
+                  </div>
+                  <h4 className="fw-extrabold mb-1" style={{ color: '#f59e0b', fontSize: '1.15rem', lineHeight: '1.3' }}>
+                    {exams.length > 0 ? exams[exams.length - 1].date : 'Aucun'}
+                  </h4>
+                  <p className="text-muted mb-0" style={{ fontSize: '0.88rem', fontWeight: '600' }}>
+                    Dernier examen
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Grille des examens d'imagerie */}
+            <div className="row g-4">
+              {exams.length === 0 ? (
+                <div className="col-12">
+                  <div className="text-center py-5" style={{ 
+                    background: 'var(--bg-card)', 
+                    border: '2px dashed var(--border-color)', 
+                    borderRadius: '24px',
+                    padding: '4rem 2rem'
+                  }}>
+                    <div style={{ 
+                      width: '100px', 
+                      height: '100px', 
+                      borderRadius: '50%', 
+                      background: 'rgba(139, 92, 246, 0.1)', 
+                      margin: '0 auto 1.5rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '3rem'
+                    }}>
+                      🩻
+                    </div>
+                    <h5 className="fw-bold mb-2" style={{ color: 'var(--text-main)' }}>
+                      Aucun examen d'imagerie enregistré
+                    </h5>
+                    <p className="text-muted mb-4" style={{ fontSize: '0.95rem', maxWidth: '500px', margin: '0 auto 2rem' }}>
+                      Les examens d'imagerie médicale (radiographies, scanners, IRM, échographies) apparaîtront ici une fois ajoutés par un professionnel de santé.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                    <div className="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                      <small className="text-muted fw-semibold" style={{ fontSize: '0.85rem' }}>
+                        {visibleExams.length} examen{visibleExams.length > 1 ? 's' : ''} affiche{visibleExams.length > 1 ? 's' : ''}
+                        {searchTerm.trim() ? ' pour « ' + searchTerm.trim() + ' »' : ''}
+                      </small>
+                      <span className="badge px-3 py-2" style={{ background: 'rgba(99, 102, 241, 0.12)', color: '#6366f1', borderRadius: '10px', fontSize: '0.76rem', fontWeight: '800' }}>
+                        Cliches : {exams.reduce((s, ex) => s + (ex.cliches || 0), 0)}
+                      </span>
+                    </div>
+                    {visibleExams.map((ex) => (
+                    <div key={ex.id} className="col-12 col-lg-6">
+                      <div className="rounded-4 overflow-hidden hover-lift h-100" style={{ 
+                        background: 'var(--bg-card)', 
+                        border: '1.5px solid var(--border-color)', 
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
+                        transition: 'all 0.3s ease'
+                      }}>
+                        {/* Image d'aperçu */}
+                        {ex.preview && (
+                          <div className="position-relative" style={{ 
+                            height: '240px', 
+                            background: `linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%), url(${ex.preview}) center/cover`,
+                            overflow: 'hidden'
+                          }}>
+                            <span style={{ 
+                              background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', 
+                              color: '#ffffff', 
+                              padding: '0.65rem 1.25rem', 
+                              borderRadius: '14px', 
+                              fontSize: '0.82rem', 
+                              fontWeight: '800', 
+                              position: 'absolute', 
+                              top: '16px', 
+                              right: '16px',
+                              boxShadow: '0 4px 15px rgba(0,0,0,0.4)',
+                              border: '1.5px solid rgba(255,255,255,0.3)'
+                            }}>
+                              {ex.badge}
+                            </span>
+                            <span style={{ 
+                              background: 'rgba(15, 23, 42, 0.9)', 
+                              color: '#38bdf8', 
+                              backdropFilter: 'blur(10px)', 
+                              padding: '0.55rem 1.15rem', 
+                              borderRadius: '12px', 
+                              fontSize: '0.82rem', 
+                              fontWeight: '750', 
+                              position: 'absolute', 
+                              bottom: '16px', 
+                              left: '16px',
+                              border: '1px solid rgba(56, 189, 248, 0.3)',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.5rem'
+                            }}>
+                              <span>📅</span>
+                              {ex.date}
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Contenu de la carte */}
+                        <div className="p-4">
+                          <div className="d-flex align-items-start justify-content-between mb-3">
+                            <span className="badge px-3 py-2" style={{ 
+                              background: 'rgba(99, 102, 241, 0.12)', 
+                              color: '#6366f1', 
+                              border: '1px solid rgba(99, 102, 241, 0.25)', 
+                              borderRadius: '12px', 
+                              fontSize: '0.8rem', 
+                              fontWeight: '750'
+                            }}>
+                              {ex.exam_type}
+                            </span>
+                            <small className="text-muted fw-bold" style={{ fontSize: '0.85rem' }}>
+                              {ex.cliches} cliché{ex.cliches > 1 ? 's' : ''} HD
+                            </small>
+                          </div>
+
+                          <h5 className="fw-extrabold mb-3" style={{ 
+                            color: 'var(--text-main)', 
+                            fontSize: '1.25rem', 
+                            lineHeight: '1.4'
+                          }}>
+                            {ex.title}
+                          </h5>
+
+                          <div className="d-flex flex-column gap-2 mb-3">
+                            <div className="d-flex align-items-center gap-2">
+                              <span style={{ fontSize: '1.1rem' }}>🏥</span>
+                              <small className="text-muted" style={{ fontSize: '0.88rem', fontWeight: '600' }}>
+                                {ex.facility}
+                              </small>
+                            </div>
+                            <div className="d-flex align-items-center gap-2">
+                              <span style={{ fontSize: '1.1rem' }}>🩺</span>
+                              <small className="text-muted" style={{ fontSize: '0.88rem', fontWeight: '600' }}>
+                                {ex.doctor}
+                              </small>
+                            </div>
+                          </div>
+
+                          {/* Conclusion clinique */}
+                          <div style={{ 
+                            background: 'var(--bg-card-subtle)', 
+                            border: '1.5px solid var(--border-color)', 
+                            borderRadius: '16px', 
+                            padding: '1.25rem'
+                          }}>
+                            <small className="fw-bold text-muted d-block mb-2" style={{ 
+                              fontSize: '0.78rem', 
+                              textTransform: 'uppercase', 
+                              letterSpacing: '0.05em'
+                            }}>
+                              📋 Conclusion clinique certifiée
+                            </small>
+                            <p className="mb-0 fw-semibold" style={{ 
+                              fontSize: '0.92rem', 
+                              lineHeight: '1.7', 
+                              color: 'var(--text-main)'
+                            }}>
+                              {ex.conclusion}
+                            </p>
+                          </div>
+
+                          {/* Boutons d'action */}
+                          <div className="d-flex flex-wrap align-items-center justify-content-between mt-4 pt-3 border-top" style={{ 
+                            borderColor: 'var(--border-color)', 
+                            gap: '1rem'
+                          }}>
+                            <div className="d-flex flex-wrap align-items-center" style={{ gap: '0.75rem' }}>
+                              <button 
+                                type="button" 
+                                className="btn fw-bold hover-lift text-white"
+                                style={{ 
+                                  background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', 
+                                  border: 'none', 
+                                  borderRadius: '14px', 
+                                  fontSize: '0.88rem', 
+                                  padding: '0.75rem 1.35rem',
+                                  boxShadow: '0 4px 14px rgba(139, 92, 246, 0.3)',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.5rem'
+                                }}
+                                onClick={() => setViewingExam(ex)}
+                              >
+                                <span>🩻</span>
+                                Visionner
+                              </button>
+                              
+                              <button 
+                                type="button" 
+                                className="btn fw-bold hover-lift"
+                                style={{ 
+                                  background: 'var(--bg-card-subtle)', 
+                                  color: 'var(--text-main)', 
+                                  border: '1.5px solid var(--border-color)', 
+                                  borderRadius: '14px', 
+                                  padding: '0.75rem 1.25rem', 
+                                  fontSize: '0.88rem',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '0.5rem'
+                                }}
+                                onClick={() => handleDownloadExam(ex)}
+                              >
+                                <span>📥</span>
+                                PDF
+                              </button>
+                            </div>
+
+                            {canAddLabExam && (
+                              <div className="d-flex align-items-center" style={{ gap: '0.65rem' }}>
+                                <button 
+                                  type="button" 
+                                  className="btn btn-sm fw-bold hover-lift"
+                                  style={{ 
+                                    background: 'rgba(99, 102, 241, 0.1)', 
+                                    color: '#6366f1', 
+                                    border: '1.5px solid rgba(99, 102, 241, 0.25)', 
+                                    borderRadius: '12px', 
+                                    fontSize: '0.84rem', 
+                                    padding: '0.6rem 1rem'
+                                  }}
+                                  onClick={() => setEditingExamTarget({ ...ex })}
+                                >
+                                  ✏️ Éditer
+                                </button>
+                                
+                                <button 
+                                  type="button" 
+                                  className="btn btn-sm fw-bold hover-lift"
+                                  style={{ 
+                                    background: 'rgba(239, 68, 68, 0.12)', 
+                                    color: '#ef4444', 
+                                    border: '1.5px solid rgba(239, 68, 68, 0.3)', 
+                                    borderRadius: '12px', 
+                                    padding: '0.6rem 1rem', 
+                                    fontSize: '0.84rem'
+                                  }}
+                                  onClick={() => setDeleteConfirmTarget({
+                                    title: ex.title,
+                                    itemType: "l'examen d'imagerie",
+                                    onConfirm: () => {
+                                      handleDeleteExam(ex);
+                                      setDeleteConfirmTarget(null);
+                                    }
+                                  })}
+                                >
+                                  🗑️
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   ))}
-                  {labResults.length === 0 && (
-                    <tr><td colSpan={canEditMedical ? 5 : 4} className="text-center py-4" style={{ color: 'var(--text-sub)' }}>Aucun résultat d'analyse enregistré.</td></tr>
-                  )}
-                </tbody>
-              </table>
+
+                </>
+              )}
             </div>
           </div>
         )}
@@ -2187,7 +2472,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
           </div>
 
           <div className="row g-4 mb-4">
-            <div className="col-lg-4 col-md-6">
+            <div className="col-xl-4 col-md-6">
               <div style={{ padding: '1.5rem', borderRadius: '20px', background: 'rgba(219, 39, 119, 0.06)', border: '1.5px solid rgba(219, 39, 119, 0.25)', height: '100%' }}>
                 <div className="d-flex align-items-center justify-content-between mb-2">
                   <span style={{ fontSize: '1.6rem' }}>🗓️</span>
@@ -2204,7 +2489,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
               </div>
             </div>
 
-            <div className="col-lg-4 col-md-6">
+            <div className="col-xl-4 col-md-6">
               <div style={{ padding: '1.5rem', borderRadius: '20px', background: 'rgba(14, 165, 233, 0.06)', border: '1.5px solid rgba(14, 165, 233, 0.25)', height: '100%' }}>
                 <div className="d-flex align-items-center justify-content-between mb-2">
                   <span style={{ fontSize: '1.6rem' }}>🩻</span>
@@ -2218,7 +2503,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
               </div>
             </div>
 
-            <div className="col-lg-4 col-md-6">
+            <div className="col-xl-4 col-md-6">
               <div style={{ padding: '1.5rem', borderRadius: '20px', background: 'rgba(16, 185, 129, 0.06)', border: '1.5px solid rgba(16, 185, 129, 0.25)', height: '100%' }}>
                 <div className="d-flex align-items-center justify-content-between mb-2">
                   <span style={{ fontSize: '1.6rem' }}>💊</span>
@@ -2238,73 +2523,132 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
       {/* TAB 4B: SPÉCIALITÉS MÉDICALES & PATHOLOGIES (Adapté Homme / Femme) */}
       {activeTab === 'maternity_pathology' && (
         <div className="card text-left p-4 fade-in-up" style={{ borderRadius: '24px', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', margin: '1.5rem auto', maxWidth: '1320px', boxShadow: '0 12px 35px rgba(0,0,0,0.06)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.25rem', marginBottom: '1.5rem', paddingBottom: '1.25rem', borderBottom: '1px solid var(--border-color)' }}>
+          {/* En-tete — CTA discret (contour) : un aplat vert concurrence le titre */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.25rem', marginBottom: '1.75rem', paddingBottom: '1.5rem', borderBottom: '1px solid var(--border-color)' }}>
             <div className="d-flex align-items-center gap-3">
-              <div style={{ width: '52px', height: '52px', borderRadius: '16px', background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.2) 0%, rgba(16, 185, 129, 0.15) 100%)', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem', border: '1px solid rgba(5, 150, 105, 0.3)' }}>
+              <div style={{ width: '54px', height: '54px', borderRadius: '16px', background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.2) 0%, rgba(16, 185, 129, 0.14) 100%)', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.7rem', border: '1px solid rgba(5, 150, 105, 0.3)', flexShrink: 0 }}>
                 🩺
               </div>
               <div>
-                <h4 style={{ fontSize: '1.3rem', fontWeight: '850', color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <h4 style={{ fontSize: '1.35rem', fontWeight: '850', color: 'var(--text-main)', margin: 0 }}>
                   {isFemalePatient ? 'Pathologies & Spécialités Médicales' : 'Spécialités Médicales & Pathologies Suivies'}
                 </h4>
-                <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', margin: '0.25rem 0 0 0' }}>
-                  Suivi clinique spécialisé (Cardiologie, Diabète, Pneumologie, Chirurgie & ALD) pour {activeFirstName} {activeLastName} ({activeCmuNumber})
+                <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', margin: '0.3rem 0 0 0' }}>
+                  {activeFirstName} {activeLastName} ({activeCmuNumber})
                 </p>
               </div>
             </div>
             <button
               type="button"
-              className="btn btn-sm fw-bold px-4 py-2.5 hover-lift text-white"
-              style={{ borderRadius: '14px', background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', border: 'none', boxShadow: '0 4px 15px rgba(5,150,105,0.3)', fontSize: '0.9rem' }}
+              className="btn btn-sm fw-bold px-4 py-2.5 hover-lift"
+              style={{ borderRadius: '12px', background: 'transparent', color: '#047857', border: '1.5px solid rgba(5, 150, 105, 0.45)', fontSize: '0.88rem' }}
               onClick={() => setView ? setView('maternity') : (window.location.hash = '#/maternity')}
             >
-              📖 Consulter les Protocoles ALD
+              📖 Protocoles ALD
             </button>
           </div>
 
-          <div className="row g-4 mb-4">
-            <div className="col-lg-4 col-md-6">
-              <div style={{ padding: '1.5rem', borderRadius: '20px', background: 'rgba(14, 165, 233, 0.06)', border: '1.5px solid rgba(14, 165, 233, 0.25)', height: '100%' }}>
-                <div className="d-flex align-items-center justify-content-between mb-2">
-                  <span style={{ fontSize: '1.6rem' }}>🩸</span>
-                  <span className="badge" style={{ background: '#0ea5e9', color: '#fff', fontSize: '0.75rem', fontWeight: '800' }}>ALD 80% / 100%</span>
+          {/* Grille des specialites — anatomie identique pour chaque service */}
+          <div className="row g-4">
+            <div className="col-xl-4 col-md-6">
+              <div className="h-100 d-flex flex-column" style={{ padding: '1.6rem 1.5rem', borderRadius: '22px', background: 'var(--bg-card-subtle)', border: '1.5px solid var(--border-color)', transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease' }}>
+                <div className="d-flex align-items-center justify-content-between mb-3">
+                  <div style={{ width: '46px', height: '46px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', background: 'rgba(14,165,233,0.14)', color: '#0ea5e9', border: '1px solid rgba(14,165,233,0.3)' }}>🩸</div>
+                  <span className="badge" style={{ background: 'rgba(14,165,233,0.14)', color: '#0369a1', border: '1px solid rgba(14,165,233,0.3)', fontSize: '0.72rem', fontWeight: '800', borderRadius: '999px', padding: '0.35rem 0.7rem' }}>ALD 80 % / 100 %</span>
                 </div>
-                <strong style={{ color: '#0ea5e9', fontSize: '1.05rem', display: 'block', marginBottom: '0.35rem' }}>Pathologies Chroniques (ALD)</strong>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', lineHeight: '1.55', marginBottom: '0.75rem' }}>
-                  Diabète Type 2 & HTA d'effort • Suivi trimestriel avec délivrance de bandelettes et ordonnances sécurisées sous le tiers-payant.
+                <strong style={{ color: 'var(--text-main)', fontSize: '1.02rem', display: 'block', marginBottom: '0.4rem' }}>Pathologies Chroniques (ALD)</strong>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', lineHeight: '1.6', marginBottom: '1rem', flex: 1 }}>
+                  Diabète de type 2 et hypertension d'effort — suivi trimestriel avec délivrance de bandelettes et ordonnances sécurisées sous le tiers-payant.
                 </p>
-                <div className="d-flex align-items-center gap-2">
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#0ea5e9', display: 'inline-block' }}></span>
-                  <small style={{ color: '#0ea5e9', fontWeight: '750', fontSize: '0.82rem' }}>Protocole d'affection longue durée actif</small>
+                <div className="d-flex align-items-center gap-2 pt-3" style={{ borderTop: '1px solid var(--border-color)' }}>
+                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#0ea5e9', display: 'inline-block', flexShrink: 0 }}></span>
+                  <small style={{ color: '#0369a1', fontWeight: '700', fontSize: '0.8rem' }}>ALD pris en charge selon protocole</small>
                 </div>
               </div>
             </div>
 
-            <div className="col-lg-4 col-md-6">
-              <div style={{ padding: '1.5rem', borderRadius: '20px', background: 'rgba(245, 158, 11, 0.06)', border: '1.5px solid rgba(245, 158, 11, 0.25)', height: '100%' }}>
-                <div className="d-flex align-items-center justify-content-between mb-2">
-                  <span style={{ fontSize: '1.6rem' }}>❤️</span>
-                  <span className="badge" style={{ background: '#f59e0b', color: '#fff', fontSize: '0.75rem', fontWeight: '800' }}>Cardiologie</span>
+            <div className="col-xl-4 col-md-6">
+              <div className="h-100 d-flex flex-column" style={{ padding: '1.6rem 1.5rem', borderRadius: '22px', background: 'var(--bg-card-subtle)', border: '1.5px solid var(--border-color)', transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease' }}>
+                <div className="d-flex align-items-center justify-content-between mb-3">
+                  <div style={{ width: '46px', height: '46px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', background: 'rgba(245,158,11,0.14)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)' }}>❤️</div>
+                  <span className="badge" style={{ background: 'rgba(245,158,11,0.14)', color: '#b45309', border: '1px solid rgba(245,158,11,0.3)', fontSize: '0.72rem', fontWeight: '800', borderRadius: '999px', padding: '0.35rem 0.7rem' }}>Cardiologie</span>
                 </div>
-                <strong style={{ color: '#f59e0b', fontSize: '1.05rem', display: 'block', marginBottom: '0.35rem' }}>Cardiologie & Santé Vasculaire</strong>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', lineHeight: '1.55', marginBottom: '0.75rem' }}>
-                  ECG de repos annuel, échocardiographie Doppler et surveillance tensionnelle auprès des cardiologues conventionnés UNAMUSC.
+                <strong style={{ color: 'var(--text-main)', fontSize: '1.02rem', display: 'block', marginBottom: '0.4rem' }}>Cardiologie & Santé Vasculaire</strong>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', lineHeight: '1.6', marginBottom: '1rem', flex: 1 }}>
+                  Électrocardiogramme de repos annuel, échocardiographie Doppler et surveillance tensionnelle auprès des cardiologues conventionnés UNAMUSC.
                 </p>
-                <small className="text-warning fw-bold d-block" style={{ fontSize: '0.82rem' }}>Prise en charge consultation & bilans à 80%</small>
+                <div className="d-flex align-items-center gap-2 pt-3" style={{ borderTop: '1px solid var(--border-color)' }}>
+                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#f59e0b', display: 'inline-block', flexShrink: 0 }}></span>
+                  <small style={{ color: '#b45309', fontWeight: '700', fontSize: '0.8rem' }}>Consultations et bilans à 80 %</small>
+                </div>
               </div>
             </div>
 
-            <div className="col-lg-4 col-md-6">
-              <div style={{ padding: '1.5rem', borderRadius: '20px', background: 'rgba(16, 185, 129, 0.06)', border: '1.5px solid rgba(16, 185, 129, 0.25)', height: '100%' }}>
-                <div className="d-flex align-items-center justify-content-between mb-2">
-                  <span style={{ fontSize: '1.6rem' }}>👶</span>
-                  <span className="badge" style={{ background: '#10b981', color: '#fff', fontSize: '0.75rem', fontWeight: '800' }}>100% Gratuit PEV</span>
+            <div className="col-xl-4 col-md-6">
+              <div className="h-100 d-flex flex-column" style={{ padding: '1.6rem 1.5rem', borderRadius: '22px', background: 'var(--bg-card-subtle)', border: '1.5px solid var(--border-color)', transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease' }}>
+                <div className="d-flex align-items-center justify-content-between mb-3">
+                  <div style={{ width: '46px', height: '46px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', background: 'rgba(16,185,129,0.14)', color: '#10b981', border: '1px solid rgba(16,185,129,0.3)' }}>👶</div>
+                  <span className="badge" style={{ background: 'rgba(16,185,129,0.14)', color: '#047857', border: '1px solid rgba(16,185,129,0.3)', fontSize: '0.72rem', fontWeight: '800', borderRadius: '999px', padding: '0.35rem 0.7rem' }}>100 % gratuit PEV</span>
                 </div>
-                <strong style={{ color: '#10b981', fontSize: '1.05rem', display: 'block', marginBottom: '0.35rem' }}>Santé Infantile & PEV (Ayants Droit)</strong>
-                <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', lineHeight: '1.55', marginBottom: '0.75rem' }}>
-                  Programme Élargi de Vaccination (BCG, Pentavalent 1 à 3, Rougeole-Rubéole), carnet pédiatrique et suivi de croissance des enfants.
+                <strong style={{ color: 'var(--text-main)', fontSize: '1.02rem', display: 'block', marginBottom: '0.4rem' }}>Santé Infantile & PEV (Ayants Droit)</strong>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', lineHeight: '1.6', marginBottom: '1rem', flex: 1 }}>
+                  Programme élargi de vaccination (BCG, Pentavalent 1 à 3, Rougeole-Rubéole), carnet pédiatrique et suivi de croissance des enfants.
                 </p>
-                <small className="text-success fw-bold d-block" style={{ fontSize: '0.82rem' }}>Gratuité totale pour les enfants de 0 à 5 ans</small>
+                <div className="d-flex align-items-center gap-2 pt-3" style={{ borderTop: '1px solid var(--border-color)' }}>
+                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#10b981', display: 'inline-block', flexShrink: 0 }}></span>
+                  <small style={{ color: '#047857', fontWeight: '700', fontSize: '0.8rem' }}>Gratuité totale de 0 à 5 ans</small>
+                </div>
+              </div>
+            </div>
+
+            <div className="col-xl-4 col-md-6">
+              <div className="h-100 d-flex flex-column" style={{ padding: '1.6rem 1.5rem', borderRadius: '22px', background: 'var(--bg-card-subtle)', border: '1.5px solid var(--border-color)', transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease' }}>
+                <div className="d-flex align-items-center justify-content-between mb-3">
+                  <div style={{ width: '46px', height: '46px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', background: 'rgba(99,102,241,0.14)', color: '#6366f1', border: '1px solid rgba(99,102,241,0.3)' }}>🫁</div>
+                  <span className="badge" style={{ background: 'rgba(99,102,241,0.14)', color: '#4338ca', border: '1px solid rgba(99,102,241,0.3)', fontSize: '0.72rem', fontWeight: '800', borderRadius: '999px', padding: '0.35rem 0.7rem' }}>Pneumologie</span>
+                </div>
+                <strong style={{ color: 'var(--text-main)', fontSize: '1.02rem', display: 'block', marginBottom: '0.4rem' }}>Pneumologie & Voies Respiratoires</strong>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', lineHeight: '1.6', marginBottom: '1rem', flex: 1 }}>
+                  Spirométries, radiographies thoraciques et suivi des pathologies respiratoires au sein du réseau conventionné UNAMUSC.
+                </p>
+                <div className="d-flex align-items-center gap-2 pt-3" style={{ borderTop: '1px solid var(--border-color)' }}>
+                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#6366f1', display: 'inline-block', flexShrink: 0 }}></span>
+                  <small style={{ color: '#4338ca', fontWeight: '700', fontSize: '0.8rem' }}>Examens et consultations à 80 %</small>
+                </div>
+              </div>
+            </div>
+
+            <div className="col-xl-4 col-md-6">
+              <div className="h-100 d-flex flex-column" style={{ padding: '1.6rem 1.5rem', borderRadius: '22px', background: 'var(--bg-card-subtle)', border: '1.5px solid var(--border-color)', transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease' }}>
+                <div className="d-flex align-items-center justify-content-between mb-3">
+                  <div style={{ width: '46px', height: '46px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', background: 'rgba(236,72,153,0.14)', color: '#ec4899', border: '1px solid rgba(236,72,153,0.3)' }}>🔬</div>
+                  <span className="badge" style={{ background: 'rgba(236,72,153,0.14)', color: '#be185d', border: '1px solid rgba(236,72,153,0.3)', fontSize: '0.72rem', fontWeight: '800', borderRadius: '999px', padding: '0.35rem 0.7rem' }}>Chirurgie</span>
+                </div>
+                <strong style={{ color: 'var(--text-main)', fontSize: '1.02rem', display: 'block', marginBottom: '0.4rem' }}>Chirurgie Ambulatoire</strong>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', lineHeight: '1.6', marginBottom: '1rem', flex: 1 }}>
+                  Consultations pré-opératoires, actes mineurs ambulatoires et contrôle post-opératoire dans les structures conventionnées.
+                </p>
+                <div className="d-flex align-items-center gap-2 pt-3" style={{ borderTop: '1px solid var(--border-color)' }}>
+                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#ec4899', display: 'inline-block', flexShrink: 0 }}></span>
+                  <small style={{ color: '#be185d', fontWeight: '700', fontSize: '0.8rem' }}>Actes pris en charge 50 à 80 %</small>
+                </div>
+              </div>
+            </div>
+
+            <div className="col-xl-4 col-md-6">
+              <div className="h-100 d-flex flex-column" style={{ padding: '1.6rem 1.5rem', borderRadius: '22px', background: 'var(--bg-card-subtle)', border: '1.5px solid var(--border-color)', transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease' }}>
+                <div className="d-flex align-items-center justify-content-between mb-3">
+                  <div style={{ width: '46px', height: '46px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', background: 'rgba(139,92,246,0.14)', color: '#8b5cf6', border: '1px solid rgba(139,92,246,0.3)' }}>👁️</div>
+                  <span className="badge" style={{ background: 'rgba(139,92,246,0.14)', color: '#6d28d9', border: '1px solid rgba(139,92,246,0.3)', fontSize: '0.72rem', fontWeight: '800', borderRadius: '999px', padding: '0.35rem 0.7rem' }}>Optique</span>
+                </div>
+                <strong style={{ color: 'var(--text-main)', fontSize: '1.02rem', display: 'block', marginBottom: '0.4rem' }}>Ophtalmologie & Optique</strong>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', lineHeight: '1.6', marginBottom: '1rem', flex: 1 }}>
+                  Dépistage du glaucome, des cataracts et des troubles de la vue ; correction optique dans le cadre du tiers-payant.
+                </p>
+                <div className="d-flex align-items-center gap-2 pt-3" style={{ borderTop: '1px solid var(--border-color)' }}>
+                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#8b5cf6', display: 'inline-block', flexShrink: 0 }}></span>
+                  <small style={{ color: '#6d28d9', fontWeight: '700', fontSize: '0.8rem' }}>Consultation à 80 %</small>
+                </div>
               </div>
             </div>
           </div>

@@ -14,7 +14,9 @@
  */
 
 import { getStoredMembers, saveStoredMembers } from './beneficiaryStore';
-import { getAccessToken, API_BASE } from './api';
+// Les appels HTTP passent par `apiFetch` (import dynamique dans fetchAll) : il
+// renouvelle le jeton expiré. Un `fetch` brut ne le faisait pas, et le studio
+// concluait à une panne serveur alors que la base répondait.
 
 /** Registre mis en cache : évite N requêtes quand plusieurs vues montent. */
 let cache = null;
@@ -97,24 +99,31 @@ const fromApi = (b) => {
 
 /**
  * Récupère TOUS les bénéficiaires depuis l'API (pagination automatique).
+ *
+ * ⚠️ On passe par `apiFetch` et NON par un `fetch` brut : c'est ce wrapper qui
+ * renouvelle l'access token expiré via le refresh token, puis rejoue la requête.
+ * Un `fetch` brut renvoyait 401 dès que la session dépassait sa durée — et le
+ * studio affichait alors « registre serveur injoignable » alors que le backend
+ * répondait parfaitement. C'est arrivé : le bump du cache local vide avait
+ * masqué le problème, et l'agent croyait ses 257 fiches perdues.
+ *
  * @returns {Promise<Array|null>} null si l'agent n'est pas habilité.
  */
 const fetchAll = async () => {
+  const { apiFetch } = await import('./api');
   const pageSize = 200;
   const collected = [];
   let page = 1;
   let totalPages = 1;
 
   do {
-    const res = await fetch(
-      `${API_BASE}/api/beneficiaries?page=${page}&limit=${pageSize}`,
-      { headers: { Authorization: `Bearer ${getAccessToken() || ''}` } }
-    );
-    if (!res.ok) {
+    const res = await apiFetch(`/api/beneficiaries?page=${page}&limit=${pageSize}`);
+    if (!res || !res.ok) {
+      const status = res ? res.status : 0;
       // 401/403 : session expirée ou rôle insuffisant. L'appelant conservera
       // son registre local — on ne remplace jamais des données par du vide.
-      if (res.status === 401 || res.status === 403) return null;
-      throw new Error(`HTTP ${res.status}`);
+      if (status === 401 || status === 403) return null;
+      throw new Error(`HTTP ${status || 'injoignable'}`);
     }
     const payload = await res.json();
     const rows = Array.isArray(payload) ? payload : payload.data || [];
@@ -157,10 +166,21 @@ export const syncBeneficiariesFromServer = async ({ force = false } = {}) => {
       // et les dossiers médicaux se rechargent donc automatiquement.
       const saved = saveStoredMembers(mapped);
       if (!saved.ok) {
-        // Registre volumineux (photos base64) : le plafond local est atteint.
-        // La base fait foi — l'agent peut continuer, les fiches reviendront au
-        // prochain chargement depuis le serveur.
+        // Registre volumineux (photos base64) : le plafond local est atteint et
+        // l'ANCIEN registre est resté en place.
+        //
+        // ⚠️ Il ne faut surtout PAS relire `getStoredMembers()` dans ce cas :
+        // on renverrait alors ce registre périmé — typiquement 160 fiches
+        // d'un ancien import, avec leurs anciens lots — alors que la base en
+        // compte 257 réparties sur deux lots. Le studio affichait alors un
+        // seul lot, et l'agent croyait que la séparation avait échoué.
+        //
+        // La base fait foi : on garde les données FRAICHES en mémoire, et
+        // elles reviendront de la base à chaque rechargement.
         console.warn('[syncBeneficiaries] Registre non écrit en local :', saved.error);
+        cache = mapped;
+        lastSyncAt = Date.now();
+        return cache;
       }
       cache = getStoredMembers();
       lastSyncAt = Date.now();

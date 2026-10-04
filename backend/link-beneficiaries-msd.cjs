@@ -32,7 +32,10 @@
  *   node backend/link-beneficiaries-msd.cjs           (simulation)
  *   node backend/link-beneficiaries-msd.cjs --apply   (écriture)
  */
-require('dotenv').config();
+// Le .env vit dans backend/ : lancé depuis la racine du dépôt, `dotenv` ne le
+// trouve pas et la connexion part avec des identifiants vides («
+// authentification par mot de passe échouée »).
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 const { query, pool } = require('./db');
 const { msdFromCmuNumber } = require('./msdScope');
 

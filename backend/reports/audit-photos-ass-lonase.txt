@@ -1,0 +1,268 @@
+================================================================
+SOURCE : ASS LONASE
+================================================================
+mutuelle_name distinctes en base : 1
+  retenues pour ASS LONASE : (aucune)
+fiches en base (merged_into is null) : 0
+  dont avec photo_url non vide   : 0
+  SANS photo                     : 0
+codes distincts                 : 0
+codes en doublon                : 0
+identites (prenom+nom+naissance) en doublon : 0
+
+dossier photos : C:\Users\hp\Downloads\ASS LONASE
+  existe        : oui
+  fichiers image: 66
+
+=== APPARIEMENT (regle bulkImport.js) ===
+  fiches ayant trouve un fichier photo : 0 / 0
+  fichiers reellement consommes        : 0 / 66
+
+=== FICHES SANS PHOTO (0) ===
+
+=== FICHIERS PHOTO NON UTILISES (66) ===
+  DKR_2600040.1 PAPA IBRAHIMA SEYE.jpeg
+  DKR_2600041.1 ELHADJI MALICK FALL.jpeg
+  DKR_2600042.1 IDRISSA NDOYE.jpeg
+  DKR_2600043.1 MOUHAMADOU MOUSTAPHA SAMBE.jpeg
+  DKR_2600044.1 ANOKO AKPE LAWSON.jpeg
+  DKR_2600045.1 AISSATOU NDIAYE.jpeg
+  DKR_2600046.1 MOHAMADOU TALL.jpeg
+  DKR_2600047.1 FALOU DIA.jpeg
+  DKR_2600048.1 ABY NDIAYE.jpeg
+  DKR_2600049.1 AMINATA NDIAYE.jpeg
+  DKR_2600050.1 GADE NDOYE NDIAYE.jpeg
+  DKR_2600052.1 Adama Wade.jpeg
+  DKR_2600053.1 Malick DIAGNE.jpeg
+  DKR_2600054.1 Medoune Niang.jpeg
+  DKR_2600055.1 Jeannette Ba.jpeg
+  DKR_2600056.1 Papa A Diao.jpeg
+  DKR_2600056.1 PAPA ABDALAH DIAO.jpeg
+  DKR_2600057.1 Papa D Ndao.jpeg
+  DKR_2600057.1 PAPA DIALO NDAW.jpeg
+  DKR_2600058.1  Louise S Diallo.jpeg
+  DKR_2600058.1 LOUISE SEYNABOU DIALLO.jpeg
+  DKR_2600059.1 Khady Pouye.jpeg
+  DKR_2600060.1 Thierno Sow.jpeg
+  DKR_2600061.1 Abissatou Diallo.jpeg
+  DKR_2600062.1 MAIMOUNA SOW.jpeg
+  DKR_2600062.1 Maïmouna Sow.jpeg
+  DKR_2600063.1 Aminata Ch Camara.jpeg
+  DKR_2600063.1 AMINATA CHRISTIANE CAMARA.jpeg
+  DKR_2600064.1 Babaly A Wane.jpeg
+  DKR_2600064.1 BABALY ALMAMY WANE.jpeg
+  DKR_2600065.1 Babacar Bakhoum.jpeg
+  DKR_2600066.1 ETIENNE MEDOU.jpeg
+  DKR_2600066.1 Étienne Medou.jpeg
+  DKR_2600067.1 Ndeye A Seck.jpeg
+  DKR_2600067.1 NDEYE AICHATOU SECK.jpeg
+  DKR_2600068.1 Abdoulaye Mbodj.jpeg
+  DKR_2600069.1 CHERIF CISSE.jpeg
+  DKR_2600069.1 Chérif Cissé.jpeg
+  DKR_2600070.1 Aminata Diop.jpeg
+  DKR_2600071.1 Aminata Dianko.jpeg
+  DKR_2600072.1 Mboussobe MBACKE.jpeg
+  DKR_2600073.1 Yanekh Sarr.jpeg
+  DKR_2600074.1 Alioune B Diaw.jpeg
+  DKR_2600075.1 Arame B Mbodj.jpeg
+  DKR_2600076.1 Ndeye F Diop.jpeg
+  DKR_2600077.1 Adama Badiane.jpeg
+  DKR_2600078.1 Serigne Pene.jpeg
+  DKR_2600079.1 Naffi Diallo.jpeg
+  DKR_2600080.1 Mouhamadou Sylla.jpeg
+  DKR_2600081.1 Elhadji A Diouf.jpeg
+  DKR_2600082.1 Ndeye C Diakhate.jpeg
+  DKR_2600083.1 Lena Gueye.jpeg
+  DKR_2600084.1 Coumba K Fall.jpeg
+  DKR_2600085.1 Soucayna Thioune.jpeg
+  DKR_2600086.1 Yaye W Dafe.jpeg
+  DKR_2600087.1 Fatoumata Ba.jpeg
+  DKR_2600088.1 Amadou M Diop.jpeg
+  DKR_2600089.1 Souleymane Cissé.jpeg
+  DKR_2600090.1 Katy Niang.jpeg
+  DKR_2600091.1 Sokhna R Dieye.jpeg
+  DKR_2600092.1 Malle H Tall.jpeg
+  DKR_2600093.1 Layty Gueye.jpeg
+  DKR_2600094.1 Binetou R Diouf.jpeg
+  DKR_2600095.1 Ndeye F Ndiaye.jpeg
+  DKR_2600096.1 Mouhamadou M Gueye.jpeg
+  DKR_2600097.1 Khady DIAGNE.jpeg
+
+=== ECARTS NOM DE FICHIER (fichier non apparie) ===
+  DKR_2600040.1 PAPA IBRAHIMA SEYE.jpeg
+     -> code DKR_2600040.1 ABSENT en base | (variante sans suffixe DKR_2600040 : absente) | nom "papaibrahimaseye" INCONNU en base
+  DKR_2600041.1 ELHADJI MALICK FALL.jpeg
+     -> code DKR_2600041.1 ABSENT en base | (variante sans suffixe DKR_2600041 : absente) | nom "elhadjimalickfall" INCONNU en base
+  DKR_2600042.1 IDRISSA NDOYE.jpeg
+     -> code DKR_2600042.1 ABSENT en base | (variante sans suffixe DKR_2600042 : absente) | nom "idrissandoye" INCONNU en base
+  DKR_2600043.1 MOUHAMADOU MOUSTAPHA SAMBE.jpeg
+     -> code DKR_2600043.1 ABSENT en base | (variante sans suffixe DKR_2600043 : absente) | nom "mouhamadoumoustaphasambe" INCONNU en base
+  DKR_2600044.1 ANOKO AKPE LAWSON.jpeg
+     -> code DKR_2600044.1 ABSENT en base | (variante sans suffixe DKR_2600044 : absente) | nom "anokoakpelawson" INCONNU en base
+  DKR_2600045.1 AISSATOU NDIAYE.jpeg
+     -> code DKR_2600045.1 ABSENT en base | (variante sans suffixe DKR_2600045 : absente) | nom "aissatoundiaye" INCONNU en base
+  DKR_2600046.1 MOHAMADOU TALL.jpeg
+     -> code DKR_2600046.1 ABSENT en base | (variante sans suffixe DKR_2600046 : absente) | nom "mohamadoutall" INCONNU en base
+  DKR_2600047.1 FALOU DIA.jpeg
+     -> code DKR_2600047.1 ABSENT en base | (variante sans suffixe DKR_2600047 : absente) | nom "faloudia" INCONNU en base
+  DKR_2600048.1 ABY NDIAYE.jpeg
+     -> code DKR_2600048.1 ABSENT en base | (variante sans suffixe DKR_2600048 : absente) | nom "abyndiaye" INCONNU en base
+  DKR_2600049.1 AMINATA NDIAYE.jpeg
+     -> code DKR_2600049.1 ABSENT en base | (variante sans suffixe DKR_2600049 : absente) | nom "aminatandiaye" INCONNU en base
+  DKR_2600050.1 GADE NDOYE NDIAYE.jpeg
+     -> code DKR_2600050.1 ABSENT en base | (variante sans suffixe DKR_2600050 : absente) | nom "gadendoyendiaye" INCONNU en base
+  DKR_2600052.1 Adama Wade.jpeg
+     -> code DKR_2600052.1 ABSENT en base | (variante sans suffixe DKR_2600052 : absente) | nom "adamawade" INCONNU en base
+  DKR_2600053.1 Malick DIAGNE.jpeg
+     -> code DKR_2600053.1 ABSENT en base | (variante sans suffixe DKR_2600053 : absente) | nom "malickdiagne" INCONNU en base
+  DKR_2600054.1 Medoune Niang.jpeg
+     -> code DKR_2600054.1 ABSENT en base | (variante sans suffixe DKR_2600054 : absente) | nom "medouneniang" INCONNU en base
+  DKR_2600055.1 Jeannette Ba.jpeg
+     -> code DKR_2600055.1 ABSENT en base | (variante sans suffixe DKR_2600055 : absente) | nom "jeannetteba" INCONNU en base
+  DKR_2600056.1 Papa A Diao.jpeg
+     -> code DKR_2600056.1 ABSENT en base | (variante sans suffixe DKR_2600056 : absente) | nom "papaadiao" INCONNU en base
+  DKR_2600056.1 PAPA ABDALAH DIAO.jpeg
+     -> code DKR_2600056.1 ABSENT en base | (variante sans suffixe DKR_2600056 : absente) | nom "papaabdalahdiao" INCONNU en base
+  DKR_2600057.1 Papa D Ndao.jpeg
+     -> code DKR_2600057.1 ABSENT en base | (variante sans suffixe DKR_2600057 : absente) | nom "papadndao" INCONNU en base
+  DKR_2600057.1 PAPA DIALO NDAW.jpeg
+     -> code DKR_2600057.1 ABSENT en base | (variante sans suffixe DKR_2600057 : absente) | nom "papadialondaw" INCONNU en base
+  DKR_2600058.1  Louise S Diallo.jpeg
+     -> code DKR_2600058.1 ABSENT en base | (variante sans suffixe DKR_2600058 : absente) | nom "louisesdiallo" INCONNU en base
+  DKR_2600058.1 LOUISE SEYNABOU DIALLO.jpeg
+     -> code DKR_2600058.1 ABSENT en base | (variante sans suffixe DKR_2600058 : absente) | nom "louiseseynaboudiallo" INCONNU en base
+  DKR_2600059.1 Khady Pouye.jpeg
+     -> code DKR_2600059.1 ABSENT en base | (variante sans suffixe DKR_2600059 : absente) | nom "khadypouye" INCONNU en base
+  DKR_2600060.1 Thierno Sow.jpeg
+     -> code DKR_2600060.1 ABSENT en base | (variante sans suffixe DKR_2600060 : absente) | nom "thiernosow" INCONNU en base
+  DKR_2600061.1 Abissatou Diallo.jpeg
+     -> code DKR_2600061.1 ABSENT en base | (variante sans suffixe DKR_2600061 : absente) | nom "abissatoudiallo" INCONNU en base
+  DKR_2600062.1 MAIMOUNA SOW.jpeg
+     -> code DKR_2600062.1 ABSENT en base | (variante sans suffixe DKR_2600062 : absente) | nom "maimounasow" INCONNU en base
+  DKR_2600062.1 Maïmouna Sow.jpeg
+     -> code DKR_2600062.1 ABSENT en base | (variante sans suffixe DKR_2600062 : absente) | nom "maimounasow" INCONNU en base
+  DKR_2600063.1 Aminata Ch Camara.jpeg
+     -> code DKR_2600063.1 ABSENT en base | (variante sans suffixe DKR_2600063 : absente) | nom "aminatachcamara" INCONNU en base
+  DKR_2600063.1 AMINATA CHRISTIANE CAMARA.jpeg
+     -> code DKR_2600063.1 ABSENT en base | (variante sans suffixe DKR_2600063 : absente) | nom "aminatachristianecamara" INCONNU en base
+  DKR_2600064.1 Babaly A Wane.jpeg
+     -> code DKR_2600064.1 ABSENT en base | (variante sans suffixe DKR_2600064 : absente) | nom "babalyawane" INCONNU en base
+  DKR_2600064.1 BABALY ALMAMY WANE.jpeg
+     -> code DKR_2600064.1 ABSENT en base | (variante sans suffixe DKR_2600064 : absente) | nom "babalyalmamywane" INCONNU en base
+  DKR_2600065.1 Babacar Bakhoum.jpeg
+     -> code DKR_2600065.1 ABSENT en base | (variante sans suffixe DKR_2600065 : absente) | nom "babacarbakhoum" INCONNU en base
+  DKR_2600066.1 ETIENNE MEDOU.jpeg
+     -> code DKR_2600066.1 ABSENT en base | (variante sans suffixe DKR_2600066 : absente) | nom "etiennemedou" INCONNU en base
+  DKR_2600066.1 Étienne Medou.jpeg
+     -> code DKR_2600066.1 ABSENT en base | (variante sans suffixe DKR_2600066 : absente) | nom "etiennemedou" INCONNU en base
+  DKR_2600067.1 Ndeye A Seck.jpeg
+     -> code DKR_2600067.1 ABSENT en base | (variante sans suffixe DKR_2600067 : absente) | nom "ndeyeaseck" INCONNU en base
+  DKR_2600067.1 NDEYE AICHATOU SECK.jpeg
+     -> code DKR_2600067.1 ABSENT en base | (variante sans suffixe DKR_2600067 : absente) | nom "ndeyeaichatouseck" INCONNU en base
+  DKR_2600068.1 Abdoulaye Mbodj.jpeg
+     -> code DKR_2600068.1 ABSENT en base | (variante sans suffixe DKR_2600068 : absente) | nom "abdoulayembodj" INCONNU en base
+  DKR_2600069.1 CHERIF CISSE.jpeg
+     -> code DKR_2600069.1 ABSENT en base | (variante sans suffixe DKR_2600069 : absente) | nom "cherifcisse" INCONNU en base
+  DKR_2600069.1 Chérif Cissé.jpeg
+     -> code DKR_2600069.1 ABSENT en base | (variante sans suffixe DKR_2600069 : absente) | nom "cherifcisse" INCONNU en base
+  DKR_2600070.1 Aminata Diop.jpeg
+     -> code DKR_2600070.1 ABSENT en base | (variante sans suffixe DKR_2600070 : absente) | nom "aminatadiop" INCONNU en base
+  DKR_2600071.1 Aminata Dianko.jpeg
+     -> code DKR_2600071.1 ABSENT en base | (variante sans suffixe DKR_2600071 : absente) | nom "aminatadianko" INCONNU en base
+  DKR_2600072.1 Mboussobe MBACKE.jpeg
+     -> code DKR_2600072.1 ABSENT en base | (variante sans suffixe DKR_2600072 : absente) | nom "mboussobembacke" INCONNU en base
+  DKR_2600073.1 Yanekh Sarr.jpeg
+     -> code DKR_2600073.1 ABSENT en base | (variante sans suffixe DKR_2600073 : absente) | nom "yanekhsarr" INCONNU en base
+  DKR_2600074.1 Alioune B Diaw.jpeg
+     -> code DKR_2600074.1 ABSENT en base | (variante sans suffixe DKR_2600074 : absente) | nom "aliounebdiaw" INCONNU en base
+  DKR_2600075.1 Arame B Mbodj.jpeg
+     -> code DKR_2600075.1 ABSENT en base | (variante sans suffixe DKR_2600075 : absente) | nom "aramebmbodj" INCONNU en base
+  DKR_2600076.1 Ndeye F Diop.jpeg
+     -> code DKR_2600076.1 ABSENT en base | (variante sans suffixe DKR_2600076 : absente) | nom "ndeyefdiop" INCONNU en base
+  DKR_2600077.1 Adama Badiane.jpeg
+     -> code DKR_2600077.1 ABSENT en base | (variante sans suffixe DKR_2600077 : absente) | nom "adamabadiane" INCONNU en base
+  DKR_2600078.1 Serigne Pene.jpeg
+     -> code DKR_2600078.1 ABSENT en base | (variante sans suffixe DKR_2600078 : absente) | nom "serignepene" INCONNU en base
+  DKR_2600079.1 Naffi Diallo.jpeg
+     -> code DKR_2600079.1 ABSENT en base | (variante sans suffixe DKR_2600079 : absente) | nom "naffidiallo" INCONNU en base
+  DKR_2600080.1 Mouhamadou Sylla.jpeg
+     -> code DKR_2600080.1 ABSENT en base | (variante sans suffixe DKR_2600080 : absente) | nom "mouhamadousylla" INCONNU en base
+  DKR_2600081.1 Elhadji A Diouf.jpeg
+     -> code DKR_2600081.1 ABSENT en base | (variante sans suffixe DKR_2600081 : absente) | nom "elhadjiadiouf" INCONNU en base
+  DKR_2600082.1 Ndeye C Diakhate.jpeg
+     -> code DKR_2600082.1 ABSENT en base | (variante sans suffixe DKR_2600082 : absente) | nom "ndeyecdiakhate" INCONNU en base
+  DKR_2600083.1 Lena Gueye.jpeg
+     -> code DKR_2600083.1 ABSENT en base | (variante sans suffixe DKR_2600083 : absente) | nom "lenagueye" INCONNU en base
+  DKR_2600084.1 Coumba K Fall.jpeg
+     -> code DKR_2600084.1 ABSENT en base | (variante sans suffixe DKR_2600084 : absente) | nom "coumbakfall" INCONNU en base
+  DKR_2600085.1 Soucayna Thioune.jpeg
+     -> code DKR_2600085.1 ABSENT en base | (variante sans suffixe DKR_2600085 : absente) | nom "soucaynathioune" INCONNU en base
+  DKR_2600086.1 Yaye W Dafe.jpeg
+     -> code DKR_2600086.1 ABSENT en base | (variante sans suffixe DKR_2600086 : absente) | nom "yayewdafe" INCONNU en base
+  DKR_2600087.1 Fatoumata Ba.jpeg
+     -> code DKR_2600087.1 ABSENT en base | (variante sans suffixe DKR_2600087 : absente) | nom "fatoumataba" INCONNU en base
+  DKR_2600088.1 Amadou M Diop.jpeg
+     -> code DKR_2600088.1 ABSENT en base | (variante sans suffixe DKR_2600088 : absente) | nom "amadoumdiop" INCONNU en base
+  DKR_2600089.1 Souleymane Cissé.jpeg
+     -> code DKR_2600089.1 ABSENT en base | (variante sans suffixe DKR_2600089 : absente) | nom "souleymanecisse" INCONNU en base
+  DKR_2600090.1 Katy Niang.jpeg
+     -> code DKR_2600090.1 ABSENT en base | (variante sans suffixe DKR_2600090 : absente) | nom "katyniang" INCONNU en base
+  DKR_2600091.1 Sokhna R Dieye.jpeg
+     -> code DKR_2600091.1 ABSENT en base | (variante sans suffixe DKR_2600091 : absente) | nom "sokhnardieye" INCONNU en base
+  DKR_2600092.1 Malle H Tall.jpeg
+     -> code DKR_2600092.1 ABSENT en base | (variante sans suffixe DKR_2600092 : absente) | nom "mallehtall" INCONNU en base
+  DKR_2600093.1 Layty Gueye.jpeg
+     -> code DKR_2600093.1 ABSENT en base | (variante sans suffixe DKR_2600093 : absente) | nom "laytygueye" INCONNU en base
+  DKR_2600094.1 Binetou R Diouf.jpeg
+     -> code DKR_2600094.1 ABSENT en base | (variante sans suffixe DKR_2600094 : absente) | nom "binetourdiouf" INCONNU en base
+  DKR_2600095.1 Ndeye F Ndiaye.jpeg
+     -> code DKR_2600095.1 ABSENT en base | (variante sans suffixe DKR_2600095 : absente) | nom "ndeyefndiaye" INCONNU en base
+  DKR_2600096.1 Mouhamadou M Gueye.jpeg
+     -> code DKR_2600096.1 ABSENT en base | (variante sans suffixe DKR_2600096 : absente) | nom "mouhamadoumgueye" INCONNU en base
+  DKR_2600097.1 Khady DIAGNE.jpeg
+     -> code DKR_2600097.1 ABSENT en base | (variante sans suffixe DKR_2600097 : absente) | nom "khadydiagne" INCONNU en base
+
+=== FICHIER EXCEL ASS LONASE.xlsx ===
+  lignes avec CODE_BENEFICIAIRE : 122
+  codes presents en base        : 0
+  codes ABSENTS de la base      : 122
+     DKR_2600040.1
+     DKR_2600041.1
+     DKR_2600042.1
+     DKR_2600043.1
+     DKR_2600044.1
+     DKR_2600045.1
+     DKR_2600046.1
+     DKR_2600047.1
+     DKR_2600048.1
+     DKR_2600049.1
+     DKR_2600050.1
+     DKR_2600051.1
+     DKR_2600052.1
+     DKR_2600053.1
+     DKR_2600054.1
+     DKR_2600055.1
+     DKR_2600056.1
+     DKR_2600057.1
+     DKR_2600058.1
+     DKR_2600059.1
+     DKR_2600060.1
+     DKR_2600061.1
+     DKR_2600062.1
+     DKR_2600063.1
+     DKR_2600064.1
+     DKR_2600065.1
+     DKR_2600066.1
+     DKR_2600067.1
+     DKR_2600068.1
+     DKR_2600069.1
+     DKR_2600070.1
+     DKR_2600071.1
+     DKR_2600072.1
+     DKR_2600073.1
+     DKR_2600074.1
+     DKR_2600075.1
+     DKR_2600076.1
+     DKR_2600077.1
+     DKR_2600078.1
+     DKR_2600079.1

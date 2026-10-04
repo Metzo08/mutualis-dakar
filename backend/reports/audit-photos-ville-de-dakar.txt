@@ -1,0 +1,571 @@
+================================================================
+SOURCE : Ville de Dakar
+================================================================
+mutuelle_name distinctes en base : 1
+  retenues pour Ville de Dakar : (aucune)
+fiches en base (merged_into is null) : 0
+  dont avec photo_url non vide   : 0
+  SANS photo                     : 0
+codes distincts                 : 0
+codes en doublon                : 0
+identites (prenom+nom+naissance) en doublon : 0
+
+dossier photos : C:\Users\hp\Downloads\Photos ville de Dakar
+  existe        : oui
+  fichiers image: 167
+
+=== APPARIEMENT (regle bulkImport.js) ===
+  fiches ayant trouve un fichier photo : 0 / 0
+  fichiers reellement consommes        : 0 / 167
+
+=== FICHES SANS PHOTO (0) ===
+
+=== FICHIERS PHOTO NON UTILISES (167) ===
+  1.0 Adjaratou Ndeye DEME.jpeg
+  1.0 Aissatou Barry Hanne.jpeg
+  1.0 Amadou M Ndiaye.jpeg
+  1.0 Aminata Sow.jpeg
+  1.0 Anta Lo.jpeg
+  1.0 Anta Mbaye Fall.jpeg
+  1.0 Assane Dia.jpeg
+  1.0 Assane Ndiaye.jpeg
+  1.0 Bineta Sow.jpeg
+  1.0 Coumba Thiaw.jpeg
+  1.0 Elhadji Amadou Benga.jpeg
+  1.0 Fama Diakhate.jpeg
+  1.0 Fapenda DIAGNE.jpeg
+  1.0 Fatou Ba.jpeg
+  1.0 Fatou Mane.jpeg
+  1.0 Fatou Sarr.jpeg
+  1.0 Fatoumata Bintou Diouf.jpeg
+  1.0 Gnagna Thiam.jpeg
+  1.0 Ibou Diop.jpeg
+  1.0 Ibrahima Dior Y Fall.jpeg
+  1.0 Ibrahima Gueye.jpeg
+  1.0 Irsule Diamètre.jpeg
+  1.0 Khady Ndiaye.jpeg
+  1.0 Khoudia Samba.jpeg
+  1.0 Marieme Doumbouya.jpeg
+  1.0 MBACKE Sow.jpeg
+  1.0 Moustapha NDIONE.jpeg
+  1.0 Ndeye Diouf Mbengue.jpeg
+  1.0 Niocoro Sow.jpeg
+  1.0 Oulimatou DIAGNE.jpeg
+  1.0 Papa Abdou GAYE.jpeg
+  1.0 Papa Jean Touré.jpeg
+  1.0 Seydi Gadio.jpeg
+  1.0 Seynabou Tall.jpeg
+  1.0 Seynabou Yade.jpeg
+  1.0 Tamsir Touré.jpeg
+  1.1 Abdoul Aziz Diallo.jpeg
+  1.1 Abdoulaye Mbengue Diop.jpeg
+  1.1 Adama Dia.jpeg
+  1.1 Aida Mb Kebe.jpeg
+  1.1 Amadou Konate Ndiaye.jpeg
+  1.1 Amadou Lamine Diallo.jpeg
+  1.1 Anna Diallo.jpeg
+  1.1 Anne Simone Faye.jpeg
+  1.1 Arame Sene.jpeg
+  1.1 Assi Seck.jpeg
+  1.1 Astou Gueye Ciss.jpeg
+  1.1 Binetou NDOYE.jpeg
+  1.1 Binta Rassoul Faye.jpeg
+  1.1 Carima R Boimond.jpeg
+  1.1 Cheikh Touradou Camara.jpeg
+  1.1 Dahirou Gadio.jpeg
+  1.1 Denise Élis A Goudiaby.jpeg
+  1.1 Elhadji Bibi Ndiaye Diop.jpeg
+  1.1 Fatim DIAGNE.jpeg
+  1.1 Fatou Diop.jpeg
+  1.1 Fatou Mbengue.jpeg
+  1.1 Khady Gaye.jpeg
+  1.1 Malick Diouf.jpeg
+  1.1 Mame Moussou Diakhate.jpeg
+  1.1 Mame Sokhna Gaye.jpeg
+  1.1 Mouhamed Bachir Dial.jpeg
+  1.1 Nancy Ndiaye.jpeg
+  1.1 Ndeye Mareme Fall.jpeg
+  1.1 Nogaye Gakou.jpeg
+  1.1 Pierre Andre Ibrahima Sock.jpeg
+  1.1 Ramatoulaye DEME.jpeg
+  1.1 Seydina Mouhamed Doussou Guin.jpeg
+  1.1 Sophietou Mboup.jpeg
+  1.1 Yacine Dior Y Fall.jpeg
+  1.1 Yaya Diedhiou.jpeg
+  1.1 Zeinabou T Sow.jpeg
+  1.10 Sokhna F Diop.jpeg
+  1.2 Abdou Aziz Faye.jpeg
+  1.2 Abdoulaye Diabo NDIONE.jpeg
+  1.2 Aissatou Dial.jpeg
+  1.2 Aminata Ndiaye NDOYE Barry.jpeg
+  1.2 Awa Dia.jpeg
+  1.2 Babacar Amadou Loum.jpeg
+  1.2 Djibril Tall.jpeg
+  1.2 Elhadji Babacar Touré.jpeg
+  1.2 Fatou Bintou DIAGNE.jpeg
+  1.2 Fatoumata Sadio.jpeg
+  1.2 Ibrahima Gaye.jpeg
+  1.2 Isseu Toure.jpeg
+  1.2 Khadidiatou Diop.jpeg
+  1.2 Maman Seynabou Mboup.jpeg
+  1.2 Mame Kor Ciss.jpeg
+  1.2 Mandiaye Gueye.jpeg
+  1.2 Marie Jeanne Sock.jpeg
+  1.2 Marieme Sow.jpeg
+  1.2 Maïmouna Dior Y Fal.jpeg
+  1.2 Mouhamadou M Lo.jpeg
+  1.2 Mouhamed Thiam.jpeg
+  1.2 Mouhamet Gaye.jpeg
+  1.2 Ndeye Khoury Cabeuil.jpeg
+  1.2 Ndeye Sylvie Diop.jpeg
+  1.2 Nogoye Ndiaye.jpeg
+  1.2 Oumar Ndiaye NDOYE.jpeg
+  1.2 Oumar Sarr.jpeg
+  1.2 Pape Lemou Benga.jpeg
+  1.2 Paul I Boimond.jpeg
+  1.2 Ramatoulaye Bano Gadio.jpeg
+  1.2 Ramatoulaye Thiombane.jpeg
+  1.2 Rokhaya Diop.jpeg
+  1.2 Seydina M R Ndiaye.jpeg
+  1.2 Sokhna Marie Doussou Gouin.jpeg
+  1.3 Abdou DEME Loum.jpeg
+  1.3 Adji Ndeup Ciss.jpeg
+  1.3 Aissatou Diop.jpeg
+  1.3 Aminata Diop.jpeg
+  1.3 Awa Gaye.jpeg
+  1.3 Awa Pascaline Dasylva.jpeg
+  1.3 Birago Benga.jpeg
+  1.3 Boubacar Diallo.jpeg
+  1.3 Fatou Dior Y Fall.jpeg
+  1.3 Fatou Ndiaye.jpeg
+  1.3 Khalifa Ababacar NDOYE.jpeg
+  1.3 Kindy Diallo.jpeg
+  1.3 Mame Libass Mbengue Ndiaye.jpeg
+  1.3 Mame Thérèse DIAGNE.jpeg
+  1.3 Mariama Diawara.jpeg
+  1.3 Mariama Fall.jpeg
+  1.3 Mohamed Sow.jpeg
+  1.3 Mouhamadou DIAGNE.jpeg
+  1.3 Mouhamadou Mansour Gueye.jpeg
+  1.3 Mouhamed Yero Thiam.jpeg
+  1.3 Moussa Touré.jpeg
+  1.3 Ngayéna Diop.jpeg
+  1.3 Rougui Gadio.jpeg
+  1.3 Sadio Coulibaly.jpeg
+  1.3 Salimata Samba.jpeg
+  1.3 Sidy Sadio.jpeg
+  1.3 Tidiane Camara.jpeg
+  1.4 Abdoul Aziz Dabakh NDIONE.jpeg
+  1.4 Adama Gaye.jpeg
+  1.4 Anta Diallo.jpeg
+  1.4 Badou Diouf.jpeg
+  1.4 Dieynaba Gaye.jpeg
+  1.4 Fatimata Camara.jpeg
+  1.4 Kara Laye Sow.jpeg
+  1.4 Khadidiatou Sene.jpeg
+  1.4 Madjiguene Fatou Gueye.jpeg
+  1.4 Mareme Diedhiou.jpeg
+  1.4 Mouhamadou Moustapha Diop.jpeg
+  1.4 Moussa Thiam.jpeg
+  1.4 Nassirou Niane.jpeg
+  1.4 Ndeye D Cissé.jpeg
+  1.4 Ngone Laye Diop.jpeg
+  1.4 Pape Demba DIAGNE.jpeg
+  1.5 Aminata Gaye.jpeg
+  1.5 Cheikh Youssouph Diedhiou.jpeg
+  1.5 Khadidiatou Sene.jpeg
+  1.5 Kiné Laye Sow.jpeg
+  1.5 Mame Sidy Sall.jpeg
+  1.5 Mbayang NDIONE.jpeg
+  1.5 Mbekh Ndiaye.jpeg
+  1.5 Wolimata Gaye.jpeg
+  1.5 Yaye Fama Laye Diop.jpeg
+  1.6 Aissatou Gaye.jpeg
+  1.6 Ismaila Diedhiou.jpeg
+  1.6 Mouhamed Gaye.jpeg
+  1.6 Ndeye M Diallo.jpeg
+  1.7 Toumany Diedhiou.jpeg
+  1.8 Amy Ba.jpeg
+  1.9 Serigne M M Diop.jpeg
+  aminata_sarr_ine_004812.png
+
+=== ECARTS NOM DE FICHIER (fichier non apparie) ===
+  1.0 Adjaratou Ndeye DEME.jpeg
+     -> aucun indice exploitable
+  1.0 Aissatou Barry Hanne.jpeg
+     -> aucun indice exploitable
+  1.0 Amadou M Ndiaye.jpeg
+     -> aucun indice exploitable
+  1.0 Aminata Sow.jpeg
+     -> aucun indice exploitable
+  1.0 Anta Lo.jpeg
+     -> aucun indice exploitable
+  1.0 Anta Mbaye Fall.jpeg
+     -> aucun indice exploitable
+  1.0 Assane Dia.jpeg
+     -> aucun indice exploitable
+  1.0 Assane Ndiaye.jpeg
+     -> aucun indice exploitable
+  1.0 Bineta Sow.jpeg
+     -> aucun indice exploitable
+  1.0 Coumba Thiaw.jpeg
+     -> aucun indice exploitable
+  1.0 Elhadji Amadou Benga.jpeg
+     -> aucun indice exploitable
+  1.0 Fama Diakhate.jpeg
+     -> aucun indice exploitable
+  1.0 Fapenda DIAGNE.jpeg
+     -> aucun indice exploitable
+  1.0 Fatou Ba.jpeg
+     -> aucun indice exploitable
+  1.0 Fatou Mane.jpeg
+     -> aucun indice exploitable
+  1.0 Fatou Sarr.jpeg
+     -> aucun indice exploitable
+  1.0 Fatoumata Bintou Diouf.jpeg
+     -> aucun indice exploitable
+  1.0 Gnagna Thiam.jpeg
+     -> aucun indice exploitable
+  1.0 Ibou Diop.jpeg
+     -> aucun indice exploitable
+  1.0 Ibrahima Dior Y Fall.jpeg
+     -> aucun indice exploitable
+  1.0 Ibrahima Gueye.jpeg
+     -> aucun indice exploitable
+  1.0 Irsule Diamètre.jpeg
+     -> aucun indice exploitable
+  1.0 Khady Ndiaye.jpeg
+     -> aucun indice exploitable
+  1.0 Khoudia Samba.jpeg
+     -> aucun indice exploitable
+  1.0 Marieme Doumbouya.jpeg
+     -> aucun indice exploitable
+  1.0 MBACKE Sow.jpeg
+     -> aucun indice exploitable
+  1.0 Moustapha NDIONE.jpeg
+     -> aucun indice exploitable
+  1.0 Ndeye Diouf Mbengue.jpeg
+     -> aucun indice exploitable
+  1.0 Niocoro Sow.jpeg
+     -> aucun indice exploitable
+  1.0 Oulimatou DIAGNE.jpeg
+     -> aucun indice exploitable
+  1.0 Papa Abdou GAYE.jpeg
+     -> aucun indice exploitable
+  1.0 Papa Jean Touré.jpeg
+     -> aucun indice exploitable
+  1.0 Seydi Gadio.jpeg
+     -> aucun indice exploitable
+  1.0 Seynabou Tall.jpeg
+     -> aucun indice exploitable
+  1.0 Seynabou Yade.jpeg
+     -> aucun indice exploitable
+  1.0 Tamsir Touré.jpeg
+     -> aucun indice exploitable
+  1.1 Abdoul Aziz Diallo.jpeg
+     -> aucun indice exploitable
+  1.1 Abdoulaye Mbengue Diop.jpeg
+     -> aucun indice exploitable
+  1.1 Adama Dia.jpeg
+     -> aucun indice exploitable
+  1.1 Aida Mb Kebe.jpeg
+     -> aucun indice exploitable
+  1.1 Amadou Konate Ndiaye.jpeg
+     -> aucun indice exploitable
+  1.1 Amadou Lamine Diallo.jpeg
+     -> aucun indice exploitable
+  1.1 Anna Diallo.jpeg
+     -> aucun indice exploitable
+  1.1 Anne Simone Faye.jpeg
+     -> aucun indice exploitable
+  1.1 Arame Sene.jpeg
+     -> aucun indice exploitable
+  1.1 Assi Seck.jpeg
+     -> aucun indice exploitable
+  1.1 Astou Gueye Ciss.jpeg
+     -> aucun indice exploitable
+  1.1 Binetou NDOYE.jpeg
+     -> aucun indice exploitable
+  1.1 Binta Rassoul Faye.jpeg
+     -> aucun indice exploitable
+  1.1 Carima R Boimond.jpeg
+     -> aucun indice exploitable
+  1.1 Cheikh Touradou Camara.jpeg
+     -> aucun indice exploitable
+  1.1 Dahirou Gadio.jpeg
+     -> aucun indice exploitable
+  1.1 Denise Élis A Goudiaby.jpeg
+     -> aucun indice exploitable
+  1.1 Elhadji Bibi Ndiaye Diop.jpeg
+     -> aucun indice exploitable
+  1.1 Fatim DIAGNE.jpeg
+     -> aucun indice exploitable
+  1.1 Fatou Diop.jpeg
+     -> aucun indice exploitable
+  1.1 Fatou Mbengue.jpeg
+     -> aucun indice exploitable
+  1.1 Khady Gaye.jpeg
+     -> aucun indice exploitable
+  1.1 Malick Diouf.jpeg
+     -> aucun indice exploitable
+  1.1 Mame Moussou Diakhate.jpeg
+     -> aucun indice exploitable
+  1.1 Mame Sokhna Gaye.jpeg
+     -> aucun indice exploitable
+  1.1 Mouhamed Bachir Dial.jpeg
+     -> aucun indice exploitable
+  1.1 Nancy Ndiaye.jpeg
+     -> aucun indice exploitable
+  1.1 Ndeye Mareme Fall.jpeg
+     -> aucun indice exploitable
+  1.1 Nogaye Gakou.jpeg
+     -> aucun indice exploitable
+  1.1 Pierre Andre Ibrahima Sock.jpeg
+     -> aucun indice exploitable
+  1.1 Ramatoulaye DEME.jpeg
+     -> aucun indice exploitable
+  1.1 Seydina Mouhamed Doussou Guin.jpeg
+     -> aucun indice exploitable
+  1.1 Sophietou Mboup.jpeg
+     -> aucun indice exploitable
+  1.1 Yacine Dior Y Fall.jpeg
+     -> aucun indice exploitable
+  1.1 Yaya Diedhiou.jpeg
+     -> aucun indice exploitable
+  1.1 Zeinabou T Sow.jpeg
+     -> aucun indice exploitable
+  1.10 Sokhna F Diop.jpeg
+     -> aucun indice exploitable
+  1.2 Abdou Aziz Faye.jpeg
+     -> aucun indice exploitable
+  1.2 Abdoulaye Diabo NDIONE.jpeg
+     -> aucun indice exploitable
+  1.2 Aissatou Dial.jpeg
+     -> aucun indice exploitable
+  1.2 Aminata Ndiaye NDOYE Barry.jpeg
+     -> aucun indice exploitable
+  1.2 Awa Dia.jpeg
+     -> aucun indice exploitable
+  1.2 Babacar Amadou Loum.jpeg
+     -> aucun indice exploitable
+  1.2 Djibril Tall.jpeg
+     -> aucun indice exploitable
+  1.2 Elhadji Babacar Touré.jpeg
+     -> aucun indice exploitable
+  1.2 Fatou Bintou DIAGNE.jpeg
+     -> aucun indice exploitable
+  1.2 Fatoumata Sadio.jpeg
+     -> aucun indice exploitable
+  1.2 Ibrahima Gaye.jpeg
+     -> aucun indice exploitable
+  1.2 Isseu Toure.jpeg
+     -> aucun indice exploitable
+  1.2 Khadidiatou Diop.jpeg
+     -> aucun indice exploitable
+  1.2 Maman Seynabou Mboup.jpeg
+     -> aucun indice exploitable
+  1.2 Mame Kor Ciss.jpeg
+     -> aucun indice exploitable
+  1.2 Mandiaye Gueye.jpeg
+     -> aucun indice exploitable
+  1.2 Marie Jeanne Sock.jpeg
+     -> aucun indice exploitable
+  1.2 Marieme Sow.jpeg
+     -> aucun indice exploitable
+  1.2 Maïmouna Dior Y Fal.jpeg
+     -> aucun indice exploitable
+  1.2 Mouhamadou M Lo.jpeg
+     -> aucun indice exploitable
+  1.2 Mouhamed Thiam.jpeg
+     -> aucun indice exploitable
+  1.2 Mouhamet Gaye.jpeg
+     -> aucun indice exploitable
+  1.2 Ndeye Khoury Cabeuil.jpeg
+     -> aucun indice exploitable
+  1.2 Ndeye Sylvie Diop.jpeg
+     -> aucun indice exploitable
+  1.2 Nogoye Ndiaye.jpeg
+     -> aucun indice exploitable
+  1.2 Oumar Ndiaye NDOYE.jpeg
+     -> aucun indice exploitable
+  1.2 Oumar Sarr.jpeg
+     -> aucun indice exploitable
+  1.2 Pape Lemou Benga.jpeg
+     -> aucun indice exploitable
+  1.2 Paul I Boimond.jpeg
+     -> aucun indice exploitable
+  1.2 Ramatoulaye Bano Gadio.jpeg
+     -> aucun indice exploitable
+  1.2 Ramatoulaye Thiombane.jpeg
+     -> aucun indice exploitable
+  1.2 Rokhaya Diop.jpeg
+     -> aucun indice exploitable
+  1.2 Seydina M R Ndiaye.jpeg
+     -> aucun indice exploitable
+  1.2 Sokhna Marie Doussou Gouin.jpeg
+     -> aucun indice exploitable
+  1.3 Abdou DEME Loum.jpeg
+     -> aucun indice exploitable
+  1.3 Adji Ndeup Ciss.jpeg
+     -> aucun indice exploitable
+  1.3 Aissatou Diop.jpeg
+     -> aucun indice exploitable
+  1.3 Aminata Diop.jpeg
+     -> aucun indice exploitable
+  1.3 Awa Gaye.jpeg
+     -> aucun indice exploitable
+  1.3 Awa Pascaline Dasylva.jpeg
+     -> aucun indice exploitable
+  1.3 Birago Benga.jpeg
+     -> aucun indice exploitable
+  1.3 Boubacar Diallo.jpeg
+     -> aucun indice exploitable
+  1.3 Fatou Dior Y Fall.jpeg
+     -> aucun indice exploitable
+  1.3 Fatou Ndiaye.jpeg
+     -> aucun indice exploitable
+  1.3 Khalifa Ababacar NDOYE.jpeg
+     -> aucun indice exploitable
+  1.3 Kindy Diallo.jpeg
+     -> aucun indice exploitable
+  1.3 Mame Libass Mbengue Ndiaye.jpeg
+     -> aucun indice exploitable
+  1.3 Mame Thérèse DIAGNE.jpeg
+     -> aucun indice exploitable
+  1.3 Mariama Diawara.jpeg
+     -> aucun indice exploitable
+  1.3 Mariama Fall.jpeg
+     -> aucun indice exploitable
+  1.3 Mohamed Sow.jpeg
+     -> aucun indice exploitable
+  1.3 Mouhamadou DIAGNE.jpeg
+     -> aucun indice exploitable
+  1.3 Mouhamadou Mansour Gueye.jpeg
+     -> aucun indice exploitable
+  1.3 Mouhamed Yero Thiam.jpeg
+     -> aucun indice exploitable
+  1.3 Moussa Touré.jpeg
+     -> aucun indice exploitable
+  1.3 Ngayéna Diop.jpeg
+     -> aucun indice exploitable
+  1.3 Rougui Gadio.jpeg
+     -> aucun indice exploitable
+  1.3 Sadio Coulibaly.jpeg
+     -> aucun indice exploitable
+  1.3 Salimata Samba.jpeg
+     -> aucun indice exploitable
+  1.3 Sidy Sadio.jpeg
+     -> aucun indice exploitable
+  1.3 Tidiane Camara.jpeg
+     -> aucun indice exploitable
+  1.4 Abdoul Aziz Dabakh NDIONE.jpeg
+     -> aucun indice exploitable
+  1.4 Adama Gaye.jpeg
+     -> aucun indice exploitable
+  1.4 Anta Diallo.jpeg
+     -> aucun indice exploitable
+  1.4 Badou Diouf.jpeg
+     -> aucun indice exploitable
+  1.4 Dieynaba Gaye.jpeg
+     -> aucun indice exploitable
+  1.4 Fatimata Camara.jpeg
+     -> aucun indice exploitable
+  1.4 Kara Laye Sow.jpeg
+     -> aucun indice exploitable
+  1.4 Khadidiatou Sene.jpeg
+     -> aucun indice exploitable
+  1.4 Madjiguene Fatou Gueye.jpeg
+     -> aucun indice exploitable
+  1.4 Mareme Diedhiou.jpeg
+     -> aucun indice exploitable
+  1.4 Mouhamadou Moustapha Diop.jpeg
+     -> aucun indice exploitable
+  1.4 Moussa Thiam.jpeg
+     -> aucun indice exploitable
+  1.4 Nassirou Niane.jpeg
+     -> aucun indice exploitable
+  1.4 Ndeye D Cissé.jpeg
+     -> aucun indice exploitable
+  1.4 Ngone Laye Diop.jpeg
+     -> aucun indice exploitable
+  1.4 Pape Demba DIAGNE.jpeg
+     -> aucun indice exploitable
+  1.5 Aminata Gaye.jpeg
+     -> aucun indice exploitable
+  1.5 Cheikh Youssouph Diedhiou.jpeg
+     -> aucun indice exploitable
+  1.5 Khadidiatou Sene.jpeg
+     -> aucun indice exploitable
+  1.5 Kiné Laye Sow.jpeg
+     -> aucun indice exploitable
+  1.5 Mame Sidy Sall.jpeg
+     -> aucun indice exploitable
+  1.5 Mbayang NDIONE.jpeg
+     -> aucun indice exploitable
+  1.5 Mbekh Ndiaye.jpeg
+     -> aucun indice exploitable
+  1.5 Wolimata Gaye.jpeg
+     -> aucun indice exploitable
+  1.5 Yaye Fama Laye Diop.jpeg
+     -> aucun indice exploitable
+  1.6 Aissatou Gaye.jpeg
+     -> aucun indice exploitable
+  1.6 Ismaila Diedhiou.jpeg
+     -> aucun indice exploitable
+  1.6 Mouhamed Gaye.jpeg
+     -> aucun indice exploitable
+  1.6 Ndeye M Diallo.jpeg
+     -> aucun indice exploitable
+  1.7 Toumany Diedhiou.jpeg
+     -> aucun indice exploitable
+  1.8 Amy Ba.jpeg
+     -> aucun indice exploitable
+  1.9 Serigne M M Diop.jpeg
+     -> aucun indice exploitable
+  aminata_sarr_ine_004812.png
+     -> aucun indice exploitable
+
+=== FICHIER EXCEL AMEVI.xlsx ===
+  lignes avec CODE_BENEFICIAIRE : 190
+  codes presents en base        : 0
+  codes ABSENTS de la base      : 190
+     DKR_260001.0
+     DKR_260001.1
+     DKR_260001.2
+     DKR_260001.3
+     DKR_260001.4
+     DKR_260001.5
+     DKR_260001.6
+     DKR_260001.7
+     DKR_260001.8
+     DKR_260001.9
+     DKR_260002.0
+     DKR_260002.1
+     DKR_260002.2
+     DKR_260002.3
+     DKR_260002.4
+     DKR_260002.5
+     DKR_260002.6
+     DKR_260002.7
+     DKR_260002.8
+     DKR_260002.9
+     DKR_260002.10
+     DKR_260002.11
+     DKR_260002.12
+     DKR_260003.0
+     DKR_260003.1
+     DKR_260003.2
+     DKR_260003.3
+     DKR_260004.0
+     DKR_260004.1
+     DKR_260004.2
+     DKR_260004.3
+     DKR_260004.4
+     DKR_260004.5
+     DKR_260004.6
+     DKR_260004.7
+     DKR_260005.0
+     DKR_260005.1
+     DKR_260006.0
+     DKR_260006.1
+     DKR_260006.2

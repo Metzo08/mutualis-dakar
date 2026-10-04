@@ -1735,7 +1735,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
         {/* 2. CONTENU DU HUB PHARMACIEN */}
         <div className="row g-4 mb-4">
           {/* Panneau d'information des droits RBAC */}
-          <div className="col-lg-5">
+          <div className="col-xxl-5 col-12">
             <div className="p-4 rounded-4 h-100 position-relative overflow-hidden" style={{
               background: 'var(--bg-card)',
               border: '1.5px solid rgba(16, 185, 129, 0.3)',
@@ -1776,8 +1776,8 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
               </p>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div className="p-3 rounded-3 d-flex align-items-center justify-content-between" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
-                  <div className="d-flex align-items-center gap-2">
+                <div className="p-3 rounded-3 d-flex flex-wrap align-items-center justify-content-between" style={{ gap: '0.5rem', background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+                  <div className="d-flex align-items-center gap-2" style={{ minWidth: 0 }}>
                     <span style={{ fontSize: '1rem' }}>💊</span>
                     <span style={{ color: 'var(--text-main)', fontSize: '0.85rem', fontWeight: 600 }}>Délivrance kit maternité en pharmacie</span>
                   </div>
@@ -1786,8 +1786,8 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                   </span>
                 </div>
 
-                <div className="p-3 rounded-3 d-flex align-items-center justify-content-between" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
-                  <div className="d-flex align-items-center gap-2">
+                <div className="p-3 rounded-3 d-flex flex-wrap align-items-center justify-content-between" style={{ gap: '0.5rem', background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+                  <div className="d-flex align-items-center gap-2" style={{ minWidth: 0 }}>
                     <span style={{ fontSize: '1rem' }}>🩺</span>
                     <span style={{ color: 'var(--text-main)', fontSize: '0.85rem', fontWeight: 600 }}>Saisie des consultations obstétriques</span>
                   </div>
@@ -1800,9 +1800,9 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
           </div>
 
           {/* RACCOURCIS PHARMACIE */}
-          <div className="col-lg-7">
+          <div className="col-xxl-7 col-12">
             <div className="row g-3">
-              <div className="col-md-6">
+              <div className="col-xl-6 col-12">
                 <div 
                   className="p-4 rounded-4 h-100 cursor-pointer transition-all position-relative overflow-hidden" 
                   style={{ 
@@ -1830,7 +1830,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                 </div>
               </div>
 
-              <div className="col-md-6">
+              <div className="col-xl-6 col-12">
                 <div 
                   className="p-4 rounded-4 h-100 cursor-pointer transition-all position-relative overflow-hidden" 
                   style={{ 
@@ -1857,7 +1857,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                 </div>
               </div>
 
-              <div className="col-md-6">
+              <div className="col-xl-6 col-12">
                 <div 
                   className="p-4 rounded-4 h-100 cursor-pointer transition-all position-relative overflow-hidden" 
                   style={{ 
@@ -1884,7 +1884,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                 </div>
               </div>
 
-              <div className="col-md-6">
+              <div className="col-xl-6 col-12">
                 <div 
                   className="p-4 rounded-4 h-100 cursor-pointer transition-all position-relative overflow-hidden" 
                   style={{ 
@@ -2670,8 +2670,15 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
         {activeTab === 'cpn' && (
           <div className="row g-4 mb-4">
             
-            {/* Main Left Column: CPN Timeline */}
-            <div className="col-lg-8">
+            {/* Main Left Column: CPN Timeline
+                `col-xxl-8` et non `col-lg-8`/`col-xl-8` : les points de rupture
+                se basent sur le viewport, pas sur la zone de contenu. La sidebar
+                (270px) + le padding de `.view-container` (2rem) retirent ~340px,
+                si bien qu'à 1300px de viewport la colonne de droite ne disposait
+                que de ~280px : les titres se coupaient et les badges débordaient.
+                `xxl` (1600px) garantit une colonne latérale confortable ; en
+                dessous, `col-12` empile en pleine largeur. */}
+            <div className="col-xxl-8 col-12">
               <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)' }}>
                 
                 <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
@@ -2911,8 +2918,8 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
               </div>
             </div>
 
-            {/* Right Sidebar Column */}
-            <div className="col-lg-4">
+            {/* Right Sidebar Column — aligné sur le `col-xxl-8` ci-dessus. */}
+            <div className="col-xxl-4 col-12">
               <div className="d-flex flex-column gap-4">
                 {activeMother.category === 'chronic' ? (
                   /* 🩸 SEMAINE / PROTOCOLE SURVEILLANCE ALD (PATIENT CHRONIQUE) */

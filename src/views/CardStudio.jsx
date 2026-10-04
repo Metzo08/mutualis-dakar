@@ -23,7 +23,7 @@ import {
   setLotLogo,
   SPONSOR_LOGO_MAX_BYTES
 } from '../utils/sponsorLogos';
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
@@ -585,6 +585,30 @@ const [printLotConfirmed, setPrintLotConfirmed] = useState(false);
   // d'enrôlement, et de n'agir que sur elle.
   const [lotFilter, setLotFilter] = useState('ALL');
 
+  // Lots connus (libellés de provenance), rafraîchis depuis la base : sans
+  // eux, deux lots ne se distinguaient que par leur numéro.
+  const [lotLabels, setLotLabels] = useState({});
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { syncCampaignLotsFromServer } = await import('../utils/bulkImport');
+        const lots = await syncCampaignLotsFromServer();
+        if (cancelled) return;
+        const map = {};
+        (lots || []).forEach((l) => {
+          const code = String(l.code || '').trim();
+          if (!code) return;
+          const label = String(l.label || '').trim();
+          // Un libellé générique ne sert à rien : on retombe sur le code.
+          map[code] = label && !/^Campagne d'enr/i.test(label) ? label : '';
+        });
+        setLotLabels(map);
+      } catch { /* base injoignable : les codes restent affichés */ }
+    })();
+    return () => { cancelled = true; };
+  }, [members.length]);
+
   // Lots présents dans le registre, avec leur effectif réel (compte de
   // personnes, ayants droit compris).
   const lotList = useMemo(() => {
@@ -601,6 +625,12 @@ const [printLotConfirmed, setPrintLotConfirmed] = useState(false);
     }
     return [...map.values()].sort((a, b) => a.code.localeCompare(b.code));
   }, [members]);
+
+  /** Nom lisible d'un lot : provenance en tete, code en secours. */
+  const lotLabel = useCallback(
+    (code) => (lotLabels[code] ? `${lotLabels[code]} (${code})` : code),
+    [lotLabels]
+  );
 
   // Membres visibles après application du filtre de lot.
   const membersByLot = useMemo(
@@ -1095,7 +1125,7 @@ const [printLotConfirmed, setPrintLotConfirmed] = useState(false);
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const { syncBeneficiariesFromServer } = await import('../utils/beneficiarySync');
+      const { syncBeneficiariesFromServer, isAuthenticated } = await import('../utils/beneficiarySync');
       const synced = await syncBeneficiariesFromServer();
       if (cancelled) return;
 
@@ -1103,9 +1133,17 @@ const [printLotConfirmed, setPrintLotConfirmed] = useState(false);
         // Backend éteint ou session expirée : le registre local reste
         // affiché tel quel, sans jamais être vidé.
         if (getStoredMembers().length === 0) {
+          // Distinguer les deux causes : un jeton expiré se corrige en se
+          // reconnectant, une panne serveur en redémarrant le backend.
+          // « Registre serveur injoignable » renvoyait l'agent vers le mauvais
+          // remède — il relançait le backend alors que le problème était sa
+          // session, et repartait sans rien voir après avoir tout réimporté.
+          const sessionExpiree = !isAuthenticated();
           setBulkNotice({
             type: 'warning',
-            text: '⚠️ Aucun bénéficiaire disponible : le registre serveur est injoignable et aucune fiche n\'est enregistrée sur ce poste. Démarrez le backend et reconnectez-vous pour importer les 1 003 dossiers réels.'
+            text: sessionExpiree
+              ? '🔒 Session expirée : reconnectez-vous pour recharger vos dossiers. Le backend fonctionne normalement, vos fiches sont intactes.'
+              : '⚠️ Backend injoignable : redémarrez-le (npm start dans backend/), puis rechargez la page. Aucune fiche n\'a été perdue.'
           });
         }
         return;
@@ -1548,9 +1586,20 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
       // 1b. Écriture locale — SAISIR LE RÉSULTAT.
       // Une fiche affichée mais non écrite disparaît au rechargement : on
       // refuse donc d'annoncer un succès si l'enregistrement a échoué.
+      //
+      // ⚠️ Les PHOTOS ne sont PAS écrites en local : elles sont poussées en
+      // base (étape 2) et relues à la demande. Les conserver ici en base64
+      // remplissait le plafond localStorage (4,71 Mo pour 154 fiches) : rien
+      // n'était écrit, tout disparut au rechargement, et l'agent devait
+      // réimporter par petits lots sans jamais y arriver.
       let saved = { ok: true, quotaExceeded: false, bytes: 0 };
       if (fresh.length > 0) {
-        const nextMembers = [...fresh, ...existing];
+        // La version destinée au local ne porte que l'URL de la photo.
+        const sansPhoto = fresh.map((m) => ({
+          ...m,
+          photoUrl: m.photoUrl && String(m.photoUrl).startsWith('data:') ? '' : (m.photoUrl || ''),
+        }));
+        const nextMembers = [...sansPhoto, ...existing];
         saved = saveStoredMembers(nextMembers);
         setMembers(nextMembers);
       }
@@ -1607,7 +1656,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   bloodGroup: d.bloodGroup,
                   telephone: d.phone,
                   address: d.address,
-                  photoUrl: d.photoUrl || null
+                  photoUrl: d.photoUrl && String(d.photoUrl).startsWith('data:') ? null : (d.photoUrl || null)
                 }))
               ])
             })
@@ -2315,7 +2364,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                 <option value="ALL">🌐 Tous les lots ({members.length} dossier(s))</option>
                 {lotList.map(l => (
                   <option key={l.code} value={l.code}>
-                    {l.code} — {l.dossiers} dossier(s) / {l.people} personne(s)
+                    {lotLabel(l.code)} — {l.dossiers} dossier(s) / {l.people} personne(s)
                     {l.fichiers.size ? ` · ${[...l.fichiers].join(', ')}` : ''}
                   </option>
                 ))}
@@ -2323,7 +2372,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
               <small className="text-muted d-block mt-1" style={{ fontSize: '0.82rem' }}>
                 {lotFilter === 'ALL'
                   ? 'Chaque import ouvre un lot : il indique d’où vient chaque carte.'
-                  : `Lot ${lotFilter} sélectionné — seules ses fiches sont proposées ci-dessous.`}
+                  : `Lot ${lotLabel(lotFilter)} sélectionné — seules ses fiches sont proposées ci-dessous.`}
               </small>
               {/* Purge en un clic du lot affiché : obligatoire avant un
                   réimport, sinon la déduplication saute toutes les personnes
@@ -2339,7 +2388,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                 disabled={memberOptions.length === 0 || deleteBusy}
                 title="Supprime toutes les fiches affichées (registre local ET base) afin de pouvoir réimporter le fichier avec les matricules officiels"
               >
-                🧹 Vider {lotFilter === 'ALL' ? 'tout le registre' : `le lot ${lotFilter}`} ({memberOptions.length})
+                🧹 Vider {lotFilter === 'ALL' ? 'tout le registre' : lotLabel(lotFilter)} ({memberOptions.length})
               </button>
               {lotFilter === 'ALL' && memberOptions.length > 0 && (
                 <small className="d-block mt-1" style={{ fontSize: '0.72rem', color: '#b91c1c', fontWeight: '700' }}>
