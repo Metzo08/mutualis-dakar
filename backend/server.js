@@ -3,7 +3,7 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const XLSX = require('xlsx');
-const { query, pool } = require('./db');
+const { query, pool, initRealtime, closeRealtime } = require('./db');
 const fallbackStore = require('./fallbackStore');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const helmet = require('helmet');
@@ -2873,9 +2873,38 @@ app.use((err, req, res, next) => {
 
 // Start the server
 if (process.env.NODE_ENV !== 'test') {
-  app.listen(port, '0.0.0.0', () => {
+  // ── Canal temps réel partagé (multi-instance) ──────────────────────────
+  // Démarre AVANT d'accepter les connexions : une instance qui reçoit du
+  // trafic sans être à l'écoute sur la base diffuserait des statuts
+  // périmés aux flux SSE qu'elle héberge.
+  initRealtime();
+
+  const server = app.listen(port, '0.0.0.0', () => {
+    // Identifiant d'instance : indispensable pour diagnostiquer un
+    // déploiement multi-instance. Sans cela, les journaux de deux
+    // instances sont indiscernables et un bug de répartition est
+    // impossible à tracer.
     console.log(`Serveur démarré sur http://localhost:${port}`);
+    console.log(`[Instance] id=${process.env.INSTANCE_ID || 'local'} · pool=${process.env.DB_POOL_MAX || 10} connexions · canal=${process.env.REALTIME_CHANNEL || 'unamusc_presence'}`);
   });
+
+  // Arrêt propre. En multi-instance, un déploiement remplace les instances
+  // une par une : sans fermeture de la connexion LISTEN, l'instance
+  // sortante laisse une connexion PostgreSQL ouverte et une entrée périmée
+  // tant qu'elle n'est pas tuée par le superviseur.
+  const shutdown = async (signal) => {
+    console.log(`[Instance] Arrêt demandé (${signal})…`);
+    await closeRealtime();
+    server.close(() => {
+      console.log('[Instance] Arrêt propre terminé.');
+      process.exit(0);
+    });
+    // Filet de sécurité : si des connexions SSE restent ouvertes, le
+    // callback ne sera jamais appelé et le conteneur resterait bloqué.
+    setTimeout(() => process.exit(0), 10000).unref?.();
+  };
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
 }
 
 module.exports = app;

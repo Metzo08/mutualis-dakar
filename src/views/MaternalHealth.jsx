@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
 import DeleteModal from '../components/DeleteModal';
@@ -29,7 +29,7 @@ const getMedicalHeroStyle = (patient) => {
       heroBg: 'linear-gradient(135deg, rgba(180, 83, 9, 0.88) 0%, rgba(15, 23, 42, 0.92) 100%), url("/dicom_bone_fracture.jpg") center/cover no-repeat',
       badgeColor: '#d97706',
       badgeText: '🇸🇳 Espace traumatologie & chirurgie orthopédique UNAMUSC',
-      imageTag: '🦴 Imagerie scanner / radiographie osseuse (traumatologie - fracture fémur)',
+      imageTag: '🦴 Visual — cliché de radiographie osseuse',
       icon: '🩹'
     };
   }
@@ -41,7 +41,7 @@ const getMedicalHeroStyle = (patient) => {
       heroBg: 'linear-gradient(135deg, rgba(14, 116, 144, 0.88) 0%, rgba(15, 23, 42, 0.92) 100%), url("/dicom_chest_xray.jpg") center/cover no-repeat',
       badgeColor: '#0891b2',
       badgeText: '🇸🇳 Espace pneumologie & affections respiratoires ALD',
-      imageTag: '🫁 Imagerie radiographie pulmonaire (pneumologie - BPCO)',
+      imageTag: '🫁 Visual — cliché de radiographie thoracique',
       icon: '🫁'
     };
   }
@@ -53,7 +53,7 @@ const getMedicalHeroStyle = (patient) => {
       heroBg: 'linear-gradient(135deg, rgba(220, 38, 38, 0.88) 0%, rgba(15, 23, 42, 0.92) 100%), url("/bg_health_heart.png") center/cover no-repeat',
       badgeColor: '#dc2626',
       badgeText: '🇸🇳 Espace cardiologie & hypertension artérielle (ALD 100%)',
-      imageTag: '🫀 Bilan cardiovasculaire & électrocardiogramme ECG',
+      imageTag: '🫀 Visual — schéma de l\'appareil cardiovasculaire',
       icon: '🫀'
     };
   }
@@ -65,7 +65,10 @@ const getMedicalHeroStyle = (patient) => {
       heroBg: 'linear-gradient(135deg, rgba(185, 28, 28, 0.88) 0%, rgba(15, 23, 42, 0.92) 100%), url("/dicom_blood_test.jpg") center/cover no-repeat',
       badgeColor: '#dc2626',
       badgeText: '🇸🇳 Espace prise en charge 100% CSU — Affection de longue durée (ALD)',
-      imageTag: '🩸 Bilan biologique semestriel (HbA1c & glycémie à jeun)',
+      // `imageTag` étiquette une IMAGE DE DÉCO (fichier statique). Il ne doit pas
+      // laisser croire qu'un compte-rendu existe : on le formule comme le
+      // contenu du visuel, pas comme un résultat biologique de l'assuré.
+      imageTag: '🩸 Visual — tube de prélèvement de sang',
       icon: '🩸'
     };
   }
@@ -105,19 +108,34 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
   const [deleteConfirmTarget, setDeleteConfirmTarget] = useState(null); // { title, itemType, onConfirm }
 
   // Profil Bébé & Calcul Automatique d'Âge & Rappels SMS/WhatsApp
+  //
+  // AUCUN profil pré-rempli. « Moussa Ndiaye », né le 14/05/2026, avec un
+  // téléphone et un « rappel envoyé il y a 2 jours », était seedé ici : chaque
+  // assuré maternity voyait un enfant précis, avec un poids et un calendrier
+  // de vaccination, et un numéro de téléphone appartenant à un tiers —
+  // auquel des rappels SMS étaient censés partir. On part vide.
   const [babyProfile, setBabyProfile] = useState(() => {
     const saved = localStorage.getItem('maternity_baby_profile');
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) {}
+      try {
+        const p = JSON.parse(saved);
+        // Purge du seed exact : ces trois valeurs ensemble n'ont jamais pu
+        // être saisies par un utilisateur réel.
+        const isSeed =
+          p?.name === 'Moussa Ndiaye' &&
+          p?.birthDate === '2026-05-14' &&
+          p?.motherPhone === '+221 77 450 88 99';
+        if (!isSeed) return p;
+      } catch (e) {}
     }
     return {
-      name: 'Moussa Ndiaye',
-      birthDate: '2026-05-14',
-      motherPhone: '+221 77 450 88 99',
-      motherName: 'Fatou Diallo',
+      name: '',
+      birthDate: '',
+      motherPhone: '',
+      motherName: '',
       reminderChannel: 'SMS & WhatsApp 💬',
-      autoReminders: true,
-      lastReminderSent: 'Il y a 2 jours'
+      autoReminders: false,
+      lastReminderSent: ''
     };
   });
 
@@ -165,23 +183,82 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
   const [selectedDangerSign, setSelectedDangerSign] = useState('Saignements vaginaux');
 
   // 💊 État Supplémentation Maternelle & TPI-SP Paludisme (PNLP Sénégal / UNAMUSC)
+  //
+  // PURGE TOTALE — Aucun soignant n'a jamais saisi de donnée sur cette
+  // plateforme : tout ce qui est dans `maternity_*` est du seed de
+  // démonstration, pas un dossier réel. Purger uniquement les valeurs
+  // « reconnaissables » conservait des données de démonstration dans les
+  // navigateurs des testeurs, et un seed légèrement différent passait
+  // au travers du filtre.
+  //
+  // On supprime donc TOUTES les clés `maternity_*` au premier chargement,
+  // une seule fois. La logique de saisie reste intacte : un professionnel
+  // peut toujours consigner une consultation, une ordonnance ou une
+  // constante, et l'assuré le lit ensuite. Seules les données de
+  // démonstration disparaissent.
+  //
+  // La purge ne touche PAS aux clés hors périmètre (session, profil,
+  // panier, notifications) : `cmu-pending-renewal` par exemple alimente
+  // un paiement réel et doit survivre.
+
+  const purgeLegacyFakeData = () => {
+    try {
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        // Tout ce qui commence par `maternity_` est un état local de
+        // démonstration : carnet mère, bébé, ALD, CPN, thread sage-femme.
+        if (key && key.startsWith('maternity_')) {
+          keysToRemove.push(key);
+        }
+      }
+      keysToRemove.forEach((key) => localStorage.removeItem(key));
+    } catch (e) {
+      // Stockage indisponible (mode privé, quota) : on ne bloque pas le rendu.
+    }
+  };
+
+  // Exécuté AU MOMENT DU RENDU, avant tout `useState` ci-dessous.
+  //
+  // Un `useEffect` serait trop tard : les états sont initialisés pendant le
+  // rendu, donc ils lisaient déjà les anciennes valeurs fictives et
+  // l'écran affichait « 45 / 90 j » jusqu'au rechargement suivant. La purge
+  // doit précéder la lecture.
+  if (typeof window !== 'undefined') {
+    try {
+      if (localStorage.getItem('maternity_fake_data_purged_v2') !== '1') {
+        purgeLegacyFakeData();
+        localStorage.setItem('maternity_fake_data_purged_v2', '1');
+      }
+    } catch (e) {
+      // Ignoré : le garde-fou est un confort, jamais un bloquant.
+    }
+  }
+
   const [maternalSupplements, setMaternalSupplements] = useState(() => {
     const saved = localStorage.getItem('maternity_supplements');
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) {}
+      try {
+        const parsed = JSON.parse(saved);
+        // On repart d'un état neutre : seule la saisie d'un soignant fait foi.
+        return {
+          ferFolateDaysTaken: Number(parsed?.ferFolateDaysTaken) || 0,
+          ferFolateTotalDays: Number(parsed?.ferFolateTotalDays) || 0,
+          tpiDoses: Array.isArray(parsed?.tpiDoses) ? parsed.tpiDoses : [],
+          mildaNetDistributed: parsed?.mildaNetDistributed === true,
+          mildaDate: typeof parsed?.mildaDate === 'string' ? parsed.mildaDate : ''
+        };
+      } catch (e) {
+        return { ferFolateDaysTaken: 0, ferFolateTotalDays: 0, tpiDoses: [], mildaNetDistributed: false, mildaDate: '' };
+      }
     }
-    return {
-      ferFolateDaysTaken: 45,
-      ferFolateTotalDays: 90,
-      tpiDoses: [
-        { id: 1, cpn: 'CPN 2 (16-20 sem)', date: '14/06/2026', given: true, status: 'Administré (Dose 1)' },
-        { id: 2, cpn: 'CPN 3 (28-32 sem)', date: '12/08/2026', given: true, status: 'Administré (Dose 2)' },
-        { id: 3, cpn: 'CPN 4 (36-38 sem)', date: 'À venir', given: false, status: 'Programmé (Dose 3)' }
-      ],
-      mildaNetDistributed: true,
-      mildaDate: '15/05/2026'
-    };
+    return { ferFolateDaysTaken: 0, ferFolateTotalDays: 0, tpiDoses: [], mildaNetDistributed: false, mildaDate: '' };
   });
+
+  // Vrai seulement si un traitement a réellement été prescrit et saisi. Pilote
+  // l'affichage : sans saisie, aucune jauge de progression n'est montrée.
+  const hasPrescribedSupplements =
+    maternalSupplements.ferFolateTotalDays > 0 || maternalSupplements.tpiDoses.length > 0;
 
   const [showSupplementsModal, setShowSupplementsModal] = useState(false);
   const [editSupplementsForm, setEditSupplementsForm] = useState(maternalSupplements);
@@ -194,16 +271,22 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
   };
 
   // 🛡️ État Surveillance ALD (Diabète/HTA) — CRUD complet (Créer / Modifier / Supprimer)
+  // AUCUN examen par défaut. « Fond d'œil annuel ✅ Normal », « Examen pied
+  // diabétique ✅ Pas de lésion » ou « ECG & fonction rénale ✅ Effectué » sont
+  // des résultats cliniques : les afficher pour un assuré qui n'a jamais eu
+  // l'examen taughtait un faux bilan de santé (et il pourrait le transmettre
+  // à un médecin). Le bloc reste accessible et vide ; seul le soignant saisit.
   const [aldSurveillanceItems, setAldSurveillanceItems] = useState(() => {
     const saved = localStorage.getItem('maternity_ald_surveillance');
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) {}
+      try {
+        const parsed = JSON.parse(saved);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        return [];
+      }
     }
-    return [
-      { id: 1, title: "👁️ Fond d'œil annuel (rétinopathie)", status: "✅ Normal", date: "10/04/2026" },
-      { id: 2, title: "👣 Examen pied diabétique (monofilament)", status: "✅ Pas de lésion", date: "10/04/2026" },
-      { id: 3, title: "🫀 ECG & fonction rénale (microalbuminurie)", status: "✅ Effectué", date: "12/05/2026" }
-    ];
+    return [];
   });
 
   const [showAldModal, setShowAldModal] = useState(false);
@@ -236,16 +319,21 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
   };
 
   // 🩹 État Protocole Post-Opératoire (Chirurgie/Orthopédie) — CRUD complet (Créer / Modifier / Supprimer)
+  // AUCUN acte par défaut. « Pansements stériles J+3 à J+14 ✅ Fait », « Ablation
+  // des fils ✅ Ablation faite » ou « Rééducation Session 3/10 » décrivent des
+  // soins qui n'ont jamais eu lieu pour l'assuré affiché : un faux compte-rendu
+  // opératoire. Le protocole se saisit, il ne se pré-remplit pas.
   const [postOpProtocolItems, setPostOpProtocolItems] = useState(() => {
     const saved = localStorage.getItem('maternity_postop_protocol');
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) {}
+      try {
+        const parsed = JSON.parse(saved);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        return [];
+      }
     }
-    return [
-      { id: 1, title: "🩹 Pansements stériles J+3 à J+14", status: "✅ Fait", date: "25/05/2026" },
-      { id: 2, title: "🧵 Ablation des fils / agrafes J+14", status: "✅ Ablation faite", date: "03/06/2026" },
-      { id: 3, title: "🩼 Rééducation & Appui soulagé", status: "⏳ En cours (Session 3/10)", date: "15/06/2026" }
-    ];
+    return [];
   });
 
   const [showPostOpModal, setShowPostOpModal] = useState(false);
@@ -283,12 +371,13 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
-    return [
-      { id: 1, name: 'Metformine 1000 mg', form: 'Comprimés sécables', specialty: '🩸 Diabétologie', dosage: '1 comprimé matin et soir au milieu des repas', coverage: '✅ 100% CSU Gratuit' },
-      { id: 2, name: 'Amlodipine 10 mg', form: 'Gélules quotidiennes', specialty: '🫀 Cardiologie / HTA', dosage: '1 comprimé le matin au réveil', coverage: '✅ 100% CSU Gratuit' },
-      { id: 3, name: 'Glimepiride 2 mg', form: 'Sulfamide hypoglycémiant', specialty: '🩸 Diabétologie', dosage: '1 comprimé avant le petit-déjeuner', coverage: '✅ 100% CSU Gratuit' },
-      { id: 4, name: 'Lecteur & Bandelettes Glycémiques', form: 'Auto-surveillance à domicile', specialty: '🔬 Auto-Contrôle', dosage: '100 bandelettes + lancettes par mois', coverage: '✅ 100% CSU Gratuit' }
-    ];
+    // AUCUNE ordonnance pré-remplie. « Metformine 1000 mg », « Amlodipine
+    // 10 mg » et « Glimepiride 2 mg » avec leurs posologies étaient seedés
+    // ici : tout assuré ALD voyait donc un traitement médicamenteux complet,
+    // précis et couvert à 100 % — qu'il n'a jamais reçu. Un antihypertenseur
+    // ou un antidiabétique inventé peut provoquer un arrêt erroné ou une
+    // interaction. La liste démarre vide ; seul un soignant la remplit.
+    return [];
   });
 
   const [showPrescriptionModal, setShowPrescriptionModal] = useState(false);
@@ -321,29 +410,49 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
   };
 
   // 📈 État Constantes Vitales & Régime ALD — CRUD complet (Créer / Modifier / Supprimer)
+  //
+  // AUCUNE valeur pré-remplie. « Glycémie 1,25 g/L », « Tension 135/85 »,
+  // « HbA1c 6,9 % » avec leur statut « 🟢 Dans la cible » étaient seedés :
+  // chaque assuré ALD obtenait un bilan biologique chiffré et interprété —
+  // donc un suivi réel dans l'affichage — alors que personne n'avait rien
+  // mesuré. Une HbA1c affichée comme favorable peut dissuader un contrôle de
+  // suivi. Tout part vide.
   const [aldVitals, setAldVitals] = useState(() => {
     const saved = localStorage.getItem('maternity_ald_vitals');
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) {}
+      try {
+        const list = JSON.parse(saved);
+        // Purge ciblée : on retire une entrée seulement si sa valeur ET sa
+        // date correspondent au seed historique. Une saisie médecin réelle
+        // qui coïnciderait est conservée par prudence.
+        if (Array.isArray(list)) {
+          const cleaned = list.filter(
+            (v) => !(
+              v?.value === '1.25 g/L' && v?.date === '10/06/2026'
+            ) && !(
+              v?.value === '135 / 85 mmHg' && v?.date === '10/06/2026'
+            ) && !(
+              v?.value === '74 kg (IMC 25.1)' && v?.date === '10/06/2026'
+            ) && !(
+              v?.value === '6.9%' && v?.date === '12/05/2026'
+            )
+          );
+          return cleaned;
+        }
+      } catch (e) {}
     }
-    return [
-      { id: 1, type: 'Glycémie à jeun', value: '1.25 g/L', target: 'Objectif < 1.26 g/L', date: '10/06/2026', status: '🟢 Dans la cible' },
-      { id: 2, type: 'Tension Artérielle', value: '135 / 85 mmHg', target: 'Objectif < 140/90', date: '10/06/2026', status: '🟢 Contrôlée' },
-      { id: 3, type: 'Poids / IMC', value: '74 kg (IMC 25.1)', target: 'Poids stable', date: '10/06/2026', status: '🟢 Conforme' },
-      { id: 4, type: 'HbA1c Glyquée', value: '6.9%', target: 'Objectif < 7.0%', date: '12/05/2026', status: '🟢 Optimal' }
-    ];
+    return [];
   });
 
+  // Régime alimentaire : des consignes « ✅ Actif » n'ont jamais été données.
+  // Un régime actif mais non prescrit peut provoquer une déshydratation
+  // (hyposodé) ou une hypoglycémie (hypoglucidique).
   const [aldDietDirectives, setAldDietDirectives] = useState(() => {
     const saved = localStorage.getItem('maternity_ald_diet');
     if (saved) {
       try { return JSON.parse(saved); } catch (e) {}
     }
-    return [
-      { id: 1, title: '🥗 Régime Hyposodé (< 5g sel/jour)', desc: 'Réduction de l\'apport en sel pour la protection vasculaire et la tension artérielle.', status: '✅ Actif' },
-      { id: 2, title: '🍏 Régime Hypoglucidique ALD', desc: 'Gestion des sucres rapides et répartition des glucides complexes sur 3 repas.', status: '✅ Actif' },
-      { id: 3, title: '🚶 Marche Quotidienne 30 min', desc: 'Activité physique adaptée 5 jours par semaine pour la sensibilité à l\'insuline.', status: '✅ Actif' }
-    ];
+    return [];
   });
 
   const [showAldVitalModal, setShowAldVitalModal] = useState(false);
@@ -376,16 +485,32 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
   };
 
   // 📊 État Suivi de Croissance Bébé OMS (Percentiles 0-24 mois)
+  //
+  // AUCUNE pesée pré-remplie. Poids, taille, périmètre crânien et percentiles
+  // étaient seedés : une courbe de croissance fictive pour un enfant qui
+  // n'existe pas. Un percentile « Harmonieuse » affiché peut fausser le
+  // dépistage d'un retard de croissance chez un vrai bébé.
   const [babyGrowth, setBabyGrowth] = useState(() => {
     const saved = localStorage.getItem('maternity_baby_growth');
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) {}
+      try {
+        const list = JSON.parse(saved);
+        if (Array.isArray(list)) {
+          // Purge du seed : dates fixes 14/05, 14/06, 14/07/2026 avec les
+          // poids exacts d'origine.
+          return list.filter(
+            (g) => !(
+              g?.date === '14/05/2026' && g?.weight === 3.4
+            ) && !(
+              g?.date === '14/06/2026' && g?.weight === 4.3
+            ) && !(
+              g?.date === '14/07/2026' && g?.weight === 5.2
+            )
+          );
+        }
+      } catch (e) {}
     }
-    return [
-      { id: 1, month: 'Naissance (M0)', date: '14/05/2026', weight: 3.4, height: 50, head: 35, status: 'Harmonieuse (Percentile 50)' },
-      { id: 2, month: '1er Mois (M1)', date: '14/06/2026', weight: 4.3, height: 54, head: 37, status: 'Harmonieuse (Percentile 50)' },
-      { id: 3, month: '2ème Mois (M2)', date: '14/07/2026', weight: 5.2, height: 58, head: 39, status: 'Harmonieuse (Percentile 50)' }
-    ];
+    return [];
   });
 
   const [showAddGrowthModal, setShowAddGrowthModal] = useState(false);
@@ -568,7 +693,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
   ]);
 
   const [showAddVaccineModal, setShowAddVaccineModal] = useState(false);
-  const [newVaccineForm, setNewVaccineForm] = useState({ ageLabel: '', vaccines: '', subtext: '', diseases: '', structure: 'Centre Hospitalier Abass Ndao', status: 'Administré (100% CSU)', completed: true });
+  const [newVaccineForm, setNewVaccineForm] = useState({ ageLabel: '', vaccines: '', subtext: '', diseases: '', structure: '', status: '', completed: false });
   const [editingVaccineId, setEditingVaccineId] = useState(null);
   const [editVaccineForm, setEditVaccineForm] = useState(null);
 
@@ -581,16 +706,29 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
   const [bookingDate, setBookingDate] = useState('2026-08-15');
 
   // Dynamic Vitals State (Poids & Tension)
+  //
+  // AUCUNE valeur pré-remplie. « 64,5 kg », « +2,1 kg / mois » et « 12/8 »
+  // étaient seedés : chaque assuré maternity voyait un poids, une prise de
+  // poids mensuelle et une tension « Normal ». Une courbe de poids peut servir
+  // au suivi d'une suspicion de macrosomie ou d'échec de croissance.
   const [vitals, setVitals] = useState(() => {
     const saved = localStorage.getItem('maternity_vitals');
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) {}
+      try {
+        const p = JSON.parse(saved);
+        // Purge du seed exact (les quatre valeurs ensemble).
+        const isSeed =
+          p?.weight === '64.5 kg' &&
+          p?.weightGain === '+2.1kg / mois' &&
+          p?.bloodPressure === '12/8';
+        if (!isSeed) return p;
+      } catch (e) {}
     }
     return {
-      weight: '64.5 kg',
-      weightGain: '+2.1kg / mois',
-      bloodPressure: '12/8',
-      bpStatus: 'Normal'
+      weight: '',
+      weightGain: '',
+      bloodPressure: '',
+      bpStatus: ''
     };
   });
 
@@ -680,14 +818,32 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
 
   // Formulaire question sage-femme
   const [midwifeQuestion, setMidwifeQuestion] = useState('');
-  const [midwifeAnswers, setMidwifeAnswers] = useState([
-    {
-      q: "Est-ce normal d'avoir des nausées légères au 2ème trimestre ?",
-      a: "Bonjour Awa. Les nausées diminuent généralement au 2ème trimestre. Si elles persistent, nous vous recommandons des tisanes au gingembre et des repas fractionnés.",
-      date: "Hier à 14:30",
-      doctor: "Sage-femme Fatou Diome"
+  // Fil de discussion SANS échange pré-fabriqué.
+  // La conversation démarrait avec une question et surtout une RÉPONSE
+  // médicale : « Bonjour Awa. Les nausées diminuent généralement au 2ème
+  // trimestre… tisanes au gingembre », signée « Sage-femme Fatou Diome ».
+  // C'est un conseil médical attribué à un professionnel qui n'a jamais vu
+  // l'assurée, sur une grossesse qui n'existe pas. Un fil vide est honnête :
+  // seule une question réellement posée apparaît, et sa réponse reste en
+  // attente tant qu'un soignant n'a pas répondu.
+  const [midwifeAnswers, setMidwifeAnswers] = useState(() => {
+    const saved = localStorage.getItem('maternity_midwife_thread');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
     }
-  ]);
+    return [];
+  });
+
+  // PERSISTANCE — l'état React seul était perdu à chaque rechargement : une
+  // question « transmise » disparaissait au refresh, donc ni l'assuré ni le
+  // soignant ne la voyait plus. Sans stockage, la promesse faite dans l'alerte
+  // (« visible par un professionnel dès qu'il consultera votre carnet »)
+  // était intenable.
+  useEffect(() => {
+    try {
+      localStorage.setItem('maternity_midwife_thread', JSON.stringify(midwifeAnswers));
+    } catch (e) {}
+  }, [midwifeAnswers]);
 
   // ────────────────────────────────────────────────────────────────────
   //  AUCUN SUIVI DE GROSSESSE FABRIQUÉ.
@@ -937,7 +1093,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
     setMidwifeAnswers(updated);
     setReplyingToIdx(null);
     setProReply('');
-    alert("✅ Réponse publiée — l'assurée est notifiée.");
+    alert("✅ Réponse enregistrée dans le carnet de l'assuré.");
   };
 
   // Poser question à la sage-femme
@@ -946,22 +1102,36 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
     if (!midwifeQuestion.trim()) return;
     const newQ = {
       q: midwifeQuestion,
-      a: "Merci Awa. Votre question a été transmise à la sage-femme de garde Dr. Fatou Diome. Une réponse vous sera notifiée d'ici 15 minutes.",
+      // Statut « en attente », pas réponse inventée : l'accusé de réception
+      // promettait « une réponse de Dr. Fatou Diome d'ici 15 minutes » alors
+      // qu'aucun dispositif de notification n'existe et qu'aucun professionnel
+      // n'est saisi. On affiche l'état réel — « en attente de réponse » —
+      // qui sera levé uniquement par `handleProReply`.
+      a: null,
       date: "À l'instant",
-      doctor: "Sage-femme Fatou Diome"
+      doctor: null
     };
     setMidwifeAnswers([newQ, ...midwifeAnswers]);
     setMidwifeQuestion('');
     setShowAskMidwifeModal(false);
-    alert("📩 Votre question a bien été envoyée à la sage-femme de garde !");
+    alert("📩 Votre question a été enregistrée. Elle sera visible par un professionnel de santé UNAMUSC dès qu'il consultera votre carnet.");
   };
 
   const handleDownloadCarnet = () => {
+    // Référence et nom de fichier dérivés des données réelles : « CARNET-MAT-2026-8812 »
+    // et un nom de fichier figé produisaient deux fois le même carnet officiel,
+    // indistinguable d'un vrai. En l'absence d'identifiant, le PDF n'est pas
+    // généré plutôt que d'être attribué à un dossier qui n'existe pas.
+    if (!activeCmuNumber) {
+      alert("⚠️ Impossible de générer le carnet : votre numéro de carte CSU n'est pas renseigné.");
+      return;
+    }
+    const cmuRef = activeCmuNumber.replace(/[^A-Za-z0-9]+/g, '-');
     generateOfficialPdf({
-      filename: `carnet_sante_maternelle_${activeFirstName.toLowerCase()}_${activeLastName.toLowerCase()}.pdf`,
+      filename: `carnet_sante_maternelle_${cmuRef}.pdf`,
       docType: 'CARNET DE SANTÉ MATERNELLE ET PÉDIATRIQUE',
       title: 'Carnet Maternité & Suivi Enfant 100% Gratuit',
-      referenceNo: 'CARNET-MAT-2026-8812',
+      referenceNo: `CARNET-MAT-${cmuRef}`,
       beneficiaryName: activeFullName,
       cmuNumber: activeCmuNumber,
       structureName: 'Hôpital Universitaire de Fann (Dakar)',
@@ -997,10 +1167,18 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
   };
 
   // Nom et identifiants de l'assurée connectée
-  const activeFirstName = citizenUser?.firstName || citizenUser?.first_name || 'Fatou';
-  const activeLastName = citizenUser?.lastName || citizenUser?.last_name || 'Diallo';
-  const activeFullName = `${activeFirstName} ${activeLastName}`;
-  const activeCmuNumber = citizenUser?.cmuNumber || citizenUser?.cmu_number || 'CSU-DKR-2026-8812';
+  // AUCUNE identité de repli. « Fatou » / « Diallo » / « CSU-DKR-2026-8812 »
+  // étaient des valeurs de substitution : un assuré dont la session était
+  // incomplète voyait un dossier médical au nom d'une autre personne, avec
+  // son propre numéro de carte remplacé. Un champ non renseigné s'affiche
+  // « — » : c'est un défaut visible, jamais une fausse identité.
+  const activeFirstName = citizenUser?.firstName || citizenUser?.first_name || '';
+  const activeLastName = citizenUser?.lastName || citizenUser?.last_name || '';
+  const activeFullName = [activeFirstName, activeLastName].filter(Boolean).join(' ').trim() || 'Assuré non identifié';
+  // Pas de n° de carte de substitution : un numéro inventé sur un document
+  // officiel (attestation, PDF) est le cas le plus grave — il renvoie à une
+  // autre personne réelle. On laisse le champ vide et l'appelant affiche « — ».
+  const activeCmuNumber = citizenUser?.cmuNumber || citizenUser?.cmu_number || '';
 
   // ═══════════════════════════════════════════════════════
   // RBAC — Définition granulaire des rôles (cohérent avec MedicalProfile)
@@ -1978,9 +2156,18 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
             <h3 className="fw-bold mb-2 text-danger" style={{ fontSize: '1.4rem' }}>⚠️ Accès aux soins de maternité refusé — Couverture CSU suspendue</h3>
             
             <div className="mb-3">
-              <code className="px-3 py-1.5 bg-dark text-warning border border-warning rounded-3 fw-bold d-inline-block" style={{ fontSize: '1.05rem', color: '#f59e0b' }}>
-                CSU-DKR-2026-8812
-              </code>
+              {/* Le n° de carte était écrit en dur (« CSU-DKR-2026-8812 »)
+                  dans un écran de REFUS DE SOINS : il s'affichait quel que soit
+                  l'assuré connecté. Deux conséquences graves : l'écran disait à
+                  un utilisateur que SA couverture était suspendue alors qu'il
+                  peut s'agir du dossier d'un tiers, et il exposait un numéro de
+                  carte ne lui appartenant pas. On affiche le numéro réel, ou
+                  rien. */}
+              {activeCmuNumber && (
+                <code className="px-3 py-1.5 bg-dark text-warning border border-warning rounded-3 fw-bold d-inline-block" style={{ fontSize: '1.05rem', color: '#f59e0b' }}>
+                  {activeCmuNumber}
+                </code>
+              )}
             </div>
 
             <p className="lead mb-4 mx-auto" style={{ maxWidth: '640px', fontSize: '1.05rem', lineHeight: '1.65' }}>
@@ -1995,12 +2182,21 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                 className="btn btn-emerald btn-lg px-4 py-3 fw-bold d-inline-flex align-items-center gap-2 shadow"
                 style={{ background: '#10b981', borderColor: '#10b981', color: '#ffffff', borderRadius: '16px', fontSize: '1.05rem', cursor: 'pointer', boxShadow: '0 6px 20px rgba(16, 185, 129, 0.35)' }}
                 onClick={() => {
+                  // Rien n'est écrit si l'identifiant est absent : sans lui,
+                  // la page de paiement ne peut pas rattacher le renouvellement
+                  // à personne. Les valeurs de repli ('Awa', 'Ndiaye',
+                  // familyCount: 3) pré-remplissaient un paiement réel avec
+                  // l'identité et la composition familiale d'une autre personne.
+                  if (!activeCmuNumber) {
+                    alert("⚠️ Impossible de lancer le renouvellement : votre numéro de carte CSU n'est pas renseigné.");
+                    return;
+                  }
                   localStorage.setItem('cmu-pending-renewal', JSON.stringify({
-                    cmuNumber: 'CSU-DKR-2026-8812',
+                    cmuNumber: activeCmuNumber,
                     amount: 10500,
-                    familyCount: 3,
-                    firstName: citizenUser?.firstName || 'Awa',
-                    lastName: citizenUser?.lastName || 'Ndiaye'
+                    familyCount: 0,
+                    firstName: activeFirstName,
+                    lastName: activeLastName
                   }));
                   if (setView) setView('payments');
                   else window.location.hash = '#payments';
@@ -2025,7 +2221,22 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
             <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.1rem' }}>UNAMUSC Sénégal 🇸🇳</h5>
             <span style={{ height: '14px', width: '1px', background: 'var(--border-color)' }} />
             <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '20px', fontSize: '0.78rem', fontWeight: '600', padding: '0.3rem 0.85rem' }}>
-              {isCitizen ? `${activeFullName} : Mère éligible CSU` : `🏥 ${partnerUser?.structureName || partnerUser?.name || 'Hôpital Principal de Dakar'} • Registre Maternité (${maternalRegistry.length} mères suivies)`}
+              {isCitizen
+                // « Mère éligible CSU » était écrit en dur : un homme s'affichait
+                // « Modou Diop : Mère éligible CSU », un absurde qui révèle que
+                // cette page est un modèle de maternité réutilisé sans
+                // distinction de sexe. On nomme désormais le pôle réel du
+                // dossier — celui qui pilote déjà le hero et les onglets.
+                ? `${activeFullName} : ${
+                    activeMother.category === 'chronic'
+                      ? 'Suivi ALD CSU'
+                      : activeMother.category === 'surgery'
+                      ? 'Suivi chirurgical CSU'
+                      : activeMother.category === 'pediatric'
+                      ? 'Carnet pédiatrique CSU'
+                      : 'Suivi prénatal CSU'
+                  }`
+                : `🏥 ${partnerUser?.structureName || partnerUser?.name || 'Hôpital Principal de Dakar'} • Registre Maternité (${maternalRegistry.length} mères suivies)`}
             </span>
           </div>
 
@@ -2526,10 +2737,25 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
             ? `Carnet de santé pédiatrique & PEV — ${activeMother.name}`
             : `Carnet de santé maternelle & suivi de l'enfant`;
 
+          // Le sous-titre interpolait `activeMother.pathology`, dont la valeur
+          // « Aucun suivi enregistré » produisait la phrase absurde et
+          // trompeuse « Suivi thérapeutique & biologique pour Aucun suivi
+          // enregistré ». On n'annonce un suivi que s'il existe réellement.
+          const hasPathology = Boolean(
+            activeMother.pathology &&
+            activeMother.pathology !== '—' &&
+            activeMother.pathology !== 'Aucun suivi enregistré'
+          );
+          const identityTail = `Patient (${activeMother.gender === 'M' ? 'Homme' : 'Femme'}, ${activeMother.age} ans) • N° Carte CSU : ${activeMother.cmuNumber || 'non renseigné'}.`;
+
           const heroSubtitle = cat === 'chronic'
-            ? `Suivi thérapeutique & biologique pour ${activeMother.pathology}. Patient (${activeMother.gender === 'M' ? 'Homme' : 'Femme'}, ${activeMother.age} ans) • N° Carte CSU : ${activeMother.cmuNumber}.`
+            ? (hasPathology
+              ? `Suivi thérapeutique & biologique pour ${activeMother.pathology}. ${identityTail}`
+              : `Aucune affection de longue durée n'est enregistrée à ce jour pour votre dossier. Les consultations et bilans apparaîtront ici dès qu'un professionnel les consignera. ${identityTail}`)
             : cat === 'surgery'
-            ? `Suivi post-opératoire, rééducation & radiographies pour ${activeMother.pathology}. Patient (${activeMother.gender === 'M' ? 'Homme' : 'Femme'}, ${activeMother.age} ans) • N° Carte CSU : ${activeMother.cmuNumber}.`
+            ? (hasPathology
+              ? `Suivi post-opératoire, rééducation & radiographies pour ${activeMother.pathology}. ${identityTail}`
+              : `Aucune intervention n'est enregistrée à ce jour pour votre dossier. Le suivi post-opératoire et les radiographies apparaîtront ici dès leur consignation. ${identityTail}`)
             : cat === 'pediatric'
             ? `Suivi de croissance OMS & calendrier vaccinal 0-5 ans pour ${activeMother.name} (${activeMother.age} ans). Prise en charge 100% CSU.`
             : `Accédez en toute sécurité au suivi prénatal et au calendrier vaccinal PEV de votre enfant. Bénéficiez des garanties de prise en charge 100% CSU.`;
@@ -2684,21 +2910,19 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                 <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                   {(() => {
                     const cat = activeMother.category || 'maternity';
-                    const activeConsultationsList = cat === 'chronic' ? [
-                      { id: 101, title: 'Consultation cardiologie & évaluation HTA sévère', desc: 'Tension 15/9 mmHg. Fond d\'œil réalisé (stade 0). Ajustement Amlodipine 10mg & régime hyposodé.', date: '10/04/2026', doctor: activeMother.doctorRef || 'Dr. Ousmane Sow (Cardiologie)', status: 'Consultation ALD validée', completed: true },
-                      { id: 102, title: 'Bilan diabétologie & HbA1c semestriel', desc: 'HbA1c mesurée à 6.9%. Glycémie à jeun 1.25 g/L. Prescription Metformine 1000mg & contrôle podologique.', date: '05/06/2026', doctor: 'Dr. Cheikh Diop (Diabétologue)', status: 'Bilan biologique validé', completed: true },
-                      { id: 103, title: 'Bilan rénal, microalbuminurie & fond d\'œil', desc: 'Prévue : Bilan lipidique (Cholestérol/Triglycérides), créatininémie & électrocardiogramme ECG.', date: '12/08/2026', doctor: activeMother.doctorRef || 'Dr. Ousmane Sow (Cardiologie)', status: 'RDV ALD à venir', completed: false },
-                      { id: 104, title: 'Consultation étape semestrielle & adaptation traitement', desc: 'Prévue : Contrôle annuel 100% CSU, renouvellement ordonnance 6 mois & bilan cardiovasculaire.', date: '25/09/2026', doctor: 'Dr. Cheikh Diop (Diabétologue)', status: 'Programmé CSU 100%', completed: false }
-                    ] : cat === 'surgery' ? [
-                      { id: 201, title: 'Chirurgie orthopédique & réduction de fracture', desc: 'Intervention sous rachi-anesthésie. Réduction fracture fémur droite avec matériel d\'ostéosynthèse. Pose plâtre.', date: '20/05/2026', doctor: activeMother.doctorRef || 'Dr. Babacar Kane (Orthopédiste)', status: 'Intervention réalisée', completed: true },
-                      { id: 202, title: 'Radiographie de contrôle J+30 & ablation fils', desc: 'Alignement osseux satisfaisant. Cal osseux en formation. Ablation des agrafes & réfection résine.', date: '20/06/2026', doctor: activeMother.doctorRef || 'Dr. Babacar Kane (Orthopédiste)', status: 'Radio contrôle validée', completed: true },
-                      { id: 203, title: 'Ablation plâtre & début kinésithérapie', desc: 'Prévue : Ablation résine, examen mobilité genou/hanche & démarrage 10 séances de rééducation fonctionnelle.', date: '20/07/2026', doctor: activeMother.doctorRef || 'Dr. Babacar Kane (Orthopédiste)', status: 'Suivi post-op à venir', completed: false },
-                      { id: 204, title: 'Bilan d\'autonomie & décharge matériel', desc: 'Prévue : Évaluation de la marche sans appui, radio de consolidation définitive à 4 mois.', date: '20/09/2026', doctor: 'Dr. Babacar Kane (Orthopédiste)', status: 'Programmé CSU 100%', completed: false }
-                    ] : cat === 'pediatric' ? [
-                      { id: 301, title: 'Consultation 1er mois & pesée pédiatrique', desc: 'Développement psychomoteur normal. Poids 4.3 kg. Vaccination BCG + VPO 0 validée.', date: '14/06/2026', doctor: activeMother.doctorRef || 'Dr. Mariama Seck (Pédiatre)', status: 'Pédiatrie validée', completed: true },
-                      { id: 302, title: 'Visite 9ème mois & rappel PEV', desc: 'Vaccin RR 1 + Fièvre Jaune. Supplémentation en Vitamine A & Déparasitation à l\'Albendazole.', date: '14/07/2026', doctor: activeMother.doctorRef || 'Dr. Mariama Seck (Pédiatre)', status: 'Suivi PEV validé', completed: true },
-                      { id: 303, title: 'Contrôle croissance 2 ans & dépistage anémie', desc: 'Prévue : Évaluation du langage, courbe de croissance OMS & dépistage malnutrition aiguë.', date: '14/08/2026', doctor: activeMother.doctorRef || 'Dr. Mariama Seck (Pédiatre)', status: 'Pédiatrie à venir', completed: false }
-                    ] : cpnVisits;
+                    // SOURCE UNIQUE DE VÉRITÉ — plus aucun jeu de données
+                    // fictif par catégorie.
+                    //
+                    // Ce bloc conditionnait `chronic`/`surgery`/`pediatric` sur des
+                    // tableaux en dur (11 consultations avec dates, médecins et
+                    // résultats : « HbA1c 6,9 % », « Tension 15/9 mmHg »). Un assuré
+                    // réel voyait donc un dossier médical fabriqué, avec des actes
+                    // « validés » et des praticiens qui n'ont jamais existé.
+                    //
+                    // On lit désormais l'unique source réelle, `cpnVisits`, quel que
+                    // soit le pôle : une consultation n'apparaît que si un soignant
+                    // l'a réellement saisie.
+                    const activeConsultationsList = cpnVisits;
 
                     const completedCount = activeConsultationsList.filter(c => c.completed).length;
                     const totalCount = activeConsultationsList.length;
@@ -2709,20 +2933,34 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                       <div className="w-100">
                         <div className="d-flex justify-content-between align-items-center mb-1">
                           <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.2rem' }}>{titleText}</h5>
-                          <span style={{ background: percentage === 100 ? 'rgba(16, 185, 129, 0.2)' : 'rgba(59, 130, 246, 0.2)', color: percentage === 100 ? '#10b981' : '#3b82f6', border: `1px solid ${percentage === 100 ? '#10b981' : '#3b82f6'}`, borderRadius: '20px', padding: '0.35rem 0.85rem', fontSize: '0.78rem', fontWeight: '700' }}>
-                            {percentage === 100 ? '✔ Toutes effectuées' : `⌛ En cours (${completedCount}/${totalCount})`}
+                          {/* Sans aucune consultation, « En cours (0/0) » et
+                              « 0 % complété » laissaient croire à un suivi
+                              démarré mais non honoré. Sans donnée, on ne
+                              mesure rien : le badge l'annonce explicitement. */}
+                          <span style={{ background: totalCount === 0 ? 'rgba(148,163,184,0.15)' : percentage === 100 ? 'rgba(16, 185, 129, 0.2)' : 'rgba(59, 130, 246, 0.2)', color: totalCount === 0 ? '#94a3b8' : percentage === 100 ? '#10b981' : '#3b82f6', border: `1px solid ${totalCount === 0 ? '#94a3b8' : percentage === 100 ? '#10b981' : '#3b82f6'}`, borderRadius: '20px', padding: '0.35rem 0.85rem', fontSize: '0.78rem', fontWeight: '700' }}>
+                            {totalCount === 0
+                              ? 'Aucun suivi saisi'
+                              : percentage === 100 ? '✔ Toutes effectuées' : `⌛ En cours (${completedCount}/${totalCount})`}
                           </span>
                         </div>
 
-                        <div className="d-flex align-items-center justify-content-between mt-1">
-                          <small style={{ color: 'var(--text-sub)' }}>
-                            Progression globale du suivi : <span className="text-success fw-extrabold" style={{ fontSize: '0.95rem' }}>{percentage}% complété</span> ({completedCount} sur {totalCount} consultations validées)
-                          </small>
-                        </div>
+                        {totalCount > 0 ? (
+                          <>
+                            <div className="d-flex align-items-center justify-content-between mt-1">
+                              <small style={{ color: 'var(--text-sub)' }}>
+                                Progression globale du suivi : <span className="text-success fw-extrabold" style={{ fontSize: '0.95rem' }}>{percentage}% complété</span> ({completedCount} sur {totalCount} consultations validées)
+                              </small>
+                            </div>
 
-                        <div className="progress mt-2" style={{ height: '8px', background: 'var(--bg-card-subtle)', borderRadius: '10px' }}>
-                          <div className="progress-bar bg-success" style={{ width: `${percentage}%`, borderRadius: '10px', transition: 'width 0.4s ease' }}></div>
-                        </div>
+                            <div className="progress mt-2" style={{ height: '8px', background: 'var(--bg-card-subtle)', borderRadius: '10px' }}>
+                              <div className="progress-bar bg-success" style={{ width: `${percentage}%`, borderRadius: '10px', transition: 'width 0.4s ease' }}></div>
+                            </div>
+                          </>
+                        ) : (
+                          <small style={{ color: 'var(--text-sub)' }}>
+                            Aucune consultation n'a encore été enregistrée pour ce dossier. Ce calendrier se remplira dès qu'un professionnel de santé consignera une consultation.
+                          </small>
+                        )}
                       </div>
                     );
                   })()}
@@ -2731,22 +2969,36 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                 {/* Timeline Items Dynamiques */}
                 <div className="d-flex flex-column gap-3.5">
                   {(() => {
-                    const cat = activeMother.category || 'maternity';
-                    const list = cat === 'chronic' ? [
-                      { id: 101, title: 'Consultation cardiologie & évaluation HTA sévère', desc: 'Tension 15/9 mmHg. Fond d\'œil réalisé (stade 0). Ajustement Amlodipine 10mg & régime hyposodé.', date: '10/04/2026', doctor: activeMother.doctorRef || 'Dr. Ousmane Sow (Cardiologie)', status: 'Consultation ALD validée', completed: true },
-                      { id: 102, title: 'Bilan diabétologie & HbA1c semestriel', desc: 'HbA1c mesurée à 6.9%. Glycémie à jeun 1.25 g/L. Prescription Metformine 1000mg & contrôle podologique.', date: '05/06/2026', doctor: 'Dr. Cheikh Diop (Diabétologue)', status: 'Bilan biologique validé', completed: true },
-                      { id: 103, title: 'Bilan rénal, microalbuminurie & fond d\'œil', desc: 'Prévue : Bilan lipidique (Cholestérol/Triglycérides), créatininémie & électrocardiogramme ECG.', date: '12/08/2026', doctor: activeMother.doctorRef || 'Dr. Ousmane Sow (Cardiologie)', status: 'RDV ALD à venir', completed: false },
-                      { id: 104, title: 'Consultation étape semestrielle & adaptation traitement', desc: 'Prévue : Contrôle annuel 100% CSU, renouvellement ordonnance 6 mois & bilan cardiovasculaire.', date: '25/09/2026', doctor: 'Dr. Cheikh Diop (Diabétologue)', status: 'Programmé CSU 100%', completed: false }
-                    ] : cat === 'surgery' ? [
-                      { id: 201, title: 'Chirurgie orthopédique & réduction de fracture', desc: 'Intervention sous rachi-anesthésie. Réduction fracture fémur droite avec matériel d\'ostéosynthèse. Pose plâtre.', date: '20/05/2026', doctor: activeMother.doctorRef || 'Dr. Babacar Kane (Orthopédiste)', status: 'Intervention réalisée', completed: true },
-                      { id: 202, title: 'Radiographie de contrôle J+30 & ablation fils', desc: 'Alignement osseux satisfaisant. Cal osseux en formation. Ablation des agrafes & réfection résine.', date: '20/06/2026', doctor: activeMother.doctorRef || 'Dr. Babacar Kane (Orthopédiste)', status: 'Radio contrôle validée', completed: true },
-                      { id: 203, title: 'Ablation plâtre & début kinésithérapie', desc: 'Prévue : Ablation résine, examen mobilité genou/hanche & démarrage 10 séances de rééducation fonctionnelle.', date: '20/07/2026', doctor: activeMother.doctorRef || 'Dr. Babacar Kane (Orthopédiste)', status: 'Suivi post-op à venir', completed: false },
-                      { id: 204, title: 'Bilan d\'autonomie & décharge matériel', desc: 'Prévue : Évaluation de la marche sans appui, radio de consolidation définitive à 4 mois.', date: '20/09/2026', doctor: 'Dr. Babacar Kane (Orthopédiste)', status: 'Programmé CSU 100%', completed: false }
-                    ] : cat === 'pediatric' ? [
-                      { id: 301, title: 'Consultation 1er mois & pesée pédiatrique', desc: 'Développement psychomoteur normal. Poids 4.3 kg. Vaccination BCG + VPO 0 validée.', date: '14/06/2026', doctor: activeMother.doctorRef || 'Dr. Mariama Seck (Pédiatre)', status: 'Pédiatrie validée', completed: true },
-                      { id: 302, title: 'Visite 9ème mois & rappel PEV', desc: 'Vaccin RR 1 + Fièvre Jaune. Supplémentation en Vitamine A & Déparasitation à l\'Albendazole.', date: '14/07/2026', doctor: activeMother.doctorRef || 'Dr. Mariama Seck (Pédiatre)', status: 'Suivi PEV validé', completed: true },
-                      { id: 303, title: 'Contrôle croissance 2 ans & dépistage anémie', desc: 'Prévue : Évaluation du langage, courbe de croissance OMS & dépistage malnutrition aiguë.', date: '14/08/2026', doctor: activeMother.doctorRef || 'Dr. Mariama Seck (Pédiatre)', status: 'Pédiatrie à venir', completed: false }
-                    ] : cpnVisits;
+                    // MÊME SOURCE UNIQUE QUE LE COMPTEUR CI-DESSUS.
+                    // Ce second jeu de données était la copie conforme du premier :
+                    // deux listes fantômes indépendantes qu'il fallait corriger en
+                    // même temps. Une seule lecture des données réelles supprime
+                    // définitivement le risque de divergence.
+                    const list = cpnVisits;
+
+                    // Liste vide = état normal. Sans message explicite, la
+                    // colonne paraissait cassée ; on explique donc pourquoi
+                    // elle est vide et qui peut la remplir.
+                    if (list.length === 0) {
+                      return (
+                        <div
+                          className="p-4 rounded-4 text-center"
+                          style={{
+                            background: 'var(--bg-card-subtle)',
+                            border: '1px dashed var(--border-color)',
+                            borderRadius: '18px'
+                          }}
+                        >
+                          <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>📋</div>
+                          <h6 className="fw-bold mb-1" style={{ fontSize: '0.95rem', color: 'var(--text-main)' }}>
+                            Aucune consultation enregistrée
+                          </h6>
+                          <p className="mb-0" style={{ fontSize: '0.82rem', color: 'var(--text-sub)', lineHeight: 1.55, maxWidth: '520px', margin: '0 auto' }}>
+                            Votre carnet ne contient aucune consultation pour le moment. Les entrées apparaîtront ici uniquement lorsqu'un médecin ou une sage-femme les consignera — aucune donnée n'est générée automatiquement.
+                          </p>
+                        </div>
+                      );
+                    }
 
                     return list.map((item) => (
                       <div 
@@ -2958,13 +3210,43 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                             <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.95rem', flexShrink: 0 }}>💊</div>
                             <div>
                               <span className="fw-extrabold d-block" style={{ color: 'var(--text-main)', fontSize: '0.88rem', lineHeight: 1.3 }}>Observance thérapeutique ALD</span>
-                              <small style={{ color: 'var(--text-muted)', fontSize: '0.76rem' }}>Traitement quotidien à vie pris régulièrement</small>
+                              {/* Ni dose ni prescription ne sont affichées sans saisie : la ligne
+                                  ci-dessous décrivait un « traitement quotidien à vie pris
+                                  régulièrement », c'est-à-dire un traitement à vie
+                                  qu'aucun médecin n'a prescrit. */}
+                              <small style={{ color: 'var(--text-muted)', fontSize: '0.76rem' }}>
+                                {(() => {
+                                  const t = Number(maternalSupplements.ferFolateTotalDays) || 0;
+                                  return t > 0
+                                    ? 'Observance déclarée par le soignant'
+                                    : 'Observance non renseignée — aucune prescription enregistrée';
+                                })()}
+                              </small>
                             </div>
                           </div>
-                          <span style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', fontWeight: 800, fontSize: '0.75rem', padding: '0.35rem 0.75rem', borderRadius: '10px', whiteSpace: 'nowrap' }}>180 / 180 j</span>
+                          {(() => {
+                            const daysTaken = Number(maternalSupplements.ferFolateDaysTaken) || 0;
+                            const daysTotal = Number(maternalSupplements.ferFolateTotalDays) || 0;
+
+                            return (
+                              <span style={{
+                                  background: daysTotal > 0 ? 'linear-gradient(135deg, #10b981, #059669)' : 'var(--bg-card-subtle)',
+                                  color: daysTotal > 0 ? '#fff' : 'var(--text-muted)',
+                                  border: daysTotal > 0 ? 'none' : '1px solid var(--border-color)',
+                                  fontWeight: 800, fontSize: '0.75rem', padding: '0.35rem 0.75rem',
+                                  borderRadius: '10px', whiteSpace: 'nowrap'
+                                }}>
+                                  {daysTotal > 0 ? `${daysTaken} / ${daysTotal} j` : 'Non renseigné'}
+                                </span>
+                            );
+                          })()}
                         </div>
                         <div style={{ height: '8px', background: 'rgba(16,185,129,0.2)', borderRadius: '6px', overflow: 'hidden' }}>
-                          <div style={{ width: '100%', height: '100%', background: 'linear-gradient(90deg, #10b981, #34d399)', borderRadius: '6px', boxShadow: '0 0 12px rgba(16,185,129,0.4)' }}></div>
+                          <div style={{ width: `${(() => {
+                            const t = Number(maternalSupplements.ferFolateTotalDays) || 0;
+                            const k = Number(maternalSupplements.ferFolateDaysTaken) || 0;
+                            return t > 0 ? Math.min(100, Math.round((k / t) * 100)) : 0;
+                          })()}%`, height: '100%', background: 'linear-gradient(90deg, #10b981, #34d399)', borderRadius: '6px', boxShadow: '0 0 12px rgba(16,185,129,0.4)' }}></div>
                         </div>
                       </div>
 
@@ -2978,6 +3260,25 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
 
                       {/* Liste Dynamique des Examens ALD - redesigned */}
                       <div className="d-flex flex-column gap-2.5 mb-3.5">
+                        {/* Aucun examen n'est pré-rempli : une liste vide
+                            signifie « rien de prescrit », pas « rien de suivi ».
+                            On le dit, sinon la carte paraît en défaut. */}
+                        {aldSurveillanceItems.length === 0 && (
+                          <p
+                            className="m-0 p-3 text-center"
+                            style={{
+                              background: 'var(--bg-card-subtle)',
+                              border: '1px dashed var(--border-color)',
+                              borderRadius: '14px',
+                              fontSize: '0.82rem',
+                              color: 'var(--text-sub)',
+                              lineHeight: 1.55
+                            }}
+                          >
+                            Aucun examen de surveillance n'a été prescrit pour le moment.{' '}
+                            {canEditMaternity && 'Utilisez « + Ajouter un examen » pour consigner un examen réellement prescrit.'}
+                          </p>
+                        )}
                         {aldSurveillanceItems.map(item => {
                           const iconMap = { '👁️': { bg: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', icon: '👁️' }, '👣': { bg: 'linear-gradient(135deg, #f59e0b, #d97706)', icon: '👣' }, '🫀': { bg: 'linear-gradient(135deg, #ef4444, #dc2626)', icon: '🫀' } };
                           const firstEmoji = item.title.match(/^(\p{Emoji_Presentation}|\p{Extended_Pictographic})/u);
@@ -3045,19 +3346,14 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                         })}
                       </div>
 
-                      {/* Matériel Auto-surveillance - redesigned */}
-                      <div className="p-3.5 rounded-4" style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.15) 0%, rgba(5,150,105,0.08) 100%)', border: '1.5px solid rgba(16,185,129,0.3)', borderRadius: '18px' }}>
-                        <div className="d-flex align-items-center justify-content-between">
-                          <div className="d-flex align-items-center gap-2.5">
-                            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }}>🔬</div>
-                            <div>
-                              <strong className="d-block" style={{ fontSize: '0.86rem', color: 'var(--text-main)' }}>Kit glycémique & bandelettes</strong>
-                              <small style={{ fontSize: '0.75rem', color: '#10b981', fontWeight: 700 }}>Renouvellement mensuel gratuit</small>
-                            </div>
-                          </div>
-                          <span style={{ background: 'linear-gradient(135deg, #10b981, #059669)', color: '#fff', fontWeight: 800, fontSize: '0.72rem', padding: '0.4rem 0.8rem', borderRadius: '10px', boxShadow: '0 2px 8px rgba(16,185,129,0.3)' }}>100% Gratuit</span>
-                        </div>
-                      </div>
+                      {/* Carte « Kit glycémique & bandelettes — renouvellement mensuel gratuit,
+                       100% Gratuit » supprimée. Elle n'était adossée à
+                       aucune donnée : elle affirmait qu'un lot de bandelettes
+                       était délivré et renouvelé chaque mois, alors que
+                       rien dans le dossier ne l'atteste. Un assuré pouvait
+                       se présenter chez un pharmacien en réclamant un
+                       matériel sur la seule foi de cet écran. Le droit réel
+                       se vérifie auprès de la mutuelle, pas ici. */}
                     </div>
                   </div>
                 ) : activeMother.category === 'surgery' ? (
@@ -3086,17 +3382,24 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                       )}
                     </div>
 
-                    {/* Thromboprophylaxie Lovenox */}
+                    {/* Anticoagulation — l'état « prescrit » était inféré de
+                        `postOpProtocolItems.length > 0`. C'est faux : un pansement
+                        ou un contrôle de cicatrice ne prouve aucune prescription
+                        d'anticoagulant. Comme il n'existe aucune source réelle
+                        d'ordonnance pour la branche chirurgie (les ordonnances ALD
+                        ne concernent que le pôle chronique), la carte affiche un
+                        état inconnu explicite plutôt qu'un statut fabriqué, et la
+                        barre de progression — qui suggérait un traitement en cours —
+                        disparaît. */}
                     <div className="p-3 rounded-3 mb-3" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
                       <div className="d-flex justify-content-between align-items-center mb-1.5">
-                        <small className="fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.82rem' }}>💉 Anti-thrombotique (Lovenox 0.4ml)</small>
-                        <span className="badge bg-success-subtle text-success fw-bold px-2 py-1" style={{ fontSize: '0.72rem', borderRadius: '6px' }}>30 / 30 jours</span>
-                      </div>
-                      <div className="progress mb-1" style={{ height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '6px' }}>
-                        <div className="progress-bar bg-success" style={{ width: '100%', borderRadius: '6px' }}></div>
+                        <small className="fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.82rem' }}>💉 Anticoagulation préventive</small>
+                        <span className="badge bg-secondary-subtle text-muted fw-bold px-2 py-1" style={{ fontSize: '0.72rem', borderRadius: '6px' }}>
+                          Statut non renseigné
+                        </span>
                       </div>
                       <small className="d-block text-muted" style={{ fontSize: '0.72rem', lineHeight: '1.35' }}>
-                        Injections sous-cutanées quotidiennes accomplies avec succès
+                        Ce dossier ne contient aucune ordonnance d'anticoagulant. Le statut « prescrit / non prescrit » ne sera affiché qu'après saisie d'une ordonnance par un médecin — il n'est jamais déduit d'autres soins.
                       </small>
                     </div>
 
@@ -3109,6 +3412,21 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                       </div>
 
                       <div className="d-flex flex-column gap-2">
+                        {postOpProtocolItems.length === 0 && (
+                          <p
+                            className="m-0 p-3 text-center"
+                            style={{
+                              background: 'var(--bg-card-subtle)',
+                              border: '1px dashed var(--border-color)',
+                              borderRadius: '14px',
+                              fontSize: '0.82rem',
+                              color: 'var(--text-sub)',
+                              lineHeight: 1.55
+                            }}
+                          >
+                            Aucun protocole post-opératoire n'est enregistré. Les consignes de soins ne s'afficheront ici qu'une fois réellement prescrites par le chirurgien.
+                          </p>
+                        )}
                         {postOpProtocolItems.map(item => (
                           <div key={item.id} className="p-2.5 rounded-3 d-flex align-items-center justify-content-between gap-2" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', fontSize: '0.8rem' }}>
                             <div className="d-flex flex-column">
@@ -3269,44 +3587,35 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                       : 'Dans le cadre du programme UNAMUSC, vos frais de maternité sont couverts à 100%.'}
                   </p>
 
+                  {/* Les « garanties » ci-dessus énuméraient des avantages financiers
+                     entièrement écrits en dur : « zéro ticket modérateur »,
+                      « médicaments 100% gratuits », « 100 bandelettes offertes
+                      par mois », « 10 séances de kiné offertes ». Aucun de
+                      ces droits n'est vérifiable depuis ce dossier : le taux
+                      réel dépend de la commune, de la mutuelle, de l'acte et
+                      du circuit de facturation. Les afficher comme acquis —
+                      avec de vraies coches vertes — pouvait pousser un assuré
+                      un assuré qui se voyait ensuite facturer. On ne les
+                      invente donc pas : la carte renvoie vers la mutuelle,
+                      seule source du taux applicable à un dossier donné. */}
                   <div className="d-flex flex-column gap-2 mb-4 small fw-semibold">
-                    {activeMother.category === 'chronic' ? (
-                      <>
-                        <div className="d-flex align-items-center gap-2">
-                          <span>✓</span> <span><strong>Zéro ticket modérateur :</strong> Consultations spécialisées & bilans glycémiques.</span>
-                        </div>
-                        <div className="d-flex align-items-center gap-2">
-                          <span>✓</span> <span><strong>Médicaments ALD :</strong> Antidiabétiques & antihypertenseurs 100% gratuits.</span>
-                        </div>
-                        <div className="d-flex align-items-center gap-2">
-                          <span>✓</span> <span><strong>Auto-surveillance :</strong> Kit lecteur & 100 bandelettes offertes par mois.</span>
-                        </div>
-                      </>
-                    ) : activeMother.category === 'surgery' ? (
-                      <>
-                        <div className="d-flex align-items-center gap-2">
-                          <span>✓</span> <span><strong>Chirurgie & bloc :</strong> Gratuité des frais d'opérations et d'hospitalisation.</span>
-                        </div>
-                        <div className="d-flex align-items-center gap-2">
-                          <span>✓</span> <span><strong>Radiologie DICOM :</strong> Radiographies, scanners et IRM 100% couverts.</span>
-                        </div>
-                        <div className="d-flex align-items-center gap-2">
-                          <span>✓</span> <span><strong>Kinésithérapie :</strong> 10 séances de rééducation et orthèses offertes.</span>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="d-flex align-items-center gap-2">
-                          <span>✓</span> <span><strong>Zéro dépense :</strong> Consultations & examens biologiques.</span>
-                        </div>
-                        <div className="d-flex align-items-center gap-2">
-                          <span>✓</span> <span><strong>Accouchement :</strong> Gratuité totale en structure publique.</span>
-                        </div>
-                        <div className="d-flex align-items-center gap-2">
-                          <span>✓</span> <span><strong>Pédiatrie :</strong> Soins offerts jusqu'à 5 ans.</span>
-                        </div>
-                      </>
-                    )}
+                    <div className="d-flex align-items-start gap-2">
+                      <span>ℹ️</span>
+                      <span>
+                        Le niveau de prise en charge applicable à votre dossier
+                        n'est pas renseigné ici. Il dépend de votre commune,
+                        de votre mutuelle et de l'acte concerné : demandez
+                        votre taux exact à votre mutuelle avant tout acte.
+                      </span>
+                    </div>
+                    <div className="d-flex align-items-start gap-2">
+                      <span>ℹ️</span>
+                      <span>
+                        Aucun bon de commande, aucune ordonnance et aucune
+                        prise en charge validée n'apparaissent dans ce dossier.
+                        Seuls vos soins réellement enregistrés y figurent.
+                      </span>
+                    </div>
                   </div>
 
                   <button 
@@ -3322,13 +3631,38 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                 {/* Card Médecin / Praticien de garde — Adaptatif */}
                 <div className="p-3.5 rounded-4 d-flex align-items-center justify-content-between" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
                   <div className="d-flex align-items-center gap-3">
-                    <img src={activeMother.category === 'chronic' ? '/mariama_avatar.png' : activeMother.category === 'surgery' ? '/mariama_avatar.png' : '/dr_fatou_diop.png'} onError={(e) => { e.target.src = '/mariama_avatar.png'; }} alt="Praticien" style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover' }} />
+                    {/* Pas de photo de praticien : la photo venait d'un fichier statique
+                          (« /mariama_avatar.png ») alors que le nom affiché
+                          venait d'une ternaire en dur — la photo et le nom
+                          pouvaient désigner deux personnes différentes. On
+                          affiche les initiales du praticien réellement connu. */}
+                    <div
+                      aria-hidden="true"
+                      style={{
+                        width: '48px', height: '48px', borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #10b981, #059669)',
+                        color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '1rem', fontWeight: 800, flexShrink: 0
+                      }}
+                    >
+                      {activeMother.doctorRef && activeMother.doctorRef !== '—'
+                        ? activeMother.doctorRef.replace(/^Dr\.?\s*/i, '').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase()
+                        : '—'}
+                    </div>
                     <div>
+                      {/* Praticien : on n'affiche QUE le `doctorRef` réellement connu du dossier.
+                      « Dr. Ousmane Sow », « Dr. Babacar Kane » et « Dr. Fatou
+                      Diome » étaient écrits en dur : chaque assuré voyait un
+                      médecin « référent » qui ne l'a jamais pris en charge. Sans
+                      praticien désigné, on l'affiche tel quel au lieu d'inventer
+                      un nom. */}
                       <small className="d-block text-muted" style={{ fontSize: '0.72rem' }}>
                         {activeMother.category === 'chronic' ? 'Médecin référent ALD / diabétologue' : activeMother.category === 'surgery' ? 'Chirurgien orthopédiste de garde' : 'Sage-femme de garde'}
                       </small>
-                      <strong className="small d-block" style={{ color: 'var(--text-main)' }}>
-                        {activeMother.category === 'chronic' ? 'Dr. Ousmane Sow' : activeMother.category === 'surgery' ? 'Dr. Babacar Kane' : 'Dr. Fatou Diome'}
+                      <strong className="small d-block" style={{ color: activeMother.doctorRef && activeMother.doctorRef !== '—' ? 'var(--text-main)' : 'var(--text-sub)' }}>
+                        {activeMother.doctorRef && activeMother.doctorRef !== '—'
+                          ? activeMother.doctorRef
+                          : 'Aucun praticien désigné'}
                       </strong>
                     </div>
                   </div>
@@ -3436,6 +3770,21 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                         </tr>
                       </thead>
                       <tbody>
+                        {/* Tableau vide = aucune ordonnance. Une ligne vide
+                            muette laisserait croire à un bug d'affichage. */}
+                        {aldPrescriptions.length === 0 && (
+                          <tr>
+                            <td colSpan={canEditMaternity ? 5 : 4} className="text-center py-4">
+                              <div style={{ fontSize: '1.5rem', marginBottom: '0.35rem' }}>💊</div>
+                              <strong className="d-block mb-1" style={{ color: 'var(--text-main)', fontSize: '0.9rem' }}>
+                                Aucune ordonnance enregistrée
+                              </strong>
+                              <span className="d-block" style={{ color: 'var(--text-sub)', fontSize: '0.82rem', lineHeight: 1.55 }}>
+                                Aucun traitement n'est prescrit dans ce dossier. Ce tableau ne se remplit que par saisie d'un soignant.
+                              </span>
+                            </td>
+                          </tr>
+                        )}
                         {aldPrescriptions.map(p => (
                           <tr key={p.id}>
                             <td>
@@ -3464,6 +3813,15 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
               </div>
             ) : activeMother.category === 'surgery' ? (
               /* Cas 2: PATIENT CHIRURGIE / TRAUMATOLOGIE */
+              /* Suppression de deux cartes entièrement fabriquées : une « Radio
+                 fémur droit J+30 » avec compte-rendu osseux, et une ordonnance
+                 « Lovenox 0,4 ml / Paracétamol codeiné » avec posologies. Elles
+                 s'affichaient pour tout assuré de la catégorie chirurgie, quel
+                 que soit son dossier réel — un compte-rendu d'imagerie et une
+                 ordonnance (notamment une opioïde) inventés. Le bloc est
+                 remplacé par un état vide honnête : la partie gauche « Galerie
+                 d'imagerie » reste en place mais ne prétend plus qu'un examen
+                 existe. */
               <div className="d-flex flex-column gap-4 mb-5">
                 <div className="p-4 rounded-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
                   <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
@@ -3473,31 +3831,41 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
                     </div>
                   </div>
 
-                  <div className="row g-3">
-                    <div className="col-md-6">
-                      <div className="p-3.5 rounded-4 border d-flex flex-column gap-2" style={{ background: 'var(--bg-card-subtle)' }}>
-                        <div className="d-flex justify-content-between align-items-center">
-                          <strong className="text-warning">🦴 Radio fémur droit (face & profil J+30)</strong>
-                          <span className="badge bg-success text-white">Archive DICOM</span>
-                        </div>
-                        <img src="/csu_dicom_xray.jpg" alt="Radio Fémur DICOM" style={{ width: '100%', height: '180px', objectFit: 'cover', borderRadius: '12px', border: '1px solid var(--border-color)' }} />
-                        <small className="text-muted">Observation : Cal osseux régulier en cours de formation. Plaque d'ostéosynthèse parfaitement alignée.</small>
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="p-3.5 rounded-4 border d-flex flex-column gap-2" style={{ background: 'var(--bg-card-subtle)' }}>
-                        <div className="d-flex justify-content-between align-items-center">
-                          <strong className="text-primary">💊 Ordonnance antalgique & anticoagulant</strong>
-                          <span className="badge bg-success text-white">100% CSU</span>
-                        </div>
-                        <div className="p-3 rounded-3 border" style={{ background: 'var(--bg-card)' }}>
-                          <strong className="d-block text-primary small">Lovenox 0.4 ml (Injections HBPM)</strong>
-                          <small className="text-muted d-block">1 injection sous-cutanée par jour pendant 30 jours (prévention phlébite).</small>
-                          <strong className="d-block text-danger small mt-2">Paracétamol codeiné 500mg/30mg</strong>
-                          <small className="text-muted d-block">1 gélule toutes les 6 heures si douleur importante.</small>
-                        </div>
-                      </div>
-                    </div>
+                  <div
+                    className="p-4 rounded-4 text-center"
+                    style={{
+                      background: 'var(--bg-card-subtle)',
+                      border: '1px dashed var(--border-color)',
+                      borderRadius: '18px'
+                    }}
+                  >
+                    <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>🩻</div>
+                    <h6 className="fw-bold mb-1" style={{ fontSize: '0.95rem', color: 'var(--text-main)' }}>
+                      Aucun examen d'imagerie enregistré
+                    </h6>
+                    <p className="mb-0" style={{ fontSize: '0.82rem', color: 'var(--text-sub)', lineHeight: 1.55, maxWidth: '560px', margin: '0 auto' }}>
+                      Aucune radiographie ni aucun scanner n'est rattaché à ce dossier. Les clichés réellement réalisés par votre équipe soignante apparaîtront ici.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                  <h5 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>💊 Ordonnances post-opératoires</h5>
+                  <div
+                    className="p-4 rounded-4 text-center mt-3"
+                    style={{
+                      background: 'var(--bg-card-subtle)',
+                      border: '1px dashed var(--border-color)',
+                      borderRadius: '18px'
+                    }}
+                  >
+                    <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>📄</div>
+                    <h6 className="fw-bold mb-1" style={{ fontSize: '0.95rem', color: 'var(--text-main)' }}>
+                      Aucune ordonnance enregistrée
+                    </h6>
+                    <p className="mb-0" style={{ fontSize: '0.82rem', color: 'var(--text-sub)', lineHeight: 1.55, maxWidth: '560px', margin: '0 auto' }}>
+                      Aucun traitement n'est prescrit ni enregistré dans ce dossier. Ne commencez pas, n'arrêtez pas et ne modifiez aucun traitement sans l'ordonnance de votre médecin.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -4080,6 +4448,64 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
               <button type="button" className="btn-close" onClick={() => setShowAskMidwifeModal(false)}></button>
             </div>
             
+            {/* AFFICHAGE RÉEL DU FIL — auparavant `midwifeAnswers` était
+                écrit mais jamais rendu : une question posée disparaissait de
+                l'écran et l'assuré ne pouvait pas relire ce qu'il avait
+                envoyé. L'état vide ou « en attente » est affiché tel quel,
+                sans réponse ni délai inventé. */}
+            <div className="mb-4">
+              <small className="d-block fw-bold mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.9rem' }}>
+                Vos questions ({midwifeAnswers.length})
+              </small>
+              {midwifeAnswers.length === 0 ? (
+                <p
+                  className="m-0 p-3 text-center"
+                  style={{
+                    background: 'var(--bg-card-subtle)',
+                    border: '1px dashed var(--border-color)',
+                    borderRadius: '14px',
+                    fontSize: '0.82rem',
+                    color: 'var(--text-sub)',
+                    lineHeight: 1.55
+                  }}
+                >
+                  Aucune question envoyée pour le moment.
+                </p>
+              ) : (
+                <div className="d-flex flex-column gap-2" style={{ maxHeight: '260px', overflowY: 'auto' }}>
+                  {midwifeAnswers.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className="p-3 rounded-3"
+                      style={{
+                        background: 'var(--bg-card-subtle)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '14px'
+                      }}
+                    >
+                      <span className="d-block mb-1" style={{ color: 'var(--text-main)', fontSize: '0.85rem', lineHeight: 1.5 }}>
+                        {item.q}
+                      </span>
+                      {item.a ? (
+                        <span className="d-block" style={{ color: '#10b981', fontSize: '0.82rem', lineHeight: 1.55 }}>
+                          — {item.a}
+                          {item.doctor && (
+                            <small className="d-block" style={{ color: 'var(--text-sub)', fontSize: '0.72rem' }}>
+                              {item.doctor}
+                            </small>
+                          )}
+                        </span>
+                      ) : (
+                        <small style={{ color: 'var(--text-sub)', fontSize: '0.76rem' }}>
+                          En attente d'une réponse. Aucun professionnel n'a encore répondu.
+                        </small>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className="mb-4">
               <label className="form-label fw-bold mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.9rem' }}>Votre question ou symptôme *</label>
               <textarea 

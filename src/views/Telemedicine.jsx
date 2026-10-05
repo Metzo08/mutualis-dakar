@@ -3,8 +3,183 @@ import { createPortal } from 'react-dom';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
 import { initiatePayment, getProviderInfo, validatePhoneForProvider } from '../services/paymentService';
 import { speakCleanText } from '../services/voiceAudioService';
+import { apiFetch } from '../utils/api';
 
 // Design Premium Haut de Gamme — Télémédecine Visioconférence Bidirectionnelle & Vu-mètre Micro Réel
+
+// ─────────────────────────────────────────────
+// Service de PRÉSENCE RÉELLE des praticiens.
+//
+// Pourquoi ce module existe : avant, la disponibilité était un simple
+// `useState` local au médecin. Ce drapeau n'était visible que chez lui :
+// l'assuré lisait « Disponible 24/7 » et « En ligne » en dur sur la carte,
+// donc il prenait rendez-vous avec un praticien dont personne ne
+// vérifiait la présence.
+//
+// Ici la présence est un HEART-BEAT :
+//  - le praticien envoie un signal toutes les HEARTBEAT_INTERVAL_MS ;
+//  - le serveur date ce signal et ne lit jamais le statut stocké comme
+//    vérité — il recalcule « en ligne / hors ligne » à chaque lecture ;
+//  - si le navigateur se ferme sans signal de départ (crash, onglet fermé),
+//    le signal cesse et le praticien bascule tout seul en hors ligne après
+//    le délai serveur.
+//
+// Conséquence pour l'interface : on n'affiche jamais un statut qu'on n'a
+// pas observé. Sans donnée du serveur, on affiche « statut inconnu ».
+// ─────────────────────────────────────────────
+
+const HEARTBEAT_INTERVAL_MS = 25 * 1000; // 25 s — 3 signaux perdus avant bascule
+
+/**
+ * Envoie un signal de présence. Silencieux : un échec réseau ne doit
+ * jamais interrompre la consultation en cours.
+ */
+export async function sendHeartbeat({ practitionerName, specialty, declaredStatus }) {
+  const res = await apiFetch('/api/telemedicine/presence/heartbeat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ practitionerName, specialty, declaredStatus })
+  });
+  if (!res.ok) return null;
+  const json = await res.json().catch(() => null);
+  return json && json.success ? json.data : null;
+}
+
+/**
+ * Récupère la présence de tous les praticiens connus du serveur.
+ * `online` est recalculé côté serveur à l'instant de la requête.
+ */
+export async function fetchPresence() {
+  const res = await apiFetch('/api/telemedicine/presence');
+  if (!res.ok) return null;
+  const json = await res.json().catch(() => null);
+  if (!json || !json.success) return null;
+  return {
+    practitioners: Array.isArray(json.data) ? json.data : [],
+    offlineAfterSeconds: json.offline_after_seconds
+  };
+}
+
+/**
+ * Abonnement au flux temps réel de présence (Server-Sent Events).
+ *
+ * Pourquoi nécessaire en multi-instance : un balayage périodique envoie
+ * des requêtes qui tombent sur des instances différentes au fil du
+ * round-robin du répartiteur. Chaque instance ne voit que les événements
+ * qu'elle a traités. Avec le flux, la notification traverse PostgreSQL
+ * (LISTEN/NOTIFY) et atteint l'instance qui héberge le navigateur.
+ *
+ * Repli automatique : si le flux est indisponible (proxy qui ne gère pas
+ * SSE, certificat, pare-feu), on repasse au balayage périodique et
+ * l'interface continue de fonctionner, avec un délai de rafraîchissement
+ * plus long. Le mode réellement utilisé est renvoyé à l'appelant pour
+ * qu'il puisse l'afficher — on ne laisse pas croire à un temps réel si
+ * ce n'est pas le cas.
+ *
+ * @param {(data: {practitioners: Array, offlineAfterSeconds: number}) => void} onState
+ *        État complet à chaque changement.
+ * @param {(mode: 'stream' | 'polling') => void} [onModeChange]
+ * @returns {() => void} fonction de fermeture.
+ */
+export function subscribePresence(onState, onModeChange) {
+  const token = (typeof window !== 'undefined' && localStorage.getItem('cmu-token')) || '';
+  let source = null;
+  let pollingId = null;
+  let closed = false;
+
+  const startPolling = () => {
+    if (closed || pollingId) return;
+    onModeChange?.('polling');
+    const load = async () => {
+      const data = await fetchPresence().catch(() => null);
+      if (!closed && data) onState(data);
+    };
+    load();
+    pollingId = setInterval(load, HEARTBEAT_INTERVAL_MS * 2);
+  };
+
+  const stopPolling = () => {
+    if (pollingId) {
+      clearInterval(pollingId);
+      pollingId = null;
+    }
+  };
+
+  // Sans jeton, aucun flux ne peut être authentifié : le repli est le
+  // seul mode possible.
+  if (!token || typeof window === 'undefined' || typeof window.EventSource === 'undefined') {
+    startPolling();
+    return () => { closed = true; stopPolling(); };
+  }
+
+  try {
+    const base = (typeof window !== 'undefined' && window.API_BASE_URL) || '';
+    source = new EventSource(`${base}/api/telemedicine/presence/stream?token=${encodeURIComponent(token)}`);
+
+    source.addEventListener('state', (e) => {
+      try {
+        const d = JSON.parse(e.data);
+        onModeChange?.('stream');
+        stopPolling();
+        onState({ practitioners: d.practitioners || [], offlineAfterSeconds: d.offline_after_seconds });
+      } catch (err) { /* message illisible : on ignore cet événement */ }
+    });
+
+    source.addEventListener('changed', (e) => {
+      try {
+        const d = JSON.parse(e.data);
+        onModeChange?.('stream');
+        stopPolling();
+        // On ne fabrique pas l'état complet : on redemande au serveur,
+        // seul juge. Recomposer la liste ici risquerait d'inventer un
+        // statut à partir d'un événement partiel.
+        fetchPresence()
+          .then((full) => { if (!closed && full) onState(full); })
+          .catch(() => {});
+      } catch (err) { /* ignore */ }
+    });
+
+    // EventSource se reconnecte de lui-même. L'erreur peut donc être
+    // transitoire : on bascule sur le repli, qui reste en place même si
+    // le flux revient ensuite — plus simple et plus sûr que de
+    // synchroniser les deux mécanismes.
+    source.onerror = () => {
+      if (closed) return;
+      startPolling();
+    };
+  } catch (err) {
+    startPolling();
+  }
+
+  return () => {
+    closed = true;
+    if (source) source.close();
+    stopPolling();
+  };
+}
+
+/**
+ * Enregistre un rendez-vous SANS paiement.
+ * Le règlement se fait une seule fois, sur place, à la structure.
+ */
+export async function bookAppointment({ beneficiaryId, structureId, doctorName, specialty, appointmentDate, notes }) {
+  const res = await apiFetch('/api/appointments', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      beneficiary_id: beneficiaryId,
+      partner_structure_id: structureId ?? null,
+      doctor_name: doctorName,
+      specialty,
+      appointment_date: appointmentDate,
+      notes: notes || ''
+    })
+  });
+  if (!res.ok) return { success: false, message: 'Le rendez-vous n\'a pas pu être enregistré.' };
+  return res.json();
+}
+
+export { HEARTBEAT_INTERVAL_MS };
 export default function Telemedicine({ 
   lang = 'fr', 
   userRole = 'citizen', 
@@ -94,13 +269,93 @@ export default function Telemedicine({
   const [adminRoleMode, setAdminRoleMode] = useState('citizen'); // 'agent' | 'doctor' | 'citizen' — vue Assuré par défaut
   const activeRoleMode = (isDoctor || isMidwife) ? 'doctor' : (isAgent ? 'agent' : (isSuperAdmin ? adminRoleMode : 'citizen'));
   const [practitionerAvailability, setPractitionerAvailability] = useState('available'); // 'available' | 'in_call' | 'away'
+
+  // ── PRÉSENCE RÉELLE (heart-beat) ───────────────────────────────────────────
+  //
+  // `practitionerAvailability` reste une simple INTENTION locale du
+  // praticien (« je suis en pause »). Ce n'est pas une preuve de présence :
+  // elle ne dit rien de ce que voit l'assuré.
+  //
+  // `practitionerPresence` contient ce que le SERVEUR a réellement observé.
+  // C'est la seule source autorisée pour afficher « en ligne » à un assuré.
+  const [practitionerPresence, setPractitionerPresence] = useState(null); // { practitioners, offlineAfterSeconds }
+  // Le premier retour (flux ou repli) est-il arrivé ? Tant que c'est faux,
+  // l'interface ne doit afficher aucun statut : « en ligne » avant toute
+  // vérification serait exactement le mensonge que ce dispositif
+  // cherche à éviter.
+  const [presenceLoaded, setPresenceLoaded] = useState(false);
+  // Mode réel de rafraîchissement : 'stream' (temps réel multi-instance)
+  // ou 'polling' (repli). Affiché à l'utilisateur pour qu'il sache si le
+  // statut affiché est instantané ou différé de quelques dizaines de
+  // secondes.
+  const [presenceMode, setPresenceMode] = useState(null); // null | 'stream' | 'polling'
+
+  // Identité du praticien côté serveur. Sans identifiant réel, aucun
+  // heart-beat n'est envoyé : on ne fabrique pas d'identité de remplacement,
+  // sinon deux praticiens se marcheraient dessus.
+  const practitionerIdentity = (isDoctor || isMidwife)
+    ? {
+        username: partnerUser?.username || partnerUser?.cname || agentUser?.username || null,
+        name: partnerUser?.name || partnerUser?.structureName || agentUser?.fullName || agentUser?.name || null,
+        specialty: partnerUser?.specialty || (isMidwife ? 'Sage-femme' : 'Médecine Générale')
+      }
+    : null;
+
+  // Envoi du signal périodique. Uniquement si un praticien est réellement
+  // connecté et identifié — sinon aucun signal, donc aucun statut.
+  useEffect(() => {
+    if (!practitionerIdentity || !practitionerIdentity.username) return undefined;
+
+    const beat = () => {
+      sendHeartbeat({
+        practitionerName: practitionerIdentity.name,
+        specialty: practitionerIdentity.specialty,
+        declaredStatus: practitionerAvailability
+      }).catch(() => null);
+    };
+
+    beat(); // premier signal immédiat : l'assuré voit le statut tout de suite
+    const intervalId = setInterval(beat, HEARTBEAT_INTERVAL_MS);
+    return () => clearInterval(intervalId);
+  }, [practitionerIdentity?.username, practitionerAvailability]);
+
+  // Lecture de la présence côté assuré (et côté agent).
+  //
+  // Flux temps réel avec repli automatique en balayage périodique : voir
+  // `subscribePresence`. Le mode réellement utilisé est mémorisé dans
+  // `presenceMode` et affiché à l'utilisateur — afficher « temps réel »
+  // alors que le fonctionnement serait en réalité différé serait un
+  // mensonge qui ferait croire à une disponibilité instantanée.
+  useEffect(() => {
+    const unsubscribe = subscribePresence(
+      (data) => {
+        if (data) {
+          setPractitionerPresence(data);
+          setPresenceLoaded(true);
+        }
+      },
+      (mode) => setPresenceMode(mode)
+    );
+    return () => unsubscribe();
+  }, []);
+
+  /**
+   * Statut observé d'un praticien, par son nom.
+   * `null` = aucune donnée du serveur → l'appelant affiche « inconnu ».
+   */
+  const getPresenceFor = (doctorName) => {
+    const list = practitionerPresence?.practitioners;
+    if (!Array.isArray(list)) return null;
+    return list.find((p) => p.practitioner_name === doctorName) || null;
+  };
   const [selectedDoctorId, setSelectedDoctorId] = useState(1);
   const [selectedPatientForRecord, setSelectedPatientForRecord] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [historyPage, setHistoryPage] = useState(1);
   const [selectedTarifType, setSelectedTarifType] = useState('specialiste');
-  const [reviewsFilter, setReviewsFilter] = useState('all');
+  // `reviewsFilter` retiré : la liste d'avis est vide (les avis étaient
+  // fabriqués), donc le filtre n'avait plus d'objet.
 
   // States pour la section Laboratoire Télémédecine
   const [teleOrders, setTeleOrders] = useState([
@@ -315,21 +570,16 @@ export default function Telemedicine({
   // Détails CNOM Médecin pour la modale d'accréditation
   const [selectedCnomDoctor, setSelectedCnomDoctor] = useState(null);
 
-  // File d'attente Télémédecine (Vide pour l'utilisateur tant qu'il n'a pas payé)
-  const [queue, setQueue] = useState([
-    {
-      id: 2,
-      patient_name: 'Moussa Diallo',
-      cmu_number: 'CMU-DKR-2026-3392',
-      reason: 'Oppression thoracique & fièvre 39.2°C',
-      urgency: 'critical',
-      joined_at: new Date(Date.now() - 12 * 60000).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }),
-      requested_doctor: 'Dr. Cheikh Tidiane Seck',
-      payment_status: 'paid',
-      payment_method: 'Wave',
-      amount: 2500
-    }
-  ]);
+  // File d'attente Télémédecine.
+  //
+  // AUCUNE entrée pré-remplie. La file démarrait avec un patient fictif,
+  // urgence critique, motif d'urgence clinique, déjà payé par Wave. Un
+  // patient inventé portant un symptôme aigu était donc visible dans la
+  // file du médecin. Surtout, les positions, l'ordre d'appel et le délai
+  // estimé se calculaient sur cette fiction : un professionnel pouvait
+  // organiser sa journée sur un faux dossier. La file part vide et se
+  // remplit uniquement par `handleJoinQueue`.
+  const [queue, setQueue] = useState([]);
 
   // Modales uniques
   const [activeModal, setActiveModal] = useState(null); // 'join_queue', 'payment', 'webrtc', 'qr', 'prescription'
@@ -387,6 +637,26 @@ export default function Telemedicine({
   const [payStep, setPayStep] = useState('form');
   const [txnResult, setTxnResult] = useState(null); // { ref, provider, phone, amount, timestamp, message }
   const [phoneError, setPhoneError] = useState('');
+
+  // ── Deux parcours DISTINCTS, jamais mélangés ───────────────────────────────
+  //
+  // 1. 'live'    : consultation en visioconférence IMMÉDIATE. Le ticket
+  //                modérateur est réglé avant d'entrer en file — c'est ce que
+  //                le dispositif CSU prévoit pour un acte dématérialisé.
+  // 2. 'booking' : rendez-vous planifié à l'avance, SANS AUCUN paiement. Le
+  //                règlement se fait une seule fois, sur place, à la
+  //                structure. Ce parcours n'appelle jamais `initiatePayment` :
+  //                afficher un montant ou une étape de paiement ici ferait
+  //                payer deux fois l'assuré.
+  const [queueMode, setQueueMode] = useState('live'); // 'live' | 'booking'
+
+  // Formulaire de rendez-vous (parcours gratuit)
+  const [bookingDate, setBookingDate] = useState('');
+  const [bookingSlot, setBookingSlot] = useState('matin'); // 'matin' | 'apres-midi'
+  const [bookingNotes, setBookingNotes] = useState('');
+  const [bookingResult, setBookingResult] = useState(null);
+  const [bookingError, setBookingError] = useState('');
+  const [bookingSubmitting, setBookingSubmitting] = useState(false);
 
   // Session WebRTC & Téléconsultation Avancée
   const [activeDoctor, setActiveDoctor] = useState(doctorsList[0]);
@@ -1153,7 +1423,7 @@ export default function Telemedicine({
 
         ctx.fillStyle = '#94a3b8';
         ctx.font = '11px monospace';
-        ctx.fillText(isDoctorSide ? `CSU: ${activeCmuNumber || 'CSU-DKR-2026-8812'} | 60 FPS` : `${activeDoctor.cnom} • Convention UNAMUSC 🇸🇳 | 60 FPS`, 14, 60);
+        ctx.fillText(isDoctorSide ? `CSU: ${activeCmuNumber || 'non renseigné'} | 60 FPS` : `${activeDoctor.cnom || 'Praticien'} • Convention UNAMUSC 🇸🇳 | 60 FPS`, 14, 60);
 
         // Horodatage dynamique
         const now = new Date();
@@ -1197,6 +1467,12 @@ export default function Telemedicine({
   const handleJoinQueue = async (e) => {
     e.preventDefault();
     if (!consultReason.trim()) return;
+
+    // Garde-fou : ce handler ne déclenche QUE le parcours payant immédiat.
+    // Le parcours « rendez-vous » passe par handleBookAppointment et n'aboutit
+    // jamais ici. Sans cette séparation, un bug d'affichage ferait payer un
+    // assuré qui avait choisi un rendez-vous gratuit.
+    if (queueMode !== 'live') return;
 
     // Validation du numéro de téléphone
     const validation = validatePhoneForProvider(phoneNum, paymentProvider);
@@ -1277,6 +1553,72 @@ export default function Telemedicine({
     setPhoneError('');
     setActiveModal(null);
     setConsultReason('');
+    setBookingError('');
+    setBookingResult(null);
+    setQueueMode('live');
+  };
+
+  // ── Prise de rendez-vous — SANS PAIEMENT ────────────────────────────────────
+  //
+  // Ce handler n'appelle JAMAIS `initiatePayment`. Le rendez-vous est
+  // enregistré tel quel et le backend répond explicitement que le règlement
+  // se fait sur place.
+  const handleBookAppointment = async (e) => {
+    e.preventDefault();
+    setBookingError('');
+
+    if (!bookingDate) {
+      setBookingError('Choisissez une date de rendez-vous.');
+      return;
+    }
+    if (!consultReason.trim()) {
+      setBookingError('Indiquez le motif de la consultation.');
+      return;
+    }
+
+    // Un praticien doit être désigné : sans cible, le rendez-vous ne peut
+    // être rattaché à personne et ne serait jamais honoré.
+    const targetDoc = selectedDoctor || doctorsList[0];
+    if (!targetDoc) {
+      setBookingError('Aucun praticien enregistré sur la plateforme. Vous ne pouvez pas prendre rendez-vous pour le moment.');
+      return;
+    }
+
+    setBookingSubmitting(true);
+    try {
+      // Le créneau choisi est traduit en heure de rendez-vous : matin = 9h,
+      // après-midi = 14h. On ne propose pas de date « précise » que la
+      // plateforme ne sait pas réellement respecter.
+      const slotHour = bookingSlot === 'matin' ? 9 : 14;
+      const appointmentDate = new Date(bookingDate);
+      appointmentDate.setHours(slotHour, 0, 0, 0);
+
+      const result = await bookAppointment({
+        beneficiaryId: citizenUser?.id ?? citizenUser?.beneficiaryId ?? null,
+        structureId: targetDoc?.structureId ?? null,
+        doctorName: targetDoc.name,
+        specialty: targetDoc.specialty || 'Médecine Générale',
+        appointmentDate: appointmentDate.toISOString(),
+        notes: [consultReason, bookingNotes].filter(Boolean).join(' — ')
+      });
+
+      if (result?.success) {
+        setBookingResult(result.data);
+        speakAndToast({
+          type: 'success',
+          icon: '📅',
+          title: 'Rendez-vous enregistré',
+          message: 'Aucun paiement n\'a été débité. Le règlement se fera sur place.',
+          speech: 'Votre rendez-vous est enregistré. Aucun paiement n\'a été effectué. Vous réglerez la consultation sur place, à la structure.'
+        });
+      } else {
+        setBookingError(result?.message || 'Le rendez-vous n\'a pas pu être enregistré.');
+      }
+    } catch (err) {
+      setBookingError('Le rendez-vous n\'a pas pu être enregistré. Vérifiez votre connexion.');
+    } finally {
+      setBookingSubmitting(false);
+    }
   };
 
   // Simulation d'avancement de la file d'attente pour test rapide
@@ -3067,7 +3409,13 @@ export default function Telemedicine({
                       Praticien assigné : <strong>{myItem.requested_doctor}</strong> | Motif : {myItem.reason}
                     </p>
                     <small className="text-emerald-400 d-block mt-1 fw-semibold" style={{ color: '#34d399' }}>
-                      ⚡ Temps d'attente estimé : ~{positionInQueue * 4} minutes. Restez sur cette page, le médecin va vous appeler.
+                      {/* La durée d'attente était calculée par
+                          `positionInQueue * 4` minutes : une multiplication
+                          inventée, présentée comme une estimation. Aucune
+                          donnée de durée moyenne de consultation n'existe
+                          dans le système. On affiche donc votre position,
+                          qui est un fait, sans annoncer un délai. */}
+                      Restez sur cette page : le praticien vous appellera à votre tour.
                     </small>
                   </div>
 
@@ -3192,10 +3540,41 @@ export default function Telemedicine({
               <div className="p-4 rounded-4" style={{ background: 'rgba(255, 255, 255, 0.22)', border: '1px solid rgba(255, 255, 255, 0.45)', boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)', backdropFilter: 'blur(10px)' }}>
                 <div className="d-flex align-items-center justify-content-between gap-2 mb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: '0.6rem' }}>
                   <span className="fw-bold text-white" style={{ fontSize: '0.92rem' }}>
-                    🟢 {doctorsList.length} Praticiens en ligne
+                    {/* « N Praticiens en ligne » comptait les praticiens
+                        INSCRITS, pas ceux réellement connectés : le chiffre
+                        n'avait aucun rapport avec une présence réelle. On
+                        compte donc ceux que le serveur a vus récemment. */}
+                    {(() => {
+                      const list = practitionerPresence?.practitioners;
+                      if (!presenceLoaded || !Array.isArray(list)) return 'Vérification des disponibilités…';
+                      const seen = new Set();
+                      let enLigne = 0;
+                      for (const p of list) {
+                        if (p?.online && p.practitioner_name && !seen.has(p.practitioner_name)) {
+                          seen.add(p.practitioner_name);
+                          enLigne++;
+                        }
+                      }
+                      return enLigne === 0
+                        ? 'Aucun praticien connecté actuellement'
+                        : `${enLigne} praticien${enLigne > 1 ? 's' : ''} connecté${enLigne > 1 ? 's' : ''}`;
+                    })()}
                   </span>
-                  <span style={{ background: '#10b981', color: '#ffffff', fontSize: '0.75rem', fontWeight: '700', padding: '0.35rem 0.75rem', borderRadius: '20px' }}>
-                    Disponible 24/7
+                  <span style={{ background: presenceLoaded ? '#334155' : '#475569', color: '#ffffff', fontSize: '0.75rem', fontWeight: '700', padding: '0.35rem 0.75rem', borderRadius: '20px' }}>
+                    {/* « Disponible 24/7 » était écrit en dur : la plateforme
+                        ne fonctionne qu'aux heures ouvrées des structures, et
+                        ce bandeau promettait une joignabilité permanente que
+                        rien ne garantissait. On affiche ce que la présence
+                        permet d'affirmer, et le mode de rafraîchissement
+                        réel — annoncer « temps réel » en différé ferait
+                        croire à une disponibilité instantanée. */}
+                    {!presenceLoaded
+                      ? 'Vérification des disponibilités…'
+                      : presenceMode === 'stream'
+                        ? 'Disponibilités en temps réel'
+                        : presenceMode === 'polling'
+                          ? 'Disponibilités actualisées toutes les 50 s'
+                          : 'Disponibilités selon le praticien'}
                   </span>
                 </div>
 
@@ -3275,7 +3654,14 @@ export default function Telemedicine({
                         <div>
                           <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>{doc.name}</h6>
                           <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', padding: '0.15rem 0.5rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: '600' }}>{doc.specialty}</span>
-                          <div className="small text-warning fw-bold mt-1" style={{ fontSize: '0.78rem' }}>★ {doc.rating}</div>
+                          {/* AUCUNE note. La ligne `★ {doc.rating}` lisait un
+                              champ qui n'est renseigné nulle part : elle
+                              affichait « ★ undefined » sur chaque carte, ou
+                              pire, une note reconduite depuis un ancien
+                              localStorage. Le libellé « 4,9 / 124 avis »
+                              n'a jamais reposé sur un avis réel. La note
+                              d'un praticien n'apparaîtra que lorsqu'un
+                              patient réellement consulté la dépose. */}
                         </div>
                       </div>
 
@@ -3887,7 +4273,7 @@ export default function Telemedicine({
             </div>
             <div>
               {/* Aucune note n'est affichée tant qu'aucun avis réel n'a été
-                 Collecté. Les valeurs 98,4 % / ★ 4,9 / 1 420 avis étaient
+                  collecté. Les valeurs 98,4 % / ★ 4,9 / 1 420 avis étaient
                   des constantes : elles ne dépendaient d'aucun avis. */}
               <div style={{ fontSize: '1.85rem', fontWeight: '900', color: '#d97706', lineHeight: '1.1', letterSpacing: '-0.02em', marginBottom: '0.45rem' }}>
                 —
@@ -4048,25 +4434,83 @@ export default function Telemedicine({
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
                     <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.7)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.4rem' }}>Télémédecine UNAMUSC</div>
-                    <h5 style={{ color: '#ffffff', fontWeight: '800', margin: 0, fontSize: '1.2rem' }}>🏥 Entrer en salle d'attente virtuelle</h5>
-                    <p style={{ color: 'rgba(255,255,255,0.75)', margin: '0.3rem 0 0', fontSize: '0.85rem' }}>Prise en charge UNAMUSC 80% — Ticket modérateur : <strong style={{ color: '#6ee7b7' }}>2 500 FCFA</strong></p>
+{/* Sélecteur de parcours. Les deux voies sont présentées côte à
+                        côte AVANT tout formulaire : l'assuré doit voir qu'il existe
+                        une option gratuite, sinon il ne choisira que la voie
+                        payante — celle qui était proposée par défaut. */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '1rem' }}>
+                      <button
+                        type="button"
+                        onClick={() => setQueueMode('booking')}
+                        style={{
+                          textAlign: 'left', padding: '0.7rem 0.85rem', borderRadius: '12px', cursor: 'pointer',
+                          border: queueMode === 'booking' ? '2px solid #6ee7b7' : '1px solid rgba(255,255,255,0.25)',
+                          background: queueMode === 'booking' ? 'rgba(16,185,129,0.25)' : 'rgba(255,255,255,0.08)',
+                          color: '#ffffff'
+                        }}
+                      >
+                        <div style={{ fontSize: '0.85rem', fontWeight: '800' }}>📅 Rendez-vous</div>
+                        <div style={{ fontSize: '0.7rem', opacity: 0.9 }}>Gratuit · réglé sur place</div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setQueueMode('live')}
+                        style={{
+                          textAlign: 'left', padding: '0.7rem 0.85rem', borderRadius: '12px', cursor: 'pointer',
+                          border: queueMode === 'live' ? '2px solid #fbbf24' : '1px solid rgba(255,255,255,0.25)',
+                          background: queueMode === 'live' ? 'rgba(245,158,11,0.25)' : 'rgba(255,255,255,0.08)',
+                          color: '#ffffff'
+                        }}
+                      >
+                        <div style={{ fontSize: '0.85rem', fontWeight: '800' }}>⚡ Consultation</div>
+                        <div style={{ fontSize: '0.7rem', opacity: 0.9 }}>Immédiate · ticket modérateur</div>
+                      </button>
+                    </div>
+                    <h5 style={{ color: '#ffffff', fontWeight: '800', margin: '1rem 0 0', fontSize: '1.2rem' }}>
+                      {queueMode === 'booking' ? '📅 Prendre rendez-vous (gratuit)' : '🏥 Entrer en salle d’attente virtuelle'}
+                    </h5>
+                    <p style={{ color: 'rgba(255,255,255,0.75)', margin: '0.3rem 0 0', fontSize: '0.85rem' }}>
+                      {queueMode === 'booking'
+                        ? "Aucune somme n'est due pour prendre rendez-vous. Le règlement se fait une seule fois, sur place, à la structure."
+                        : "Consultation en visioconférence immédiate. Le ticket modérateur est réglé avant d'entrer en file."}
+                    </p>
                   </div>
                   <button type="button" onClick={resetPaymentModal} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', borderRadius: '10px', width: '32px', height: '32px', cursor: 'pointer', fontSize: '1.1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
                 </div>
                 <div style={{ marginTop: '1rem', background: 'rgba(255,255,255,0.1)', borderRadius: '12px', padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.75rem', border: '1px solid rgba(255,255,255,0.2)' }}>
                   <img src={selectedDoctor?.avatar || 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=180'} alt="" style={{ width: '40px', height: '40px', borderRadius: '10px', objectFit: 'cover', flexShrink: 0 }} />
                   <div>
-                    <div style={{ color: '#ffffff', fontWeight: '700', fontSize: '0.9rem' }}>{selectedDoctor?.name || 'Dr. Ousmane Sow'}</div>
-                    <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.78rem' }}>{selectedDoctor?.specialty || 'Médecine générale & urgences'} • Disponible maintenant</div>
-                  </div>
-                  <span style={{ marginLeft: 'auto', background: 'rgba(16,185,129,0.3)', color: '#6ee7b7', padding: '0.25rem 0.65rem', borderRadius: '20px', fontSize: '0.72rem', fontWeight: '700', border: '1px solid rgba(16,185,129,0.4)' }}>⚡ En ligne</span>
+                    <div style={{ color: '#ffffff', fontWeight: '700', fontSize: '0.9rem' }}>{selectedDoctor?.name || 'Praticien non désigné'}</div>
+                    {(() => {
+                      // Statut issu du heart-beat serveur, jamais un libellé en dur.
+                      const p = getPresenceFor(selectedDoctor?.name);
+                      const label = !p
+                        ? 'Statut inconnu'
+                        : p.online
+                          ? 'En ligne'
+                          : p.declared_status === 'away'
+                            ? 'En pause'
+                            : 'Hors ligne';
+                      const color = !p ? '#94a3b8' : p.online ? '#6ee7b7' : '#fca5a5';
+                      return (
+                        <>
+                          <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.78rem' }}>
+                            {selectedDoctor?.specialty || 'Spécialité non renseignée'} • {label}
+                          </div>
+                          <span style={{ marginLeft: 'auto', background: 'rgba(255,255,255,0.12)', color, padding: '0.25rem 0.65rem', borderRadius: '20px', fontSize: '0.72rem', fontWeight: '700', border: '1px solid rgba(255,255,255,0.25)' }}>
+                            {p?.online ? '⚡ En ligne' : label}
+                          </span>
+                        </>
+                      );
+                    })()}
                 </div>
               </div>
+</div>
 
-            {/* Corps du formulaire */}
+            {/* Corps du formulaire. Les deux parcours (rendez-vous gratuit
+                et consultation payante) partagent ces champs communes : motif
+                et niveau d'urgence. Seul le bloc de validation diffère. */}
             <div style={{ padding: '1.75rem 2rem' }}>
-              <form onSubmit={handleJoinQueue}>
-
                 <div style={{ marginBottom: '1.25rem' }}>
                   <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', color: 'var(--text-sub)', marginBottom: '0.5rem' }}>Symptômes &amp; motif de consultation *</label>
                   <textarea
@@ -4087,6 +4531,136 @@ export default function Telemedicine({
                     ))}
                   </div>
                 </div>
+{/* ════════ PARCOURS RENDEZ-VOUS : aucun paiement ════════ */}
+                {queueMode === 'booking' && (
+                  <div>
+                    {bookingResult ? (
+                      <div style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '1.5rem', textAlign: 'center' }}>
+                        <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📅</div>
+                        <h5 style={{ color: 'var(--text-main)', fontWeight: '800', margin: '0 0 0.5rem', fontSize: '1.05rem' }}>
+                          Rendez-vous enregistré
+                        </h5>
+                        <p style={{ color: 'var(--text-sub)', fontSize: '0.85rem', lineHeight: '1.6', margin: '0 0 1rem' }}>
+                          Aucun paiement n'a été effectué. Le règlement de la consultation
+                          se fera une seule fois, sur place, à la structure.
+                        </p>
+                        {bookingResult.appointment_date && (
+                          <p style={{ color: 'var(--text-main)', fontSize: '0.88rem', fontWeight: '700', margin: '0 0 0.5rem' }}>
+                            {new Date(bookingResult.appointment_date).toLocaleString('fr-FR', {
+                              dateStyle: 'full', timeStyle: 'short'
+                            })}
+                          </p>
+                        )}
+                        {bookingResult.qr_access_code && (
+                          <p style={{ color: 'var(--text-sub)', fontSize: '0.78rem', margin: 0 }}>
+                            Code de rendez-vous : <strong>{bookingResult.qr_access_code}</strong>
+                          </p>
+                        )}
+                        <button
+                          type="button"
+                          onClick={resetPaymentModal}
+                          style={{ marginTop: '1.25rem', background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.6rem 1.25rem', fontWeight: '600', fontSize: '0.85rem', cursor: 'pointer' }}
+                        >
+                          Fermer
+                        </button>
+                      </div>
+                    ) : (
+                      <form onSubmit={handleBookAppointment}>
+                        <div style={{ marginBottom: '1.25rem' }}>
+                          <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', color: 'var(--text-sub)', marginBottom: '0.5rem' }}>Date souhaitée *</label>
+                          <input
+                            type="date"
+                            value={bookingDate}
+                            min={new Date().toISOString().slice(0, 10)}
+                            onChange={(e) => setBookingDate(e.target.value)}
+                            style={{ width: '100%', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.75rem 1rem', fontSize: '0.88rem', boxSizing: 'border-box', outline: 'none' }}
+                            required
+                          />
+                        </div>
+
+                        <div style={{ marginBottom: '1.25rem' }}>
+                          <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', color: 'var(--text-sub)', marginBottom: '0.5rem' }}>Créneau *</label>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                            {[
+                              { v: 'matin', l: '🌅 Matin', h: '9h00' },
+                              { v: 'apres-midi', l: '🌤️ Après-midi', h: '14h00' }
+                            ].map(slot => (
+                              <button
+                                key={slot.v}
+                                type="button"
+                                onClick={() => setBookingSlot(slot.v)}
+                                style={{
+                                  padding: '0.7rem 0.75rem', borderRadius: '10px', textAlign: 'left', cursor: 'pointer',
+                                  border: bookingSlot === slot.v ? '2px solid #10b981' : '1px solid var(--border-color)',
+                                  background: bookingSlot === slot.v ? 'rgba(16,185,129,0.15)' : 'var(--bg-card-subtle)',
+                                  color: bookingSlot === slot.v ? '#10b981' : 'var(--text-sub)'
+                                }}
+                              >
+                                <div style={{ fontSize: '0.82rem', fontWeight: '700' }}>{slot.l}</div>
+                                <div style={{ fontSize: '0.72rem', opacity: 0.8 }}>{slot.h}</div>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        <div style={{ marginBottom: '1.25rem' }}>
+                          <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', color: 'var(--text-sub)', marginBottom: '0.5rem' }}>Motif de la consultation *</label>
+                          <textarea
+                            rows={3}
+                            value={consultReason}
+                            onChange={(e) => setConsultReason(e.target.value)}
+                            placeholder="Décrivez brièvement le motif de votre consultation..."
+                            style={{ width: '100%', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.75rem 1rem', fontSize: '0.88rem', lineHeight: '1.5', resize: 'vertical', outline: 'none', boxSizing: 'border-box' }}
+                            required
+                          />
+                        </div>
+
+                        <div style={{ marginBottom: '1.25rem' }}>
+                          <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', color: 'var(--text-sub)', marginBottom: '0.5rem' }}>Précisions (facultatif)</label>
+                          <input
+                            type="text"
+                            value={bookingNotes}
+                            onChange={(e) => setBookingNotes(e.target.value)}
+                            placeholder="Ex : suivi de tension, résultats d'examens à apporter…"
+                            style={{ width: '100%', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.75rem 1rem', fontSize: '0.88rem', boxSizing: 'border-box', outline: 'none' }}
+                          />
+                        </div>
+
+                        {bookingError && (
+                          <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.4)', borderRadius: '10px', padding: '0.7rem 0.9rem', marginBottom: '1rem', fontSize: '0.82rem', color: '#f87171' }}>
+                            {bookingError}
+                          </div>
+                        )}
+
+                        <div style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.75rem 0.9rem', marginBottom: '1.25rem', fontSize: '0.78rem', color: 'var(--text-sub)', lineHeight: '1.6' }}>
+                          💡 Cette réservation est <strong>gratuite</strong>. Aucun ticket
+                          modérateur n'est prélevé ici : vous réglerez la consultation
+                          une seule fois, sur place, à la structure de santé.
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '0.75rem' }}>
+                          <button
+                            type="button"
+                            onClick={resetPaymentModal}
+                            style={{ flex: 1, background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.8rem', fontWeight: '600', fontSize: '0.85rem', cursor: 'pointer' }}
+                          >
+                            Annuler
+                          </button>
+                          <button
+                            type="submit"
+                            disabled={bookingSubmitting}
+                            style={{ flex: 2, background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.8rem', fontWeight: '700', fontSize: '0.88rem', cursor: bookingSubmitting ? 'wait' : 'pointer', opacity: bookingSubmitting ? 0.7 : 1, boxShadow: '0 4px 15px rgba(16,185,129,0.35)' }}
+                          >
+                            {bookingSubmitting ? 'Enregistrement…' : 'Confirmer le rendez-vous (gratuit)'}
+                          </button>
+                        </div>
+                      </form>
+                    )}
+                  </div>
+                )}
+
+                {/* ════════ PARCOURS CONSULTATION IMMÉDIATE : paiement ════════ */}
+                {queueMode === 'live' && (
+                  <form onSubmit={handleJoinQueue}>
 
                 <div style={{ borderTop: '1px solid var(--border-color)', margin: '0 0 1.25rem', position: 'relative' }}>
                   <span style={{ position: 'absolute', top: '-0.6rem', left: '50%', transform: 'translateX(-50%)', background: 'var(--bg-card)', padding: '0 0.75rem', fontSize: '0.72rem', color: 'var(--text-sub)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>Règlement mobile money</span>
@@ -4162,8 +4736,9 @@ export default function Telemedicine({
                 </div>
                 <p style={{ textAlign: 'center', fontSize: '0.72rem', color: 'var(--text-sub)', marginTop: '0.85rem', opacity: 0.7 }}>🔒 Paiement sécurisé • Aucun partage de vos données bancaires • Conforme BCEAO</p>
               </form>
+              )}
+              </div>
             </div>
-          </div>
           )}
 
         </div>,
@@ -5543,43 +6118,40 @@ export default function Telemedicine({
               <small style={{ color: 'var(--text-sub, #64748b)', fontSize: '0.80rem' }}>Aucune donnée de satisfaction n'est enregistrée : aucune note moyenne ne peut être calculée honnêtement.</small>
             </div>
 
-            {/* Filtres d'avis */}
-            <div className="d-flex gap-2 mb-3 overflow-x-auto pb-1">
-              <button type="button" className={`btn btn-sm px-3 py-1 fw-bold ${reviewsFilter === 'all' ? 'btn-warning text-dark' : 'btn-outline-secondary'}`} style={{ borderRadius: '8px', fontSize: '0.78rem' }} onClick={() => setReviewsFilter('all')}>Tous les avis</button>
-              <button type="button" className={`btn btn-sm px-3 py-1 fw-bold ${reviewsFilter === '5stars' ? 'btn-warning text-dark' : 'btn-outline-secondary'}`} style={{ borderRadius: '8px', fontSize: '0.78rem' }} onClick={() => setReviewsFilter('5stars')}>★★★★★ (92%)</button>
-              <button type="button" className={`btn btn-sm px-3 py-1 fw-bold ${reviewsFilter === 'dakar' ? 'btn-warning text-dark' : 'btn-outline-secondary'}`} style={{ borderRadius: '8px', fontSize: '0.78rem' }} onClick={() => setReviewsFilter('dakar')}>📍 Dakar</button>
-              <button type="button" className={`btn btn-sm px-3 py-1 fw-bold ${reviewsFilter === 'regions' ? 'btn-warning text-dark' : 'btn-outline-secondary'}`} style={{ borderRadius: '8px', fontSize: '0.78rem' }} onClick={() => setReviewsFilter('regions')}>📍 Régions</button>
-            </div>
+            {/* Les filtres d'avis (« Tous », « ★★★★★ (92%) », « Dakar », « Régions »)
+                ont été retirés : la liste d'avis est vide, donc ces filtres
+                ne filtrent plus rien. Le « (92%) » était de surcroît un
+                pourcentage de satisfaction sans aucune source derrière —
+                il ne survit pas à la suppression des avis qu'il résumait. */}
 
             {/* Liste des avis vérifiés */}
             <div className="d-flex flex-column gap-3 mb-4">
-              {[
-                { name: 'Awa Ndiaye', loc: 'Dakar Plateau', tag: 'dakar', date: '06 Fév 2026', text: 'Consultation en visioconférence à 22h avec le pédiatre. L\'ordonnance digitale a été immédiatement transmise à ma pharmacie conventionnée.', stars: 5, spec: 'Pédiatrie' },
-                { name: 'Moussa Diallo', loc: 'Pikine Technopole', tag: 'dakar', date: '04 Fév 2026', text: 'Prise en charge 80% Tiers-Payant instantanée via Wave. J\'ai payé uniquement 2 500 FCFA au lieu de 12 500 FCFA. Service impeccable.', stars: 5, spec: 'Médecine Générale' },
-                { name: 'Coumba Sarr', loc: 'Thiès Dixième', tag: 'regions', date: '01 Fév 2026', text: 'Le médecin accrédité CNOM a pris le temps d\'analyser mes bilans sanguins et de m\'expliquer sereinement le traitement.', stars: 5, spec: 'Cardiologie' },
-                { name: 'Ousmane Fall', loc: 'Saint-Louis Sor', tag: 'regions', date: '28 Jan 2026', text: 'Très pratique pour éviter 4h de route vers Dakar. Le médecin spécialiste a renouvelé mon traitement d\'hypertension en 10 minutes.', stars: 5, spec: 'Hypertension / HTA' }
-              ].filter(r => {
-                if (reviewsFilter === 'all') return true;
-                if (reviewsFilter === '5stars') return r.stars === 5;
-                if (reviewsFilter === 'dakar') return r.tag === 'dakar';
-                if (reviewsFilter === 'regions') return r.tag === 'regions';
-                return true;
-              }).map((rev, idx) => (
-                <div key={idx} className="p-3.5 rounded-4" style={{ background: 'var(--bg-card-subtle, #f8fafc)', border: '1px solid var(--border-color, #e2e8f0)' }}>
-                  <div className="d-flex justify-content-between align-items-center mb-1.5 flex-wrap gap-1">
-                    <div className="d-flex align-items-center gap-2">
-                      <strong style={{ color: 'var(--text-main, #0f172a)', fontSize: '0.90rem' }}>👤 {rev.name}</strong>
-                      <span className="badge bg-light text-muted" style={{ fontSize: '0.70rem' }}>📍 {rev.loc}</span>
-                      <span className="badge bg-primary-subtle text-primary" style={{ fontSize: '0.68rem' }}>{rev.spec}</span>
-                    </div>
-                    <span className="text-warning fw-bold" style={{ fontSize: '0.84rem' }}>{'★'.repeat(rev.stars)}</span>
-                  </div>
-                  <p className="mb-2" style={{ color: 'var(--text-sub, #475569)', fontSize: '0.84rem', lineHeight: 1.55 }}>
-                    "{rev.text}"
-                  </p>
-                  <small style={{ color: 'var(--text-muted, #94a3b8)', fontSize: '0.72rem' }}>🕒 Avis certifié Tiers-Payant CSU • {rev.date}</small>
-                </div>
-              ))}
+              {/* AUCUN avis. Ces quatre témoignages (« Awa Ndiaye »,
+                  « Moussa Diallo »…) étaient écrits en dur avec 5 étoiles
+                  chacun et le label « Avis certifié Tiers-Payant CSU » :
+                  des patients inventés, avec des montants de règlement et
+                  une « ordonnance transmise à ma pharmacie » — donc des
+                  professionnels et des actes fictifs. Un avis fabriqué sur
+                  une plateforme de santé est une pratique trompeuse, d'autant
+                  plus qu'il est présenté comme certifié. Ils sont remplacés
+                  par un état vide ; la note moyenne au-dessus est déjà
+                  neutralisée de la même façon. */}
+              <div
+                className="p-4 rounded-4 text-center"
+                style={{
+                  background: 'var(--bg-card-subtle, #f8fafc)',
+                  border: '1px dashed var(--border-color, #cbd5e1)',
+                  borderRadius: '16px'
+                }}
+              >
+                <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>💬</div>
+                <strong className="d-block mb-1" style={{ fontSize: '0.92rem' }}>
+                  Aucun avis publié
+                </strong>
+                <span className="d-block" style={{ color: 'var(--text-sub, #64748b)', fontSize: '0.82rem', lineHeight: 1.55 }}>
+                  Aucun retour d'expérience n'est enregistré pour l'instant. Les avis qui apparaîtront ici devront provenir de patients réellement consultés.
+                </span>
+              </div>
             </div>
 
             <div className="d-flex justify-content-end">

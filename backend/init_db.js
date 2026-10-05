@@ -574,6 +574,40 @@ const createTablesQuery = `
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   );
 
+  -- 5b. Disponibilité des praticiens — HEART-BEAT (pas de statut figé)
+  --
+  -- Pourquoi une table plutôt qu'un simple drapeau "en ligne" :
+  -- un drapeau « en ligne » écrit par le frontend ment dès que le
+  -- navigateur se ferme sans armer le départ (crash, onglet fermé, perte
+  -- réseau). Le médecin resterait affiché « disponible » alors qu'il a
+  -- quitté la plateforme.
+  --
+  -- Le cœur du dispositif est la colonne last_heartbeat_at : le praticien
+  -- envoie un signal toutes les HEARTBEAT_INTERVAL_MS. Le serveur ne lit
+  -- JAMAIS le statut stocké comme vérité — il le recalcule à chaque lecture
+  -- en comparant last_heartbeat_at à NOW() moins le délai d'absence. Un
+  -- Un praticien qui disparaît est donc automatiquement marqué indisponible
+  -- après le délai, sans dépendre d'un client qui se déconnecte
+  -- proprement.
+  --
+  -- La colonne declared_status n'est que l'intention déclarée du praticien
+  -- (« je suis en pause »), à ne pas confondre avec la présence technique.
+  CREATE TABLE IF NOT EXISTS practitioner_presence (
+    practitioner_username VARCHAR(150) PRIMARY KEY,
+    practitioner_name VARCHAR(255),
+    specialty VARCHAR(150),
+    declared_status VARCHAR(30) NOT NULL DEFAULT 'available',
+      -- available : reçoit les patients | in_call : en consultation | away : pause
+    last_heartbeat_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    session_token VARCHAR(128),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT NOW()
+  );
+
+  -- Index utilisé par la lecture du statut (tri sur dernière activité).
+  CREATE INDEX IF NOT EXISTS idx_practitioner_presence_heartbeat
+    ON practitioner_presence (last_heartbeat_at DESC);
+
   -- 6. Imagerie Médicale & Biologie (Scanner, Radio, IRM)
   CREATE TABLE IF NOT EXISTS medical_imaging_results (
     id SERIAL PRIMARY KEY,
