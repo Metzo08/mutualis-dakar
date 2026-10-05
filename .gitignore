@@ -18,6 +18,10 @@ dist-ssr
 !.env.example
 backend/.env
 backend/.env.*
+# Le modèle de configuration DOIT rester versionné : sans lui, personne ne
+# sait quelles variables existent ni ce qu'elles valent. La règle générale
+# `backend/.env.*` ci-dessus l'excluait par inadvertance.
+!backend/.env.example
 
 
 # Editor directories and files

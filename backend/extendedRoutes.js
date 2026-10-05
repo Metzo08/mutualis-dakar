@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-const { query, publishRealtime, subscribeRealtime } = require('./db');
+const { query, pool } = require('./db');
+// Bus temps réel : Redis en production, PostgreSQL en secours. L'interface
+// est identique à celle de `./db`, donc cet import remplace l'ancien.
+const { publishRealtime, subscribeRealtime } = require('./realtimeBus');
 const { authenticateToken, requireRole } = require('./rbac');
 const crypto = require('crypto');
 

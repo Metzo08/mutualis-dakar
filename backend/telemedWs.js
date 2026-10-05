@@ -1,7 +1,14 @@
 const { WebSocketServer } = require('ws');
 const { URL } = require('url');
 const jwt = require('jsonwebtoken');
-const { subscribeRealtime, publishRealtime } = require('./db');
+// Bus temps réel partagé (Redis en production, PostgreSQL en secours).
+// Ce module passe à la place de `./db` pour la publication et les
+// abonnements : l'interface est identique, seul le moteur change.
+const {
+  publishRealtime,
+  subscribeRealtime,
+  realtimeStatus
+} = require('./realtimeBus');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_only_insecure_secret_do_not_use_in_prod_min_32_chars';
 

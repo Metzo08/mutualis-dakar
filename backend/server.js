@@ -3,7 +3,14 @@ const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 const XLSX = require('xlsx');
-const { query, pool, initRealtime, closeRealtime } = require('./db');
+const { query, pool } = require('./db');
+// Bus temps réel : Redis en production, PostgreSQL en secours. Ce module
+// remplace `initRealtime`/`closeRealtime` de `./db`, avec la même interface.
+const {
+  initRealtime,
+  closeRealtime,
+  realtimeStatus
+} = require('./realtimeBus');
 const telemedWs = require('./telemedWs');
 const fallbackStore = require('./fallbackStore');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
@@ -2264,7 +2271,70 @@ app.use(dynamicRoutes);
 // ROUTES AVANCÉES (fidélité, paiements OM/Wave, sync hors-ligne)
 // ============================================================================
 app.use(advancedRoutes);
-app.use('/api', extendedRoutes);
+// ============================================================================
+// SONDE DE SANTÉ — /health et /health/ready
+// ============================================================================
+// Indispensable en déploiement : le répartiteur de charge et l'orchestrateur
+// prennent leurs décisions à partir de ces réponses.
+//
+// /health       → l'instance répond-elle ? (sonde de vivacité, sans dépendance)
+// /health/ready → peut-elle réellement servir ? (sonde de disponibilité)
+//
+// La distinction est ce qui évite les pannes en série : une instance dont
+// Redis est coupé doit être retirée du répartiteur, mais la tuer
+// immédiatement ferait tomber les consultations en cours.
+// ============================================================================
+
+const startedAt = Date.now();
+
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    instance: process.env.INSTANCE_ID || 'local',
+    uptime_s: Math.round((Date.now() - startedAt) / 1000),
+    pid: process.pid
+  });
+});
+
+app.get('/health/ready', async (req, res) => {
+  const checks = { database: false, realtime: false };
+  let degraded = null;
+
+  // Base : une instance sans base ne peut rien servir.
+  try {
+    await query('SELECT 1');
+    checks.database = true;
+  } catch (err) {
+    checks.database = false;
+    degraded = `base inaccessible : ${err.message}`;
+  }
+
+  // Bus temps réel : en mono-instance, son absence n'empêche pas de servir.
+  // En multi-instance en revanche, les salons ne se relieraient pas — on
+  // signale alors l'instance non prête, sans la tuer, pour que le trafic
+  // existant se termine.
+  const bus = realtimeStatus();
+  const multiInstance = String(process.env.REALTIME_DRIVER || '').toLowerCase() === 'redis';
+  if (bus.driver === 'redis' && multiInstance) {
+    checks.realtime = bus.redis_healthy;
+    if (!checks.realtime) degraded = 'bus Redis indisponible';
+  } else {
+    checks.realtime = true;
+  }
+
+  const ready = checks.database && checks.realtime;
+  // 503 = « ne m'envoyez pas de trafic », distinct de l'échec critique.
+  res.status(ready ? 200 : 503).json({
+    status: ready ? 'ready' : 'not_ready',
+    instance: process.env.INSTANCE_ID || 'local',
+    checks,
+    realtime: bus,
+    rooms: typeof telemedWs.roomStats === 'function' ? telemedWs.roomStats() : {},
+    ...(degraded ? { degraded } : {})
+  });
+});
+
+app.use(extendedRoutes);
 
 // ============================================================================
 // ENCAISSEMENT MULTI-MSD — passerelle agrégateur Kadev Pay
@@ -2875,46 +2945,64 @@ app.use((err, req, res, next) => {
 // Start the server
 if (process.env.NODE_ENV !== 'test') {
   // ── Canal temps réel partagé (multi-instance) ──────────────────────────
-  // Démarre AVANT d'accepter les connexions : une instance qui reçoit du
-  // trafic sans être à l'écoute sur la base diffuserait des statuts
-  // périmés aux flux SSE qu'elle héberge.
-  initRealtime();
+  // Démarré ET attendu AVANT d'accepter les connexions : une instance qui
+  // reçoit du trafic sans être abonnée au bus diffuserait des statuts
+  // périmés et ne relayerait aucune offre WebRTC.
+  //
+  // L'attente est explicite parce que l'initialisation est désormais
+  // asynchrone (connexion à Redis). Sans elle, `listen` se déclencherait
+  // en parallèle et les premiers clients seraient servis à vide.
+  (async () => {
+    try {
+      await initRealtime();
+    } catch (err) {
+      // Le bus temps réel dégradé ne doit pas empêcher l'instance de
+      // démarrer : elle reste utilisable en mono-instance. En multi-instance
+      // en revanche, les salons ne se relicront pas — c'est logged pour
+      // être visible au diagnostic.
+      console.error('[Realtime] Démarrage incomplet :', err.message);
+    }
 
-  const server = app.listen(port, '0.0.0.0', () => {
-    // Identifiant d'instance : indispensable pour diagnostiquer un
-    // déploiement multi-instance. Sans cela, les journaux de deux
-    // instances sont indiscernables et un bug de répartition est
-    // impossible à tracer.
-    console.log(`Serveur démarré sur http://localhost:${port}`);
-    console.log(`[Instance] id=${process.env.INSTANCE_ID || 'local'} · pool=${process.env.DB_POOL_MAX || 10} connexions · canal=${process.env.REALTIME_CHANNEL || 'unamusc_presence'}`);
-  });
-
-  // ── Signalisation téléconsultation ───────────────────────────────────────
-  // Le même serveur HTTP porte aussi le WebSocket : un port de moins à
-  // ouvrir dans le pare-feu et le répartiteur de charge. La gestion
-  // multi-instances passe par le bus PostgreSQL (voir telemedWs.js).
-  telemedWs.attachToServer(server);
-
-  // Arrêt propre. En multi-instance, un déploiement remplace les instances
-  // une par une : sans fermeture de la connexion LISTEN, l'instance
-  // sortante laisse une connexion PostgreSQL ouverte et une entrée périmée
-  // tant qu'elle n'est pas tuée par le superviseur.
-  const shutdown = async (signal) => {
-    console.log(`[Instance] Arrêt demandé (${signal})…`);
-    // Les WebSocket ouverts sont fermés AVANT le pool : une socket encore
-    // active tenterait de publier sur un bus déjà coupé.
-    telemedWs.closeAll();
-    await closeRealtime();
-    server.close(() => {
-      console.log('[Instance] Arrêt propre terminé.');
-      process.exit(0);
+    const server = app.listen(port, '0.0.0.0', () => {
+      // Identifiant d'instance : indispensable pour diagnostiquer un
+      // déploiement multi-instance. Sans cela, les journaux de deux
+      // instances sont indiscernables et un bug de répartition est
+      // impossible à tracer.
+      console.log(`Serveur démarré sur http://localhost:${port}`);
+      console.log(`[Instance] id=${process.env.INSTANCE_ID || 'local'} · pool=${process.env.DB_POOL_MAX || 10} connexions · bus=${process.env.REALTIME_DRIVER || 'auto'}`);
     });
-    // Filet de sécurité : si des connexions SSE restent ouvertes, le
-    // callback ne sera jamais appelé et le conteneur resterait bloqué.
-    setTimeout(() => process.exit(0), 10000).unref?.();
-  };
-  process.on('SIGTERM', () => shutdown('SIGTERM'));
-  process.on('SIGINT', () => shutdown('SIGINT'));
+
+    // ── Signalisation téléconsultation ───────────────────────────────────────
+    // Le même serveur HTTP porte aussi le WebSocket : un port de moins à
+    // ouvrir dans le pare-feu et le répartiteur de charge. La gestion
+    // multi-instances passe par le bus partagé (voir telemedWs.js).
+    telemedWs.attachToServer(server);
+
+    // Arrêt propre. En multi-instance, un déploiement remplace les
+    // instances une par une : sans fermeture du bus partagé, l'instance
+    // sortante laisse une connexion ouverte et une entrée périmée tant
+    // qu'elle n'est pas tuée par le superviseur.
+    const shutdown = async (signal) => {
+      console.log(`[Instance] Arrêt demandé (${signal})…`);
+      // Les WebSocket sont fermés AVANT le bus : une socket encore active
+      // tenterait de publier sur un canal déjà coupé.
+      telemedWs.closeAll();
+      try {
+        await closeRealtime();
+      } catch (err) {
+        console.warn('[Instance] Fermeture du bus incomplète:', err.message);
+      }
+      server.close(() => {
+        console.log('[Instance] Arrêt propre terminé.');
+        process.exit(0);
+      });
+      // Filet de sécurité : si des connexions SSE restent ouvertes, le
+      // callback ne sera jamais appelé et le conteneur resterait bloqué.
+      setTimeout(() => process.exit(0), 10000).unref?.();
+    };
+    process.on('SIGTERM', () => shutdown('SIGTERM'));
+    process.on('SIGINT', () => shutdown('SIGINT'));
+  })();
 }
 
 module.exports = app;
