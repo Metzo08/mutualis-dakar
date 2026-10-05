@@ -4,6 +4,7 @@ import { generateOfficialPdf } from '../utils/pdfGenerator';
 import { initiatePayment, getProviderInfo, validatePhoneForProvider } from '../services/paymentService';
 import { speakCleanText } from '../services/voiceAudioService';
 import { apiFetch } from '../utils/api';
+import { openSignaling } from '../services/signalingService';
 
 // Design Premium Haut de Gamme — Télémédecine Visioconférence Bidirectionnelle & Vu-mètre Micro Réel
 
@@ -666,9 +667,19 @@ export default function Telemedicine({
   const isDoctorSide = consultationRole === 'doctor';
   // Patient appelé (renseigné côté praticien via « Recevoir & Appeler »)
   const [activePatient, setActivePatient] = useState(null);
-  // Liaison vidéo bidirectionnelle WebRTC réelle (signaling BroadcastChannel)
+  // Liaison vidéo bidirectionnelle WebRTC réelle (signalisation serveur)
   const [peerConnected, setPeerConnected] = useState(false);
   const [peerWaiting, setPeerWaiting] = useState(true);
+  // État RÉEL du canal de signalisation. Distinguer « connexion en
+  // cours », « canal interrompu » et « non authentifié » évite d'afficher
+  // une salle qui semble vivante alors que personne ne peut être joint.
+  // Valeurs : null | 'connecting' | 'reconnecting' | 'open' | 'error' |
+  // 'closed' | 'unauthenticated'
+  const [signalState, setSignalState] = useState(null);
+  // Identifiant de la salle de consultation. Doit être identique chez le
+  // praticien et l'assuré : c'est ce qui leur permet de se trouver malgré
+  // des postes et des instances différents.
+  const [signalRoomId, setSignalRoomId] = useState('');
   // ── Auto-vue déplaçable (doxy.me) : null = position par défaut bas-droite ──
   const [pipPos, setPipPos] = useState(null);
   const pipDragRef = useRef(null);
@@ -740,7 +751,7 @@ export default function Telemedicine({
   const ecgCanvasRef = useRef(null);
   const streamRef = useRef(null);
   const pcRef = useRef(null);          // RTCPeerConnection (liaison bidirectionnelle)
-  const chanRef = useRef(null);        // BroadcastChannel (signaling même-navigateur)
+  const chanRef = useRef(null);        // WebSocket de signalisation (serveur partagé)
   const remoteVideoRef = useRef(null); // <video> du flux distant (plein écran)
   const animFrameRef = useRef(null);
   const ecgAnimFrameRef = useRef(null);
@@ -946,22 +957,35 @@ export default function Telemedicine({
   };
 
   // ─────────────────────────────────────────────────────────────────────────
-  // LIAISON VIDÉO BIDIRECTIONNELLE RÉELLE (doxy.me) — WebRTC P2P dont le
-  // signaling transite par un BroadcastChannel : le praticien ouvre SON
-  // espace (cabinet), l'assuré ouvre SON espace (2e onglet), et les flux
-  // caméras réels s'échangent entre les deux. Sans correspondant, chaque
-  // espace retombe sur son rendu simulé.
+  // LIAISON VIDÉO BIDIRECTIONNELLE RÉELLE (doxy.me)
+  //
+  // WebRTC pair-à-pair, signalisation via le serveur WebSocket partagé.
+  //
+  // Ce qui a changé, et pourquoi c'était nécessaire : la signalisation
+  // passait par un BroadcastChannel, qui ne fonctionne qu'entre onglets du
+  // MÊME navigateur sur le MÊME poste. Un médecin au poste 1 et un assuré au
+  // poste 2 n'avaient donc aucun canal commun : aucune offre ne partait,
+  // aucune réponse n'arrivait, et chaque écran restait sur son flux simulé
+  // en affichant une téléconsultation qui n'avait jamais eu lieu.
+  //
+  // Le canal de signalisation est désormais le serveur, relié à toutes les
+  // instances par le bus PostgreSQL. Les deux postes s'entendent réellement,
+  // même s'ils sont servis par deux instances différentes. La vidéo reste
+  // pair-à-pair : le serveur ne voit ni les images ni le son.
   // ─────────────────────────────────────────────────────────────────────────
   const setupPeer = (localStream) => {
     // Idempotent : si une session P2P existe déjà (double déclenchement
     // geste-utilisateur + effet d'ouverture de la salle), on la conserve
     if (chanRef.current || pcRef.current) return;
-    if (typeof BroadcastChannel === 'undefined' || typeof RTCPeerConnection === 'undefined') return;
+    if (typeof RTCPeerConnection === 'undefined') return;
     const role = consultationRole;
-    const chan = new BroadcastChannel('unamusc-telemed-room');
-    chanRef.current = chan;
     const polite = role === 'patient'; // l'assuré est « polite », le praticien initie l'offre
-    const pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+    const pc = new RTCPeerConnection({
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' }
+      ]
+    });
     pcRef.current = pc;
     setPeerWaiting(true);
 
@@ -998,7 +1022,20 @@ export default function Telemedicine({
       if (['failed', 'disconnected', 'closed'].includes(pc.connectionState)) setPeerConnected(false);
     };
     pc.onicecandidate = ({ candidate }) => {
-      if (candidate) chan.postMessage({ from: role, type: 'ice', candidate });
+      if (candidate) sendSignal({ type: 'ice', candidate });
+    };
+
+    /**
+     * Émet un message de signalisation sur le canal partagé.
+     * Silencieuse si le canal n'est pas encore ouvert : un candidat ICE
+     * émis trop tôt serait perdu, et il en arrivera d'autres.
+     */
+    const sendSignal = (payload) => {
+      const chan = chanRef.current;
+      if (!chan || typeof chan.send !== 'function') return;
+      try {
+        chan.send(payload);
+      } catch (e) { /* canal refermé entre-temps */ }
     };
 
     const flushIce = async () => {
@@ -1013,61 +1050,89 @@ export default function Telemedicine({
       makingOffer = true;
       try {
         await pc.setLocalDescription();
-        chan.postMessage({ from: role, type: 'desc', description: pc.localDescription });
+        sendSignal({ type: 'desc', description: pc.localDescription });
       } catch (e) {
         console.warn('Telemed P2P offer error:', e);
       }
       makingOffer = false;
     };
 
-    chan.onmessage = async ({ data }) => {
-      if (!data || data.from === role) return;
-      try {
-        if (data.type === 'hello') {
-          if (!polite) {
-            // Le praticien initie la session dès qu'il aperçoit l'assuré
-            makeOffer();
-          } else if (Date.now() - lastEcho > 2000) {
-            // L'assuré ré-annonce sa présence pour que le praticien installé
-            // avant lui puisse déclencher l'offre
-            lastEcho = Date.now();
-            chan.postMessage({ from: role, type: 'hello' });
-          }
-        } else if (data.type === 'desc') {
-          const offerCollision = data.description.type === 'offer' && (makingOffer || pc.signalingState !== 'stable');
-          ignoreOffer = !polite && offerCollision;
-          if (ignoreOffer) return;
-          await pc.setRemoteDescription(data.description);
-          flushIce();
-          if (data.description.type === 'offer') {
-            await pc.setLocalDescription();
-            chan.postMessage({ from: role, type: 'desc', description: pc.localDescription });
-          }
-        } else if (data.type === 'ice') {
-          if (pc.remoteDescription) {
-            try { await pc.addIceCandidate(data.candidate); } catch (e) { /* ignoré */ }
-          } else {
-            pendingIce.push(data.candidate);
-          }
-        } else if (data.type === 'bye') {
-          setPeerConnected(false);
-          setPeerWaiting(true);
-          if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
-        }
-      } catch (e) {
-        console.warn('Telemed P2C signaling error:', e);
-      }
-    };
+    // ── Ouverture du canal partagé ────────────────────────────────────────
+    //
+    // L'identifiant de salle doit être IDENTIQUE chez les deux parties.
+    // On le dérive du code bénéficiaire de l'assuré : deux consultations
+    // simultanées ne peuvent donc pas se croiser, ce qu'un salon unique
+    // ne permettait pas.
+    const room = signalRoomId || (activeCmuNumber ? `cmu:${activeCmuNumber}` : null) || 'cmu:default';
 
-    chan.postMessage({ from: role, type: 'hello' });
+    chanRef.current = openSignaling({
+      room,
+      role,
+      participantId: role === 'doctor' ? (activeDoctor?.name || 'doctor') : (activeCmuNumber || 'patient'),
+      name: role === 'doctor' ? (activeDoctor?.name || 'Praticien') : `${activeFirstName || ''} ${activeLastName || ''}`.trim(),
+      onStatus: (status) => {
+        // On reflète l'état réel du canal : afficher une consultation
+        // « en cours » alors que la signalisation est rompue laisserait
+        // croire à tort que l'autre partie est joignable.
+        setSignalState(status.state);
+        if (status.state === 'open') setPeerWaiting(true);
+      },
+      onMessage: async (data) => {
+        if (!data) return;
+        try {
+          if (data.type === 'hello') {
+            if (!polite) {
+              // Le praticien initie dès qu'il aperçoit l'assuré.
+              makeOffer();
+            } else if (Date.now() - lastEcho > 2000) {
+              // L'assuré ré-annonce sa présence pour que le praticien
+              // installé avant lui puisse déclencher l'offre.
+              lastEcho = Date.now();
+              sendSignal({ type: 'hello' });
+            }
+          } else if (data.type === 'desc') {
+            const offerCollision = data.description?.type === 'offer' && (makingOffer || pc.signalingState !== 'stable');
+            ignoreOffer = !polite && offerCollision;
+            if (ignoreOffer) return;
+            await pc.setRemoteDescription(data.description);
+            flushIce();
+            if (data.description.type === 'offer') {
+              await pc.setLocalDescription();
+              sendSignal({ type: 'desc', description: pc.localDescription });
+            }
+          } else if (data.type === 'ice') {
+            if (pc.remoteDescription) {
+              try { await pc.addIceCandidate(data.candidate); } catch (e) { /* ignoré */ }
+            } else {
+              pendingIce.push(data.candidate);
+            }
+          } else if (data.type === 'peer-left' || data.type === 'bye') {
+            setPeerConnected(false);
+            setPeerWaiting(true);
+            if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
+          } else if (data.type === 'peer-joined') {
+            // Un pair arrive. Le praticien lance l'offre ; l'assuré se
+            // contente de se signaler, le rôle « polite » évite ainsi une
+            // double négociation.
+            sendSignal({ type: 'hello' });
+          }
+        } catch (e) {
+          console.warn('Telemed P2P signaling error:', e);
+        }
+      }
+    });
+
+    // Annonce immédiate : si le praticien est déjà en salle, il déclenche
+    // son offre sans attendre.
+    sendSignal({ type: 'hello' });
   };
 
   const teardownPeer = () => {
     if (chanRef.current) {
-      try {
-        chanRef.current.postMessage({ from: consultationRole, type: 'bye' });
-        chanRef.current.close();
-      } catch (e) { /* déjà fermé */ }
+      // La fermeture propre envoie « bye » au pair, qui peut alors
+      // basculer en attente au lieu de rester figé sur un écran de
+      // connexion.
+      try { chanRef.current(); } catch (e) { /* déjà fermé */ }
       chanRef.current = null;
     }
     if (pcRef.current) {

@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const XLSX = require('xlsx');
 const { query, pool, initRealtime, closeRealtime } = require('./db');
+const telemedWs = require('./telemedWs');
 const fallbackStore = require('./fallbackStore');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const helmet = require('helmet');
@@ -2888,12 +2889,21 @@ if (process.env.NODE_ENV !== 'test') {
     console.log(`[Instance] id=${process.env.INSTANCE_ID || 'local'} · pool=${process.env.DB_POOL_MAX || 10} connexions · canal=${process.env.REALTIME_CHANNEL || 'unamusc_presence'}`);
   });
 
+  // ── Signalisation téléconsultation ───────────────────────────────────────
+  // Le même serveur HTTP porte aussi le WebSocket : un port de moins à
+  // ouvrir dans le pare-feu et le répartiteur de charge. La gestion
+  // multi-instances passe par le bus PostgreSQL (voir telemedWs.js).
+  telemedWs.attachToServer(server);
+
   // Arrêt propre. En multi-instance, un déploiement remplace les instances
   // une par une : sans fermeture de la connexion LISTEN, l'instance
   // sortante laisse une connexion PostgreSQL ouverte et une entrée périmée
   // tant qu'elle n'est pas tuée par le superviseur.
   const shutdown = async (signal) => {
     console.log(`[Instance] Arrêt demandé (${signal})…`);
+    // Les WebSocket ouverts sont fermés AVANT le pool : une socket encore
+    // active tenterait de publier sur un bus déjà coupé.
+    telemedWs.closeAll();
     await closeRealtime();
     server.close(() => {
       console.log('[Instance] Arrêt propre terminé.');

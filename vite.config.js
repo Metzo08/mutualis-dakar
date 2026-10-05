@@ -99,7 +99,13 @@ export default defineConfig({
         skipWaiting: true,
         clientsClaim: true,
         cleanupOutdatedCaches: true,
-        maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
+        // Le bundle principal dépasse 6 Mio : la limite par défaut de
+        // Workbox (2 Mio) refusait de le précacher et faisait ÉCHOUER le
+        // build en closeBundle, donc tout déploiement était bloqué.
+        // 8 Mio laisse passer le bundle actuel tout en gardant une borne
+        // haute : au-delà, un fichier si volumineux ne doit pas être mis
+        // en cache de façon incontrôlée.
+        maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
         globPatterns: ['**/*.{js,css,html,png,svg,jpg,jpeg,woff,woff2}'],
         // Stratégies de cache avancées pour le mode hors-ligne
         runtimeCaching: [
