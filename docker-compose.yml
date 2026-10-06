@@ -1,0 +1,235 @@
+# ═════════════════════════════════════════════════════════════════════════════
+# MUTUALIS DAKAR — STACK DE PRODUCTION
+# ═════════════════════════════════════════════════════════════════════════════
+#
+# Démarrage :    docker compose up -d
+# Journaux :     docker compose logs -f backend-1
+# Arrêt propre : docker compose down          (conserve les données)
+# Tout effacer : docker compose down -v       (⚠️ SUPPRIME les volumes)
+#
+# ─────────────────────────────────────────────────────────────────────────────
+# CHOIX D'ARCHITECTURE ET LEURS RAISONS
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# * REDIS est obligatoire en multi-instance. C'est lui qui relaie la
+#   signalisation WebRTC entre le praticien et l'assuré quand ils sont servis
+#   par deux instances différentes. PostgreSQL LISTEN/NOTIFY ne convient pas :
+#   il plafonne la taille du payload, et une description SDP avec ses
+#   candidats ICE dépasse ce plafond.
+#
+# * COTURN n'est pas un luxe. Sans serveur TURN, la téléconsultation ne
+#   fonctionne que si les deux postes arrivent à se voir en direct. En 4G ou
+#   derrière un NAT strict (le cas le plus fréquent au Sénégal), ils n'y
+#   arrivent pas : la vidéo reste bloquée. Le STUN seul ne suffit pas, il
+#   permet de découvrir son adresse publique mais pas d'établir le tunnel.
+#
+# * Les instances backend sont SANS ÉTAT. Aucune donnée de session en mémoire :
+#   le répartiteur peut donc arrêter n'importe laquelle, et les autres prennent
+#   le relais sans interrompre une consultation.
+#
+# * POSTGRESQL expose max_connections = 200. Avec 3 instances à 20 connexions
+#   chacune, on est à 60 : de la marge reste disponible. La règle à retenir
+#   est toujours DB_POOL_MAX × nombre d'instances < max_connections.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: mutualis-dakar
+
+services:
+  # ── PostgreSQL ────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD est obligatoire dans backend/.env}
+      POSTGRES_DB: ${DB_NAME:-mutualis}
+      # Vérifie les pages à l'écriture : une corruption silencieuse coûte bien
+      # plus cher à détecter qu'un démarrage un peu plus lent.
+      POSTGRES_INITDB_ARGS: "--data-checksums"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    command:
+      - postgres
+      - -c
+      - max_connections=200
+      - -c
+      - shared_buffers=512MB
+      - -c
+      - work_mem=8MB
+      - -c
+      - maintenance_work_mem=128MB
+      - -c
+      - effective_cache_size=1536MB
+    healthcheck:
+      # `pg_isready` seul renvoie OK avant que le serveur n'accepte vraiment
+      # les connexions. On attend la version, servie une fois prêt.
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-mutualis}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks: [privnet]
+
+  # ── Redis ─────────────────────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # `--save ""` désactive la persistance : le bus ne contient que des
+    # messages éphémères (présence, signalisation). Les écrire sur disque
+    # coûterait des E/S sans bénéfice, et restaurer des données périmées
+    # serait pire qu'un bus vide.
+    command:
+      - redis-server
+      - --save
+      - ""
+      - --appendonly
+      - "no"
+      - --maxmemory
+      - 256mb
+      # `allkeys-lru` convient : tout ce qu'on y met est reproductible depuis
+      # PostgreSQL, rien n'est irremplaçable.
+      - --maxmemory-policy
+      - allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    # ⚠️ PAS de `ports:` — Redis ne doit jamais être joignable depuis
+    # l'extérieur. Seul le réseau privé y accède.
+    networks: [privnet]
+
+# ── Coturn (serveur TURN) ─────────────────────────────────────────────────
+  # Relève de l'infrastructure réseau. Il doit être joignable en UDP ET TCP,
+  # et ses ports doivent être ouverts sur le pare-feu : c'est une condition de
+  # fonctionnement de la téléconsultation, pas une optimisation.
+  coturn:
+    image: coturn/coturn:4.6
+    restart: unless-stopped
+    network_mode: host
+    command:
+      - -n
+      - --log-file=stdout
+      - --fingerprint
+      - --lt-cred-mech
+      - --realm=${TURN_REALM:-mutualis-dakar.sn}
+      - --user=${TURN_USERNAME:?TURN_USERNAME est obligatoire}:${TURN_PASSWORD:?TURN_PASSWORD est obligatoire}
+      # Plages de relais : à autoriser dans le pare-feu, sans chevauchement
+      # avec les autres ports de l'hôte.
+      - --min-port=${TURN_MIN_PORT:-49160}
+      - --max-port=${TURN_MAX_PORT:-49200}
+      # L'allocation doit couvrir une consultation entière : si un médecin est
+      # en consultation, elle ne doit pas expirer sous ses pieds.
+      - --stale-ntc
+      - --no-multicast-peers
+      - --no-cli
+    healthcheck:
+      test: ["CMD", "coturn", "-h"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    # `network_mode: host` est incompatible avec `networks`. Coturn a besoin
+    # d'un accès bas niveau pour la traversée de NAT.
+
+  # ── Backend : une définition commune, trois instances ──────────────────────
+  # `deploy.replicas` est ignoré par `docker compose up` hors mode Swarm.
+  # On déclare donc trois services qui partagent l'image et la configuration,
+  # et ne diffèrent que par INSTANCE_ID (utilisé dans les journaux et pour
+  # diagnostiquer la répartition).
+  backend: &backend
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    image: mutualis-backend:latest
+    restart: unless-stopped
+    env_file:
+      - backend/.env
+    environment: &backend-env
+      # Surcharges pour l'intérieur du réseau Docker : ici les services se
+      # trouvent par leur NOM, pas par localhost. Sans ces lignes, l'instance
+      # chercherait PostgreSQL et Redis sur elle-même et échouerait.
+      DB_HOST: postgres
+      REDIS_URL: redis://redis:6379
+      REALTIME_DRIVER: redis
+      NODE_ENV: production
+    # `depends_on` attend la SANTÉ du conteneur, pas son démarrage. La sonde
+    # `health/ready` prend le relais : c'est elle qui décide si l'on peut
+    # envoyer du trafic. Sans elle, le répartiteur viserait une instance dont
+    # la base n'est pas prête.
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:'+(process.env.PORT||5000)+'/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      # Laisse le temps de démarrer avant de juger : une sonde trop pressée
+      # ferait redémarrer un conteneur parfaitement sain.
+      start_period: 60s
+    networks: [privnet]
+
+  backend-1:
+    <<: *backend
+    environment:
+      <<: *backend-env
+      INSTANCE_ID: backend-1
+
+  backend-2:
+    <<: *backend
+    environment:
+      <<: *backend-env
+      INSTANCE_ID: backend-2
+
+  backend-3:
+    <<: *backend
+    environment:
+      <<: *backend-env
+      INSTANCE_ID: backend-3
+
+  # ── Nginx : point d'entrée unique ──────────────────────────────────────────
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx.d:/etc/nginx/conf.d:ro
+      # Let's Encrypt pour le certificat. Le domaine doit pointer vers cette
+      # machine et le port 80 être joignable pour la validation.
+      - certbot_conf:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    depends_on:
+      - backend-1
+      - backend-2
+      - backend-3
+    networks: [privnet]
+
+  # ── Certbot : renouvellement du certificat ────────────────────────────────
+  # Ne tourne pas en continu : un aller-retour suffit. La tâche est appelée
+  # deux fois par jour puis ignorée si le certificat n'est pas proche de
+  # l'expiration.
+  certbot:
+    image: certbot/certbot:latest
+    restart: unless-stopped
+    volumes:
+      - certbot_conf:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+      - ./nginx.d:/etc/nginx/conf.d:ro
+    entrypoint: >
+      /bin/sh -c "trap exit TERM;
+      while :; do certbot renew --webroot -w /var/www/certbot --quiet;
+      sleep 12h & wait $${!}; done"
+
+networks:
+  privnet:
+    driver: bridge
+
+volumes:
+  pgdata:
+  certbot_conf:
+  certbot_www:

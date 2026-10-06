@@ -1,0 +1,48 @@
+# ── Dépendances ────────────────────────────────────────────────────────────
+# Elles sont réinstallées dans l'image par `npm ci`. Les envoyer ne fait que
+# ralentir le build — et, si le verrouillage ne correspond pas à ces
+# modules, risquer d'embarquer des versions différentes de celles déployées.
+node_modules
+**/node_modules
+
+# ── Données et secrets ─────────────────────────────────────────────────────
+# Les données de production ne doivent JAMAIS entrer dans une image.
+backend/data
+**/*.log
+
+.env
+**/.env
+!.env.example
+**/.env.example
+*.key
+*.pem
+
+# ── Git ────────────────────────────────────────────────────────────────────
+.git
+.gitignore
+
+# ── Build et tests ─────────────────────────────────────────────────────────
+dist
+dev-dist
+coverage
+**/*.test.js
+**/*.spec.js
+backend/__tests__
+
+# ── Éditeurs et système ────────────────────────────────────────────────────
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+*.swp
+
+# ── Documentation ──────────────────────────────────────────────────────────
+*.md
+!README.md
+
+# ── Fichiers temporaires ───────────────────────────────────────────────────
+tmp
+temp
+*.tmp
+*.bak
+*.log.*
