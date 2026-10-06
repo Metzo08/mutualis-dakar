@@ -84,3 +84,7 @@ pr.txt
 probe.txt
 *_dump.csv
 scripts/_*.mjs
+
+# Dumps et sauvegardes de la base — données de santé, JAMAIS sur le dépôt
+*.dump
+*.sql.gz
