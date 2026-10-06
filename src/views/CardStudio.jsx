@@ -28,6 +28,7 @@ import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
 import DeleteModal from '../components/DeleteModal';
+import SecurePhoto from '../components/SecurePhoto';
 // Armoiries vectorielles de la Ville de Dakar (filigrane des cartes scolaires)
 import DakarCoatOfArms from '../components/DakarCoatOfArms';
 // Programmes de cartes + coordonnées par MSD (source de vérité des libellés)
@@ -173,7 +174,11 @@ function SchoolCardFront({ cardData, currentUnion, getMsdLogo, customLogo = null
         <div className="school-card-wide"><span style={labelStyle}>👤 {program.referralLabel}</span><strong style={valueStyle}>{cardData.tuteurName || cardData.sponsorName || cardData.fullName} • {cardData.tuteurPhone || cardData.phone || 'téléphone à renseigner'}</strong></div>
       </div>
       <div className="school-card-photo">
-        {cardData.photoUrl ? <img src={cardData.photoUrl} alt={cardData.fullName} /> : <span>Photo<br />à importer</span>}
+        {/* SecurePhoto : les photos servies par /api/beneficiaries/:id/photo
+            exigent un jeton que <img> ne peut pas envoyer — elles
+            s'affichaient toutes cassées. Ce composant télécharge avec
+            l'en-tête Authorization puis rend une URL locale. */}
+        {cardData.photoUrl ? <SecurePhoto photoUrl={cardData.photoUrl} serverId={cardData.serverId || cardData.cmuNumber} alt={cardData.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span>Photo<br />à importer</span>}
       </div>
     </div>
     <div className="school-card-footer"><span>{program.frontFooter}</span><span>DÉLIVRÉE PAR LA MSD DE {currentUnion.region.toUpperCase()}</span></div>
@@ -2776,8 +2781,9 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
             {/* Cadre Photo & Upload */}
             <div className="d-flex align-items-center gap-4 mb-4 p-4 rounded-4 bg-body border" style={{ borderColor: 'var(--border-color)', borderRadius: '20px' }}>
               {editForm.photoUrl || cardData.photoUrl ? (
-                <img
-                  src={editForm.photoUrl || cardData.photoUrl}
+                <SecurePhoto
+                  photoUrl={editForm.photoUrl || cardData.photoUrl}
+                  serverId={cardData.serverId || cardData.cmuNumber}
                   alt="Photo Adhérent"
                   style={{ width: '76px', height: '76px', borderRadius: '50%', objectFit: 'cover', border: '3.5px solid #10b981', boxShadow: '0 6px 18px rgba(16,185,129,0.25)', flexShrink: 0 }}
                 />
@@ -3615,8 +3621,9 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                 <div style={{ width: '104px', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start' }}>
                   <div style={{ width: '100px', height: '126px', borderRadius: '10px', overflow: 'hidden', border: '2px solid #059669', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', background: '#f1f5f9', position: 'relative' }}>
                     {cardData.photoUrl ? (
-                      <img
-                        src={cardData.photoUrl}
+                      <SecurePhoto
+                        photoUrl={cardData.photoUrl}
+                        serverId={cardData.serverId || cardData.cmuNumber}
                         alt={cardData.fullName}
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />

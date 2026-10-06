@@ -23,6 +23,22 @@ backend/.env.*
 # `backend/.env.*` ci-dessus l'excluait par inadvertance.
 !backend/.env.example
 
+# ─────────────────────────────────────────────────────────────────────────────
+# DONNÉES PERSONNELLES — JAMAIS sur le dépôt
+# ─────────────────────────────────────────────────────────────────────────────
+# Les photos des assurés sont des données de santé. Leur présence sur un
+# dépôt public est une violation du secret médical, même si le dépôt est
+# « interne » : il finit toujours par être partagé plus loin que prévu.
+# Les photos vivent en base (data-URL) ou sur le disque local du poste
+# d'import — jamais dans git.
+public/msd_photos/
+ASS LONASE/
+MSD de Grand Yoff/
+MSD DAKAR/
+Ville de Dakar msd Dakar.xlsx
+modele_eleves_cmu.xlsx
+modele cartes cmu-eleves et daara/
+
 
 # Editor directories and files
 .vscode/*

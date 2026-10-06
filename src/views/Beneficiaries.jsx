@@ -285,11 +285,12 @@ export default function Beneficiaries({ lang, agentUser }) {
         return res.json();
       })
       .then(payload => {
-        // Une réponse vide est une réponse vide : aucun registre de
-        // remplacement. Les bénéficiaires affichés proviennent de la base
-        // (identique au registre du Studio Cartes), jamais d'une liste
-        // locale inventée.
-        setBeneficiaries(Array.isArray(payload) ? payload : []);
+        // L'API renvoie { data, pagination }. L'ancien code testait
+        // Array.isArray(payload) : toujours faux, donc le registre restait
+        // vide ou périmé et l'affichage « X bénéficiaires enregistrés »
+        // montrait la taille de la PAGE, pas le total.
+        const rows = payload && Array.isArray(payload.data) ? payload.data : (Array.isArray(payload) ? payload : []);
+        setBeneficiaries(rows);
         if (payload && payload.pagination) {
           setPagination(payload.pagination);
         } else {
@@ -462,7 +463,11 @@ export default function Beneficiaries({ lang, agentUser }) {
           <span style={{ fontSize: '1.2rem' }}>📊</span>
           <div>
             <strong style={{ color: 'var(--text-main)' }}>Registre Régional des Assurés CSU :</strong>{' '}
-            <span style={{ color: '#3b82f6', fontWeight: '800' }}>{beneficiaries.length} bénéficiaires enregistrés</span>{' '}
+            {/* Total issu de la PAGINATION du serveur, pas du tableau affiché :
+                le tableau ne contient qu'une page. L'ancien code affichait
+                beneficiaries.length, qui montrait la taille de page et laissait
+                croire à un registre beaucoup plus petit qu'il ne l'est. */}
+            <span style={{ color: '#3b82f6', fontWeight: '800' }}>{pagination.total ?? beneficiaries.length} bénéficiaires enregistrés</span>{' '}
             <span style={{ color: 'var(--text-sub)', fontSize: '0.78rem' }}>({beneficiaries.filter(b => ['active', 'actif'].includes(String(b.status).toLowerCase())).length} actifs • {beneficiaries.filter(b => ['pending', 'en attente'].includes(String(b.status).toLowerCase())).length} en attente de validation • {beneficiaries.filter(b => ['suspended', 'suspendu'].includes(String(b.status).toLowerCase())).length} suspendus)</span>
           </div>
         </div>

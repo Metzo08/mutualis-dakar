@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
 import { getBeneficiaryInfo, getAdherentCode, getBeneficiaryCode } from '../utils/csuFormatter';
 import { speakCleanText } from '../services/voiceAudioService';
+import SecurePhoto from '../components/SecurePhoto';
 
 // Vue publique et médicale de vérification d'une carte CSU.
 // Accessible via #/verify ou #/verify/:cmuNumber — utilisée par les structures de soins,
@@ -1448,10 +1449,10 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
             <div className="row g-4 align-items-center mb-4 position-relative" style={{ zIndex: 2 }}>
               <div className="col-auto">
                 {result.photoUrl ? (
-                  <img 
-                    src={result.photoUrl} 
+                  <SecurePhoto
+                    photoUrl={result.photoUrl}
+                    serverId={result.id || result.cmuNumber}
                     alt={`${result.firstName} ${result.lastName}`}
-                    onError={(e) => { e.target.onerror = null; e.target.src = '/csu_profile_hero_real.png'; }}
                     style={{
                       width: '92px',
                       height: '92px',

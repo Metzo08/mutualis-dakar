@@ -63,7 +63,12 @@ services:
     healthcheck:
       # `pg_isready` seul renvoie OK avant que le serveur n'accepte vraiment
       # les connexions. On attend la version, servie une fois prêt.
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-mutualis}"]
+      # Les variables lues sont celles DU CONTENEUR ($$ = littéral pour
+      # compose, résolu par le shell du conteneur) : robuste même si le nom
+      # de la base contient un espace — un nom non protégé était coupé en
+      # deux arguments et le healthcheck échouait alors que la base était
+      # parfaitement opérationnelle.
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
       interval: 10s
       timeout: 5s
       retries: 10
