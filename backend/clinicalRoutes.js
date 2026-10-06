@@ -21,6 +21,11 @@ const DISCLAIMER = "Aide à la décision clinique — validation médicale oblig
 
 const assistSchema = z.object({
   cmuNumber: z.string().trim().min(3).max(60),
+  // Profil d'assistance demandé. Le backend le BORNE selon le rôle de
+  // l'appelant (voir plus bas) : un infirmier qui demanderait le profil
+  // différentiel du médecin reçoit le profil de triage, silencieusement
+  // mais consigné dans la réponse pour que l'interface affiche la vérité.
+  profile: z.enum(['doctor', 'nurse']).optional(),
   presentation: z.string().trim().max(8000).optional(),
   antecedents: z.array(z.string().max(300)).max(50).optional(),
   allergies: z.array(z.string().max(200)).max(50).optional(),
@@ -54,11 +59,19 @@ const buildContext = (body) => {
 /** État du moteur : le frontend affiche si l'assistant est disponible. */
 router.get('/api/clinical/status', authenticateToken, (req, res) => {
   const cfg = clinicalAi.getConfig();
+  const role = (req.user && req.user.role) || '';
+  // Le profil autorisé dépend du rôle : l'interface peut ainsi n'afficher
+  // que le sélecteur pertinent plutôt que d'offrir un choix que le backend
+  // bornerait silencieusement.
+  const allowedProfiles = clinicalAi.resolveProfile(role, 'doctor') === 'doctor'
+    ? ['doctor', 'nurse']
+    : ['nurse'];
   res.json({
     available: clinicalAi.isConfigured(),
     engine: 'MedGemma',
     model: cfg.model,
-    roleAllowed: clinicalAi.isClinicalRole(req.user && req.user.role),
+    roleAllowed: clinicalAi.isClinicalRole(role),
+    allowedProfiles,
     disclaimer: DISCLAIMER
   });
 });
@@ -84,8 +97,19 @@ router.post('/api/clinical/assist', authenticateToken, validate(assistSchema), a
     });
   }
 
+  const role = (req.user && req.user.role) || '';
+  const r = role.toLowerCase().trim();
+  // Résolution et application du profil : un infirmier ou une sage-femme
+  // qui demanderait le profil médical reçoit le profil de triage. Ce n'est
+  // pas une restriction technique mais une borne de responsabilité :
+  // proposer un diagnostic différentiel hors du champ légal du praticien
+  // engage autant celui qui l'a fourni.
+  const profile = clinicalAi.resolveProfile(role, req.body.profile);
+  const requested = req.body.profile || null;
+  const profileWasAdjusted = requested && requested !== profile;
+
   const messages = [
-    { role: 'system', content: clinicalAi.buildSystemPrompt(buildContext(req.body)) },
+    { role: 'system', content: clinicalAi.buildSystemPrompt(profile, buildContext(req.body)) },
     { role: 'user', content: req.body.presentation || 'Analyse structurée du dossier à partir des éléments disponibles.' }
   ];
 
@@ -103,7 +127,7 @@ router.post('/api/clinical/assist', authenticateToken, validate(assistSchema), a
     await query('INSERT INTO audit_logs (action, actor, details) VALUES ($1, $2, $3)', [
       'ASSISTANCE_CLINIQUE_IA',
       actor,
-      `Analyse clinique IA demandée pour ${req.body.cmuNumber} (moteur ${clinicalAi.getConfig().model}). Validation clinique requise.`
+      `Analyse clinique IA demandée pour ${req.body.cmuNumber} (moteur ${clinicalAi.getConfig().model}, profil ${profile}${profileWasAdjusted ? `, demandé ${requested} — ajusté au rôle` : ''}). Validation clinique requise.`
     ]);
   } catch (e) {
     console.warn('[ClinicalAI] Journalisation impossible :', e.message);
@@ -113,6 +137,8 @@ router.post('/api/clinical/assist', authenticateToken, validate(assistSchema), a
     success: true,
     engine: 'MedGemma',
     model: clinicalAi.getConfig().model,
+    profile,
+    profileWasAdjusted,
     cmuNumber: req.body.cmuNumber,
     analysis: result.content,
     disclaimer: DISCLAIMER,

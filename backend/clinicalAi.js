@@ -41,6 +41,44 @@ const isClinicalRole = (role) => {
   return CLINICAL_ROLES.includes(r);
 };
 
+// ---------------------------------------------------------------------------
+// PROFILS CLINIQUES — l'assistance est calibrée sur les compétences réelles
+// du praticien, pas sur un modèle unique.
+//
+// Pourquoi deux profils et pas un : un médecin et une sage-femme/infirmier
+// n'ont ni la même formation ni la même responsabilité légale. Une sage-femme
+// qui reçoit des hypothèses diagnostiques différentielles complexes sur un
+// domaïne hors périnatalité est mise en position de décider au-delà de son
+// champ légal — et le système qui la pousse dans cette position partage cette
+// responsabilité. L'inférieur reçoit donc un OUTIL DE TRIAGE et d'orientation,
+// pas un moteur d'hypothèses.
+//
+// Le praticien peut toujours demander l'autre profil via le sélecteur, mais
+// le backend borne ce qu'il accepte : un infirmier ne peut pas obtenir le
+// profil différentiel (voir clinicalRoutes.js). C'est une borne de
+// responsabilité, pas une limite technique.
+// ---------------------------------------------------------------------------
+const CLINICAL_PROFILES = {
+  doctor: 'doctor',
+  infirmier: 'nurse',
+  nurse: 'nurse',
+  sage_femme: 'nurse',
+  midwife: 'nurse'
+};
+
+const resolveProfile = (role, requested) => {
+  const r = String(role || '').toLowerCase().trim();
+  const req = String(requested || '').toLowerCase().trim();
+  // Les rôles "agent/admin" (administration, pas un praticien clinique)
+  // ne peuvent demander que le profil de triage : voir la borne côté routes.
+  const isPhysician = ['médecin', 'medecin', 'doctor'].includes(r);
+  if (isPhysician) {
+    return req === 'nurse' ? 'nurse' : 'doctor';
+  }
+  // Sage-femme/infirmier : profil triage, quelle que soit la demande.
+  return 'nurse';
+};
+
 /** Configuration du moteur, lue à chaque appel (surchargeable par variables). */
 const getConfig = () => ({
   baseUrl: (process.env.MEDGEMMA_BASE_URL || process.env.LLM_BASE_URL || '').replace(/\/+$/, ''),
@@ -53,20 +91,28 @@ const getConfig = () => ({
 const isConfigured = () => Boolean(getConfig().baseUrl);
 
 /**
- * Consigne système clinique.
+ * Consignes système cliniques — une par profil.
  *
- * Elle impose un raisonnement STRUCTURÉ (hypothèses, éléments en faveur et
- * défavorables, examens, alertes, incertitude) plutôt qu'un verdict, et
- * interdit explicitement l'affirmation d'un diagnostic.
+ * Les deux profils partagent les mêmes garde-fous fondamentaux, mais
+ * raisonnent différemment :
+ *
+ *  - DOCTOR : raisonnement différentiel structuré. Le médecin a la
+ *    formation et la responsabilité de peser des hypothèses — l'assistant
+ *    les organise sans les trancher.
+ *
+ *  - NURSE : triage et orientation. Aucune hypothèse diagnostique : le
+ *    modèle identifie les signes de gravité, les mesures à prendre et
+ *    vers QUI orienter (médecin, structure, urgence). L'infirmier agit
+ *    dans un cadre défini par ce qu'il peut faire légalement.
  */
-const buildSystemPrompt = (context) => `Tu es un assistant d'aide à la décision clinique pour un professionnel de santé au Sénégal (portail CSU / MUTUALIS).
+const buildDoctorPrompt = (context) => `Tu es un assistant d'aide à la décision clinique pour un MÉDECIN au Sénégal (portail CSU / MUTUALIS).
 
 RÔLE ET LIMITES
-- Tu aides le praticien à raisonner. Tu ne poses PAS de diagnostic.
+- Tu aides le médecin à raisonner. Tu ne poses PAS de diagnostic.
 - Tu ne prescris PAS de traitement ni de posologie.
 - Tu ne remplaces JAMAIS l'examen clinique ni le jugement du médecin.
 - En cas d'urgence vitale, indique immédiatement la conduite à tenir et les signes d'alerte à rechercher.
-- Ne déduis jamais un diagnostic à partir d'un element manquant : signale l'information manquante.
+- Ne déduis jamais un diagnostic à partir d'un élément manquant : signale l'information manquante.
 
 SORTIE ATTENDUE (Markdown strict, dans cet ordre exact) :
 ## MOTIF
@@ -85,6 +131,38 @@ CONTEXTE DU PATIENT (données autorisées par le praticien) :
 ${context}
 
 Rédige en français, de façon concise et factuelle.`;
+
+const buildNursePrompt = (context) => `Tu es un assistant de TRIAGE CLINIQUE pour un infirmier ou une sage-femme au Sénégal (portail CSU / MUTUALIS).
+
+RÔLE ET LIMITES — CONTRAIGNANTES
+- Tu aides le praticien à évaluer la GRAVITÉ et à ORIENTER. Tu ne proposes JAMAIS d'hypothèse diagnostique.
+- Tu ne prescris RIEN. Tu ne suggères AUCUN traitement, même symptomatique.
+- Tu décris ce que le praticien peut FAIRE dans son champ : mesures, surveillance, critères de réévaluation.
+- Pour toute prise en charge au-delà du triage, tu renvoies explicitement vers un médecin ou une structure, en précisant le niveau d'urgence.
+- En cas de signe de gravité, tu places l'orientation en TÊTE de réponse : le praticien doit la voir en premier.
+
+SORTIE ATTENDUE (Markdown strict, dans cet ordre exact) :
+## SITUATION
+## NIVEAU D'URGENCE   ← rouge / orange / vert selon les signes observés
+## SIGNES DE GRAVITE A RECHERCHER   ← quoi mesurer, à quelle fréquence
+## ACTIONS DANS LE CHAMP DU PRATICIEN   ← uniquement ce qu'il peut faire lui-même
+## ORIENTATION RECOMMANDEE   ← vers qui, quand, par quel moyen
+## CRITERES DE REEVALUATION   ← ce qui doit déclencher une réorientation
+## INFORMATIONS A TRANSMETTRE AU MEDECIN   ← ce que le praticien doit consigner
+
+CONTEXTE DU PATIENT (données autorisées par le praticien) :
+${context}
+
+Rédige en français, de façon concise et factuelle. L'ORIENTATION est toujours la section la plus concrète : qui appeler, quel niveau de structure, quel délai.`;
+
+/**
+ * Consigne système selon le profil résolu.
+ * @param {'doctor'|'nurse'} profile
+ */
+const buildSystemPrompt = (profile, context) => {
+  if (profile === 'nurse') return buildNursePrompt(context);
+  return buildDoctorPrompt(context);
+};
 
 /**
  * Appelle le modèle médical via une API compatible OpenAI.
@@ -139,6 +217,8 @@ module.exports = {
   isConfigured,
   isClinicalRole,
   getConfig,
+  resolveProfile,
+  CLINICAL_PROFILES,
   buildSystemPrompt,
   callModel
 };

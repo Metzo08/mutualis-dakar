@@ -107,20 +107,25 @@ services:
     image: coturn/coturn:4.6
     restart: unless-stopped
     network_mode: host
+    # --use-auth-secret : coturn vérifie les identifiants dérivés par le
+    # backend via HMAC-SHA1 sur TURN_STATIC_AUTH_SECRET. C'est le schéma
+    # REST standard : les navigateurs ne reçoivent jamais le secret, seulement
+    # des identifiants tournés qu'ils ne peuvent pas falsifier.
+    # Le secret DOIT être identique à celui du backend, sinon les clients
+    # reçoivent 401 et la téléconsultation échoue en 4G sans explication.
     command:
       - -n
       - --log-file=stdout
       - --fingerprint
-      - --lt-cred-mech
+      - --use-auth-secret
+      - --static-auth-secret=${TURN_STATIC_AUTH_SECRET:?TURN_STATIC_AUTH_SECRET est obligatoire — identique côté backend}
       - --realm=${TURN_REALM:-mutualis-dakar.sn}
-      - --user=${TURN_USERNAME:?TURN_USERNAME est obligatoire}:${TURN_PASSWORD:?TURN_PASSWORD est obligatoire}
       # Plages de relais : à autoriser dans le pare-feu, sans chevauchement
       # avec les autres ports de l'hôte.
       - --min-port=${TURN_MIN_PORT:-49160}
       - --max-port=${TURN_MAX_PORT:-49200}
       # L'allocation doit couvrir une consultation entière : si un médecin est
       # en consultation, elle ne doit pas expirer sous ses pieds.
-      - --stale-ntc
       - --no-multicast-peers
       - --no-cli
     healthcheck:
@@ -152,6 +157,12 @@ services:
       REDIS_URL: redis://redis:6379
       REALTIME_DRIVER: redis
       NODE_ENV: production
+      # Dérivation des identifiants TURN exposés aux navigateurs. Doit être
+      # identique à celui du service coturn, sinon les clients reçoivent 401
+      # et la téléconsultation échoue en 4G sans explication visible.
+      TURN_STATIC_AUTH_SECRET: ${TURN_STATIC_AUTH_SECRET:?TURN_STATIC_AUTH_SECRET est obligatoire — identique côté coturn}
+      TURN_REALM: ${TURN_REALM:-mutualis-dakar.sn}
+      TURN_PUBLIC_URL: ${TURN_PUBLIC_URL:-}
     # `depends_on` attend la SANTÉ du conteneur, pas son démarrage. La sonde
     # `health/ready` prend le relais : c'est elle qui décide si l'on peut
     # envoyer du trafic. Sans elle, le répartiteur viserait une instance dont
