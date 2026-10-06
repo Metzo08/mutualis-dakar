@@ -586,7 +586,7 @@ const createTablesQuery = `
   -- envoie un signal toutes les HEARTBEAT_INTERVAL_MS. Le serveur ne lit
   -- JAMAIS le statut stocké comme vérité — il le recalcule à chaque lecture
   -- en comparant last_heartbeat_at à NOW() moins le délai d'absence. Un
-  -- Un praticien qui disparaît est donc automatiquement marqué indisponible
+  -- praticien qui disparaît est donc automatiquement marqué indisponible
   -- après le délai, sans dépendre d'un client qui se déconnecte
   -- proprement.
   --

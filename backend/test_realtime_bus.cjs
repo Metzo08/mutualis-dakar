@@ -14,7 +14,11 @@ const {
   realtimeStatus
 } = require('./realtimeBus');
 
-const URL_REDIS = process.env.REDIS_URL || 'redis://localhost:6379';
+// L'URL par défaut vise l'interieur du reseau Docker (nom de service) :
+// c'est le seul endroit ou le conteneur Redis est joignable — il n'expose
+// volontairement aucun port vers l'hote. Un test lance hors Docker passe
+// REDIS_URL explicitement.
+const URL_REDIS = process.env.REDIS_URL || 'redis://redis:6379';
 const results = [];
 
 const record = (label, pass, detail) => {
