@@ -2336,6 +2336,61 @@ app.get('/health/ready', async (req, res) => {
 
 app.use(extendedRoutes);
 
+// ═══════════════════════════════════════════════════════════════════════════
+// IDENTIFIANTS TURN ÉPHÉMÈRES (iceServers pour les navigateurs)
+// ═══════════════════════════════════════════════════════════════════════════
+// Le serveur TURN (coturn) est configuré en --lt-cred-mech avec un secret
+// statique : les clients doivent calculer un mot de passe dérivé (HMAC-SHA1)
+// et ne JAMAIS recevoir le secret lui-même. C'est le schéma REST dit
+// « long-term credentials » de la RFC 5766 §14.3.
+//
+// Pourquoi éphémère : un identifiant tourné toutes les 6 h limite la durée
+// d'usage d'identifiants volés (copiés d'une console, partagés d'un écran).
+// 6 h couvre une téléconsultation très longue plus une marge de reconnexion.
+//
+// Pourquoi authentifié : un endpoint public serait une porte d'entrée pour
+// relayer gratuitement du trafic via notre serveur (abuse de relais).
+const TURN_CREDENTIAL_TTL = 6 * 60 * 60; // secondes
+
+app.get('/api/turn-credentials', authenticateToken, (req, res) => {
+  const realm = process.env.TURN_REALM || 'mutualis-dakar.sn';
+  const secret = process.env.TURN_STATIC_AUTH_SECRET;
+
+  if (!secret) {
+    // Sans secret configuré, nous ne pouvons pas dériver d'identifiants.
+    // Répondre avec des STUN seuls serait mentir : en 4G la connexion
+    // échouera. On le dit explicitement, pour que l'interface puisse
+    // expliquer la cause plutôt qu'afficher un écran bloqué.
+    return res.status(503).json({
+      error: 'Serveur TURN non configuré',
+      code: 'TURN_NOT_CONFIGURED',
+      message: "La traversée de NAT n'est pas disponible. Configurez TURN_STATIC_AUTH_SECRET et le conteneur coturn."
+    });
+  }
+
+  // Nom d'utilisateur temporaire = <expiration UNIX>:<identité>. Le format
+  // est imposé par coturn en --use-auth-secret : le timestamp sert à la
+  // rotation, la partie identitaire sert au journal d'audit du relais.
+  const expiry = Math.floor(Date.now() / 1000) + TURN_CREDENTIAL_TTL;
+  const username = `${expiry}:${req.user.id || req.user.username || 'anon'}`;
+
+  const credential = crypto
+    .createHmac('sha1', secret)
+    .update(username)
+    .digest('base64');
+
+  const turnUdp = process.env.TURN_PUBLIC_URL || `turn:${req.hostname}:3478`;
+  res.json({
+    iceServers: [
+      { urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] },
+      // TCP en secours : certains réseaux d'entreprise bloquent UDP.
+      { urls: [`${turnUdp}?transport=udp`, `${turnUdp}?transport=tcp`], username, credential, credentialType: 'password' }
+    ],
+    ttl: TURN_CREDENTIAL_TTL,
+    realm
+  });
+});
+
 // ============================================================================
 // ENCAISSEMENT MULTI-MSD — passerelle agrégateur Kadev Pay
 // Chaque MSD encaisse sur son propre compte marchand ; la commission de
