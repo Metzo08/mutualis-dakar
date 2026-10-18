@@ -29,6 +29,8 @@ const { router: advancedRoutes, awardPoints } = require('./advancedRoutes');
 const extendedRoutes = require('./extendedRoutes');
 const kadevRoutes = require('./kadevRoutes');
 const clinicalRoutes = require('./clinicalRoutes');
+const { maintenanceGate } = require('./maintenance');
+const { router: cardLifecycleRouter } = require('./cardLifecycleRoutes');
 const {
   loadRecordsForCodes,
   planRepair,
@@ -267,6 +269,14 @@ app.use(helmet());
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '1mb' }));
 
+// ═════════════════
+// MODE MAINTENANCE — le portail peut être fermé par le Super Admin sans
+// arrêter le serveur : les sondes /health restent vertes (le répartiteur
+// ne retire pas l'instance) et seul le trafic métier reçoit un 503 portant
+// le message de l'admin, que le frontend affiche via MaintenanceScreen.
+// ═════════════════
+app.use(maintenanceGate);
+
 // Rate Limiter for Auth Routes
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -324,6 +334,40 @@ const requireRole = (...roles) => (req, res, next) => {
 
 // Combine authentification + rôle attendu
 const requireAuth = (...roles) => [authenticateToken, requireRole(...roles)];
+
+// Pilotage du mode maintenance (DECISIONS.md — Super Admin uniquement).
+// Lecture : état courant. Écriture : activation/désactivation avec message
+// optionnel, chaque changement journalisé dans audit_logs.
+app.get('/api/admin/maintenance', authenticateToken, requireRole('admin'), async (req, res) => {
+  try {
+    const { getMaintenanceState } = require('./maintenance');
+    res.json(await getMaintenanceState());
+  } catch (err) {
+    console.error('Lecture état maintenance :', err.message);
+    res.status(500).json({ error: 'Impossible de lire l\'état de maintenance.' });
+  }
+});
+app.post('/api/admin/maintenance', authenticateToken, requireRole('admin'), async (req, res) => {
+  try {
+    const { setMaintenanceState, invalidateMaintenanceCache } = require('./maintenance');
+    const { enabled, message } = req.body || {};
+    if (typeof enabled !== 'boolean') {
+      return res.status(400).json({ error: 'Le champ booléen "enabled" est obligatoire.' });
+    }
+    const msg = typeof message === 'string' ? message.slice(0, 500) : null;
+    await setMaintenanceState(enabled, msg, req.user.username);
+    await query(
+      `INSERT INTO audit_logs (action, actor, details) VALUES ($1, $2, $3)`,
+      [enabled ? 'ACTIVATION_MAINTENANCE' : 'DESACTIVATION_MAINTENANCE', req.user.username,
+        `Mode maintenance ${enabled ? 'activé' : 'désactivé'}${msg ? ' — message : ' + msg : ''}.`]
+    );
+    invalidateMaintenanceCache();
+    res.json({ success: true, enabled, message: msg });
+  } catch (err) {
+    console.error('Changement état maintenance :', err.message);
+    res.status(500).json({ error: 'Impossible de changer l\'état de maintenance.' });
+  }
+});
 
 app.use('/api/auth/', authLimiter);
 app.use('/api/', apiLimiter);
@@ -2343,6 +2387,15 @@ app.use(extendedRoutes);
 // ═════════════════
 const { router: studioRouter } = require('./studioRoutes');
 app.use('/api/studio', authenticateToken, studioRouter);
+
+// ═════════════════
+// CYCLE DE VIE DES CARTES — blocage, déblocage, révocation, remplacement,
+// historique et réinitialisation de mot de passe. Chaque opération vérifie
+// l'authentification, le rôle (agent/admin) et le cloisonnement MSD côté
+// serveur ; la révocation est irréversible (une carte révoquée ne peut plus
+// être débloquée ni rebloquée). journalisé dans audit_logs par le module.
+// ═════════════════
+app.use('/api', authenticateToken, requireRole('agent', 'admin'), cardLifecycleRouter);
 
 // ═══════════════════════════════════════════════════════════════════════════
 // IDENTIFIANTS TURN ÉPHÉMÈRES (iceServers pour les navigateurs)
