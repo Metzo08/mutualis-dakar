@@ -10,6 +10,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch } from '../../utils/api';
+import LotsTable from './LotsTable';
+import ProductionPanel from './ProductionPanel';
 
 const PRIX_CARTE_FCFA = 350;
 
@@ -116,6 +118,13 @@ export default function StudioOverview({ onSelectRegion }) {
   // charge la liste de ses MSD via GET /api/studio/geo/dept/:name.
   const [deptDetail, setDeptDetail] = useState(null);
   const [deptLoading, setDeptLoading] = useState(false);
+  // Recherche paginée des adhésions de masse (§1.2 Étape 2).
+  const [lotsQuery, setLotsQuery] = useState('');
+  const [lotsStatus, setLotsStatus] = useState('');
+  const [lotsPage, setLotsPage] = useState(1);
+  const [lotsData, setLotsData] = useState(null);
+  const [lotsLoading, setLotsLoading] = useState(false);
+  const [prodDetail, setProdDetail] = useState(null); // { code, events, loading }
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -160,6 +169,39 @@ export default function StudioOverview({ onSelectRegion }) {
       setDeptDetail({ name, error: err.message });
     } finally {
       setDeptLoading(false);
+    }
+  }, []);
+
+  // Recherche paginée des adhésions de masse (§1.2 Étape 2) : référence unique,
+  // titre, date, MSD, adhérents, états de validation/production, revenu figé.
+  const loadLots = useCallback(async (page = 1, q = lotsQuery, status = lotsStatus) => {
+    setLotsLoading(true);
+    try {
+      const params = new URLSearchParams({ page: String(page), limit: '10' });
+      if (q.trim()) params.set('q', q.trim());
+      if (status) params.set('status', status);
+      const res = await apiFetch(`/api/studio/lots?${params.toString()}`);
+      if (!res || !res.ok) throw new Error(res ? `Statut ${res.status}` : 'Backend injoignable');
+      setLotsData(await res.json());
+      setLotsPage(page);
+    } catch {
+      setLotsData({ data: [], pagination: { page, limit: 10, total: 0, totalPages: 1, hasNext: false, hasPrev: false }, error: true });
+    } finally {
+      setLotsLoading(false);
+    }
+  }, [lotsQuery, lotsStatus]);
+
+  // Historique de production d'un lot (§1.3 Étape 2) : événements INITIAL,
+  // REPRINT, REPLACEMENT, DESTROYED avec tarifs figés.
+  const loadProduction = useCallback(async (code) => {
+    setProdDetail({ code, loading: true, events: [] });
+    try {
+      const res = await apiFetch(`/api/studio/lot/${encodeURIComponent(code)}/production`);
+      if (!res || !res.ok) throw new Error(res ? `Statut ${res.status}` : 'Backend injoignable');
+      const payload = await res.json();
+      setProdDetail({ code, loading: false, ...payload });
+    } catch (err) {
+      setProdDetail({ code, loading: false, events: [], error: err.message });
     }
   }, []);
 
@@ -371,6 +413,59 @@ export default function StudioOverview({ onSelectRegion }) {
         </div>
       )}
 
+      {/* Recherche des adhésions de masse (§1.2 Étape 2) */}
+      <div style={{ marginBottom: '0.75rem', marginTop: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+        <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: 'var(--text-main, #0f172a)' }}>
+          Adhésions de masse
+        </h3>
+        {lotsData && !lotsData.error && (
+          <span style={{ background: '#f1f5f9', color: '#475569', borderRadius: '20px', padding: '0.1rem 0.6rem', fontSize: '0.75rem', fontWeight: 700 }}>
+            {lotsData.pagination?.total ?? 0} lot(s)
+          </span>
+        )}
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <input
+            type="text"
+            value={lotsQuery}
+            onChange={(e) => setLotsQuery(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') loadLots(1, e.target.value, lotsStatus); }}
+            placeholder="Rechercher (référence, titre, fichier…)"
+            style={{ border: '1px solid var(--border-color, #e2e8f0)', borderRadius: '8px', padding: '0.4rem 0.7rem', fontSize: '0.82rem', minWidth: '220px' }}
+          />
+          <select
+            value={lotsStatus}
+            onChange={(e) => { setLotsStatus(e.target.value); setLotsPage(1); }}
+            style={{ border: '1px solid var(--border-color, #e2e8f0)', borderRadius: '8px', padding: '0.4rem 0.6rem', fontSize: '0.82rem' }}
+          >
+            <option value="">Tous statuts</option>
+            <option value="IMPRIME">Imprimés</option>
+            <option value="EN_ATTENTE">En attente</option>
+          </select>
+          <button
+            type="button"
+            onClick={() => loadLots(1)}
+            style={{ background: '#059669', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.4rem 1rem', fontWeight: 700, cursor: 'pointer', fontSize: '0.82rem' }}
+          >
+            🔍 Rechercher
+          </button>
+        </div>
+      </div>
+
+      {lotsLoading && (
+        <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-sub, #64748b)' }}>⏳ Recherche en cours…</div>
+      )}
+      {lotsData && !lotsLoading && !lotsData.error && (lotsData.data || []).length === 0 && lotsData.pagination && (
+        <div style={{ fontSize: '0.82rem', color: '#64748b', marginBottom: '1rem' }}>Aucune adhésion ne correspond à la recherche.</div>
+      )}
+
+      <LotsTable
+        lotsData={lotsData}
+        lotsPage={lotsPage}
+        lotsLoading={lotsLoading}
+        onPage={(p) => loadLots(p)}
+        onProduction={loadProduction}
+      />
+      <ProductionPanel detail={prodDetail} onClose={() => setProdDetail(null)} />
       {/* Note financière */}
       <div style={{
         background: 'var(--bg-subtle, #f8fafc)',
@@ -386,9 +481,9 @@ export default function StudioOverview({ onSelectRegion }) {
       }}>
         <span>ℹ️</span>
         <div>
-          <strong>Règle financière</strong> : Sen-E-Carte perçoit <strong>{PRIX_CARTE_FCFA} FCFA</strong> par carte dont l'impression est effectivement enregistrée.
-          Les revenus affichés correspondent aux cartes imprimées uniquement — pas aux dossiers validés ni aux adhérents importés.
-          Toute réimpression est tracée séparément et ne génère pas automatiquement un revenu supplémentaire.
+          <strong>Règle financière</strong> : Sen-E-Carte perçoit <strong>{PRIX_CARTE_FCFA} FCFA</strong> par carte dont l'impression est effectivement enregistrée
+          (production initiale, réimpression ou remplacement — destruction exclue).
+          Les revenus affichés correspondent aux montants figés au jour de chaque événement.
         </div>
       </div>
     </div>

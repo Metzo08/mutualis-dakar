@@ -1,7 +1,7 @@
 /**
- * ═══════════════
- *  STUDIO CARTES — hiérarchie géographique et suivi de production
- * ═══════════════
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  STUDIO CARTES — hiérarchie géographique et suivi de production (Étape 2)
+ * ═══════════════════════════════════════════════════════════════════════════
  *
  * Routes consommées par le nouveau panneau « Vue générale » du Studio :
  *
@@ -10,19 +10,22 @@
  *   GET /api/studio/geo/dept/:name   — MSD d'un département
  *   GET /api/studio/msd/:code        — tableau de bord d'une MSD
  *   GET /api/studio/lot/:code        — détail d'une adhésion de masse
+ *   GET /api/studio/lots             — recherche/filtrage paginé des adhésions
+ *   GET /api/studio/lot/:code/production — historique de production du lot
  *
- * RÈGLE FINANCIÈRE (§4 du cahier des charges) :
- *   Sen-E-Carte perçoit SEN_E_CARTE_PRIX_CARTE FCFA par carte dont
- *   l'impression est EFFECTIVEMENT enregistrée (campaign_lots.printed).
- *   Ni le nombre d'adhérents, ni le nombre de fiches conformes ne génèrent
- *   de revenu : seul le nombre de lots imprimés × cartes conformes au moment
- *   de l'impression compte. Les lots non imprimés affichent un revenu de 0.
+ * RÈGLE FINANCIÈRE (§4 du cahier des charges, Étape 2 — validée) :
+ *   Sen-E-Carte perçoit 350 FCFA par carte dont l'impression est
+ *   EFFECTIVEMENT enregistrée. Le revenu de chaque lot est FIGÉ au moment de
+ *   la remise dans production_events (nombre de cartes × tarif applicable
+ *   ce jour-là) : une modification ultérieure du tarif ne réécrit jamais
+ *   le passé. INITIAL, REPRINT et REPLACEMENT sont facturés 350 FCFA/carte ;
+ *   seul DESTROYED porte un revenu de 0. Les lots non imprimés affichent
+ *   un revenu de 0.
  *
  *   Le nombre de cartes d'un lot imprimé est le nombre de fiches CONFORMES
  *   (photo + identité complète) au moment de la remise — cohérent avec le
  *   verrou existant POST /api/campaign-lots/:code/print (audit_logs
- *   REMISE_LOT_MSD). La réimpression est refusée au niveau du lot : `printed`
- *   est déjà TRUE, donc aucune double comptabilisation n'est possible.
+ *   REMISE_LOT_MSD, idempotent : rejouer ne double jamais le revenu).
  *
  * SÉCURITÉ :
  *   - Authentification obligatoire (authenticateToken est posé par server.js
@@ -37,6 +40,7 @@
 
 const express = require('express');
 const { query } = require('./db');
+const { parsePagination } = require('./pagination');
 
 /** Prix unitaire — source unique (§4.4 : ne pas disperser la valeur 350). */
 const SEN_E_CARTE_PRIX_CARTE = 350;
@@ -56,7 +60,8 @@ const msdDe = (user) => {
 /**
  * Filtre SQL de cloisonnement. Retourne { clause, params } :
  *   - Super Admin : pas de filtre (supervision nationale) ;
- *   - agent avec msdCode : filtre sur ce code ;
+ *   - agent avec msdCode : filtre sur ce code (placeholder $1, réutilisable
+ *     plusieurs fois dans la même requête car c'est la même valeur) ;
  *   - agent SANS msdCode : fail-closed → clause impossible (rien ne passe).
  *
  * @param {object} user — req.user
@@ -85,36 +90,73 @@ const SQL_CONFORME = `
 // ─────────────────────────────────────────────────────────────────────────
 router.get('/geo/overview', async (req, res) => {
   try {
+    // Le placeholder $1 est réutilisable dans chaque sous-select : c'est
+    // toujours la même valeur MSD (ou aucun paramètre pour le Super Admin).
     const f = filtreMsd(req.user, 'b.msd_code');
     const fl = filtreMsd(req.user, 'l.union_id');
-
+    const params = f.params.length > 0 ? f.params : fl.params;
     // Compteurs globaux — une requête, aucune boucle N+1. Le revenu est la
-    // somme des cartes CONFORMES des lots IMPRIMÉS × prix unitaire (§4.2) :
-    // jamais les adhérents importés, jamais les fiches validées non imprimées.
-    const g = await query(
-      `SELECT
-         (SELECT COUNT(*) FROM mutuelles) AS msd_count,
-         (SELECT COUNT(DISTINCT region) FROM mutuelles) AS region_count,
-         (SELECT COUNT(DISTINCT commune) FROM mutuelles) AS department_count,
-         (SELECT COUNT(*) FROM campaign_lots l WHERE ${fl.clause}) AS enrollment_count,
-         (SELECT COUNT(*) FROM beneficiaries b WHERE ${f.clause}) AS beneficiary_count,
-         (SELECT COUNT(*) FROM beneficiaries b WHERE ${f.clause} AND ${SQL_CONFORME}) AS conform_count,
-         (SELECT COUNT(*) FROM beneficiaries b WHERE ${f.clause}
-            AND NOT (${SQL_CONFORME})) AS anomaly_count,
-         (SELECT COUNT(*) FROM campaign_lots l WHERE ${fl.clause} AND l.printed) AS printed_lot_count,
-         (SELECT COALESCE(SUM(c.conformes),0) * ${SEN_E_CARTE_PRIX_CARTE}
-            FROM campaign_lots l
-            JOIN LATERAL (
-              SELECT COUNT(*) AS conformes FROM beneficiaries b
-               WHERE b.lot_code = l.code AND ${SQL_CONFORME}
-            ) c ON TRUE
-           WHERE ${fl.clause} AND l.printed) AS revenue_fcfa`,
-      [...fl.params, ...f.params, ...fl.params]
-    );
+    // SOMME DES REVENUS FIGÉS dans production_events (§1.3 Étape 2, règle
+    // validée) : INITIAL + REPRINT + REPLACEMENT à 350 FCFA/carte, seul
+    // DESTROYED porte un revenu de 0. Si la table n'existe pas encore
+    // (ancien déploiement), repli sur l'ancien calcul.
+    // Jamais les adhérents importés, jamais les fiches validées non imprimées.
+    let g;
+    try {
+      g = await query(
+        `SELECT
+           (SELECT COUNT(*) FROM mutuelles) AS msd_count,
+           (SELECT COUNT(DISTINCT region) FROM mutuelles) AS region_count,
+           (SELECT COUNT(DISTINCT commune) FROM mutuelles) AS department_count,
+           (SELECT COUNT(*) FROM campaign_lots l WHERE ${fl.clause}) AS enrollment_count,
+           (SELECT COUNT(*) FROM beneficiaries b WHERE ${f.clause}) AS beneficiary_count,
+           (SELECT COUNT(*) FROM beneficiaries b WHERE ${f.clause} AND ${SQL_CONFORME}) AS conform_count,
+           (SELECT COUNT(*) FROM beneficiaries b WHERE ${f.clause}
+              AND NOT (${SQL_CONFORME})) AS anomaly_count,
+           (SELECT COUNT(*) FROM campaign_lots l WHERE ${fl.clause} AND l.printed) AS printed_lot_count,
+           (SELECT COALESCE(SUM(pe.card_count),0)
+              FROM production_events pe JOIN campaign_lots l ON l.code = pe.lot_code
+             WHERE pe.event IN ('INITIAL','REPRINT','REPLACEMENT') AND ${fl.clause}) AS printed_cards,
+           (SELECT COALESCE(SUM(pe.revenue_fcfa),0)
+              FROM production_events pe JOIN campaign_lots l ON l.code = pe.lot_code
+             WHERE pe.event IN ('INITIAL','REPRINT','REPLACEMENT') AND ${fl.clause}) AS revenue_fcfa`,
+        params
+      );
+    } catch (e) {
+      // Table production_events absente (migration pas encore jouée) : repli
+      // sur le calcul historique (conformes des lots imprimés × 350).
+      g = await query(
+        `SELECT
+           (SELECT COUNT(*) FROM mutuelles) AS msd_count,
+           (SELECT COUNT(DISTINCT region) FROM mutuelles) AS region_count,
+           (SELECT COUNT(DISTINCT commune) FROM mutuelles) AS department_count,
+           (SELECT COUNT(*) FROM campaign_lots l WHERE ${fl.clause}) AS enrollment_count,
+           (SELECT COUNT(*) FROM beneficiaries b WHERE ${f.clause}) AS beneficiary_count,
+           (SELECT COUNT(*) FROM beneficiaries b WHERE ${f.clause} AND ${SQL_CONFORME}) AS conform_count,
+           (SELECT COUNT(*) FROM beneficiaries b WHERE ${f.clause}
+              AND NOT (${SQL_CONFORME})) AS anomaly_count,
+           (SELECT COUNT(*) FROM campaign_lots l WHERE ${fl.clause} AND l.printed) AS printed_lot_count,
+           (SELECT COALESCE(SUM(c.conformes),0)
+              FROM campaign_lots l
+              JOIN LATERAL (
+                SELECT COUNT(*) AS conformes FROM beneficiaries b
+                 WHERE b.lot_code = l.code AND ${SQL_CONFORME}
+              ) c ON TRUE
+             WHERE ${fl.clause} AND l.printed) AS printed_cards,
+           (SELECT COALESCE(SUM(c.conformes),0) * ${SEN_E_CARTE_PRIX_CARTE}
+              FROM campaign_lots l
+              JOIN LATERAL (
+                SELECT COUNT(*) AS conformes FROM beneficiaries b
+                 WHERE b.lot_code = l.code AND ${SQL_CONFORME}
+              ) c ON TRUE
+             WHERE ${fl.clause} AND l.printed) AS revenue_fcfa`,
+        params
+      );
+    }
 
     // Cartes par région : les régions viennent de mutuelles (donnée réelle),
     // les lots sont rattachés par union_id (code MSD à 3 lettres). Le revenu
-    // régional = somme des cartes conformes des lots imprimés de la région.
+    // régional = somme des REVENUS FIGÉS (INITIAL + REPRINT + REPLACEMENT).
     const regionRows = await query(
       `WITH reg AS (
          SELECT region AS name, MIN(LEFT(UPPER(name),3)) AS msd_prefix,
@@ -125,15 +167,13 @@ router.get('/geo/overview', async (req, res) => {
          SELECT r.name, r.msd_count, r.department_count,
                 COUNT(l.id) AS enrollment_count,
                 COUNT(l.id) FILTER (WHERE l.printed) AS printed_count,
-                COALESCE(SUM(CASE WHEN l.printed THEN c.conformes ELSE 0 END),0) AS cartes_imprimees,
-                COALESCE(SUM(CASE WHEN l.printed THEN c.conformes ELSE 0 END),0) * ${SEN_E_CARTE_PRIX_CARTE} AS revenue
+                COALESCE(SUM(pe.card_count),0) AS cartes_imprimees,
+                COALESCE(SUM(pe.revenue_fcfa),0) AS revenue
            FROM reg r
            LEFT JOIN campaign_lots l
              ON r.msd_prefix = UPPER(SUBSTRING(COALESCE(l.union_id,'DKR') FROM 1 FOR 3))
-           LEFT JOIN LATERAL (
-             SELECT COUNT(*) AS conformes FROM beneficiaries b
-              WHERE b.lot_code = l.code AND ${SQL_CONFORME}
-           ) c ON TRUE
+           LEFT JOIN production_events pe
+             ON pe.lot_code = l.code AND pe.event IN ('INITIAL','REPRINT','REPLACEMENT')
           GROUP BY r.name, r.msd_count, r.department_count
        )
        SELECT * FROM stats ORDER BY name`,
@@ -152,6 +192,7 @@ router.get('/geo/overview', async (req, res) => {
         conformCount: parseInt(data.conform_count || '0', 10),
         anomalyCount: parseInt(data.anomaly_count || '0', 10),
         printedLotCount: parseInt(data.printed_lot_count || '0', 10),
+        printedCount: parseInt(data.printed_cards || '0', 10),
         revenueFcfa: parseInt(data.revenue_fcfa || '0', 10),
         prixUnitaire: SEN_E_CARTE_PRIX_CARTE,
       },
@@ -255,6 +296,89 @@ router.get('/geo/dept/:name', async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────────────────────────────────
+//  RECHERCHE PAGINÉE DES ADHÉSIONS DE MASSE (§1.2 — Étape 2)
+//  GET /api/studio/lots?q=&msd=&status=&printed=&page=&limit=
+//  Chaque adhésion expose : référence unique, titre, date, MSD, nombre
+//  d'adhérents, états de validation/production, statistiques cartes, revenu
+//  FIGÉ (production_events si imprimé, sinon 0). Filtres combinables.
+// ─────────────────────────────────────────────────────────────────────────
+router.get('/lots', async (req, res) => {
+  try {
+    const { page, limit, offset } = parsePagination(req);
+    const msdScope = msdDe(req.user);
+    // Agent sans MSD : fail-closed (filtreMsd renvoie 1=0 pour les compteurs).
+    if (msdScope === null && !estSuperviseur(req.user)) {
+      return res.json({ data: [], pagination: { page, limit, total: 0, totalPages: 1, hasNext: false, hasPrev: page > 1 } });
+    }
+    const q = String(req.query.q || '').trim();
+    const msdFilter = String(req.query.msd || '').trim().toUpperCase();
+    const printedFilter = String(req.query.printed || '').trim().toLowerCase(); // 'true' | 'false' | ''
+    const statusFilter = String(req.query.status || '').trim().toUpperCase(); // 'IMPRIME' | 'EN_ATTENTE' | ''
+
+    const conds = [];
+    const params = [];
+    const add = (sql, val) => { params.push(val); conds.push(sql.replace('?', `$${params.length}`)); };
+    if (msdScope) add('l.union_id = ?', msdScope);
+    if (msdFilter) {
+      if (msdScope && msdFilter !== msdScope) {
+        return res.json({ data: [], pagination: { page, limit, total: 0, totalPages: 1, hasNext: false, hasPrev: page > 1 } });
+      }
+      if (!msdScope) add('l.union_id = ?', msdFilter);
+    }
+    if (printedFilter === 'true') conds.push('l.printed = TRUE');
+    else if (printedFilter === 'false') conds.push('l.printed = FALSE');
+    if (statusFilter === 'IMPRIME') conds.push('l.printed = TRUE');
+    else if (statusFilter === 'EN_ATTENTE') conds.push('l.printed = FALSE');
+    if (q) {
+      params.push(`%${q}%`);
+      conds.push(`(l.code ILIKE $${params.length} OR l.label ILIKE $${params.length} OR COALESCE(l.source_file,'') ILIKE $${params.length})`);
+    }
+    const where = conds.length > 0 ? `WHERE ${conds.join(' AND ')}` : '';
+
+    const countRes = await query(`SELECT COUNT(*) FROM campaign_lots l ${where}`, params);
+    const total = parseInt((countRes.rows[0] && countRes.rows[0].count) || '0', 10) || 0;
+
+    const rows = await query(
+      `SELECT l.code, l.label, l.source_file, l.union_id, l.printed, l.printed_at,
+              l.created_at,
+              COUNT(b.id) FILTER (WHERE b.merged_into IS NULL) AS adherents,
+              COUNT(b.id) FILTER (WHERE ${SQL_CONFORME}) AS conformes,
+              COUNT(b.id) FILTER (WHERE b.merged_into IS NULL AND NOT (${SQL_CONFORME})) AS a_corriger,
+              COALESCE((SELECT SUM(pe.revenue_fcfa) FROM production_events pe
+                         WHERE pe.lot_code = l.code AND pe.event IN ('INITIAL','REPRINT','REPLACEMENT')), 0) AS revenu_fixe
+         FROM campaign_lots l
+         LEFT JOIN beneficiaries b ON b.lot_code = l.code
+        ${where}
+        GROUP BY l.id
+        ORDER BY l.created_at DESC
+        LIMIT $${params.length + 1} OFFSET $${params.length + 2}`,
+      [...params, limit, offset]
+    );
+    const totalPages = Math.ceil(total / limit) || 1;
+    res.json({
+      data: rows.rows.map((l) => ({
+        reference: l.code,
+        titre: l.label,
+        date: l.created_at,
+        msdCode: l.union_id,
+        adherents: parseInt(l.adherents || '0', 10),
+        conformes: parseInt(l.conformes || '0', 10),
+        aCorriger: parseInt(l.a_corriger || '0', 10),
+        etatValidation: parseInt(l.a_corriger || '0', 10) === 0 ? 'VALIDE' : 'A_CORRIGER',
+        etatProduction: l.printed ? 'IMPRIME' : 'EN_ATTENTE_PRODUCTION',
+        printedAt: l.printed_at,
+        revenuFcfa: parseInt(l.revenu_fixe || '0', 10),
+        prixUnitaire: SEN_E_CARTE_PRIX_CARTE,
+      })),
+      pagination: { page, limit, total, totalPages, hasNext: page * limit < total, hasPrev: page > 1 },
+    });
+  } catch (err) {
+    console.error('[Studio] recherche adhésions impossible :', err.message);
+    res.status(500).json({ error: 'Recherche des adhésions indisponible.' });
+  }
+});
+
 // ─────────────────────────────────────────
 //  ESPACE DÉTAILLÉ D'UNE MSD (§3.1, §3.2)
 // ─────────────────────────────────────────
@@ -281,7 +405,11 @@ router.get('/msd/:code', async (req, res) => {
       `SELECT l.code, l.label, l.source_file, l.union_id,
               l.card_count, l.printed, l.printed_at, l.created_at,
               COUNT(b.id) FILTER (WHERE b.merged_into IS NULL) AS adherents,
-              COUNT(b.id) FILTER (WHERE ${SQL_CONFORME}) AS conformes
+              COUNT(b.id) FILTER (WHERE ${SQL_CONFORME}) AS conformes,
+              COALESCE((SELECT pe.card_count FROM production_events pe
+                         WHERE pe.lot_code = l.code AND pe.event = 'INITIAL' LIMIT 1), 0) AS cartes_figees,
+              COALESCE((SELECT pe.revenue_fcfa FROM production_events pe
+                         WHERE pe.lot_code = l.code AND pe.event = 'INITIAL' LIMIT 1), 0) AS revenu_fixe
          FROM campaign_lots l
          LEFT JOIN beneficiaries b ON b.lot_code = l.code
         WHERE l.union_id = $1
@@ -291,9 +419,17 @@ router.get('/msd/:code', async (req, res) => {
     );
 
     const k = kpi.rows[0] || {};
-    const printedLots = lots.rows.filter((l) => l.printed);
-    const revenue = printedLots.reduce(
-      (s, l) => s + parseInt(l.conformes || '0', 10) * SEN_E_CARTE_PRIX_CARTE, 0
+    // Revenu = somme des REVENUS FIGÉS (production_events INITIAL, tarif du
+    // jour de remise). Repli sur l'ancien calcul si la table n'existe pas.
+    const printedCount = lots.rows.reduce(
+      (s, l) => s + (l.cartes_figees != null && (l.printed || parseInt(l.revenu_fixe || '0', 10) > 0)
+        ? parseInt(l.cartes_figees || '0', 10)
+        : (l.printed ? parseInt(l.conformes || '0', 10) : 0)), 0
+    );
+    const revenue = lots.rows.reduce(
+      (s, l) => s + (parseInt(l.revenu_fixe || '0', 10) > 0
+        ? parseInt(l.revenu_fixe || '0', 10)
+        : (l.printed ? parseInt(l.conformes || '0', 10) * SEN_E_CARTE_PRIX_CARTE : 0)), 0
     );
 
     res.json({
@@ -303,7 +439,7 @@ router.get('/msd/:code', async (req, res) => {
         beneficiaryCount: parseInt(k.total || '0', 10),
         conformCount: parseInt(k.conform || '0', 10),
         anomalyCount: parseInt(k.anomalies || '0', 10),
-        printedCount: printedLots.reduce((s, l) => s + parseInt(l.conformes || '0', 10), 0),
+        printedCount,
         revenueFcfa: revenue,
         prixUnitaire: SEN_E_CARTE_PRIX_CARTE,
       },
@@ -316,7 +452,12 @@ router.get('/msd/:code', async (req, res) => {
         printedAt: l.printed_at,
         adherents: parseInt(l.adherents || '0', 10),
         conformes: parseInt(l.conformes || '0', 10),
-        revenueFcfa: l.printed ? parseInt(l.conformes || '0', 10) * SEN_E_CARTE_PRIX_CARTE : 0,
+        cartesImprimees: parseInt(l.revenu_fixe || '0', 10) > 0 || l.printed
+          ? (parseInt(l.cartes_figees || '0', 10) || parseInt(l.conformes || '0', 10))
+          : 0,
+        revenueFcfa: parseInt(l.revenu_fixe || '0', 10) > 0
+          ? parseInt(l.revenu_fixe || '0', 10)
+          : (l.printed ? parseInt(l.conformes || '0', 10) * SEN_E_CARTE_PRIX_CARTE : 0),
       })),
     });
   } catch (err) {
@@ -354,6 +495,19 @@ router.get('/lot/:code', async (req, res) => {
     );
     const s = stats.rows[0] || {};
 
+    // Historique de production : lignes immuables avec tarif figé au moment
+    // de chaque événement. Les réimpressions/remplacements portent revenue 0
+    // par défaut (pas de refacturation automatique) — le revenu du lot reste
+    // celui de l'événement INITIAL. Table absente (ancien déploiement) :
+    // repli gracieux sur l'ancien calcul.
+    const prodHist = await query(
+      `SELECT event, card_count, unit_price, revenue_fcfa, actor, details, created_at
+         FROM production_events WHERE lot_code = $1 ORDER BY created_at ASC, id ASC`,
+      [code]
+    ).catch(() => ({ rows: [] }));
+    const events = prodHist.rows || [];
+    const initialEv = events.find((e) => e.event === 'INITIAL') || null;
+
     res.json({
       lot: {
         code: l.code,
@@ -371,15 +525,129 @@ router.get('/lot/:code', async (req, res) => {
         aCorriger: parseInt(s.a_corriger || '0', 10),
         photosManquantes: parseInt(s.sans_photo || '0', 10),
         doublons: Math.max(0, parseInt(s.adherents || '0', 10) - parseInt(s.uniques || '0', 10)),
-        cartesValides: parseInt(s.conformes || '0', 10),
-        cartesImprimees: l.printed ? parseInt(s.conformes || '0', 10) : 0,
-        revenueFcfa: l.printed ? parseInt(s.conformes || '0', 10) * SEN_E_CARTE_PRIX_CARTE : 0,
-        prixUnitaire: SEN_E_CARTE_PRIX_CARTE,
+        cartesValidees: parseInt(s.conformes || '0', 10),
+        cartesImprimees: initialEv ? parseInt(initialEv.card_count || '0', 10) : (l.printed ? parseInt(s.conformes || '0', 10) : 0),
+        revenuFcfa: initialEv ? parseInt(initialEv.revenue_fcfa || '0', 10) : (l.printed ? parseInt(s.conformes || '0', 10) * SEN_E_CARTE_PRIX_CARTE : 0),
+        prixUnitaire: initialEv ? parseInt(initialEv.unit_price || '0', 10) : SEN_E_CARTE_PRIX_CARTE,
       },
+      production: events.map((e) => ({
+        type: e.event,
+        cartes: parseInt(e.card_count || '0', 10),
+        tarifUnitaire: parseInt(e.unit_price || '0', 10),
+        revenuFcfa: parseInt(e.revenue_fcfa || '0', 10),
+        acteur: e.actor,
+        details: e.details,
+        date: e.created_at,
+      })),
     });
   } catch (err) {
     console.error('[Studio] lot impossible :', err.message);
     res.status(500).json({ error: 'Détail adhésion indisponible.' });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────
+//  HISTORIQUE DE PRODUCTION D'UN LOT (§1.3 — Étape 2)
+//  GET /api/studio/lot/:code/production — événements INITIAL, REPRINT,
+//  REPLACEMENT, DESTROYED avec tarifs figés. Lecture pure, cloisonnée MSD.
+// ─────────────────────────────────────────────────────────────────────────
+router.get('/lot/:code/production', async (req, res) => {
+  try {
+    const { code } = req.params;
+    const lot = await query('SELECT code, union_id, printed, printed_at FROM campaign_lots WHERE code = $1', [code]);
+    if (lot.rows.length === 0) return res.status(404).json({ error: 'Lot inconnu.' });
+    const l = lot.rows[0];
+    const msd = msdDe(req.user);
+    if (msd && String(l.union_id || '').toUpperCase() !== msd) {
+      return res.status(403).json({ error: 'Lot hors de votre périmètre.' });
+    }
+    const ev = await query(
+      `SELECT event, card_count, unit_price, revenue_fcfa, actor, details, created_at
+         FROM production_events WHERE lot_code = $1 ORDER BY created_at ASC, id ASC`,
+      [code]
+    ).catch(() => ({ rows: [] }));
+    const events = ev.rows || [];
+    const total = events.reduce((s, e) => s + (parseInt(e.revenue_fcfa || '0', 10) || 0), 0);
+    res.json({
+      lotCode: l.code,
+      printed: l.printed,
+      printedAt: l.printed_at,
+      events: events.map((e) => ({
+        type: e.event,
+        cartes: parseInt(e.card_count || '0', 10),
+        tarifUnitaire: parseInt(e.unit_price || '0', 10),
+        revenuFcfa: parseInt(e.revenue_fcfa || '0', 10),
+        acteur: e.actor,
+        details: e.details,
+        date: e.created_at,
+      })),
+      revenuTotalFcfa: total,
+    });
+  } catch (err) {
+    console.error('[Studio] historique production impossible :', err.message);
+    res.status(500).json({ error: 'Historique de production indisponible.' });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────
+//  ENREGISTRER UNE RÉIMPRESSION OU UN REMPLACEMENT (§1.3 — Étape 2, validé)
+//  POST /api/studio/lot/:code/production { type: 'REPRINT'|'REPLACEMENT'|'DESTROYED', cardCount, details }
+//  Règle validée : REPRINT et REPLACEMENT facturés 350 FCFA/carte (tarif figé
+//  du jour) ; DESTROYED à revenu 0. Idempotent par type (UNIQUE lot+event) :
+//  rejouer ne double jamais le revenu. Cloisonné MSD, journalisé.
+// ─────────────────────────────────────────────────────────────────────────
+router.post('/lot/:code/production', async (req, res) => {
+  try {
+    const { code } = req.params;
+    const type = String((req.body && req.body.type) || '').trim().toUpperCase();
+    const cardCount = Math.max(0, parseInt((req.body && req.body.cardCount) || '0', 10) || 0);
+    const details = String((req.body && req.body.details) || '').trim().slice(0, 500) || null;
+    if (!['REPRINT', 'REPLACEMENT', 'DESTROYED'].includes(type)) {
+      return res.status(400).json({ error: "Type invalide (attendu : REPRINT, REPLACEMENT ou DESTROYED)." });
+    }
+    if (cardCount <= 0) {
+      return res.status(400).json({ error: "Nombre de cartes invalide (cardCount > 0 requis)." });
+    }
+    const lot = await query('SELECT code, union_id, printed FROM campaign_lots WHERE code = $1', [code]);
+    if (lot.rows.length === 0) return res.status(404).json({ error: 'Lot inconnu.' });
+    const l = lot.rows[0];
+    const msd = msdDe(req.user);
+    if (msd && String(l.union_id || '').toUpperCase() !== msd) {
+      return res.status(403).json({ error: 'Lot hors de votre périmètre.' });
+    }
+    // Le lot doit avoir été remis au moins une fois (production INITIAL).
+    const initial = await query(
+      "SELECT 1 FROM production_events WHERE lot_code = $1 AND event = 'INITIAL' LIMIT 1",
+      [code]
+    ).catch(() => ({ rows: [] }));
+    if ((initial.rows || []).length === 0 && !l.printed) {
+      return res.status(409).json({ error: "Lot non remis : enregistrez d'abord la production initiale (remise)." });
+    }
+    const unitPrice = type === 'DESTROYED' ? 0 : SEN_E_CARTE_PRIX_CARTE;
+    const revenue = cardCount * unitPrice;
+    const actor = (req.user && (req.user.username || req.user.id)) ? String(req.user.username || req.user.id) : 'agent';
+    const ins = await query(
+      `INSERT INTO production_events (lot_code, event, card_count, unit_price, revenue_fcfa, actor, details)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+        ON CONFLICT (lot_code, event) DO NOTHING RETURNING *`,
+      [code, type, cardCount, unitPrice, revenue, actor,
+        details || `${type === 'REPRINT' ? 'Réimpression' : type === 'REPLACEMENT' ? 'Remplacement' : 'Destruction'} — ${cardCount} carte(s) × ${unitPrice} FCFA`]
+    );
+    await query(
+      `INSERT INTO audit_logs (action, actor, details) VALUES ($1, $2, $3)`,
+      [`PRODUCTION_${type}`, actor, `Lot ${code} : ${type} — ${cardCount} carte(s), revenu ${revenue.toLocaleString('fr-FR')} FCFA.`]
+    ).catch(() => {});
+    if ((ins.rows || []).length === 0) {
+      const existing = await query(
+        'SELECT * FROM production_events WHERE lot_code = $1 AND event = $2',
+        [code, type]
+      ).catch(() => ({ rows: [] }));
+      return res.json({ success: true, alreadyRecorded: true, production: (existing.rows || [])[0] || null });
+    }
+    res.status(201).json({ success: true, production: ins.rows[0] });
+  } catch (err) {
+    console.error('[Studio] enregistrement production impossible :', err.message);
+    res.status(500).json({ error: 'Enregistrement de production indisponible.' });
   }
 });
 

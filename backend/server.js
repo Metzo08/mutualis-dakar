@@ -2926,17 +2926,57 @@ app.post('/api/campaign-lots/:code/assign', authenticateToken, requireRole('agen
 /**
  * Marque un lot comme IMPRIMÉ. Verrou de sécurité : un lot imprimé ne doit
  * plus jamais passer par un recodage de masse.
+ *
+ * Étape 2 — idempotence + traçabilité : un second appel ne double JAMAIS le
+ * revenu (clause WHERE printed = FALSE + contrainte UNIQUE sur
+ * production_events). La production initiale fige : nombre de cartes
+ * conformes au moment de la remise, tarif applicable, revenu constaté et
+ * acteur — avec journalisation REMISE_LOT_MSD dans audit_logs.
  */
 app.post('/api/campaign-lots/:code/print', authenticateToken, requireRole('agent', 'admin'), async (req, res) => {
   const { code } = req.params;
   try {
     const r = await query(
       `UPDATE campaign_lots SET printed = TRUE, printed_at = CURRENT_TIMESTAMP
-        WHERE code = $1 RETURNING *`,
+        WHERE code = $1 AND printed = FALSE RETURNING *`,
       [code]
     );
-    if (r.rows.length === 0) return res.status(404).json({ error: 'Lot inconnu.' });
-    res.json({ success: true, lot: r.rows[0] });
+    if (r.rows.length === 0) {
+      const existing = await query('SELECT * FROM campaign_lots WHERE code = $1', [code]);
+      if (existing.rows.length === 0) return res.status(404).json({ error: 'Lot inconnu.' });
+      // Rejeu idempotent : le lot est déjà imprimé, on renvoie l'état figé
+      // sans créer de second événement de production (pas de double revenu).
+      const ev = await query(
+        'SELECT * FROM production_events WHERE lot_code = $1 AND event = $2',
+        [code, 'INITIAL']
+      ).catch(() => ({ rows: [] }));
+      return res.json({ success: true, lot: existing.rows[0], alreadyPrinted: true, production: ev.rows[0] || null });
+    }
+    const lot = r.rows[0];
+    // Cartes conformes au moment de la remise (photo + identité complète) —
+    // c'est ce nombre, figé maintenant, qui fait foi pour le revenu.
+    const conformRes = await query(
+      `SELECT COUNT(*) AS n FROM beneficiaries b WHERE b.lot_code = $1 AND b.merged_into IS NULL
+         AND b.photo_url IS NOT NULL AND b.photo_url <> ''
+         AND COALESCE(b.first_name,'') <> '' AND COALESCE(b.last_name,'') <> ''
+         AND COALESCE(b.birth_date,'') <> ''`,
+      [code]
+    ).catch(() => ({ rows: [{ n: '0' }] }));
+    const conformes = parseInt((conformRes.rows[0] && conformRes.rows[0].n) || '0', 10) || 0;
+    const unitPrice = 350; // tarif applicable au jour de la remise
+    const revenue = conformes * unitPrice;
+    const actor = req.user && (req.user.username || req.user.id) ? String(req.user.username || req.user.id) : 'agent';
+    const prod = await query(
+      `INSERT INTO production_events (lot_code, event, card_count, unit_price, revenue_fcfa, actor, details)
+        VALUES ($1, 'INITIAL', $2, $3, $4, $5, $6)
+        ON CONFLICT (lot_code, event) DO NOTHING RETURNING *`,
+      [code, conformes, unitPrice, revenue, actor, `Remise initiale — ${conformes} carte(s) conforme(s) × ${unitPrice} FCFA`]
+    ).catch(() => ({ rows: [] }));
+    await query(
+      `INSERT INTO audit_logs (action, actor, details) VALUES ($1, $2, $3)`,
+      ['REMISE_LOT_MSD', actor, `Lot ${code} remis : ${conformes} carte(s) conforme(s), revenu constaté ${revenue.toLocaleString('fr-FR')} FCFA.`]
+    ).catch(() => {});
+    res.json({ success: true, lot, production: prod.rows[0] || { lot_code: code, event: 'INITIAL', card_count: conformes, unit_price: unitPrice, revenue_fcfa: revenue } });
   } catch (err) {
     console.error('[Lots] marquage impression impossible :', err.message);
     res.status(500).json({ error: err.message });
@@ -3060,6 +3100,30 @@ app.use((err, req, res, next) => {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `).catch(() => { /* base absente : la migration sera rejouée au prochain démarrage */ });
+    // ── Étape 2 — Historique de production infalsifiable ──────────────────
+    // Un lot « imprimé » ne suffit pas : il faut savoir QUAND, COMBIEN et à
+    // QUEL TARIF. Chaque événement (production initiale, réimpression,
+    // remplacement, carte détruite) est une ligne immuable avec le tarif
+    // historique figé — un changement ultérieur du tarif ne réécrit jamais
+    // le passé. La contrainte UNIQUE (lot_code, event) rend l'enregistrement
+    // idempotent : rejouer deux fois la même production ne double jamais le
+    // revenu. RÈGLE VALIDÉE : INITIAL, REPRINT et REPLACEMENT sont facturés
+    // 350 FCFA/carte ; seul DESTROYED porte un revenu de 0.
+    await query(`
+      CREATE TABLE IF NOT EXISTS production_events (
+        id SERIAL PRIMARY KEY,
+        lot_code VARCHAR(32) NOT NULL REFERENCES campaign_lots(code) ON DELETE RESTRICT,
+        event VARCHAR(20) NOT NULL CHECK (event IN ('INITIAL','REPRINT','REPLACEMENT','DESTROYED')),
+        card_count INTEGER NOT NULL DEFAULT 0 CHECK (card_count >= 0),
+        unit_price INTEGER NOT NULL DEFAULT 350 CHECK (unit_price >= 0),
+        revenue_fcfa INTEGER NOT NULL DEFAULT 0,
+        actor VARCHAR(100),
+        details TEXT,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE (lot_code, event)
+      )
+    `).catch(() => { /* base absente : rejoué au prochain démarrage */ });
+    await query('CREATE INDEX IF NOT EXISTS idx_production_events_lot ON production_events(lot_code)').catch(() => {});
     // Chaque fiche porte le code de son lot : NULL = carte historique,
     // antérieure au dispositif de lots (donc jamais recodable).
     await query('ALTER TABLE beneficiaries ADD COLUMN IF NOT EXISTS lot_code VARCHAR(32)');
