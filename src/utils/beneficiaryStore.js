@@ -34,6 +34,10 @@
 // figé (160 fiches d'un ancien import, un seul lot). La base en compte 257
 // répartis sur deux lots : le studio affichait une séparation inexistante.
 // Vider le cache force la relecture de la base, seule source de vérité.
+// Résolution des ayants droit mineurs (forme imbriquée Excel ET fiches sœurs
+// plates de l'API) — source unique partagée avec CardStudio.
+import { resolveMinorDependents } from './householdMinors';
+
 const STORAGE_KEY = 'unamusc_beneficiaries_store_v21';
 // Nettoyage one-shot des anciennes générations de cache (v1 → v20).
 try {
@@ -331,12 +335,20 @@ export const buildBeneficiaryIndex = (members) => {
       cleanFirst = cleanFirst.slice(0, cleanFirst.length - cleanLast.length).trim();
     }
 
-    const minorDeps = (m.dependents || []).filter(d => !d.isMajor).map((child, idx) => ({
+    // Ayants droit mineurs pris en charge par CET adhérent. Source unique :
+    // `resolveMinorDependents` unifie les deux formes (imbriquée Excel + plate
+    // API « fiches sœurs »). On lit `members` (registre complet) et non
+    // `m.dependents` seul, sinon les mineurs sœurs de l'API restent invisibles
+    // et VerifyCard affiche « aucun enfant » (family_members est vide en base).
+    const minorDeps = resolveMinorDependents(members, m).map((child, idx) => ({
       id: `m_${idx}`,
       name: child.name,
-      cmuCode: `${m.cmuNumber}${child.codeSuffix || '.M' + (idx + 1)}`,
-      relation: child.gender === 'F' ? 'Fille (Enfant mineur)' : 'Fils (Enfant mineur)',
-      age: Math.max(1, new Date().getFullYear() - parseInt((child.birthDate || '2018').split('/').pop(), 10) || 6),
+      // Matricule officiel de l'enfant ; repli « parent + suffixe » seulement
+      // si la fiche plate n'en porte pas (cartes anciennes).
+      cmuCode: child.cmuNumber || `${m.cmuNumber}${child.codeSuffix || '.M' + (idx + 1)}`,
+      codeSuffix: child.codeSuffix,
+      relation: child.relation,
+      age: child.age,
       birthDate: child.birthDate,
       birthPlace: child.birthPlace || 'Dakar',
       gender: child.gender || 'M',
@@ -621,7 +633,11 @@ export const addMemberFromAdhesion = (adhesionData) => {
 
   const newMemberId = `MEM-${Date.now().toString().slice(-5)}`;
   const departmentUnionId = adhesionData.departmentUnionId || 'DKR';
-  const randomCmuNum = `${departmentUnionId}_${Math.floor(10000 + Math.random() * 90000)}.1`;
+  // PAS de faux matricule : le code OFFICIEL (DKR-DKR-AAAA-XXXX.1) est
+  // attribué par le serveur à la validation, puis réaligné ici via
+  // `unamusc_last_created_member_id`. Un code inventé localement affichait
+  // une carte introuvable au scan et excluait la fiche des imprimables.
+  const randomCmuNum = '';
 
   // AUCUNE valeur n'est inventée ici. L'ancien code remplissait les champs
   // manquants par des valeurs « plausibles » — prénom « Fatou », nom « Sow »,

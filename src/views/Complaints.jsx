@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import DeleteModal from '../components/DeleteModal';
 
 export default function Complaints({ lang, portalMode, citizenUser, agentUser, partnerUser }) {
@@ -14,11 +14,15 @@ export default function Complaints({ lang, portalMode, citizenUser, agentUser, p
     partnerUser ? (partnerUser.phone || '33 821 44 55') : (citizenUser ? citizenUser.phone : '')
   );
   const [formTitle, setFormTitle] = useState('Prise en charge & Décompte tiers-payant');
-  const [formRecipient, setFormRecipient] = useState('Assuré (Modou Diop - SN-DK-MED-8472)');
+  // Destinataire figé côté envoi (cf. `recipient:` plus bas) : aucun champ ne permet
+  // à l'utilisateur de le modifier, le setter n'a donc pas à être conservé.
+  const [formRecipient] = useState('Assuré (Modou Diop - SN-DK-MED-8472)');
   const [formDescription, setFormDescription] = useState('');
   const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [submitError, setSubmitError] = useState('');
-  const [submitLoading, setSubmitLoading] = useState(false);
+  // Les deux états ci-dessous sont écrits mais jamais relus : la réinitialisation
+  // du formulaire reste indispensable, seul le rendu de la valeur est inutile.
+  const [, setSubmitError] = useState('');
+  const [, setSubmitLoading] = useState(false);
 
   // Agent / Partner / SuperAdmin states
   const [selectedComplaint, setSelectedComplaint] = useState(null);
@@ -113,6 +117,7 @@ export default function Complaints({ lang, portalMode, citizenUser, agentUser, p
         setComplaints(parsed);
         setLoading(false);
         return;
+      // eslint-disable-next-line no-unused-vars -- Plaintes locales illisibles : on repart du jeu par défaut plutôt que de casser le rendu.
       } catch (e) {}
     }
 

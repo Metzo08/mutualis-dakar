@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
 import { outboxAdd } from '../utils/offline';
 
-export default function ParrainageCSU({ lang, initialPackage = 'individuel', portalMode, agentUser, citizenUser }) {
+export default function ParrainageCSU({ lang, initialPackage = 'individuel', portalMode, agentUser }) {
   // Agent Dashboard states & logic
   const isAgent = (portalMode === 'agent' && agentUser) || portalMode === 'superadmin';
   const [showWizard, setShowWizard] = useState(false);
@@ -24,7 +24,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
     }
   }, [initialPackage]);
 
-  const generateSponsorReceiptPDF = ({ sponsor, filleuls, dateStr }) => {
+  const generateSponsorReceiptPDF = ({ sponsor, filleuls }) => {
     // Un reçu officiel ne doit porter NI numéro inventé NI identité inventée :
     // si une donnée manque, le reçu le dit au lieu de la combler.
     const sponsorCmu = sponsor?.cmuNumber || 'NON RENSEIGNÉ';
@@ -132,8 +132,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
       .then(data => {
         generateSponsorReceiptPDF({
           sponsor,
-          filleuls: data,
-          dateStr: sponsor.created_at
+          filleuls: data
         });
       })
       .catch(() => alert('Erreur lors du téléchargement du reçu.'));
@@ -154,6 +153,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
   const [paymentMethod, setPaymentMethod] = useState('wave');
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState('');
+  // eslint-disable-next-line no-unused-vars -- Indicateur de succès du paiement de parrainage. Le setter est appelé après chaque wave/OTP réussi mais aucun rendu ne lit le drapeau.
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [generatedCmuNumber, setGeneratedCmuNumber] = useState('');
   const [qrCodeUrl, setQrCodeUrl] = useState('');
@@ -189,7 +189,9 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
     ];
     fetch(`${window.API_BASE_URL}/api/mutuelles`)
       .then(res => res.json())
-      .then(data => {
+      .then(payload => {
+        // Format paginé { data, pagination } ; tableau brut accepté aussi.
+        const data = Array.isArray(payload) ? payload : (payload.data || []);
         if (data && data.length > 0) {
           setMutuellesList(data.map(m => m.name));
         } else {

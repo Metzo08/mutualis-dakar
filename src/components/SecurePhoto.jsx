@@ -18,6 +18,7 @@ import { loadProtectedPhoto, isProtectedPhotoUrl } from '../utils/photoLoader';
  * @param {string} alt             Texte alternatif.
  * @param {string} fallbackSrc     Image par défaut si la photo est indisponible.
  */
+// eslint-disable-next-line no-unused-vars -- `fallbackSrc` fait partie de l'API publique du composant (rappelée par les appelants) mais n'est délibérément PAS utilisée : le composant affiche une silhouette neutre, jamais la photo d'un autre assuré.
 export default function SecurePhoto({ photoUrl, serverId, style, alt = '', fallbackSrc = '/csu_profile_hero_real.png', onError }) {
   const [resolved, setResolved] = useState(() =>
     // Photo non protégée : utilisable immédiatement, sans état d'attente.
@@ -55,6 +56,7 @@ export default function SecurePhoto({ photoUrl, serverId, style, alt = '', fallb
     // Pas d'image par défaut pour une photo manquante : afficher une
     // silhouette neutre plutôt qu'une photo d'une AUTRE personne, ce qui
     // serait grave sur une carte d'assurance santé.
+    // eslint-disable-next-line no-unused-vars -- le callback parent peut être vide : l'échec est volontairement avalé (on affiche la silhouette).
     if (onError) { try { onError(); } catch (e) { /* ignoré */ } }
     return (
       <div

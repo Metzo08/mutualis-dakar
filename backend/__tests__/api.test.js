@@ -236,14 +236,23 @@ describe('Chatbot (fallback local)', () => {
   test('POST /api/chatbot Wolof → réponse fallback WO', async () => {
     const res = await request(app).post('/api/chatbot').send({ message: 'naka', lang: 'wo' });
     expect(res.status).toBe(200);
-    expect(res.body.response.toLowerCase()).toContain('nanga def');
+    // Le chatbot a été enrichi : la salutation peut être « nanga def » ou la
+    // forme plus naturelle « naka nga defee » — on accepte les deux.
+    const r = res.body.response.toLowerCase();
+    const isWolofGreeting = r.includes('nanga def') || r.includes('naka nga def');
+    expect(isWolofGreeting).toBe(true);
   });
 });
 
-describe('TTS déprécié', () => {
-  test('GET /api/tts → 410 Gone', async () => {
-    const res = await request(app).get('/api/tts?text=hello');
-    expect(res.status).toBe(410);
+describe('TTS', () => {
+  test('GET /api/tts sans paramètre text → 400', async () => {
+    // Le TTS n'a jamais été déprécié : la synthèse vocale (voix Piper en
+    // open-source, repli navigateur) reste une fonctionnalité active du portail.
+    // L'ancien test attendait un 410 « Gone » résiduel d'une dépréciation
+    // annulée — il faisait échouer toute la suite.
+    const res = await request(app).get('/api/tts');
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty('error');
   });
 });
 
@@ -614,5 +623,575 @@ describe('Synchronisation hors-ligne', () => {
   test('GET /api/sync/status sans auth → 401', async () => {
     const res = await request(app).get('/api/sync/status');
     expect(res.status).toBe(401);
+  });
+});
+
+/**
+ * Import en masse : c'est une ÉCRITURE, donc elle doit être authentifiée et
+ * cloisonnée par MSD comme les autres.
+ *
+ * ⚠️ RÉGRESSION : la route était déclarée `app.post('/api/beneficiaries/bulk',
+ * async (req, res) => …)` — sans `authenticateToken`, sans `requireRole` et
+ * sans filtre `msd_code`. N'importe qui pouvait insérer ou modifier des
+ * bénéficiaires en base, y compris ceux d'une autre MSD. Ces tests verrouillent
+ * la fermeture.
+ *
+ * La DB est mockée : `pool.connect()` doit donc renvoyer un client avec
+ * `query` et `release`. On helper pour éviter de réécrire le double mock.
+ */
+describe('POST /api/beneficiaries/bulk — écriture protégée et cloisonnée', () => {
+  const LOT_DKR = [{
+    codeBeneficiaire: 'DKR_260001.0',
+    prenom: 'MOUSTAPHA',
+    nom: 'NDIONE',
+    birthDate: '1972-01-03',
+    photoUrl: 'data:image/jpeg;base64,AAAA'
+  }];
+
+  /** Client SQL mocké : une réponse vide par requête. */
+  const clientMock = () => ({
+    query: jest.fn().mockResolvedValue({ rows: [], rowCount: 0 }),
+    release: jest.fn()
+  });
+
+  /** Jeton d'un agent rattaché à une MSD (PKN = Pikine). */
+  const agentPknToken = () => jwt.sign(
+    { id: 12, role: 'agent', username: 'agent@pkn.cmu.sn', msdCode: 'PKN' },
+    JWT_SECRET, { expiresIn: '1h' }
+  );
+
+  beforeEach(() => {
+    pool.connect.mockReset();
+  });
+
+  test('sans jeton → 401 (la route était ouverte à tous)', async () => {
+    const res = await request(app).post('/api/beneficiaries/bulk').send({ rows: LOT_DKR });
+    expect(res.status).toBe(401);
+  });
+
+  test('avec jeton citoyen → 403 (RBAC)', async () => {
+    const res = await request(app)
+      .post('/api/beneficiaries/bulk')
+      .set(authCitizen)
+      .send({ rows: LOT_DKR });
+    expect(res.status).toBe(403);
+  });
+
+  test('un agent DAKAR importe un code DKR → accepté et rattaché à sa MSD', async () => {
+    const client = clientMock();
+    // SELECT de détection : aucune fiche existante → INSERT.
+    client.query
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [], rowCount: 1 })
+      .mockResolvedValueOnce({ rows: [] });
+    pool.connect.mockResolvedValue(client);
+
+    const agentDkrToken = jwt.sign(
+      { id: 13, role: 'agent', username: 'agent@dkr.cmu.sn', msdCode: 'DKR' },
+      JWT_SECRET, { expiresIn: '1h' }
+    );
+    const res = await request(app)
+      .post('/api/beneficiaries/bulk')
+      .set({ Authorization: `Bearer ${agentDkrToken}` })
+      .send({ rows: LOT_DKR });
+
+    expect(res.status).toBe(201);
+    expect(res.body.inserted).toBe(1);
+
+    // L'INSERT doit porter msd_code : sans lui, la fiche créée est INVISIBLE
+    // du filtre `b.msd_code` de GET /api/beneficiaries (elle n'apparaîtrait
+    // que pour le Super Admin).
+    const insert = client.query.mock.calls.find((c) => /INSERT INTO beneficiaries/i.test(c[0]));
+    expect(insert).toBeDefined();
+    expect(insert[0]).toMatch(/msd_code/i);
+    expect(insert[1]).toContain('DKR');
+  });
+
+  test('un agent PKN ne peut PAS importer une fiche DKR (refus, pas doublon)', async () => {
+    const client = clientMock();
+    client.query.mockResolvedValue({ rows: [], rowCount: 0 });
+    pool.connect.mockResolvedValue(client);
+
+    const res = await request(app)
+      .post('/api/beneficiaries/bulk')
+      .set({ Authorization: `Bearer ${agentPknToken()}` })
+      .send({ rows: LOT_DKR });
+
+    expect(res.status).toBe(201);
+    // La ligne est refusée : ni créée, ni mise à jour.
+    expect(res.body.inserted).toBe(0);
+    expect(res.body.refused).toBe(1);
+    // AUCUNE requête d'écriture : un refus ne doit rien laisser passer.
+    expect(client.query.mock.calls.filter((c) => /^INSERT/i.test(c[0].trim()))).toHaveLength(0);
+    expect(client.query.mock.calls.filter((c) => /^UPDATE/i.test(c[0].trim()))).toHaveLength(0);
+  });
+
+  test('un agent ne peut PAS modifier une fiche déjà rattachée à une autre MSD', async () => {
+    const client = clientMock();
+    // SELECT de détection : la fiche existe et appartient à DKR…
+    client.query.mockResolvedValueOnce({ rows: [{ id: 77, msd_code: 'DKR' }] });
+    pool.connect.mockResolvedValue(client);
+
+    const res = await request(app)
+      .post('/api/beneficiaries/bulk')
+      .set({ Authorization: `Bearer ${agentPknToken()}` })
+      .send({ rows: LOT_DKR });
+
+    expect(res.status).toBe(201);
+    expect(res.body.updated).toBe(0);
+    expect(res.body.refused).toBe(1);
+    // Le refus porte BIEN sur la photo : aucune écriture de photo_url.
+    expect(client.query.mock.calls.filter((c) => /^UPDATE/i.test(c[0].trim()))).toHaveLength(0);
+  });
+
+  test('le Super Admin (sans msdCode) n\'est PAS filtré', async () => {
+    const client = clientMock();
+    client.query.mockResolvedValue({ rows: [], rowCount: 1 });
+    pool.connect.mockResolvedValue(client);
+
+    const res = await request(app)
+      .post('/api/beneficiaries/bulk')
+      .set(authAdmin)
+      .send({ rows: LOT_DKR });
+
+    expect(res.status).toBe(201);
+    expect(res.body.inserted).toBe(1);
+    expect(res.body.refused).toBe(0);
+  });
+
+  // ⚠️ FAIL-CLOSED : un compte agent dont `agents.msd_code` est vide n'est
+  // pas traité comme un superviseur. Avant ce chantier, il passait les deux
+  // barrières MSD (agentMsd === null) et pouvait importer dans TOUTES les MSD.
+  test('un agent NON RATTACHÉ à une MSD → 403 (fail-closed)', async () => {
+    const client = clientMock();
+    client.query.mockResolvedValue({ rows: [], rowCount: 1 });
+    pool.connect.mockResolvedValue(client);
+
+    // `authAgent` = { role: 'agent', username: … } — AUCUN msdCode.
+    const res = await request(app)
+      .post('/api/beneficiaries/bulk')
+      .set(authAgent)
+      .send({ rows: LOT_DKR });
+
+    expect(res.status).toBe(403);
+    // Le refus doit être explicite, sinon l'agent croira à une panne réseau.
+    expect(res.body.errorCode).toBe('AGENT_NOT_LINKED_TO_MSD');
+    expect(String(res.body.error)).toMatch(/MSD/i);
+    // Aucune écriture, et pas d'appel base du tout.
+    expect(pool.connect).not.toHaveBeenCalled();
+  });
+
+  // La même règle s'applique à la LECTURE du secours : sinon un agent non
+  // rattaché verrait les NIN, adresses et photos de toutes les MSD.
+  test('un agent NON RATTACHÉ ne peut pas lire le secours (403)', async () => {
+    const res = await request(app).get('/api/beneficiaries/fallback').set(authAgent);
+    expect(res.status).toBe(403);
+    expect(res.body.errorCode).toBe('AGENT_NOT_LINKED_TO_MSD');
+  });
+
+  test('le contrat de réponse expose toujours inserted/updated/total', async () => {
+    const client = clientMock();
+    client.query.mockResolvedValue({ rows: [], rowCount: 1 });
+    pool.connect.mockResolvedValue(client);
+
+    // ⚠️ AMENDÉ : ce test utilisait `authAgent`, dont le jeton ne porte AUCUN
+    // `msdCode`. Il encodait donc la FAILLE que ce chantier ferme — un agent non
+    // rattaché à une MSD passait les deux barrières, parce que `agentMsd` valait
+    // `null`, la signature du superviseur. Le 201 attendu ci-dessous ne pouvait
+    // plus être obtenu par ce compte : c'est précisément l'objet du correctif.
+    // Le compte de rattachement reste vérifié juste au-dessus, sur 6 tests.
+    const agentDkrToken = jwt.sign(
+      { id: 13, role: 'agent', username: 'agent@dkr.cmu.sn', msdCode: 'DKR' },
+      JWT_SECRET, { expiresIn: '1h' }
+    );
+    const res = await request(app)
+      .post('/api/beneficiaries/bulk')
+      .set({ Authorization: `Bearer ${agentDkrToken}` })
+      .send({ rows: LOT_DKR });
+
+    expect(res.status).toBe(201);
+    expect(res.body).toMatchObject({ success: true, mode: 'database' });
+    ['inserted', 'updated', 'skipped', 'total'].forEach((k) => {
+      expect(res.body).toHaveProperty(k);
+    });
+    expect(res.body.total).toBe(1);
+  });
+});
+
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  CONTRE-EXPERIENCE — ce que les tests « à jest.Mock » ne voirraient jamais
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ * Les tests ci-dessus répondent toujours `{ rows: [] }` : ils prouvent le COMPTE
+ * (inserted/refused), jamais ce qu'une vraie PostgreSQL aurait fait. Les cas
+ * suivants sont précisément ceux qu'un `mockResolvedValue` ne peut pas détecter :
+ * une correspondance croisée (matricule d'une MSD, NIN d'une autre), un
+ * `LIMIT 1` sans `ORDER BY`, une transaction laissée ouverte, un journal
+ * indisponible. Ils sont écrits contre la ROUTE, pas contre son squelette.
+ */
+describe('POST /api/beneficiaries/bulk — contre-expertise', () => {
+  const fallbackStore = require('../fallbackStore');
+
+  const clientMock = () => ({
+    query: jest.fn().mockResolvedValue({ rows: [], rowCount: 0 }),
+    release: jest.fn()
+  });
+
+  const agentPknToken = () => jwt.sign(
+    { id: 12, role: 'agent', username: 'agent@pkn.cmu.sn', msdCode: 'PKN' },
+    JWT_SECRET, { expiresIn: '1h' }
+  );
+
+  /** Les requêtes envoyées au client, dans l'ordre. */
+  const statements = (client) => client.query.mock.calls.map((c) => String(c[0]).trim());
+  const updates = (client) => statements(client).filter((s) => /^UPDATE/i.test(s));
+  const inserts = (client) => statements(client).filter((s) => /^INSERT/i.test(s));
+
+  let addRecord;
+
+  beforeEach(() => {
+    pool.connect.mockReset();
+    // Le repli fichier ne doit jamais toucher backend/data/store.json pendant
+    // une suite de tests : on l'espionne (server.js appelle bien
+    // `fallbackStore.addRecord(...)`, donc l'espion est vu par la route).
+    jest.spyOn(fallbackStore, 'listRecords').mockReturnValue([]);
+    addRecord = jest.spyOn(fallbackStore, 'addRecord').mockReturnValue({});
+    jest.spyOn(fallbackStore, 'mergeRecord').mockReturnValue(null);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+    query.mockReset();
+  });
+
+  test('un NIN d\'une AUTRE MSD ne permet pas de s\'approprier sa fiche', async () => {
+    // Fiche DKR jamais rattachée (msd_code NULL) : c'est le SEUL cas que la
+    // troisième clause de la barrière B laissait passer jusqu'ici, car le
+    // préfixe invoqué était celui de la LIGNE IMPORTÉE (CMU-PKN-…), jamais
+    // celui de la FICHE TROUVÉE (CMU-DKR-…).
+    const client = clientMock();
+    client.query
+      .mockResolvedValueOnce({ rows: [], rowCount: 0 })                              // BEGIN
+      .mockResolvedValueOnce({ rows: [{ id: 20, msd_code: null, cmu_number: 'CMU-DKR-0000009' }] })
+      .mockResolvedValueOnce({ rows: [], rowCount: 0 });                             // COMMIT
+    pool.connect.mockResolvedValue(client);
+
+    const res = await request(app)
+      .post('/api/beneficiaries/bulk')
+      .set({ Authorization: `Bearer ${agentPknToken()}` })
+      .send({
+        rows: [{
+          codeBeneficiaire: 'CMU-PKN-0000001',
+          nin: 'NIN-DKR',
+          prenom: 'PIRATE',
+          photoUrl: 'data:image/jpeg;base64,AA'
+        }]
+      });
+
+    expect(res.status).toBe(201);
+    expect(res.body.updated).toBe(0);
+    expect(res.body.refused).toBe(1);
+    // Aucune écriture : ni le nom, ni la photo, ni le rattachement à PKN.
+    expect(updates(client)).toHaveLength(0);
+    expect(inserts(client)).toHaveLength(0);
+  });
+
+  test('la correspondance exacte par matricule prime sur le NIN', async () => {
+    const client = clientMock();
+    // Deux fiches correspondent : celle de DKR (par NIN) et celle de PKN (par
+    // matricule). `LIMIT 1` sans `ORDER BY` laissait PostgreSQL rendre une
+    // ligne ARBITRAIRE : l'import légitime de l'agent était alors refusé sans
+    // motif, et le résultat changeait d'un import à l'autre.
+    client.query
+      .mockResolvedValueOnce({ rows: [], rowCount: 0 })
+      .mockResolvedValueOnce({ rows: [{ id: 10, msd_code: 'PKN', cmu_number: 'CMU-PKN-0000001' }] })
+      .mockResolvedValueOnce({ rows: [], rowCount: 1 })
+      .mockResolvedValueOnce({ rows: [], rowCount: 0 });
+    pool.connect.mockResolvedValue(client);
+
+    const res = await request(app)
+      .post('/api/beneficiaries/bulk')
+      .set({ Authorization: `Bearer ${agentPknToken()}` })
+      .send({ rows: [{ codeBeneficiaire: 'CMU-PKN-0000001', nin: 'NIN-DKR', photoUrl: 'PHOTO' }] });
+
+    const select = client.query.mock.calls
+      .map((c) => String(c[0]))
+      .find((s) => /SELECT id, msd_code/i.test(s));
+    expect(select).toBeDefined();
+    expect(select).toMatch(/ORDER BY \(cmu_number = \$1\) DESC, id/i);
+
+    expect(res.status).toBe(201);
+    expect(res.body.updated).toBe(1);
+    expect(res.body.refused).toBe(0);
+    expect(updates(client)).toHaveLength(1);
+    // L'écriture porte bien sur la fiche de l'agent (id 10), pas sur l'autre.
+    expect(updates(client)[0]).toMatch(/WHERE id = \$1/);
+    expect(client.query.mock.calls
+      .find((c) => /^UPDATE/i.test(String(c[0]).trim()))[1][0]).toBe(10);
+  });
+
+  test('une erreur en cours d\'import ANNULE la transaction avant de rendre la connexion', async () => {
+    const client = clientMock();
+    client.query
+      .mockResolvedValueOnce({ rows: [], rowCount: 0 })            // BEGIN
+      .mockRejectedValueOnce(new Error('connexion perdue'))        // SELECT de la boucle
+      .mockResolvedValue({ rows: [], rowCount: 0 });              // ROLLBACK
+    pool.connect.mockResolvedValue(client);
+
+    const res = await request(app)
+      .post('/api/beneficiaries/bulk')
+      .set({ Authorization: `Bearer ${agentPknToken()}` })
+      .send({ rows: [{ codeBeneficiaire: 'CMU-PKN-0000001', prenom: 'A' }] });
+
+    const trace = statements(client);
+    // Sans ROLLBACK, la connexion repartait au POOL avec une transaction
+    // ouverte : les requêtes suivantes échouaient et un COMMIT tiers validait
+    // les écritures partielles de l'import.
+    expect(trace).toContain('ROLLBACK');
+    expect(trace).not.toContain('COMMIT');
+    expect(client.release).toHaveBeenCalled();
+    // Le repli fichier a bien pris le relais (zéro perte).
+    expect(res.body.mode).toBe('fallback-file');
+    expect(res.body.inserted).toBe(1);
+  });
+
+  test('un journal d\'audit indisponible NE rejoue PAS l\'import dans le secours', async () => {
+    const client = clientMock();
+    client.query.mockResolvedValue({ rows: [], rowCount: 1 });
+    pool.connect.mockResolvedValue(client);
+    // Le COMMIT a réussi : les fiches SONT en base. Si l'écriture du journal
+    // faisait tomber la route dans le repli, chaque fiche existerait deux fois
+    // (base + store.json) et le secours finirait par être rejoué en base.
+    query.mockImplementation(async (sql) => {
+      if (/INSERT INTO audit_logs/i.test(String(sql))) throw new Error('audit_logs indisponible');
+      return { rows: [], rowCount: 1 };
+    });
+
+    const res = await request(app)
+      .post('/api/beneficiaries/bulk')
+      .set({ Authorization: `Bearer ${agentPknToken()}` })
+      .send({ rows: [{ codeBeneficiaire: 'CMU-PKN-0000001', prenom: 'A' }] });
+
+    expect(res.status).toBe(201);
+    expect(res.body.mode).toBe('database');
+    expect(res.body.inserted).toBe(1);
+    expect(inserts(client)).toHaveLength(1);
+    expect(addRecord).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * Secours fichier : la MSD stockée en JSON doit survivre au rejeu en base, et
+ * la fusion ne doit jamais effacer une valeur existante.
+ *
+ * `fs` est espionné : backend/data/store.json n'est ni lu ni écrit.
+ */
+describe('Secours fichier — mergeRecord et rejeu de la MSD', () => {
+  const fs = require('fs');
+  const fallbackStore = require('../fallbackStore');
+  let contenuInitial;
+
+  beforeEach(() => {
+    contenuInitial = fs.readFileSync(fallbackStore.STORE_PATH, 'utf8');
+    jest.spyOn(fs, 'existsSync').mockReturnValue(true);
+    jest.spyOn(fs, 'readFileSync').mockReturnValue(contenuInitial);
+    jest.spyOn(fs, 'writeFileSync').mockImplementation(() => {});
+    jest.spyOn(fs, 'renameSync').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  /** Fabrique un store.json de test à partir d'une liste de bénéficiaires. */
+  const storeJson = (beneficiaries) => JSON.stringify({
+    adhesions: [], cotisations: [], donations: [], complaints: [], beneficiaries
+  });
+
+  test('une valeur VIDE n\'efface pas la fiche, _flushed et les champs absents survivent', () => {
+    fs.readFileSync.mockReturnValue(storeJson([{
+      cmuNumber: 'CMU-PKN-0000001', prenom: 'Amadou', nom: 'Sall',
+      photoUrl: null, schoolName: 'Ecole Pikine', msdCode: 'PKN', _flushed: true
+    }]));
+    const fusion = fallbackStore.mergeRecord(
+      'beneficiaries',
+      (x) => x.cmuNumber === 'CMU-PKN-0000001',
+      { prenom: '', nom: null, photoUrl: undefined, schoolName: '' }
+    );
+    expect(fusion.prenom).toBe('Amadou');
+    expect(fusion._flushed).toBe(true);
+    expect(fusion.schoolName).toBe('Ecole Pikine');
+    expect(fusion.nom).toBe('Sall');
+  });
+
+  test('le rejeu en base conserve msd_code (cloisonnement)', async () => {
+    // Fiche NON flushée : c'est elle que flushToDb rejoue.
+    fs.readFileSync.mockReturnValue(storeJson([
+      { cmuNumber: 'CMU-PKN-0000002', prenom: 'Fatou', msdCode: 'PKN' }
+    ]));
+    const requetes = [];
+    await fallbackStore.flushToDb(async (sql, params) => {
+      if (/^\s*INSERT/i.test(String(sql))) requetes.push({ sql, params });
+      return { rows: [] };
+    });
+
+    const insert = requetes.find((r) => /INSERT INTO beneficiaries/i.test(r.sql));
+    expect(insert).toBeDefined();
+    const colonnes = insert.sql.slice(insert.sql.indexOf('(') + 1, insert.sql.indexOf(')'))
+      .split(',').map((c) => c.trim());
+    expect(colonnes).toContain('msd_code');
+    // 14 colonnes = 14 placeholders : un décalage décalerait la valeur.
+    const placeholders = [...insert.sql.matchAll(/\$(\d+)/g)].map((m) => Number(m[1]));
+    expect(placeholders).toEqual(colonnes.map((_, i) => i + 1));
+    expect(insert.params[colonnes.indexOf('msd_code')]).toBe('PKN');
+  });
+});
+
+/**
+ * Secours fichier — exposition HTTP du secours.
+ *
+ * Ces deux routes étaient ouvertes à TOUT le monde : `GET /api/beneficiaries/
+ * fallback` renvoyait la totalité du secours (noms, téléphones, adresses, NIN,
+ * photos base64) pour toutes les MSD, et déclenchait au passage des INSERT en
+ * base. `GET /api/fallback-status` exposait le chemin du fichier de secours.
+ *
+ * ⚠️ backend/data/store.json est un fichier RÉEL du projet : il ne doit jamais
+ * être modifié par une suite de tests. On n'espionne donc que les deux lectures
+ * du module (`listRecords`, `readStore`) — `fs` n'est jamais appelé par ces
+ * routes tant que les espions sont en place.
+ */
+describe('Secours fichier — routes d\'exposition', () => {
+  const fallbackStore = require('../fallbackStore');
+
+  const agentPknToken = () => jwt.sign(
+    { id: 12, role: 'agent', username: 'agent@pkn.cmu.sn', msdCode: 'PKN' },
+    JWT_SECRET, { expiresIn: '1h' }
+  );
+  const authAgentPkn = () => ({ Authorization: `Bearer ${agentPknToken()}` });
+
+  // Fiches d'agents concurrents, toutes présentes sur le disque.
+  const SECOURS = [
+    { cmuNumber: 'CMU-PKN-0000001', prenom: 'Fatou', nom: 'Sall', msdCode: 'PKN' },
+    // Pas de `msdCode` : MSD déduite du préfixe → PKN, la fiche reste visible.
+    { cmuNumber: 'CMU-PKN-0000009', prenom: 'Moussa', nom: 'Ba' },
+    // Autre MSD, rattachée : invisible pour l'agent PKN.
+    { cmuNumber: 'CMU-DKR-0000004', prenom: 'Ibrahima', nom: 'Diop', msdCode: 'DKR' },
+    // Autre MSD, sans rattachement, préfixe connu : également invisible.
+    { cmuNumber: 'CMU-DKR-0000005', prenom: 'Awa', nom: 'Ndiaye' },
+    // Ni `msdCode` ni préfixe reconnu : fail-closed → invisible (voir le
+    // commentaire de `fallbackRecordMsd` dans server.js).
+    { cmuNumber: 'ZZZ-XX-0000001', prenom: 'Inconnu', nom: 'Rattachement' }
+  ];
+
+  let flushToDb;
+
+  beforeEach(() => {
+    jest.spyOn(fallbackStore, 'listRecords').mockImplementation(
+      (collection) => (collection === 'beneficiaries' ? SECOURS : [])
+    );
+    jest.spyOn(fallbackStore, 'readStore').mockReturnValue({
+      adhesions: [], cotisations: [], donations: [], complaints: [],
+      beneficiaries: SECOURS
+    });
+    flushToDb = jest.spyOn(fallbackStore, 'flushToDb')
+      .mockResolvedValue({ flushed: 0, remaining: 0 });
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+    query.mockReset();
+  });
+
+  describe('GET /api/beneficiaries/fallback', () => {
+    test('sans jeton → 401', async () => {
+      const res = await request(app).get('/api/beneficiaries/fallback');
+      expect(res.status).toBe(401);
+      expect(flushToDb).not.toHaveBeenCalled();
+    });
+
+    test('avec jeton citoyen → 403', async () => {
+      const res = await request(app).get('/api/beneficiaries/fallback').set(authCitizen);
+      expect(res.status).toBe(403);
+      expect(flushToDb).not.toHaveBeenCalled();
+    });
+
+    test('avec jeton agent PKN → 200, cloisonné sur SA MSD', async () => {
+      const res = await request(app).get('/api/beneficiaries/fallback').set(authAgentPkn());
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.count).toBe(2);
+
+      const cmus = res.body.records.map((r) => r.cmuNumber);
+      expect(cmus).toContain('CMU-PKN-0000001');   // msdCode explicite
+      expect(cmus).toContain('CMU-PKN-0000009');   // MSD déduite du préfixe
+      // Aucune fiche d'une autre MSD, rattachée ou non, ni à rattachement inconnu.
+      expect(cmus).not.toContain('CMU-DKR-0000004');
+      expect(cmus).not.toContain('CMU-DKR-0000005');
+      expect(cmus).not.toContain('ZZZ-XX-0000001');
+
+      // AUCUNE donnée d'une autre MSD ne fuit, pas même par un champ annexe.
+      const corps = JSON.stringify(res.body);
+      for (const nom of ['Ibrahima', 'Awa', 'Inconnu', 'Diop', 'Ndiaye']) {
+        expect(corps).not.toContain(nom);
+      }
+    });
+
+    test('le Super Admin supervise toutes les MSD, y compris les fiches non rattachées', async () => {
+      const res = await request(app).get('/api/beneficiaries/fallback').set(authAdmin);
+      expect(res.status).toBe(200);
+      expect(res.body.count).toBe(SECOURS.length);
+    });
+
+    test('un GET n\'écrit plus en base : le rejeu est une route POST', async () => {
+      const res = await request(app).get('/api/beneficiaries/fallback').set(authAgentPkn());
+      expect(res.status).toBe(200);
+      expect(flushToDb).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('POST /api/beneficiaries/fallback/flush', () => {
+    test('sans jeton → 401', async () => {
+      const res = await request(app).post('/api/beneficiaries/fallback/flush');
+      expect(res.status).toBe(401);
+      expect(flushToDb).not.toHaveBeenCalled();
+    });
+
+    test('avec jeton agent → 403 (le rejeu est transverse, pas par MSD)', async () => {
+      const res = await request(app).post('/api/beneficiaries/fallback/flush').set(authAgentPkn());
+      expect(res.status).toBe(403);
+      expect(flushToDb).not.toHaveBeenCalled();
+    });
+
+    test('avec jeton admin → 200 et rejeu effectif', async () => {
+      flushToDb.mockResolvedValue({ flushed: 3, remaining: 1 });
+      const res = await request(app).post('/api/beneficiaries/fallback/flush').set(authAdmin);
+      expect(res.status).toBe(200);
+      expect(res.body.flushed).toBe(3);
+      expect(res.body.remaining).toBe(1);
+      expect(flushToDb).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('GET /api/fallback-status', () => {
+    test('sans jeton → 401', async () => {
+      const res = await request(app).get('/api/fallback-status');
+      expect(res.status).toBe(401);
+    });
+
+    test('avec jeton citoyen → 403', async () => {
+      const res = await request(app).get('/api/fallback-status').set(authCitizen);
+      expect(res.status).toBe(403);
+    });
+
+    test('avec jeton agent → 200 et compteurs (aucun enregistrement renvoyé)', async () => {
+      const res = await request(app).get('/api/fallback-status').set(authAgentPkn());
+      expect(res.status).toBe(200);
+      expect(res.body.counts.beneficiaries).toBe(SECOURS.length);
+      // Des compteurs, pas des fiches : aucun nom/NIN/photo dans le statut.
+      expect(res.body.records).toBeUndefined();
+      expect(JSON.stringify(res.body)).not.toContain('Fatou');
+    });
   });
 });

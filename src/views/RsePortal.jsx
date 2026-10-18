@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useQuery } from '@tanstack/react-query';
 
-export default function RsePortal({ lang, setView, portalMode, agentUser }) {
+export default function RsePortal({ portalMode, agentUser }) {
   const [beneficiariesCount, setBeneficiariesCount] = useState(50);
   const [corporateRevenue, setCorporateRevenue] = useState(50000000); // 50M FCFA
   const [selectedDept, setSelectedDept] = useState('Dakar');

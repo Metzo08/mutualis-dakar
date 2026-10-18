@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
+import { collectAttachedMinorIds, resolveMinorDependents } from '../utils/householdMinors';
 import DeleteModal from '../components/DeleteModal';
 
 export default function Beneficiaries({ lang, agentUser }) {
@@ -12,7 +13,9 @@ export default function Beneficiaries({ lang, agentUser }) {
   const [selectedBeneficiary, setSelectedBeneficiary] = useState(null);
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // Seul le setter est consommé : le registre affiche un message d'hydratation
+  // en ligne (L~300) plutôt que de rendre l'erreur dans l'arbre React.
+  const [, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, hasPrev: false, hasNext: false });
 
@@ -52,8 +55,19 @@ export default function Beneficiaries({ lang, agentUser }) {
   }, [selectedBeneficiary]);
 
   // flat-map all beneficiaries and their family members into a single flat list
+  //
+  // ⚠️ RÈGLE D'OR : un enfant de moins de 18 ans n'a PAS de dossier propre —
+  // il est pris en charge sur la carte de son adhérent. Les fiches mineures
+  // « sœurs » (même base de ménage, âge < 18 ans) sont donc RETIRÉES de la
+  // liste et signalées comme pris-en-charge sur la ligne de leur adhérent.
+  // C'est la même règle que le Studio cartes et Payments (source unique :
+  // `householdMinors.js`), pour que les trois pages restent cohérentes.
+  const attachedMinorIds = collectAttachedMinorIds(beneficiaries);
   const flatBeneficiariesList = [];
   beneficiaries.forEach(b => {
+    if (attachedMinorIds.has(b.id) || attachedMinorIds.has(String(b.cmuNumber || '').toUpperCase())) {
+      return; // mineur rattaché : pas de ligne propre, il figure sur la carte de l'adhérent
+    }
     // Add chef/main enrollee
     flatBeneficiariesList.push({
       ...b,
@@ -85,6 +99,13 @@ export default function Beneficiaries({ lang, agentUser }) {
       });
     }
   });
+  // Nombre de mineurs pris en charge par chaque adhérent (badge sur sa ligne).
+  const minorsByHead = new Map();
+  beneficiaries.forEach(b => {
+    if (attachedMinorIds.has(b.id) || attachedMinorIds.has(String(b.cmuNumber || '').toUpperCase())) return;
+    const mineurs = resolveMinorDependents(beneficiaries, b);
+    if (mineurs.length > 0) minorsByHead.set(b.id, mineurs);
+  });
 
   // Filter this flat list locally by search query, status, and mutuelle
   const filteredBeneficiaries = flatBeneficiariesList.filter(b => {
@@ -106,21 +127,16 @@ export default function Beneficiaries({ lang, agentUser }) {
   });
 
   const handleDownloadSponsorReceipt = (sponsor) => {
-    const now = new Date(sponsor.createdAt || new Date());
-    
     // Find all beneficiaries sponsored by this sponsor
     const sponsored = beneficiaries.filter(b => b.sponsorPhone === sponsor.phone && b.id !== sponsor.id);
     
     // Detect parrainageType
     let parrainageType = 'individuel';
-    let schoolName = '';
     if (sponsored.length > 0) {
       const firstCmu = sponsored[0].cmuNumber || '';
       if (firstCmu.startsWith('SN-DK-EDU')) parrainageType = 'eleves';
       else if (firstCmu.startsWith('SN-DK-COL')) parrainageType = 'collectif';
       else if (firstCmu.includes('-HH-')) parrainageType = 'menages';
-      
-      schoolName = sponsored[0].schoolName || '';
     }
     
     // Reconstruct sponsored lists
@@ -577,6 +593,19 @@ export default function Beneficiaries({ lang, agentUser }) {
                           alignItems: 'center',
                           gap: '2px'
                         }}>🤝 {lang === 'fr' ? 'Parrainé' : 'Parrainé'}</span>
+                      )}
+                      {!b.isFamilyMember && minorsByHead.has(b.id) && (
+                        <span style={{
+                          fontSize: '0.65rem',
+                          fontWeight: 'bold',
+                          color: '#b45309',
+                          backgroundColor: '#fef3c7',
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '2px'
+                        }}>👶 {minorsByHead.get(b.id).length} {lang === 'fr' ? 'enfant(s) pris en charge' : 'Xaaj yi'}</span>
                       )}
                     </div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-sub)', marginTop: '0.2rem' }}>

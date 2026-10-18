@@ -1,8 +1,23 @@
 import { addMemberFromAdhesion, getStoredMembers, saveStoredMembers } from '../utils/beneficiaryStore';
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
 import { outboxAdd } from '../utils/offline';
+
+/**
+ * Photo d'identité → data-URL JPEG COMPRESSÉE (300px, ~20-40 Ko).
+ *
+ * ⚠️ OBLIGATOIRE : le backend limite le corps JSON à 1 Mo (express.json).
+ * Une photo brute (2-5 Mo) faisait rejeter la requête EN BLOC (413) — la
+ * photo n'arrivait donc JAMAIS sur la carte. On réutilise le compresseur
+ * du Studio (mêmes paliers, même qualité) au lieu de FileReader brut.
+ */
+const readPhotoCompressed = async (file) => {
+  const { fileToCompressedDataUrl } = await import('../utils/bulkImport');
+  const dataUrl = await fileToCompressedDataUrl(file);
+  if (!dataUrl) throw new Error("Lecture de la photo impossible.");
+  return dataUrl;
+};
 
 export default function ServicesEnLigne({ lang, initialTab = 'register', initialPackage = 'individuel', setView, setViewTab }) {
   const [activeTab, setActiveTab] = useState(initialTab);
@@ -25,15 +40,21 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
   }, [initialPackage]);
 
   const [formData, setFormData] = useState({
-    firstName: '', lastName: '', birthDate: '', phone: '', email: '', address: '', cni: null, photo: null
+    firstName: '', lastName: '', birthDate: '', phone: '', email: '', address: '', cni: null, photo: null, photoDataUrl: ''
   });
+  // Aperçu immédiat de la photo d'identité (étape 5) : data-URL compressée à
+  // la volée, affichée ET transmise au serveur dans le payload (photo_url).
+  const [photoPreview, setPhotoPreview] = useState('');
+  const [photoReading, setPhotoReading] = useState(false);
   const [familyMembers, setFamilyMembers] = useState([]);
   const [newFamilyMember, setNewFamilyMember] = useState({ name: '', relation: 'enfant', age: '' });
   const [paymentMethod, setPaymentMethod] = useState('wave');
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState('');
+  // eslint-disable-next-line no-unused-vars -- Indicateur de succès de paiement d'adhésion. Le setter est appelé à plusieurs endroits mais aucun rendu ne lit encore le drapeau.
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [gdprConsent, setGdprConsent] = useState(false);
+  // eslint-disable-next-line no-unused-vars -- État `sponsorPhone` de l'adhésion. Remplacé dans le payload par `formData.phone` (ligne ~423) ; le setter n'est jamais appelé.
   const [sponsorPhone, setSponsorPhone] = useState('');
   const [schoolName, setSchoolName] = useState('');
   const [parrainageType, setParrainageType] = useState('individuel');
@@ -42,6 +63,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
   // Renewal States
   const [renewPhone, setRenewPhone] = useState('');
   const [renewPassword, setRenewPassword] = useState('');
+  // eslint-disable-next-line no-unused-vars -- Drapeau « renouvellement déjà journalisé » du parcours de renouvellement. Le setter est appelé, aucun rendu ne lit le drapeau.
   const [renewLogged, setRenewLogged] = useState(false);
   const [renewStep, setRenewStep] = useState(1); // 1: login, 2: dues info, 3: pay, 4: done
   const [renewOtpSent, setRenewOtpSent] = useState(false);
@@ -55,6 +77,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
   const [donateStep, setDonateStep] = useState(1); // 1: config, 2: choose method & phone, 3: OTP verify
   const [donatePaymentMethod, setDonatePaymentMethod] = useState('wave');
   const [donatePhone, setDonatePhone] = useState('');
+  // eslint-disable-next-line no-unused-vars -- Drapeau « OTP de don envoyé ». Le setter est appelé, aucun rendu ne lit le drapeau.
   const [donateOtpSent, setDonateOtpSent] = useState(false);
   const [donateOtpCode, setDonateOtpCode] = useState('');
 
@@ -139,7 +162,9 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
         if (!res.ok) throw new Error('Erreur API');
         return res.json();
       })
-      .then(data => {
+      .then(payload => {
+        // Format paginé { data, pagination } ; tableau brut accepté aussi.
+        const data = Array.isArray(payload) ? payload : (payload.data || []);
         if (data && data.length > 0) {
           setMutuellesList(data.map(m => m.name));
         } else {
@@ -309,6 +334,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
   };
 
   // Helper: Next Step for Registration
+  // eslint-disable-next-line no-unused-vars -- Nombre d'étapes du parcours d'adhésion (constante métier). Le parcours se termine en `setRegStep(8)` : la borne est documentée ici mais aucun rendu ne s'en sert.
   const newStepCount = 7;
   const nextStep = () => {
     if (regStep === 1 && !selectedPackage) {
@@ -382,7 +408,9 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
   };
 
   // Confirm Payment
-  const handlePayment = (e) => {
+  // ⚠️ ASYNC obligatoire : la persistance de la photo en base après
+  // création du dossier (PUT /api/beneficiaries/:id/photo) est attendue.
+  const handlePayment = async (e) => {
     e.preventDefault();
     const cleanOtp = String(otpCode || '').replace(/[\s\D]+/g, '');
     if (window.addLog) {
@@ -391,7 +419,10 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
 
     if (cleanOtp === '7842') {
       // Auto-création de la carte CSU dans le studio et le store
-      const autoCreatedMember = addMemberFromAdhesion({
+      // Effet de bord volontaire : `addMemberFromAdhesion` enregistre l'adhérent dans
+      // le store local. La valeur de retour n'est pas relue ici, la carte est ensuite
+      // affichée via le store.
+      addMemberFromAdhesion({
         firstName: formData.firstName || 'Adhérent',
         lastName: formData.lastName || 'Nouveau',
         birthDate: formData.birthDate || '01/01/1990',
@@ -399,6 +430,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
         address: formData.address || 'Dakar',
         mutuelleOrigine: selectedMutuelle || 'Mutuelle de Santé Départementale de Dakar',
         package: selectedPackage === 'csu_eleves' ? 'Gratuité Élèves 100%' : 'UNAMUSC 80%',
+        photoUrl: formData.photoDataUrl || photoPreview || '',
         dependents: (familyMembers || []).map(f => ({
           name: f.name,
           birthDate: f.age ? `01/01/${new Date().getFullYear() - (parseInt(f.age, 10) || 6)}` : '01/01/2018',
@@ -418,6 +450,9 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
         paymentMethod: paymentMethod,
         familyMembers: familyMembers,
         sponsorPhone: selectedPackage === 'parrainage' ? formData.phone : null,
+        // La photo lue à l'étape 5 (data-URL) : le backend la stocke dans
+        // photo_url, et la carte Studio l'affiche au lieu de « PHOTO EN ATTENTE ».
+        photoUrl: formData.photoDataUrl || photoPreview || null,
         schoolName: (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || selectedPackage === 'adhesion_masse' || (selectedPackage === 'parrainage' && parrainageType === 'eleves')) ? schoolName : null,
         parrainageType: selectedPackage === 'parrainage' ? parrainageType : null,
         sponsoredHouseholds: (selectedPackage === 'parrainage' && parrainageType === 'menages') ? sponsoredHouseholds : null
@@ -427,9 +462,9 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
         if (window.addLog) window.addLog('WARN', 'Adhésion : Mode hors-ligne détecté. Enregistrement en cache local...');
         outboxAdd('adhesion', payload)
           .then(() => {
-            const randNum = Math.floor(1000 + Math.random() * 9000);
-            const mSh = selectedMutuelle ? selectedMutuelle.split(' ').pop().substring(0, 3).toUpperCase() : 'CMU';
-            setGeneratedCmuNumber(`SN-DK-${mSh}-${randNum}`);
+            // PAS de faux matricule (SN-DK-…/MD-OFFLINE) : le code OFFICIEL
+            // est attribué par le serveur au rejeu de la file, photo comprise.
+            setGeneratedCmuNumber('');
             setPaymentSuccess(true);
             setRegStep(8);
             alert(lang === 'fr' 
@@ -440,7 +475,9 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
           .catch(err => {
             console.error('Offline queuing failed:', err);
             if (window.addLog) window.addLog('ERROR', `Adhésion : Échec stockage local : ${err.message}`);
-            setGeneratedCmuNumber('MD-OFFLINE-DK');
+            // PAS de faux matricule « MD-OFFLINE-DK » : carte en attente,
+            // code officiel attribué au rejeu serveur.
+            setGeneratedCmuNumber('');
             setPaymentSuccess(true);
             setRegStep(8);
           });
@@ -459,12 +496,49 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
           // Persistance ZÉRO PERTE : le membre du store est réaligné sur le
           // numéro CMU officiel renvoyé par le serveur (base ou fichier secours).
           // La carte créée localement reste valable et retrouvable dans le studio.
+          // ⚠️ Correctif photo : la fiche locale garde une data-URL que
+          // saveStoredMembers STRIP (garde-fou quota) — la photo disparaissait
+          // donc du studio à chaque rechargement. On récupère l'ID serveur et
+          // on pousse la photo EN BASE via PUT /api/beneficiaries/:id/photo :
+          // le studio la relit ensuite via GET …/photo, à chaque affichage.
+          try {
+            // Le POST /api/adhesions stocke DÉJÀ la photo en base (photoValue).
+            // Ce PUT n'est qu'un filet de secours si le premier stockage a
+            // échoué — et il n'est possible qu'avec une session authentifiée
+            // (la route PUT exige un jeton agent) : un citoyen qui adhère
+            // depuis la page publique n'en a pas, on n'envoie rien (sinon
+            // une 401 inutile à chaque adhésion).
+            const hasToken = typeof window !== 'undefined' && localStorage.getItem('cmu-token');
+            if (hasToken && data.beneficiaryId && (formData.photoDataUrl || photoPreview)) {
+              // Filet de secours NON bloquant : le POST /api/adhesions a
+              // déjà stocké la photo en base (photoValue). Cet appel ne
+              // couvre que le cas rare d'un premier stockage manqué.
+              fetch(`${window.API_BASE_URL}/api/beneficiaries/${data.beneficiaryId}/photo`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ photoUrl: formData.photoDataUrl || photoPreview })
+              }).catch((photoErr) => console.warn('Photo (secours) non poussée :', photoErr));
+            }
+          } catch (photoErr) {
+            console.warn('Photo non poussée en base :', photoErr);
+          }
           try {
             const stored = getStoredMembers();
             const lastId = localStorage.getItem('unamusc_last_created_member_id');
             const idx = stored.findIndex(m => m.id === lastId);
             if (idx >= 0) {
-              stored[idx] = { ...stored[idx], cmuNumber: data.cmuNumber, adherentCode: data.cmuNumber, verificationStatus: 'VERIFIED_SERVER' };
+              stored[idx] = {
+                ...stored[idx],
+                cmuNumber: data.cmuNumber,
+                adherentCode: data.cmuNumber,
+                verificationStatus: 'VERIFIED_SERVER',
+                // L'ID serveur permet au Studio de cibler PUT/DELETE.
+                serverId: data.beneficiaryId,
+                // L'URL de lecture remplace la data-URL (strippée de toute
+                // façon) : la photo se recharge depuis la base à l'affichage.
+                photoUrl: data.beneficiaryId ? `/api/beneficiaries/${data.beneficiaryId}/photo` : stored[idx].photoUrl,
+                hasOfficialPhoto: Boolean(data.beneficiaryId && (formData.photoDataUrl || photoPreview))
+              };
               saveStoredMembers(stored);
             }
           } catch (e) { console.warn('Réalignement CMU du store impossible :', e); }
@@ -479,7 +553,9 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
       .catch(err => {
         if (window.addLog) window.addLog('ERROR', `Erreur réseau lors de l'appel API : ${err.message}. Fallback simulation...`);
         outboxAdd('adhesion', payload);
-        setGeneratedCmuNumber('MD-782410-DK');
+        // PAS de faux matricule : le code OFFICIEL (DKR-DKR-AAAA-XXXX.1) est
+        // attribué par le serveur au rejeu de la file, photo comprise.
+        setGeneratedCmuNumber('');
         setPaymentSuccess(true);
         setRegStep(8);
       });
@@ -634,7 +710,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
         body: JSON.stringify(payload)
       })
       .then(res => res.json())
-      .then(data => {
+      .then(() => {
         if (window.addLog) window.addLog('SUCCESS', `Don enregistré avec succès ! Montant: ${donateAmount} FCFA`);
         setDonateSuccess(true);
         setDonationTotals(prev => ({
@@ -1372,11 +1448,40 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
 
                   <div className="form-group" style={{ marginTop: '1.5rem' }}>
                     <label className="form-label">{lang === 'fr' ? 'Photo d\'identité' : 'Photo d\'identité'}</label>
-                    <input 
-                      type="file" 
-                      className="form-control" 
-                      onChange={(e) => setFormData({...formData, photo: e.target.files[0]})}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="form-control"
+                      onChange={async (e) => {
+                        // La photo est lue IMMÉDIATEMENT en data-URL : aperçu à
+                        // l'écran + transmission au serveur dans le payload.
+                        // Sans cela, seul l'objet File (non sérialisable) était
+                        // conservé — la photo n'arrivait jamais sur la carte.
+                        const file = e.target.files && e.target.files[0];
+                        if (!file) {
+                          setFormData((p) => ({ ...p, photo: null, photoDataUrl: '' }));
+                          setPhotoPreview('');
+                          return;
+                        }
+                        setPhotoReading(true);
+                        try {
+                          const dataUrl = await readPhotoCompressed(file);
+                          setFormData((p) => ({ ...p, photo: file, photoDataUrl: dataUrl }));
+                          setPhotoPreview(dataUrl);
+                        } catch (err) {
+                          showError(err.message || 'Lecture de la photo impossible.');
+                        } finally {
+                          setPhotoReading(false);
+                        }
+                      }}
                     />
+                    {photoReading && <small>⏳ Lecture de la photo…</small>}
+                    {photoPreview && (
+                      <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <img src={photoPreview} alt="Aperçu photo" style={{ width: '84px', height: '84px', objectFit: 'cover', borderRadius: '12px', border: '1px solid var(--border-color)' }} />
+                        <small style={{ color: '#047857', fontWeight: 700 }}>✅ Photo prête — elle apparaîtra sur votre carte.</small>
+                      </div>
+                    )}
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '3rem' }}>
@@ -1625,6 +1730,16 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                     </div>
                     
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      {/* Photo d'identité : la même que celle téléversée à
+                          l'étape 5 — l'assuré voit immédiatement qu'elle est
+                          bien prise en compte sur sa carte. */}
+                      {(photoPreview || formData.photoDataUrl) && (
+                        <img
+                          src={photoPreview || formData.photoDataUrl}
+                          alt="Photo adhérent"
+                          style={{ width: '74px', height: '74px', objectFit: 'cover', borderRadius: '10px', border: '2px solid rgba(255,255,255,0.7)' }}
+                        />
+                      )}
                       <div>
                         <div className="digital-card-label">
                           {selectedPackage === 'parrainage' ? 'Parrain / Sponsor' : 
@@ -1667,7 +1782,9 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                     <div className="digital-card-details">
                       <div>
                         <div className="digital-card-label">ID Membre</div>
-                        <div className="digital-card-value">{generatedCmuNumber || 'MD-782410-DK'}</div>
+                        {/* PAS de faux code : sans matricule serveur, on affiche
+                            l'état d'attente (file hors-ligne en cours de rejeu). */}
+                        <div className="digital-card-value">{generatedCmuNumber || 'En attente de synchronisation…'}</div>
                       </div>
                       <div>
                         <div className="digital-card-label">Validité</div>

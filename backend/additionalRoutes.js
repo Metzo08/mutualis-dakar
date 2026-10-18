@@ -347,8 +347,19 @@ router.get('/api/partner/stats', authenticatePartner, async (req, res) => {
 // Gestion des structures (admin/agent)
 router.get('/api/partners/structures', authenticateToken, requireRole('admin'), async (req, res) => {
   try {
-    const result = await query('SELECT * FROM partner_structures ORDER BY name ASC');
-    res.json(result.rows);
+    // Pagination : le référentiel des structures partenaires croît avec les
+    // conventions signées. Borné par page pour des réponses légères.
+    const { page, limit, offset } = parsePagination(req);
+    const countRes = await query('SELECT COUNT(*) FROM partner_structures');
+    const total = parseInt(countRes.rows[0]?.count || '0', 10);
+    const result = await query(
+      'SELECT * FROM partner_structures ORDER BY name ASC LIMIT $1 OFFSET $2',
+      [limit, offset]
+    );
+    res.json({
+      data: result.rows,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) || 1, hasNext: page * limit < total, hasPrev: page > 1 }
+    });
   } catch (err) {
     console.error('Erreur liste structures :', err);
     res.status(500).json({ error: 'Erreur interne.' });

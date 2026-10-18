@@ -26,6 +26,7 @@ export const isProtectedPhotoUrl = (url) =>
 const revokeOld = (serverId) => {
   const old = blobCache.get(serverId);
   if (old && old.blobUrl && old.blobUrl.startsWith('blob:')) {
+    // eslint-disable-next-line no-unused-vars -- URL déjà révoquée : le cache la remplace de toute façon.
     try { URL.revokeObjectURL(old.blobUrl); } catch (e) { /* déjà révoquée */ }
   }
 };

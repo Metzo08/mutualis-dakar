@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
 export default function AuditLogs({ lang = 'fr' }) {
@@ -70,6 +70,7 @@ export default function AuditLogs({ lang = 'fr' }) {
     try {
       const stored = localStorage.getItem('cmu-audit-logs');
       if (stored) localStored = JSON.parse(stored);
+    // eslint-disable-next-line no-unused-vars -- journal local illisible : on repart du journal serveur sans bloquer l'affichage.
     } catch (e) {}
 
     const combined = [...localStored, ...defaultLogs];
@@ -112,6 +113,7 @@ export default function AuditLogs({ lang = 'fr' }) {
         const existing = JSON.parse(localStorage.getItem('cmu-audit-logs') || '[]');
         const updated = [newEntry, ...existing];
         localStorage.setItem('cmu-audit-logs', JSON.stringify(updated));
+      // eslint-disable-next-line no-unused-vars -- écriture du journal local best-effort : l'événement reste visible via le serveur.
       } catch (e) {}
       loadAuditLogs();
     };

@@ -1,0 +1,241 @@
+﻿  console.warn
+    Vérification du schéma PostgreSQL reportée (les tables ne sont peut-être pas encore initialisées) : Cannot read properties of undefined (reading 'catch')
+
+    [0m [90m 3430 |[39m     console[33m.[39mlog([32m'Indexation PostgreSQL et schéma vérifiés avec succès.'[39m)[33m;[39m
+     [90m 3431 |[39m   } [36mcatch[39m (err) {
+    [31m[1m>[22m[39m[90m 3432 |[39m     console[33m.[39mwarn([32m'Vérification du schéma PostgreSQL reportée (les tables ne sont peut-être pas encore initialisées) :'[39m[33m,[39m err[33m.[39mmessage)[33m;[39m
+     [90m      |[39m             [31m[1m^[22m[39m
+     [90m 3433 |[39m   }
+     [90m 3434 |[39m })()[33m;[39m
+     [90m 3435 |[39m[0m
+
+      at warn (server.js:3432:13)
+
+  console.log
+    [Voix] Serveur Piper déjà actif — voix neuronale disponible.
+
+      at log (server.js:3449:15)
+
+  console.log
+    [PAIEMENT] Clés d'API absentes ou invalides pour wave. Utilisation du mode Simulation démo.
+
+      at log (advancedRoutes.js:233:15)
+
+  console.warn
+    [BULK] 1 ligne(s) non enregistrées : hors périmètre MSD de l'agent.
+
+    [0m [90m 2797 |[39m       [36mif[39m (refused [33m>[39m [35m0[39m) {
+     [90m 2798 |[39m         [90m// Compte seul : aucun nom, NIN ni code n'est écrit dans les logs.[39m
+    [31m[1m>[22m[39m[90m 2799 |[39m         console[33m.[39mwarn([32m`[BULK] ${refused} ligne(s) non enregistrées : hors périmètre MSD de l'agent.`[39m)[33m;[39m
+     [90m      |[39m                 [31m[1m^[22m[39m
+     [90m 2800 |[39m       }
+     [90m 2801 |[39m       [90m// L'acteur est désormais l'agent authentifié : un import écrit en base,[39m
+     [90m 2802 |[39m       [90m// il doit être attribuable (avant, la route était ouverte et l'import[39m[0m
+
+      at warn (server.js:2799:17)
+
+  console.warn
+    [BULK] 1 ligne(s) non enregistrées : hors périmètre MSD de l'agent.
+
+    [0m [90m 2797 |[39m       [36mif[39m (refused [33m>[39m [35m0[39m) {
+     [90m 2798 |[39m         [90m// Compte seul : aucun nom, NIN ni code n'est écrit dans les logs.[39m
+    [31m[1m>[22m[39m[90m 2799 |[39m         console[33m.[39mwarn([32m`[BULK] ${refused} ligne(s) non enregistrées : hors périmètre MSD de l'agent.`[39m)[33m;[39m
+     [90m      |[39m                 [31m[1m^[22m[39m
+     [90m 2800 |[39m       }
+     [90m 2801 |[39m       [90m// L'acteur est désormais l'agent authentifié : un import écrit en base,[39m
+     [90m 2802 |[39m       [90m// il doit être attribuable (avant, la route était ouverte et l'import[39m[0m
+
+      at warn (server.js:2799:17)
+
+  console.warn
+    [BULK] 1 ligne(s) non enregistrées : hors périmètre MSD de l'agent.
+
+    [0m [90m 2797 |[39m       [36mif[39m (refused [33m>[39m [35m0[39m) {
+     [90m 2798 |[39m         [90m// Compte seul : aucun nom, NIN ni code n'est écrit dans les logs.[39m
+    [31m[1m>[22m[39m[90m 2799 |[39m         console[33m.[39mwarn([32m`[BULK] ${refused} ligne(s) non enregistrées : hors périmètre MSD de l'agent.`[39m)[33m;[39m
+     [90m      |[39m                 [31m[1m^[22m[39m
+     [90m 2800 |[39m       }
+     [90m 2801 |[39m       [90m// L'acteur est désormais l'agent authentifié : un import écrit en base,[39m
+     [90m 2802 |[39m       [90m// il doit être attribuable (avant, la route était ouverte et l'import[39m[0m
+
+      at warn (server.js:2799:17)
+
+  console.warn
+    [BULK] Base indisponible, fallback fichier : connexion perdue
+
+    [0m [90m 2840 |[39m   } [36mcatch[39m (dbErr) {
+     [90m 2841 |[39m     [90m// Base indisponible → fallback fichier : chaque ligne est conservée[39m
+    [31m[1m>[22m[39m[90m 2842 |[39m     console[33m.[39mwarn([32m'[BULK] Base indisponible, fallback fichier :'[39m[33m,[39m dbErr[33m.[39mmessage)[33m;[39m
+     [90m      |[39m             [31m[1m^[22m[39m
+     [90m 2843 |[39m     [36mlet[39m inserted [33m=[39m [35m0[39m[33m;[39m
+     [90m 2844 |[39m     [36mlet[39m updated [33m=[39m [35m0[39m[33m;[39m
+     [90m 2845 |[39m     [36mlet[39m skipped [33m=[39m [35m0[39m[33m;[39m[0m
+
+      at warn (server.js:2842:13)
+
+  console.warn
+    [BULK] Journal d'audit indisponible (import déjà commité) : audit_logs indisponible
+
+    [0m [90m 2815 |[39m            [32m`Import en masse : ${inserted} créés, ${updated} mis à jour, ${skipped} ignorés, ${refused} refusés (hors MSD).`[39m])[33m;[39m
+     [90m 2816 |[39m       } [36mcatch[39m (auditErr) {
+    [31m[1m>[22m[39m[90m 2817 |[39m         console[33m.[39mwarn([32m'[BULK] Journal d\'audit indisponible (import déjà commité) :'[39m[33m,[39m auditErr[33m.[39mmessage)[33m;[39m
+     [90m      |[39m                 [31m[1m^[22m[39m
+     [90m 2818 |[39m       }
+     [90m 2819 |[39m       [90m// `refused` est un compteur AJOUTÉ : les clés d'origine sont inchangées.[39m
+     [90m 2820 |[39m       [36mreturn[39m res[33m.[39mstatus([35m201[39m)[33m.[39mjson({ success[33m:[39m [36mtrue[39m[33m,[39m mode[33m:[39m [32m'database'[39m[33m,[39m inserted[33m,[39m updated[33m,[39m skipped[33m,[39m refused[33m,[39m total[33m:[39m rows[33m.[39mlength })[33m;[39m[0m
+
+      at warn (server.js:2817:17)
+
+  console.log
+    [Secours] lecture MSD PKN : 2/5 enregistrement(s) visibles.
+
+      at log (server.js:3249:13)
+
+  console.log
+    [Secours] lecture supervision : 5/5 enregistrement(s) visibles.
+
+      at log (server.js:3249:13)
+
+  console.log
+    [Secours] lecture MSD PKN : 2/5 enregistrement(s) visibles.
+
+      at log (server.js:3249:13)
+
+  console.log
+    [Secours] rejeu base : 3 traité(s), 1 en attente.
+
+      at log (server.js:3274:13)
+
+node.exe : PASS __tests__/api.test.js (7.284 s)
+Au caractère Ligne:1 : 1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (PASS __tests__/api.test.js (7.284 s):String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Sécurité & RBAC
+    √ GET /api/beneficiaries sans jeton → 401 (150 ms)
+    √ GET /api/beneficiaries avec jeton citoyen → 403 (RBAC) (38 ms)
+    √ GET /api/beneficiaries avec jeton agent → 200 (26 ms)
+    √ POST /api/agents sans auth → 401 (55 ms)
+    √ POST /api/agents avec agent (non admin) → 403 (22 ms)
+    √ GET /api/audit-logs sans jeton → 401 (19 ms)
+    √ GET /api/complaints sans jeton → 401 (23 ms)
+  Authentification : access + refresh tokens
+    √ POST /api/auth/citizen/login avec PIN haché invalide → 401 (155 ms)
+    √ POST /api/auth/refresh sans refresh token → 400 (20 ms)
+    √ POST /api/auth/refresh avec token invalide → 401 (15 ms)
+    √ POST /api/auth/refresh avec token valide → nouveaux jetons + rotation (20 ms)
+    √ POST /api/auth/logout révoque le refresh token → 200 (22 ms)
+    √ POST /api/auth/logout sans refresh token → 200 (best-effort) (17 ms)
+  Validation des entrées (zod)
+    √ POST /api/auth/citizen/login avec PIN invalide → 400 (26 ms)
+    √ POST /api/auth/citizen/login avec téléphone invalide → 400 (18 ms)
+    √ POST /api/donations avec montant négatif → 400 (15 ms)
+    √ POST /api/donations avec montant valide → 201 (79 ms)
+    √ POST /api/agents avec mot de passe trop court → 400 (19 ms)
+    √ POST /api/complaints avec champs manquants → 400 (16 ms)
+    √ POST /api/chatbot avec message vide → 400 (15 ms)
+  Pagination
+    √ GET /api/beneficiaries renvoie une structure paginée (22 ms)
+    √ GET /api/audit-logs plafonne la limit à 200 (14 ms)
+  Chatbot (fallback local)
+    √ POST /api/chatbot sans clé Gemini → réponse fallback FR (22 ms)
+    √ POST /api/chatbot Wolof → réponse fallback WO (12 ms)
+  TTS
+    √ GET /api/tts sans paramètre text → 400 (15 ms)
+  Routes publiques
+    √ GET /api/mutuelles → 200 (18 ms)
+    √ GET /api/locations → 200 (11 ms)
+    √ GET /api/stats → 200 (11 ms)
+  Routes CSU (programmes, claims, carte CMU, dashboard)
+    √ GET /api/csu/programs → 200 (public) (13 ms)
+    √ GET /api/csu/programs/:slug → 200 (14 ms)
+    √ GET /api/csu/programs/:slug introuvable → 404 (13 ms)
+    √ POST /api/csu/programs sans auth → 401 (12 ms)
+    √ POST /api/claims avec données valides → 201 (15 ms)
+    √ POST /api/claims avec type de soin invalide → 400 (15 ms)
+    √ GET /api/claims sans auth → 401 (10 ms)
+    √ GET /api/claims avec token agent → 200 (paginé) (14 ms)
+    √ GET /api/cmu-card/:cmuNumber → 200 (carte valide) (13 ms)
+    √ GET /api/cmu-card/:cmuNumber introuvable → 404 (13 ms)
+    √ GET /api/dashboard/stats sans auth → 401 (12 ms)
+    √ GET /api/dashboard/stats avec token agent → 200 (14 ms)
+    √ POST /api/notifications sans auth → 401 (11 ms)
+    √ POST /api/notifications avec token agent → 201 (17 ms)
+  Cotisations + rappels automatiques
+    √ GET /api/cotisations sans auth → 401 (12 ms)
+    √ GET /api/cotisations avec token agent → 200 (paginé) (12 ms)
+    √ POST /api/cotisations/send-reminders sans auth → 401 (11 ms)
+    √ POST /api/cotisations/send-reminders avec token agent → 200 (15 ms)
+  Espace partenaire (structures de soins)
+    √ POST /api/auth/partner/login avec identifiants invalides → 404 (15 ms)
+    √ POST /api/auth/partner/login sans champs → 400 (12 ms)
+    √ GET /api/partner/verify-card sans token partenaire → 401 (13 ms)
+    √ GET /api/partner/verify-card avec token agent (non partenaire) → 403 (14 ms)
+    √ GET /api/partners/structures sans auth → 401 (11 ms)
+    √ GET /api/partners/structures avec token agent (non admin) → 403 (12 ms)
+  Statistiques inter-régions
+    √ GET /api/dashboard/regional-comparison sans auth → 401 (12 ms)
+    √ GET /api/dashboard/regional-comparison avec token agent → 403 (15 ms)
+    √ GET /api/dashboard/regional-comparison avec token admin → 200 (14 ms)
+  Fidélité assurés (points + badges)
+    √ GET /api/loyalty/:id sans auth → 401 (12 ms)
+    √ GET /api/loyalty/:id avec token citoyen (propre compte) → 200 (15 ms)
+    √ GET /api/loyalty/:id avec citoyen (autre compte) → 403 (13 ms)
+    √ GET /api/loyalty/leaderboard sans auth → 401 (17 ms)
+    √ GET /api/loyalty/leaderboard avec token agent → 200 (19 ms)
+  Paiements Orange Money / Wave
+    √ POST /api/payments/initiate avec données valides → 201 (55 ms)
+    √ POST /api/payments/initiate avec provider invalide → 400 (13 ms)
+    √ POST /api/payments/initiate avec montant négatif → 400 (16 ms)
+    √ GET /api/payments/:reference → 200 (14 ms)
+    √ GET /api/payments/:reference introuvable → 404 (12 ms)
+    √ POST /api/payments/webhook/:provider avec référence manquante → 400 (13 ms)
+    √ GET /api/payments sans auth → 401 (13 ms)
+    √ GET /api/payments avec token citoyen → 200 (paginé) (12 ms)
+  Synchronisation hors-ligne
+    √ POST /api/sync/queue sans auth → 401 (13 ms)
+    √ POST /api/sync/queue avec token citoyen → 201 (18 ms)
+    √ POST /api/sync/queue avec action invalide → 400 (13 ms)
+    √ POST /api/sync/process sans auth → 401 (13 ms)
+    √ GET /api/sync/status sans auth → 401 (14 ms)
+  POST /api/beneficiaries/bulk — écriture protégée et cloisonnée
+    √ sans jeton → 401 (la route était ouverte à tous) (18 ms)
+    √ avec jeton citoyen → 403 (RBAC) (17 ms)
+    √ un agent DAKAR importe un code DKR → accepté et rattaché à sa MSD (22 ms)
+    √ un agent PKN ne peut PAS importer une fiche DKR (refus, pas doublon) (77 ms)
+    √ un agent ne peut PAS modifier une fiche déjà rattachée à une autre MSD (79 ms)
+    √ le Super Admin (sans msdCode) n'est PAS filtré (15 ms)
+    √ un agent NON RATTACHÉ à une MSD → 403 (fail-closed) (16 ms)
+    √ un agent NON RATTACHÉ ne peut pas lire le secours (403) (14 ms)
+    √ le contrat de réponse expose toujours inserted/updated/total (15 ms)
+  POST /api/beneficiaries/bulk — contre-expertise
+    √ un NIN d'une AUTRE MSD ne permet pas de s'approprier sa fiche (60 ms)
+    √ la correspondance exacte par matricule prime sur le NIN (15 ms)
+    √ une erreur en cours d'import ANNULE la transaction avant de rendre la connexion (64 ms)
+    √ un journal d'audit indisponible NE rejoue PAS l'import dans le secours (61 ms)
+  Secours fichier — mergeRecord et rejeu de la MSD
+    √ une valeur VIDE n'efface pas la fiche, _flushed et les champs absents survivent (6 ms)
+    √ le rejeu en base conserve msd_code (cloisonnement) (6 ms)
+  Secours fichier — routes d'exposition
+    GET /api/beneficiaries/fallback
+      √ sans jeton → 401 (12 ms)
+      √ avec jeton citoyen → 403 (13 ms)
+      √ avec jeton agent PKN → 200, cloisonné sur SA MSD (45 ms)
+      √ le Super Admin supervise toutes les MSD, y compris les fiches non rattachées (24 ms)
+      √ un GET n'écrit plus en base : le rejeu est une route POST (24 ms)
+    POST /api/beneficiaries/fallback/flush
+      √ sans jeton → 401 (11 ms)
+      √ avec jeton agent → 403 (le rejeu est transverse, pas par MSD) (14 ms)
+      √ avec jeton admin → 200 et rejeu effectif (16 ms)
+    GET /api/fallback-status
+      √ sans jeton → 401 (13 ms)
+      √ avec jeton citoyen → 403 (14 ms)
+      √ avec jeton agent → 200 et compteurs (aucun enregistrement renvoyé) (18 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       99 passed, 99 total
+Snapshots:   0 total
+Time:        7.832 s, estimated 16 s
+Ran all test suites.

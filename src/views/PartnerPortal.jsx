@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 // Espace partenaire pour les structures de soins et les prestataires conventionnés.
 // Inclut le Module de Gestion des Prestataires & Médecins pour les Administrateurs d'Unions Départementales (UDMS).
-export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentUser, partnerUser, setPartnerUser }) {
+export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, partnerUser, setPartnerUser }) {
   const [partner, setPartner] = useState(partnerUser || (() => {
     try {
       const cached = localStorage.getItem('cmu-partner-user');
@@ -27,8 +27,6 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
   const [tpResult, setTpResult] = useState(null);
   const [tpLoading, setTpLoading] = useState(false);
 
-  // Stats
-  const [stats, setStats] = useState(null);
   const [partnerStatusFilter, setPartnerStatusFilter] = useState('all'); // all, 'Actif & agréé', etc.
   const isAuthenticated = !!partner || (portalMode === 'superadmin') || (portalMode === 'agent' && !!agentUser) || portalMode === 'doctor' || portalMode === 'midwife' || portalMode === 'pharmacist' || portalMode === 'partner';
   
@@ -36,7 +34,7 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
   const isSuperAdmin = portalMode === 'superadmin' || agentUser?.role === 'SuperAdmin' || agentUser?.role === 'Super Admin';
   const isUdmsAgentOrAdmin = (isSuperAdmin || (portalMode === 'agent' && !!agentUser) || agentUser?.role === 'Agent Instructeur') && !partner && portalMode !== 'doctor' && portalMode !== 'partner' && portalMode !== 'midwife' && portalMode !== 'pharmacist';
   
-  // Le prestataire / médecin (ex: Centre Hospitalier Abass Ndao) accède EXCLUSIVEMENT en lecteur aux informations qui le concernent
+  // eslint-disable-next-line no-unused-vars -- Drapeau RBAC documenté (le prestataire / médecin, ex: Centre Hospitalier Abass Ndao, accède EXCLUSIVEMENT en lecteur) : conservé car il matérialise la règle d'accès, mais aucune branche du rendu ne le lit encore.
   const isPartner = !isUdmsAgentOrAdmin && (!!partner || portalMode === 'doctor' || portalMode === 'midwife' || portalMode === 'pharmacist' || portalMode === 'partner');
 
   // Load KPI filter from Super Admin dashboard if present
@@ -229,6 +227,7 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
         localStorage.setItem('cmu_udms_prestataires', JSON.stringify(list));
       }
       return list;
+      // eslint-disable-next-line no-unused-vars -- Catch volontairement muet (repli sur la liste par défaut si le cache localStorage est illisible) : la liaison d'erreur n'est pas lue.
     } catch (e) {
       return defaultUdmsPrestataires;
     }
@@ -293,7 +292,6 @@ export default function PartnerPortal({ lang = 'fr', setView, portalMode, agentU
   };
 
   // ── PÉRIMÈTRE RBAC ET FILTRAGE DYNAMIQUE STRICT DE LA STRUCTURE & DES PRATICIENS ──
-  const activeUserUdms = partner?.udms || agentUser?.udms || selectedUdms || 'UDMS Dakar';
   const activeUserStructure = (partner?.structureName || partner?.name || '').toLowerCase().trim();
 
   const filteredPrestataires = prestataires.filter(p => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getStoredMembers, saveStoredMembers, getCardByCode } from '../utils/beneficiaryStore.js';
-import { getAdherentCode } from '../utils/csuFormatter';
+import { getStoredMembers, saveStoredMembers } from '../utils/beneficiaryStore.js';
+import { resolveMinorDependents, collectAttachedMinorIds } from '../utils/householdMinors';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
 
 /**
@@ -36,11 +36,9 @@ function formatProperCase(str) {
  * 3. Consulter et télécharger exclusivement SES reçus et son historique personnel de paiements
  */
 export default function Payments({ 
-  lang = 'fr', 
   citizenUser = null, 
   agentUser = null, 
-  portalMode = 'citizen', 
-  setView = null 
+  portalMode = 'citizen'
 }) {
   const [activeTab, setActiveTab] = useState('cotisation'); // 'cotisation' | 'sponsoring' | 'history'
   
@@ -57,6 +55,7 @@ export default function Payments({
         const parsed = JSON.parse(pending);
         const found = allMembers.find(m => m.cmuNumber?.startsWith(parsed.cmuNumber) || m.adherentCode === parsed.cmuNumber);
         if (found) return found.id;
+      // eslint-disable-next-line no-unused-vars -- Catch volontairement muet : on ignore l'erreur et on renvoie la valeur par défaut (le stockage local peut être indisponible en navigation privée).
       } catch (e) {}
     }
     const activeId = localStorage.getItem('cmu-active-insured-id');
@@ -80,6 +79,7 @@ export default function Payments({
           return false;
         });
         if (found) return found.id;
+      // eslint-disable-next-line no-unused-vars -- Catch volontairement muet : on ignore l'erreur et on renvoie la valeur par défaut (le stockage local peut être indisponible en navigation privée).
       } catch (e) {}
     }
     if (citizenUser) {
@@ -120,7 +120,8 @@ export default function Payments({
             (cmu && (m.cmuNumber?.toLowerCase() === cmu.toLowerCase() || m.adherentCode?.toLowerCase() === cmu.toLowerCase()))
           );
           if (found) setSelectedMemberId(found.id);
-        } catch (e) {}
+        // eslint-disable-next-line no-unused-vars -- Catch volontairement muet : on ignore l'erreur et on renvoie la valeur par défaut (le stockage local peut être indisponible en navigation privée).
+      } catch (e) {}
       }
     };
 
@@ -133,6 +134,13 @@ export default function Payments({
   }, [allMembers, selectedMemberId]);
 
   // Liste des membres du foyer (Titulaire + Ayants droit) avec mise en forme propre des noms
+  //
+  // ⚠️ RÈGLE D'OR : un enfant de moins de 18 ans n'a PAS de carte ni de
+  // cotisation propre — il est pris en charge sur la carte de son adhérent.
+  // La source de vérité est `resolveMinorDependents`, qui unifie la forme
+  // imbriquée (import Excel) et la forme plate (fiches « sœurs » de l'API) :
+  // lire `activeMember.dependents` seul renvoyait une liste vide pour les
+  // fiches API, et les mineurs apparaissaient comme des assurés indépendants.
   const familyList = React.useMemo(() => {
     if (!activeMember) return [];
     const titulaire = {
@@ -147,24 +155,25 @@ export default function Payments({
       coverage: '80% Tiers-payant'
     };
 
-    const deps = (activeMember.dependents || []).map((d, idx) => {
-      const suffix = d.codeSuffix || (d.isMajor ? `.1${idx + 1}` : `.M${idx + 1}`);
-      const depCode = `${activeMember.adherentCode || activeMember.cmuNumber.replace('.0', '')}${suffix}`;
+    const deps = resolveMinorDependents(allMembers, activeMember).map((d, idx) => {
+      const suffix = d.codeSuffix || `.M${idx + 1}`;
+      const depCode = d.cmuNumber || `${activeMember.adherentCode || activeMember.cmuNumber.replace('.0', '')}${suffix}`;
       return {
         id: `dep_${idx}`,
-        name: formatProperCase(d.name),
-        relation: d.isMajor ? 'Ayant droit majeur' : (d.gender === 'F' ? 'Enfant mineur (Fille)' : 'Enfant mineur (Fils)'),
+        name: formatProperCase(d.name || `${d.firstName || ''} ${d.lastName || ''}`),
+        relation: d.relation || 'Enfant mineur (pris en charge)',
         code: depCode,
-        isMajor: d.isMajor,
+        isMajor: false,
         isTitulaire: false,
         photoUrl: d.photoUrl,
-        status: d.isMajor ? '80% Tiers-payant' : '100% Pédiatrie gratuite',
-        coverage: d.isMajor ? '80% Tiers-payant' : '100% Gratuité'
+        status: '100% Pédiatrie gratuite',
+        coverage: '100% Gratuité',
+        prisEnCharge: true
       };
     });
 
     return [titulaire, ...deps];
-  }, [activeMember]);
+  }, [activeMember, allMembers]);
 
   // Sélection interactive des membres pour la cotisation
   const [selectedMemberIds, setSelectedMemberIds] = useState(() => familyList.map(m => m.id));
@@ -200,6 +209,7 @@ export default function Payments({
     try {
       const stored = localStorage.getItem(historyStorageKey);
       if (stored) return JSON.parse(stored);
+      // eslint-disable-next-line no-unused-vars -- Historique illisible ou stockage indisponible : on repart de l'historique d'exemple plutôt que de casser l'écran.
     } catch (e) {}
     return [
       {
@@ -239,6 +249,7 @@ export default function Payments({
         ];
         setPersonalPayments(initial);
       }
+      // eslint-disable-next-line no-unused-vars -- Historique illisible ou stockage indisponible : l'historique d'exemple reste affiché.
     } catch (e) {}
   }, [activeMember?.id]);
 
@@ -249,6 +260,7 @@ export default function Payments({
     try {
       localStorage.setItem(historyStorageKey, JSON.stringify(updated));
       window.dispatchEvent(new Event('unamusc_payment_created'));
+      // eslint-disable-next-line no-unused-vars -- Persistance best-effort : un stockage indisponible ne doit pas faire perdre le paiement pour la session en cours.
     } catch (e) {}
   };
 
@@ -375,7 +387,8 @@ export default function Payments({
               parsed.photoStatus = 'OFFICIAL';
               localStorage.setItem('cmu-citizen-user', JSON.stringify(parsed));
             }
-          } catch (e) {}
+          // eslint-disable-next-line no-unused-vars -- Catch volontairement muet : on ignore l'erreur et on renvoie la valeur par défaut (le stockage local peut être indisponible en navigation privée).
+      } catch (e) {}
 
           // Mettre à jour le store centralisé
           try {
@@ -388,7 +401,8 @@ export default function Payments({
             });
             saveStoredMembers(updated);
             setAllMembers(updated);
-          } catch (e) {}
+          // eslint-disable-next-line no-unused-vars -- Catch volontairement muet : on ignore l'erreur et on renvoie la valeur par défaut (le stockage local peut être indisponible en navigation privée).
+      } catch (e) {}
 
           // Déclencher un événement global pour actualiser instantanément tous les composants montés
           window.dispatchEvent(new CustomEvent('cmu-rights-restored', { 
@@ -483,6 +497,7 @@ export default function Payments({
                   value={selectedMemberId} 
                   onChange={(e) => {
                     setSelectedMemberId(e.target.value);
+                    // eslint-disable-next-line no-unused-vars -- Mémorisation best-effort du membre actif : un stockage indisponible ne doit pas bloquer le changement de membre.
                     try { localStorage.setItem('cmu-active-insured-id', e.target.value); } catch (err) {}
                   }}
                   className="form-select fw-extrabold border"
@@ -502,15 +517,25 @@ export default function Payments({
                     boxSizing: 'border-box'
                   }}
                 >
-                  {allMembers.map(m => {
-                    const depCount = (m.dependents || []).length;
-                    const typeLabel = depCount === 0 ? 'Assuré Seul (0 ayant droit)' : `${depCount} ayant(s) droit à charge`;
-                    return (
-                      <option key={m.id} value={m.id}>
-                        {formatProperCase(`${m.firstName} ${m.lastName}`)} ({m.cmuNumber}) — {typeLabel}
-                      </option>
-                    );
-                  })}
+                  {(() => {
+                    // Règle d'or : un mineur < 18 ans n'est PAS un assuré
+                    // indépendant. Il est pris en charge sur la carte de son
+                    // adhérent — on le retire du menu de sélection.
+                    const attachedMinorIds = collectAttachedMinorIds(allMembers);
+                    return allMembers
+                      .filter((m) =>
+                        !attachedMinorIds.has(m.id) &&
+                        !attachedMinorIds.has(String(m.cmuNumber || '').toUpperCase()))
+                      .map((m) => {
+                        const depCount = resolveMinorDependents(allMembers, m).length;
+                        const typeLabel = depCount === 0 ? 'Assuré Seul (0 ayant droit)' : `${depCount} enfant(s) mineur(s) à charge`;
+                        return (
+                          <option key={m.id} value={m.id}>
+                            {formatProperCase(`${m.firstName} ${m.lastName}`)} ({m.cmuNumber}) — {typeLabel}
+                          </option>
+                        );
+                      });
+                  })()}
                 </select>
               </div>
             </div>

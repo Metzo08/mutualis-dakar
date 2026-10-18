@@ -98,6 +98,46 @@ function replaceCollection(collection, records) {
 }
 
 /**
+ * Fusionne des champs dans un enregistrement DÉJÀ présent d'une collection.
+ *
+ * POURQUOI
+ * L'import en masse (`POST /api/beneficiaries/bulk`) tombait en fallback
+ * fichier dès que la base était indisponible. Or la seule API d'écriture
+ * exposed alors était `addRecord`, qui empile : une réimportation était donc
+ *IGNorée (« la ligne existe déjà »), et la photo d'un dossier réimporté ne
+ * pouvait jamais se remplir — l'agent réimportait indéfiniment sans résultat.
+ *
+ * RÈGLE (identique à celle de la voie base, `COALESCE` SQL) :
+ * une valeur VIDE (`null`, `undefined`, chaîne vide) ne remplace JAMAIS la
+ * valeur existante ; une valeur renseignée, si. Compléter est permis,
+ * effacer ne l'est pas.
+ *
+ * @param {string} collection
+ * @param {(rec: object) => boolean} matcher sélecteur de l'enregistrement visé
+ * @param {object} patch champs à fusionner (noms tels que stockés en JSON)
+ * @returns {object|null} l'enregistrement fusionné, ou `null` si introuvable
+ */
+function mergeRecord(collection, matcher, patch) {
+  if (!COLLECTIONS.includes(collection)) return null;
+  if (typeof matcher !== 'function') throw new TypeError('mergeRecord requiert une fonction matcher().');
+  const store = readStore();
+  const list = Array.isArray(store[collection]) ? store[collection] : null;
+  if (!list) return null;
+  const idx = list.findIndex((rec) => matcher(rec));
+  if (idx === -1) return null;
+  const current = list[idx];
+  for (const [key, value] of Object.entries(patch || {})) {
+    if (value === null || value === undefined || value === '') continue;
+    current[key] = value;
+  }
+  // `_flushed` est laissé intact : une fiche déjà versée en base ne doit pas
+  // être rejouée au prochain flush, même si l'import l'a enrichie depuis.
+  store[collection][idx] = current;
+  writeStore(store);
+  return current;
+}
+
+/**
  * Rejoue les enregistrements du fallback dans PostgreSQL (idempotent :
  * les lignes déjà en base sont détectées par cmu_number).
  * @returns {{flushed: number, remaining: number}}
@@ -114,13 +154,24 @@ async function flushToDb(query) {
         const cmu = rec.cmuNumber || rec.cmu_number || '';
         const exists = await query('SELECT id FROM beneficiaries WHERE cmu_number = $1 LIMIT 1', [cmu]);
         if (exists.rows.length === 0 && cmu) {
+          // ⚠️ `msd_code` est REPLAYÉ. Sans cette colonne, une fiche importée en
+          // mode secours (où le cloisonnement MSD a été appliqué et où `msdCode`
+          // a été stocké avec la fiche) revenait en base SANS MSD : elle
+          // devenait invisible du filtre `b.msd_code` de GET /api/beneficiaries
+          // pour son propre agent, et visible de tous les autres. Le
+          // cloisonnement était perdu au moment du flush.
+          // ⚠️ 14 colonnes / 14 paramètres ($1..$14) — compte à tenir.
           await query(
-            `INSERT INTO beneficiaries (first_name, last_name, birth_date, phone, email, address, mutuelle_name, package_type, payment_method, cmu_number, status, sponsor_phone, school_name)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+            `INSERT INTO beneficiaries (first_name, last_name, birth_date, phone, email, address, mutuelle_name, package_type, payment_method, cmu_number, status, sponsor_phone, school_name, msd_code)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
             [rec.firstName || rec.prenom || '', rec.lastName || rec.nom || '', rec.birthDate || '', rec.phone || rec.telephone || '', rec.email || '',
              rec.address || '', rec.mutuelleName || 'MSD Dakar', rec.packageType || 'individuel',
              rec.paymentMethod || 'mobile_money', cmu || `SN-DK-FB-${Date.now().toString(36).toUpperCase()}`,
-             rec.status || 'active', rec.sponsorPhone || null, rec.schoolName || null]
+             rec.status || 'active', rec.sponsorPhone || null, rec.schoolName || null,
+             // Les deux graphies sont lues : le secours écrit `msdCode`
+             // (camelCase, comme les autres champs de la collection), mais un
+             // fichier plus ancien peut porter `msd_code`.
+             rec.msdCode || rec.msd_code || null]
           );
         }
         rec._flushed = true;
@@ -283,13 +334,24 @@ async function generateCmuNumber(opts = {}) {
   return `${prefix}-${String(seq).padStart(7, '0')}-${Date.now().toString(36).toUpperCase().slice(-4)}`;
 }
 
+// Nombre d'enregistrements encore en attente de rejeu vers la DB (toutes
+// collections confondues). Utilisé pour l'affichage du statut de secours.
+const pendingCount = () => {
+  const store = readStore();
+  let n = 0;
+  for (const v of Object.values(store)) n += Array.isArray(v) ? v.length : 0;
+  return n;
+};
+
 module.exports = {
   // Persistance de secours (fichier JSON)
   addRecord,
   listRecords,
+  mergeRecord,
   replaceCollection,
   flushToDb,
   readStore,
+  pendingCount,
   STORE_PATH,
   // Génération de matricules CMU
   generateCmuNumber,

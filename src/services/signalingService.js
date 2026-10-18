@@ -44,6 +44,7 @@ export function openSignaling({ room, role, participantId, name, onMessage, onSt
   let heartbeat = null;
 
   const emit = (status) => {
+    // eslint-disable-next-line no-unused-vars -- l'appelant peut ne rien faire : l'échec d'un callback de statut ne doit pas casser la signalisation.
     try { onStatus?.(status); } catch (e) { /* l'appelant peut ne rien faire */ }
   };
 
@@ -68,6 +69,7 @@ const connect = () => {
     try {
       const base = new URL(apiBase || window.location.origin, window.location.href);
       wsUrl = `${base.protocol === 'https:' ? 'wss:' : 'ws:'}//${base.host}${WS_PATH}`;
+    // eslint-disable-next-line no-unused-vars -- URL relative impossible ici : on retombe sur l'origine courante plutôt que d'abandonner la consultation.
     } catch (e) {
       wsUrl = `${window.location.origin.replace(/^http/, 'ws')}${WS_PATH}`;
     }
@@ -76,6 +78,7 @@ const connect = () => {
 
     try {
       ws = new WebSocket(`${wsUrl}?token=${encodeURIComponent(token)}`);
+    // eslint-disable-next-line no-unused-vars -- WebSocket peut refuser l'URL : la reconnexion prend le relais.
     } catch (e) {
       scheduleReconnect();
       return;
@@ -89,6 +92,7 @@ const connect = () => {
       // indéfiniment que l'autre parle.
       try {
         ws.send(JSON.stringify({ type: 'join', room, role, participantId: participantId || null, name: name || null }));
+      // eslint-disable-next-line no-unused-vars -- socket refermée entre-temps : la réception du message est sans objet.
       } catch (e) { /* socket refermée entre-temps */ }
 
       // Battement d'application : détecte une connexion silencieusement
@@ -96,6 +100,7 @@ const connect = () => {
       // les proxys qui ferment les connexions inactives.
       heartbeat = setInterval(() => {
         if (ws && ws.readyState === 1) {
+          // eslint-disable-next-line no-unused-vars -- ping best-effort : une socket morte sera de toute façon détectée à la fermeture.
           try { ws.send(JSON.stringify({ type: 'ping' })); } catch (e) { /* ignoré */ }
         }
       }, 25000);
@@ -103,6 +108,7 @@ const connect = () => {
 
     ws.onmessage = (evt) => {
       let msg;
+      // eslint-disable-next-line no-unused-vars -- message non JSON : on l'ignore, le canal reste ouvert.
       try { msg = JSON.parse(evt.data); } catch (e) { return; }
       if (!msg) return;
       if (msg.type === 'ping') return;
@@ -110,6 +116,7 @@ const connect = () => {
         emit({ state: 'open', instance: msg.instance || null });
         return;
       }
+      // eslint-disable-next-line no-unused-vars -- message invalide : on l'ignore sans fermer le canal.
       try { onMessage?.(msg); } catch (e) { /* message invalide : on l'ignore */ }
     };
 
@@ -151,7 +158,9 @@ const connect = () => {
         if (ws.readyState === 1) {
           ws.send(JSON.stringify({ type: 'bye' }));
         }
+      // eslint-disable-next-line no-unused-vars -- socket déjà fermée : le « bye » est sans objet.
       } catch (e) { /* socket déjà fermée */ }
+      // eslint-disable-next-line no-unused-vars -- close() peut échouer si le socket est déjà dans un état terminal.
       try { ws.close(1000, 'Fin de consultation'); } catch (e) { /* ignoré */ }
       ws = null;
     }

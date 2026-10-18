@@ -1,8 +1,10 @@
-import React, { useState, useEffect, Component } from 'react';
+import { useState, useEffect, Component } from 'react';
 import Header from './components/Header';
 import ChatbotWidget from './components/ChatbotWidget';
 import AudioReader from './components/AudioReader';
 import MobileTabBar from './components/MobileTabBar';
+import MaintenanceScreen from './components/MaintenanceScreen';
+import NotFound from './components/NotFound';
 
 // Import Views
 import Home from './views/Home';
@@ -69,18 +71,49 @@ class ErrorBoundary extends Component {
   }
   render() {
     if (this.state.hasError) {
+      // Le message technique est DÉROULABLE : un utilisateur qui signale un
+      // bug peut copier le détail sans qu'il soit exposé à la première vue.
+      // Avant, la stack s'affichait en gros sur tous les écrans, y compris
+      // devant l'assuré — mauvais pour la confiance, inutile pour lui.
       return (
-        <div className="card text-center" style={{ padding: '3rem', margin: '2rem auto', maxWidth: '600px', borderLeft: '6px solid var(--danger)' }}>
-          <h2 style={{ color: 'var(--danger)', fontSize: '1.4rem', marginBottom: '1rem' }}>⚠️ Erreur d'affichage</h2>
-          <p style={{ fontSize: '0.95rem', color: 'var(--text-sub)', marginBottom: '1.5rem' }}>
-            Une erreur inattendue est survenue lors du rendu de cette section. L'incident a été automatiquement signalé à l'équipe technique.
+        <div className="card text-center" style={{ padding: '3rem', margin: '2rem auto', maxWidth: '640px', borderRadius: '24px', borderLeft: '6px solid var(--danger)', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}>
+          <div style={{ fontSize: '3.2rem', marginBottom: '0.75rem' }}>🛠️</div>
+          <h2 style={{ color: 'var(--danger)', fontSize: '1.5rem', fontWeight: '800', marginBottom: '0.6rem' }}>
+            Une erreur inattendue est survenue
+          </h2>
+          <p style={{ fontSize: '0.95rem', color: 'var(--text-sub)', marginBottom: '1.5rem', lineHeight: 1.6 }}>
+            Cette section n'a pas pu s'afficher. Vos autres données restent accessibles.
+            L'incident a été automatiquement signalé à l'équipe technique.
           </p>
-          <div style={{ textAlign: 'left', background: 'var(--card-bg-subtle)', padding: '1rem', borderRadius: '8px', overflowX: 'auto', fontSize: '0.8rem', fontFamily: 'monospace', color: 'var(--text-main)', border: '1px solid var(--border-color)', marginBottom: '1.5rem' }}>
-            {this.state.error?.toString()}
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
+            <button
+              className="btn btn-primary fw-bold px-4 py-2.5"
+              style={{ borderRadius: '12px', background: '#059669', border: 'none' }}
+              onClick={() => this.setState({ hasError: false, error: null })}
+            >
+              🔄 Réessayer
+            </button>
+            <button
+              className="btn btn-outline-secondary fw-bold px-4 py-2.5"
+              style={{ borderRadius: '12px' }}
+              onClick={() => { window.location.hash = '#home'; window.location.reload(); }}
+            >
+              🏠 Retour à l'accueil
+            </button>
           </div>
-          <button className="btn btn-primary btn-sm" onClick={() => window.location.reload()}>
-            Actualiser l'application
-          </button>
+          <details style={{ textAlign: 'left' }}>
+            <summary style={{ fontSize: '0.8rem', color: 'var(--text-sub)', cursor: 'pointer', userSelect: 'none' }}>
+              Détails techniques (pour le signalement)
+            </summary>
+            <pre style={{
+              background: 'var(--bg-card-subtle)', padding: '1rem', borderRadius: '8px',
+              overflowX: 'auto', fontSize: '0.75rem', fontFamily: 'monospace',
+              color: 'var(--text-main)', border: '1px solid var(--border-color)',
+              marginTop: '0.75rem', whiteSpace: 'pre-wrap', wordBreak: 'break-word'
+            }}>
+              {this.state.error?.toString()}
+            </pre>
+          </details>
         </div>
       );
     }
@@ -99,6 +132,7 @@ const isSessionFresh = () => {
   try {
     const ts = Number(localStorage.getItem('cmu-session-ts') || 0);
     return ts > 0 && (Date.now() - ts) < SESSION_TTL_MS;
+  // eslint-disable-next-line no-unused-vars -- session illisible = session invalide : le garde-fou est volontaire.
   } catch (e) {
     return false;
   }
@@ -110,6 +144,7 @@ const purgeStaleSessions = () => {
       localStorage.removeItem('cmu-citizen-user');
       localStorage.removeItem('cmu-partner-user');
     }
+    // eslint-disable-next-line no-unused-vars -- purge best-effort : un stockage indisponible ne doit pas empêcher le rendu.
   } catch (e) {}
 };
 purgeStaleSessions();
@@ -118,7 +153,16 @@ export default function App() {
   // Liste des vues valides (pour valider le hash URL)
   const validViews = ['home','login','beneficiaries','services','map','directory','depts','programmes','about','medicaments','audit-logs','galerie','infos-csu','blog-experts','parrainage-solidaire','partnership','complaints','profile','verify','dashboard','claims','notifications','cotisations','partner','regional-stats','loyalty','payments','guarantees','purchase-orders','telemedicine','medical-profile','maternity','superadmin-governance','rse','institution-coud','card-studio'];
 
-  // Initialise la vue depuis le hash URL (#/beneficiaries) pour le deep-linking
+  // Initialise la vue depuis le hash URL (#/beneficiaries) pour le deep-linking.
+  // Un hash inconnu n'est PLUS silencieusement remplacé par l'accueil : il est
+  // conservé dans `unknownView` et la page 404 s'affiche — l'utilisateur voit
+  // ainsi pourquoi son lien ne fonctionne pas (favori périmé, QR code obsolète).
+  const [unknownView, setUnknownView] = useState(() => {
+    const hash = window.location.hash.replace(/^#\/?/, '');
+    const firstSegment = hash.split('/')[0];
+    return validViews.includes(firstSegment) ? null : (firstSegment || null);
+  });
+
   const initialViewFromHash = () => {
     const hash = window.location.hash.replace(/^#\/?/, '');
     const firstSegment = hash.split('/')[0];
@@ -213,6 +257,7 @@ export default function App() {
       if (storedCitizen && !citizenUser) {
         rawSetCitizenUser(JSON.parse(storedCitizen));
       }
+    // eslint-disable-next-line no-unused-vars -- session illisible : on l'ignore plutôt que de purger l'écran (garde existant).
     } catch (e) {}
 
     try {
@@ -220,6 +265,7 @@ export default function App() {
       if (storedAgent && !agentUser) {
         rawSetAgentUser(JSON.parse(storedAgent));
       }
+    // eslint-disable-next-line no-unused-vars -- session illisible : on l'ignore plutôt que de purger l'écran (garde existant).
     } catch (e) {}
 
     try {
@@ -227,6 +273,7 @@ export default function App() {
       if (storedPartner && !partnerUser) {
         rawSetPartnerUser(JSON.parse(storedPartner));
       }
+    // eslint-disable-next-line no-unused-vars -- session illisible : on l'ignore plutôt que de purger l'écran (garde existant).
     } catch (e) {}
 
     const storedMode = localStorage.getItem('cmu-portal-mode');
@@ -384,8 +431,26 @@ export default function App() {
     return () => window.removeEventListener('cmu-session-expired', handleSessionExpired);
   }, []);
 
+  // Mode maintenance : déclenché par apiFetch quand une requête reçoit
+  // 503 { error: 'MAINTENANCE' }. On affiche l'écran dédié (pas une erreur
+  // générique) avec le message de l'admin, et le bouton « Réessayer »
+  // relance la page — le retour du service est ainsi immédiat.
+  const [maintenanceInfo, setMaintenanceInfo] = useState(null);
+
+  useEffect(() => {
+    const handleMaintenance = (e) => {
+      setMaintenanceInfo({
+        message: e.detail?.message || null,
+        since: e.detail?.since || null
+      });
+    };
+    window.addEventListener('cmu-maintenance', handleMaintenance);
+    return () => window.removeEventListener('cmu-maintenance', handleMaintenance);
+  }, []);
+
   // Mode hors-ligne : synchronisation automatique de la file d'attente au retour de connexion.
   // Met aussi en cache les données critiques (mutuelles, carte CMU) quand en ligne.
+  // eslint-disable-next-line no-unused-vars -- compteur d'attente synchronisé (outbox) mais pas encore rendu : l'état et son setter restent en place.
   const [pendingSyncCount, setPendingSyncCount] = useState(0);
   useEffect(() => {
     const handleBackOnline = async () => {
@@ -405,6 +470,8 @@ export default function App() {
   // Synchronise l'URL (hash) avec la vue courante pour le deep-linking et le back/forward navigateur.
   // - Quand `view` change, on met à jour le hash (#/beneficiaries).
   // - Quand l'utilisateur utilise back/forward (hashchange), on met à jour `view`.
+  // (déclarés AVANT les rendus conditionnels : les hooks ne doivent jamais
+  // suivre un return conditionnel, sinon React déclenche une erreur d'ordre.)
   useEffect(() => {
     const currentHash = window.location.hash;
     const expectedHash = `#/${view}`;
@@ -422,7 +489,13 @@ export default function App() {
     const handleHashChange = () => {
       const hash = window.location.hash.replace(/^#\/?/, '');
       const firstSegment = hash.split('/')[0];
-      if (validViews.includes(firstSegment) && firstSegment !== view) {
+      if (!validViews.includes(firstSegment)) {
+        // Vue inconnue → page 404 (au lieu d'un retour silencieux à l'accueil).
+        setUnknownView(firstSegment || null);
+        return;
+      }
+      if (unknownView) setUnknownView(null);
+      if (firstSegment !== view) {
         setView(firstSegment);
         setSidebarOpen(false);
       }
@@ -430,6 +503,61 @@ export default function App() {
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, [view]);
+
+  // RENDUS CONDITIONNELS (tous les hooks ont été appelés ci-dessus — les
+  // returns conditionnels doivent venir APRÈS la déclaration de tous les
+  // hooks, sinon React déclenche une erreur de hooks conditionnels).
+
+  // Mode maintenance : écran dédié (pas une erreur générique).
+  if (maintenanceInfo) {
+    return (
+      <MaintenanceScreen
+        message={maintenanceInfo.message}
+        onRetry={() => window.location.reload()}
+      />
+    );
+  }
+
+  // Page 404 : hash inconnu (lien périmé, faute de frappe, QR obsolète).
+  // Un wrapper sur setView purge `unknownView` dès que l'utilisateur choisit
+  // une destination — sinon la 404 resterait collée à l'écran.
+  if (unknownView) {
+    const navigateFrom404 = (v) => {
+      setUnknownView(null);
+      setView(v);
+    };
+    return (
+      <div className="app-layout">
+        <Header
+          lang={lang}
+          setLang={setLang}
+          currentView={view}
+          setView={navigateFrom404}
+          setViewTab={handleSetViewTab}
+          servicesTab={servicesTab}
+          portalMode={portalMode}
+          setPortalMode={setPortalMode}
+          citizenUser={citizenUser}
+          setCitizenUser={setCitizenUser}
+          agentUser={agentUser}
+          setAgentUser={setAgentUser}
+          partnerUser={partnerUser}
+          setPartnerUser={setPartnerUser}
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+        />
+        <div className="main-content">
+          <div className="view-container">
+            <NotFound requestedView={unknownView} setView={navigateFrom404} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Mode hors-ligne : synchronisation automatique de la file d'attente au retour de connexion.
+  // Met aussi en cache les données critiques (mutuelles, carte CMU) quand en ligne.
+  // (hooks déclarés plus haut, avant les rendus conditionnels)
 
   // View Router with Authentication Guards
   const renderView = () => {

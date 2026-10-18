@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
 
-export default function Home({ lang, setView, setViewTab, portalMode, setPortalMode, citizenUser, setCitizenUser, agentUser }) {
+export default function Home({ lang, setView, setViewTab, portalMode, citizenUser, setCitizenUser, agentUser }) {
   const [qrCodeUrl, setQrCodeUrl] = useState('');
 
   useEffect(() => {
@@ -271,8 +271,10 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
   const [loginLoading, setLoginLoading] = useState(false);
   const [loginError, setLoginError] = useState(null);
   const [statsLoading, setStatsLoading] = useState(true);
-  const [statsError, setStatsError] = useState(false);
-  const [rufisqueTotal, setRufisqueTotal] = useState(720000);
+  // `statsError` et `rufisqueTotal` sont alimentés par la requête des statistiques
+  // mais jamais rendus : seuls leurs setters sont conservés (réinitialisation).
+  const [, setStatsError] = useState(false);
+  const [, setRufisqueTotal] = useState(720000);
 
   const [hoveredRegion, setHoveredRegion] = useState(null);
 
@@ -294,10 +296,6 @@ export default function Home({ lang, setView, setViewTab, portalMode, setPortalM
   ];
 
   const [regionsMapData, setRegionsMapData] = useState(defaultRegionsMapData);
-  const regionsData = regionsMapData.map(reg => ({
-    name: reg.name,
-    value: reg.couv
-  }));
 
   useEffect(() => {
     fetch(`${window.API_BASE_URL}/api/coverage/regions`)

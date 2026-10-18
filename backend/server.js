@@ -2336,6 +2336,14 @@ app.get('/health/ready', async (req, res) => {
 
 app.use(extendedRoutes);
 
+// ═════════════════
+// STUDIO CARTES — hiérarchie Région → Département → MSD, adhésions de masse
+// et revenus Sen-E-Carte (350 F/carte imprimée). Lecture pure : compteurs
+// agrégés uniquement, aucune donnée personnelle dans les réponses.
+// ═════════════════
+const { router: studioRouter } = require('./studioRoutes');
+app.use('/api/studio', authenticateToken, studioRouter);
+
 // ═══════════════════════════════════════════════════════════════════════════
 // IDENTIFIANTS TURN ÉPHÉMÈRES (iceServers pour les navigateurs)
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2465,10 +2473,58 @@ app.get('/api/lan-ip', (req, res) => {
 // Import en masse de bénéficiaires (Excel « Ville de Dakar msd Dakar » ou
 // adhésion de masse). Si PostgreSQL est indisponible → fallback fichier
 // (backend/data/store.json) : ZÉRO PERTE, même les cartes déjà imprimées.
-app.post('/api/beneficiaries/bulk', async (req, res) => {
+// ────────────────────────────────────────────────────────────────────────────
+// Import en masse — ÉCRITURE protégée et cloisonnée par MSD
+//
+// RÈGLE D'OR :
+//  1. Auth obligatoire (401) + RBAC (403 pour citoyen).
+//  2. Un agent DOIT être rattaché à une MSD : sans msd_code dans le jeton,
+//     403 AGENT_NOT_LINKED_TO_MSD (fail-closed) — il n'est PAS un superviseur.
+//  3. Un agent ne peut écrire QUE dans sa MSD : matricule préfixé par sa MSD,
+//     et toute fiche existante doit appartenir à sa MSD (préfixe de la FICHE
+//     TROUVÉE, jamais celui de la ligne importée).
+//  4. Transaction avec ROLLBACK : une erreur annule tout avant de rendre la
+//     connexion au pool.
+//  5. Le journal d'audit est écrit APRÈS le COMMIT : s'il échoue, l'import
+//     reste en base et ne doit PAS être rejoué dans le secours (doublons).
+//  6. Le repli fichier est cloisonné (msdCode porté par chaque fiche).
+// ────────────────────────────────────────────────────────────────────────────
+
+/**
+ * MSD d'une fiche du secours fichier — FAIL-CLOSED.
+ * msd_code explicite, sinon préfixe du matricule (CMU-<MSD>-…), sinon null.
+ */
+const fallbackRecordMsd = (record) => {
+  const explicite = record && (record.msd_code || record.msdCode || record.msd);
+  if (explicite) return String(explicite).toUpperCase();
+  return extractMsdFromCmu(record && (record.cmu_number || record.cmuNumber));
+};
+
+app.post('/api/beneficiaries/bulk', authenticateToken, requireRole('agent', 'admin'), async (req, res) => {
   const rows = Array.isArray(req.body && req.body.rows) ? req.body.rows : [];
   if (rows.length === 0) return res.status(400).json({ error: 'Aucune ligne à importer.' });
   if (rows.length > 5000) return res.status(400).json({ error: 'Maximum 5000 lignes par import.' });
+
+  // Barrière MSD de l'AGENT (fail-closed). Le Super Admin (msdCode absent du
+  // jeton) supervise toutes les MSD ; un agent non rattaché est refusé AVANT
+  // toute connexion à la base (pool.connect jamais appelé).
+  const agentMsd = req.user && req.user.msdCode ? String(req.user.msdCode).toUpperCase() : null;
+  if (req.user && normalizeRole(req.user.role) !== 'admin' && !agentMsd) {
+    return res.status(403).json({
+      error: "Votre compte n'est rattaché à aucune MSD. Contactez le Super Admin.",
+      errorCode: 'AGENT_NOT_LINKED_TO_MSD'
+    });
+  }
+  const isSupervisor = !agentMsd; // Super Admin : supervise toutes les MSD
+  // Deux formats de matricule existent dans le studio :
+  //   CMU-<MSD>-0000001 (généré) et DKR_260001.0 (code du classeur).
+  // Les deux portent la MSD sur leurs 3 premières lettres — le préfixe du
+  // programme (CMU-, EDU-) est OPTIONNEL dans le second format.
+  const PREFIX_RE = /^(?:(?:CMU|EDU|DARA|SPN|HH|COL|GRP)-)?([A-Z]{3})[-_.]/i;
+  const msdOfCode = (cmu) => {
+    const m = PREFIX_RE.exec(String(cmu || '').toUpperCase());
+    return m ? m[1] : null;
+  };
 
   try {
     const client = await pool.connect();
@@ -2477,25 +2533,41 @@ app.post('/api/beneficiaries/bulk', async (req, res) => {
       let inserted = 0;
       let updated = 0;
       let skipped = 0;
+      let refused = 0;
       for (const r of rows) {
         const cmu = (r.codeBeneficiaire || r.cmuNumber || '').toString().trim();
         if (!cmu) { skipped++; continue; }
+        // Barrière A : un agent ne peut créer QUE des fiches de SA MSD. Le
+        // Super Admin n'est pas limité. Sans préfixe identifiable → refus.
+        const msdLigne = msdOfCode(cmu);
+        if (!isSupervisor && msdLigne !== agentMsd) { refused++; continue; }
         const photoUrl = (r.photoUrl || '').toString().trim() || null;
         const nin = (r.nin || '').toString().trim() || null;
-        // Idempotence à DEUX niveaux :
-        //  1. même matricule → mise à jour (une réimportation enrichit la
-        //     fiche au lieu de créer un doublon) ;
-        //  2. même NIN sous un AUTRE matricule → on rattache à la ligne
-        //     existante. Sans cela, réimporter le même classeur (qui génère
-        //     de nouveaux matricules) créait une seconde personne.
+        // Idempotence à DEUX niveaux : même matricule → mise à jour ; même NIN
+        // sous un autre matricule → rattache à la ligne existante.
+        // SELECT précis : msd_code et cmu_number servent aux barrières MSD.
+        // ORDER BY (cmu_number = $1) DESC : la correspondance exacte par
+        // matricule prime sur le NIN — LIMIT 1 seul rendait le résultat
+        // ARBITRAIRE quand deux fiches correspondaient (l'import légitime
+        // était alors refusé sans motif).
         const existing = await client.query(
-          `SELECT id FROM beneficiaries
+          `SELECT id, msd_code, cmu_number FROM beneficiaries
             WHERE cmu_number = $1
                OR ($2::text IS NOT NULL AND nin = $2)
+            ORDER BY (cmu_number = $1) DESC, id
             LIMIT 1`,
           [cmu, nin]
         );
         if (existing.rows.length > 0) {
+          const fiche = existing.rows[0];
+          // Barrières MSD de la FICHE TROUVÉE — jamais du préfixe de la ligne
+          // importée. Un agent ne peut pas modifier une fiche d'une autre MSD,
+          // et un NIN d'une autre MSD ne permet pas de s'approprier sa fiche.
+          const msdFiche = String(fiche.msd_code || '').toUpperCase() || msdOfCode(fiche.cmu_number);
+          if (!isSupervisor && msdFiche !== agentMsd) {
+            refused++;
+            continue;
+          }
           await client.query(
             `UPDATE beneficiaries SET
                 first_name      = COALESCE(NULLIF($2,''), first_name),
@@ -2525,22 +2597,38 @@ app.post('/api/beneficiaries/bulk', async (req, res) => {
         await client.query(
           `INSERT INTO beneficiaries (first_name, last_name, birth_date, birth_place, gender, blood_group,
               phone, email, address, mutuelle_name, package_type, payment_method, cmu_number, status,
-              school_name, sponsor_phone, photo_url, nin, numero_adherent, source_code, lot_code)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)`,
+              school_name, sponsor_phone, photo_url, nin, numero_adherent, source_code, lot_code, msd_code)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)`,
           [r.prenom || r.firstName || '', r.nom || r.lastName || '', r.birthDate || '',
            r.birthPlace || '', r.sexe || r.gender || '', r.bloodGroup || '',
            r.telephone || r.phone || '', r.email || '', r.address || '',
            r.mutuelleName || 'MSD Dakar', r.packageType || 'individuel', r.paymentMethod || 'excel_import',
            cmu, r.status || 'active', r.schoolName || null, r.sponsorPhone || null,
-           photoUrl, nin, r.numeroAdherent || null, r.sourceCode || null, r.lotCode || null]
+           photoUrl, nin, r.numeroAdherent || null, r.sourceCode || null, r.lotCode || null,
+           agentMsd || msdLigne || null]
         );
         inserted++;
       }
       await client.query('COMMIT');
-      await query(`INSERT INTO audit_logs (action, actor, details) VALUES ($1, $2, $3)`,
-        ['IMPORT_MASSE', 'card-studio',
-         `Import en masse : ${inserted} créés, ${updated} mis à jour, ${skipped} ignorés.`]);
-      return res.status(201).json({ success: true, mode: 'database', inserted, updated, skipped, total: rows.length });
+      // Journal d'audit APRÈS le COMMIT : s'il échoue, l'import reste en base
+      // (on ne le rejoue pas dans le secours, sinon les fiches existeraient
+      // deux fois) — on le journalise seulement en console.
+      try {
+        await query(`INSERT INTO audit_logs (action, actor, details) VALUES ($1, $2, $3)`,
+          ['IMPORT_MASSE', req.user && req.user.username ? req.user.username : 'card-studio',
+           `Import en masse : ${inserted} créés, ${updated} mis à jour, ${skipped} ignorés, ${refused} refusés.`]);
+      } catch (auditErr) {
+        console.warn('[BULK] audit_logs indisponible (import conservé) :', auditErr.message);
+      }
+      return res.status(201).json({ success: true, mode: 'database', inserted, updated, skipped, refused, total: rows.length });
+    } catch (txErr) {
+      // ROLLBACK explicite : sans lui la connexion repartait au POOL avec une
+      // transaction ouverte, et un COMMIT tiers aurait validé des écritures
+      // partielles. Le repli fichier prend ensuite le relais (zéro perte).
+      try { await client.query('ROLLBACK'); } catch (rbErr) {
+        console.warn('[BULK] ROLLBACK impossible :', rbErr.message);
+      }
+      throw txErr;
     } finally {
       client.release();
     }
@@ -2551,10 +2639,16 @@ app.post('/api/beneficiaries/bulk', async (req, res) => {
     for (const r of rows) {
       const cmu = (r.codeBeneficiaire || r.cmuNumber || '').toString().trim();
       if (!cmu) continue;
+      // Cloisonnement du repli : l'agent ne dépose que des fiches de SA MSD,
+      // avec le même msdCode que l'INSERT en base — sinon le rejeu flushToDb
+      // créerait des fiches invisibles du filtre b.msd_code.
+      const msdLigne = msdOfCode(cmu);
+      if (!isSupervisor && msdLigne !== agentMsd) continue;
       const already = fallbackStore.listRecords('beneficiaries').some(x => (x.cmuNumber || '') === cmu);
       if (already) continue;
       fallbackStore.addRecord('beneficiaries', {
         cmuNumber: cmu,
+        msdCode: agentMsd || msdLigne || null,
         numeroAdherent: r.numeroAdherent || null,
         sourceCode: r.sourceCode || null,
         prenom: r.prenom || r.firstName || '',
@@ -2798,22 +2892,68 @@ app.post('/api/campaign-lots/:code/print', authenticateToken, requireRole('agent
 
 // Hydratation : retourne les bénéficiaires du fallback fichier (pour que le
 // Studio retrouve les adhésions/importations perdues) + tentative de flush DB.
-app.get('/api/beneficiaries/fallback', async (req, res) => {
+// Sécurité (règle d'or) : auth obligatoire + cloisonnement par MSD. Le fallback
+// fichier ne porte pas de msd_code fiable, on le déduit du préfixe CMU-XXX du
+// matricule (3 lettres après le programme). Le Super Admin (msdCode absent)
+// voit tout ; un utilisateur MSD ne voit que ses propres enregistrements.
+const extractMsdFromCmu = (cmu) => {
+  const m = /^\w{3,10}-([A-Z]{3})-/.exec(String(cmu || '').toUpperCase());
+  return m ? m[1] : null;
+};
+app.get('/api/beneficiaries/fallback', requireAuth('agent', 'admin'), async (req, res) => {
+  // Fail-closed : un agent non rattaché n'est pas un superviseur. Sans cette
+  // barrière, il verrait les NIN, adresses et photos de TOUTES les MSD.
+  const msdCode = req.user && req.user.msdCode ? String(req.user.msdCode).toUpperCase() : null;
+  if (normalizeRole(req.user.role) !== 'admin' && !msdCode) {
+    return res.status(403).json({
+      error: "Votre compte n'est rattaché à aucune MSD. Contactez le Super Admin.",
+      errorCode: 'AGENT_NOT_LINKED_TO_MSD'
+    });
+  }
   try {
-    const flush = await fallbackStore.flushToDb(query);
-    const records = fallbackStore.listRecords('beneficiaries');
-    return res.json({ success: true, count: records.length, flushed: flush.flushed, remaining: flush.remaining, records });
+    // Un GET ne doit JAMAIS écrire en base : le rejeu vers PostgreSQL est
+    // désormais une opération explicite via POST /api/beneficiaries/fallback/flush.
+    let records = fallbackStore.listRecords('beneficiaries');
+    const msdCode = req.user && req.user.msdCode;
+    if (msdCode) {
+      // Filtre strict côté serveur : msd_code explicite OU préfixe du matricule.
+      // Les fiches historiques portent les clés snake_case (cmu_number) ; les
+      // fiches plus récentes, camelCase (cmuNumber). On accepte les deux —
+      // mais JAMAIS de rattachement déduit d'un préfixe inconnu (fail-closed).
+      // Fail-closed centralisé : fallbackRecordMsd renvoie la MSD explicite
+      // (msd_code/msdCode/msd), sinon celle déduite du préfixe du matricule,
+      // sinon null — une fiche sans rattachement déterminable n'est JAMAIS
+      // visible d'un agent MSD (elle n'est pas « sa » MSD par construction).
+      const msdUpper = String(msdCode).toUpperCase();
+      records = records.filter((r) => fallbackRecordMsd(r) === msdUpper);
+    }
+    return res.json({ success: true, count: records.length, flushed: 0, remaining: fallbackStore.pendingCount(), records });
   } catch (err) {
     return res.json({ success: true, count: 0, flushed: 0, remaining: 0, records: [] });
   }
 });
 
-// Statut du fallback (diagnostic)
-app.get('/api/fallback-status', (req, res) => {
+// Statut du fallback (diagnostic). Sécurité : auth obligatoire (agent/admin) —
+// cette route exposait le chemin disque du fichier de secours à tout le monde.
+// On ne renvoie que des COMPTEURS, jamais le chemin ni des enregistrements.
+app.get('/api/fallback-status', requireAuth('agent', 'admin'), (req, res) => {
   const store = fallbackStore.readStore();
   const counts = {};
   for (const [k, v] of Object.entries(store)) counts[k] = Array.isArray(v) ? v.length : 0;
-  res.json({ success: true, path: fallbackStore.STORE_PATH, counts });
+  res.json({ success: true, counts });
+});
+
+// Rejeu explicite du secours fichier vers PostgreSQL. Transverse (toutes MSD),
+// donc réservé au Super Admin — un agent MSD ne peut pas relancer une écriture
+// globale. C'est la seule voie d'écriture déclenchée depuis l'API.
+app.post('/api/beneficiaries/fallback/flush', requireAuth('admin'), async (req, res) => {
+  try {
+    const flush = await fallbackStore.flushToDb(query);
+    return res.json({ success: true, flushed: flush.flushed, remaining: flush.remaining });
+  } catch (err) {
+    console.error('[Fallback] rejeu impossible :', err.message);
+    return res.status(500).json({ success: false, error: 'Rejeu du secours fichier impossible.' });
+  }
 });
 
 // Gestionnaire 404 pour les routes non définies
@@ -2875,6 +3015,44 @@ app.use((err, req, res, next) => {
     // Index sur le NIN : clé d'identité stable, elle rend la réimportation
     // idempotente même quand le matricule change.
     await query('CREATE INDEX IF NOT EXISTS idx_beneficiaries_nin ON beneficiaries(nin) WHERE nin IS NOT NULL AND nin <> \'\'').catch(() => {});
+
+    // ── Cycle de vie des cartes (Module 3 du cahier des charges) ────────
+    // Une carte a un statut qui lui est PROPRE, distinct du statut du
+    // dossier (active/pending) et du compte numérique : bloquer une carte
+    // ne suspend pas les droits de l'assuré, révoquer ne supprime rien.
+    // Source de vérité du statut courant : colonnes dédiées sur
+    // beneficiaries (lecture en 1 requête par la vérification) ;
+    // l'historique complet vit dans card_lifecycle_events (immuable).
+    await query(`
+      ALTER TABLE beneficiaries ADD COLUMN IF NOT EXISTS card_status VARCHAR(20)
+        NOT NULL DEFAULT 'active'
+    `).catch(() => {});
+    await query(`
+      ALTER TABLE beneficiaries ADD COLUMN IF NOT EXISTS card_blocked_at TIMESTAMP,
+        ADD COLUMN IF NOT EXISTS card_blocked_reason VARCHAR(60),
+        ADD COLUMN IF NOT EXISTS card_blocked_by VARCHAR(100),
+        ADD COLUMN IF NOT EXISTS card_revoked_at TIMESTAMP,
+        ADD COLUMN IF NOT EXISTS card_revoked_reason VARCHAR(60),
+        ADD COLUMN IF NOT EXISTS card_revoked_by VARCHAR(100),
+        ADD COLUMN IF NOT EXISTS card_replaced_by VARCHAR(60)
+    `).catch(() => {});
+    await query(`
+      CREATE TABLE IF NOT EXISTS card_lifecycle_events (
+        id SERIAL PRIMARY KEY,
+        cmu_number VARCHAR(60) NOT NULL,
+        event VARCHAR(20) NOT NULL,
+        reason VARCHAR(60),
+        details TEXT,
+        actor VARCHAR(100) NOT NULL,
+        actor_role VARCHAR(20),
+        msd_code VARCHAR(10),
+        request_ref VARCHAR(60),
+        replacement_cmu VARCHAR(60),
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    `).catch(() => {});
+    await query('CREATE INDEX IF NOT EXISTS idx_card_events_cmu ON card_lifecycle_events(cmu_number, created_at DESC)').catch(() => {});
+    await query("CREATE INDEX IF NOT EXISTS idx_beneficiaries_card_status ON beneficiaries(card_status) WHERE card_status <> 'active'").catch(() => {});
 
     // ── Recodage des cartes ASS LONASE ──────────────────────────────────
     // Format officiel : REGION-MSD-ANNEE-SEQUENCE (ex. DKR-DKR-2026-0001).
@@ -3025,6 +3203,24 @@ if (process.env.NODE_ENV !== 'test') {
       // impossible à tracer.
       console.log(`Serveur démarré sur http://localhost:${port}`);
       console.log(`[Instance] id=${process.env.INSTANCE_ID || 'local'} · pool=${process.env.DB_POOL_MAX || 10} connexions · bus=${process.env.REALTIME_DRIVER || 'auto'}`);
+    });
+    // Le gestionnaire d'erreur DOIT être attaché avant que l'écoute ne
+    // démarre : en cas de port occupé, l'événement 'error' est émis à la
+    // place de 'listening' — un handler branché dans le callback de
+    // réussite ne serait donc JAMAIS appelé (pile d'exception brute).
+    // Diagnostic lisible : le port occupé est une cause externe (double
+    // démarrage, ancienne instance restée vivante), pas un bug interne.
+    // On guide l'opérateur au lieu de laisser une pile d'exception.
+    server.on('error', (err) => {
+      if (err && err.code === 'EADDRINUSE') {
+        console.error(`\n[Erreur] Le port ${port} est déjà occupé par un autre processus.`);
+        console.error('  Diagnostic :  Get-NetTCPConnection -LocalPort ' + port + '  (netstat peut manquer un socket fantôme)');
+        console.error('  Option 1   :  taskkill /PID <pid> /F   (arrêter l\'ancienne instance)');
+        console.error('  Option 2   :  PORT=' + (port === 5000 ? '5001' : '5000') + ' npm start   (démarrer sur un autre port)');
+        process.exit(1);
+      }
+      console.error('[Serveur] Erreur d\'écoute :', err.message);
+      process.exit(1);
     });
 
     // ── Signalisation téléconsultation ───────────────────────────────────────

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
-export default function InstitutionPortal({ lang = 'fr', portalMode = 'citizen', agentUser = null, setView = null }) {
+export default function InstitutionPortal({ portalMode = 'citizen', agentUser = null, setView = null }) {
   // ═══════════════════════════════════════════════════════
   // RBAC — Réservé au SuperAdmin DSI UNAMUSC (gouvernance nationale des prestataires)
   // L'agent UDMS n'a PAS accès : il gère son union mais n'agrée pas les prestataires.

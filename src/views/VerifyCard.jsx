@@ -3,7 +3,7 @@ import jsQR from 'jsqr';
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
-import { getBeneficiaryInfo, getAdherentCode, getBeneficiaryCode } from '../utils/csuFormatter';
+import { getAdherentCode } from '../utils/csuFormatter';
 import { speakCleanText } from '../services/voiceAudioService';
 import SecurePhoto from '../components/SecurePhoto';
 
@@ -12,6 +12,7 @@ import SecurePhoto from '../components/SecurePhoto';
 // médecins, pharmaciens et agents pour vérifier instantanément une carte scannée
 // et exécuter les actions médicales directes (Garantie, Ordonnance, Télémédecine, Radios, Antécédents).
 
+// eslint-disable-next-line no-unused-vars -- Helper d'âge, doublon local de `calculateAge` exporté par `src/utils/csuFormatter.js` (utilisé par CardStudio). Conservé tel quel pour ne pas toucher à la logique d'âge de la vue : à arbitrer.
 const calculateAge = (birthDateStr) => {
   if (!birthDateStr) return 54;
   try {
@@ -23,11 +24,12 @@ const calculateAge = (birthDateStr) => {
       const year = parseInt(birthDateStr.split('-')[0], 10);
       if (!isNaN(year)) return Math.max(0, new Date().getFullYear() - year);
     }
+    // eslint-disable-next-line no-unused-vars -- Date de naissance illisible : on retombe sur l'âge par défaut (54).
   } catch (e) {}
   return 54;
 };
 
-export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = null }) {
+export default function VerifyCard({ setView = null, citizenUser = null }) {
   const [cmuNumber, setCmuNumber] = useState('');
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -54,6 +56,7 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
   const [guaranteeAct, setGuaranteeAct] = useState('Hospitalisation & Soins Spécialisés');
   const [guaranteeAmount, setGuaranteeAmount] = useState('250000');
   const [guaranteeRate, setGuaranteeRate] = useState('80%');
+  // eslint-disable-next-line no-unused-vars -- Mention libre de la lettre de garantie. Le formulaire de garantie (modale `guarantee`) ne propose pas encore ce champ : conservé, à arbitrer.
   const [guaranteeNotes, setGuaranteeNotes] = useState('Prise en charge validée sous convention Tiers-Payant UNAMUSC.');
 
   const [medPharmacy, setMedPharmacy] = useState('Pharmacie de la Médina');
@@ -83,17 +86,23 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
   const [examCenter, setExamCenter] = useState('Centre d\'Imagerie de Fann');
   const [examNotes, setExamNotes] = useState('Examen sans anomalie majeure détectée. Cliché archivé.');
 
+  // Valeurs d'antécédents lues par `handleUpdateAntecedents` (ligne ~710) et affichées sur la carte. Le formulaire de saisie correspondant n'est pas rendu : setters conservés, à arbitrer.
+  // eslint-disable-next-line no-unused-vars -- Setters non appelés (pas de champ de saisie d'antécédents dans le rendu actuel) ; la valeur est lue plus bas.
   const [bloodGroup, setBloodGroup] = useState('O Rhésus positif (O+)');
+  // eslint-disable-next-line no-unused-vars -- Idem `setBloodGroup` : la valeur `allergies` est lue par `handleUpdateAntecedents`.
   const [allergies, setAllergies] = useState('Pénicilline');
+  // eslint-disable-next-line no-unused-vars -- Idem `setBloodGroup` : la valeur `chronicCond` est lue par `handleUpdateAntecedents`.
   const [chronicCond, setChronicCond] = useState('Hypertension artérielle (HTA)');
 
   const [specialtyType, setSpecialtyType] = useState('Pédiatrie & Néo-natologie');
   const [specialtyDoctor, setSpecialtyDoctor] = useState('Dr. Mariama Ba (Pédiatre CHU Fann)');
+  // eslint-disable-next-line no-unused-vars -- Date de la consultation spécialisée. La modale `specialties` ne propose pas ce champ : conservé, à arbitrer.
   const [specialtyDate, setSpecialtyDate] = useState('2026-08-25T10:00');
   const [specialtyNotes, setSpecialtyNotes] = useState('Consultation spécialisée certifiée UNAMUSC.');
 
   const [pathologyName, setPathologyName] = useState('Hypertension artérielle (HTA)');
   const [pathologyProtocol, setPathologyProtocol] = useState('Prise en charge 100% Universelle UNAMUSC');
+  // eslint-disable-next-line no-unused-vars -- Médecin référent du protocole ALD. La modale `pathologies` ne propose pas ce champ : conservé, à arbitrer.
   const [pathologyDoctor, setPathologyDoctor] = useState('Dr. Ousmane Sow');
   const [pathologyStatus, setPathologyStatus] = useState('Patient stabilisé sous traitement');
 
@@ -191,9 +200,11 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
           stream = await navigator.mediaDevices.getUserMedia({ 
             video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } } 
           });
+          // eslint-disable-next-line no-unused-vars -- Repli de contrainte : on retente une caméra arrière sans réglage de résolution. L'échec est géré par le catch `e2` plus bas.
         } catch (e1) {
           try {
             stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+            // eslint-disable-next-line no-unused-vars -- Repli final de contrainte : caméra par défaut, sans contrainte de facingMode. Un échec ici remonte au catch externe.
           } catch (e2) {
             stream = await navigator.mediaDevices.getUserMedia({ video: true });
           }
@@ -224,6 +235,7 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
             await videoRef.current.play();
             setCameraActive(true);
             if (activeTimeout) clearTimeout(activeTimeout);
+            // eslint-disable-next-line no-unused-vars -- `play()` peut rejeter sur certains navigateurs malgré un flux valide : le scan continue via la boucle de frames.
           } catch (pe) {}
 
           liveScanRef.current = true;
@@ -356,6 +368,7 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
         osc.start();
         osc.stop(ctx.currentTime + 0.35);
       }
+      // eslint-disable-next-line no-unused-vars -- Web Audio indisponible (navigateur restreint) : la synthèse vocale wolof reste jouée, seul le bip de confirmation est perdu.
     } catch (e) {}
 
     const spokenMsg = customMessage || `Nanga def ${firstName}! Carte CSU scannée. Rappel UNAMUSC : consultation de suivi pédiatrique et vaccins PEV programmés. Prise en charge 100% gratuite.`;
@@ -386,6 +399,7 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
           localStorage.setItem('cmu-active-insured-cmu', result.cmuNumber);
         }
         window.dispatchEvent(new Event('unamusc_card_scanned'));
+        // eslint-disable-next-line no-unused-vars -- Persistance best-effort de la carte scannée : un stockage indisponible ne doit pas empêcher l'affichage du résultat.
       } catch (e) {}
     }
   }, [result]);
@@ -434,6 +448,7 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
           try {
             const scanned = JSON.parse(scannedRaw);
             cardCode = scanned.cmuNumber || scanned.cmuCode || scanned.rawCode || scanned.id;
+            // eslint-disable-next-line no-unused-vars -- Cache local illisible : on retente la vérification via le paramètre d'URL.
           } catch (e) {}
         }
         if (!cardCode && activeId) cardCode = activeId;
@@ -502,6 +517,7 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
         try {
           const scanned = JSON.parse(scannedRaw);
           fallbackCode = scanned.cmuNumber || scanned.cmuCode || scanned.rawCode || scanned.id;
+          // eslint-disable-next-line no-unused-vars -- Cache local illisible : la saisie manuelle du numéro prend le relais.
         } catch (e) {}
       }
       if (!fallbackCode && activeId) fallbackCode = activeId;
@@ -702,6 +718,7 @@ export default function VerifyCard({ lang = 'fr', setView = null, citizenUser = 
     setActiveModal(null);
   };
 
+  // eslint-disable-next-line no-unused-vars -- Mise à jour des antécédents médicaux (groupe sanguin, allergies, pathologies chroniques) depuis la fiche vérifiée. Fonction métier complète, aucun formulaire ne la branche encore : à arbitrer.
   const handleUpdateAntecedents = (e) => {
     e.preventDefault();
     setResult({

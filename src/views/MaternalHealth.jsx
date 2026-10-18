@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
 import DeleteModal from '../components/DeleteModal';
@@ -97,7 +97,7 @@ const getMedicalHeroStyle = (patient) => {
 };
 
 
-export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentUser = null, partnerUser = null, userRole = 'citizen', setView = null }) {
+export default function MaternalHealth({ citizenUser = null, agentUser = null, partnerUser = null, userRole = 'citizen', setView = null }) {
   // ═══════════════════════════════════════════════════════
   // TOUS LES HOOKS DOIVENT ÊTRE ICI — avant tout return conditionnel
   // (règle des hooks React : ne jamais appeler useState/useEffect après un return)
@@ -126,6 +126,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
           p?.birthDate === '2026-05-14' &&
           p?.motherPhone === '+221 77 450 88 99';
         if (!isSeed) return p;
+      // eslint-disable-next-line no-unused-vars -- Profil maternal illisible : on repart de valeurs vides plutôt que de bloquer le rendu de l'assurée.
       } catch (e) {}
     }
     return {
@@ -213,6 +214,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
         }
       }
       keysToRemove.forEach((key) => localStorage.removeItem(key));
+    // eslint-disable-next-line no-unused-vars -- Stockage local indisponible (mode privé, quota) : garde-fou de confort, jamais bloquant.
     } catch (e) {
       // Stockage indisponible (mode privé, quota) : on ne bloque pas le rendu.
     }
@@ -230,6 +232,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
         purgeLegacyFakeData();
         localStorage.setItem('maternity_fake_data_purged_v2', '1');
       }
+    // eslint-disable-next-line no-unused-vars -- Stockage local indisponible : garde-fou de confort, jamais bloquant.
     } catch (e) {
       // Ignoré : le garde-fou est un confort, jamais un bloquant.
     }
@@ -248,17 +251,13 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
           mildaNetDistributed: parsed?.mildaNetDistributed === true,
           mildaDate: typeof parsed?.mildaDate === 'string' ? parsed.mildaDate : ''
         };
+      // eslint-disable-next-line no-unused-vars -- JSON local corrompu : on repart des valeurs par défaut plutôt que de casser le rendu.
       } catch (e) {
         return { ferFolateDaysTaken: 0, ferFolateTotalDays: 0, tpiDoses: [], mildaNetDistributed: false, mildaDate: '' };
       }
     }
     return { ferFolateDaysTaken: 0, ferFolateTotalDays: 0, tpiDoses: [], mildaNetDistributed: false, mildaDate: '' };
   });
-
-  // Vrai seulement si un traitement a réellement été prescrit et saisi. Pilote
-  // l'affichage : sans saisie, aucune jauge de progression n'est montrée.
-  const hasPrescribedSupplements =
-    maternalSupplements.ferFolateTotalDays > 0 || maternalSupplements.tpiDoses.length > 0;
 
   const [showSupplementsModal, setShowSupplementsModal] = useState(false);
   const [editSupplementsForm, setEditSupplementsForm] = useState(maternalSupplements);
@@ -282,6 +281,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
       try {
         const parsed = JSON.parse(saved);
         return Array.isArray(parsed) ? parsed : [];
+      // eslint-disable-next-line no-unused-vars -- JSON local corrompu : on repart des valeurs par défaut plutôt que de casser le rendu.
       } catch (e) {
         return [];
       }
@@ -329,6 +329,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
       try {
         const parsed = JSON.parse(saved);
         return Array.isArray(parsed) ? parsed : [];
+      // eslint-disable-next-line no-unused-vars -- JSON local corrompu : on repart des valeurs par défaut plutôt que de casser le rendu.
       } catch (e) {
         return [];
       }
@@ -369,6 +370,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
   const [aldPrescriptions, setAldPrescriptions] = useState(() => {
     const saved = localStorage.getItem('maternity_ald_prescriptions');
     if (saved) {
+      // eslint-disable-next-line no-unused-vars -- JSON local corrompu : on repart des valeurs par défaut plutôt que de casser le rendu.
       try { return JSON.parse(saved); } catch (e) {}
     }
     // AUCUNE ordonnance pré-remplie. « Metformine 1000 mg », « Amlodipine
@@ -439,6 +441,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
           );
           return cleaned;
         }
+      // eslint-disable-next-line no-unused-vars -- JSON local corrompu : on repart des valeurs par défaut plutôt que de casser le rendu.
       } catch (e) {}
     }
     return [];
@@ -447,9 +450,11 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
   // Régime alimentaire : des consignes « ✅ Actif » n'ont jamais été données.
   // Un régime actif mais non prescrit peut provoquer une déshydratation
   // (hyposodé) ou une hypoglycémie (hypoglucidique).
+  // eslint-disable-next-line no-unused-vars -- État du régime alimentaire ALD : la clé localStorage n'est écrite par personne, la fonctionnalité est inachevée. Conservé plutôt que supprimé.
   const [aldDietDirectives, setAldDietDirectives] = useState(() => {
     const saved = localStorage.getItem('maternity_ald_diet');
     if (saved) {
+      // eslint-disable-next-line no-unused-vars -- JSON local corrompu : on repart des valeurs par défaut plutôt que de casser le rendu.
       try { return JSON.parse(saved); } catch (e) {}
     }
     return [];
@@ -473,6 +478,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
     setEditingAldVital(null);
   };
 
+  // eslint-disable-next-line no-unused-vars -- Déclencheur de suppression d'une constante vitale ALD. La modale de confirmation (`confirmDeleteObj`) est bien rendue plus bas : seul le bouton d'appel manque.
   const handleDeleteAldVital = (id) => {
     setConfirmDeleteObj({
       title: "cette constante vitale ALD",
@@ -508,6 +514,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
             )
           );
         }
+      // eslint-disable-next-line no-unused-vars -- JSON local corrompu : on repart des valeurs par défaut plutôt que de casser le rendu.
       } catch (e) {}
     }
     return [];
@@ -564,6 +571,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
   };
 
   // Nettoyage strict du texte pour la synthèse vocale (évite la lecture de symboles, émojis et parenthèses)
+  // eslint-disable-next-line no-unused-vars -- Nettoyage du texte pour la synthèse vocale, appelé uniquement par `playSpeechAudio` ci-dessous — lui-même non branché. Conservé avec lui.
   const cleanSpeechText = (rawText) => {
     if (!rawText) return '';
     let str = String(rawText);
@@ -581,6 +589,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
   const [reminderToast, setReminderToast] = useState(null);
 
   // Moteur de synthèse vocale Web Speech & Web Audio chime
+  // eslint-disable-next-line no-unused-vars -- Lecture vocale + bip d'alerte. Le sélecteur de langue (`audioLang`) est affiché mais aucun bouton ne déclenche encore cette lecture.
   const playSpeechAudio = (textToSpeak) => {
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -598,6 +607,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
         osc.start();
         osc.stop(ctx.currentTime + 0.35);
       }
+    // eslint-disable-next-line no-unused-vars -- Le moteur Web Audio est optionnel : son absence ne doit pas interrompre la lecture vocale.
     } catch (e) {}
 
     // Voix naturelle via backend TTS (ElevenLabs/Open-Source) avec repli speechSynthesis
@@ -702,7 +712,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
   const [showRightsModal, setShowRightsModal] = useState(false);
   const [showAskMidwifeModal, setShowAskMidwifeModal] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
-  const [selectedCpnForBooking, setSelectedCpnForBooking] = useState(null);
+  const [selectedCpnForBooking, ] = useState(null);
   const [bookingDate, setBookingDate] = useState('2026-08-15');
 
   // Dynamic Vitals State (Poids & Tension)
@@ -722,6 +732,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
           p?.weightGain === '+2.1kg / mois' &&
           p?.bloodPressure === '12/8';
         if (!isSeed) return p;
+      // eslint-disable-next-line no-unused-vars -- JSON local corrompu : on repart des valeurs par défaut plutôt que de casser le rendu.
       } catch (e) {}
     }
     return {
@@ -829,6 +840,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
   const [midwifeAnswers, setMidwifeAnswers] = useState(() => {
     const saved = localStorage.getItem('maternity_midwife_thread');
     if (saved) {
+      // eslint-disable-next-line no-unused-vars -- JSON local corrompu : on repart des valeurs par défaut plutôt que de casser le rendu.
       try { return JSON.parse(saved); } catch (e) {}
     }
     return [];
@@ -842,6 +854,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
   useEffect(() => {
     try {
       localStorage.setItem('maternity_midwife_thread', JSON.stringify(midwifeAnswers));
+    // eslint-disable-next-line no-unused-vars -- Persistance best-effort : un stockage indisponible ne doit pas casser le carnet.
     } catch (e) {}
   }, [midwifeAnswers]);
 
@@ -866,7 +879,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
   const [editingAdviceId, setEditingAdviceId] = useState(null);
   const [editAdviceForm, setEditAdviceForm] = useState(null);
   // Réponse professionnel
-  const [replyingToIdx, setReplyingToIdx] = useState(null);
+  const [, setReplyingToIdx] = useState(null);
   const [proReply, setProReply] = useState('');
   // ═══════════════════════════════════════════════════════
   // FIN DES HOOKS — les returns conditionnels peuvent maintenant suivre
@@ -1041,6 +1054,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
     setNewVaccineForm({ ageLabel: '', vaccines: '', subtext: '', diseases: '', structure: 'Centre Hospitalier Abass Ndao', status: 'Administré (100% CSU)', completed: true });
   };
 
+  // eslint-disable-next-line no-unused-vars -- Ouverture de la modale d'édition d'une dose vaccinale. La modale ET `handleSaveEditVaccine` sont rendues plus bas : seul le bouton « Modifier » manque.
   const openEditVaccine = (v) => {
     setEditingVaccineId(v.id);
     setEditVaccineForm({ ...v });
@@ -1053,6 +1067,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
     setEditVaccineForm(null);
   };
 
+  // eslint-disable-next-line no-unused-vars -- Suppression d'une dose vaccinale via DeleteModal (rendue sur `deleteConfirmTarget`). Seul le bouton d'appel manque.
   const handleDeleteVaccine = (v) => {
     setDeleteConfirmTarget({
       title: v.vaccines,
@@ -1063,6 +1078,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
 
   // ─── ÉDITION FICHE CONSEIL (médecin / sage-femme / superadmin) ───
 
+  // eslint-disable-next-line no-unused-vars -- Ouverture de la modale d'édition d'une fiche conseil. La modale ET `handleSaveEditAdvice` sont rendues plus bas : seul le bouton « Modifier » manque.
   const openEditAdvice = (art) => {
     setEditingAdviceId(art.id);
     setEditAdviceForm({ ...art, content: Array.isArray(art.content) ? art.content.join('\n') : art.content });
@@ -1076,6 +1092,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
     setEditAdviceForm(null);
   };
 
+  // eslint-disable-next-line no-unused-vars -- Suppression d'une fiche conseil via DeleteModal (rendue sur `deleteConfirmTarget`). Seul le bouton d'appel manque.
   const handleDeleteAdvice = (art) => {
     setDeleteConfirmTarget({
       title: art.title,
@@ -1086,6 +1103,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
 
   // ─── RÉPONSE PROFESSIONNEL (médecin / sage-femme) ───
 
+  // eslint-disable-next-line no-unused-vars -- Réponse d'un professionnel au carnet de la sage-femme. Désigné dans le commentaire de `handleSendQuestion` comme le seul mécanisme qui lève le statut « en attente ».
   const handleProReply = (idx) => {
     if (!proReply.trim()) return;
     const updated = [...midwifeAnswers];
@@ -1196,8 +1214,6 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
   const canEditMaternity = (isDoctor || isMidwife || isSuperAdmin) && !isLabUser;
   // Vue administrative (statistiques)
   const isAdminStatsView = isAgent && !isSuperAdmin;
-  // Alias rétro-compatibilité
-  const isDoctorOrAgent = canEditMaternity || isAgent;
   const overrideActive = (
     localStorage.getItem(`cmu-status-${citizenUser?.cmuNumber || citizenUser?.cmu_number}`) === 'active' ||
     localStorage.getItem('cmu-portal-mode') === 'citizen'
@@ -1229,6 +1245,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
       const raw = localStorage.getItem(MATERNAL_STORE_KEY);
       const parsed = raw ? JSON.parse(raw) : [];
       return Array.isArray(parsed) ? parsed : [];
+    // eslint-disable-next-line no-unused-vars -- JSON local corrompu : on repart des valeurs par défaut plutôt que de casser le rendu.
     } catch (e) {
       return [];
     }
@@ -1406,6 +1423,7 @@ export default function MaternalHealth({ lang = 'fr', citizenUser = null, agentU
 
         localStorage.setItem(`cmu-exams-${patientCmu}`, JSON.stringify([newExam, ...patientExams]));
         localStorage.setItem('cmu-medical-exams', JSON.stringify([newExam, ...existingExams]));
+      // eslint-disable-next-line no-unused-vars -- Persistance best-effort : un stockage indisponible ne doit pas perdre le compte-rendu déjà transmis.
       } catch (err) {}
 
       alert(`✅ Bilan prénatal certifié transmis avec succès au dossier maternité (${uploadCpnTarget.period}) !`);

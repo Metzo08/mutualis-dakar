@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
 import { formatFCFA } from '../utils/formatters';
 
 // Design Premium Haut de Gamme — Bons & Garanties (Prises en charge Tiers-Payant UNAMUSC)
-export default function Claims({ lang = 'fr', portalMode, citizenUser, agentUser }) {
+export default function Claims({ portalMode, citizenUser, agentUser }) {
   const [careTypeTab, setCareTypeTab] = useState('hospitalisation'); // 'hospitalisation' or 'pharmacie'
   const [filterStatus, setFilterStatus] = useState('');
   const [showDetailModal, setShowDetailModal] = useState(null);

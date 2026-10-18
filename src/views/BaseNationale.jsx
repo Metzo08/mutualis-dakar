@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery } from '@tanstack/react-query';
 
@@ -538,7 +538,10 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
       try {
         const res = await fetch(`${window.API_BASE_URL}/api/mutuelles`);
         if (!res.ok) throw new Error('API Error');
-        const data = await res.json();
+        const payload = await res.json();
+        // Format paginé { data, pagination } depuis la migration serveur ;
+        // on tolère aussi le tableau brut historique pour compatibilité.
+        const data = Array.isArray(payload) ? payload : (payload.data || []);
         if (data && data.length > 0) {
           const mapped = data.map(item => {
             const localMatch = dataset.find(d => d.name === item.name || d.id === item.id);
@@ -694,7 +697,7 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
             }
           });
 
-          routingControlRef.current.on('routingerror', function(e) {
+          routingControlRef.current.on('routingerror', function() {
             setRouteInfo({ error: true, details: lang === 'fr' ? "Impossible de calculer l'itinéraire." : "Mënu noo xayma yoon bi." });
             setRouteInstructions([]);
           });

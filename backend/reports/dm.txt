@@ -1,0 +1,235 @@
+Cibles (sans photo ou absentes) : 45
+
+DKR-DKR-2026-2151.1  MAFOU DIEDHIOU  n├®e le 1975-01-05 ├á ZIGUINCHOR  
+   Ô£ÿ AUCUN FICHIER AVEC CETTE DATE
+
+DKR-DKR-2026-2156.1  KHODIA NDONG  n├®e le 1984-01-05 ├á KAOLACK  
+   ÔåÆ Gass Ndong n├®e le 05-01-1984 ├á Kaolack adresse cit├® Sonatel 2.jpeg
+     identit├®: Gass Ndong | ratio=0.45 nomFamille=true
+   Ô£ö RETENU (date + nom de famille)
+
+DKR-DKR-2026-2171.1  ADBOU KARIM DIOUF  n├®e le 1997-08-28 ├á GOSSASS  
+   ÔåÆ Abdou Karim Diouf n├® le 28-08-97 ├á Gossas adresse Conachap.jpeg
+     identit├®: Abdou Karim Diouf | ratio=0.87 nomFamille=true
+   Ô£ö RETENU (date + nom de famille)
+
+DKR-DKR-2026-2172.1  AWA LO  n├®e le 2008-08-23 ├á KEUR MASSA  
+   ÔåÆ Awa L├┤ n├®e le 23-08-2008 ├á keur Massar ├á S├®kou Mbalo.jpeg
+     identit├®: Awa L├┤ | ratio=1.00 nomFamille=true
+   Ô£ö RETENU (date + nom de famille)
+
+DKR-DKR-2026-2177.1  NDEYE CODOU FAYE  n├®e le 2001-04-28 ├á DAKAR  
+   ÔåÆ Codou Faye n├®e le28-04-2001 ├á Dakar adresse Cit├® Mansour Gueye Libert├® 6 extension.jpeg
+     identit├®: Codou Faye n├®e le28-04-2001 ├á | ratio=0.17 nomFamille=true
+   Ô£ö RETENU (date + nom de famille)
+
+DKR-DKR-2026-2180.1  OUSMANE MAGUETTE NDIAYE  n├®e le 2016-02-10 ├á DAKAR  
+   ÔåÆ Ousmane Magueye Ndiaye n├® 10-02-2016 ├á Dakar Cit├® Conachap.jpeg
+     identit├®: Ousmane Magueye Ndiaye | ratio=0.90 nomFamille=true
+   Ô£ö RETENU (date + nom de famille)
+
+DKR-DKR-2026-2186.1  BINTA BA  n├®e le 1992-07-10 ├á MEDINA GOUNASS  
+   ÔåÆ Bineta B├ó n├®e le 10-07-1992 ├á Medina Gounas Adresse Golf Sud.jpeg
+     identit├®: Bineta B├ó | ratio=0.88 nomFamille=true
+   Ô£ö RETENU (date + nom de famille)
+
+DKR-DKR-2026-2191.1  IBRAHIMA SORY NDIAYE  n├®e le 1983-02-07 ├á MEDINA GOUNASS  
+   ÔåÆ Ibrahima Sorry Ndiaye n├® le 07-02-1983 ├á Dakar adresse HLM grand yoff.jpeg
+     identit├®: Ibrahima Sorry Ndiaye | ratio=0.95 nomFamille=true
+   Ô£ö RETENU (date + nom de famille)
+
+DKR-DKR-2026-2193.1  MOUHAMADOU HADY NIANG  n├®e le 1989-03-10 ├á DAKAR  
+   ÔåÆ Mouhamadou Ady Niang n├® le 10-03-1989 ├á Dakar adresse Arafat.jpeg
+     identit├®: Mouhamadou Ady Niang | ratio=0.95 nomFamille=true
+   Ô£ö RETENU (date + nom de famille)
+
+DKR-DKR-2026-2199.2  NOGAYE SOW  n├®e le 2005-11-11 ├á FOUTA  [ABSENTE DE LA BASE]
+   ÔåÆ Nogaye Sow n├®e 11-11-2005 ├á Fouta adresse Darou.jpeg
+     identit├®: Nogaye Sow | ratio=1.00 nomFamille=true
+   Ô£ö RETENU (date + nom de famille)
+
+DKR-DKR-2026-2202.1  MADIKE DIAO  n├®e le 1995-12-11 ├á DAKAR  
+   ÔåÆ Madick├® Diao n├® 11-12-1995 ├á Dakar adresse Bastos 2.jpeg
+     identit├®: Madick├® Diao | ratio=0.91 nomFamille=true
+   Ô£ö RETENU (date + nom de famille)
+
+DKR-DKR-2026-2205.1  PAPE CHEIKH TIDIANE DIAW  n├®e le 1987-12-04 ├á DAKAR  
+   ÔåÆ Pape Cheikh Tidiane Diao n├® le 04-12-1987 ├á Dakar Adresse Bastos.jpeg
+     identit├®: Pape Cheikh Tidiane Diao | ratio=0.95 nomFamille=false
+   Ô£ö RETENU (date + nom proche)
+
+DKR-DKR-2026-2209.1  MARIEME SARR  n├®e le 1978-02-09 ├á DAKAR  
+   ÔåÆ Mar├®me Sarr n├®e le 09-02-1978 ├á Dakar adresse HLM Patte dÔÇÖoie.jpeg
+     identit├®: Mar├®me Sarr | ratio=0.91 nomFamille=true
+   Ô£ö RETENU (date + nom de famille)
+
+DKR-DKR-2026-2225.1  DIARY SAMB  n├®e le 1974-11-28 ├á THIES  
+   Ô£ÿ AUCUN FICHIER AVEC CETTE DATE
+
+DKR-DKR-2026-2227.1  ELHADJI BABACAR MANE  n├®e le 1994-05-08 ├á DAKAR  
+   ÔåÆ Elhadji Boubacar Man├® ne le 08-05-1994 ├á Dakar adresse Khar Yallah.jpeg
+     identit├®: Elhadji Boubacar Man├® | ratio=0.89 nomFamille=true
+   Ô£ö RETENU (date + nom de famille)
+
+DKR-DKR-2026-2233.1  AISSATA OUMAR HANNE  n├®e le 1995-01-01 ├á BOCKE MBAYEBE  
+   ÔåÆ Aissata Oumar Anne n├® le 01011995 ├á  Bock├® Mbay├®b├®.jpeg
+     identit├®: Aissata Oumar Anne | ratio=0.94 nomFamille=false
+   Ô£ö RETENU (date + nom proche)
+
+DKR-DKR-2026-2234.1  ALPHOUSSEYNOU DIALLO  n├®e le 1973-10-23 ├á DAKAR  
+   Ô£ÿ AUCUN FICHIER AVEC CETTE DATE
+
+DKR-DKR-2026-2257.1  MATHIAS MENDY  n├®e le 1965-02-24 ├á DAKAR  
+   ÔåÆ Matias Mendy ne 24-02-1965 ├á Dakar adresse Darou Salam Khar Yallah membre stade 04.jpeg
+     identit├®: Matias Mendy | ratio=0.92 nomFamille=true
+   Ô£ö RETENU (date + nom de famille)
+
+DKR-DKR-2026-2245.2  TACKO CISSOKHO  n├®e le 2000-01-10 ├á THIES  [ABSENTE DE LA BASE]
+   ÔåÆ Tacko Cissokho n├®e le 10-01-2000 ├á Thies Adresse HLM Pattes dÔÇÖoie Membre Seydou.jpeg
+     identit├®: Tacko Cissokho | ratio=1.00 nomFamille=true
+   Ô£ö RETENU (date + nom de famille)
+
+DKR-DKR-2026-2245.3  NDEYE BIGUE SARR  n├®e le 2000-12-26 ├á THIES  [ABSENTE DE LA BASE]
+   ÔåÆ Ndeye Bigu├® Sarr n├®e le 26-12-2000 ├á Thies adresse HLM Patte dÔÇÖoie Membres d├®l├®gu├® Seydou.jpeg
+     identit├®: Ndeye Bigu├® Sarr | ratio=1.00 nomFamille=true
+   Ô£ö RETENU (date + nom de famille)
+
+DKR-DKR-2026-2251.2  AWA CISSE  n├®e le 2009-03-04 ├á DAKAR  [ABSENTE DE LA BASE]
+   ÔåÆ Awa Ciss├® n├®e le 04-03-2009 ├á Dakar adresse Scart Urbam 1.jpeg
+     identit├®: Awa Ciss├® | ratio=1.00 nomFamille=true
+   Ô£ö RETENU (date + nom de famille)
+
+DKR-DKR-2026-2267.1  DIE ASTOU FALL  n├®e le 2003-03-04 ├á DAKAR  
+   Ô£ÿ AUCUN FICHIER AVEC CETTE DATE
+
+DKR-DKR-2026-2268.1  AMI SOW  n├®e le 1962-01-27 ├á KAYES MALI  
+   ÔåÆ Amy Sow n├®e le 27-01-1962 ├á Kayes Mali Adresse HLM grand yoff.jpeg
+     identit├®: Amy Sow | ratio=0.83 nomFamille=true
+   Ô£ö RETENU (date + nom de famille)
+
+DKR-DKR-2026-2269.1  AISSATOU FAYE  n├®e le 2001-12-05 ├á SAGNE  
+   Ô£ÿ AUCUN FICHIER AVEC CETTE DATE
+
+DKR-DKR-2026-2270.1  ABDOU DIOKEL NGOM  n├®e le 1991-04-12 ├á NIAKHAR  
+   Ô£ÿ AUCUN FICHIER AVEC CETTE DATE
+
+DKR-DKR-2026-2270.2  BABACAR DJIRE NGOM  n├®e le 2021-11-07 ├á NIAKHAR  [ABSENTE DE LA BASE]
+   Ô£ÿ AUCUN FICHIER AVEC CETTE DATE
+
+DKR-DKR-2026-2271.1  SOKHNA MAI TANDINE  n├®e le 1998-01-05 ├á TOUBA  
+   Ô£ÿ AUCUN FICHIER AVEC CETTE DATE
+
+DKR-DKR-2026-2272.1  MAME PENDA DIAWO  n├®e le 1972-08-08 ├á DAKAR  
+   ÔåÆ Mame Penda Diao 08-08-1972 ├á Dakar adresse CSE.jpeg
+     identit├®: Mame Penda Diao 08-08-1972 ├á | ratio=0.55 nomFamille=false
+   Ô£ÿ AUCUN CANDIDAT FIABLE (meilleur ratio=0.55, famille=false)
+
+DKR-DKR-2026-2273.1  SERIGNE CISSE  n├®e le 1958-11-05 ├á DIOURBEL  
+   Ô£ÿ AUCUN FICHIER AVEC CETTE DATE
+
+DKR-DKR-2026-2276.1  MOUSSA FALL  n├®e le 1953-09-19 ├á DAKAR  
+   Ô£ÿ AUCUN FICHIER AVEC CETTE DATE
+
+DKR-DKR-2026-2277.1  ALIOUNE FALL  n├®e le 1991-07-01 ├á DAKAR  
+   Ô£ÿ AUCUN FICHIER AVEC CETTE DATE
+
+DKR-DKR-2026-2278.1  MAIMOUNA LO  n├®e le 1996-07-08 ├á BARGNY  
+   Ô£ÿ AUCUN FICHIER AVEC CETTE DATE
+
+DKR-DKR-2026-2280.1  IBRAHIMA GUEYE  n├®e le 1998-06-04 ├á SAMBAYE KARANG  [ABSENTE DE LA BASE]
+   ÔåÆ Ibrahima Gueye n├®e 04-06-1998 ├á Sambaye-Karang adresse Khar Yallah.jpeg
+     identit├®: Ibrahima Gueye | ratio=1.00 nomFamille=true
+   Ô£ö RETENU (date + nom de famille)
+
+DKR-DKR-2026-2281.1  MATY CISS  n├®e le 1979-06-02 ├á LOUKHOUSS  
+   Ô£ÿ AUCUN FICHIER AVEC CETTE DATE
+
+DKR-DKR-2026-2282.1  FATOU FAYE  n├®e le 1992-09-03 ├á NGAPAROU  
+   Ô£ÿ AUCUN FICHIER AVEC CETTE DATE
+
+DKR-DKR-2026-2283.1  LAMINE DOUMBOUYA  n├®e le 1995-04-24 ├á BAYA  
+   Ô£ÿ AUCUN FICHIER AVEC CETTE DATE
+
+DKR-DKR-2026-2285.1  NDEYE FATOU BADJI  n├®e le 1981-01-17 ├á SEDHIOU  
+   ÔåÆ Ndeye Fatou Fatou Badji n├®e le 17-01-1981 ├á Sedhiou adresse L├®ona 770978924.jpeg
+     identit├®: Ndeye Fatou Fatou Badji | ratio=0.75 nomFamille=true
+   Ô£ö RETENU (date + nom de famille)
+
+DKR-DKR-2026-2286.1  ALIOUNE GUEYE  n├®e le 1977-01-15 ├á SOKONE  [ABSENTE DE LA BASE]
+   ÔåÆ Alioune Gueye n├® 15-01-1977 ├á Sokone adresse Khar Yallah.jpeg
+     identit├®: Alioune Gueye | ratio=1.00 nomFamille=true
+   Ô£ö RETENU (date + nom de famille)
+
+DKR-DKR-2026-2287.1  BINETA OUMOU DIALLO  n├®e le 2012-08-30 ├á DAKAR  [ABSENTE DE LA BASE]
+   Ô£ÿ AUCUN FICHIER AVEC CETTE DATE
+
+DKR-DKR-2026-2288.1  PAPE ATOUMANE MBAYE  n├®e le 1990-01-31 ├á KAOLACK  
+   Ô£ÿ AUCUN FICHIER AVEC CETTE DATE
+
+DKR-DKR-2026-2289.1  MOHAMADOU CISSOKO  n├®e le 1984-07-08 ├á GOLMY  
+   Ô£ÿ AUCUN FICHIER AVEC CETTE DATE
+
+DKR-DKR-2026-2290.1  GOR COUMBA NDAW  n├®e le 1953-05-28 ├á DAKAR  
+   Ô£ÿ AUCUN FICHIER AVEC CETTE DATE
+
+DKR-DKR-2026-2291.1  RAMATOULAYE KOUVATE  n├®e le 1968-04-05 ├á DAKAR  
+   Ô£ÿ AUCUN FICHIER AVEC CETTE DATE
+
+DKR-DKR-2026-2292.1  AMY BADJI  n├®e le 1994-03-14 ├á SINDIA  
+   Ô£ÿ AUCUN FICHIER AVEC CETTE DATE
+
+DKR-DKR-2026-2294.1  CLARICE BOCK  n├®e le 1980-07-03 ├á BOTA  
+   Ô£ÿ AUCUN FICHIER AVEC CETTE DATE
+
+=== SYNTH├êSE ===
+  photos ├á rattacher : 22
+  fiches sans photo  : 23
+
+--- ├Ç RATTACHER ---
+  DKR-DKR-2026-2156.1    KHODIA NDONG                       <- Gass Ndong n├®e le 05-01-1984 ├á Kaolack adresse cit├® Sonatel 2.jpeg
+  DKR-DKR-2026-2171.1    ADBOU KARIM DIOUF                  <- Abdou Karim Diouf n├® le 28-08-97 ├á Gossas adresse Conachap.jpeg
+  DKR-DKR-2026-2172.1    AWA LO                             <- Awa L├┤ n├®e le 23-08-2008 ├á keur Massar ├á S├®kou Mbalo.jpeg
+  DKR-DKR-2026-2177.1    NDEYE CODOU FAYE                   <- Codou Faye n├®e le28-04-2001 ├á Dakar adresse Cit├® Mansour Gueye Libert├® 6 extension.jpeg
+  DKR-DKR-2026-2180.1    OUSMANE MAGUETTE NDIAYE            <- Ousmane Magueye Ndiaye n├® 10-02-2016 ├á Dakar Cit├® Conachap.jpeg
+  DKR-DKR-2026-2186.1    BINTA BA                           <- Bineta B├ó n├®e le 10-07-1992 ├á Medina Gounas Adresse Golf Sud.jpeg
+  DKR-DKR-2026-2191.1    IBRAHIMA SORY NDIAYE               <- Ibrahima Sorry Ndiaye n├® le 07-02-1983 ├á Dakar adresse HLM grand yoff.jpeg
+  DKR-DKR-2026-2193.1    MOUHAMADOU HADY NIANG              <- Mouhamadou Ady Niang n├® le 10-03-1989 ├á Dakar adresse Arafat.jpeg
+  DKR-DKR-2026-2199.2    NOGAYE SOW                         <- Nogaye Sow n├®e 11-11-2005 ├á Fouta adresse Darou.jpeg
+  DKR-DKR-2026-2202.1    MADIKE DIAO                        <- Madick├® Diao n├® 11-12-1995 ├á Dakar adresse Bastos 2.jpeg
+  DKR-DKR-2026-2205.1    PAPE CHEIKH TIDIANE DIAW           <- Pape Cheikh Tidiane Diao n├® le 04-12-1987 ├á Dakar Adresse Bastos.jpeg
+  DKR-DKR-2026-2209.1    MARIEME SARR                       <- Mar├®me Sarr n├®e le 09-02-1978 ├á Dakar adresse HLM Patte dÔÇÖoie.jpeg
+  DKR-DKR-2026-2227.1    ELHADJI BABACAR MANE               <- Elhadji Boubacar Man├® ne le 08-05-1994 ├á Dakar adresse Khar Yallah.jpeg
+  DKR-DKR-2026-2233.1    AISSATA OUMAR HANNE                <- Aissata Oumar Anne n├® le 01011995 ├á  Bock├® Mbay├®b├®.jpeg
+  DKR-DKR-2026-2257.1    MATHIAS MENDY                      <- Matias Mendy ne 24-02-1965 ├á Dakar adresse Darou Salam Khar Yallah membre stade 04.jpeg
+  DKR-DKR-2026-2245.2    TACKO CISSOKHO                     <- Tacko Cissokho n├®e le 10-01-2000 ├á Thies Adresse HLM Pattes dÔÇÖoie Membre Seydou.jpeg
+  DKR-DKR-2026-2245.3    NDEYE BIGUE SARR                   <- Ndeye Bigu├® Sarr n├®e le 26-12-2000 ├á Thies adresse HLM Patte dÔÇÖoie Membres d├®l├®gu├® Seydou.jpeg
+  DKR-DKR-2026-2251.2    AWA CISSE                          <- Awa Ciss├® n├®e le 04-03-2009 ├á Dakar adresse Scart Urbam 1.jpeg
+  DKR-DKR-2026-2268.1    AMI SOW                            <- Amy Sow n├®e le 27-01-1962 ├á Kayes Mali Adresse HLM grand yoff.jpeg
+  DKR-DKR-2026-2280.1    IBRAHIMA GUEYE                     <- Ibrahima Gueye n├®e 04-06-1998 ├á Sambaye-Karang adresse Khar Yallah.jpeg
+  DKR-DKR-2026-2285.1    NDEYE FATOU BADJI                  <- Ndeye Fatou Fatou Badji n├®e le 17-01-1981 ├á Sedhiou adresse L├®ona 770978924.jpeg
+  DKR-DKR-2026-2286.1    ALIOUNE GUEYE                      <- Alioune Gueye n├® 15-01-1977 ├á Sokone adresse Khar Yallah.jpeg
+
+--- SANS PHOTO (aucun fichier de cette date) ---
+  DKR-DKR-2026-2151.1    MAFOU DIEDHIOU (1975-01-05)
+  DKR-DKR-2026-2225.1    DIARY SAMB (1974-11-28)
+  DKR-DKR-2026-2234.1    ALPHOUSSEYNOU DIALLO (1973-10-23)
+  DKR-DKR-2026-2267.1    DIE ASTOU FALL (2003-03-04)
+  DKR-DKR-2026-2269.1    AISSATOU FAYE (2001-12-05)
+  DKR-DKR-2026-2270.1    ABDOU DIOKEL NGOM (1991-04-12)
+  DKR-DKR-2026-2270.2    BABACAR DJIRE NGOM (2021-11-07)
+  DKR-DKR-2026-2271.1    SOKHNA MAI TANDINE (1998-01-05)
+  DKR-DKR-2026-2272.1    MAME PENDA DIAWO (1972-08-08)
+  DKR-DKR-2026-2273.1    SERIGNE CISSE (1958-11-05)
+  DKR-DKR-2026-2276.1    MOUSSA FALL (1953-09-19)
+  DKR-DKR-2026-2277.1    ALIOUNE FALL (1991-07-01)
+  DKR-DKR-2026-2278.1    MAIMOUNA LO (1996-07-08)
+  DKR-DKR-2026-2281.1    MATY CISS (1979-06-02)
+  DKR-DKR-2026-2282.1    FATOU FAYE (1992-09-03)
+  DKR-DKR-2026-2283.1    LAMINE DOUMBOUYA (1995-04-24)
+  DKR-DKR-2026-2287.1    BINETA OUMOU DIALLO (2012-08-30)
+  DKR-DKR-2026-2288.1    PAPE ATOUMANE MBAYE (1990-01-31)
+  DKR-DKR-2026-2289.1    MOHAMADOU CISSOKO (1984-07-08)
+  DKR-DKR-2026-2290.1    GOR COUMBA NDAW (1953-05-28)
+  DKR-DKR-2026-2291.1    RAMATOULAYE KOUVATE (1968-04-05)
+  DKR-DKR-2026-2292.1    AMY BADJI (1994-03-14)
+  DKR-DKR-2026-2294.1    CLARICE BOCK (1980-07-03)

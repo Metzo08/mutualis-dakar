@@ -1,0 +1,143 @@
+══════════════════════════════════════════════════════════════════════════════════════════
+DISTRIBUTION TERRAIN — ASSURÉS SANS PHOTO (à photographier par les délégués)
+Généré le 11/10/2026 21:27:50 — 99 personnes au total
+══════════════════════════════════════════════════════════════════════════════════════════
+
+─── MSD (non rattaché) : 5 assuré(s) ───
+CODE BÉNÉFICIAIRE            NOM COMPLET                            NAISSANCE           TÉLÉPHONE
+------------------------------------------------------------------------------------------
+BAM_2600160.1                MAWO DIOUF                             1957-04-05 à NDIAGNE 776357465
+BAM_2600161.1                FATOU KINE SECK                        1965-06-29 à OUARKHOTH 775893670
+KDA_2600157.1                MAMADOU SALIF DIALLO                   1962-06-27 à MAMPATIM 775188802
+LGA_2600154.1                NDEYE RAMATOULAYE NDIAYE               1956-02-05 à SAINT LOUIS 775279504
+TBA_2600159.1                MAMADOU DOUDOU BA                      1962-11-01 à TAMBACOUNDA 776501463
+
+─── MSD DKR : 35 assuré(s) ───
+CODE BÉNÉFICIAIRE            NOM COMPLET                            NAISSANCE           TÉLÉPHONE
+------------------------------------------------------------------------------------------
+DKR-DKR-2026-2151.1          MAFOU DIEDHIOU                         1975-01-05 à ZIGUINCHOR 768455499
+DKR-DKR-2026-2225.1          DIARY SAMB                             1974-11-28 à THIES   776022323
+DKR-DKR-2026-2234.1          ALPHOUSSEYNOU DIALLO                   1973-10-23 à DAKAR   776567489
+DKR-DKR-2026-2267.1          DIE ASTOU FALL                         2003-03-04 à DAKAR   787035703
+DKR-DKR-2026-2269.1          AISSATOU FAYE                          2001-12-05 à SAGNE   77 337 10 73
+DKR-DKR-2026-2270.1          ABDOU DIOKEL NGOM                      1991-04-12 à NIAKHAR 774118096
+DKR-DKR-2026-2271.1          SOKHNA MAI TANDINE                     1998-01-05 à TOUBA   756473562
+DKR-DKR-2026-2273.1          SERIGNE CISSE                          1958-11-05 à DIOURBEL 77 671 30 01
+DKR-DKR-2026-2276.1          MOUSSA FALL                            1953-09-19 à DAKAR   77 634 07 64
+DKR-DKR-2026-2277.1          ALIOUNE FALL                           1991-07-01 à DAKAR   77 508 29 59
+DKR-DKR-2026-2278.1          MAIMOUNA LO                            1996-07-08 à BARGNY  77 545 39 66
+DKR-DKR-2026-2281.1          MATY CISS                              1979-06-02 à LOUKHOUSS 761692097
+DKR-DKR-2026-2282.1          FATOU FAYE                             1992-09-03 à NGAPAROU 785590422
+DKR-DKR-2026-2283.1          LAMINE DOUMBOUYA                       1995-04-24 à BAYA    770587439
+DKR-DKR-2026-2287.1          BINETA OUMOU DIALLO                    2012-08-30 à DAKAR   769364657
+DKR-DKR-2026-2288.1          PAPE ATOUMANE MBAYE                    1990-01-31 à KAOLACK 777918719
+DKR-DKR-2026-2289.1          MOHAMADOU CISSOKO                      1984-07-08 à GOLMY   775524282
+DKR-DKR-2026-2290.1          GOR COUMBA NDAW                        1953-05-28 à DAKAR   777449346
+DKR-DKR-2026-2291.1          RAMATOULAYE KOUVATE                    1968-04-05 à DAKAR   774275739
+DKR-DKR-2026-2292.1          AMY BADJI                              1994-03-14 à SINDIA  776426888
+DKR-DKR-2026-2294.1          CLARICE BOCK                           1980-07-03 à BOTA    771256536
+DKR_2600010.3                BABACAR DIALLO                         1974-12-30 à DAKAR   -
+DKR_2600010.7                NDEYE MADJIGUENE DIALLO                1971-12-03 à RUFISQUE -
+DKR_260002.11                AMY FALL                               1973-02-28 à DIOURBEL -
+DKR_260002.12                MOMAR TALLA NDOYE                      1975-07-15 à DIOURBEL -
+DKR_2600020.1                NEDYE MAREME FALL                      1986-10-15 à PIKINE  773270763
+DKR_2600027.0                URSULE DIAME                           1975-09-15 à DAKAR   776317173
+DKR_2600030.0                OULIMATA DIAGNE                        1967-04-27 à DAKAR   764891308
+DKR_2600030.1                BINETA NDOYE                           1944-11-26 à DAKAR   764891308
+DKR_2600039.1                MOUSTAPHA MBENGUE                      1967-07-21 à DAKAR   775525029
+DKR_260004.0                 PAPE DEMBA SY                          1965-05-17 à DAKAR   -
+DKR_260004.1                 ABY CISSE                              1971-02-28 à DAKAR   -
+DKR_260004.2                 ARAME SY                               2003-01-06 à DAKAR   -
+DKR_260004.3                 ISSA NDOYE SY                          2009-01-03 à DAKAR   -
+DKR_2600051.1                KHADY MBAYE                            1954-07-10 à DAKAR   777602240
+
+─── MSD DRB : 2 assuré(s) ───
+CODE BÉNÉFICIAIRE            NOM COMPLET                            NAISSANCE           TÉLÉPHONE
+------------------------------------------------------------------------------------------
+DBL_2600152.1                SERIGNE BASSIROU KA                    1964-10-29 à DIOURBEL 776575208
+DBL_2600153.1                PAPA KASA WADE                         1963-03-31 à DIOURBEL 776639691
+
+─── MSD GDW : 10 assuré(s) ───
+CODE BÉNÉFICIAIRE            NOM COMPLET                            NAISSANCE           TÉLÉPHONE
+------------------------------------------------------------------------------------------
+GUED_2600108.1               COUMBA NIANG                           1963-06-07 à DAKAR   776406305
+GUED_2600109.1               LISSA SENE SAKHO                       1960-08-25 à DAKAR   775749794
+GUED_2600110.1               FANDIAYE SECK DIENG                    1961-06-11 à LOUGA   774593205
+GUED_2600111.1               WAGANE FAYE                            1961-04-16 à MBOUR   775466439
+GUED_2600112.1               KHADY MBAYE                            1960-09-07 à DAKAR   776368119
+GUED_2600113.1               AMINATA TOP                            1965-12-26 à KEBEMER 776424822
+GUED_2600114.1               BOUNA NDIAYE                           1956-01-18 à DAKAR   775368571
+GUED_2600115.1               KHADY COULIBALY                        1957-11-13 à DAKAR   772563945
+GUED_2600116.1               AL HASSANE SY                          1964-07-06 à DARA    776300441
+GUED_2600117.1               MBAYE NDIEYE                           1962-02-04 à ZIGUINCHOR 777181282
+
+─── MSD KLC : 4 assuré(s) ───
+CODE BÉNÉFICIAIRE            NOM COMPLET                            NAISSANCE           TÉLÉPHONE
+------------------------------------------------------------------------------------------
+FTK_2600158.1                ABDOU KARIM COULIBALY                  1960-06-17 à SAGNE BAMBARA 775738107
+KLK_2600147.1                MOR FALL                               1960-05-26 à KAOLACK 772003605
+KLK_2600148.1                MARIE LOUISE SARR                      1956-09-25 à KAOLACK 771145129
+KLK_2600149.1                FATOU SOW SENE                         1962-03-12 à MBOUR   773639792
+
+─── MSD MBR : 12 assuré(s) ───
+CODE BÉNÉFICIAIRE            NOM COMPLET                            NAISSANCE           TÉLÉPHONE
+------------------------------------------------------------------------------------------
+MBK_2600150.1                DAOUR NDOYE                            1958-01-02 à MBACKE  774434772
+MBK_2600151.1                NGUEYA SALL                            1958-12-05 à NDOYENE 776481731
+MBR_2600128.1                SIDY THIMBO                            1964-01-30 à OUROSSOGUI 776710759
+MBR_2600129.1                SOUKEYE MBAYE                          1963-05-28 à MBOUR   775751729
+MBR_2600130.1                DIEGANE DIENG                          1961-05-22 à FAO     775368534
+MBR_2600131.1                NDEYE SANOU DIOP                       1960-02-09 à NGUEKOKH 775018338
+MBR_2600132.1                FATOU MBAYE                            1963-05-22 à DAKAR   775748356
+MBR_2600133.1                ARFANG DIOP                            1959-04-22 à BANGOUANOU 761914664
+MBR_2600134.1                SERIGNE DIOP                           1960-09-19 à MBOUR   766820773
+MBR_2600135.1                IBRAHIMA SONKO                         1953-10-21 à MBOUR   776480486
+MBR_2600136.1                ASTOU DIAW                             1963-11-26 à MBOUR   774060692
+MBR_2600137.1                MEISSA NDIAYE                          1963-10-18 à DAKAR   774896296
+
+─── MSD PKN : 11 assuré(s) ───
+CODE BÉNÉFICIAIRE            NOM COMPLET                            NAISSANCE           TÉLÉPHONE
+------------------------------------------------------------------------------------------
+KRM_2600098.1                GORA DIOP                              1960-04-16 à RUFISQUE 776559328
+KRM_2600099.1                ABDOULAYE FALL                         1964-06-13 à KOKI    772550668
+KRM_2600100.1                FRANCOIS DIEGANE DIENE                 1964-11-20 à DAKAR   776639590
+KRM_2600101.1                SOPHY SOW                              1958-01-15 à KAEL    775563116
+KRM_2600102.1                AMADOU DOUDOU NIANE                    1960-10-02 à DAKAR   772550952
+KRM_2600103.1                MADEMBA FALL                           1960-05-08 à MBACKE  776405993
+KRM_2600104.1                NGAGNE MBAYE                           1963-05-08 à MBEULEUKHE 776485952
+KRM_2600105.1                MOR MBABA NDIAYE                       1953-00-00 à DIERY BIRANE 776469510
+KRM_2600106.1                BOUBACAR GUEYE                         1959-08-17 à SAINT LOUIS 785216515
+KRM_2600107.1                FATOU NDIAYE                           1956-07-06 à SAINT LOUIS 776569245
+PIK_2600118.1                MAMADOU NGOM                           1960-01-14 à BACCO NDIEME 771439978
+
+─── MSD RFS : 9 assuré(s) ───
+CODE BÉNÉFICIAIRE            NOM COMPLET                            NAISSANCE           TÉLÉPHONE
+------------------------------------------------------------------------------------------
+RUF_2600119.1                OUMOU KHALSOME CORREA                  1957-09-11 à DAKAR   776495526
+RUF_2600120.1                FATOU KINE SECK                        1953-07-17 à RUFISQUE 775431520
+RUF_2600121.1                TAIB BATHILY                           1959-08-30 à SAINT LOUIS 776303574
+RUF_2600122.1                IBRAHIMA DIALLO                        1961-04-21 à DAKAR   771942706
+RUF_2600123.1                JUDOR GOMIS                            1959-12-31 à SOUKOUTA 776639523
+RUF_2600124.1                MOMAR DABO NIANG                       1962-06-25 à KAOLACK 781860773
+RUF_2600125.1                NOGAYE LEYE                            1959-11-28 à DAKAR   778507808
+RUF_2600126.1                MAMADOU LAMINE KA                      1958-08-17 à DAKAR   781772849
+RUF_2600127.1                ROSE KHARDIATA SAMBOU                  1963-06-04 à ZIGUINCHOR 775518788
+
+─── MSD THS : 9 assuré(s) ───
+CODE BÉNÉFICIAIRE            NOM COMPLET                            NAISSANCE           TÉLÉPHONE
+------------------------------------------------------------------------------------------
+THI_2600138.1                MAHAMADOU TRAORE                       1964-05-09 à BAMAKO  773675494
+THI_2600139.1                PAPA MAMADOU GAYE BASSE                1960-05-02 à THIES   776417020
+THI_2600140.1                ARAME DIOUM                            1960-07-21 à KHOUNGHEUL 775478572
+THI_2600141.1                BABACAR NDIAYE                         1961-02-25 à THIES   778199544
+THI_2600142.1                NGALLA DIOP                            1959-01-15 à DAKAR   776329797
+THI_2600143.1                BABA DIOP CISSE                        1959-10-09 à KHOMBOLE 776639679
+THI_2600144.1                ABDOULAYE NDIAYE                       1964-08-05 à THIES   775893797
+THI_2600145.1                MAMADOU BAMBA FALL                     1964-02-10 à THIES   776131110
+THI_2600146.1                KADIDIA BERTHE                         1964-03-06 à BAMAKO  776598190
+
+─── MSD ZGC : 2 assuré(s) ───
+CODE BÉNÉFICIAIRE            NOM COMPLET                            NAISSANCE           TÉLÉPHONE
+------------------------------------------------------------------------------------------
+ZIG_2600155.1                MANSATA DIATTA                         1963-04-12 à MANGAGOULACK 775637778
+ZIG_2600156.1                PAPA OUSMANE CISSE                     1958-11-02 à BIRKILANE 772003719

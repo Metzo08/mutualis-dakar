@@ -46,17 +46,75 @@
       window.API_BASE_URL = 'http://' + window.location.hostname + ':5000';
     </script>
     <script>
-      window.addEventListener('error', function(e) {
-        var errText = (e && e.error && e.error.stack) ? e.error.stack : (e ? e.message : 'Erreur inconnue');
-        var div = document.getElementById('root');
-        if (div) {
-          div.innerHTML = '<div style="padding:2rem;color:#b91c1c;background:#fff;font-family:sans-serif;z-index:999999;position:fixed;top:0;left:0;right:0;bottom:0;overflow:auto;">' +
-            '<h2 style="margin-top:0;">⚠️ Incident de Rendu JS Détecté :</h2>' +
-            '<pre style="white-space:pre-wrap;background:#fef2f2;padding:1rem;border-radius:8px;border:1px solid #fca5a5;color:#991b1b;">' + errText + '</pre>' +
-            '<button onclick="window.location.reload()" style="margin-top:1rem;padding:0.6rem 1.2rem;background:#059669;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:bold;">Actualiser la page</button>' +
-            '</div>';
-        }
-      });
+      // ── Garde-fou d'incident global ─────────────────────────────────────────
+      // AVANT : ce handler écrasait #root via `div.innerHTML = ...` à la
+      // moindre erreur JS. Il détruisait tout l'arbre React hors de son
+      // contrôle : le prochain commit levait « Failed to execute removeChild
+      // on 'Node' » (voir backend/frontend_error.log) et TOUTE l'application
+      // tombait sur l'écran « Une erreur inattendue est survenue » jusqu'au
+      // rechargement — pour une erreur parfois bénigne.
+      //
+      // DÉSORMAIS : l'incident s'affiche dans un calque DÉTACHÉ de #root
+      // (appendé à document.body). L'arbre React n'est jamais touché : les
+      // autres sections restent utilisables, on peut fermer le bandeau. Le
+      // détail part aussi à /api/log (route assainie/bornée côté serveur) pour
+      // que la cause RÉELLE soit diagnostiquée, pas seulement un symptôme.
+      (function () {
+        var lastReportAt = 0;
+        window.addEventListener('error', function (e) {
+          try {
+            var errText = (e && e.error && e.error.stack) ? e.error.stack
+              : (e && e.message) ? e.message
+              : 'Erreur inconnue';
+            // Un seul bandeau à la fois (une erreur en rafale ne doit pas
+            // empiler des calques).
+            if (document.getElementById('mutualis-incident-overlay')) return;
+            var overlay = document.createElement('div');
+            overlay.id = 'mutualis-incident-overlay';
+            overlay.setAttribute('role', 'alert');
+            overlay.style.cssText = 'position:fixed;left:0;right:0;bottom:0;max-height:45vh;overflow:auto;padding:1rem 1.5rem;color:#b91c1c;background:#fff;border-top:3px solid #b91c1c;z-index:2147483647;font-family:sans-serif;box-shadow:0 -4px 16px rgba(0,0,0,0.12);';
+            var title = document.createElement('h2');
+            title.textContent = '⚠️ Incident de Rendu JS Détecté';
+            title.style.cssText = 'margin:0 0 0.5rem;font-size:1.05rem;';
+            // textContent uniquement : le message d'erreur peut contenir du
+            // texte forgé, jamais de markup interprété.
+            var pre = document.createElement('pre');
+            pre.textContent = errText;
+            pre.style.cssText = 'white-space:pre-wrap;background:#fef2f2;padding:1rem;border-radius:8px;border:1px solid #fca5a5;color:#991b1b;margin:0;font-size:0.8rem;';
+            var row = document.createElement('div');
+            row.style.cssText = 'margin-top:0.75rem;display:flex;gap:0.5rem;flex-wrap:wrap;';
+            var reload = document.createElement('button');
+            reload.textContent = '🔄 Actualiser la page';
+            reload.style.cssText = 'padding:0.55rem 1.1rem;background:#059669;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:bold;';
+            reload.onclick = function () { window.location.reload(); };
+            var dismiss = document.createElement('button');
+            dismiss.textContent = '✖ Fermer (continuer)';
+            dismiss.style.cssText = 'padding:0.55rem 1.1rem;background:#fff;color:#334155;border:1px solid #cbd5e1;border-radius:8px;cursor:pointer;font-weight:bold;';
+            dismiss.onclick = function () { try { overlay.remove(); } catch (err) { /* best-effort */ } };
+            row.appendChild(reload);
+            row.appendChild(dismiss);
+            overlay.appendChild(title);
+            overlay.appendChild(pre);
+            overlay.appendChild(row);
+            document.body.appendChild(overlay);
+            // Signalement best-effort, anti-rafale (1 max / 5 s).
+            var now = Date.now();
+            if (now - lastReportAt > 5000) {
+              lastReportAt = now;
+              try {
+                fetch(window.API_BASE_URL + '/api/log', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    message: 'window.onerror (index.html): ' + ((e && e.message) || 'Erreur inconnue'),
+                    stack: errText
+                  })
+                }).catch(function () {});
+              } catch (err) { /* best-effort : le signalement ne doit jamais aggraver l'incident */ }
+            }
+          } catch (err) { /* le handler ne doit jamais aggraver l'incident */ }
+        });
+      })();
     </script>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>

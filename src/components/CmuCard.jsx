@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
 import { detectLanIp, getCachedLanIp, isValidLanIp } from '../utils/lanIp';
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { API_BASE, setTokens } from '../utils/api';
 
 // Registre des 13 profils d'accès avec E-mail et Mot de passe uniques

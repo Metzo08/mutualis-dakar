@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 // Suivi des cotisations annuelles + rappels automatiques.
 // - Citoyen : voit son historique de cotisations + statut (payé/expiré)
@@ -7,7 +7,9 @@ export default function Cotisations({ lang, portalMode, citizenUser, agentUser }
   const [cotisations, setCotisations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState('');
-  const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
+  // Seul `setPagination` est consommé : la pagination affichée est recalculée
+  // côté rendu à partir de `activeList` (voir totalPages/safePage plus bas).
+  const [, setPagination] = useState({ page: 1, totalPages: 1 });
   const [page, setPage] = useState(1);
   const [reminderResult, setReminderResult] = useState(null);
   const [reminderLoading, setReminderLoading] = useState(false);

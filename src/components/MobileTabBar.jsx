@@ -1,5 +1,3 @@
-import React from 'react';
-
 /**
  * MobileTabBar Component — Bottom Tab Bar for Mobile Navigation
  * Conforme au Cahier des Charges Section 3 : Ergonomie Mobile

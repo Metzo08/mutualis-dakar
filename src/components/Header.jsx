@@ -1,4 +1,3 @@
-import React from 'react';
 import { cacheSet } from '../utils/offline';
 
 export default function Header({ 
@@ -15,8 +14,7 @@ export default function Header({
   setAgentUser,
   partnerUser,
   setPartnerUser,
-  sidebarOpen,
-  setSidebarOpen
+  sidebarOpen
 }) {
   // Translations dictionary for the sidebar navigation
   const dict = {
@@ -108,7 +106,6 @@ export default function Header({
   // Déconnexion : révoque le refresh token côté serveur puis purge la session locale
   const handleLogout = () => {
     const refreshToken = localStorage.getItem('cmu-refresh-token');
-    const accessToken = localStorage.getItem('cmu-token');
     // Appel best-effort : on ne bloque pas la déconnexion locale en cas d'échec réseau
     fetch(`${window.API_BASE_URL}/api/auth/logout`, {
       method: 'POST',
@@ -167,16 +164,6 @@ export default function Header({
         };
       }
     }
-  };
-
-  const isMaleUser = () => {
-    if (portalMode === 'citizen' && citizenUser) {
-      if (citizenUser.gender === 'M' || citizenUser.sexe === 'M') return true;
-      const firstName = (citizenUser.firstName || citizenUser.first_name || '').toLowerCase();
-      const maleNames = ['ibrahima', 'modou', 'amadou', 'moustapha', 'abdoulaye', 'cheikh', 'moussa', 'ousmane', 'mamadou', 'babacar', 'samba', 'aliou', 'boubacar', 'omar', 'pape'];
-      if (maleNames.some(n => firstName.includes(n))) return true;
-    }
-    return false;
   };
 
   const profile = getProfileInfo();
@@ -474,7 +461,12 @@ export default function Header({
         )}
 
         {/* Option 9: Journal d'Audit & Studio Cartes (Super Admin only) */}
-        {portalMode === 'agent' && agentUser && agentUser.role === 'Super Admin' && (
+        {/* Les DEUX modes sont acceptés : la connexion (Login ACC-11) installe
+            portalMode='superadmin', tandis que le changement de profil (Profile
+            « Tester ce profil ») installe portalMode='agent'. N'accepter qu'un
+            seul des deux forçait le Super Admin à passer par Profil puis
+            « Tester ce profil » pour voir le Studio Cartes apparaître. */}
+        {agentUser && agentUser.role === 'Super Admin' && (portalMode === 'agent' || portalMode === 'superadmin') && (
           <>
             <button 
               className={`nav-item ${currentView === 'audit-logs' ? 'active' : ''}`}

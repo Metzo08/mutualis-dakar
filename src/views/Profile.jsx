@@ -1,12 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import CmuCard from '../components/CmuCard';
 
-const formatBadgeName = (name) => {
-  if (!name) return '';
-  return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
-};
-
-export default function Profile({ lang, portalMode, citizenUser, agentUser, partnerUser, setView, setViewTab, setPortalMode, setCitizenUser, setAgentUser, setPartnerUser }) {
+export default function Profile({ lang, portalMode, citizenUser, agentUser, partnerUser, setView, setPortalMode, setCitizenUser, setAgentUser, setPartnerUser }) {
   const dict = {
     fr: {
       titleCitizen: 'Mon compte assuré CSU',
@@ -362,16 +357,22 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
   // Super Admin Agent Creation State
   const [newAgent, setNewAgent] = useState({ firstName: '', lastName: '', username: '', password: '', role: 'Admin Régional' });
   const [agentList, setAgentList] = useState([]);
+  // eslint-disable-next-line no-unused-vars -- Spinner de création d'agent. Le setters est piloté par `handleCreateAgent` (POST /api/agents) : le rendu du panneau Super Admin reste à brancher.
   const [adminLoading, setAdminLoading] = useState(false);
+  // eslint-disable-next-line no-unused-vars -- Message de retour de la création d'agent (succès/erreur). Setter piloté par `handleCreateAgent`, aucun rendu ne l'affiche encore.
   const [adminMsg, setAdminMsg] = useState('');
 
   // Messages State
+  // eslint-disable-next-line no-unused-vars -- File de messages de l'agent, alimentée par GET /api/messages/:username. Le setter est actif mais aucune liste n'est rendue.
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState({ receiver: '', subject: '', body: '' });
+  // eslint-disable-next-line no-unused-vars -- Spinner d'envoi de message, piloté par `handleSendMessage` (POST /api/messages) : le formulaire n'est pas encore rendu.
   const [msgLoading, setMsgLoading] = useState(false);
 
   // Loyalty State
+  // eslint-disable-next-line no-unused-vars -- Points de fidélité du citoyen, chargés par GET /api/loyalty/:id. Le setter est actif mais le bloc fidélité n'est pas rendu.
   const [loyaltyData, setLoyaltyData] = useState(null);
+  // eslint-disable-next-line no-unused-vars -- Spinner de chargement des points de fidélité : mêmes setters que ci-dessus, aucun rendu ne l'affiche.
   const [loyaltyLoading, setLoyaltyLoading] = useState(false);
 
   // Fetch loyalty data for citizen
@@ -419,6 +420,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
     }
   }, [portalMode, user]);
 
+  // eslint-disable-next-line no-unused-vars -- Création d'un compte agent (POST /api/agents) avec retour utilisateur via `adminMsg`/`adminLoading`. Flux métier complet, aucun bouton ne le déclenche encore : à arbitrer.
   const handleCreateAgent = () => {
     setAdminLoading(true);
     setAdminMsg('');
@@ -447,6 +449,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
     });
   };
 
+  // eslint-disable-next-line no-unused-vars -- Envoi d'un message agent→assuré (POST /api/messages). Flux métier complet, aucun formulaire ne l'appelle encore : à arbitrer.
   const handleSendMessage = () => {
     if (!newMessage.receiver || !newMessage.body) return;
     setMsgLoading(true);

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
-import { getBeneficiaryInfo, getAdherentCode, getBeneficiaryCode } from '../utils/csuFormatter';
+import { getBeneficiaryInfo } from '../utils/csuFormatter';
 
 /**
  * Détermine le contexte temporel de délivrance d'une Lettre de Garantie :
@@ -78,8 +78,6 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
   const isStaff      = isDoctor || isMidwife || isAgent || isPharmacist || isLabUser || isSuperAdmin;
   // Droits d'instruction : agent gérant ou superadmin
   const canInstruire = isAgent || isSuperAdmin;
-  // Peut consulter les dossiers liés à ses patients (médecin/sage-femme) ou tous (agent/superadmin)
-  const canViewAllLetters = isAgent || isSuperAdmin || isDoctor || isMidwife || isLabUser;
 
   const overrideActive = (
     localStorage.getItem(`cmu-status-${citizenUser?.cmuNumber || citizenUser?.cmu_number}`) === 'active' ||
@@ -145,6 +143,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
     try {
       const saved = localStorage.getItem('unamusc_lab_orders');
       if (saved) return sanitizeOrderList(JSON.parse(saved));
+    // eslint-disable-next-line no-unused-vars -- Commandes de laboratoire illisibles : on repart des valeurs par défaut plutôt que de casser le rendu.
     } catch (e) {}
     return defaults;
   });
@@ -231,6 +230,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
     setLetters(updated);
     try {
       localStorage.setItem('unamusc_guarantee_letters', JSON.stringify(updated));
+    // eslint-disable-next-line no-unused-vars -- Persistance best-effort : un stockage indisponible ne doit pas perdre la lettre de garantie.
     } catch(err) {}
 
     setEditingLetterObj(null);
@@ -245,6 +245,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
         setLetters(updated);
         try {
           localStorage.setItem('unamusc_guarantee_letters', JSON.stringify(updated));
+        // eslint-disable-next-line no-unused-vars -- Persistance best-effort : un stockage indisponible ne doit pas perdre la lettre de garantie.
         } catch(err) {}
       }
     });
@@ -274,7 +275,9 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
   const [activeTab, setActiveTab] = useState('list'); // 'list' | 'new'
   
   // 🎯 WIZARD MULTI-ÉTAPES pour création de Lettre de Garantie
-  const [wizardStep, setWizardStep] = useState(1); // 1: Patient Info | 2: Acte & Montant | 3: Révision
+  // Le pas courant est réinitialisé au clic (L~1732) ; le libellé d'étape n'est
+  // pas encore affiché, d'où l'absence de lecture de `wizardStep`.
+  const [, setWizardStep] = useState(1); // 1: Patient Info | 2: Acte & Montant | 3: Révision
 
   // Formulaire de demande (Assuré ou Structure Sanitaire Conventionnée)
   const [applicantFirstName, setApplicantFirstName] = useState(activeFirstName);
@@ -326,7 +329,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
         setLetters([]);
       }
     } catch (err) {
-      console.warn('Registre des garanties injoignable — registre affiché vide:', err);
+      console.warn('Registre des garanties injoignable — registre affiché vide (échec réseau distinct d’un registre réellement vide):', err);
       setLetters([]);
     } finally {
       setLoading(false);
@@ -533,6 +536,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
     return false;
   });
 
+  // eslint-disable-next-line no-unused-vars -- Régularisation/homologation d'une prise en charge d'urgence (action métier complète, avec trace d'audit dans agent_note). Aucun écran ne l'appelle encore : à arbitrer.
   const handleRegularizeEmergency = (letterItem) => {
     const updatedLetters = letters.map(l => {
       if (l.id === letterItem.id) {
@@ -548,6 +552,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
     setLetters(updatedLetters);
     try {
       localStorage.setItem('unamusc_guarantee_letters', JSON.stringify(updatedLetters));
+    // eslint-disable-next-line no-unused-vars -- Persistance best-effort : un stockage indisponible ne doit pas perdre la régularisation.
     } catch (e) {}
     alert(`✅ La prise en charge d'urgence #${letterItem.validation_code} pour ${letterItem.first_name} ${letterItem.last_name} a été régularisée et homologuée avec succès !`);
   };
@@ -740,8 +745,6 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
   };
 
   // KPIs
-  const totalPending = letters.filter(l => l.status === 'pending').length;
-  const totalApproved = letters.filter(l => l.status === 'approved').length;
   const totalGuaranteedSum = letters.filter(l => l.status === 'approved').reduce((acc, l) => acc + (l.max_amount || 0), 0);
 
   // ── LABORATOIRE & BIOLOGIE : Périmètre d'imagerie et d'analyses ──
@@ -761,6 +764,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
         return o;
       });
       setLabOrdersState(updated);
+      // eslint-disable-next-line no-unused-vars -- Persistance best-effort : un stockage indisponible ne doit pas perdre la commande de laboratoire.
       try { localStorage.setItem('unamusc_lab_orders', JSON.stringify(updated)); } catch (err) {}
 
       // Add to DMP exams list in localStorage (Global & Patient-specific)
@@ -784,6 +788,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
         localStorage.setItem(`cmu-exams-${patientCmu}`, JSON.stringify([newExam, ...patientExams]));
         localStorage.setItem('cmu-medical-exams', JSON.stringify([newExam, ...existingExams]));
+      // eslint-disable-next-line no-unused-vars -- Persistance best-effort : un stockage indisponible ne doit pas perdre le compte-rendu déjà transmis.
       } catch (e) {}
 
       alert(`✅ Fichier et compte-rendu certifiés transmis au Dossier Médical Partagé (DMP) pour ${uploadLabTargetOrder.patientName} (${uploadLabTargetOrder.cmuNumber}) !`);

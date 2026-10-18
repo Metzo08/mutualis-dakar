@@ -433,6 +433,7 @@ export const saveSponsorLogo = async (phone, logoUrl) => {
       sponsorLogo: logoUrl,
       warning: `Serveur indisponible (erreur ${res.status}) : logo conservé localement.`
     };
+  // eslint-disable-next-line no-unused-vars -- serveur injoignable : le message de repli local le dit à l'utilisateur.
   } catch (err) {
     return {
       saved: 'local',

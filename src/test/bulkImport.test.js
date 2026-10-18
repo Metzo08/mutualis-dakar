@@ -155,6 +155,60 @@ describe('generateUniqueCmuCode', () => {
   });
 });
 
+describe('Grand Yoff — série structurée déjà imprimée (MSD DKR)', () => {
+  it('la suite générée repart au-dessus du max imprimé (2294 → 2295)', async () => {
+    const { buildStudioMembers } = await import('../utils/bulkImport.js');
+    const records = [
+      { codeBeneficiaire: 'DKR-DKR-2026-2294.1', numeroAdherent: '', prenom: 'CLARICE', nom: 'BOCK', birthDate: '', birthPlace: '', nin: '', sexe: 'F', telephone: '', address: '', bloodGroup: '', schoolName: '', sponsorPhone: '', mutuelleName: '', packageType: '', photoHint: '', status: 'active' },
+      { codeBeneficiaire: '', numeroAdherent: '', prenom: 'SANS', nom: 'CODE', birthDate: '', birthPlace: '', nin: '', sexe: 'M', telephone: '', address: '', bloodGroup: '', schoolName: '', sponsorPhone: '', mutuelleName: '', packageType: '', photoHint: '', status: 'active' },
+    ];
+    const members = await buildStudioMembers(records, { unionId: 'DKR', codeStrategy: 'SYSTEM' });
+    const codes = members.map((m) => m.cmuNumber);
+    // La fiche sans code reçoit la suite de la série terrain, pas 0001.
+    expect(codes).toContain('DKR-DKR-2026-2295.1');
+  });
+
+  it('les codes imprimés sont conservés tels quels en mode FILE', async () => {
+    const { buildStudioMembers } = await import('../utils/bulkImport.js');
+    const records = [
+      { codeBeneficiaire: 'DKR-DKR-2026-2151.1', numeroAdherent: '', prenom: 'MAFOU', nom: 'DIEDHIOU', birthDate: '', birthPlace: '', nin: '', sexe: 'F', telephone: '', address: '', bloodGroup: '', schoolName: '', sponsorPhone: '', mutuelleName: '', packageType: '', photoHint: '', status: 'active' },
+      { codeBeneficiaire: 'DKR-DKR-2026-2151.2', numeroAdherent: '', prenom: 'BATOR', nom: 'SAMB', birthDate: '', birthPlace: '', nin: '', sexe: 'M', telephone: '', address: '', bloodGroup: '', schoolName: '', sponsorPhone: '', mutuelleName: '', packageType: '', photoHint: '', status: 'active' },
+      // Tout `.1` est un ADHÉRENT-CHEF : BABACAR DIOP ouvre son propre foyer 2152.
+      { codeBeneficiaire: 'DKR-DKR-2026-2152.1', numeroAdherent: '', prenom: 'BABACAR', nom: 'DIOP', birthDate: '', birthPlace: '', nin: '', sexe: 'M', telephone: '', address: '', bloodGroup: '', schoolName: '', sponsorPhone: '', mutuelleName: '', packageType: '', photoHint: '', status: 'active' },
+    ];
+    const members = await buildStudioMembers(records, { unionId: 'DKR', codeStrategy: 'FILE' });
+    // Deux foyers : 2151 (MAFOU + 1 ayant droit) et 2152 (BABACAR seul).
+    expect(members).toHaveLength(2);
+    const chef2151 = members.find((m) => m.firstName === 'MAFOU');
+    expect(chef2151.cmuNumber).toBe('DKR-DKR-2026-2151.1');
+    expect(chef2151.dependents).toHaveLength(1);
+    expect(chef2151.dependents[0].cmuNumber).toBe('DKR-DKR-2026-2151.2');
+    const chef2152 = members.find((m) => m.firstName === 'BABACAR');
+    expect(chef2152.cmuNumber).toBe('DKR-DKR-2026-2152.1');
+    expect(chef2152.dependents).toHaveLength(0);
+  });
+
+  it('une ligne sans code sous un ménage codé devient son ayant droit (RAMATA CAMARA)', async () => {
+    const { buildStudioMembers } = await import('../utils/bulkImport.js');
+    const records = [
+      { codeBeneficiaire: 'DKR-DKR-2026-2216.1', numeroAdherent: '', prenom: 'MAME MAREME', nom: 'SALL', birthDate: '', birthPlace: '', nin: '', sexe: 'F', telephone: '', address: '', bloodGroup: '', schoolName: '', sponsorPhone: '', mutuelleName: '', packageType: '', photoHint: '', status: 'active' },
+      { codeBeneficiaire: '', numeroAdherent: '', prenom: 'RAMATA', nom: 'CAMARA', birthDate: '', birthPlace: '', nin: '', sexe: 'F', telephone: '', address: '', bloodGroup: '', schoolName: '', sponsorPhone: '', mutuelleName: '', packageType: '', photoHint: '', status: 'active' },
+    ];
+    const members = await buildStudioMembers(records, { unionId: 'DKR', codeStrategy: 'FILE' });
+    expect(members).toHaveLength(1);
+    expect(members[0].dependents).toHaveLength(1);
+    expect(members[0].dependents[0].cmuNumber).toBe('DKR-DKR-2026-2216.2');
+  });
+
+  it('une photo nommée par code structuré est appariée par code', async () => {
+    const { matchPhotosToRows } = await import('../utils/bulkImport.js');
+    const rows = [{ codeBeneficiaire: 'DKR-DKR-2026-2151.1', numeroAdherent: '', prenom: 'MAFOU', nom: 'DIEDHIOU', telephone: '', photoHint: '', photoUrl: '' }];
+    const file = new File(['x'], 'DKR-DKR-2026-2151.1 MAFOU DIEDHIOU.jpg', { type: 'image/jpeg' });
+    const matched = matchPhotosToRows(rows, [file]);
+    expect(matched[0].photoUrl).toBe(file.name);
+  });
+});
+
 describe('migrateLegacyCodes — non-régression des cartes imprimées', () => {
   const registre = [
     // Carte DÉJÀ imprimée : ne doit JAMAIS bouger.
@@ -247,8 +301,14 @@ describe('identité stable (déduplication entre imports)', () => {
   });
 
   it('privilégie le NIN quand il existe', () => {
-    const a = { firstName: 'A', lastName: 'B', birthDate: '1990-01-01', nin: '123456789' };
-    const b = { firstName: 'Z', lastName: 'Y', birthDate: '1975-05-05', nin: '123456789' };
+    const a = { firstName: 'A', lastName: 'B', birthDate: '1990-01-01', nin: '1234567890123' };
+    const b = { firstName: 'Z', lastName: 'Y', birthDate: '1975-05-05', nin: '1234567890123' };
+    expect(beneficiaryIdentity(a)).toBe(beneficiaryIdentity(b));
+  });
+
+  it('ignore un NIN parasite (texte de gabarit, pas 13 chiffres)', () => {
+    const a = { firstName: 'Awa', lastName: 'FALL', birthDate: '1990-01-01', nin: 'BULL. NAISSANCE' };
+    const b = { firstName: 'Awa', lastName: 'FALL', birthDate: '1990-01-01', nin: '' };
     expect(beneficiaryIdentity(a)).toBe(beneficiaryIdentity(b));
   });
 

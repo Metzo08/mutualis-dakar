@@ -602,7 +602,7 @@ export const syncCampaignLotsFromServer = async () => {
  */
 export const createCampaignLot = async (meta = {}) => {
   const year = campaignYear();
-  let seq = 0;
+  let seq = 0; // eslint-disable-line no-useless-assignment -- valeur de repli si localStorage illisible
   try {
     seq = parseInt(window.localStorage.getItem(LOT_SEQ_KEY) || '0', 10) || 0;
   } catch { seq = 0; }
@@ -742,9 +742,13 @@ export const beneficiaryIdentity = (m) => {
   const last = normalizeName(m.lastName || m.nom);
   const first = normalizeName(m.firstName || m.prenom);
   if (!last && !first) return '';
-  // Le NIN est le plus sûr quand il existe (numéro national d'identification).
-  const nin = normalizeName(m.nin);
-  if (nin) return `n${nin}`;
+  // Le NIN est le plus sûr quand il existe — mais SEULEMENT s'il est un vrai
+  // numéro (13 chiffres). La base et les classeurs contiennent des textes
+  // parasites dans la colonne NIN (« BULL. NAISSANCE », « EXT NAISSANCE ») :
+  // les prendre comme clé créerait des identités faussement stables et
+  // rapprocherait deux personnes différentes partageant le même gabarit.
+  const nin = String(m.nin || '').trim();
+  if (/^\d{13}$/.test(nin)) return `n${nin}`;
   return `${first}|${last}|${String(m.birthDate || '').slice(0, 10)}`;
 };
 
@@ -756,6 +760,121 @@ export const collectIdentities = (members) => {
     if (key) set.add(key);
   }
   return set;
+};
+
+/**
+ * Répartit les fiches d'un import entre « à créer » et « à enrichir ».
+ *
+ * ⚠️ POURQUOI CETTE FONCTION EXISTE (bug des photos perdues au réimport)
+ *
+ * Le Studio faisait, pour chaque fiche lue dans le classeur :
+ *
+ *     si la personne est déjà connue → `duplicates++ ; continue`
+ *
+ * Une fiche déjà enregistrée n'était donc JAMAIS repoussée vers
+ * `POST /api/beneficiaries/bulk`. Conséquence sur le fichier AMEVI :
+ * au premier import, la photo est perdue (le push renvoyait `null` pour tout
+ * ayants droit) ; à la réimportation, la fiche est reconnue comme doublon et
+ * RIEN n'est envoyé — `photo_url` reste vide en base indéfiniment. L'agent
+ * était bloqué et le contournement « 🧹 Vider le lot » de la procédure
+ * RENOMMAGE-PHOTOS.xlsx ne faisait que masquer le défaut.
+ *
+ * La sémantique corrigée : une fiche déjà connue n'est plus IGNORÉE, elle est
+ * RÉPUTÉE. Le backend est déjà idempotent — sur conflit `cmu_number` OU `nin`
+ * il fait un `UPDATE`, et `photo_url = COALESCE($photo, photo_url)` : pousser
+ * une photo n'efface donc jamais une photo déjà enregistrée. Aucun doublon
+ * n'est créé, et la photo manquante arrive enfin.
+ *
+ * Les fiches de `updates` ne sont PAS écrites dans le registre local : elles
+ * y sont déjà. Seules les fiches réellement nouvelles le sont.
+ *
+ * Deux cas restent écartés, volontairement :
+ *  - doublon À L'INTÉRIEUR du fichier (`duplicatesInFile`) : une seule ligne
+ *    et une seule photo par personne, la première occurrence est conservée ;
+ *  - collision de MATRICULE avec quelqu'un d'autre, identité différente
+ *    (`codeConflicts`) : le backend écraserait alors la fiche d'un tiers avec
+ *    celle d'une autre personne. On ne pousse pas, et on le dit.
+ *
+ * Fonction PURE → testable hors navigateur (c'était de la logique enfouie
+ * dans le composant React, donc invérifiable).
+ *
+ * @param {Array} members   — fiches produites par runExcelImport()
+ * @param {Array} existing  — registre déjà connu (getStoredMembers())
+ * @returns {{fresh: Array, updates: Array, duplicatesInFile: number,
+ *            codeConflicts: number, duplicates: number}}
+ */
+export const partitionForReimport = (members, existing) => {
+  const registre = Array.isArray(existing) ? existing : [];
+  const existingIds = collectIdentities(registre);
+  const existingCodes = new Set(
+    registre.map((m) => String((m && m.cmuNumber) || '')).filter(Boolean)
+  );
+
+  const seenInFile = new Set();
+  const fresh = [];
+  const updates = [];
+  let duplicatesInFile = 0;
+  let codeConflicts = 0;
+
+  for (const m of members || []) {
+    if (!m) continue;
+    const key = beneficiaryIdentity(m);
+    const code = String(m.cmuNumber || '');
+
+    // Doublon dans le fichier : la 1ʳᵉ occurrence est déjà retenue.
+    if (key && seenInFile.has(key)) { duplicatesInFile += 1; continue; }
+    if (key) seenInFile.add(key);
+
+    // Même personne déjà enregistrée → on la REPOUSSE pour qu'elle reçoive
+    // ce qui lui manque (typiquement la photo). Aucun doublon n'est créé :
+    // c'est le backend qui décide (UPDATE sur conflit cmu_number / nin).
+    if (key && existingIds.has(key)) { updates.push(m); continue; }
+
+    // Matricule déjà pris par une AUTRE personne : ne rien écraser.
+    if (code && existingCodes.has(code)) { codeConflicts += 1; continue; }
+
+    fresh.push(m);
+  }
+
+  return {
+    fresh,
+    updates,
+    duplicatesInFile,
+    codeConflicts,
+    duplicates: duplicatesInFile + codeConflicts
+  };
+};
+
+/**
+ * Compte les FICHES réellement construites (titulaires ET ayants droit) selon
+ * qu'elles portent ou non une photo.
+ *
+ * ⚠️ Le compte-rendu affiché à l'agent ne doit JAMAIS comparer un nombre de
+ * fiches à un nombre de LIGNES lues : sur le fichier AMEVI, 1702 lignes ne
+ * produisent pas 1702 fiches (déduplication des doublons, regroupement en
+ * ménages, lignes sans nom). Le message « 135 / 1702 » était donc trompeur.
+ *
+ * `summarizePhotos` compte les fiches produites par `buildStudioMembers`, donc
+ * APRÈS déduplication : c'est exactement ce qui sera poussé en base.
+ * Fonction PURE et sans canvas → testable en jsdom.
+ *
+ * @param {Array} members — fiches du Studio
+ * @returns {{total: number, withPhoto: number, withoutPhoto: number}}
+ */
+export const summarizePhotos = (members) => {
+  let total = 0;
+  let withPhoto = 0;
+  for (const m of members || []) {
+    if (!m) continue;
+    total += 1;
+    if (m.photoUrl) withPhoto += 1;
+    for (const d of m.dependents || []) {
+      if (!d) continue;
+      total += 1;
+      if (d.photoUrl) withPhoto += 1;
+    }
+  }
+  return { total, withPhoto, withoutPhoto: total - withPhoto };
 };
 
 /**
@@ -829,11 +948,25 @@ export const matchPhotosToRows = (rows, photoFiles) => {
     const sansRang = base.replace(/^\d{1,3}(?:\.\d{1,3})?\s+/, '');
     // Code en tête de nom : DKR_2600040.1, KLK_2600149.1, ZIG_2600155.1…
     const codeMatch = base.match(/^([A-Za-z]{2,4})[_\-\s](\d{4,8})(\.\d+)?/);
+    // Série structurée Grand Yoff (quartier de Dakar, MSD DKR) :
+    // « DKR-DKR-2026-2151.1 MAFOU DIEDHIOU.jpg ». Le motif classique
+    // ci-dessus ne la capte pas (`DKR-DKR` n'est pas lettres+chiffres),
+    // donc sans ce second motif aucune photo Grand Yoff ne matchait par
+    // code et tout retombait sur le nom, moins fiable.
+    const structMatch = base.match(/^([A-Za-z]{3}-[A-Za-z]{3}-\d{4}-\d{4})(\.\d+)?/);
     // Deux formes sont indexées car le code dépend du modèle de fichier :
     //  • avec suffixe   : DKR_2600040.1 (ASS LONASE)
     //  • sans suffixe .0: DKR_2600011    (fichier MSD, chef de ménage)
-    const codeComplet = codeMatch ? normalizeName(codeMatch[0]) : '';
-    const codeBase = codeMatch ? normalizeName(codeMatch[1] + codeMatch[2]) : '';
+    //  • structuré      : DKR-DKR-2026-2151.1 (Grand Yoff, déjà imprimé)
+    const codeComplet = structMatch
+      ? normalizeName(structMatch[0])
+      : (codeMatch ? normalizeName(codeMatch[0]) : '');
+    const codeBase = structMatch
+      ? normalizeName(structMatch[1])
+      : (codeMatch ? normalizeName(codeMatch[1] + codeMatch[2]) : '');
+    const codeEnd = structMatch
+      ? structMatch[0].length
+      : (codeMatch ? codeMatch[0].length : 0);
     return {
       file: f,
       nameNorm: normalizeName(sansRang),
@@ -841,7 +974,7 @@ export const matchPhotosToRows = (rows, photoFiles) => {
       codeBaseNorm: codeBase,
       // Nom de personne seul (le code et le rang en tête sont retirés)
       personNorm: normalizeName(
-        codeMatch ? base.slice(codeMatch[0].length) : sansRang
+        codeEnd ? base.slice(codeEnd) : sansRang
       ),
       phoneNorm: normalizePhone(base)
     };
@@ -1028,12 +1161,21 @@ export const CODE_STRATEGY = {
  * Inversement, quand le fichier ne fournit rien, il n'y a rien à préserver et
  * un matricule officiel est le seul choix possible.
  *
- * Le mode SYSTEM est donc une DÉCISION EXPLICITE de l'agent, jamais un
- * hasard. (Il a été imposé par défaut par erreur lors d'un import ASS LONASE
- * : les 122 cartes ont reçu `DKR-DKR-2026-XXXX` au lieu de
- * `DKR_2600040.1` gravé sur le PVC.)
+/**
+ * Stratégie par DÉFAUT : ATTRIBUTION AUTOMATIQUE par le système.
+ *
+ * Règle (décision porteur, oct. 2026) : « à partir de maintenant, la
+ * génération des codes des assurés est automatique — région, département,
+ * année, code bénéficiaire — et chaque code est unique ».
+ *
+ * Garde-fou inchangé : quand un classeur PORTE un code (colonne
+ * CODE_BENEFICIAIRE remplie), ce code est celui gravé sur une carte DÉJÀ
+ * IMPRIMÉE — il est conservé tel quel même en mode SYSTEM. L'attribution
+ * automatique ne s'applique donc qu'aux lignes SANS code du fichier, et
+ * aux lots qui n'ont encore aucune carte imprimée. Aucun PVC en
+ * circulation ne peut être détaché de sa fiche.
  */
-export const DEFAULT_CODE_STRATEGY = CODE_STRATEGY.FILE;
+export const DEFAULT_CODE_STRATEGY = CODE_STRATEGY.SYSTEM;
 
 /** Libellé lisible d'une stratégie, pour l'interface. */
 export const describeCodeStrategy = (s) => (
@@ -1062,7 +1204,9 @@ export const describeCodeStrategy = (s) => (
  *
  * @param {Array} records  — sortie de parseRowsToRecords()
  * @param {object} opts
- * @param {Map<string,string>} opts.photoUrls — code du FICHIER → data-URL
+ * @param {Map<string,string>} opts.photoUrls — data-URL compressée, indexée par
+ *        NOM DE FICHIER IMAGE (clé unique par personne) et, pour compatibilité,
+ *        par code du FICHIER (code, numéro d'adhérent, base de ménage).
  * @param {Array|Set<string>} [opts.existingCodes] — matricules déjà pris
  * @param {string} [opts.unionId='DKR'] — préfixe MSD
  * @param {string} [opts.unionName]
@@ -1133,11 +1277,27 @@ export const buildStudioMembers = async (records, opts = {}) => {
    * compte produisait un matricule à 8 digits — invalide — au lieu de 4.
    * Exemple : les codes vont jusqu'à `DKR_2600271`, donc la série officielle
    * commence à `DKR-DKR-2026-0272`.
+   *
+   * Grand Yoff (quartier de Dakar, pas une MSD) imprime déjà au format
+   * officiel structuré `DKR-DKR-2026-2151.1` : DKR = région de Dakar, DKR =
+   * département/MSD de Dakar, 2026 = année d'adhésion, 2151 = n° de dossier,
+   * `.1` = rang dans le foyer (`.1` chef, `.2`+ ayants droit). Ces codes
+   * portent donc EUX AUSSI le numéro d'ordre : on les lit pour que la
+   * suite générée reparte AU-DESSUS (ex. 2294 → 2295), jamais par-dessus
+   * une carte déjà imprimée.
    */
   const floorFromRecords = (() => {
     let max = 0;
     for (const r of records || []) {
-      const m = String(r.codeBeneficiaire || '').match(/(\d{7})$/);
+      const raw = String(r.codeBeneficiaire || '');
+      // Série structurée Grand Yoff : DKR-DKR-2026-2294(.1)
+      const s = raw.match(/-(\d{4})(?:\.\d+)?$/);
+      if (s) {
+        const n = parseInt(s[1], 10);
+        if (Number.isFinite(n) && n > max) max = n;
+        continue;
+      }
+      const m = raw.match(/(\d{7})$/);
       if (!m) continue;
       const n = parseInt(m[1].slice(-4), 10);
       if (Number.isFinite(n) && n > max) max = n;
@@ -1153,30 +1313,6 @@ export const buildStudioMembers = async (records, opts = {}) => {
     ? new Set(existingCodes)
     : new Set((existingCodes || []).map((c) => String(c || '').toUpperCase()));
 
-  /**
-   * Choisit le matricule d'une personne selon la stratégie du lot.
-   *
-   * - 'FILE'   : on REPREND le code du classeur (`DKR_2600040.1`). C'est le
-   *   mode des lots DÉJÀ IMPRIMÉS : le code du fichier est celui gravé sur
-   *   le PVC, y compris son suffixe. Le modifier casserait le scan.
-   * - 'SYSTEM' : le système attribue un matricule officiel
-   *   (`DKR-DKR-2026-0042`). C'est le mode des lots à venir.
-   */
-  const pickCode = (fileCode) => {
-    if (codeStrategy === CODE_STRATEGY.FILE) {
-      const fromFile = String(fileCode || '').trim();
-      if (!fromFile) return nextCode();          // fichier sans code : on dépanse
-      const upper = fromFile.toUpperCase();
-      // Deux personnes distinctes ne peuvent pas partager un code : en cas
-      // de doublon dans le fichier, on bascule sur un matricule officiel
-      // plutôt que de fusionner deux assured au silence.
-      if (taken.has(upper)) return nextCode();
-      taken.add(upper);
-      return fromFile;
-    }
-    return nextCode();
-  };
-
   const nextCode = () => {
     const code = generateUniqueCmuCode(taken, unionId, undefined, seqFloor || floorFromRecords);
     taken.add(code.toUpperCase());
@@ -1185,6 +1321,33 @@ export const buildStudioMembers = async (records, opts = {}) => {
 
   const households = new Map();   // clé de ménage → fiches
   const standalone = [];
+  // Dernier ménage codé rencontré : les lignes sans code qui le suivent
+  // (ayants droit Grand Yoff) s'y rattachent.
+  let lastHouseholdKey = '';
+
+  // ── Garde-fou ANTI-MÉGA-MÉNAGE ─────────────────────────────────────
+  // ⚠️ BUG RÉEL (lot LOT-2026-034, « ménage 0067 ») : 60 foyers distincts
+  // (60 téléphones, 35 adresses — Grand Yoff, Fass, HLM, Khar Yalla…)
+  // ont été empilés sous UNE seule séquence DKR-DKR-2026-0067.1 → .60.
+  // Cause : NUMERO_ADHERENT ne prenait que ~2 valeurs pour des centaines
+  // de lignes ; la clé de ménage tombait donc sur cette valeur partagée
+  // et tout le fichier se regroupait sur un seul « foyer ».
+  //
+  // Règle : une clé fondée sur NUMERO_ADHERENT (les lignes SANS code) ne
+  // regroupe que si l'effectif partageant cette valeur est plausible —
+  // un ménage réel dépasse rarement 15 personnes (ménages étendus). Au-
+  // delà, la valeur est manifestement un code de LOT / de collecte et
+  // non une clé de foyer : chaque ligne redevient un dossier indépendant.
+  // Les lignes AVEC code (baseFromCode) ne sont PAS concernées : leur
+  // numérotation .0/.1/.2… EST la structure du ménage, gravée sur PVC.
+  const MAX_MEMBRES_MENAGE = 15;
+  const effectifNumero = new Map();
+  for (const r of records || []) {
+    const num = canonicalCode(r.numeroAdherent || '');
+    if (num) effectifNumero.set(num, (effectifNumero.get(num) || 0) + 1);
+  }
+  const numeroFiable = (num) =>
+    num && (effectifNumero.get(num) || 0) <= MAX_MEMBRES_MENAGE;
 
   for (const r of records || []) {
     if (!r.prenom && !r.nom) continue; // ligne vide
@@ -1203,17 +1366,41 @@ export const buildStudioMembers = async (records, opts = {}) => {
     //    DKR_2600111.0 → chef, .1 .2 .3 .4 → ses ayants droit.
     //
     //  ⚠️ Cette clé sert UNIQUEMENT à regrouper les membres d'un foyer.
-    //  Elle ne devient JAMAIS le matricule de la personne : celui-ci est
-    //  généré par le système (nextCode()), sinon deux fichiers MSD
-    //  successifs produiraient les mêmes matricules.
+    //  En mode FILE (lot déjà imprimé), le matricule reste celui du classeur
+    //  (rankCode) : la carte et la fiche ne peuvent pas diverger. En mode
+    //  SYSTEM (nouveau lot), il est généré par nextCode(), sinon deux
+    //  fichiers MSD successifs produiraient les mêmes matricules.
     const baseFromCode = code ? code.replace(/\.\d+$/, '') : '';
-    const householdKey = baseFromCode || numero;
+    // ⚠️ Le numéro ne sert de clé que s'il n'est PAS partagé par un
+    // effectif invraisemblable (cf. garde-fou anti-méga-ménage) : le
+    // « ménage 0067 » a empilé 60 foyers sous une valeur unique.
+    const householdKey = baseFromCode || (numeroFiable(numero) ? numero : '');
+    // Grand Yoff (MSD DKR) : les lignes SANS code qui suivent un ménage codé
+    // sont ses ayants droit (ex. RAMATA CAMARA sous DKR-DKR-2026-2216.1).
+    // Sans ce rattachement elles partaient en « standalone » avec un dossier
+    // neuf, détachées de leur foyer.
+    // ⚠️ En mode SYSTEM (génération automatique), ce rattachement implicite
+    // n'est PAS voulu : chaque ligne sans code ouvre son propre dossier
+    // fraîchement numéroté. Le rattachement reste réservé au mode FILE,
+    // où il reproduit la logique du terrain (cartes déjà imprimées).
+    const rattacherAuPrecedent = !householdKey && lastHouseholdKey
+      && codeStrategy === CODE_STRATEGY.FILE
+      // Même garde-fou : on ne rajoute un ayant droit SANS code à un
+      // ménage implicite que s'il n'a pas déjà accumulé un effectif
+      // invraisemblable. Sinon, dossier indépendant (foyer propre).
+      && (households.get(lastHouseholdKey) || []).length < MAX_MEMBRES_MENAGE;
 
     const age = r.birthDate
       ? new Date().getFullYear() - parseInt(String(r.birthDate).slice(0, 4), 10)
       : 30;
-    const photoUrl = photoUrls.get(code) || photoUrls.get(numero) || ''
-      || photoUrls.get(householdKey) || '';
+    // ⚠️ Le NOM DU FICHIER IMAGE est cherché EN PREMIER : il est unique par
+    // personne (matchPhotosToRows n'attribue jamais deux fois la même image).
+    // Le code, lui, est une clé de MENAGE : toutes les lignes du classeur
+    // dépourvues de CODE_BENEFICIAIRE tombaient sur la même clé « '' » et
+    // recevaient la photo de la dernière d'entre elles — le visage d'un assuré
+    // imprimé sur la carte d'un autre.
+    const photoUrl = photoUrls.get(r.photoUrl) || photoUrls.get(code)
+      || photoUrls.get(numero) || photoUrls.get(householdKey) || '';
 
     const member = {
       // Matricule provisoire : remplacé juste après, par un code unique.
@@ -1256,23 +1443,27 @@ export const buildStudioMembers = async (records, opts = {}) => {
       dependents: []
     };
 
-    if (householdKey) {
-      if (!households.has(householdKey)) households.set(householdKey, []);
-      households.get(householdKey).push(member);
+    if (rattacherAuPrecedent || householdKey) {
+      const key = householdKey || lastHouseholdKey;
+      if (!households.has(key)) households.set(key, []);
+      households.get(key).push(member);
+      if (householdKey) lastHouseholdKey = householdKey;
     } else {
       standalone.push(member);
     }
   }
 
-  // Un ménage = une fiche : le premier membre est le chef, les suivants
-  // deviennent ses ayants droit. CHACUN reçoit son propre matricule.
+  // Un ménage = une fiche : le premier membre est l'ADHÉRENT-CHEF (toujours
+  // le `.1` du classeur : MAFOU DIEDHIOU en 2151.1, BABACAR DIOP en 2152.1…),
+  // les suivants deviennent ses ayants droit (.2, .3…). CHACUN reçoit son
+  // propre matricule, conservé tel quel en mode FILE.
   const stamp = Date.now().toString(36);
   const members = [];
   const pushMember = (m) => {
     members.push({ ...m, id: `IMP-${stamp}-${members.length}` });
   };
 
-  for (const [, group] of households) {
+  for (const [cleMenage, group] of households) {
     const [chef, ...deps] = group;
     // Un DOSSIER = un matricule de base, puis un RANG par personne :
     //   DKR-DKR-2026-0001.1  l'adhérent
@@ -1283,11 +1474,27 @@ export const buildStudioMembers = async (records, opts = {}) => {
     // En mode FILE, en revanche, le code du classeur prime : il est gravé
     // sur un PVC déjà imprimé, et sa numérotation interne (`.0`, `.1`…) est
     // celle du terrain.
-    const dossierBase = nextCode();
+    // Base du dossier TELLE QU'IMPRIMÉE : en mode FILE, un ayant droit sans
+    // code (ex. RAMATA CAMARA sous DKR-DKR-2026-2216.1) reçoit la suite du
+    // dossier de son chef (…-2216.2), pas un dossier neuf.
+    const baseImprimee = String(chef.rawCode || chef.sourceCode || '').replace(/\.\d+$/, '')
+      || String(cleMenage || '').replace(/\.\d+$/, '');
+    // Le code système n'est généré que S'IL EST VRAIMENT UTILE : quand tous
+    // les membres du foyer portent déjà leur code imprimé, un nextCode()
+    // systématique brûlerait un numéro de la série (trou 2295 dans la
+    // numérotation, jamais attribué à personne).
+    const besoinsCode = [chef.rawCode || chef.sourceCode, ...deps.map((d) => d.rawCode || d.sourceCode)]
+      .some((c) => !String(c || '').trim());
+    const dossierBase = besoinsCode ? nextCode() : '';
     const rankCode = (rank, fileCode) => {
+      // Garde-fou transverse : un code PRÉSENT dans le classeur est celui d'une
+      // carte déjà imprimée — il est conservé en MODE SYSTEM AUSSI. La
+      // génération automatique ne s'applique qu'aux lignes SANS code.
+      const fromFile = String(fileCode || '').trim();
+      if (fromFile) return fromFile;
       if (codeStrategy === CODE_STRATEGY.FILE) {
-        const fromFile = String(fileCode || '').trim();
-        return fromFile || withHouseholdRank(dossierBase, rank);
+        if (baseImprimee) return withHouseholdRank(baseImprimee, rank);
+        return withHouseholdRank(dossierBase, rank);
       }
       return withHouseholdRank(dossierBase, rank);
     };
@@ -1385,6 +1592,19 @@ export const dedupeRecordsByIdentity = (records) => {
     parNin.get(nin).push(r);
   }
 
+  /**
+   * Lignes absorbées par une fusion, repérées par leur RÉFÉRENCE.
+   *
+   * ⚠️ JAMAIS par leur code : le code du classeur n'est pas unique. Deux lignes
+   * peuvent porter le même `codeBeneficiaire` (ligne recopiée dans le fichier,
+   * code dupliqué par erreur de saisie). Un Set de CODES contenait alors ce
+   * code et le filtre retirait LES DEUX lignes — la personne disparaissait
+   * silencieusement de l'import, et `records` revenait amputé, voire vide.
+   * La référence, elle, ne peut désigner qu'une seule ligne : la ligne
+   * conservée ne peut jamais être absorbée par erreur.
+   */
+  const absorbees = new Set();
+
   const groupes = [];
   for (const [nin, lignes] of parNin) {
     if (lignes.length < 2) continue;
@@ -1408,35 +1628,52 @@ export const dedupeRecordsByIdentity = (records) => {
         if (!gardien.address && d.address) gardien.address = d.address;
         if (!gardien.photoHint && d.photoHint) gardien.photoHint = d.photoHint;
         if (!gardien.birthPlace && d.birthPlace) gardien.birthPlace = d.birthPlace;
-        d._fuseDans = gardien.codeBeneficiaire || '';
+        // Marquage par RÉFÉRENCE (voir `absorbees` ci-dessus) : la ligne
+        // absorbée est identifiée sans toucher à son `codeBeneficiaire`, qui
+        // reste INTACT de toute façon — il est gravé sur le PVC (canonicalCode).
+        absorbees.add(d);
       }
+      // ⚠️ `fusions` ne liste QUE les codes RÉELLEMENT distincts du code
+      // conservé. Auparavant, une ligne recopiée portant le même code que le
+      // gardien y apparaissait aussi : le message affichait alors
+      // « MOUSTAPHA NDIONE (DKR_260001.0) : doublon fusionné » alors que la
+      // fiche CONSERVÉE porte précisément ce code et survit. L'agent y lisait
+      // une fusion de code qui n'a pas eu lieu, et pouvait croire que sa carte
+      // avait été remplacée. Le même code n'est donc plus compté comme fusion :
+      // ce qui s'est produit est une fusion de LIGNES, pas de matricule.
+      const codeGarde = gardien.codeBeneficiaire || '';
+      const codesAbsorbes = new Set(
+        doublons.map((d) => String(d.codeBeneficiaire || '').trim()).filter(Boolean)
+      );
+      codesAbsorbes.delete(String(codeGarde).trim());
       groupes.push({
         nin,
         naissance,
         nom: `${gardien.prenom} ${gardien.nom}`.trim(),
-        code: gardien.codeBeneficiaire || '',
-        fusions: doublons.map((d) => d.codeBeneficiaire || '').filter(Boolean)
+        code: codeGarde,
+        fusions: [...codesAbsorbes],
+        // Le nombre de LIGNES absorbées, y compris celles qui portaient le même
+        // code que le gardien : c'est le décompte exact de ce qui a disparu du
+        // classeur, indépendamment de la question des matricules.
+        lignesAbsorbees: doublons.length,
+        // Vrai quand toutes les lignes absorbées portaient le code du gardien
+        // (ligne recopiée) : il n'y a alors AUCUN matricule à citer.
+        memeCodeSeulement: doublons.length > 0 && codesAbsorbes.size === 0
       });
     }
   }
 
   if (groupes.length === 0) return { records: list, merged: 0, groups: [] };
-  const fusions = new Set();
-  // ⚠️ On n'ajoute QUE des codes non vides. Insérer `''` ferait ensuite
-  // disparaître TOUTES les lignes du fichier dépourvues de code — c'est-à-dire
-  // l'import entier.
-  for (const g of groupes) {
-    for (const c of g.fusions) {
-      const code = String(c || '').trim();
-      if (code) fusions.add(code);
-    }
-  }
-  if (fusions.size === 0) return { records: list, merged: 0, groups: groupes };
-  // On retire les lignes absorbées (repérées par leur code de fichier).
-  const nettoyes = list.filter((r) => !fusions.has(r.codeBeneficiaire) && !r._fuseDans);
-  for (const r of list) delete r._fuseDans;
+  if (absorbees.size === 0) return { records: list, merged: 0, groups: groupes };
 
-  return { records: nettoyes, merged: fusions.size, groups: groupes };
+  // On retire UNIQUEMENT les lignes absorbées, désignées par leur référence.
+  // La ligne conservée survit toujours, même si elle porte le même code que la
+  // ligne absorbée : c'est la garantie de ZÉRO PERTE.
+  // ⚠️ Aucun marquage n'est posé sur les objets, donc rien à nettoyer : aucun
+  // champ temporaire ne peut fuir dans les objets du Studio.
+  const nettoyes = list.filter((r) => !absorbees.has(r));
+
+  return { records: nettoyes, merged: absorbees.size, groups: groupes };
 };
 
 /**
@@ -1500,7 +1737,11 @@ export const repairDependentCodeSuffix = (members) => {
  * @param {FileList} photoFiles — les images du dossier de photos
  * @param {Array|Set<string>} [existingCodes] — matricules déjà pris (registre)
  * @param {object} [opts] — options transmises à buildStudioMembers
- * @returns {Promise<{members: Array, totalPeople: number, matchedPhotos: number, columns: string[]}>}
+ * @returns {Promise<{members: Array, totalPeople: number, matchedPhotos: number,
+ *          photoSummary: {total: number, withPhoto: number, withoutPhoto: number},
+ *          columns: string[]}>}
+ *          `totalPeople` = LIGNES lues ; `photoSummary` = FICHES construites,
+ *          titulaires et ayants droit confondus, après déduplication.
  */
 export const runExcelImport = async (excelFile, photoFiles, existingCodes = [], opts = {}) => {
   if (!excelFile) throw new Error('Aucun fichier Excel sélectionné.');
@@ -1539,6 +1780,7 @@ export const runExcelImport = async (excelFile, photoFiles, existingCodes = [], 
   let photoBytes = 0;
   let step = 0;
   let degradedPhotos = 0;
+  let compressedPhotos = 0;
   for (const r of matched) {
     if (!r.photoUrl) continue;
     const file = byName.get(r.photoUrl);
@@ -1551,7 +1793,13 @@ export const runExcelImport = async (excelFile, photoFiles, existingCodes = [], 
     const dataUrl = await fileToCompressedDataUrl(file, PHOTO_QUALITY_STEPS[step]);
     if (dataUrl) {
       photoBytes += dataUrl.length;
+      compressedPhotos += 1;
       photoUrls.set(canonicalCode(r.codeBeneficiaire || ''), dataUrl);
+      // Seconde clé : le NOM DU FICHIER. Elle est unique par personne, donc
+      // elle identifie la photo sans dépendre du code du classeur. C'est ce qui
+      // évite qu'une ligne SANS code hérite de la photo d'une autre (voir la
+      // lecture dans buildStudioMembers).
+      if (r.photoUrl) photoUrls.set(r.photoUrl, dataUrl);
     }
   }
 
@@ -1562,7 +1810,15 @@ export const runExcelImport = async (excelFile, photoFiles, existingCodes = [], 
   return {
     members,
     totalPeople: rows.length,
-    matchedPhotos: photoUrls.size,
+    // Nombre de photos RÉELLEMENT compressées. Ce n'est plus `photoUrls.size` :
+    // l'index porte désormais deux clés par photo (code + nom de fichier), et
+    // sa taille compterait chaque image deux fois.
+    matchedPhotos: compressedPhotos,
+    // 📷 Compteurs demandés par l'agent : des FICHES (titulaires + ayants
+    // droit, après déduplication), PAS des lignes brutes. `summarizePhotos`
+    // est une fonction pure, sans canvas : elle est couverte par les tests
+    // sans dépendre de la compression d'images.
+    photoSummary: summarizePhotos(members),
     // Doublons fusionnés et détail des groupes, pour un message honnête.
     merged,
     dupGroups,

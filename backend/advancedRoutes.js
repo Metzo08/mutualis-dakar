@@ -459,29 +459,48 @@ router.post('/api/sync/process', authenticateToken, requireRole('agent', 'admin'
             await query("UPDATE beneficiaries SET status = 'active' WHERE id = $1", [item.beneficiary_id]);
           }
         } else if (item.action === 'adhesion') {
-          // Matricule séquentiel par MSD : un adhésion rejouée depuis la file
-          // hors-ligne ne peut plus tomber sur un code déjà attribué.
-          const { generateCmuNumber } = require('./fallbackStore');
-          const cmuNumber = payload.cmuNumber || await generateCmuNumber({
-            query,
-            program: payload.packageType === 'csu_eleves' ? 'ELEVES'
-              : payload.packageType === 'csu_daara' ? 'DAARA'
-              : 'CLASSIC',
-            mutuelleName: payload.mutuelleName || 'MSD Dakar'
-          });
+          // Matricule OFFICIEL REGION-MSD-ANNEE-SEQUENCE (mêmes règles que
+          // POST /api/adhesions) : une adhésion rejouée depuis la file
+          // hors-ligne reçoit le même format, photo comprise.
+          const fb = require('./fallbackStore');
+          const unionId = fb.unionCodeFrom(payload.mutuelleName || 'MSD Dakar') || 'DKR';
+          const UNION_REGIONS = { DKR: 'Dakar', PKN: 'Dakar', GDW: 'Dakar', RFS: 'Dakar', THS: 'Thiès', MBR: 'Thiès', STL: 'Saint-Louis', KLC: 'Kaolack', ZGC: 'Ziguinchor', DRB: 'Diourbel' };
+          const REGION_CODES = { Dakar: 'DKR', 'Thiès': 'THS', 'Saint-Louis': 'STL', Kaolack: 'KLC', Ziguinchor: 'ZGC', Diourbel: 'DRB' };
+          const region = REGION_CODES[UNION_REGIONS[unionId]] || unionId || 'DKR';
+          const year = new Date().getFullYear();
+          let cmuNumber = payload.cmuNumber;
+          if (!cmuNumber || !/^([A-Z]{3})-([A-Z]{3})-(\d{4})-(\d{4})(\.\d+)?$/.test(String(cmuNumber).toUpperCase())) {
+            const lastRes = await query(
+              `SELECT cmu_number FROM beneficiaries WHERE cmu_number LIKE $1 ORDER BY cmu_number DESC LIMIT 1`,
+              [`${region}-${unionId}-${year}-%`]
+            );
+            const lastCmu = lastRes && lastRes.rows && lastRes.rows[0] && lastRes.rows[0].cmu_number;
+            let seq = 0;
+            if (lastCmu) {
+              const m = String(lastCmu).match(/-(\d{4})(?:\.\d+)?$/);
+              if (m) seq = parseInt(m[1], 10) || 0;
+            }
+            for (let attempt = 0; attempt < 50 && !cmuNumber; attempt++) {
+              seq += 1;
+              const candidate = `${region}-${unionId}-${year}-${String(seq).padStart(4, '0')}.1`;
+              const exists = await query('SELECT 1 FROM beneficiaries WHERE cmu_number = $1 LIMIT 1', [candidate]);
+              if (!exists || !exists.rows || !exists.rows.length) cmuNumber = candidate;
+            }
+          }
+          const photoValue = (typeof payload.photoUrl === 'string' && payload.photoUrl.startsWith('data:image')) ? payload.photoUrl : null;
           
           const pinCode = payload.pinCode || '1234';
           const salt = await require('bcrypt').genSalt(10);
           const hashedPin = await require('bcrypt').hash(pinCode, salt);
           
           const bRes = await query(
-            `INSERT INTO beneficiaries (first_name, last_name, birth_date, phone, email, address, mutuelle_name, package_type, payment_method, cmu_number, status, pin_code, sponsor_phone, school_name)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'active', $11, $12, $13) RETURNING id`,
+            `INSERT INTO beneficiaries (first_name, last_name, birth_date, phone, email, address, mutuelle_name, package_type, payment_method, cmu_number, status, pin_code, sponsor_phone, school_name, photo_url)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'active', $11, $12, $13, $14) RETURNING id`,
             [
               payload.firstName, payload.lastName, payload.birthDate, payload.phone, 
               payload.email || '', payload.address || '', payload.mutuelleName || 'Médina', 
               payload.packageType || 'individuel', payload.paymentMethod || 'wave', cmuNumber,
-              hashedPin, payload.sponsorPhone || null, payload.schoolName || null
+              hashedPin, payload.sponsorPhone || null, payload.schoolName || null, photoValue
             ]
           );
           

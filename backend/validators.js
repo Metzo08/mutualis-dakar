@@ -69,6 +69,9 @@ const adhesionSchema = z.object({
     .default([]),
   sponsorPhone: z.string().max(50).optional().nullable(),
   schoolName: z.string().max(255).optional().nullable(),
+  // Photo d'identité (data-URL lue à l'étape 5 du formulaire). Optionnelle :
+  // absente → NULL en base → la carte affiche « PHOTO EN ATTENTE ».
+  photoUrl: z.string().max(5000000).optional().nullable(),
   parrainageType: z.enum(['eleves', 'menages', 'individuel', 'collectif']).optional().nullable(),
   sponsoredHouseholds: z
     .array(

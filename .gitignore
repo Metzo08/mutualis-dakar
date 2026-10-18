@@ -88,3 +88,12 @@ scripts/_*.mjs
 # Dumps et sauvegardes de la base — données de santé, JAMAIS sur le dépôt
 *.dump
 *.sql.gz
+
+# Outils d'agents IA pour le développement (agency-agents) — pas du produit
+.claude/
+.codex/
+.dsh/
+.opencode/
+.qwen/
+.zcode/
+gui-test-screenshots/

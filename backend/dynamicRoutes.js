@@ -123,14 +123,23 @@ router.put('/api/partnerships/:id', authenticateToken, requireRole('agent', 'adm
 // GET /api/blog/articles (Public list)
 router.get('/api/blog/articles', async (req, res) => {
   try {
+    // Pagination serveur : le blog peut accumuler des centaines d'articles.
+    // Sans LIMIT, la liste entière était renvoyée à chaque visite.
+    const { page, limit, offset } = parsePagination(req);
+    const countRes = await query('SELECT COUNT(*) FROM blog_articles');
+    const total = parseInt(countRes.rows[0]?.count || '0', 10);
     const result = await query(
-      `SELECT a.*, COUNT(c.id)::int as comment_count 
-       FROM blog_articles a 
-       LEFT JOIN blog_comments c ON c.article_id = a.id 
-       GROUP BY a.id 
-       ORDER BY a.date DESC`
+      `SELECT a.*, COUNT(c.id)::int as comment_count
+       FROM blog_articles a
+       LEFT JOIN blog_comments c ON c.article_id = a.id
+       GROUP BY a.id
+       ORDER BY a.date DESC LIMIT $1 OFFSET $2`,
+      [limit, offset]
     );
-    res.json(result.rows);
+    res.json({
+      data: result.rows,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) || 1, hasNext: page * limit < total, hasPrev: page > 1 }
+    });
   } catch (err) {
     console.error('Erreur liste articles de blog :', err);
     res.status(500).json({ error: 'Erreur interne du serveur.' });
@@ -173,7 +182,7 @@ router.put('/api/blog/articles/:id', async (req, res) => {
     const { titleFr, titleWo, author, roleFr, roleWo, avatar, readTimeFr, readTimeWo, previewFr, previewWo, contentFr, contentWo, imageUrl } = req.body;
 
     const result = await query(
-      `UPDATE blog_articles 
+      `UPDATE blog_articles
        SET title_fr = COALESCE($1, title_fr),
            title_wo = COALESCE($2, title_wo),
            author = COALESCE($3, author),
@@ -258,8 +267,20 @@ router.post('/api/blog/articles/:id/comments', async (req, res) => {
 // GET /api/gallery (Public list)
 router.get('/api/gallery', async (req, res) => {
   try {
-    const result = await query('SELECT * FROM gallery_items ORDER BY created_at DESC');
-    res.json(result.rows);
+    // Pagination serveur : la galerie peut contenir des centaines de médias,
+    // chacun pouvant peser plusieurs centaines de Ko. Tout renvoyer figeait
+    // la page sur mobile.
+    const { page, limit, offset } = parsePagination(req);
+    const countRes = await query('SELECT COUNT(*) FROM gallery_items');
+    const total = parseInt(countRes.rows[0]?.count || '0', 10);
+    const result = await query(
+      'SELECT * FROM gallery_items ORDER BY created_at DESC LIMIT $1 OFFSET $2',
+      [limit, offset]
+    );
+    res.json({
+      data: result.rows,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) || 1, hasNext: page * limit < total, hasPrev: page > 1 }
+    });
   } catch (err) {
     console.error('Erreur liste galerie :', err);
     res.status(500).json({ error: 'Erreur interne du serveur.' });

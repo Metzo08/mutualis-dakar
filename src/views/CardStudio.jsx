@@ -1,5 +1,13 @@
-import { calculateAge, getAgeLabel } from '../utils/csuFormatter';
+ import { calculateAge, getAgeLabel } from '../utils/csuFormatter';
+// Vue générale Studio Cartes : hiérarchie Région → Département → MSD,
+// adhésions de masse et revenus Sen-E-Carte (composant dédié, lazy-friendly).
+import StudioOverview from './studio/StudioOverview';
 import { getStoredMembers, saveStoredMembers, purgeDuplicateMembers } from '../utils/beneficiaryStore';
+// Résolution des ayants droit mineurs (forme imbriquée Excel ET fiches sœurs
+// plates de l'API) → alimente le nombre au verso + le QR + VerifyCard.
+import { resolveMinorDependents, collectAttachedMinorIds } from '../utils/householdMinors';
+// Appels API centralisés : URL de base de l'API + jeton automatiques.
+import { apiFetch } from '../utils/api';
 // Détection du format ANCIEN des cartes à purger (cf. handlePurgeLegacyCards).
 // Importé depuis `cmuCode` et NON depuis `bulkImport` : ce dernier charge la
 // librairie `xlsx` (≈ 350 Ko) et la ferait entrer dans le bundle initial.
@@ -43,17 +51,17 @@ import {
 
 // Vecteur SVG officiel du Drapeau du Sénégal (Vert, Jaune avec étoile verte, Rouge)
 const SenegalFlagSvg = ({ style }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    viewBox="0 0 900 600" 
-    style={{ 
-      width: '34px', 
-      height: '22px', 
-      borderRadius: '3px', 
-      border: '1px solid #cbd5e1', 
-      boxShadow: '0 1px 3px rgba(0,0,0,0.15)', 
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 900 600"
+    style={{
+      width: '34px',
+      height: '22px',
+      borderRadius: '3px',
+      border: '1px solid #cbd5e1',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
       flexShrink: 0,
-      ...style 
+      ...style
     }}
   >
     <rect width="300" height="600" fill="#00853f"/>
@@ -231,6 +239,45 @@ function SchoolCardBack({ cardData, qrCodeDataUrl, customLogo = null }) {
 }
 
 
+// ── WRAPPER : Vue générale Studio, pliable ────────────────────────────────
+// Placé au-dessus du banner du Studio. Par défaut replié pour ne pas
+// masquer les outils quotidiens ; un clic déplie le tableau de bord complet
+// (régions, départements, MSD, adhésions, revenus Sen-E-Carte).
+// Hooks TOUJOURS en tête (§8 des conventions) : le rendu conditionnel
+// (`open &&`) vient après — jamais l'inverse.
+function StudioOverviewPanel() {
+  const [open, setOpen] = useState(false);
+  return (
+    <section className="card p-3 p-md-4 rounded-4 mb-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '22px' }}>
+      <button
+        type="button"
+        className="btn w-100 d-flex align-items-center justify-content-between gap-2 p-0"
+        style={{ background: 'transparent', border: 'none', textAlign: 'left' }}
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+      >
+        <span className="d-flex align-items-center gap-2">
+          <span style={{ fontSize: '1.35rem' }}>🗺️</span>
+          <span>
+            <span className="fw-extrabold d-block" style={{ fontSize: '1.02rem', color: 'var(--text-main)' }}>
+              Vue générale — production des cartes par région, département et MSD
+            </span>
+            <span className="text-sub d-block" style={{ fontSize: '0.8rem' }}>
+              Adhésions de masse, cartes imprimées et revenus Sen-E-Carte (350 F/carte imprimée)
+            </span>
+          </span>
+        </span>
+        <span style={{ fontSize: '1.2rem', color: 'var(--text-sub)' }} aria-hidden="true">{open ? '▲' : '▼'}</span>
+      </button>
+      {open && (
+        <div className="mt-3">
+          <StudioOverview />
+        </div>
+      )}
+    </section>
+  );
+}
+
 export default function CardStudio({ lang = 'fr', setView = null }) {
   // Système d'Audit & Filtres des Cartes et Photos Officielles (137/137)
   const [auditFilter, setAuditFilter] = useState('ALL'); // 'ALL' | 'VERIFIED' | 'PHOTO_PENDING'
@@ -238,6 +285,15 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
   // Import en masse (Excel MSD Dakar + dossier de photos appariées)
   const [bulkImporting, setBulkImporting] = useState(false);
   const [bulkNotice, setBulkNotice] = useState(null); // { type, text }
+  // Liste nominative des fiches SANS photo du dernier import — offerte en
+  // téléchargement à côté du compte-rendu (délégation : aller photographier
+  // exactement ces personnes, pas tout le lot).
+  const [sansPhotoList, setSansPhotoList] = useState([]);
+  // Téléchargement du gabarit d'adhésion en masse (Super Admin → MSD).
+  const [gabaritLoading, setGabaritLoading] = useState(false);
+  // MSD cible du gabarit : l'admin choisit POUR QUI le gabarit est généré —
+  // l'en-tête du fichier porte alors les coordonnées de CETTE MSD.
+  const [gabaritMsd, setGabaritMsd] = useState('DKR');
   const excelInputRef = useRef(null);
   const photosInputRef = useRef(null);
   const pendingPhotosRef = useRef(null); // FileList gardée entre les 2 sélections
@@ -631,6 +687,153 @@ const [printLotConfirmed, setPrintLotConfirmed] = useState(false);
     return [...map.values()].sort((a, b) => a.code.localeCompare(b.code));
   }, [members]);
 
+  // ── CENTRE DE CONTRÔLE ENRICHÉ (données BASE, pas local) ────────────────
+  // Pour chaque lot : MSD concernée, date d'enrôlement, cartes totales,
+  // cartes imprimables (mineurs rattachés exclus), cartes conformes (photo +
+  // toutes informations) et gain de l'admin (350 FCFA par carte remise).
+  // La source est GET /api/campaign-lots : le local ne connaît ni les mineurs
+  // rangés en base, ni les dates réelles d'import.
+  const LOT_PRIX_CARTE = 350; // FCFA par carte remise à la MSD
+  const [controlStats, setControlStats] = useState({});
+  const [controlError, setControlError] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await apiFetch('/api/campaign-lots?limit=200');
+        if (!res || !res.ok) throw new Error(res ? `statut ${res.status}` : 'réseau');
+        const payload = await res.json();
+        if (cancelled) return;
+        // Tolérance du format historique (tableau brut) et du format paginé.
+        const rows = Array.isArray(payload) ? payload : (payload.data || []);
+        const stats = {};
+        for (const l of rows) {
+          const code = String(l.code || '').trim();
+          if (!code) continue;
+          const totales = Number(l.real_count) || 0;
+          const imprimables = Number(l.printable_count);
+          const conformes = Number(l.conform_count) || 0;
+          // MSD du lot : union_id déclaré en base (source de vérité), sinon '—'.
+          const msd = String(l.union_id || '').trim() || '—';
+          stats[code] = {
+            msd,
+            dateEnrolement: l.created_at || null,
+            dateDernierImport: l.last_import_at || null,
+            cartes: totales,
+            imprimables: Number.isFinite(imprimables) && imprimables > 0 ? imprimables : totales,
+            conformes,
+            nonConformes: Math.max(0, totales - conformes),
+            gain: conformes * LOT_PRIX_CARTE,
+            printed: Boolean(l.printed),
+            printedAt: l.printed_at || null
+          };
+        }
+        setControlStats(stats);
+        setControlError(false);
+      } catch {
+        if (!cancelled) setControlError(true); // repli : affichage local sans stats
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [members.length]);
+
+  // Cartes RÉELLEMENT CONFORMES du lot affiché, d'après le registre local :
+  // photo présente + nom complet + date de naissance. Sert de repli quand la
+  // base est injoignable et de compteur visible immédiatement.
+  const conformiteLocale = useMemo(() => {
+    const map = new Map();
+    for (const m of members) {
+      const code = m.lotCode || 'HORS-LOT';
+      if (!map.has(code)) map.set(code, { conformes: 0, total: 0 });
+      const e = map.get(code);
+      e.total += 1;
+      const complet = Boolean(m.photoUrl || m.hasOfficialPhoto)
+        && String(m.firstName || '').trim() !== ''
+        && String(m.lastName || '').trim() !== ''
+        && String(m.birthDate || '').trim() !== '';
+      if (complet) e.conformes += 1;
+    }
+    return map;
+  }, [members]);
+
+  // Premier matricule d'un lot (pour déduire la MSD d'un lot sans union_id).
+  const lotMembers = useCallback(
+    (code) => members.filter((m) => (m.lotCode || 'HORS-LOT') === code),
+    [members]
+  );
+
+  // ── REMISE D'UN LOT À LA MSD + BORDERS COMPTABLE ──────────────────────
+  // L'admin gagne 350 FCFA par carte remise : l'acte de remise doit donc être
+  // EXPLICITE (double confirmation) et daté. Il appelle la route existante
+  // POST /api/campaign-lots/:code/print qui fige printed + printed_at.
+  const [remiseTarget, setRemiseTarget] = useState(null); // { code } en attente de confirmation
+  const [remiseBusy, setRemiseBusy] = useState(false);
+
+  const handleMarquerRemise = async (code) => {
+    if (!code) return;
+    setRemiseBusy(true);
+    try {
+      const res = await apiFetch(`/api/campaign-lots/${encodeURIComponent(code)}/print`, { method: 'POST' });
+      if (!res || !res.ok) {
+        const err = res ? await res.json().catch(() => ({})) : {};
+        setBulkNotice({ type: 'error', text: `❌ Remise non enregistrée : ${err.error || (res ? `statut ${res.status}` : 'backend injoignable')}.` });
+        return;
+      }
+      const data = await res.json().catch(() => ({}));
+      const s = controlStats[code] || {};
+      const gain = (Number(s.conformes) || 0) * LOT_PRIX_CARTE;
+      // Mise à jour immédiate de la ligne (pas d'attente du rechargement).
+      setControlStats((prev) => ({
+        ...prev,
+        [code]: { ...prev[code], printed: true, printedAt: (data.lot && data.lot.printed_at) || new Date().toISOString() }
+      }));
+      setBulkNotice({
+        type: 'success',
+        text: `✅ Lot ${lotLabel(code)} marqué REMIS à la MSD ${s.msd || 'DKR'} — ${s.conformes || 0} carte(s) conforme(s), gain constaté : ${gain.toLocaleString('fr-FR')} FCFA. Exportez le bordereau comptable pour la trésorerie.`
+      });
+    } catch (e) {
+      setBulkNotice({ type: 'error', text: `❌ Remise impossible : ${e.message}` });
+    } finally {
+      setRemiseBusy(false);
+      setRemiseTarget(null);
+    }
+  };
+
+  /** Bordereau comptable CSV : une ligne par lot, MSD, dates, cartes,
+      conformité, gain. À remettre à la trésorerie après chaque remise. */
+  const handleExportComptable = () => {
+    const lignes = ['Lot;Collecte (titre);MSD;Date enrôlement;Cartes;Imprimables;Conformes;Non conformes;Gain FCFA;Statut;Date remise'];
+    for (const l of lotList) {
+      const s = controlStats[l.code] || {};
+      const local = conformiteLocale.get(l.code) || { conformes: 0, total: l.dossiers };
+      const cartes = s.cartes != null ? s.cartes : local.total;
+      const conformes = s.conformes != null ? s.conformes : local.conformes;
+      lignes.push([
+        l.code,
+        lotLabel(l.code).replace(/;/g, ','),
+        s.msd || 'DKR',
+        s.dateEnrolement ? new Date(s.dateEnrolement).toISOString().slice(0, 10) : '',
+        cartes,
+        s.imprimables != null ? s.imprimables : '',
+        conformes,
+        Math.max(0, cartes - conformes),
+        conformes * LOT_PRIX_CARTE,
+        s.printed ? 'REMISE' : 'En préparation',
+        s.printedAt ? new Date(s.printedAt).toISOString().slice(0, 10) : ''
+      ].join(';'));
+    }
+    const blob = new Blob(['\ufeff' + lignes.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `bordereau-cartes-MSD-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setBulkNotice({ type: 'success', text: '✅ Bordereau comptable téléchargé — une ligne par lot de collecte (MSD, dates, cartes, gain).' });
+  };
+
   /** Nom lisible d'un lot : provenance en tete, code en secours. */
   const lotLabel = useCallback(
     (code) => (lotLabels[code] ? `${lotLabels[code]} (${code})` : code),
@@ -649,6 +852,20 @@ const [printLotConfirmed, setPrintLotConfirmed] = useState(false);
     () => (lotFilter === 'ALL' ? members : membersByLot),
     [members, membersByLot, lotFilter]
   );
+
+  // Cartes réellement IMPRIMABLES : un enfant mineur est pris en charge sur la
+  // carte de son adhérent, il n'a donc PAS sa propre entrée dans la liste de
+  // sélection. `memberOptions` (purge / logo / suppression multiple) conserve
+  // TOUTES les fiches réelles ; seules les cartes à imprimer retirent les
+  // mineurs rattachés. On ne fait jamais disparaître la fiche affichée.
+  const selectableMembers = useMemo(() => {
+    const attachedMinorIds = collectAttachedMinorIds(members);
+    if (attachedMinorIds.size === 0) return memberOptions;
+    return memberOptions.filter((m) =>
+      m.id === selectedMemberId
+      || (!attachedMinorIds.has(m.id) && !attachedMinorIds.has(String(m.cmuNumber || '').toUpperCase()))
+    );
+  }, [memberOptions, members, selectedMemberId]);
 
   // Fiches affichées dans le panneau de suppression multiple : on ne propose
   // QUE les fiches du lot sélectionné, pour qu'une suppression de masse ne
@@ -1380,7 +1597,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
     package: editForm.package || currentMember.package,
     cardTypeLabel: editForm.cardTypeLabel || currentMember.cardTypeLabel,
     photoUrl: editForm.photoUrl || currentMember.photoUrl,
-    minorDependents: (currentMember.dependents || []).filter(d => !d.isMajor),
+    minorDependents: resolveMinorDependents(members, currentMember),
     unionName: currentUnion.name,
     unionCode: currentUnion.id,
     msdContacts,
@@ -1467,7 +1684,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
         : {}),
       ine: cardData.academicData.ine || 'N/A',
       minorDependents: cardData.minorDependents.map(d => ({
-        code: `${cardData.cmuNumber.replace(/\.0$/, '')}${d.codeSuffix}`,
+        code: d.cmuNumber || `${cardData.cmuNumber.replace(/\.0$/, '')}${d.codeSuffix}`,
         name: d.name,
         birthDate: d.birthDate,
         birthPlace: d.birthPlace || 'Dakar'
@@ -1525,6 +1742,58 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
     });
   };
 
+  /**
+   * Téléversement de la photo d'une fiche (champ photoUrl de editForm).
+   *
+   * ⚠️ Correctif : saveStoredMembers STRIP les photos base64 (garde-fou
+   * quota localStorage). Une photo uploadée ici restait donc locale à la
+   * session et DISPARAISSAIT à chaque actualisation. La data-URL est
+   * désormais poussée en base via PUT /api/beneficiaries/:id/photo — la
+   * carte la relit ensuite via GET …/photo (SecurePhoto).
+   *
+   * @param {string} dataUrl — data-URL image compressée (fileToCompressedDataUrl)
+   */
+  const persistPhoto = async (dataUrl) => {
+    if (!dataUrl || !dataUrl.startsWith('data:image/')) return;
+    try {
+      // Résolution de l'ID SERVEUR : la fiche locale garde souvent son id
+      // `MEM-…` même après synchronisation (la fusion locale ← base écrase
+      // le contenu, pas l'identité). On résout donc par matricule si besoin.
+      let srvId = currentMember.serverId || (Number.isInteger(currentMember.id) ? currentMember.id : null);
+      if (!srvId && currentMember.cmuNumber) {
+        try {
+          const res = await apiFetch(`/api/beneficiaries?search=${encodeURIComponent(currentMember.cmuNumber)}&limit=5`);
+          if (res && res.ok) {
+            const payload = await res.json();
+            const rows = Array.isArray(payload) ? payload : (payload.data || []);
+            const found = rows.find((b) => String(b.cmuNumber || '').trim() === String(currentMember.cmuNumber).trim());
+            if (found) srvId = found.id;
+          }
+        } catch { /* base injoignable : le message d'échec en rend compte */ }
+      }
+      if (!srvId) {
+        setBulkNotice({ type: 'warning', text: '⚠️ Fiche pas encore en base : la photo ne survivra pas à l\'actualisation. Validez d\'abord la fiche en base (adhesion en ligne ou import Excel), puis téléversez la photo.' });
+        return;
+      }
+      const res = await apiFetch(`/api/beneficiaries/${srvId}/photo`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ photoUrl: dataUrl })
+      });
+      if (!res || !res.ok) {
+        const err = res ? await res.json().catch(() => ({})) : {};
+        setBulkNotice({ type: 'error', text: `❌ Photo non enregistrée en base : ${err.error || (res ? `statut ${res.status}` : 'backend injoignable')}.` });
+        return;
+      }
+      // L'URL servie remplace la data-URL locale : la carte lira la photo
+      // en base à chaque affichage (et après rechargement de la page).
+      handleEditChange('photoUrl', `/api/beneficiaries/${srvId}/photo`);
+      setBulkNotice({ type: 'success', text: '✅ Photo enregistrée en base — elle survivra à l\'actualisation.' });
+    } catch (e) {
+      setBulkNotice({ type: 'error', text: `❌ Photo non enregistrée : ${e.message}` });
+    }
+  };
+
   // --- Import en masse : Excel MSD Dakar + appariement photos ---------------
   //
   // AUCUNE règle de lecture ici : tout est délégué à src/utils/bulkImport.js
@@ -1559,7 +1828,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
       // Les matricules déjà attribués sont transmis : les nouveaux codes sont
       // générés AU-DELÀ du dernier, jamais par-dessus un code existant.
       const alreadyCoded = getStoredMembers().map(m => (m.cmuNumber || '').toString());
-      const { members, totalPeople, matchedPhotos, degradedPhotos, merged, dupGroups } = await runExcelImport(
+      const { members, totalPeople, matchedPhotos, photoSummary, degradedPhotos, merged, dupGroups } = await runExcelImport(
         excelFile,
         pendingPhotosRef.current,
         alreadyCoded,
@@ -1567,27 +1836,28 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
       );
 
       // 1. Ajout au store local du studio (immédiatement imprimable).
-      //    Un assuré déjà connu n'est JAMAIS réimporté : zéro doublon. La
-      //    reconnaissance se fait sur l'IDENTITÉ (NIN, ou prénom + nom +
-      //    naissance) et plus sur le matricule — celui-ci étant désormais
-      //    généré par le système, il change à chaque import.
-      const { collectIdentities, beneficiaryIdentity } = await import('../utils/bulkImport');
+      //
+      //    ⚠️ Une fiche DÉJÀ CONNUE n'est plus IGNORÉE : elle est RÉPUTÉE vers
+      //    le backend pour qu'elle reçoive ce qui lui manque — au premier
+      //    rang, la PHOTO. La conduite précédente (`duplicates++ ; continue`)
+      //    rendait le réimport IMPOSSIBLE : la fiche créée sans photo était
+      //    reconnue comme doublon au passage suivant, rien n'était envoyé, et
+      //    `photo_url` restait vide en base indéfiniment. L'agent devait alors
+      //    purger le lot pour repartir de zéro — un contournement, pas une
+      //    solution.
+      //
+      //    L'idempotence reste entière : le backend fait un UPDATE sur conflit
+      //    `cmu_number`/`nin` et n'efface jamais une photo déjà enregistrée
+      //    (`photo_url = COALESCE($photo, photo_url)`). Aucun doublon n'est
+      //    créé. La reconnaissance se fait sur l'IDENTITÉ (NIN, ou prénom +
+      //    nom + naissance) et plus sur le matricule — celui-ci étant généré
+      //    par le système, il change à chaque import.
+      //
+      //    partitionForReimport() est une fonction PURE (src/utils/bulkImport.js) :
+      //    la logique était enfouie ici, donc jamais testée.
+      const { partitionForReimport } = await import('../utils/bulkImport');
       const existing = getStoredMembers();
-      const existingCodes = new Set(existing.map(m => (m.cmuNumber || '').toString()));
-      const existingIds = collectIdentities(existing);
-      const seenInFile = new Set();
-      const fresh = [];
-      let duplicates = 0;
-      for (const m of members) {
-        const key = beneficiaryIdentity(m);
-        if ((key && (existingIds.has(key) || seenInFile.has(key)))
-          || existingCodes.has((m.cmuNumber || '').toString())) {
-          duplicates++;
-          continue;
-        }
-        if (key) seenInFile.add(key);
-        fresh.push(m);
-      }
+      const { fresh, updates, duplicates } = partitionForReimport(members, existing);
       // 1b. Écriture locale — SAISIR LE RÉSULTAT.
       // Une fiche affichée mais non écrite disparaît au rechargement : on
       // refuse donc d'annoncer un succès si l'enregistrement a échoué.
@@ -1620,8 +1890,48 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
         let inserted = 0;
         let updated = 0;
         let failed = 0;
-        for (let i = 0; i < fresh.length; i += BATCH) {
-          const batch = fresh.slice(i, i + BATCH);
+        // Lignes écartées côté serveur : refusées par le cloisonnement MSD, ou
+        // ignorées faute de matricule. Voir le commentaire plus bas.
+        let refused = 0;
+        let skipped = 0;
+        // Les fiches déjà connues repartent AUSSI : c'est ce qui remplit enfin
+        // `photo_url` en base. Elles ne sont pas réécrites dans le store local
+        // (elles y sont déjà) — seule la base est enrichie.
+        const aPousser = [...fresh, ...updates];
+
+        // ⚠️ Les lots sont constitués AU POIDS RÉEL, plus seulement par nombre
+        // de dossiers. Le backend limite le corps JSON à 1 Mo
+        // (express.json, backend/server.js) : un lot de 40 dossiers portant
+        // des photos en base64 —ayants droit compris, désormais— peut le
+        // dépasser et se faire refuser EN BLOC (413), ce qui perdrait les
+        // photos de tout un lot. On reste sous 800 Ko pour garder la marge.
+        const POIDS_MAX_LOT = 800 * 1024;
+        const poidsDossier = (m) => 1024
+          + (m.photoUrl ? m.photoUrl.length : 0)
+          + (m.dependents || []).reduce(
+            (s, d) => s + 640 + (d && d.photoUrl ? d.photoUrl.length : 0), 0
+          );
+
+        const lots = [];
+        let courant = [];
+        let poidsCourant = 0;
+        for (const m of aPousser) {
+          const p = poidsDossier(m);
+          if (courant.length > 0 && (courant.length >= BATCH || poidsCourant + p > POIDS_MAX_LOT)) {
+            lots.push(courant);
+            courant = [];
+            poidsCourant = 0;
+          }
+          courant.push(m);
+          poidsCourant += p;
+        }
+        if (courant.length > 0) lots.push(courant);
+
+        // Chaque échec de lot doit dire POURQUOI (429 rate-limit, 413 corps
+        // trop gros, 401 session expirée, 0 = réseau) : sans le code, l'agent
+        // voit « 1 lot non enregistré » et ne peut pas choisir le remède.
+        const echecs = [];
+        for (const batch of lots) {
           const res = await apiFetch('/api/beneficiaries/bulk', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1661,13 +1971,44 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   bloodGroup: d.bloodGroup,
                   telephone: d.phone,
                   address: d.address,
-                  photoUrl: d.photoUrl && String(d.photoUrl).startsWith('data:') ? null : (d.photoUrl || null)
+                  // ⚠️ NE PLUS ÉCRASER LA PHOTO DE L'AYANT DROIT.
+                  //
+                  // Après runExcelImport, `photoUrl` d'un ayant droit EST une
+                  // data-URL compressée (fileToCompressedDataUrl). Le test
+                  // « startsWith('data:') ? null : … » la renvoyait donc TOUJOURS
+                  // à null : la photo de tout ayant droit était détruite avant
+                  // d'atteindre le backend. Sur les 135 correspondances du
+                  // fichier AMEVI, 103 sont des ayants droit (.1, .2…) et 32
+                  // seulement des chefs (.0) — c'était LA cause principale des
+                  // 135 fiches sans photo.
+                  //
+                  // On applique donc au reliant exactement la même règle qu'au
+                  // chef (ligne du dessus) : la donnée part telle quelle.
+                  photoUrl: d.photoUrl || null
                 }))
               ])
             })
           });
           if (!res || !res.ok) {
             failed++;
+            const status = res ? res.status : 0;
+            // Le corps du refus porte souvent la cause exacte (403 « hors
+            // périmètre MSD », « agent non rattaché »…) : le montrer plutôt
+            // que de laisser l'agent deviner entre session et accès.
+            let detail = '';
+            try {
+              if (res) {
+                const j = await res.json();
+                if (j && j.error) detail = ` — ${j.error}`;
+              }
+            } catch { /* corps non JSON : on reste sur le statut */ }
+            const cause = status === 429 ? 'limite de requêtes (réessayez dans quelques minutes)'
+              : status === 413 ? 'corps trop volumineux'
+              : status === 401 ? 'session expirée — reconnectez-vous'
+              : status === 403 ? `accès refusé${detail}`
+              : status === 0 ? 'backend injoignable'
+              : `erreur ${status || 'réseau'}`;
+            echecs.push(cause);
             // On ne casse pas la boucle : les lots suivants sont
             // indépendants et peuvent aboutir.
             continue;
@@ -1675,26 +2016,62 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
           const data = await res.json();
           inserted += Number(data.inserted) || 0;
           updated += Number(data.updated) || 0;
+          // ⚠️ Les lignes REFUSÉES et IGNORÉES doivent être montrées.
+          //
+          // Le backend cloisonne désormais l'import par MSD : une fiche dont le
+          // code est émis par une autre MSD est refusée, pas enregistrée. Sans
+          // ce compteur, l'agent verrait « 0 créé, 0 mis à jour » etcroirait à
+          // un échec réseau — alors que la sécurité a fait son travail. Il ne
+          // peut pas corriger ce qu'on ne lui montre pas.
+          refused += Number(data.refused) || 0;
+          skipped += Number(data.skipped) || 0;
           if (data.mode === 'fallback-file') {
             serverInfo = ' · Base indisponible : conservés dans le fichier secours serveur (flush automatique à la reconnexion).';
           }
         }
-        const failInfo = failed > 0 ? ` ⚠️ ${failed} lot(s) non enregistrés en base.` : '';
-        serverInfo += ` · ${inserted} créé(s) et ${updated} mis à jour en base.${failInfo}`;
+        const failInfo = failed > 0 ? ` ⚠️ ${failed} lot(s) non enregistrés en base (${[...new Set(echecs)].join(', ')}).` : '';
+        // Lignes écartées par le serveur, avec leur cause : un agent doit
+        // pouvoir distinguer « rien n'a été écrit » d'« on a refusé d'écrire ».
+        const refusedInfo = refused > 0
+          ? ` 🔒 ${refused} ligne(s) REFUSÉE(S) : leur code bénéficiaire est émis par une autre MSD que la vôtre. Aucun doublon n'a été créé — filtre de cloisonnement.`
+          : '';
+        const skippedInfo = skipped > 0
+          ? ` ${skipped} ligne(s) ignorée(s) (matricule absent du classeur).`
+          : '';
+        serverInfo += ` · ${inserted} créé(s) et ${updated} mis à jour en base.${failInfo}${refusedInfo}${skippedInfo}`;
       } catch {
         serverInfo = ' · Backend injoignable : bénéficiaires conservés localement (store studio).';
       }
 
       const dupInfo = duplicates > 0
-        ? ` ${duplicates} déjà présent(s) ignoré(s) — aucun doublon créé.`
+        ? ` ${duplicates} ligne(s) en doublon ignorée(s) — aucun doublon créé.`
+        : '';
+      const updateInfo = updates.length > 0
+        ? ` ♻️ ${updates.length} fiche(s) déjà présente(s) enrichie(s) en base (photo et informations manquantes) — aucun doublon créé.`
         : '';
       const photoInfo = degradedPhotos > 0
         ? ` ${degradedPhotos} photo(s) ont été compressées plus fortement pour tenir dans l'espace de stockage du poste.`
         : '';
-      // Doublons réellement fusionnés : l'agent doit savoir que des lignes de
-      // son fichier ont été regroupées, et lesquelles.
+      // Doublons réellement fusionnés : l'agent doit savoir que des LIGNES de son
+      // fichier ont été regroupées, et surtout QUELLE fiche a survécu.
+      //
+      // ⚠️ Une fusion de lignes n'est pas une fusion de matricule : quand la
+      // ligne recopiée portait le même code que la ligne conservée (le cas
+      // réel du fichier AMEVI), aucun code n'a été absorbé. L'ancien message
+      // affichait malgré tout « MOUSTAPHA NDIONE (DKR_260001.0) », ce qui
+      // pouvait laisser croire que la carte DKR_260001.0 avait été remplacée
+      // alors qu'elle est précisément celle qui survit. On distingue donc les
+      // deux cas, et on nomme le code CONSERVÉ — c'est lui qui va sur la carte.
+      const describeFusion = (g) => {
+        const conserve = g.code ? `${g.nom} (${g.code})` : g.nom;
+        if (g.memeCodeSeulement) {
+          return `${conserve} : ${g.lignesAbsorbees} ligne(s) identique(s) supprimée(s), fiche et code ${g.code || '(sans code)'} conservés`;
+        }
+        const absorbés = g.fusions.length ? ` (codes ${g.fusions.join(', ')} regroupés)` : '';
+        return `${conserve}${absorbés}`;
+      };
       const mergedInfo = merged > 0
-        ? ` 🔗 ${merged} doublon(s) fusionné(s) : ${dupGroups.map((g) => `${g.nom} (${g.code})`).join(', ')}.`
+        ? ` 🔗 ${merged} ligne(s) en doublon fusionnée(s) — la fiche conservée est celle citée ci-dessous, avec son code d'origine : ${dupGroups.map(describeFusion).join(' · ')}.`
         : '';
       // Le codage appliqué est rappelé explicitement : c'est l'information qui
       // manque quand une carte ne porte pas le code attendu. La règle est
@@ -1724,13 +2101,49 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
       // « PHOTO EN ATTENTE ».
       const photoWarning = matchedPhotos === 0
         ? `⚠️ AUCUNE PHOTO IMPORTÉE : le dossier de photos n'a pas été sélectionné avant ce fichier, ou aucun nom ne correspond. Reprenez l'import en cliquant d'abord sur « 🗂️ 1️⃣ Dossier de photos… ». `
-        : (matchedPhotos < totalPeople
-          ? `⚠️ ${totalPeople - matchedPhotos} personne(s) sans photo (nom de fichier non concordant). `
-          : '');
+        : '';
+
+      // ── Compte-rendu des PHOTOS ───────────────────────────────────────────
+      //
+      // L'agent veut une seule information : combien de FICHES ont une photo,
+      // combien n'en ont pas.
+      //
+      // ⚠️ On ne compare plus `matchedPhotos` à `totalPeople`. `totalPeople`
+      // est le nombre de LIGNES lues (1702 sur le fichier AMEVI), pas le
+      // nombre de fiches : le message « 135 photos sur 1702 personnes » était
+      // trompeur, et l'écart calculé n'était lisible par personne.
+      //
+      // `photoSummary` vient de summarizePhotos(members) : titulaires ET
+      // ayants droit, après déduplication — soit exactement les fiches
+      // réellement construites et poussées.
+      const { withPhoto, withoutPhoto } = photoSummary || { withPhoto: 0, withoutPhoto: 0 };
+      const photoReport = `📷 ${withPhoto} fiche${withPhoto > 1 ? 's' : ''} avec photo, ${withoutPhoto} sans photo après matching.`;
+      // Liste nominative des fiches SANS photo, offerte en téléchargement :
+      // la délégation sait exactement QUI photographier (code + nom).
+      // Construction : mêmes règles que summarizePhotos — titulaires et
+      // ayants droit dédupliqués, une ligne par fiche réellement poussée.
+      const listeSansPhoto = [];
+      for (const m of members) {
+        const photo = m.photoDataUrl || m.photo_url || (m.photoFile ? null : null);
+        if (!photo) {
+          listeSansPhoto.push({
+            code: m.cmuNumber || m.code || m.sourceCode || '',
+            nom: `${(m.firstName || m.prenom || '').toUpperCase()} ${(m.lastName || m.nom || '').toUpperCase()}`.trim(),
+            naissance: m.birthDate || m.birth_date || '',
+            telephone: m.phone || m.telephone || '',
+          });
+        }
+      }
+      setSansPhotoList(listeSansPhoto);
+      // Une fiche sans photo est un travail à faire, pas un échec : on le signale
+      // sans le dramatiser, et on rappelle la cause la plus fréquente.
+      const noPhotoHint = withoutPhoto > 0
+        ? ` Les ${withoutPhoto} fiche(s) sans photo se repèrent à l'aplat « PHOTO EN ATTENTE » ; leur fichier image porte le plus souvent un nom qui ne correspond pas (vérifiez les accents et le préfixe « 1.0 »).`
+        : '';
 
       setBulkNotice({
         type: matchedPhotos === 0 ? 'error' : 'success',
-        text: `${photoWarning}✅ ${fresh.length} dossier(s) importé(s) (${totalPeople} personnes au total, photos appariées : ${matchedPhotos}).${strategyInfo}${dupInfo}${mergedInfo}${photoInfo} Lot de campagne : ${lot.code}.${serverInfo} Sélectionnez-les dans la liste pour générer leurs cartes.`
+        text: `${photoWarning}✅ ${fresh.length} dossier(s) créé(s) · ${totalPeople} ligne(s) lue(s). ${photoReport}${noPhotoHint}${strategyInfo}${updateInfo}${dupInfo}${mergedInfo}${photoInfo} Lot de campagne : ${lot.code}.${serverInfo}${fresh.length > 0 ? ' Sélectionnez-les dans la liste pour générer leurs cartes.' : ' Les fiches enrichies sont en base : rechargez la page pour les voir apparaître avec leur photo.'}`
       });
       if (fresh.length > 0) setSelectedMemberId(fresh[0].id);
     } catch (err) {
@@ -2023,8 +2436,120 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
     }
   };
 
+  /**
+   * ═════════════
+   * EXPORT ZIP COMPLET D'UN LOT D'ENRÔLEMENT
+   * ═════════════════════
+   *
+   * Génère pour TOUTES les cartes imprimables du lot affiché :
+   *   <MSD>/<nom enrôlement>/<Nom Assuré>_<code>/carte_csu_recto_...png
+   *   <MSD>/<nom enrôlement>/<Nom Assuré>_<code>/carte_csu_verso_...png
+   *
+   * Chaque assuré a son propre dossier, recto + verso en 600 DPI (PVC
+   * Epson L8050). Un mineur rattaché n'a PAS sa propre carte (règle d'or).
+   * Le ZIP est généré en mémoire puis téléchargé en un seul fichier.
+   */
+  const handleExportLotZip = async () => {
+    const cibles = selectableMembers.filter((m) => lotFilter === 'ALL' || (m.lotCode || 'HORS-LOT') === lotFilter);
+    if (cibles.length === 0) {
+      setBulkNotice({ type: 'warning', text: '⚠️ Aucune carte imprimable dans ce lot.' });
+      return;
+    }
+    setIsGeneratingPdf(true);
+    setBulkNotice({ type: 'info', text: `📦 Génération du ZIP : 0/${cibles.length} carte(s)…` });
+
+    try {
+      const JSZip = (await import('jszip')).default;
+      const zip = new JSZip();
+
+      // Dossier racine : MSD du lot + nom de l'enrôlement (code du lot).
+      const msdName = (currentUnion && currentUnion.name ? currentUnion.name : 'MSD')
+        .replace(/[\\/:*?"<>|]/g, '_').replace(/\s+/g, ' ').trim();
+      const lotName = lotLabel(lotFilter === 'ALL' ? 'REGISTRE-COMPLET' : lotFilter)
+        .replace(/[\\/:*?"<>|]/g, '_').replace(/\s+/g, ' ').trim();
+      const root = `${msdName} - ${lotName}`;
+
+      let ok = 0;
+      for (let i = 0; i < cibles.length; i++) {
+        const m = cibles[i];
+        setBulkNotice({ type: 'info', text: `📦 Génération du ZIP : ${i + 1}/${cibles.length} carte(s)…` });
+
+        // Sélectionner la fiche pour que rectoRef/versoRef se rendent
+        // (le rendu HTML des cartes suit currentMember). On laisse le
+        // navigateur peindre avant la capture html2canvas.
+        // eslint-disable-next-line no-await-in-loop
+        await new Promise((resolve) => {
+          setSelectedMemberId(m.id);
+          requestAnimationFrame(() => requestAnimationFrame(resolve));
+        });
+        // eslint-disable-next-line no-await-in-loop
+        await new Promise((r) => setTimeout(r, 350));
+
+        if (!rectoRef.current || !versoRef.current) continue;
+
+        const fullName = (cardData.fullName || 'adherent')
+          .toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') || 'adherent';
+        const cmu = (cardData.cmuNumber || 'sans_code').replace(/[^A-Za-z0-9._-]/g, '_');
+        const folder = `${root}/${fullName}_${cmu}`;
+
+        try {
+          // eslint-disable-next-line no-await-in-loop
+          const canvasRecto = await html2canvas(rectoRef.current, {
+            scale: 5, useCORS: true, allowTaint: true,
+            backgroundColor: '#ffffff', logging: false,
+            imageTimeout: 15000, windowWidth: 1200
+          });
+          zip.file(`${folder}/carte_csu_recto_${cmu}_${fullName}_600dpi.png`,
+            canvasRecto.toDataURL('image/png', 1.0).split(',')[1], { base64: true });
+
+          // eslint-disable-next-line no-await-in-loop
+          const canvasVerso = await html2canvas(versoRef.current, {
+            scale: 5, useCORS: true, allowTaint: true,
+            backgroundColor: '#ffffff', logging: false,
+            imageTimeout: 15000, windowWidth: 1200
+          });
+          zip.file(`${folder}/carte_csu_verso_${cmu}_${fullName}_600dpi.png`,
+            canvasVerso.toDataURL('image/png', 1.0).split(',')[1], { base64: true });
+
+          ok++;
+        } catch (e) {
+          console.warn('Capture impossible pour', cmu, e);
+        }
+      }
+
+      if (ok === 0) {
+        setBulkNotice({ type: 'error', text: '❌ Aucune carte capturée — vérifiez que les aperçus recto/verso sont chargés.' });
+        return;
+      }
+
+      setBulkNotice({ type: 'info', text: '📦 Compression du ZIP…' });
+      const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `${root}.zip`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(link.href), 4000);
+
+      setBulkNotice({
+        type: 'success',
+        text: `✅ Export terminé : ${ok} dossier(s) assuré(s) (recto + verso 600 DPI) dans « ${root}.zip ».`
+      });
+    } catch (err) {
+      console.error('Export ZIP :', err);
+      setBulkNotice({ type: 'error', text: '❌ Échec de l\'export ZIP : ' + (err.message || err) });
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
   return (
     <div className="card-studio-view fade-in-up container-fluid py-4 px-3 px-md-4" style={{ maxWidth: '1440px', margin: '0 auto' }}>
+
+      {/* ── VUE GÉNÉRALE STUDIO (hiérarchie Région → Département → MSD) ──
+          Tableau de bord pliable : synthèse nationale, revenus Sen-E-Carte
+          (350 F/carte imprimée), et accès aux régions. Les données viennent
+          de GET /api/studio/geo/overview — aucune donnée factice. */}
+      <StudioOverviewPanel />
 
       {/* Banner Super Admin */}
       <section className="banner-mini mb-5" style={{
@@ -2106,6 +2631,29 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                 </>
               )}
             </button>
+
+            {/* Export ZIP du lot : un dossier par assuré (recto + verso) dans
+                le dossier MSD/<nom enrôlement>. Action de CAMPAGNE : elle ne
+                porte que sur le lot affiché (mineurs rattachés exclus). */}
+            <button
+              type="button"
+              className="btn fw-extrabold px-4 py-3 shadow-lg hover-lift d-flex align-items-center gap-2"
+              style={{ borderRadius: '16px', fontSize: '0.94rem', cursor: 'pointer', background: '#0284c7', color: '#ffffff', border: 'none', minHeight: '48px' }}
+              onClick={handleExportLotZip}
+              disabled={isGeneratingPdf}
+              title={`Génère le ZIP complet : ${lotFilter === 'ALL' ? 'tout le registre' : lotLabel(lotFilter)} — un dossier par assuré avec recto et verso en 600 DPI`}
+            >
+              {isGeneratingPdf ? (
+                <>
+                  <span className="spinner-border spinner-border-sm" role="status"></span>
+                  Export ZIP en cours…
+                </>
+              ) : (
+                <>
+                  📦 Exporter le lot en ZIP (dossier par assuré)
+                </>
+              )}
+            </button>
           </div>
         </div>
       </section>
@@ -2178,6 +2726,74 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                 <>📊 2️⃣ Importer le fichier Excel…</>
               )}
             </button>
+            <div className="d-flex gap-2 flex-wrap align-items-center">
+              {/* Sélecteur de la MSD destinataire du gabarit : chaque MSD
+                  doit pouvoir télécharger SON gabarit, à son nom. */}
+              <select
+                className="form-select py-2.5 px-3 fw-extrabold"
+                value={gabaritMsd}
+                onChange={(e) => setGabaritMsd(e.target.value)}
+                style={{ borderRadius: '14px', fontSize: '0.88rem', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid #a78bfa', minWidth: '230px', minHeight: '48px', maxWidth: '320px' }}
+                title="MSD destinataire du gabarit : l'en-tête du fichier porte les coordonnées de cette MSD"
+              >
+                {DEPARTMENTAL_UNIONS.map((u) => (
+                  <option key={u.id} value={u.id}>{u.name || u.id}</option>
+                ))}
+              </select>
+              <button
+                type="button"
+                className="btn fw-extrabold px-4 py-3 hover-lift d-flex align-items-center gap-2"
+                style={{ borderRadius: '14px', fontSize: '0.88rem', background: '#7c3aed', color: '#fff', border: '1.5px solid #a78bfa', minHeight: '48px' }}
+                disabled={gabaritLoading}
+                onClick={async () => {
+                  // Gabarit d'ADHÉSION EN MASSE : fichier Excel que le Super Admin
+                  // remet à la MSD pour une campagne (adhésion + cotisation).
+                  // La MSD remplit les lignes (codes laissés vides → générés
+                  // automatiquement), puis réimporte le fichier ici.
+                  // apiFetch gère l'URL de base de l'API ET le jeton (cmu-token),
+                  // y compris le rechargement automatique du jeton expiré.
+                  setGabaritLoading(true);
+                  setBulkNotice({ type: 'info', text: `⏳ Génération du gabarit d'adhésion pour ${gabaritMsd}…` });
+                  try {
+                    const res = await apiFetch(`/api/msds/${encodeURIComponent(gabaritMsd)}/gabarit-adhesion`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ cotisation: 6000, adhesion: 15000 }),
+                    });
+                    if (!res.ok) {
+                      const err = await res.json().catch(() => ({}));
+                      const raison = res.status === 404
+                        ? 'route absente du serveur en cours — redémarrez le backend pour charger la nouvelle route'
+                        : res.status === 403
+                          ? 'génération réservée au Super Admin — reconnectez-vous avec le compte Super Admin'
+                          : (err.error || 'Gabarit indisponible');
+                      setBulkNotice({ type: 'error', text: `❌ ${raison} (statut ${res.status}).` });
+                      return;
+                    }
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `GABARIT-ADHESION-MASSE-${gabaritMsd}-${new Date().getFullYear()}.xlsx`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    setBulkNotice({ type: 'success', text: `✅ Gabarit d'adhésion ${gabaritMsd} téléchargé : remettez-le à la MSD. Elle remplit les lignes (CODE_BENEFICIAIRE laissé vide → codes générés automatiquement), supprime les lignes d'exemple, puis réimporte le fichier ici.` });
+                  } catch (e) {
+                    setBulkNotice({ type: 'error', text: `❌ Téléchargement impossible : ${e.message}` });
+                  } finally {
+                    setGabaritLoading(false);
+                  }
+                }}
+              >
+                {gabaritLoading ? (
+                  <><span className="spinner-border spinner-border-sm" role="status"></span> Génération…</>
+                ) : (
+                  <>📥 Gabarit adhésion en masse (Excel)</>
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Codage du lot — informatif, VOLONTAIREMENT non interactif.
@@ -2257,6 +2873,34 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
             }}
           >
             {bulkNotice.text}
+            {/* Liste nominative des fiches SANS photo du dernier import :
+                la délégation télécharge et va photographier exactement ces
+                personnes. Disponible dès qu'au moins une fiche est sans photo. */}
+            {sansPhotoList.length > 0 && (
+              <div className="mt-2">
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-primary"
+                  onClick={() => {
+                    const lignes = [
+                      'Code bénéficiaire;Nom complet;Date de naissance;Téléphone',
+                      ...sansPhotoList.map((x) => `${x.code};${x.nom};${x.naissance};${x.telephone}`),
+                    ].join('\n');
+                    const blob = new Blob(['\ufeff' + lignes], { type: 'text/csv;charset=utf-8;' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `assures-sans-photo-${new Date().toISOString().slice(0, 10)}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                  }}
+                >
+                  ⬇️ Télécharger la liste des {sansPhotoList.length} assuré(s) sans photo (CSV)
+                </button>
+              </div>
+            )}
           </div>
         )}
 
@@ -2379,6 +3023,222 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   ? 'Chaque import ouvre un lot : il indique d’où vient chaque carte.'
                   : `Lot ${lotLabel(lotFilter)} sélectionné — seules ses fiches sont proposées ci-dessous.`}
               </small>
+
+              {/* ── CENTRE DE CONTRÔLE : ENRÔLEMENTS PAR MSD ────────────────
+                  Tableau de bord complet : pour chaque collecte de masse,
+                  la MSD concernée, la date d'enrôlement, le nombre de cartes
+                  (totales / imprimables), la conformité (photo + informations
+                  complètes) et le gain de l'admin (350 FCFA par carte
+                  remise à la MSD). Données de la BASE, repli local. */}
+              {lotList.length > 0 && (
+                <div className="mt-3 p-3" style={{
+                  background: 'linear-gradient(135deg, rgba(2, 132, 199, 0.07) 0%, rgba(16, 185, 129, 0.07) 100%)',
+                  border: '1.5px solid rgba(2, 132, 199, 0.25)',
+                  borderRadius: '16px'
+                }}>
+                  <div className="d-flex align-items-center justify-content-between gap-2 mb-2 flex-wrap">
+                    <div className="d-flex align-items-center gap-2">
+                      <span style={{ fontSize: '1.1rem' }}>📊</span>
+                      <strong style={{ fontSize: '0.95rem', color: 'var(--text-main)' }}>
+                        Centre de contrôle — enrôlements de masse par MSD
+                      </strong>
+                    </div>
+                    {(() => {
+                      // Totaux sur TOUS les lots : la vision d'ensemble de l'admin.
+                      let totales = 0, conformes = 0, gain = 0;
+                      for (const l of lotList) {
+                        const s = controlStats[l.code];
+                        const local = conformiteLocale.get(l.code) || { conformes: 0, total: l.dossiers };
+                        totales += s ? s.cartes : local.total;
+                        conformes += s ? s.conformes : local.conformes;
+                        gain += s ? s.gain : local.conformes * LOT_PRIX_CARTE;
+                      }
+                      return (
+                        <div className="d-flex gap-2 flex-wrap">
+                          <span className="badge px-2.5 py-1.5" style={{ borderRadius: '12px', fontSize: '0.75rem', fontWeight: 800, background: 'rgba(2,132,199,0.12)', color: '#0369a1', border: '1px solid #38bdf8' }}>
+                            🪪 {totales} carte(s) au total
+                          </span>
+                          <span className="badge px-2.5 py-1.5" style={{ borderRadius: '12px', fontSize: '0.75rem', fontWeight: 800, background: 'rgba(5,150,105,0.12)', color: '#047857', border: '1px solid #10b981' }}>
+                            ✅ {conformes} conforme(s)
+                          </span>
+                          <span className="badge px-2.5 py-1.5" style={{ borderRadius: '12px', fontSize: '0.75rem', fontWeight: 800, background: 'rgba(180,83,9,0.12)', color: '#b45309', border: '1px solid #f59e0b' }}>
+                            💰 Gain admin : {gain.toLocaleString('fr-FR')} FCFA ({LOT_PRIX_CARTE} F/carte)
+                          </span>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                  {controlError && (
+                    <small className="d-block mb-2" style={{ fontSize: '0.72rem', color: '#b45309' }}>
+                      ⚠ Base injoignable : statistiques calculées sur le registre local (dates et gain approximatifs).
+                    </small>
+                  )}
+                  <div className="table-responsive">
+                    <table style={{ width: '100%', fontSize: '0.78rem', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr style={{ color: 'var(--text-muted)', textAlign: 'left' }}>
+                          <th style={{ padding: '0.35rem 0.5rem', fontWeight: 700 }}>Collecte (titre)</th>
+                          <th style={{ padding: '0.35rem 0.5rem', fontWeight: 700 }}>MSD</th>
+                          <th style={{ padding: '0.35rem 0.5rem', fontWeight: 700 }}>Date enrôlement</th>
+                          <th style={{ padding: '0.35rem 0.5rem', fontWeight: 700 }}>Cartes</th>
+                          <th style={{ padding: '0.35rem 0.5rem', fontWeight: 700 }}>Conformes</th>
+                          <th style={{ padding: '0.35rem 0.5rem', fontWeight: 700 }}>Gain (350 F/carte)</th>
+                          <th style={{ padding: '0.35rem 0.5rem', fontWeight: 700 }}>Statut</th>
+                          <th style={{ padding: '0.35rem 0.5rem' }}></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(() => {
+                          const attachedMinorIds = collectAttachedMinorIds(members);
+                          const isPrintable = (m) => !attachedMinorIds.has(m.id)
+                            && !attachedMinorIds.has(String(m.cmuNumber || '').toUpperCase());
+                          const fmtDate = (iso) => {
+                            if (!iso) return '—';
+                            const d = new Date(iso);
+                            return isNaN(d) ? '—' : d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                          };
+                          const fmtFcfa = (n) => `${Number(n || 0).toLocaleString('fr-FR')} F`;
+                          return lotList.map((l) => {
+                            const s = controlStats[l.code];
+                            const local = conformiteLocale.get(l.code) || { conformes: 0, total: l.dossiers };
+                            const fiches = lotMembers(l.code);
+                            const imprimablesLocal = fiches.filter(isPrintable).length;
+                            const cartes = s ? s.cartes : local.total;
+                            const conformes = s ? s.conformes : local.conformes;
+                            const gain = s ? s.gain : conformes * LOT_PRIX_CARTE;
+                            const nonConformes = Math.max(0, cartes - conformes);
+                            const actif = lotFilter === l.code;
+                            return (
+                              <tr key={l.code} style={{
+                                borderTop: '1px solid var(--border-color)',
+                                background: actif ? 'rgba(16, 185, 129, 0.08)' : 'transparent'
+                              }}>
+                                <td style={{ padding: '0.45rem 0.5rem', fontWeight: 700, color: 'var(--text-main)' }}>
+                                  {lotLabel(l.code)}
+                                </td>
+                                <td style={{ padding: '0.45rem 0.5rem' }}>
+                                  <span className="badge px-2 py-1" style={{ borderRadius: '8px', fontSize: '0.68rem', fontWeight: 800, background: 'rgba(2,132,199,0.12)', color: '#0369a1', border: '1px solid #7dd3fc' }}>
+                                    {s ? s.msd : 'DKR'}
+                                  </span>
+                                </td>
+                                <td style={{ padding: '0.45rem 0.5rem' }}>
+                                  {fmtDate(s ? s.dateEnrolement : null)}
+                                  {s && s.dateDernierImport && s.dateDernierImport !== s.dateEnrolement && (
+                                    <small className="d-block" style={{ fontSize: '0.66rem', color: 'var(--text-muted)' }}>
+                                      maj. {fmtDate(s.dateDernierImport)}
+                                    </small>
+                                  )}
+                                </td>
+                                <td style={{ padding: '0.45rem 0.5rem' }}>
+                                  {cartes}
+                                  <small style={{ color: 'var(--text-muted)' }}> ({s ? s.imprimables : imprimablesLocal} impr.)</small>
+                                </td>
+                                <td style={{ padding: '0.45rem 0.5rem', fontWeight: 800, color: conformes === cartes ? '#047857' : nonConformes > 0 ? '#b45309' : 'inherit' }}>
+                                  {conformes}/{cartes}
+                                  {nonConformes > 0 && <span style={{ color: '#b45309' }}> ⚠ {nonConformes} à compléter</span>}
+                                </td>
+                                <td style={{ padding: '0.45rem 0.5rem', fontWeight: 800, color: '#047857' }}>
+                                  {fmtFcfa(gain)}
+                                </td>
+                                <td style={{ padding: '0.45rem 0.5rem' }}>
+                                  {s && s.printed
+                                    ? <span className="badge px-2 py-1" style={{ borderRadius: '8px', fontSize: '0.66rem', fontWeight: 800, background: 'rgba(5,150,105,0.15)', color: '#047857', border: '1px solid #10b981' }}>🖨️ Remise {s.printedAt ? fmtDate(s.printedAt) : ''}</span>
+                                    : <span className="badge px-2 py-1" style={{ borderRadius: '8px', fontSize: '0.66rem', fontWeight: 800, background: 'rgba(100,116,139,0.15)', color: '#475569', border: '1px solid #cbd5e1' }}>⏳ En préparation</span>}
+                                </td>
+                                <td style={{ padding: '0.45rem 0.5rem', whiteSpace: 'nowrap' }}>
+                                  {/* Remise à la MSD : acte comptable — la
+                                      confirmation se fait dans le panneau sous
+                                      le tableau (double validation). */}
+                                  {!(s && s.printed) && (
+                                    <button
+                                      type="button"
+                                      className="btn btn-sm fw-extrabold px-2 py-1 me-1"
+                                      style={{ borderRadius: '10px', fontSize: '0.7rem', color: '#fff', background: '#b45309', border: 'none' }}
+                                      disabled={remiseBusy}
+                                      onClick={() => setRemiseTarget({ code: l.code })}
+                                      title={`Marquer ${conformes} carte(s) conforme(s) comme remise(s) à la MSD ${s ? s.msd : 'DKR'} — gain : ${fmtFcfa(gain)}`}
+                                    >
+                                      💸 Remise MSD
+                                    </button>
+                                  )}
+                                  <button
+                                    type="button"
+                                    className="btn btn-sm fw-extrabold px-2.5 py-1"
+                                    style={{
+                                      borderRadius: '10px', fontSize: '0.72rem', color: '#fff',
+                                      background: actif ? '#047857' : '#0284c7', border: 'none'
+                                    }}
+                                    onClick={() => setLotFilter(l.code)}
+                                    title={`Afficher uniquement les cartes de ${lotLabel(l.code)}`}
+                                  >
+                                    {actif ? '✓ Affiché' : 'Voir'}
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          });
+                        })()}
+                      </tbody>
+                    </table>
+                  </div>
+                  <small className="d-block mt-1" style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                    « Conformes » = carte avec photo, nom, prénom et date de naissance complets : seule une carte conforme doit partir à l'impression.
+                    Gain = 350 FCFA par carte conforme remise à la MSD (marquée « Remise » au moment de l'impression du lot).
+                    {' '}« impr. » = cartes imprimables (enfants mineurs rattachés exclus).
+                  </small>
+
+                  {/* ── PANNEAU DE CONFIRMATION DE REMISE + BORDEREAU ────── */}
+                  {remiseTarget && (() => {
+                    const s = controlStats[remiseTarget.code] || {};
+                    const local = conformiteLocale.get(remiseTarget.code) || { conformes: 0, total: 0 };
+                    const conformes = s.conformes != null ? s.conformes : local.conformes;
+                    const gain = conformes * LOT_PRIX_CARTE;
+                    return (
+                      <div className="mt-2 p-3" style={{ background: 'rgba(180,83,9,0.08)', border: '1.5px solid #f59e0b', borderRadius: '14px' }}>
+                        <div style={{ fontSize: '0.88rem', fontWeight: 800, color: '#b45309' }}>
+                          💸 Confirmer la remise du lot {lotLabel(remiseTarget.code)} à la MSD {s.msd || 'DKR'} ?
+                        </div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-sub)', marginTop: '4px', lineHeight: 1.45 }}>
+                          {conformes} carte(s) conforme(s) seront déclarées remises — gain constaté : <strong>{gain.toLocaleString('fr-FR')} FCFA</strong>.
+                          Ce statut est définitif : le lot ne pourra plus être recodé (verrou d'impression).
+                        </div>
+                        <div className="d-flex gap-2 mt-2">
+                          <button
+                            type="button"
+                            className="btn btn-sm fw-extrabold px-3 py-2"
+                            style={{ borderRadius: '10px', fontSize: '0.8rem', color: '#fff', background: '#b45309', border: 'none' }}
+                            disabled={remiseBusy}
+                            onClick={() => handleMarquerRemise(remiseTarget.code)}
+                          >
+                            {remiseBusy ? <><span className="spinner-border spinner-border-sm" role="status"></span> Enregistrement…</> : '✅ Confirmer la remise'}
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-sm fw-extrabold px-3 py-2"
+                            style={{ borderRadius: '10px', fontSize: '0.8rem', color: '#475569', background: 'transparent', border: '1.5px solid #cbd5e1' }}
+                            disabled={remiseBusy}
+                            onClick={() => setRemiseTarget(null)}
+                          >
+                            Annuler
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Bordereau comptable : une ligne par lot de collecte —
+                      l'admin sait ce qu'il a gagné, MSD par MSD. */}
+                  <button
+                    type="button"
+                    className="btn btn-sm fw-extrabold mt-2"
+                    style={{ borderRadius: '10px', fontSize: '0.78rem', color: '#fff', background: '#047857', border: 'none' }}
+                    onClick={handleExportComptable}
+                    title="Télécharge le bordereau comptable CSV (MSD, dates, cartes, gain 350 F/carte)"
+                  >
+                    💰 Exporter le bordereau comptable (CSV)
+                  </button>
+                </div>
+              )}
               {/* Purge en un clic du lot affiché : obligatoire avant un
                   réimport, sinon la déduplication saute toutes les personnes
                   déjà présentes et le fichier n'est jamais réappliqué. */}
@@ -2448,7 +3308,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
 
             <div className="studio-form-group mb-4">
               <label className="form-label text-sub fw-extrabold" style={{ fontSize: '0.9rem' }}>
-                🏛️ Sélectionner l'adhérent MSD Dakar ({memberOptions.length} dossier(s){lotFilter === 'ALL' ? '' : ` du lot ${lotFilter}`}) :
+                🏛️ Sélectionner l'adhérent MSD Dakar ({selectableMembers.length} dossier(s){lotFilter === 'ALL' ? '' : ` du lot ${lotFilter}`}) :
               </label>
               <select
                 className="form-select py-3 px-3.5 fw-extrabold"
@@ -2459,7 +3319,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   setSelectedCardType('PRINCIPAL');
                 }}
               >
-                {memberOptions.map(m => (
+                {selectableMembers.map(m => (
                   <option key={m.id} value={m.id}>
                     {m.lotCode ? `[${m.lotCode}] ` : ''}{m.firstName} {m.lastName} ({m.cmuNumber}) — {m.mutuelleOrigine}
                   </option>
@@ -2803,7 +3663,13 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                       type="file"
                       accept="image/*"
                       style={{ display: 'none' }}
-                      onChange={(e) => handlePhotoFileUpload(e, (dataUrl) => handleEditChange('photoUrl', dataUrl))}
+                      onChange={(e) => handlePhotoFileUpload(e, (dataUrl) => {
+                        // 1. Affichage immédiat (data-URL dans le state).
+                        handleEditChange('photoUrl', dataUrl);
+                        // 2. Persistance EN BASE : sinon la photo est strippée
+                        // du localStorage et disparaît à l'actualisation.
+                        persistPhoto(dataUrl);
+                      })}
                     />
                   </label>
                   <input

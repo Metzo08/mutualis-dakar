@@ -57,6 +57,7 @@ export async function refreshAccessToken() {
       }
       clearTokens();
       return false;
+    // eslint-disable-next-line no-unused-vars -- backend injoignable : les jetons sont purgés pour ne pas laisser une session fantôme.
     } catch (err) {
       clearTokens();
       return false;
@@ -121,6 +122,22 @@ export async function apiFetch(path, options = {}) {
       // Refresh impossible : notifie l'application pour déconnexion
       window.dispatchEvent(new CustomEvent('cmu-session-expired'));
     }
+  }
+
+  // 503 MAINTENANCE : la plateforme est fermée par un admin. On notifie
+  // l'application, qui affiche l'écran dédié (MaintenanceScreen) au lieu
+  // d'une erreur générique. Le payload porte le message de l'admin.
+  if (res.status === 503) {
+    try {
+      const cloned = res.clone();
+      const body = await cloned.json();
+      if (body && body.error === 'MAINTENANCE') {
+        window.dispatchEvent(new CustomEvent('cmu-maintenance', {
+          detail: { message: body.message || null, since: body.since || null }
+        }));
+      }
+    // eslint-disable-next-line no-unused-vars -- corps non-JSON : pas une maintenance, on ignore sans rien lever.
+    } catch (e) { /* corps non-JSON : pas une maintenance, on ignore */ }
   }
 
   return res;

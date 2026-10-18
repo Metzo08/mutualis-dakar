@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
 import { getStoredMembers } from '../utils/beneficiaryStore';
 import DeleteModal from '../components/DeleteModal';
 
 // Design Premium Haut de Gamme — Dossier Médical & Radiographies Certifiées
-export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, partnerUser = null, setView = null }) {
+export default function MedicalProfile({ userRole = 'citizen', citizenUser = null, agentUser = null, partnerUser = null, setView = null }) {
   const [deleteConfirmTarget, setDeleteConfirmTarget] = useState(null);
   // ═══════════════════════════════════════════════════════
   // RBAC — Définition granulaire des rôles
@@ -27,6 +27,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
   // Vue administrative (sans accès au contenu médical détaillé)
   const isAdminView     = isAgent && !isSuperAdmin;
   // Accès total
+  // eslint-disable-next-line no-unused-vars -- Alias RBAC du droit d'accès complet. Dupliqué à l'identique par `isDoctorOrAgent` (lu ligne ~1771) : conservé comme nom explicite de la règle, mais aucun rendu ne le lit encore.
   const hasFullAccess   = canEditMedical || isSuperAdmin;
   // Ancien alias pour rétro-compatibilité des blocs existants
   const isDoctorOrAgent = canEditMedical || isSuperAdmin;
@@ -59,6 +60,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
     const load = () => {
       try {
         setRealMembers(getStoredMembers());
+        // eslint-disable-next-line no-unused-vars -- Repli silencieux : un magasin de bénéficiaires illisible ne doit pas casser le dossier médical.
       } catch (e) {
         setRealMembers([]);
       }
@@ -78,6 +80,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
       if (!raw) return [];
       const parsed = JSON.parse(raw);
       return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+      // eslint-disable-next-line no-unused-vars -- Examens illisibles : on repart d'une liste vide plutôt que de casser le dossier.
     } catch (e) {
       return [];
     }
@@ -117,6 +120,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
         const cmuParam = hash.split('cmu=')[1].split('&')[0];
         if (cmuParam && !isCitizen) return decodeURIComponent(cmuParam);
       }
+      // eslint-disable-next-line no-unused-vars -- URL malformée : on poursuit avec le numéro de carte de l'utilisateur connecté.
     } catch (e) {}
     if (citizenUser?.cmuNumber || citizenUser?.cmu_number) {
       return citizenUser.cmuNumber || citizenUser.cmu_number;
@@ -184,10 +188,12 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
           return parsed;
         }
       }
+      // eslint-disable-next-line no-unused-vars -- OTP local illisible : un nouvel OTP est généré, le dossier reste utilisable.
     } catch (e) {}
     const newCode = `${Math.floor(100 + Math.random() * 900)}-${Math.floor(100 + Math.random() * 900)}`;
     const newExpiresAt = Date.now() + 24 * 60 * 60 * 1000;
     const newData = { code: newCode, expiresAt: newExpiresAt, createdAt: Date.now() };
+    // eslint-disable-next-line no-unused-vars -- Persistance best-effort de l'OTP : un stockage indisponible ne doit pas empêcher l'affichage du code.
     try { localStorage.setItem(`unamusc_otp_${activeCmuNumber}`, JSON.stringify(newData)); } catch (e) {}
     return newData;
   });
@@ -197,6 +203,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
     const newExpiresAt = Date.now() + 24 * 60 * 60 * 1000;
     const newData = { code: newCode, expiresAt: newExpiresAt, createdAt: Date.now() };
     setOtpData(newData);
+    // eslint-disable-next-line no-unused-vars -- Persistance best-effort de l'OTP : le nouveau code reste affiché même si le stockage échoue.
     try { localStorage.setItem(`unamusc_otp_${activeCmuNumber}`, JSON.stringify(newData)); } catch (e) {}
   };
 
@@ -688,10 +695,12 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
     }
   }, [activeCmuNumber, activeFirstName, isStudent, isBsf]);
 
+  // eslint-disable-next-line no-unused-vars -- Persistance des antécédents médicaux du dossier (clé `cmu-antecedents-${activeCmuNumber}`, relue au rechargement). Fonction métier complète mais aucun écran ne la branche encore : à arbitrer.
   const handleUpdateAntecedents = (updated) => {
     setAntecedents(updated);
     try {
       localStorage.setItem(`cmu-antecedents-${activeCmuNumber}`, JSON.stringify(updated));
+      // eslint-disable-next-line no-unused-vars -- Persistance best-effort des antécédents : un stockage indisponible ne doit pas perdre la saisie en cours.
     } catch (e) {}
   };
 
@@ -699,6 +708,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
     setExams(updatedExams);
     try {
       localStorage.setItem(`cmu-exams-${activeCmuNumber}`, JSON.stringify(updatedExams));
+      // eslint-disable-next-line no-unused-vars -- Persistance best-effort des examens : un stockage indisponible ne doit pas perdre la saisie en cours.
     } catch (e) {}
   };
 
@@ -713,6 +723,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
     setHistoryEntries(updatedHistory);
     try {
       localStorage.setItem(`cmu-history-${activeCmuNumber}`, JSON.stringify(updatedHistory));
+      // eslint-disable-next-line no-unused-vars -- Persistance best-effort de l'historique : un stockage indisponible ne doit pas perdre la saisie en cours.
     } catch (e) {}
   };
 
@@ -813,6 +824,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
     try {
       const savedLab = localStorage.getItem(`cmu-lab-${activeCmuNumber}`);
       setLabResults(savedLab ? JSON.parse(savedLab) : getLabResultsForUser(activeCmuNumber, isStudent, isBsf, activeFirstName));
+      // eslint-disable-next-line no-unused-vars -- Résultats de laboratoire illisibles : on repart des résultats de démonstration.
     } catch (e) {
       setLabResults(getLabResultsForUser(activeCmuNumber, isStudent, isBsf, activeFirstName));
     }
@@ -846,6 +858,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
     try {
       const globalExams = JSON.parse(localStorage.getItem('cmu-medical-exams') || '[]');
       localStorage.setItem('cmu-medical-exams', JSON.stringify([added, ...globalExams]));
+      // eslint-disable-next-line no-unused-vars -- Synchronisation globale best-effort : l'examen reste enregistré dans la clé par dossier même si le miroir global échoue.
     } catch (err) {}
 
     setShowAddExamModal(false);
@@ -2928,6 +2941,7 @@ export default function MedicalProfile({ lang = 'fr', userRole = 'citizen', citi
                 const globalExams = JSON.parse(localStorage.getItem('cmu-medical-exams') || '[]');
                 const updatedGlobal = globalExams.map(g => g.id === editingExamTarget.id ? editingExamTarget : g);
                 localStorage.setItem('cmu-medical-exams', JSON.stringify(updatedGlobal));
+                // eslint-disable-next-line no-unused-vars -- Synchronisation globale best-effort : la modification reste appliquée dans la clé par dossier.
               } catch (err) {}
 
               setEditingExamTarget(null);

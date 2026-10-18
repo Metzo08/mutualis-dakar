@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { getBeneficiaryInfo, getAdherentCode, getBeneficiaryCode } from '../utils/csuFormatter';
+import { getBeneficiaryInfo } from '../utils/csuFormatter';
 
 export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, partnerUser = null, setView = null }) {
   const defaultOrders = [
@@ -25,6 +25,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
   const isPublic     = !isAgent && !isDoctor && !isMidwife && !isPharmacist && !isSuperAdmin && !isCitizen;
   const isStaff      = isDoctor || isMidwife || isAgent || isPharmacist || isSuperAdmin;
   // Peut valider les ordonnances en attente (agent gérant ou superadmin)
+  // eslint-disable-next-line no-unused-vars -- Droit de validation d'une ordonnance en attente (agent gérant ou superadmin). Le tableau de bord de validation est incomplet (`validatingOrder`, `setValidatingOrder` sont référencés plus bas sans être déclarés) : conservé, à arbitrer avec la reprise du tableau de bord.
   const canValidateOrders = isAgent || isSuperAdmin;
   // Peut valider la délivrance en pharmacie
   const canRedeemAtPharmacy = isPharmacist || isSuperAdmin;
@@ -117,6 +118,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
     let itemsList = [];
     try {
       itemsList = typeof voucher.items_json === 'string' ? JSON.parse(voucher.items_json) : (voucher.items_json || []);
+      // eslint-disable-next-line no-unused-vars -- Lignes de commande illisibles : le PDF est imprimé sans détail d'articles plutôt que d'échouer.
     } catch (e) {
       itemsList = [];
     }
@@ -399,6 +401,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
     }, 300);
   };
 
+  // eslint-disable-next-line no-unused-vars -- Délivrance en pharmacie d'un bon de commande (POST /api/purchase-orders/:id/redeem + persistance locale du statut `used`). Flux métier complet, aucun bouton ne l'appelle encore : à arbitrer.
   const handleRedeem = async (id) => {
     const updated = orders.map(o => o.id === id ? { ...o, status: 'used' } : o);
     setOrders(updated);
@@ -911,6 +914,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                     let itemsList = [];
                     try {
                       itemsList = typeof ord.items_json === 'string' ? JSON.parse(ord.items_json) : (ord.items_json || []);
+                      // eslint-disable-next-line no-unused-vars -- Lignes de commande illisibles : la ligne est rendue sans détail d'articles plutôt que de casser le tableau.
                     } catch (e) {}
 
                     const bInfo = getBeneficiaryInfo(`${ord.first_name} ${ord.last_name}`, ord.cmu_number || activeCmuNumber);
@@ -1320,8 +1324,9 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                         <li key={idx} className="list-group-item d-flex justify-content-between align-items-center">
                           <span>💊 {it.name} (x{it.qty})</span>
                           <strong>{(it.price * it.qty).toLocaleString()} FCFA</strong>
-                        </li>
-                      ));
+                      </li>
+                    ));
+                      // eslint-disable-next-line no-unused-vars -- Détail de ordonnance illisible : on affiche le libellé générique « Prescription médicamenteuse ».
                     } catch (e) {
                       return <li className="list-group-item">Prescription médicamenteuse</li>;
                     }

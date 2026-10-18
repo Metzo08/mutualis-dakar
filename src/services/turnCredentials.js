@@ -32,6 +32,7 @@ const readCache = () => {
       return null;
     }
     return cached.iceServers;
+  // eslint-disable-next-line no-unused-vars -- cache illisible = cache inexistant : on redemande au serveur plutôt que d'échouer.
   } catch (e) {
     return null;
   }
@@ -40,6 +41,7 @@ const readCache = () => {
 const writeCache = (iceServers) => {
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify({ iceServers, fetchedAt: Date.now() }));
+  // eslint-disable-next-line no-unused-vars -- quota atteint : la requête suivante refetchera, la consultation n'est pas bloquée.
   } catch (e) { /* quota : la requête suivante refetchera */ }
 };
 
@@ -92,5 +94,6 @@ export async function getIceServers(apiFetch) {
 
 /** Vide le cache — à appeler si la négociation échoue de façon répétée. */
 export function invalidateTurnCredentials() {
+  // eslint-disable-next-line no-unused-vars -- invalidation best-effort : un stockage indisponible n'a rien à invalider.
   try { localStorage.removeItem(CACHE_KEY); } catch (e) { /* ignoré */ }
 }

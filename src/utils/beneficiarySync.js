@@ -78,6 +78,13 @@ const fromApi = (b) => {
     tuteurName: b.tutorName || '',
     tuteurPhone: b.tutorPhone || '',
     status: b.status || 'active',
+    // ⚠️ Le NIN DOIT transiter vers le registre du studio : c'est lui qui
+    // porte l'identité de reconnaissance au réimport (beneficiaryIdentity,
+    // src/utils/bulkImport.js). Sans lui, la clé du registre retombe sur
+    // « prénom|nom|naissance » alors que l'import produit « n<nin> » — les
+    // clés ne correspondent jamais, toute fiche déjà connue part en
+    // « codeConflict » et sa photo n'est JAMAIS poussée en base.
+    nin: b.nin || '',
     photoUrl: b.photoUrl || '',
     hasOfficialPhoto: Boolean(b.photoUrl),
     photoStatus: b.photoUrl ? 'OFFICIAL' : 'MISSING',
@@ -114,7 +121,7 @@ const fetchAll = async () => {
   const pageSize = 200;
   const collected = [];
   let page = 1;
-  let totalPages = 1;
+  let totalPages = 1; // eslint-disable-line no-useless-assignment -- valeur initiale requise par do...while
 
   do {
     const res = await apiFetch(`/api/beneficiaries?page=${page}&limit=${pageSize}`);

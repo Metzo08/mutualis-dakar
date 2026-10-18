@@ -32,6 +32,7 @@ try {
       }
     })
     .catch(() => {});
+// eslint-disable-next-line no-unused-vars -- garde-fou volontaire : le préchauffage LAN ne doit jamais interrompre le démarrage de l'application.
 } catch (e) {}
 
 // Purge du service worker de dev obsolète : les anciens caches servaient une
@@ -46,6 +47,7 @@ if (import.meta.env.DEV && 'serviceWorker' in navigator) {
         const keys = await caches.keys();
         await Promise.all(keys.map((k) => caches.delete(k)));
       }
+    // eslint-disable-next-line no-unused-vars -- purge du cache Best-Effort : un échec ici ne doit pas bloquer le rendu.
     } catch (e) { /* silencieux */ }
   })();
 }

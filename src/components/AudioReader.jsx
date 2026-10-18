@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { isWolofText, convertWolofToFrenchPhonetics, cleanTextForTTS } from '../utils/phonetics';
 import { speakCleanText, stopAllVoicePlayback } from '../services/voiceAudioService';
 
 export default function AudioReader({ lang }) {
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const audioRef = useRef(null);
 
   const dict = {
     fr: {
@@ -21,6 +20,7 @@ export default function AudioReader({ lang }) {
     }
   };
 
+  // eslint-disable-next-line no-unused-vars -- libellés FR/WO réservés à l'UI du lecteur (le composant rend null : la voix est déclenchée par window.cmuToggleAudio).
   const t = dict[lang] || dict.fr;
 
   // Stop speaking on view changes or unmount

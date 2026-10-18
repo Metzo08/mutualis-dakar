@@ -73,8 +73,10 @@ export function primeAudioPlayback() {
     }
     // Pré-charge aussi la liste des voix du navigateur
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      // eslint-disable-next-line no-unused-vars -- getVoices() peut échouer : le pré-chargement des voix est optionnel.
       try { window.speechSynthesis.getVoices(); } catch (e) {}
     }
+  // eslint-disable-next-line no-unused-vars -- déverrouillage audio best-effort : un échec ici n'empêche pas la synthèse vocale.
   } catch (e) {}
 }
 
@@ -137,12 +139,14 @@ export function stopAllVoicePlayback() {
       currentAudio.load();
       currentAudio.onended = null;
       currentAudio.onerror = null;
+    // eslint-disable-next-line no-unused-vars -- nettoyage de l'audio en cours best-effort : le flux est abandonné dans tous les cas.
     } catch (e) {}
     currentAudio = null;
   }
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
     try {
       window.speechSynthesis.cancel();
+    // eslint-disable-next-line no-unused-vars -- cancel() peut échouer si le moteur vocal est déjà arrêté.
     } catch (e) {}
   }
 }
@@ -184,6 +188,7 @@ async function speakViaBackendTTS(text, provider, lang, seqId, onStart, onEnd) {
           if (!ok) {
             // Échec de démarrage : on interrompt vraiment le flux pour ne
             // jamais laisser un audio orphelin jouer en arrière-plan.
+            // eslint-disable-next-line no-unused-vars -- nettoyage réel du flux best-effort : le watchdog ne doit jamais laisser d'audio orphelin.
             try { audio.pause(); audio.removeAttribute('src'); audio.load(); } catch (e) {}
           }
           currentAudio = null;
@@ -210,6 +215,7 @@ async function speakViaBackendTTS(text, provider, lang, seqId, onStart, onEnd) {
         finish(false);
       });
     });
+  // eslint-disable-next-line no-unused-vars -- échec TTS serveur : on retourne false pour déclencher le repli navigateur.
   } catch (e) {
     return false;
   }
@@ -278,6 +284,7 @@ function speakViaBrowserFallback(text, lang, seqId, onStart, onEnd) {
       try {
         window.speechSynthesis.speak(utterance);
         // Sort l'éventuel état « paused » hérité d'un cancel précédent
+        // eslint-disable-next-line no-unused-vars -- resume() peut échouer si rien n'est en pause.
         try { window.speechSynthesis.resume(); } catch (e) {}
       } catch (err) {
         console.warn('SpeechSynthesis speak error:', err);
@@ -301,6 +308,7 @@ function speakViaBrowserFallback(text, lang, seqId, onStart, onEnd) {
     }
     // Chrome : un speak() immédiat après cancel() est avalé en silence → 120 ms
     setTimeout(startSpeaking, 120);
+  // eslint-disable-next-line no-unused-vars -- repli navigateur indisponible : on relâche le flux conversationnel.
   } catch (e) {
     if (onEnd) onEnd();
   }
@@ -344,6 +352,7 @@ export function playHybridVoiceReminder({
   lang = 'fr',
   motherName = 'Fatou Diallo',
   babyName = 'Moussa Ndiaye',
+  // eslint-disable-next-line no-unused-vars -- option publique du service (transmise par MaternalHealth.jsx) ; le texte synthesise reste le message d'origine.
   prestation = 'Consultation prénatale et vaccination PEV',
   customMessage = null,
   onStart = null,

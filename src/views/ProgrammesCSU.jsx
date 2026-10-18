@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function ProgrammesCSU({ lang, setViewTab }) {
   const [activeAccordion, setActiveAccordion] = useState(null);

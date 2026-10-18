@@ -225,7 +225,7 @@ export const convertWolofToFrenchPhonetics = (text) => {
     const escapedPattern = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(escapedPattern, 'g');
     if (regex.test(cleanText)) {
-      cleanText = cleanText.replace(regex, (match) => {
+      cleanText = cleanText.replace(regex, () => {
         const placeholder = `__expr_placeholder_${placeholders.length}__`;
         placeholders.push(replacement);
         return placeholder;

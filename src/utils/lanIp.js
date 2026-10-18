@@ -46,6 +46,7 @@ export const getCachedLanIp = () => {
     if (!raw) return null;
     const { ip, ts } = JSON.parse(raw);
     if (isValidLanIp(ip) && Date.now() - ts < CACHE_TTL) return ip;
+  // eslint-disable-next-line no-unused-vars -- cache corrompu : on repart d'une détection réseau propre.
   } catch (e) { /* cache corrompu */ }
   return null;
 };
@@ -56,6 +57,7 @@ export const clearLanIpCache = () => {
     localStorage.removeItem(CACHE_KEY);
     localStorage.removeItem('cmu-wifi-ip');
     localStorage.removeItem('cmu-server-ip');
+  // eslint-disable-next-line no-unused-vars -- invalidation best-effort : rien à purger si le stockage est inaccessible.
   } catch (e) { /* stockage indisponible */ }
 };
 
@@ -72,6 +74,7 @@ export const rememberLanIp = (ip) => {
     // ailleurs dans l'application utilisent la même adresse.
     localStorage.setItem('cmu-wifi-ip', ip);
     localStorage.setItem('cmu-server-ip', ip);
+  // eslint-disable-next-line no-unused-vars -- mémorisation best-effort : l'appelant récupère l'IP même si le cache est inaccessible.
   } catch (e) { /* stockage indisponible */ }
   return ip;
 };
@@ -96,6 +99,7 @@ export const detectLanIp = async ({ force = false } = {}) => {
       const res = await fetch(`${base}/api/lan-ip`, { signal: AbortSignal.timeout(4000) });
       const data = await res.json();
       if (isValidLanIp(data?.ip)) return rememberLanIp(data.ip.trim());
+    // eslint-disable-next-line no-unused-vars -- backend injoignable : aucune IP inventée n'est renvoyée.
     } catch (e) { /* backend injoignable */ }
     return null;
   })().finally(() => { inflight = null; });

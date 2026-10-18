@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
 export default function Cartographie({ lang }) {
@@ -364,7 +364,7 @@ export default function Cartographie({ lang }) {
             }
           });
 
-          routingControlRef.current.on('routingerror', function(e) {
+          routingControlRef.current.on('routingerror', function() {
             setRouteInfo({ error: true, details: "Impossible de calculer l'itinéraire." });
             setRouteInstructions([]);
           });

@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { apiFetch } from '../utils/api';
 import {
-  BarChart, Bar, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
+  BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 import DeleteModal from '../components/DeleteModal';
 
 // Tableau de bord agent CSU : KPIs temps réel, graphiques (Recharts) et export CSV.
 export default function AgentDashboard({ lang, agentUser, setView }) {
-  const [deleteConfirmTarget, setDeleteConfirmTarget] = useState(null);
+  // Seul `setDeleteConfirmTarget` est alimenté (handleCampaignDelete) : l'ouverture
+  // de la modale vit dans SuperAdminDoctorManagement, plus bas dans ce fichier.
+  const [, setDeleteConfirmTarget] = useState(null);
   const isSuperAdmin = agentUser && (
     agentUser.role === 'Super Admin' || 
     agentUser.role === 'admin' || 
@@ -688,7 +690,7 @@ export default function AgentDashboard({ lang, agentUser, setView }) {
   );
 }
 
-function SuperAdminDoctorManagement({ lang }) {
+function SuperAdminDoctorManagement() {
   const [deleteConfirmTarget, setDeleteConfirmTarget] = useState(null);
   // ────────────────────────────────────────────────────────────────────
   //  AUCUN PRATICIEN DE DÉMONSTRATION dans l'habilitation CNOM.
@@ -704,6 +706,7 @@ function SuperAdminDoctorManagement({ lang }) {
       const stored = localStorage.getItem('cmu_telemed_doctors');
       const parsed = stored ? JSON.parse(stored) : null;
       return Array.isArray(parsed) ? parsed : [];
+    // eslint-disable-next-line no-unused-vars -- Profil de médecins illisible : on repart d'une liste vide plutôt que de casser le tableau de bord.
     } catch (e) {
       return [];
     }

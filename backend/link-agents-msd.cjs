@@ -19,7 +19,10 @@
  *   node backend/link-agents-msd.cjs           (simulation)
  *   node backend/link-agents-msd.cjs --apply   (écriture)
  */
-require('dotenv').config();
+// Le .env vit dans backend/ : lancé depuis la racine du dépôt, `dotenv` ne le
+// trouve pas et la connexion part avec des identifiants vides. Même correctif
+// que `link-beneficiaries-msd.cjs`.
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 const { query, pool } = require('./db');
 const { msdFromAgentLabel } = require('./msdScope');
 
@@ -28,7 +31,14 @@ const APPLY = process.argv.includes('--apply');
 (async () => {
   try {
     await query('alter table agents add column if not exists msd_code varchar(20)');
-    console.log('Colonne agents.msd_code prête.\n');
+    // La colonne `beneficiaries.msd_code` est utilisée par l'INSERT et l'UPDATE
+    // de `POST /api/beneficiaries/bulk` : si elle manque, TOUT import échoue et
+    // bascule silencieusement sur le fichier de secours (donc aucune photo en
+    // base). On la garantit ici, au même endroit que pour les agents, afin que
+    // ce script suffise à rendre une instance opérationnelle.
+    await query('alter table beneficiaries add column if not exists msd_code varchar(20)');
+    await query('create index if not exists idx_beneficiaries_msd on beneficiaries(msd_code)');
+    console.log('Colonnes prêtes : agents.msd_code, beneficiaries.msd_code\n');
 
     const msds = await query(
       'select union_code, union_name, region from merchant_accounts order by union_code'
@@ -95,7 +105,11 @@ const APPLY = process.argv.includes('--apply');
     if (!APPLY) {
       console.log('\n>>> SIMULATION : rien n\'a ete ecrit. Relancez avec --apply.');
       await pool.end();
-      return;
+      // ⚠️ Code de sortie 1 si des comptes restent sans rattachement : un
+      // déploiement automatisé doit pouvoir GATER la mise en production sur ce
+      // script. Sans rattachement, `POST /api/beneficiaries/bulk` répond 403 à
+      // l'agent (fail-clos) et il ne peut plus importer.
+      process.exit(unresolved.length > 0 ? 1 : 0);
     }
 
     const client = await pool.connect();
@@ -117,11 +131,23 @@ const APPLY = process.argv.includes('--apply');
 
     const check = await query('select username, role, department, msd_code from agents order by id');
     console.log('\n=== VERIFICATION ===');
+    const encoreSansMsd = [];
     check.rows.forEach((a) => {
-      console.log(`  ${String(a.username).padEnd(28)} ${String(a.role).padEnd(14)} ${a.msd_code || '(aucune MSD)'}`);
+      const superviseur = String(a.role || '').trim().toLowerCase().replace(/\s+/g, '') === 'superadmin';
+      // Un superviseur SANS MSD est normal (il supervise toutes les MSD) ; un
+      // agent SANS MSD est un blocage : il recevra 403 sur l'import en masse.
+      if (!superviseur && !a.msd_code) encoreSansMsd.push(a.username);
+      console.log(`  ${String(a.username).padEnd(28)} ${String(a.role).padEnd(14)} ${a.msd_code || (superviseur ? '(superviseur — toutes MSD)' : '(AUCUNE MSD)')}`);
     });
 
     await pool.end();
+
+    if (encoreSansMsd.length > 0) {
+      console.error(`\n✗ ${encoreSansMsd.length} compte(s) agent restent SANS rattachement : ${encoreSansMsd.join(', ')}`);
+      console.error('  Leur import en masse répondra 403 jusqu\'à affectation par le Super Admin.');
+      process.exit(1);
+    }
+    console.log('\n✓ Tous les comptes agents sont rattachés à une MSD (ou superviseurs).');
   } catch (err) {
     console.log('ERREUR :', err.message);
     try { await pool.end(); } catch { /* ignore */ }

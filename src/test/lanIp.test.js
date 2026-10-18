@@ -15,8 +15,6 @@ import {
  * on ne renvoie rien (l'agent saisit son IP) plutôt qu'une adresse fausse.
  */
 describe('Détection de l\'IP LAN pour les QR codes', () => {
-  const originalLocation = window.location;
-
   beforeEach(() => {
     localStorage.clear();
     vi.restoreAllMocks();

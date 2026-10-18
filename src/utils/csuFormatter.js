@@ -22,6 +22,7 @@ export function getBeneficiaryCode(rawNumber = 'DKR_260001.0', index = null) {
 }
 
 // Formate l'objet bénéficiaire complet pour l'affichage dans les tableaux et fiches
+// eslint-disable-next-line no-unused-vars -- `personName` est le 1er paramètre positionnel de l'API publique (appelée par pdfGenerator, GuaranteeLetters, PurchaseOrders) : le supprimer décalerait les arguments.
 export function getBeneficiaryInfo(personName = '', rawNumber = 'DKR_260001.0', defaultIndex = null) {
   const beneficiaryCode = getBeneficiaryCode(rawNumber, defaultIndex);
   const adherentCode = getAdherentCode(rawNumber);

@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { isWolofText, cleanTextForTTS, decodeWolofSpeechInput, looksLikeMisheardWolof } from '../utils/phonetics';
-import { sanitizeSpeechText, playMedicalChime, speakCleanText, stopAllVoicePlayback, primeAudioPlayback } from '../services/voiceAudioService';
+import { speakCleanText, stopAllVoicePlayback, primeAudioPlayback } from '../services/voiceAudioService';
 
 const mariamaAvatar = '/mariama_avatar.png';
 
@@ -152,6 +152,7 @@ export default function ChatbotWidget({ lang, setView }) {
   useEffect(() => () => {
     stopAllVoicePlayback();
     if (recognitionRef.current) {
+      // eslint-disable-next-line no-unused-vars -- arrêt best-effort : SpeechRecognition peut déjà être arrêté ou absent.
       try { recognitionRef.current.stop(); } catch (e) {}
     }
   }, []);
@@ -180,7 +181,8 @@ export default function ChatbotWidget({ lang, setView }) {
     if (!isOpen) {
       stopAllVoicePlayback();
       if (recognitionRef.current) {
-        try { recognitionRef.current.stop(); } catch (e) {}
+        // eslint-disable-next-line no-unused-vars -- arrêt best-effort : SpeechRecognition peut déjà être arrêté ou absent.
+      try { recognitionRef.current.stop(); } catch (e) {}
       }
       setIsSpeaking(false);
       setIsListening(false);
@@ -260,6 +262,7 @@ export default function ChatbotWidget({ lang, setView }) {
     stopSpeaking();
     stopAllVoicePlayback();
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      // eslint-disable-next-line no-unused-vars -- cancel() peut échouer si le moteur vocal est déjà arrêté.
       try { window.speechSynthesis.cancel(); } catch (e) {}
     }
     setIsSpeaking(false);
@@ -275,6 +278,7 @@ export default function ChatbotWidget({ lang, setView }) {
 
     // Si une écoute précédente traîne encore, on la stoppe proprement d'abord
     if (recognitionRef.current) {
+      // eslint-disable-next-line no-unused-vars -- abort() peut échouer sur une reconnaissance déjà terminée.
       try { recognitionRef.current.abort(); } catch (e) {}
       recognitionRef.current = null;
     }
@@ -296,6 +300,7 @@ export default function ChatbotWidget({ lang, setView }) {
         // Timeout de sécurité : si aucun son après 8s, arrêter l'écoute sans bloquer
         autoStopTimer = setTimeout(() => {
           if (rec) {
+            // eslint-disable-next-line no-unused-vars -- stop() peut échouer si la reconnaissance s'est arrêtée entre-temps.
             try { rec.stop(); } catch (e) {}
           }
           setIsListening(false);
@@ -380,6 +385,7 @@ export default function ChatbotWidget({ lang, setView }) {
 
   const stopListening = () => {
     if (recognitionRef.current) {
+      // eslint-disable-next-line no-unused-vars -- arrêt best-effort : SpeechRecognition peut déjà être arrêté ou absent.
       try { recognitionRef.current.stop(); } catch (e) {}
     }
     setIsListening(false);

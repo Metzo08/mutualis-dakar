@@ -1,0 +1,49 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "mutualis-orchestrator",
+  "provider": {
+    "groq": {
+      "npm": "@ai-sdk/groq",
+      "options": {
+        "baseURL": "https://api.groq.com/openai/v1"
+      },
+      "models": {
+        "openai/gpt-oss-120b": { "name": "GPT-OSS 120B (Groq, gratuit) — VERIFIÉ" },
+        "openai/gpt-oss-20b": { "name": "GPT-OSS 20B (Groq, gratuit, rapide) — VERIFIÉ" },
+        "qwen/qwen3.8-27b": { "name": "Qwen 3.8 27B (Groq, gratuit) — VERIFIÉ" }
+      }
+    },
+    "google": {
+      "npm": "@ai-sdk/google",
+      "models": {
+        "gemini-flash-latest": { "name": "Gemini Flash Latest (Google, gratuit) — VERIFIÉ actif" },
+        "gemini-2.5-flash": { "name": "Gemini 2.5 Flash (Google, gratuit)" }
+      }
+    },
+
+
+
+
+    "unorouter": {
+      "npm": "@ai-sdk/openai-compatible",
+      "options": {
+        "baseURL": "https://api.unorouter.com/v1"
+      },
+      "models": {
+        "deepseek-r1-distill-qwen-32b:free": { "name": "DeepSeek R1 Qwen 32B (UnoRouter, gratuit) — VERIFIÉ" },
+        "codestral-latest:free": { "name": "Codestral (UnoRouter, gratuit) — VERIFIÉ" },
+        "apertus-v1.5-70b:free": { "name": "Apertus 1.5 70B (UnoRouter, gratuit) — VERIFIÉ" },
+        "agnes-3.0-flash:free": { "name": "Agnes 3.0 Flash (UnoRouter, gratuit) — VERIFIÉ" }
+      }
+    },
+    "opencode": {
+      "npm": "@ai-sdk/openai-compatible",
+      "options": {
+        "baseURL": "https://opencode.ai/zen/v1"
+      },
+      "models": {
+        "space-bunny-alpha:free": { "name": "Space Bunny (OpenCode Zen, gratuit) — VERIFIÉ par usage" }
+      }
+    }
+  }
+}

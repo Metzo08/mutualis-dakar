@@ -1,6 +1,168 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { apiFetch } from '../utils/api';
-export default function SuperAdminGovernance({ lang = 'fr', setView, agentUser, citizenUser, partnerUser }) {
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MAINTENANCE PANEL — activer/désactiver le mode global.
+//
+// Une double confirmation est obligatoire à l'activation : un clic mal placé
+// fermerait la plateforme à 463 bénéficiaires en plein jour. La désactivation
+// est simple — la reprise du service ne doit JAMAIS être retardée par une
+// cérémonie.
+// ═══════════════════════════════════════════════════════════════════════════
+function MaintenancePanel() {
+  const [state, setState] = useState({ enabled: false, message: null });
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [draftMessage, setDraftMessage] = useState('');
+  const [confirming, setConfirming] = useState(false);
+  const [error, setError] = useState('');
+
+  const load = async () => {
+    try {
+      const res = await apiFetch('/api/admin/maintenance');
+      if (res.ok) {
+        const data = await res.json();
+        setState({ enabled: Boolean(data.enabled), message: data.message || null });
+        if (data.message) setDraftMessage(data.message);
+      } else {
+        setError(`Lecture de l'état impossible (HTTP ${res.status}).`);
+      }
+      // eslint-disable-next-line no-unused-vars -- Panneau de maintenance : le message affiché est déjà celui de `error`, la cause technique n'est pas exposée.
+    } catch (e) {
+      setError('Serveur injoignable.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const toggle = async () => {
+    setBusy(true);
+    setError('');
+    try {
+      const res = await apiFetch('/api/admin/maintenance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: !state.enabled, message: draftMessage || null })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setState({ enabled: Boolean(data.enabled), message: data.message || null });
+        setConfirming(false);
+      } else {
+        setError(`Action refusée (HTTP ${res.status}).`);
+      }
+      // eslint-disable-next-line no-unused-vars -- Bascule du mode maintenance : seule la conséquence pour l'utilisateur est affichée, pas la cause technique.
+    } catch (e) {
+      setError('Serveur injoignable — l\'état n\'a pas changé.');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (loading) return <div className="card" style={{ padding: '2rem', borderRadius: '16px', textAlign: 'center', color: 'var(--text-sub)' }}>Chargement de l'état…</div>;
+
+  return (
+    <div className="card text-left" style={{ padding: '2rem', borderRadius: '16px', borderLeft: state.enabled ? '6px solid #ef4444' : '6px solid #10b981' }}>
+      <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: state.enabled ? '#dc2626' : '#059669', marginBottom: '0.4rem' }}>
+        {state.enabled ? '🔴 Plateforme EN MAINTENANCE' : '🟢 Plateforme opérationnelle'}
+      </h3>
+      <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', marginBottom: '1.5rem', lineHeight: 1.6 }}>
+        Le mode maintenance ferme l'accès à tous les utilisateurs sauf vous. Les sondes de santé
+        restent actives (le répartiteur ne retire pas les instances) et le SAMU 1515 est affiché
+        aux visiteurs en cas d'urgence médicale.
+      </p>
+
+      {error && (
+        <div className="alert alert-warning" style={{ borderRadius: '12px', padding: '0.85rem 1rem', marginBottom: '1.25rem', fontSize: '0.86rem' }}>
+          ⚠️ {error}
+        </div>
+      )}
+
+      <div style={{ marginBottom: '1.25rem' }}>
+        <label style={{ display: 'block', fontSize: '0.84rem', fontWeight: '700', color: 'var(--text-main)', marginBottom: '0.45rem' }}>
+          Message affiché aux utilisateurs (optionnel) :
+        </label>
+        <textarea
+          value={draftMessage}
+          onChange={(e) => setDraftMessage(e.target.value)}
+          placeholder="Ex : Mise à jour du registre en cours — retour du service vers 14 h 30."
+          rows={2}
+          maxLength={500}
+          style={{
+            width: '100%', borderRadius: '12px', border: '1px solid var(--border-color)',
+            padding: '0.8rem 1rem', fontSize: '0.9rem', background: 'var(--bg-card-subtle)',
+            color: 'var(--text-main)', resize: 'vertical'
+          }}
+        />
+        <small style={{ color: 'var(--text-sub)', fontSize: '0.75rem' }}>
+          {draftMessage.length}/500 caractères
+        </small>
+      </div>
+
+      {!state.enabled && confirming && (
+        <div style={{
+          background: 'rgba(239, 68, 68, 0.08)', border: '2px solid #ef4444', borderRadius: '14px',
+          padding: '1.1rem', marginBottom: '1.25rem'
+        }}>
+          <strong style={{ display: 'block', color: '#dc2626', fontSize: '0.92rem', marginBottom: '0.4rem' }}>
+            ⚠️ Confirmer la fermeture de la plateforme
+          </strong>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', margin: '0 0 0.85rem', lineHeight: 1.55 }}>
+            Tous les utilisateurs non-admin verront l'écran de maintenance. Cliquez à nouveau pour confirmer.
+          </p>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={toggle}
+            style={{
+              background: '#dc2626', color: '#fff', border: 'none', borderRadius: '10px',
+              padding: '0.65rem 1.4rem', fontWeight: '800', fontSize: '0.88rem', cursor: 'pointer'
+            }}
+          >
+            {busy ? 'Application…' : '🔴 Oui, fermer la plateforme'}
+          </button>
+        </div>
+      )}
+
+      <button
+        type="button"
+        disabled={busy}
+        onClick={() => {
+          if (state.enabled) {
+            toggle(); // désactivation : pas de cérémonie, le service doit revenir vite
+          } else {
+            setConfirming(true); // activation : confirmation obligatoire
+          }
+        }}
+        style={{
+          background: state.enabled ? '#059669' : '#dc2626', color: '#ffffff', border: 'none',
+          borderRadius: '14px', padding: '0.85rem 1.8rem', fontWeight: '800', fontSize: '0.92rem',
+          cursor: busy ? 'wait' : 'pointer', boxShadow: '0 4px 14px rgba(0,0,0,0.12)'
+        }}
+      >
+        {busy ? '…' : (state.enabled ? '🟢 Réactiver la plateforme' : (confirming ? 'Annuler' : '🛠️ Activer le mode maintenance'))}
+      </button>
+
+      {confirming && (
+        <button
+          type="button"
+          onClick={() => setConfirming(false)}
+          style={{
+            background: 'transparent', color: 'var(--text-sub)', border: '1px solid var(--border-color)',
+            borderRadius: '14px', padding: '0.85rem 1.4rem', fontWeight: '700', fontSize: '0.9rem',
+            cursor: 'pointer', marginLeft: '0.75rem'
+          }}
+        >
+          Annuler
+        </button>
+      )}
+    </div>
+  );
+}
+
+export default function SuperAdminGovernance({ setView }) {
   const [activeTab, setActiveTab] = useState('stats'); // 'stats', 'users', 'requests', 'communications', 'pages'
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
@@ -112,6 +274,7 @@ export default function SuperAdminGovernance({ lang = 'fr', setView, agentUser, 
       } else {
         setUsersList([]);
       }
+      // eslint-disable-next-line no-unused-vars -- Annuaire utilisateurs illisible : on repart d'une liste vide plutôt que de casser le tableau de bord.
     } catch (e) {
       setUsersList([]);
     }
@@ -121,6 +284,7 @@ export default function SuperAdminGovernance({ lang = 'fr', setView, agentUser, 
     if (storedReqs) {
       try {
         setPendingRequests(JSON.parse(storedReqs));
+        // eslint-disable-next-line no-unused-vars -- Demandes de compte illisibles : on repart d'une liste vide.
       } catch (e) {
         setPendingRequests([]);
       }
@@ -131,6 +295,7 @@ export default function SuperAdminGovernance({ lang = 'fr', setView, agentUser, 
     if (storedComplaints) {
       try {
         setComplaintsList(JSON.parse(storedComplaints));
+        // eslint-disable-next-line no-unused-vars -- Réclamations locales illisibles : on repart d'une liste vide.
       } catch (e) {
         setComplaintsList([]);
       }
@@ -387,7 +552,8 @@ export default function SuperAdminGovernance({ lang = 'fr', setView, agentUser, 
           { id: 'users', icon: '👥', label: 'Utilisateurs', count: usersList.length },
           { id: 'requests', icon: '📝', label: 'Demandes', count: pendingRequests.filter(r => r.status === 'pending').length },
           { id: 'communications', icon: '🔒', label: 'Communications', count: complaintsList.length },
-          { id: 'pages', icon: '🗺️', label: 'Inspection', count: 32 }
+          { id: 'pages', icon: '🗺️', label: 'Inspection', count: 32 },
+          { id: 'maintenance', icon: '🛠️', label: 'Maintenance', count: null }
         ].map(tab => (
           <button
             key={tab.id}
@@ -887,6 +1053,11 @@ export default function SuperAdminGovernance({ lang = 'fr', setView, agentUser, 
             </table>
           </div>
         </div>
+      )}
+
+      {/* Tab: Maintenance — contrôle du mode global (Super Admin uniquement) */}
+      {activeTab === 'maintenance' && (
+        <MaintenancePanel />
       )}
 
       {/* Tab 3: Pages Inspection Navigator */}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 export default function Footer({ lang, setView }) {
   const [email, setEmail] = useState('');

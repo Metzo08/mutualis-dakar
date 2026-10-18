@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery } from '@tanstack/react-query';
 
@@ -97,7 +97,13 @@ export default function GalerieCSU({ lang }) {
     }
   });
 
-  const gallerySource = isPending ? [] : (galleryRaw && galleryRaw.length > 0 ? galleryRaw : defaultGalleryItems);
+  // Format paginé { data, pagination } depuis la migration serveur ;
+  // on tolère aussi le tableau brut historique pour compatibilité.
+  const gallerySource = isPending
+    ? []
+    : (Array.isArray(galleryRaw)
+        ? (galleryRaw.length > 0 ? galleryRaw : defaultGalleryItems)
+        : (galleryRaw?.data?.length > 0 ? galleryRaw.data : defaultGalleryItems));
   const galleryItems = gallerySource.map(item => ({
     id: item.id,
     image: item.image,

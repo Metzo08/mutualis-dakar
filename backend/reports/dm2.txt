@@ -1,0 +1,70 @@
+Cibles restantes : 45
+
+  DKR-DKR-2026-2151.1  MAFOU DIEDHIOU (1975-01-05)  Ô£ÿ aucun fichier avec cette date
+  DKR-DKR-2026-2156.1  KHODIA NDONG (1984-01-05)  Ô£ÿ aucun (meilleur: Gass Ndong n├®e le 05-01-1984 ├á Kaolack adresse cit├® Sonatel 2.jpeg ratio=0.45)
+  DKR-DKR-2026-2171.1  ADBOU KARIM DIOUF (1997-08-28)  Ô£ÿ aucun (meilleur: Abdou Karim Diouf n├® le 28-08-97 ├á Gossas adresse Conachap.jpeg ratio=0.87)
+  DKR-DKR-2026-2172.1  AWA LO (2008-08-23)
+      ÔåÆ Awa L├┤ n├®e le 23-08-2008 ├á keur Massar ├á S├®kou Mbalo.jpeg   [identit├®+date]
+  DKR-DKR-2026-2177.1  NDEYE CODOU FAYE (2001-04-28)  Ô£ÿ aucun (meilleur: Codou Faye n├®e le28-04-2001 ├á Dakar adresse Cit├® Mansour Gueye Libert├® 6 extension.jpeg ratio=0.13)
+  DKR-DKR-2026-2180.1  OUSMANE MAGUETTE NDIAYE (2016-02-10)
+      ÔåÆ Ousmane Magueye Ndiaye n├® 10-02-2016 ├á Dakar Cit├® Conachap.jpeg   [identit├®+date]
+  DKR-DKR-2026-2186.1  BINTA BA (1992-07-10)  Ô£ÿ aucun (meilleur: Bineta B├ó n├®e le 10-07-1992 ├á Medina Gounas Adresse Golf Sud.jpeg ratio=0.88)
+  DKR-DKR-2026-2191.1  IBRAHIMA SORY NDIAYE (1983-02-07)
+      ÔåÆ Ibrahima Sorry Ndiaye n├® le 07-02-1983 ├á Dakar adresse HLM grand yoff.jpeg   [identit├®+date]
+  DKR-DKR-2026-2193.1  MOUHAMADOU HADY NIANG (1989-03-10)
+      ÔåÆ Mouhamadou Ady Niang n├® le 10-03-1989 ├á Dakar adresse Arafat.jpeg   [identit├®+date]
+  DKR-DKR-2026-2199.2  NOGAYE SOW (2005-11-11)
+      ÔåÆ Nogaye Sow n├®e 11-11-2005 ├á Fouta adresse Darou.jpeg   [identit├®+date]  ÔÜá ABSENTE DE LA BASE
+  DKR-DKR-2026-2202.1  MADIKE DIAO (1995-12-11)
+      ÔåÆ Madick├® Diao n├® 11-12-1995 ├á Dakar adresse Bastos 2.jpeg   [identit├®+date]
+  DKR-DKR-2026-2205.1  PAPE CHEIKH TIDIANE DIAW (1987-12-04)
+      ÔåÆ Pape Cheikh Tidiane Diao n├® le 04-12-1987 ├á Dakar Adresse Bastos.jpeg   [identit├®+date]
+  DKR-DKR-2026-2209.1  MARIEME SARR (1978-02-09)
+      ÔåÆ Mar├®me Sarr n├®e le 09-02-1978 ├á Dakar adresse HLM Patte dÔÇÖoie.jpeg   [identit├®+date]
+  DKR-DKR-2026-2225.1  DIARY SAMB (1974-11-28)
+      ÔåÆ Diarry Samb n├®e le 27-11-1974 ├á Thies Adresse Cit├® Millionnaire.jpeg   [date┬▒1j(1j)]
+  DKR-DKR-2026-2227.1  ELHADJI BABACAR MANE (1994-05-08)  Ô£ÿ aucun (meilleur: Elhadji Boubacar Man├® ne le 08-05-1994 ├á Dakar adresse Khar Yallah.jpeg ratio=0.89)
+  DKR-DKR-2026-2233.1  AISSATA OUMAR HANNE (1995-01-01)
+      ÔåÆ Aissata Oumar Anne n├® le 01011995 ├á  Bock├® Mbay├®b├®.jpeg   [identit├®+date]
+  DKR-DKR-2026-2234.1  ALPHOUSSEYNOU DIALLO (1973-10-23)  Ô£ÿ aucun fichier avec cette date
+  DKR-DKR-2026-2257.1  MATHIAS MENDY (1965-02-24)
+      ÔåÆ Matias Mendy ne 24-02-1965 ├á Dakar adresse Darou Salam Khar Yallah membre stade 04.jpeg   [identit├®+date]
+  DKR-DKR-2026-2245.2  TACKO CISSOKHO (2000-01-10)
+      ÔåÆ Tacko Cissokho n├®e le 10-01-2000 ├á Thies Adresse HLM Pattes dÔÇÖoie Membre Seydou.jpeg   [identit├®+date]  ÔÜá ABSENTE DE LA BASE
+  DKR-DKR-2026-2245.3  NDEYE BIGUE SARR (2000-12-26)
+      ÔåÆ Ndeye Bigu├® Sarr n├®e le 26-12-2000 ├á Thies adresse HLM Patte dÔÇÖoie Membres d├®l├®gu├® Seydou.jpeg   [identit├®+date]  ÔÜá ABSENTE DE LA BASE
+  DKR-DKR-2026-2251.2  AWA CISSE (2009-03-04)
+      ÔåÆ Awa Ciss├® n├®e le 04-03-2009 ├á Dakar adresse Scart Urbam 1.jpeg   [identit├®+date]  ÔÜá ABSENTE DE LA BASE
+  DKR-DKR-2026-2267.1  DIE ASTOU FALL (2003-03-04)  Ô£ÿ aucun fichier avec cette date
+  DKR-DKR-2026-2268.1  AMI SOW (1962-01-27)  Ô£ÿ aucun (meilleur: Amy Sow n├®e le 27-01-1962 ├á Kayes Mali Adresse HLM grand yoff.jpeg ratio=0.83)
+  DKR-DKR-2026-2269.1  AISSATOU FAYE (2001-12-05)  Ô£ÿ aucun fichier avec cette date
+  DKR-DKR-2026-2270.1  ABDOU DIOKEL NGOM (1991-04-12)  Ô£ÿ aucun fichier avec cette date
+  DKR-DKR-2026-2270.2  BABACAR DJIRE NGOM (2021-11-07)  Ô£ÿ aucun fichier avec cette date
+  DKR-DKR-2026-2271.1  SOKHNA MAI TANDINE (1998-01-05)  Ô£ÿ aucun fichier avec cette date
+  DKR-DKR-2026-2272.1  MAME PENDA DIAWO (1972-08-08)
+      ÔåÆ Mame Penda Diao 08-08-1972 ├á Dakar adresse CSE.jpeg   [identit├®+date]
+  DKR-DKR-2026-2273.1  SERIGNE CISSE (1958-11-05)  Ô£ÿ aucun fichier avec cette date
+  DKR-DKR-2026-2276.1  MOUSSA FALL (1953-09-19)  Ô£ÿ aucun fichier avec cette date
+  DKR-DKR-2026-2277.1  ALIOUNE FALL (1991-07-01)  Ô£ÿ aucun fichier avec cette date
+  DKR-DKR-2026-2278.1  MAIMOUNA LO (1996-07-08)  Ô£ÿ aucun fichier avec cette date
+  DKR-DKR-2026-2280.1  IBRAHIMA GUEYE (1998-06-04)
+      ÔåÆ Ibrahima Gueye n├®e 04-06-1998 ├á Sambaye-Karang adresse Khar Yallah.jpeg   [identit├®+date]  ÔÜá ABSENTE DE LA BASE
+  DKR-DKR-2026-2281.1  MATY CISS (1979-06-02)  Ô£ÿ aucun fichier avec cette date
+  DKR-DKR-2026-2282.1  FATOU FAYE (1992-09-03)
+      ÔåÆ Fatou Faye n├®e le 09-09-1961 ├á Dagana Adresse Konachap.jpeg   [nom-exact]
+  DKR-DKR-2026-2283.1  LAMINE DOUMBOUYA (1995-04-24)  Ô£ÿ aucun fichier avec cette date
+  DKR-DKR-2026-2285.1  NDEYE FATOU BADJI (1981-01-17)  Ô£ÿ aucun (meilleur: Ndeye Fatou Fatou Badji n├®e le 17-01-1981 ├á Sedhiou adresse L├®ona 770978924.jpeg ratio=0.75)
+  DKR-DKR-2026-2286.1  ALIOUNE GUEYE (1977-01-15)
+      ÔåÆ Alioune Gueye n├® 15-01-1977 ├á Sokone adresse Khar Yallah.jpeg   [identit├®+date]  ÔÜá ABSENTE DE LA BASE
+  DKR-DKR-2026-2287.1  BINETA OUMOU DIALLO (2012-08-30)
+      ÔåÆ Bineta Oumou Diallo n├®e le 05-02-1957 ├á Ourassogui adresse Darou.jpeg   [nom-exact]  ÔÜá ABSENTE DE LA BASE
+  DKR-DKR-2026-2288.1  PAPE ATOUMANE MBAYE (1990-01-31)  Ô£ÿ aucun fichier avec cette date
+  DKR-DKR-2026-2289.1  MOHAMADOU CISSOKO (1984-07-08)  Ô£ÿ aucun fichier avec cette date
+  DKR-DKR-2026-2290.1  GOR COUMBA NDAW (1953-05-28)  Ô£ÿ aucun fichier avec cette date
+  DKR-DKR-2026-2291.1  RAMATOULAYE KOUVATE (1968-04-05)  Ô£ÿ aucun fichier avec cette date
+  DKR-DKR-2026-2292.1  AMY BADJI (1994-03-14)  Ô£ÿ aucun fichier avec cette date
+  DKR-DKR-2026-2294.1  CLARICE BOCK (1980-07-03)  Ô£ÿ aucun fichier avec cette date
+
+=== SYNTH├êSE ===
+  propositions de 2e tour : 19
+  toujours sans photo     : 26

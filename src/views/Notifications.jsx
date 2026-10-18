@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 // Centre de notifications SMS/WhatsApp.
 // - Agent : voit l'historique + peut envoyer manuellement

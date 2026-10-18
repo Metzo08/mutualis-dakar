@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -112,7 +112,10 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
     queryFn: async () => {
       const res = await fetch(`${window.API_BASE_URL}/api/blog/articles`);
       if (!res.ok) throw new Error('API Error');
-      const data = await res.json();
+      const payload = await res.json();
+      // Format paginé { data, pagination } depuis la migration serveur ;
+      // on tolère aussi le tableau brut historique pour compatibilité.
+      const data = Array.isArray(payload) ? payload : (payload.data || []);
       const toSentenceCase = (str) => {
         if (!str) return '';
         return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
@@ -397,6 +400,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
   };
 
   // Start editing an existing article
+  // eslint-disable-next-line no-unused-vars -- Ouverture de l'éditeur en mode modification. Le flux PUT /api/blog/articles/:id est complet et `isEdit` est lu : seul le bouton « Modifier » manque.
   const handleStartEdit = (article) => {
     setEditingArticle(article);
     setNewArticle({

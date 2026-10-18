@@ -1,5 +1,3 @@
-import React from 'react';
-
 export default function LoyaltyBadge({ level, points, showLabel = true }) {
   const getLevelStyle = () => {
     switch (level?.toLowerCase()) {

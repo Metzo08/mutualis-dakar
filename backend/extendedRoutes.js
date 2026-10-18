@@ -5,7 +5,8 @@ const { query, pool } = require('./db');
 // Bus temps réel : Redis en production, PostgreSQL en secours. L'interface
 // est identique à celle de `./db`, donc cet import remplace l'ancien.
 const { publishRealtime, subscribeRealtime } = require('./realtimeBus');
-const { authenticateToken, requireRole } = require('./rbac');
+const { authenticateToken, requireRole, normalizeRole } = require('./rbac');
+const { parsePagination } = require('./pagination');
 const crypto = require('crypto');
 
 // Même secret que rbac.js : le flux SSE doit valider les jetons émis
@@ -20,6 +21,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev_only_insecure_secret_do_not_us
 router.get("/guarantees", authenticateToken, async (req, res) => {
   try {
     const { beneficiary_id, status } = req.query;
+    const { page, limit, offset } = parsePagination(req);
     let sql = `
       SELECT g.*, b.first_name, b.last_name, b.cmu_number, b.phone, s.name as structure_name
       FROM guarantee_letters g
@@ -37,10 +39,35 @@ router.get("/guarantees", authenticateToken, async (req, res) => {
       params.push(status);
       sql += ` AND g.status = $${params.length}`;
     }
-    sql += ` ORDER BY g.created_at DESC`;
 
-    const result = await query(sql, params);
-    res.json({ success: true, data: result.rows });
+    // Cloisonnement : un citoyen ne voit que SES lettres, pas la liste globale.
+    // (Avant, l'absence de ce filtre exposait les lettres de garantie de tous
+    // les assurés à n'importe quel compte connecté — fuite de données.)
+    const role = normalizeRole(req.user.role);
+    if (role === 'citizen') {
+      params.push(req.user.id);
+      sql += ` AND g.beneficiary_id = $${params.length}`;
+    }
+
+    // Pagination SQL : la table peut contenir des dizaines de milliers de
+    // lettres ; COUNT et SELECT partagent le même WHERE pour des métadonnées
+    // de pagination exactes.
+    const countRes = await query(
+      `SELECT COUNT(*) FROM guarantee_letters g WHERE 1=1
+        ${beneficiary_id ? ' AND g.beneficiary_id = $1' : ''}
+        ${status ? ` AND g.status = $${beneficiary_id ? 2 : 1}` : ''}
+        ${role === 'citizen' ? ` AND g.beneficiary_id = $${params.length}` : ''}`,
+      params
+    );
+    const total = parseInt(countRes.rows[0]?.count || '0', 10);
+
+    sql += ` ORDER BY g.created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    const result = await query(sql, [...params, limit, offset]);
+    res.json({
+      success: true,
+      data: result.rows,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) || 1, hasNext: page * limit < total, hasPrev: page > 1 }
+    });
   } catch (err) {
     console.error('Erreur GET /guarantees:', err);
     res.status(500).json({ error: 'Erreur serveur lors de la récupération des lettres de garantie.' });
@@ -57,7 +84,7 @@ router.post("/guarantees", authenticateToken, async (req, res) => {
     const validationCode = `GAR-DK-${Date.now().toString().slice(-6)}-${Math.floor(100 + Math.random() * 900)}`;
 
     const result = await query(`
-      INSERT INTO guarantee_letters 
+      INSERT INTO guarantee_letters
       (beneficiary_id, partner_structure_id, medical_act, estimated_amount, status, validation_code, document_url)
       VALUES ($1, $2, $3, $4, 'pending', $5, $6)
       RETURNING *
@@ -105,6 +132,7 @@ router.put("/guarantees/:id/status", authenticateToken, requireRole("agent"), as
 router.get("/purchase-orders", authenticateToken, async (req, res) => {
   try {
     const { beneficiary_id } = req.query;
+    const { page, limit, offset } = parsePagination(req);
     let sql = `
       SELECT p.*, b.first_name, b.last_name, b.cmu_number
       FROM purchase_orders p
@@ -117,10 +145,31 @@ router.get("/purchase-orders", authenticateToken, async (req, res) => {
       params.push(beneficiary_id);
       sql += ` AND p.beneficiary_id = $${params.length}`;
     }
-    sql += ` ORDER BY p.created_at DESC`;
 
-    const result = await query(sql, params);
-    res.json({ success: true, data: result.rows });
+    // Cloisonnement : un citoyen ne voit que ses propres bons de commande.
+    const role = normalizeRole(req.user.role);
+    if (role === 'citizen') {
+      params.push(req.user.id);
+      sql += ` AND p.beneficiary_id = $${params.length}`;
+    }
+
+    // COUNT sur le même WHERE, puis page SQL — le COUNT reste cohérent avec
+    // les filtres et la table peut croître sans dégrader les réponses.
+    const countRes = await query(
+      `SELECT COUNT(*) FROM purchase_orders p WHERE 1=1
+        ${beneficiary_id ? ' AND p.beneficiary_id = $1' : ''}
+        ${role === 'citizen' ? ` AND p.beneficiary_id = $${params.length}` : ''}`,
+      params
+    );
+    const total = parseInt(countRes.rows[0]?.count || '0', 10);
+
+    sql += ` ORDER BY p.created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    const result = await query(sql, [...params, limit, offset]);
+    res.json({
+      success: true,
+      data: result.rows,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) || 1, hasNext: page * limit < total, hasPrev: page > 1 }
+    });
   } catch (err) {
     console.error('Erreur GET /purchase-orders:', err);
     res.status(500).json({ error: 'Erreur serveur.' });
@@ -175,6 +224,7 @@ router.post("/purchase-orders/:id/redeem", authenticateToken, async (req, res) =
 router.get("/telemedicine/sessions", authenticateToken, async (req, res) => {
   try {
     const { beneficiary_id } = req.query;
+    const { page, limit, offset } = parsePagination(req);
     let sql = `
       SELECT t.*, b.first_name, b.last_name, b.cmu_number
       FROM telemedicine_sessions t
@@ -186,10 +236,29 @@ router.get("/telemedicine/sessions", authenticateToken, async (req, res) => {
       params.push(beneficiary_id);
       sql += ` AND t.beneficiary_id = $${params.length}`;
     }
-    sql += ` ORDER BY t.scheduled_at ASC`;
 
-    const result = await query(sql, params);
-    res.json({ success: true, data: result.rows });
+    // Cloisonnement : un citoyen ne voit que ses propres sessions.
+    const role = normalizeRole(req.user.role);
+    if (role === 'citizen') {
+      params.push(req.user.id);
+      sql += ` AND t.beneficiary_id = $${params.length}`;
+    }
+
+    const countRes = await query(
+      `SELECT COUNT(*) FROM telemedicine_sessions t WHERE 1=1
+        ${beneficiary_id ? ' AND t.beneficiary_id = $1' : ''}
+        ${role === 'citizen' ? ` AND t.beneficiary_id = $${params.length}` : ''}`,
+      params
+    );
+    const total = parseInt(countRes.rows[0]?.count || '0', 10);
+
+    sql += ` ORDER BY t.scheduled_at ASC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    const result = await query(sql, [...params, limit, offset]);
+    res.json({
+      success: true,
+      data: result.rows,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) || 1, hasNext: page * limit < total, hasPrev: page > 1 }
+    });
   } catch (err) {
     console.error('Erreur GET /telemedicine/sessions:', err);
     res.status(500).json({ error: 'Erreur serveur.' });
@@ -217,6 +286,7 @@ router.post("/telemedicine/sessions", authenticateToken, async (req, res) => {
 router.get("/appointments", authenticateToken, async (req, res) => {
   try {
     const { beneficiary_id } = req.query;
+    const { page, limit, offset } = parsePagination(req);
     let sql = `
       SELECT a.*, b.first_name, b.last_name, s.name as structure_name
       FROM appointments a
@@ -229,10 +299,29 @@ router.get("/appointments", authenticateToken, async (req, res) => {
       params.push(beneficiary_id);
       sql += ` AND a.beneficiary_id = $${params.length}`;
     }
-    sql += ` ORDER BY a.appointment_date ASC`;
 
-    const result = await query(sql, params);
-    res.json({ success: true, data: result.rows });
+    // Cloisonnement : un citoyen ne voit que ses propres rendez-vous.
+    const role = normalizeRole(req.user.role);
+    if (role === 'citizen') {
+      params.push(req.user.id);
+      sql += ` AND a.beneficiary_id = $${params.length}`;
+    }
+
+    const countRes = await query(
+      `SELECT COUNT(*) FROM appointments a WHERE 1=1
+        ${beneficiary_id ? ' AND a.beneficiary_id = $1' : ''}
+        ${role === 'citizen' ? ` AND a.beneficiary_id = $${params.length}` : ''}`,
+      params
+    );
+    const total = parseInt(countRes.rows[0]?.count || '0', 10);
+
+    sql += ` ORDER BY a.appointment_date ASC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    const result = await query(sql, [...params, limit, offset]);
+    res.json({
+      success: true,
+      data: result.rows,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) || 1, hasNext: page * limit < total, hasPrev: page > 1 }
+    });
   } catch (err) {
     console.error('Erreur GET /appointments:', err);
     res.status(500).json({ error: 'Erreur serveur.' });
