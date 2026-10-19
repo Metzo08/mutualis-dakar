@@ -1258,7 +1258,7 @@ export default function Telemedicine({
     setUseSimulatedFeed(false);
     setCameraActive(false);
     setWebcamNotice(
-      "Aucun flux vid�o : accordez la cam�ra et le micro dans votre navigateur (ic�ne de la barre d'adresse)."
+      "Aucun flux vidéo : accordez la caméra et le micro dans votre navigateur (icône de la barre d'adresse)."
     );
   };
 
