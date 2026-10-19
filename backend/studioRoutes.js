@@ -122,7 +122,7 @@ router.get('/geo/overview', async (req, res) => {
              WHERE pe.event IN ('INITIAL','REPRINT','REPLACEMENT') AND ${fl.clause}) AS revenue_fcfa`,
         params
       );
-    } catch (e) {
+    } catch {
       // Table production_events absente (migration pas encore jouée) : repli
       // sur le calcul historique (conformes des lots imprimés × 350).
       g = await query(

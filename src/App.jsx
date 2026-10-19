@@ -581,7 +581,15 @@ export default function App() {
       // (noms, dossiers médicaux, montants, encaissements) ou d'administration —
       // elles exigent une session authentifiée (citoyen, agent ou partenaire).
       // Sans connexion, on redirige vers la page de connexion.
-      const SENSITIVE_DATA_VIEWS = ['guarantees', 'purchase-orders', 'telemedicine', 'medical-profile', 'maternity', 'partner'];
+      const SENSITIVE_DATA_VIEWS = [
+        'guarantees',
+        'purchase-orders',
+        'telemedicine',
+        'medical-profile',
+        'maternity',
+        'partner',
+        'security-center',
+      ];
       if (SENSITIVE_DATA_VIEWS.includes(view) && !citizenUser && !agentUser && !partnerUser) {
         return (
           <Login
@@ -817,6 +825,78 @@ export default function App() {
                   onClick={() => { setPortalMode('agent'); setView('login'); }}
                 >
                   🔐 Se connecter en Super Admin
+                </button>
+                <button className="btn btn-outline" style={{ fontWeight: 'bold' }} onClick={() => setView('home')}>
+                  Retour à l'accueil
+                </button>
+              </div>
+            </div>
+          );
+        }
+        case 'security-center': {
+          // 🔒 Centre de sécurité : confinement MSD + audit_logs côté serveur.
+          // Seuls agent & admin (Super Admin) peuvent y accéder.
+          if (portalMode === 'agent' && agentUser && (agentUser.role === 'agent' || agentUser.role === 'admin' || agentUser.role === 'Super Admin')) {
+            return (
+              <SecurityCenter
+                lang={lang}
+                agentUser={agentUser}
+                citizenUser={citizenUser}
+                setView={setView}
+                setViewTab={handleSetViewTab}
+              />
+            );
+          }
+          return (
+            <div className="card text-center fade-in-up" style={{ padding: '3rem', margin: '2rem auto', maxWidth: '700px', borderRadius: '16px', borderTop: '4px solid var(--danger)' }}>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🛡️</div>
+              <h2 style={{ color: 'var(--danger)', fontWeight: '850' }}>Accès réservé à l'administration</h2>
+              <p style={{ color: 'var(--text-sub)', marginTop: '0.5rem' }}>
+                Le Centre de sécurité est accessible par les agents et administrateurs de l'Union Régionale (URMSCD).
+                Super Admin : vous pouvez aussi utiliser la Gouvernance Super Admin.
+              </p>
+              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+                <button
+                  className="btn btn-primary fw-bold py-2 px-4 text-white"
+                  style={{ borderRadius: '12px' }}
+                  onClick={() => {
+                    setPortalMode('agent');
+                    setView('login');
+                  }}
+                >
+                  🔐 Se Connecter en Agent
+                </button>
+                <button className="btn btn-outline" style={{ fontWeight: 'bold' }} onClick={() => setView('home')}>
+                  Retour à l'accueil
+                </button>
+              </div>
+            </div>
+          );
+        }
+        case 'excel-reports': {
+          // 📊 Rapports Excel : export au format .xlsx (bénéficiaires, cartes, production, audit).
+          // Disponible pour agent, admin et Super Admin.
+          if (portalMode === 'agent' && agentUser && (agentUser.role === 'agent' || agentUser.role === 'admin' || agentUser.role === 'Super Admin')) {
+            return <ExcelReports lang={lang} agentUser={agentUser} setView={setView} setViewTab={handleSetViewTab} />;
+          }
+          return (
+            <div className="card text-center fade-in-up" style={{ padding: '3rem', margin: '2rem auto', maxWidth: '700px', borderRadius: '16px', borderTop: '4px solid var(--danger)' }}>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📊</div>
+              <h2 style={{ color: 'var(--danger)', fontWeight: '850' }}>Accès réservé à l'administration</h2>
+              <p style={{ color: 'var(--text-sub)', marginTop: '0.5rem' }}>
+                Les rapports Excel sont générés côté serveur (backend) et exportés en fichier .xlsx cloisonné par MSD.
+                Disponibles pour les agents, administrateurs et Super Admin.
+              </p>
+              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+                <button
+                  className="btn btn-primary fw-bold py-2 px-4 text-white"
+                  style={{ borderRadius: '12px' }}
+                  onClick={() => {
+                    setPortalMode('agent');
+                    setView('login');
+                  }}
+                >
+                  🔐 Se Connecter en Agent
                 </button>
                 <button className="btn btn-outline" style={{ fontWeight: 'bold' }} onClick={() => setView('home')}>
                   Retour à l'accueil

@@ -31,6 +31,8 @@ const kadevRoutes = require('./kadevRoutes');
 const clinicalRoutes = require('./clinicalRoutes');
 const { maintenanceGate } = require('./maintenance');
 const { router: cardLifecycleRouter } = require('./cardLifecycleRoutes');
+const { router: securityRouter } = require('./securityRoutes');
+const excelReportRouter = require('./excelReportRoutes');
 const {
   loadRecordsForCodes,
   planRepair,
@@ -2396,6 +2398,16 @@ app.use('/api/studio', authenticateToken, studioRouter);
 // être débloquée ni rebloquée). journalisé dans audit_logs par le module.
 // ═════════════════
 app.use('/api', authenticateToken, requireRole('agent', 'admin'), cardLifecycleRouter);
+
+// ═════════════════
+// CENTRE DE SÉCURITÉ — dashboard + journal d'audit filtré
+// ═════════════════
+app.use('/api', authenticateToken, requireRole('agent', 'admin'), securityRouter);
+
+// ═════════════════
+// RAPPORTS EXCEL — export bénéficiaires, cartes, production, audit
+// ═════════════════
+app.use('/api', authenticateToken, requireRole('agent', 'admin'), excelReportRouter);
 
 // ═══════════════════════════════════════════════════════════════════════════
 // IDENTIFIANTS TURN ÉPHÉMÈRES (iceServers pour les navigateurs)

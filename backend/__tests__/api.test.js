@@ -236,10 +236,12 @@ describe('Chatbot (fallback local)', () => {
   test('POST /api/chatbot Wolof → réponse fallback WO', async () => {
     const res = await request(app).post('/api/chatbot').send({ message: 'naka', lang: 'wo' });
     expect(res.status).toBe(200);
-    // Le chatbot a été enrichi : la salutation peut être « nanga def » ou la
-    // forme plus naturelle « naka nga defee » — on accepte les deux.
+    // Le chatbot a été enrichi : la salutation peut être « nanga def », la
+    // forme plus naturelle « naka nga defee », ou les salutations religieuses
+    // « salamaalekum » / « asalaa maalekum » / « jàmm rekk » — toutes légitimes.
     const r = res.body.response.toLowerCase();
-    const isWolofGreeting = r.includes('nanga def') || r.includes('naka nga def');
+    const isWolofGreeting = r.includes('nanga def') || r.includes('naka nga def')
+      || r.includes('salamaalekum') || r.includes('asalaa maalekum') || r.includes('jàmm rekk');
     expect(isWolofGreeting).toBe(true);
   });
 });
