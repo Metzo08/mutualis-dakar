@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
+import { generateOfficialDocx } from '../utils/docxGenerator';
 import { getBeneficiaryInfo } from '../utils/csuFormatter';
 
 /**
@@ -477,15 +478,15 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
     generateAndPrintPDFWindow(selectedLetter);
   };
 
-  const handleDownloadPDF = (letterToPrint = selectedLetter) => {
-    const letter = letterToPrint || selectedLetter || letters[0];
-    if (!letter) return;
+  // Payload commun PDF/Word : le PDF reste la preuve opposable (QR + empreinte),
+  // le Word offre une version éditable pour les structures de santé (papier à
+  // en-tête, mentions manuscrites, tampon du service hospitalier).
+  const buildLetterPayload = (letter) => {
     const guaranteeAmt = letter.guaranteed_amount || letter.max_amount || (letter.estimated_amount * ((letter.guaranteed_percentage || 80) / 100));
     const bInfo = getBeneficiaryInfo(`${letter.first_name} ${letter.last_name}`, letter.cmu_number || activeCmuNumber);
     const isSenior = letter.is_sesame || letter.is_senior;
 
-    generateOfficialPdf({
-      filename: `lettre_garantie_${letter.validation_code}.pdf`,
+    return {
       docType: isSenior 
         ? 'LETTRE DE GARANTIE HOSPITALIÈRE — CONVENTION PLAN SESAME (100%)' 
         : 'LETTRE DE GARANTIE HOSPITALIÈRE HABILITÉE (80%)',
@@ -513,6 +514,26 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
         { label: 'Ticket Modérateur Patient (20%)', value: `${Number(Math.max(0, letter.estimated_amount - guaranteeAmt)).toLocaleString()} FCFA` }
       ],
       notes: letter.agent_note || 'L\'UNAMUSC s\'engage sous le Programme National de la Couverture Sanitaire du Sénégal à régler directement à l\'établissement hospitalier le montant garanti sous présentation de la facture conforme.'
+    };
+  };
+
+  const handleDownloadPDF = (letterToPrint = selectedLetter) => {
+    const letter = letterToPrint || selectedLetter || letters[0];
+    if (!letter) return;
+    generateOfficialPdf({
+      filename: `lettre_garantie_${letter.validation_code}.pdf`,
+      ...buildLetterPayload(letter)
+    });
+  };
+
+  // Export Word éditable : exactement les mêmes données que le PDF, pour que la
+  // structure de santé puisse compléter le document sur son propre papier.
+  const handleDownloadDocx = () => {
+    const letter = selectedLetter || letters[0];
+    if (!letter) return;
+    generateOfficialDocx({
+      filename: `lettre_garantie_${letter.validation_code}.docx`,
+      ...buildLetterPayload(letter)
     });
   };
 
@@ -3310,6 +3331,15 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                       style={{ borderRadius: '12px', background: '#059669', borderColor: '#059669', textTransform: 'none' }}
                     >
                       📥 Télécharger le certificat PDF officiel
+                    </button>
+
+                    <button 
+                      type="button" 
+                      className="btn btn-outline-success fw-bold px-4 py-2.5 shadow-sm"
+                      onClick={handleDownloadDocx}
+                      style={{ borderRadius: '12px', textTransform: 'none' }}
+                    >
+                      📝 Version Word (.docx) éditable
                     </button>
 
                     <button 
