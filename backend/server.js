@@ -33,6 +33,7 @@ const { maintenanceGate } = require('./maintenance');
 const { router: cardLifecycleRouter } = require('./cardLifecycleRoutes');
 const { router: securityRouter } = require('./securityRoutes');
 const excelReportRouter = require('./excelReportRoutes');
+const { router: adminRequestRouter } = require('./adminRequestRoutes');
 const {
   loadRecordsForCodes,
   planRepair,
@@ -473,15 +474,80 @@ app.post('/api/auth/agent/login', validate(agentLoginSchema), async (req, res) =
 
     const agentRes = await query('SELECT * FROM agents WHERE username = $1 LIMIT 1', [username]);
     if (agentRes.rows.length === 0) {
+      // Une tentative sur un identifiant inconnu est journalisée comme un
+      // échec (surveillance des attaques par énumération) sans divulguer
+      // l'existence du compte.
+      await require('./securityMonitor').logLoginAttempt({ username, role: 'inconnu', success: false, reason: 'identifiant inconnu' });
       return res.status(404).json({ error: 'Aucun agent trouvé avec cet identifiant.' });
     }
 
-    const agent = agentRes.rows[0];
+    const agent_ = agentRes.rows[0];
+    // Verrouillage temporaire après échecs répétés (§4.4) : refus explicite
+    // tant que la fenêtre de verrouillage court.
+    if (agent_.locked_until && new Date(agent_.locked_until).getTime() > Date.now()) {
+      await require('./securityMonitor').logLoginAttempt({
+        username, role: agent_.role, success: false, reason: 'compte verrouillé temporairement', msdCode: agent_.msd_code,
+      });
+      return res.status(423).json({ error: 'Compte temporairement verrouillé. Réessayez plus tard ou contactez un administrateur.' });
+    }
+    if (String(agent_.status || 'active').toLowerCase() !== 'active') {
+      await require('./securityMonitor').logLoginAttempt({ username, role: agent_.role, success: false, reason: 'compte désactivé', msdCode: agent_.msd_code });
+      return res.status(403).json({ error: 'Ce compte est désactivé.' });
+    }
     // Comparaison stricte via bcrypt uniquement (pas de fallback en clair)
-    const match = await bcrypt.compare(password, agent.password_hash);
+    const match = await bcrypt.compare(password, agent_.password_hash);
     if (!match) {
+      // Compteur d'échecs : au-delà du seuil configurable, verrouillage
+      // temporaire de 15 minutes. Le journal d'audit horodate chaque échec
+      // pour l'alerte « échecs de connexion répétés ».
+      const maxAttempts = parseInt(process.env.LOGIN_MAX_ATTEMPTS || '5', 10) || 5;
+      const attempts = Number(agent_.failed_login_attempts || 0) + 1;
+      if (attempts >= maxAttempts) {
+        await query(
+          `UPDATE agents SET failed_login_attempts = 0, locked_until = NOW() + INTERVAL '15 minutes' WHERE id = $1`,
+          [agent_.id]
+        ).catch(() => {});
+        await query(
+          `INSERT INTO audit_logs (action, actor, details) VALUES ($1,$2,$3)`,
+          ['COMPTE_VERROUILLE', username, `Verrouillage temporaire après ${attempts} échecs (${maxAttempts} autorisés).`]
+        ).catch(() => {});
+      } else {
+        await query('UPDATE agents SET failed_login_attempts = $2 WHERE id = $1', [agent_.id, attempts]).catch(() => {});
+      }
+      await require('./securityMonitor').logLoginAttempt({ username, role: agent_.role, success: false, reason: 'mot de passe incorrect', msdCode: agent_.msd_code });
       // Délai constant pour limiter l'énumération de comptes
       return res.status(401).json({ error: 'Identifiant ou mot de passe incorrect.' });
+    }
+    const agent = agent_;
+    // Connexion réussie : remise à zéro du compteur d'échecs.
+    await query('UPDATE agents SET failed_login_attempts = 0, locked_until = NULL WHERE id = $1', [agent.id]).catch(() => {});
+    await require('./securityMonitor').logLoginAttempt({ username, role: agent.role, success: true, msdCode: agent.msd_code });
+
+    // ── MFA (§4.4) : un compte privilégié qui a activé le second facteur ne
+    // reçoit PAS de jeton ici. Le mot de passe seul ne suffit plus : un code
+    // à usage unique part sur son adresse e-mail, la connexion se termine
+    // par POST /api/auth/mfa/verify.
+    const mfa = require('./mfaService');
+    if (mfa.mfaEnabled(agent)) {
+      if (!mfa.mfaAvailable(agent)) {
+        // Sécurité dégradée : MFA activée mais canal absent (e-mail retiré,
+        // SMTP hors service). Refus fail-closed — jamais de contournement.
+        await require('./securityMonitor').logLoginAttempt({ username, role: agent.role, success: false, reason: 'MFA activée mais canal e-mail indisponible', msdCode: agent.msd_code });
+        return res.status(503).json({ error: 'MFA activée mais canal de vérification indisponible. Contactez le Super Admin.', errorCode: 'MFA_CHANNEL_UNAVAILABLE' });
+      }
+      const ch = await mfa.issueChallenge(agent);
+      if (!ch.ok) {
+        return res.status(503).json({ error: ch.message, errorCode: 'MFA_SEND_FAILED' });
+      }
+      return res.json({
+        success: true,
+        mfaRequired: true,
+        challenge: ch.challenge,
+        expiresInMinutes: ch.expiresInMinutes,
+        // L'adresse est masquée : l'agent reconnaît son canal, un attaquant
+        // n'apprend rien d'exploitable.
+        emailHint: mfa.maskEmail(agent.email),
+      });
     }
 
     // Generate JWT (access token)
@@ -524,6 +590,60 @@ app.post('/api/auth/agent/login', validate(agentLoginSchema), async (req, res) =
   } catch (err) {
     console.error('Erreur login agent :', err);
     res.status(500).json({ error: 'Erreur interne de connexion.' });
+  }
+});
+
+// 0a-bis. MFA — seconde étape de connexion (§4.4)
+// POST /api/auth/mfa/verify { challenge, code } → jetons de session.
+// Le challenge est consommé une seule fois ; la session n'est émise qu'après.
+app.post('/api/auth/mfa/verify', async (req, res) => {
+  try {
+    const mfa = require('./mfaService');
+    const { challenge, code } = req.body || {};
+    if (!challenge || !code) {
+      return res.status(400).json({ error: 'Challenge et code requis.' });
+    }
+    const result = await mfa.verifyChallenge(challenge, code);
+    if (!result.ok) {
+      return res.status(401).json({ error: result.message });
+    }
+    // Le compte peut avoir changé entre l'étape 1 et 2 : rechargé depuis la base.
+    const agentRes = await query('SELECT * FROM agents WHERE id = $1', [result.agentId]);
+    const agent = agentRes.rows && agentRes.rows[0];
+    if (!agent || String(agent.status || 'active').toLowerCase() !== 'active') {
+      return res.status(403).json({ error: 'Compte désactivé depuis le début de la connexion.' });
+    }
+    const agentPayload = {
+      id: agent.id,
+      role: agent.role,
+      username: agent.username,
+      department: agent.department,
+      msdCode: agent.msd_code || null,
+    };
+    const token = jwt.sign(agentPayload, EFFECTIVE_JWT_SECRET, { expiresIn: ACCESS_TOKEN_TTL.agent });
+    const refreshToken = await issueRefreshToken(agentPayload);
+    await query(
+      `INSERT INTO audit_logs (action, actor, details) VALUES ($1,$2,$3)`,
+      ['CONNEXION_AGENT', agent.username, `Connexion réussie avec MFA (${agent.role}${agent.msd_code ? ' / MSD ' + agent.msd_code : ''}).`]
+    ).catch(() => {});
+    return res.json({
+      success: true,
+      token,
+      refreshToken,
+      agent: {
+        id: agent.id,
+        username: agent.username,
+        firstName: agent.first_name,
+        lastName: agent.last_name,
+        role: agent.role,
+        photoUrl: agent.photo_url,
+        department: agent.department,
+        msdCode: agent.msd_code || null,
+      },
+    });
+  } catch (err) {
+    console.error('Erreur vérification MFA :', err);
+    res.status(500).json({ error: 'Erreur interne de vérification MFA.' });
   }
 });
 
@@ -1053,8 +1173,8 @@ app.put('/api/campaign/:id', authenticateToken, requireRole('admin'), async (req
     }
 
     const result = await query(
-      `UPDATE donation_campaigns 
-       SET title_fr = $1, title_wo = $2, description_fr = $3, description_wo = $4, 
+      `UPDATE donation_campaigns
+       SET title_fr = $1, title_wo = $2, description_fr = $3, description_wo = $4,
            target_amount = $5, baseline_amount = $6, is_active = $7
        WHERE id = $8 RETURNING *`,
       [newTitleFr, newTitleWo, newDescFr, newDescWo, newTarget, newBaseline, newActive, id]
@@ -1184,7 +1304,7 @@ Réponds STRICTEMENT avec un objet JSON seul, sans texte autour : {"lang":"wo","
       // Candidate models for Gemini API (du plus récent au plus ancien —
       // gemini-2.0-flash / 1.5-flash sont officiellement retirés par Google : 404)
       const modelCandidates = ['gemini-3.6-flash', 'gemini-2.5-flash', 'gemini-2.0-flash'];
-      
+
       const knowledgeBaseContext = `
 DOCUMENTS ET SPÉCIFICATIONS OFFICIELLES MUTUALIS SÉNÉGAL — CSU UNAMUSC 2026:
 1. VISION & RÔLE : MUTUALIS SÉNÉGAL est le portail numérique régional du Tiers-Payant pour la Couverture Santé Universelle (CSU) de l'Union Nationale des Mutuelles de Santé Communautaires (UNAMUSC). Zahara agit en tant qu'Agent Personnel dédié à l'assuré à jour de cotisations.
@@ -1276,7 +1396,7 @@ ${knowledgeBaseContext}`;
           }
 
           const chat = model.startChat({ history: chatHistory });
-          
+
           // Budget global ~9,5 s : la réponse doit TOUJOURS partir avant le
           // timeout de 12 s du frontend, sinon l'usager reçoit le texte local
           // générique alors que Gemini finit par répondre trop tard.
@@ -1284,12 +1404,12 @@ ${knowledgeBaseContext}`;
           const timeoutPromise = new Promise((_, reject) =>
             setTimeout(() => reject(new Error('Gemini Timeout')), chatBudget)
           );
-          
+
           const result = await Promise.race([
             chat.sendMessage(userMessageToProcess),
             timeoutPromise
           ]);
-          
+
           const responseText = result.response.text();
           console.log(`Succès avec le modèle ${modelName}`);
           return res.json({ response: responseText, decodedText: (userMessageToProcess !== message) ? userMessageToProcess : undefined });
@@ -1815,7 +1935,7 @@ app.put('/api/beneficiaries/:id/status', authenticateToken, requireRole('agent',
           if (firstCmu.startsWith('SN-DK-EDU')) detectedType = 'eleves';
           else if (firstCmu.startsWith('SN-DK-COL')) detectedType = 'collectif';
           else if (firstCmu.includes('-HH-')) detectedType = 'menages';
-          
+
           if (detectedType === 'menages') {
             const chefIds = sponsoredList.map(chef => chef.id);
             const fRes = await query("SELECT COUNT(*) FROM family_members WHERE beneficiary_id = ANY($1::int[])", [chefIds]);
@@ -1875,7 +1995,7 @@ app.delete('/api/beneficiaries/:id', authenticateToken, async (req, res) => {
       ? (req.user.phone || 'citoyen')
       : (req.user.username || 'agent@cmu.sn');
 
-    
+
     // Find beneficiary
     const bRes = await query('SELECT * FROM beneficiaries WHERE id = $1', [id]);
     if (bRes.rows.length === 0) {
@@ -2020,19 +2140,19 @@ app.get('/api/audit-logs', authenticateToken, requireRole('agent', 'admin'), asy
     let whereSql = '';
     const params = [];
     let paramIdx = 1;
-    
+
     if (search) {
       whereSql = ` WHERE action ILIKE $${paramIdx} OR actor ILIKE $${paramIdx} OR details ILIKE $${paramIdx}`;
       params.push(`%${search}%`);
       paramIdx++;
     }
-    
+
     const countRes = await query(`SELECT COUNT(*) FROM audit_logs${whereSql}`, params);
     const total = parseInt(countRes.rows[0].count || '0', 10);
-    
+
     const dataSql = `SELECT * FROM audit_logs${whereSql} ORDER BY created_at DESC LIMIT $${paramIdx} OFFSET $${paramIdx + 1}`;
     const result = await query(dataSql, [...params, limit, offset]);
-    
+
     res.json({
       data: result.rows,
       pagination: {
@@ -2181,7 +2301,7 @@ app.put('/api/complaints/:id/resolve', authenticateToken, requireRole('agent', '
     const { id } = req.params;
     const { resolutionNotes } = req.body;
     const actor = req.user.username || 'agent@cmu.sn';
-    
+
     // Find complaint
     const compRes = await query('SELECT * FROM complaints WHERE id = $1', [id]);
     if (compRes.rows.length === 0) {
@@ -2230,14 +2350,24 @@ app.get('/api/agents', authenticateToken, requireRole('admin'), async (req, res)
 // Create new agent (for Super Admin)
 app.post('/api/agents', authenticateToken, requireRole('admin'), validate(agentCreateSchema), async (req, res) => {
   try {
-    const { username, password, firstName, lastName, role, photoUrl } = req.body;
-    // Champs déjà validés par zod (mot de passe >= 8 caractères, rôle autorisé)
+    const { username, password, firstName, lastName, role, photoUrl, msdCode } = req.body;
+    // Champs déjà validés par zod (mot de passe >= 8 caractères, rôle autorisé).
+    // La MSD de rattachement est ENREGISTRÉE : sans elle, l'agent est refusé
+    // sur toutes les routes cloisonnées (AGENT_NOT_LINKED_TO_MSD).
     const salt = await bcrypt.genSalt(10);
     const hashed = await bcrypt.hash(password, salt);
     const result = await query(
-      'INSERT INTO agents (username, password_hash, first_name, last_name, role, photo_url) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, username, first_name, last_name, role, photo_url',
-      [username, hashed, firstName, lastName, role, photoUrl]
+      `INSERT INTO agents (username, password_hash, first_name, last_name, role, photo_url, msd_code)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING id, username, first_name, last_name, role, photo_url, msd_code`,
+      [username, hashed, firstName, lastName, role, photoUrl, (msdCode || '').toUpperCase() || null]
     );
+    await recordAudit({
+      action: 'CREATION_COMPTE', actor: req.user.username || String(req.user.id),
+      details: `Compte ${username} créé (rôle ${role}${msdCode ? `, MSD ${msdCode}` : ''}).`,
+      objectType: 'ACCOUNT', objectRef: username, msdCode: msdCode || null,
+      result: 'SUCCESS', severity: 'WARNING',
+    });
     res.json({ success: true, agent: result.rows[0] });
   } catch (err) {
     console.error('Erreur create agent:', err);
@@ -2247,6 +2377,25 @@ app.post('/api/agents', authenticateToken, requireRole('admin'), validate(agentC
     res.status(500).json({ error: 'Erreur interne' });
   }
 });
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MODULES 2, 3 ET 4 — MONTAGE DÉDIÉ SOUS /api
+// (importation contrôlée, comptes & cartes, centre de sécurité étendu)
+//
+// ⚠️ `app.use('/api', authenticateToken, requireRole(...), router)` appelle
+// `router(req, res, next)` — un Router n'est PAS un middleware Express :
+// sans sous-chemin, il faut le passer tel quel : `app.use(router)`.
+// Les routers portent leurs chemins complets (`/api/…`) ; ils sont montés à la
+// racine, après les middlewares globaux et avant toute route générique.
+// Vérification : scripts/_probe-layers.cjs.
+// ═══════════════════════════════════════════════════════════════════════════
+app.use(require('./securityCenterRoutes').router);
+app.use(require('./accountRoutes').router);
+app.use(require('./importRoutes').router);
+
+// Le contrôle d'authentification est appliqué DANS chaque router (voir
+// `router.use(authenticateToken)` dans accountRoutes, importRoutes,
+// securityCenterRoutes et cardLifecycleRoutes).
 
 // Upload photo for agent
 app.put('/api/agents/:id/photo', authenticateToken, requireRole('agent', 'admin'), async (req, res) => {
@@ -2380,7 +2529,20 @@ app.get('/health/ready', async (req, res) => {
   });
 });
 
+// Le CENTRE DE SÉCURITÉ ÉTENDU (Module 4) est monté plus haut, sous /api —
+// voir « MODULES 2, 3 ET 4 » — pour passer avant les routes génériques.
 app.use(extendedRoutes);
+
+// Routers historiques : chemins COMPLETS (`/api/…`), montés tels quels.
+// `app.use('/api', …, router)` appellerait le Router comme un middleware
+// Express (TypeError → 500) — c'était le cas avant cette correction.
+app.use(require('./securityRoutes').router);
+app.use(require('./excelReportRoutes'));
+app.use(require('./adminRequestRoutes').router);
+
+// Journal d'audit structuré (Module 4.2) : complète audit_logs sans changer
+// sa forme historique. Disponible pour les routes déclarées ci-dessous.
+const { recordAudit } = require('./auditTrail');
 
 // ═════════════════
 // STUDIO CARTES — hiérarchie Région → Département → MSD, adhésions de masse
@@ -2397,17 +2559,36 @@ app.use('/api/studio', authenticateToken, studioRouter);
 // serveur ; la révocation est irréversible (une carte révoquée ne peut plus
 // être débloquée ni rebloquée). journalisé dans audit_logs par le module.
 // ═════════════════
-app.use('/api', authenticateToken, requireRole('agent', 'admin'), cardLifecycleRouter);
+app.use(require('./cardLifecycleRoutes').router); // chemins complets /api/… : Router monté tel quel
+
+// ═════════════════
+// COMPTES & CARTES DES ASSURÉS (Module 3)
+// Recherche sécurisée, fiche détaillée, vérification d'identité, modification
+// administrative et réinitialisation de mot de passe. Le serveur est
+// l'autorité : cloisonnement MSD, quotas et journal d'audit côté backend.
+// → Monté plus haut, sous /api (voir « MODULES 2, 3 ET 4 »).
+// ═════════════════
 
 // ═════════════════
 // CENTRE DE SÉCURITÉ — dashboard + journal d'audit filtré
 // ═════════════════
-app.use('/api', authenticateToken, requireRole('agent', 'admin'), securityRouter);
+// → Monté plus haut, avec les autres routers historiques.
 
 // ═════════════════
 // RAPPORTS EXCEL — export bénéficiaires, cartes, production, audit
 // ═════════════════
-app.use('/api', authenticateToken, requireRole('agent', 'admin'), excelReportRouter);
+// → Monté plus haut, avec les autres routers historiques.
+
+// ═════════════════
+// DEMANDES ADMINISTRATIVES — suivi des opérations sensibles (Module 3.9)
+// ═════════════════
+// → Monté plus haut, avec les autres routers historiques.
+
+// ═════════════════
+// IMPORTATION CONTRÔLÉE (Module 2) — zone temporaire, contrôles, prévisualisation,
+// validation explicite, intégration des seuls dossiers conformes, rapport Excel.
+// → Monté plus haut, sous /api (voir « MODULES 2, 3 ET 4 »).
+// ═════════════════
 
 // ═══════════════════════════════════════════════════════════════════════════
 // IDENTIFIANTS TURN ÉPHÉMÈRES (iceServers pour les navigateurs)
@@ -2569,6 +2750,31 @@ app.post('/api/beneficiaries/bulk', authenticateToken, requireRole('agent', 'adm
   const rows = Array.isArray(req.body && req.body.rows) ? req.body.rows : [];
   if (rows.length === 0) return res.status(400).json({ error: 'Aucune ligne à importer.' });
   if (rows.length > 5000) return res.status(400).json({ error: 'Maximum 5000 lignes par import.' });
+  // ── Importation CONTRÔLÉE (Module 2) ────────────────────────────────────
+  // Une écriture directe dans le registre opérationnel n'est acceptée que
+  // pour un lot issu de la zone temporaire, validé explicitement. Le
+  // studio existant envoie `batchId` + `batchReference` ; tout autre appel
+  // reste possible mais exige désormais une confirmation explicite
+  // (`allowDirect: true`) pour que l'écriture directe ne soit jamais
+  // silencieuse.
+  const batchId = parseInt(req.body && req.body.batchId, 10) || 0;
+  if (!batchId && !(req.body && req.body.allowDirect === true)) {
+    return res.status(409).json({
+      error: 'Importation directe désactivée : utilisez le module « Importation contrôlée » (prévisualisation puis validation explicite).',
+      errorCode: 'IMPORT_CONTROLE_REQUIS',
+    });
+  }
+  if (batchId) {
+    const batchCheck = await query(
+      'SELECT status, validated_at FROM import_batches WHERE id = $1',
+      [batchId]
+    ).catch(() => ({ rows: [] }));
+    const batch = (batchCheck.rows || [])[0];
+    if (!batch) return res.status(404).json({ error: 'Lot d\'import introuvable.' });
+    if (!batch.validated_at) {
+      return res.status(409).json({ error: 'Lot non validé : une validation explicite est requise avant l\'intégration.' });
+    }
+  }
 
   // Barrière MSD de l'AGENT (fail-closed). Le Super Admin (msdCode absent du
   // jeton) supervise toutes les MSD ; un agent non rattaché est refusé AVANT
@@ -3183,6 +3389,45 @@ app.use((err, req, res, next) => {
     await query('CREATE INDEX IF NOT EXISTS idx_card_events_cmu ON card_lifecycle_events(cmu_number, created_at DESC)').catch(() => {});
     await query("CREATE INDEX IF NOT EXISTS idx_beneficiaries_card_status ON beneficiaries(card_status) WHERE card_status <> 'active'").catch(() => {});
 
+    // ── Modules 2, 3 et 4 — colonnes d'enquête, comptes, imports, alertes ─
+    // ADD COLUMN IF NOT EXISTS : aucune donnée existante n'est touchée.
+    try {
+      await query(`
+        ALTER TABLE audit_logs
+          ADD COLUMN IF NOT EXISTS correlation_id VARCHAR(40),
+          ADD COLUMN IF NOT EXISTS object_type VARCHAR(30),
+          ADD COLUMN IF NOT EXISTS object_ref VARCHAR(120),
+          ADD COLUMN IF NOT EXISTS result VARCHAR(20),
+          ADD COLUMN IF NOT EXISTS request_ref VARCHAR(60),
+          ADD COLUMN IF NOT EXISTS msd_code VARCHAR(30),
+          ADD COLUMN IF NOT EXISTS severity VARCHAR(20)
+      `);
+      await query('CREATE INDEX IF NOT EXISTS idx_audit_logs_action ON audit_logs(action, created_at DESC)').catch(() => {});
+      await query('CREATE INDEX IF NOT EXISTS idx_audit_logs_msd ON audit_logs(msd_code, created_at DESC)').catch(() => {});
+      await query('CREATE INDEX IF NOT EXISTS idx_audit_logs_corr ON audit_logs(correlation_id)').catch(() => {});
+      // Le journal dispose désormais des colonnes d'enquête : le module
+      // d'audit les utilise sans interroger le catalogue à chaque écriture.
+      require('./auditTrail').markExtendedColumnsReady();
+    } catch { /* migration rejouée au prochain démarrage */ }
+    // Compte numérique de l'assuré (DISTINCT du dossier et de la carte).
+    await require('./accountCardService').ensureAccountSchema().catch(() => {});
+    // Compteur d'échecs de connexion et verrouillage temporaire des comptes.
+    await query(`
+      ALTER TABLE agents
+        ADD COLUMN IF NOT EXISTS failed_login_attempts INTEGER NOT NULL DEFAULT 0,
+        ADD COLUMN IF NOT EXISTS locked_until TIMESTAMP
+    `).catch(() => {});
+    // Zone temporaire d'importation (Module 2).
+    await require('./importStaging').ensureImportSchema().catch(() => {});
+    // Paramètres de plateforme (états de traitement des alertes, réglages).
+    await query(`
+      CREATE TABLE IF NOT EXISTS platform_settings (
+        key VARCHAR(80) PRIMARY KEY,
+        value JSONB NOT NULL DEFAULT '{}'::jsonb,
+        updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    `).catch(() => {});
+
     // ── Recodage des cartes ASS LONASE ──────────────────────────────────
     // Format officiel : REGION-MSD-ANNEE-SEQUENCE (ex. DKR-DKR-2026-0001).
     //
@@ -3324,6 +3569,20 @@ if (process.env.NODE_ENV !== 'test') {
       // être visible au diagnostic.
       console.error('[Realtime] Démarrage incomplet :', err.message);
     }
+
+    // ── Migrations des modules sécurité récents (idempotentes) ──────────
+    await require('./mfaService').ensureMfaSchema().catch((e) => console.warn('[MFA] schéma reporté :', e.message));
+
+    // ── Optimisations « scénario A » (index + ANALYZE) : en fond, jamais
+    // bloquant — une erreur d'index ne doit pas empêcher de servir le trafic.
+    require('./dbOptimize').applyOptimizations()
+      .then((r) => console.log(`[Optim] index vérifiés : ${r.applied.length} appliqués${r.failed.length ? `, ${r.failed.length} reportés` : ''}.`))
+      .catch((e) => console.warn('[Optim] reporté :', e.message));
+
+    // ── Planificateur de sauvegardes vérifiables ────────────────────────
+    // Une sauvegarde quotidienne + restauration de contrôle ; désactivable
+    // par DISABLE_BACKUP_SCHEDULER=1 (tests, CI, instances sans pg_dump).
+    require('./backupScheduler').startBackupScheduler();
 
     const server = app.listen(port, '0.0.0.0', () => {
       // Identifiant d'instance : indispensable pour diagnostiquer un

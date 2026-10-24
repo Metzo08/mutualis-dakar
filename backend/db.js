@@ -34,7 +34,7 @@ poolConfig.allowExitOnIdle = false;
 
 const pool = new Pool(poolConfig);
 
-pool.on('error', (err, client) => {
+pool.on('error', (err) => {
   console.error('Erreur inattendue sur le client PostgreSQL idle', err);
 });
 

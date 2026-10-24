@@ -675,7 +675,7 @@ describe('POST /api/beneficiaries/bulk — écriture protégée et cloisonnée',
     const res = await request(app)
       .post('/api/beneficiaries/bulk')
       .set(authCitizen)
-      .send({ rows: LOT_DKR });
+      .send({ allowDirect: true, rows: LOT_DKR  });
     expect(res.status).toBe(403);
   });
 
@@ -695,7 +695,7 @@ describe('POST /api/beneficiaries/bulk — écriture protégée et cloisonnée',
     const res = await request(app)
       .post('/api/beneficiaries/bulk')
       .set({ Authorization: `Bearer ${agentDkrToken}` })
-      .send({ rows: LOT_DKR });
+      .send({ allowDirect: true, rows: LOT_DKR  });
 
     expect(res.status).toBe(201);
     expect(res.body.inserted).toBe(1);
@@ -717,7 +717,7 @@ describe('POST /api/beneficiaries/bulk — écriture protégée et cloisonnée',
     const res = await request(app)
       .post('/api/beneficiaries/bulk')
       .set({ Authorization: `Bearer ${agentPknToken()}` })
-      .send({ rows: LOT_DKR });
+      .send({ allowDirect: true, rows: LOT_DKR  });
 
     expect(res.status).toBe(201);
     // La ligne est refusée : ni créée, ni mise à jour.
@@ -737,7 +737,7 @@ describe('POST /api/beneficiaries/bulk — écriture protégée et cloisonnée',
     const res = await request(app)
       .post('/api/beneficiaries/bulk')
       .set({ Authorization: `Bearer ${agentPknToken()}` })
-      .send({ rows: LOT_DKR });
+      .send({ allowDirect: true, rows: LOT_DKR  });
 
     expect(res.status).toBe(201);
     expect(res.body.updated).toBe(0);
@@ -754,7 +754,7 @@ describe('POST /api/beneficiaries/bulk — écriture protégée et cloisonnée',
     const res = await request(app)
       .post('/api/beneficiaries/bulk')
       .set(authAdmin)
-      .send({ rows: LOT_DKR });
+      .send({ allowDirect: true, rows: LOT_DKR  });
 
     expect(res.status).toBe(201);
     expect(res.body.inserted).toBe(1);
@@ -773,7 +773,7 @@ describe('POST /api/beneficiaries/bulk — écriture protégée et cloisonnée',
     const res = await request(app)
       .post('/api/beneficiaries/bulk')
       .set(authAgent)
-      .send({ rows: LOT_DKR });
+      .send({ allowDirect: true, rows: LOT_DKR  });
 
     expect(res.status).toBe(403);
     // Le refus doit être explicite, sinon l'agent croira à une panne réseau.
@@ -809,7 +809,7 @@ describe('POST /api/beneficiaries/bulk — écriture protégée et cloisonnée',
     const res = await request(app)
       .post('/api/beneficiaries/bulk')
       .set({ Authorization: `Bearer ${agentDkrToken}` })
-      .send({ rows: LOT_DKR });
+      .send({ allowDirect: true, rows: LOT_DKR  });
 
     expect(res.status).toBe(201);
     expect(res.body).toMatchObject({ success: true, mode: 'database' });
@@ -882,7 +882,7 @@ describe('POST /api/beneficiaries/bulk — contre-expertise', () => {
     const res = await request(app)
       .post('/api/beneficiaries/bulk')
       .set({ Authorization: `Bearer ${agentPknToken()}` })
-      .send({
+      .send({ allowDirect: true,
         rows: [{
           codeBeneficiaire: 'CMU-PKN-0000001',
           nin: 'NIN-DKR',
@@ -915,7 +915,9 @@ describe('POST /api/beneficiaries/bulk — contre-expertise', () => {
     const res = await request(app)
       .post('/api/beneficiaries/bulk')
       .set({ Authorization: `Bearer ${agentPknToken()}` })
-      .send({ rows: [{ codeBeneficiaire: 'CMU-PKN-0000001', nin: 'NIN-DKR', photoUrl: 'PHOTO' }] });
+      // `allowDirect` : le test porte sur l'ORDRE de correspondance, pas sur la
+      // barrière d'importation contrôlée (testée ailleurs) — on la franchit.
+      .send({ allowDirect: true, rows: [{ codeBeneficiaire: 'CMU-PKN-0000001', nin: 'NIN-DKR', photoUrl: 'PHOTO' }] });
 
     const select = client.query.mock.calls
       .map((c) => String(c[0]))
@@ -944,7 +946,9 @@ describe('POST /api/beneficiaries/bulk — contre-expertise', () => {
     const res = await request(app)
       .post('/api/beneficiaries/bulk')
       .set({ Authorization: `Bearer ${agentPknToken()}` })
-      .send({ rows: [{ codeBeneficiaire: 'CMU-PKN-0000001', prenom: 'A' }] });
+      // `allowDirect` : le test porte sur le ROLLBACK de transaction, pas sur
+      // la barrière d'importation contrôlée (testée ailleurs).
+      .send({ allowDirect: true, rows: [{ codeBeneficiaire: 'CMU-PKN-0000001', prenom: 'A' }] });
 
     const trace = statements(client);
     // Sans ROLLBACK, la connexion repartait au POOL avec une transaction
@@ -973,7 +977,9 @@ describe('POST /api/beneficiaries/bulk — contre-expertise', () => {
     const res = await request(app)
       .post('/api/beneficiaries/bulk')
       .set({ Authorization: `Bearer ${agentPknToken()}` })
-      .send({ rows: [{ codeBeneficiaire: 'CMU-PKN-0000001', prenom: 'A' }] });
+      // `allowDirect` : le test porte sur l'audit APRÈS COMMIT, pas sur la
+      // barrière d'importation contrôlée (testée ailleurs).
+      .send({ allowDirect: true, rows: [{ codeBeneficiaire: 'CMU-PKN-0000001', prenom: 'A' }] });
 
     expect(res.status).toBe(201);
     expect(res.body.mode).toBe('database');
