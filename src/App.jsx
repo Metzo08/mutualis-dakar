@@ -43,6 +43,10 @@ import MaternalHealth from './views/MaternalHealth';
 import InstitutionPortal from './views/InstitutionPortal';
 import SuperAdminGovernance from './views/SuperAdminGovernance';
 import CardStudio from './views/CardStudio';
+import AccountsAndCards from './views/AccountsAndCards';
+import SecurityCenter from './views/SecurityCenter';
+import ExcelReports from './views/ExcelReports';
+import ImportControl from './views/ImportControl';
 import { syncOutbox, outboxCount, cacheSet, cacheGet } from './utils/offline';
 
 // Import Styles
@@ -151,7 +155,7 @@ purgeStaleSessions();
 
 export default function App() {
   // Liste des vues valides (pour valider le hash URL)
-  const validViews = ['home','login','beneficiaries','services','map','directory','depts','programmes','about','medicaments','audit-logs','galerie','infos-csu','blog-experts','parrainage-solidaire','partnership','complaints','profile','verify','dashboard','claims','notifications','cotisations','partner','regional-stats','loyalty','payments','guarantees','purchase-orders','telemedicine','medical-profile','maternity','superadmin-governance','rse','institution-coud','card-studio'];
+  const validViews = ['home','login','beneficiaries','services','map','directory','depts','programmes','about','medicaments','audit-logs','galerie','infos-csu','blog-experts','parrainage-solidaire','partnership','complaints','profile','verify','dashboard','claims','notifications','cotisations','partner','regional-stats','loyalty','payments','guarantees','purchase-orders','telemedicine','medical-profile','maternity','superadmin-governance','rse','institution-coud','card-studio','security-center','excel-reports','accounts-cards'];
 
   // Initialise la vue depuis le hash URL (#/beneficiaries) pour le deep-linking.
   // Un hash inconnu n'est PLUS silencieusement remplacé par l'accueil : il est
@@ -589,6 +593,9 @@ export default function App() {
         'maternity',
         'partner',
         'security-center',
+        'accounts-cards',
+        'excel-reports',
+        'import-control',
       ];
       if (SENSITIVE_DATA_VIEWS.includes(view) && !citizenUser && !agentUser && !partnerUser) {
         return (
@@ -607,11 +614,11 @@ export default function App() {
       switch (view) {
         case 'home':
           return (
-            <Home 
-              lang={lang} 
-              setView={setView} 
+            <Home
+              lang={lang}
+              setView={setView}
               setViewTab={handleSetViewTab}
-              portalMode={portalMode} 
+              portalMode={portalMode}
               setPortalMode={setPortalMode}
               citizenUser={citizenUser}
               setCitizenUser={setCitizenUser}
@@ -620,10 +627,10 @@ export default function App() {
           );
         case 'login':
           return (
-            <Login 
-              lang={lang} 
-              setView={setView} 
-              portalMode={portalMode} 
+            <Login
+              lang={lang}
+              setView={setView}
+              portalMode={portalMode}
               setPortalMode={setPortalMode}
               setCitizenUser={setCitizenUser}
               setAgentUser={setAgentUser}
@@ -634,10 +641,10 @@ export default function App() {
           return <Beneficiaries lang={lang} agentUser={agentUser} />;
         case 'services':
           return (
-            <ServicesEnLigne 
-              lang={lang} 
-              initialTab={servicesTab} 
-              initialPackage={servicesPackage} 
+            <ServicesEnLigne
+              lang={lang}
+              initialTab={servicesTab}
+              initialPackage={servicesPackage}
               setView={setView}
               setViewTab={handleSetViewTab}
             />
@@ -684,9 +691,9 @@ export default function App() {
           );
         case 'parrainage-solidaire':
           return (
-            <ParrainageCSU 
-              lang={lang} 
-              initialPackage={servicesPackage} 
+            <ParrainageCSU
+              lang={lang}
+              initialPackage={servicesPackage}
               portalMode={portalMode}
               agentUser={agentUser}
               citizenUser={citizenUser}
@@ -694,10 +701,10 @@ export default function App() {
           );
          case 'partnership':
           return (
-            <Partnership 
-              lang={lang} 
-              portalMode={portalMode} 
-              agentUser={agentUser} 
+            <Partnership
+              lang={lang}
+              portalMode={portalMode}
+              agentUser={agentUser}
             />
           );
         case 'rse':
@@ -712,8 +719,8 @@ export default function App() {
                   <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🛡️</div>
                   <h4 className="fw-bold mb-2">Accès Restreint : Espace Agent & Administration</h4>
                   <p className="small text-muted mb-4">Cette section est réservée aux agents mutualistes et administrateurs d'Unions Régionales (URMSCD).</p>
-                  <button 
-                    className="btn btn-primary fw-bold py-2 px-4 text-white" 
+                  <button
+                    className="btn btn-primary fw-bold py-2 px-4 text-white"
                     style={{ borderRadius: '12px' }}
                     onClick={() => {
                       setPortalMode('agent');
@@ -755,10 +762,10 @@ export default function App() {
           );
         case 'partner':
           return (
-            <PartnerPortal 
-              lang={lang} 
-              setView={setView} 
-              portalMode={portalMode} 
+            <PartnerPortal
+              lang={lang}
+              setView={setView}
+              portalMode={portalMode}
               agentUser={agentUser}
               partnerUser={partnerUser}
               setPartnerUser={setPartnerUser}
@@ -777,21 +784,21 @@ export default function App() {
           );
         case 'payments':
           return (
-            <Payments 
-              lang={lang} 
-              citizenUser={citizenUser} 
-              agentUser={agentUser} 
-              portalMode={portalMode} 
-              setView={setView} 
+            <Payments
+              lang={lang}
+              citizenUser={citizenUser}
+              agentUser={agentUser}
+              portalMode={portalMode}
+              setView={setView}
             />
           );
         case 'complaints':
           return (
-            <Complaints 
-              lang={lang} 
-              portalMode={portalMode} 
-              citizenUser={citizenUser} 
-              agentUser={agentUser} 
+            <Complaints
+              lang={lang}
+              portalMode={portalMode}
+              citizenUser={citizenUser}
+              agentUser={agentUser}
               partnerUser={partnerUser}
             />
           );
@@ -825,6 +832,29 @@ export default function App() {
                   onClick={() => { setPortalMode('agent'); setView('login'); }}
                 >
                   🔐 Se connecter en Super Admin
+                </button>
+                <button className="btn btn-outline" style={{ fontWeight: 'bold' }} onClick={() => setView('home')}>
+                  Retour à l'accueil
+                </button>
+              </div>
+            </div>
+          );
+        }
+        case 'accounts-cards': {
+          // 🗂️ Gestion des comptes et des cartes (Module 3.9) : agent & admin.
+          if (portalMode === 'agent' && agentUser && (agentUser.role === 'agent' || agentUser.role === 'admin' || agentUser.role === 'Super Admin')) {
+            return <AccountsAndCards lang={lang} agentUser={agentUser} setView={setView} />;
+          }
+          return (
+            <div className="card text-center fade-in-up" style={{ padding: '3rem', margin: '2rem auto', maxWidth: '700px', borderRadius: '16px', borderTop: '4px solid var(--danger)' }}>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🗂️</div>
+              <h2 style={{ color: 'var(--danger)', fontWeight: '850' }}>Accès réservé à l'administration</h2>
+              <p style={{ color: 'var(--text-sub)', marginTop: '0.5rem' }}>
+                La gestion des comptes et des cartes est réservée aux agents MSD et administrateurs habilités.
+              </p>
+              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+                <button className="btn btn-primary fw-bold py-2 px-4 text-white" style={{ borderRadius: '12px' }} onClick={() => { setPortalMode('agent'); setView('login'); }}>
+                  🔐 Se Connecter en Agent
                 </button>
                 <button className="btn btn-outline" style={{ fontWeight: 'bold' }} onClick={() => setView('home')}>
                   Retour à l'accueil
@@ -872,6 +902,14 @@ export default function App() {
               </div>
             </div>
           );
+        }
+        case 'import-control': {
+          // 📥 Importation contrôlée (Module 2) : aucune écriture avant
+          // prévisualisation + validation explicite. Réservé aux agents/admins.
+          if (portalMode === 'agent' && agentUser && (agentUser.role === 'agent' || agentUser.role === 'admin' || agentUser.role === 'Super Admin')) {
+            return <ImportControl lang={lang} agentUser={agentUser} setView={setView} setViewTab={handleSetViewTab} />;
+          }
+          return <Login lang={lang} setView={setView} portalMode={portalMode} setPortalMode={setPortalMode} setCitizenUser={setCitizenUser} setAgentUser={setAgentUser} setPartnerUser={setPartnerUser} />;
         }
         case 'excel-reports': {
           // 📊 Rapports Excel : export au format .xlsx (bénéficiaires, cartes, production, audit).

@@ -616,25 +616,26 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
   };
 
   // Stratégie de codage du prochain lot importé.
-//
-// ⚠️ FORCÉE À « FILE », ET PLUS JAMAIS RESTAURÉE DEPUIS LE NAVIGATEUR.
-//
-// Toutes les cartes des assurés sont DÉJÀ IMPRIMÉES : le code gravé sur le
-// PVC est celui de la colonne CODE_BENEFICIAIRE du classeur. Le mode
-// « SYSTEM », qui FABRIQUE un matricule (`DKR-DKR-2026-0001.1`), ne peut
-// donc produire qu'une fiche détachée de sa carte.
-//
-// Ce mode était pourtant proposé dans un sélecteur ET mémorisé dans le
-// localStorage : un agent l'ayant choisi une fois voyait cette valeur
-// restaurée à chaque session, sans que rien ne le signale. C'est ainsi que
-// MOUSTAPHA NDIONE s'est retrouvé avec `DKR-DKR-2026-0001.1` au lieu de
-// `DKR_260001.0`. Le réglage est donc figé côté interface ; la capacité
-// technique reste dans bulkImport.js si un jour un lot réellement inédit
-// doit être enregistré (il faudra alors lever ce garde-fou, explicitement).
-const [importCodeStrategy] = useState(() => {
-  try { localStorage.removeItem('unamusc_import_code_strategy'); } catch { /* sans stockage */ }
-  return 'FILE';
-});
+  //
+  // ⚠️ RÉTABLIE À « SYSTEM » (décision Ahmed Tall, lot ASS DERKLE DIEUP2) :
+  // les NOUVEAUX lots d'adhésion de masse ne sont PAS encore imprimés —
+  // leurs matricules DOIVENT être générés par le système, dans le format
+  // officiel REGION-MSD-ANNÉE-SEQUENCE, en poursuivant la numérotation déjà
+  // engagée (dernier code réel en base, ex. DKR-DKR-2026-2355.1 → 2356…).
+  // Les codes de la colonne CODE_BENEFICIAIRE du classeur ne servent qu'au
+  // regroupement des ménages, jamais d'identité permanente.
+  //
+  // Historique : ce mode avait été figé à « FILE » après un import où des
+  // cartes DÉJÀ imprimées s'étaient retrouvées détachées de leur code PVC.
+  // La confirmation « lot déjà imprimé » ci-dessous reste en place pour ce
+  // cas-là : un lot réellement imprimé doit conserver ses codes du fichier.
+  const [importCodeStrategy, setImportCodeStrategy] = useState(() => {
+    try { return localStorage.getItem('unamusc_import_code_strategy') || 'SYSTEM'; }
+    catch { return 'SYSTEM'; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem('unamusc_import_code_strategy', importCodeStrategy); } catch { /* sans stockage */ }
+  }, [importCodeStrategy]);
 
 // Garde-fou : conserver les codes d'un fichier n'a de sens que pour un lot
 // DÉJÀ IMPRIMÉ. La confirmation reste exigée — elle documente le lot.
@@ -1827,7 +1828,19 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
       });
       // Les matricules déjà attribués sont transmis : les nouveaux codes sont
       // générés AU-DELÀ du dernier, jamais par-dessus un code existant.
-      const alreadyCoded = getStoredMembers().map(m => (m.cmuNumber || '').toString());
+      //
+      // ⚠️ La séquence doit venir de LA BASE (source de vérité), pas du seul
+      // localStorage : le dernier code réel (ex. DKR-DKR-2026-2355.1) peut
+      // avoir été attribué sur un autre poste. Sans cette lecture, le nouveau
+      // lot repartait en dessous et créait des doublons de numérotation.
+      let alreadyCoded = getStoredMembers().map(m => (m.cmuNumber || '').toString());
+      try {
+        const { fetchServerBeneficiaries } = await import('../utils/bulkImport');
+        const fromServer = await fetchServerBeneficiaries();
+        if (Array.isArray(fromServer)) {
+          alreadyCoded = alreadyCoded.concat(fromServer.map(m => m.cmuNumber || ''));
+        }
+      } catch { /* base injoignable : on se fie au registre local */ }
       const { members, totalPeople, matchedPhotos, photoSummary, degradedPhotos, merged, dupGroups } = await runExcelImport(
         excelFile,
         pendingPhotosRef.current,
@@ -2696,7 +2709,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                 if (importCodeStrategy === 'FILE' && !printLotConfirmed) {
                   setBulkNotice({
                     type: 'error',
-                    text: '⛔ Import bloqué : cochez la confirmation ci-dessus pour attester que les cartes de ce lot sont DÉJÀ imprimées et que leurs codes doivent être conservés tels quels. Le code du fichier est la seule règle applicable : aucune génération automatique n\'est proposée.'
+                    text: '⛔ Import bloqué : cochez la confirmation ci-dessus pour attester que les cartes de ce lot sont DÉJÀ imprimées et que leurs codes doivent être conservés tels quels.'
                   });
                   if (excelInputRef.current) excelInputRef.current.value = '';
                   return;
@@ -2796,18 +2809,18 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
             </div>
           </div>
 
-          {/* Codage du lot — informatif, VOLONTAIREMENT non interactif.
+          {/* Codage du lot — sélecteur interactif.
 
-              Ce bloc était un menu déroulant figé : il s'affichait comme un
-              champ à choisir, mais rien ne se produisait au clic. Un
-              contrôle qui ne répond pas est pire qu'un texte : il donne
-              l'impression d'un bug.
+              SYSTEM : les matricules sont GÉNÉRÉS par le système en format
+              officiel REGION-MSD-ANNÉE-SEQUENCE, poursuivant la numérotation
+              réelle en base (dernier code connu + 1). Les codes du classeur
+              ne servent qu'au regroupement des ménages. C'est le mode des
+              lots d'adhésion de masse dont les cartes ne sont PAS encore
+              imprimées (lot ASS DERKLE DIEUP2, décision Ahmed Tall).
 
-              Il n'y a plus de choix à faire. Toutes les cartes sont déjà
-              imprimées, donc le code du classeur — celui gravé sur le PVC —
-              est le seul comportement possible. L'ancien mode « attribuer
-              un matricule » produisait des codes DKR-DKR-2026-… absents des
-              cartes, ce qui rendait chaque fiche introuvable au scan. */}
+              FILE : les codes du classeur sont conservés à l'identique —
+              réservé aux lots DÉJÀ imprimés dont le PVC porte ces codes.
+              Une confirmation explicite est exigée (bloc ci-dessous). */}
           <div className="mt-3">
             <div
               className="d-flex align-items-start gap-2 p-3"
@@ -2818,18 +2831,44 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
               }}
             >
               <span style={{ fontSize: '1.15rem', lineHeight: 1.2 }} aria-hidden="true">🔢</span>
-              <div>
+              <div className="flex-grow-1">
                 <div style={{ fontSize: '0.86rem', fontWeight: '800', color: '#047857' }}>
-                  Codage du lot : le code du fichier est conservé à l’identique
+                  Codage du lot
                 </div>
-                <div style={{ fontSize: '0.78rem', color: 'var(--text-sub)', lineHeight: 1.45, marginTop: '2px' }}>
-                  Le code de la colonne <code>CODE_BENEFICIAIRE</code> est repris tel quel,
-                  suffixe compris (ex. <code>DKR_260001.0</code>) : c’est exactement celui
-                  imprimé sur la carte de l’assuré.
-                  <br />
-                  <strong>Aucun matricule n’est généré automatiquement.</strong> La plateforme
-                  ne peut plus produire un code absent des PVC — c’est ce qui rendait les
-                  fiches introuvables au scan.
+                <select
+                  className="form-select form-select-sm mt-2"
+                  value={importCodeStrategy}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    setImportCodeStrategy(v);
+                    if (v === 'FILE') setPrintLotConfirmed(false); // confirmation à refaire
+                    setBulkNotice({
+                      type: 'info',
+                      text: v === 'SYSTEM'
+                        ? '🔢 Codage SYSTÈME : les matricules seront générés automatiquement (format REGION-MSD-ANNÉE-N°), en poursuivant la numérotation en base. Les codes du classeur ne servent qu\'au regroupement des ménages.'
+                        : '📁 Codage FICHIER : les codes du classeur seront conservés à l\'identique. Confirmation « cartes déjà imprimées » obligatoire.'
+                    });
+                  }}
+                  style={{ maxWidth: '420px', fontWeight: '700' }}
+                >
+                  <option value="SYSTEM">Système — générer les matricules (lot non imprimé)</option>
+                  <option value="FILE">Fichier — conserver les codes du classeur (lot déjà imprimé)</option>
+                </select>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-sub)', lineHeight: 1.45, marginTop: '6px' }}>
+                  {importCodeStrategy === 'SYSTEM' ? (
+                    <>
+                      Format officiel : <code>REGION-MSD-ANNÉE-SEQ</code> (ex. <code>DKR-DKR-2026-2356.1</code>).
+                      Le système part du dernier code réel en base et incrémente.
+                      <br />
+                      <strong>Les codes du fichier Excel sont ignorés</strong> — c’est la règle.
+                    </>
+                  ) : (
+                    <>
+                      Le code de la colonne <code>CODE_BENEFICIAIRE</code> est repris tel quel,
+                      suffixe compris (ex. <code>DKR_260001.0</code>) : c’est celui imprimé
+                      sur la carte de l’assuré.
+                    </>
+                  )}
                 </div>
               </div>
             </div>

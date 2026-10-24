@@ -497,6 +497,45 @@ export default function Header({
           </button>
         )}
 
+        {/* Option 10bis: Gestion des comptes et des cartes (Module 3.9 — agent & admin) */}
+        {portalMode === 'agent' && agentUser && (agentUser.role === 'agent' || agentUser.role === 'admin' || agentUser.role === 'Super Admin') && (
+          <button
+            className={`nav-item ${currentView === 'accounts-cards' ? 'active' : ''}`}
+            onClick={() => setView('accounts-cards')}
+          >
+            <span className="nav-icon">🗂️</span>
+            {lang === 'fr' ? 'Comptes & cartes' : 'Kompte ak kart'}
+          </button>
+        )}
+
+        {/* Modules 2 & 4 : importation contrôlée, sécurité, rapports Excel
+            (agents, administrateurs et Super Admin). */}
+        {portalMode === 'agent' && agentUser && (agentUser.role === 'agent' || agentUser.role === 'admin' || agentUser.role === 'Super Admin') && (
+          <>
+            <button
+              className={`nav-item ${currentView === 'import-control' ? 'active' : ''}`}
+              onClick={() => setView('import-control')}
+            >
+              <span className="nav-icon">📥</span>
+              {lang === 'fr' ? 'Importation contrôlée' : 'Yóbbu kontrolé'}
+            </button>
+            <button
+              className={`nav-item ${currentView === 'security-center' ? 'active' : ''}`}
+              onClick={() => setView('security-center')}
+            >
+              <span className="nav-icon">🛡️</span>
+              {lang === 'fr' ? 'Sécurité & surveillance' : 'Kaaraange'}
+            </button>
+            <button
+              className={`nav-item ${currentView === 'excel-reports' ? 'active' : ''}`}
+              onClick={() => setView('excel-reports')}
+            >
+              <span className="nav-icon">📊</span>
+              {lang === 'fr' ? 'Rapports Excel' : 'Rapport Excel'}
+            </button>
+          </>
+        )}
+
         {/* Option 11: Prise en charge (Agent & Citizen modes) */}
         {(portalMode === 'agent' ? agentUser : citizenUser) && (
           <button
