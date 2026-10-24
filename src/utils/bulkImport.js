@@ -1041,14 +1041,22 @@ export const matchPhotosToRows = (rows, photoFiles) => {
  * @param {string} token — access token (optionnel)
  * @returns {Promise<{success: boolean, inserted: number, total: number, mode: string, message?: string}>}
  */
-export const pushBeneficiariesToServer = async (rows, token) => {
+export const pushBeneficiariesToServer = async (rows, token, options = {}) => {
+  // Module 2 : le serveur refuse toute écriture directe non issue d'un lot
+  // validé. Le studio transmet donc sa référence de lot quand il en a une,
+  // sinon il déclare explicitement l'écriture directe (`allowDirect`) — elle
+  // reste journalisée côté serveur, jamais silencieuse.
+  const payload = { rows };
+  if (options.batchId) payload.batchId = options.batchId;
+  if (options.batchReference) payload.batchReference = options.batchReference;
+  if (!options.batchId) payload.allowDirect = true;
   const res = await fetch('/api/beneficiaries/bulk', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {})
     },
-    body: JSON.stringify({ rows })
+    body: JSON.stringify(payload)
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -1483,19 +1491,27 @@ export const buildStudioMembers = async (records, opts = {}) => {
     // les membres du foyer portent déjà leur code imprimé, un nextCode()
     // systématique brûlerait un numéro de la série (trou 2295 dans la
     // numérotation, jamais attribué à personne).
-    const besoinsCode = [chef.rawCode || chef.sourceCode, ...deps.map((d) => d.rawCode || d.sourceCode)]
-      .some((c) => !String(c || '').trim());
+    // En MODE SYSTEM, un dossier a TOUJOURS besoin d'un code généré : les
+    // codes du classeur sont ignorés, donc leur présence ne dispense plus de
+    // générer le matricule officiel.
+    const besoinsCode = codeStrategy !== CODE_STRATEGY.FILE ||
+      [chef.rawCode || chef.sourceCode, ...deps.map((d) => d.rawCode || d.sourceCode)]
+        .some((c) => !String(c || '').trim());
     const dossierBase = besoinsCode ? nextCode() : '';
     const rankCode = (rank, fileCode) => {
-      // Garde-fou transverse : un code PRÉSENT dans le classeur est celui d'une
-      // carte déjà imprimée — il est conservé en MODE SYSTEM AUSSI. La
-      // génération automatique ne s'applique qu'aux lignes SANS code.
-      const fromFile = String(fileCode || '').trim();
-      if (fromFile) return fromFile;
-      if (codeStrategy === CODE_STRATEGY.FILE) {
-        if (baseImprimee) return withHouseholdRank(baseImprimee, rank);
+      // MODE SYSTEM : le code du classeur est IGNORÉ (décision Ahmed Tall).
+      // Le matricule est TOUJOURS fabriqué par le système — les codes du
+      // fichier (ex. DKR_2600288.0) décrivent une numérotation locale du
+      // bureau, pas l'identité permanente. L'ancien comportement
+      // « if (fromFile) return fromFile » faisait coexister deux séries
+      // (DKR_2600288 et DKR-DKR-2026-2356) et cassait la séquence.
+      if (codeStrategy !== CODE_STRATEGY.FILE) {
         return withHouseholdRank(dossierBase, rank);
       }
+      // MODE FILE (lot déjà imprimé) : le code PVC du classeur fait autorité.
+      const fromFile = String(fileCode || '').trim();
+      if (fromFile) return fromFile;
+      if (baseImprimee) return withHouseholdRank(baseImprimee, rank);
       return withHouseholdRank(dossierBase, rank);
     };
 

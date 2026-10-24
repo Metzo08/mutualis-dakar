@@ -40,6 +40,30 @@ function cleanPdfText(str) {
 }
 
 /**
+ * Empreinte cryptographique officielle UNAMUSC : nettoyage du texte, seed et
+ * hachage 32 bits. Exportée pour le test de non-régression de parité
+ * (src/test/fingerprintParity.test.js) : docxGenerator.js possède sa propre
+ * copie (computeDocxFingerprint) et les deux doivent rester strictement égales,
+ * sinon la vérification publique afficherait deux empreintes pour un même document.
+ * @returns {{ cleanRef: string, cleanCmu: string, cleanDoc: string, cryptoHash: string }}
+ */
+export function computePdfFingerprint({ referenceNo, cmuNumber, docType }) {
+  const cleanRef = cleanPdfText(referenceNo);
+  const cleanCmu = cleanPdfText(cmuNumber);
+  const cleanDoc = cleanPdfText(docType);
+
+  // Génération de l'empreinte cryptographique infalsifiable DHIS2 & UNAMUSC
+  const rawSeed = `${cleanRef}-${cleanCmu}-${cleanDoc}-UNAMUSC-SENEGAL-2026`;
+  let hashNum = 0;
+  for (let i = 0; i < rawSeed.length; i++) {
+    hashNum = ((hashNum << 5) - hashNum) + rawSeed.charCodeAt(i);
+    hashNum |= 0;
+  }
+  const cryptoHash = `SHA256-${Math.abs(hashNum).toString(16).toUpperCase()}-UNAMUSC`;
+  return { cleanRef, cleanCmu, cleanDoc, cryptoHash };
+}
+
+/**
  * Générateur de Documents PDF Officiels Certifiés UNAMUSC
  * Intègre un QR Code d'authentification infalsifiable et le Sceau Numérique DHIS2 & UNAMUSC.
  */
@@ -57,18 +81,8 @@ export async function generateOfficialPdf({
   const doc = new jsPDF();
   const pageWidth = 210;
 
-  const cleanRef = cleanPdfText(referenceNo);
-  const cleanCmu = cleanPdfText(cmuNumber);
-  const cleanDoc = cleanPdfText(docType);
-
-  // Génération de l'empreinte cryptographique infalsifiable DHIS2 & UNAMUSC
-  const rawSeed = `${cleanRef}-${cleanCmu}-${cleanDoc}-UNAMUSC-SENEGAL-2026`;
-  let hashNum = 0;
-  for (let i = 0; i < rawSeed.length; i++) {
-    hashNum = ((hashNum << 5) - hashNum) + rawSeed.charCodeAt(i);
-    hashNum |= 0;
-  }
-  const cryptoHash = `SHA256-${Math.abs(hashNum).toString(16).toUpperCase()}-UNAMUSC`;
+  // Empreinte cryptographique infalsifiable DHIS2 & UNAMUSC (partagée PDF/Word).
+  const { cleanRef, cleanDoc, cryptoHash } = computePdfFingerprint({ referenceNo, cmuNumber, docType });
   const verifyUrl = `https://mutualis.sn/#/verify/${encodeURIComponent(cleanRef)}`;
 
   // ---------------------------------------------------------------------------

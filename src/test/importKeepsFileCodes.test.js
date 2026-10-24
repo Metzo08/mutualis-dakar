@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseRowsToRecords, buildStudioMembers, matchPhotosToRows } from '../utils/bulkImport';
+import { parseRowsToRecords, buildStudioMembers, matchPhotosToRows, CODE_STRATEGY } from '../utils/bulkImport';
 
 /**
  * Nommage des photos du dossier « Photos ville de Dakar » : les fichiers
@@ -69,7 +69,10 @@ describe('Import d\'un fichier sans titulaire (structure ASS LONASE)', () => {
   ]);
 
   it('conserve le suffixe .1 : le code du PVC ne perd rien', async () => {
-    const members = await buildStudioMembers(lignes);
+    // Mode FILE explicite : ces cartes sont DÉJÀ IMPRIMÉES, le code du PVC
+    // fait autorité. (Le mode SYSTEM, désormais le défaut, ignore les codes
+    // du classeur et fabrique un matricule officiel — règle du lot DERKLE.)
+    const members = await buildStudioMembers(lignes, { codeStrategy: CODE_STRATEGY.FILE });
     const codes = members.map((m) => m.cmuNumber);
     expect(codes).toContain('DKR_2600040.1');
     expect(codes).toContain('DKR_2600041.1');
@@ -77,14 +80,14 @@ describe('Import d\'un fichier sans titulaire (structure ASS LONASE)', () => {
   });
 
   it('n\'invente aucun matricule pour ces cartes déjà imprimées', async () => {
-    const members = await buildStudioMembers(lignes);
+    const members = await buildStudioMembers(lignes, { codeStrategy: CODE_STRATEGY.FILE });
     members.forEach((m) => {
       expect(m.cmuNumber).not.toMatch(/DKR-DKR-/);
     });
   });
 
   it('conserve le préfixe d\'autres MSD (KRM = Pikine, pas Dakar)', async () => {
-    const members = await buildStudioMembers(lignes);
+    const members = await buildStudioMembers(lignes, { codeStrategy: CODE_STRATEGY.FILE });
     // Chaque MSD reste identifiable par son préfixe : c'est ce qui cloisonne
     // les données par MSD après import.
     expect(members.find((m) => m.firstName === 'MOR MBABA').cmuNumber.startsWith('KRM_')).toBe(true);
@@ -113,7 +116,7 @@ describe('Import du fichier Ville de Dakar (AMEVI) — codes à 6 chiffres', () 
   ]);
 
   it('lit le code du fichier et ne fabrique aucun matricule', async () => {
-    const members = await buildStudioMembers(lignes);
+    const members = await buildStudioMembers(lignes, { codeStrategy: CODE_STRATEGY.FILE });
     const all = [];
     members.forEach((m) => {
       all.push(m.cmuNumber);
@@ -124,7 +127,7 @@ describe('Import du fichier Ville de Dakar (AMEVI) — codes à 6 chiffres', () 
   });
 
   it('donne à MOUSTAPHA NDIONE le code de sa carte', async () => {
-    const members = await buildStudioMembers(lignes);
+    const members = await buildStudioMembers(lignes, { codeStrategy: CODE_STRATEGY.FILE });
     const moustapha = members.find((m) => m.firstName.includes('MOUSTAPHA'));
     expect(moustapha).toBeDefined();
     // `DKR_260001` : le « .0 » du chef est normalisé, la recherche par code
@@ -141,7 +144,7 @@ describe('Import du fichier Ville de Dakar (AMEVI) — codes à 6 chiffres', () 
   });
 
   it('conserve le suffixe des ayants droit', async () => {
-    const members = await buildStudioMembers(lignes);
+    const members = await buildStudioMembers(lignes, { codeStrategy: CODE_STRATEGY.FILE });
     const moustapha = members.find((m) => m.firstName.includes('MOUSTAPHA'));
     const codes = moustapha.dependents.map((d) => d.cmuNumber);
     expect(codes).toContain('DKR_260001.1');
@@ -167,21 +170,21 @@ describe('Prénom contenant le nom de famille', () => {
   ]);
 
   it('retire le nom répété et ne garde que le prénom', async () => {
-    const members = await buildStudioMembers(lignes);
+    const members = await buildStudioMembers(lignes, { codeStrategy: CODE_STRATEGY.FILE });
     const moustapha = members.find((m) => m.cmuNumber === 'DKR_260001.0');
     expect(moustapha.firstName).toBe('MOUSTAPHA');
     expect(moustapha.lastName).toBe('NDIONE');
   });
 
   it('conserve un prénom composé quand le nom ne le répète pas', async () => {
-    const members = await buildStudioMembers(lignes);
+    const members = await buildStudioMembers(lignes, { codeStrategy: CODE_STRATEGY.FILE });
     const thiam = members.find((m) => m.cmuNumber === 'DKR_260002.0');
     expect(thiam.firstName).toBe('MOUHAMED YORO');
     expect(thiam.lastName).toBe('THIAM');
   });
 
   it('laisse intact un prénom qui ne répète pas le nom', async () => {
-    const members = await buildStudioMembers(lignes);
+    const members = await buildStudioMembers(lignes, { codeStrategy: CODE_STRATEGY.FILE });
     const simple = members.find((m) => m.cmuNumber === 'DKR_260003.0');
     expect(simple.firstName).toBe('MOUSTAPHA');
     expect(simple.lastName).toBe('NDIONE');
@@ -208,7 +211,7 @@ describe('Import d\'un ménage complet (chef + ayants droit)', () => {
   });
 
   it('ne fabrique aucun matricule', async () => {
-    const members = await buildStudioMembers(lignes);
+    const members = await buildStudioMembers(lignes, { codeStrategy: CODE_STRATEGY.FILE });
     expect(members[0].cmuNumber).not.toMatch(/DKR-DKR-/);
     expect(members[0].dependents.every((d) => !/DKR-DKR-/.test(d.cmuNumber))).toBe(true);
   });

@@ -12,6 +12,10 @@ import { getBeneficiaryInfo } from './csuFormatter';
  * réutiliser et compléter le document (papier à en-tête, mentions manuscrites,
  * tampon), ce qu'un PDF figé ne permet pas. Assemblage 100 % côté client :
  * aucune donnée ne transite par le réseau.
+ *
+ * Rôle (décision validée) : **le PDF demeure la preuve légale opposable ;
+ * le Word est destiné au remplissage et à l'annotation par les structures de
+ * santé** — les deux portent la même empreinte pour rester vérifiables.
  */
 
 // Copie conforme de cleanPdfText (pdfGenerator.js) : la parité du nettoyage
@@ -23,6 +27,24 @@ function cleanDocText(str) {
        .replace(/[\u201C\u201D]/g, '"')
        .replace(/[\u2013\u2014]/g, '-')
        .replace(/\u2026/g, '...');
+
+  // Remplacement des émojis connus par du texte lisible (carte identique à cleanPdfText)
+  s = s.replace(/💡/g, '[Conseil] ')
+       .replace(/⚠️/g, '[Avis] ')
+       .replace(/✅/g, '[Validé] ')
+       .replace(/🏥/g, '')
+       .replace(/🇸🇳/g, '')
+       .replace(/👶/g, '')
+       .replace(/💉/g, '')
+       .replace(/🥗/g, '')
+       .replace(/🍼/g, '')
+       .replace(/🌡️/g, '')
+       .replace(/📜/g, '')
+       .replace(/⏱️/g, '')
+       .replace(/💳/g, '')
+       .replace(/👨‍⚕️/g, '')
+       .replace(/👩‍⚕️/g, '');
+
   s = s.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '');
   return s.trim();
 }
@@ -58,6 +80,28 @@ function cellPara(text, { bold = false, italic = false, size = 16, color = INK, 
 }
 
 /**
+ * Copie conforme de computePdfFingerprint (pdfGenerator.js) : le PDF et le
+ * Word d'un même document doivent porter exactement la même empreinte.
+ * Non-régression vérifiée par src/test/fingerprintParity.test.js.
+ * @returns {{ cleanRef: string, cleanCmu: string, cleanDoc: string, cryptoHash: string }}
+ */
+export function computeDocxFingerprint({ referenceNo, cmuNumber, docType }) {
+  const cleanRef = cleanDocText(referenceNo);
+  const cleanCmu = cleanDocText(cmuNumber);
+  const cleanDoc = cleanDocText(docType);
+
+  // Empreinte identique à la variante PDF (même algorithme, même seed).
+  const rawSeed = `${cleanRef}-${cleanCmu}-${cleanDoc}-UNAMUSC-SENEGAL-2026`;
+  let hashNum = 0;
+  for (let i = 0; i < rawSeed.length; i++) {
+    hashNum = ((hashNum << 5) - hashNum) + rawSeed.charCodeAt(i);
+    hashNum |= 0;
+  }
+  const cryptoHash = `SHA256-${Math.abs(hashNum).toString(16).toUpperCase()}-UNAMUSC`;
+  return { cleanRef, cleanCmu, cleanDoc, cryptoHash };
+}
+
+/**
  * Génère et déclenche le téléchargement d'un document officiel Word.
  * @returns {Promise<void>}
  */
@@ -72,18 +116,8 @@ export async function generateOfficialDocx({
   details = [],
   notes = 'Ce document officiel fait foi de justificatif auprès des structures de santé et pharmacies agréées de la République du Sénégal.'
 }) {
-  const cleanRef = cleanDocText(referenceNo);
-  const cleanCmu = cleanDocText(cmuNumber);
-  const cleanDoc = cleanDocText(docType);
-
-  // Empreinte identique à la variante PDF (même algorithme, même seed).
-  const rawSeed = `${cleanRef}-${cleanCmu}-${cleanDoc}-UNAMUSC-SENEGAL-2026`;
-  let hashNum = 0;
-  for (let i = 0; i < rawSeed.length; i++) {
-    hashNum = ((hashNum << 5) - hashNum) + rawSeed.charCodeAt(i);
-    hashNum |= 0;
-  }
-  const cryptoHash = `SHA256-${Math.abs(hashNum).toString(16).toUpperCase()}-UNAMUSC`;
+  // Empreinte strictement identique à la variante PDF (contrôlée par src/test/fingerprintParity.test.js).
+  const { cleanRef, cleanDoc, cryptoHash } = computeDocxFingerprint({ referenceNo, cmuNumber, docType });
   const verifyUrl = `https://mutualis.sn/#/verify/${encodeURIComponent(cleanRef)}`;
 
   // QR d'authenticité pointant vers la même vérification publique que le PDF.

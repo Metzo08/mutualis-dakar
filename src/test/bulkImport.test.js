@@ -18,7 +18,8 @@ import {
   beneficiaryIdentity,
   collectIdentities,
   buildStudioMembers,
-  migrateLegacyCodes
+  migrateLegacyCodes,
+  CODE_STRATEGY
 } from '../utils/bulkImport';
 import { isLegacyGeneratedCode, isOfficialCode } from '../utils/cmuCode';
 
@@ -348,7 +349,7 @@ describe('buildStudioMembers — conservation du code du fichier', () => {
   });
 
   it('reprend le code du fichier, suffixe compris', async () => {
-    const [chef] = await buildStudioMembers(lignes);
+    const [chef] = await buildStudioMembers(lignes, { codeStrategy: CODE_STRATEGY.FILE });
     // Aucun matricule fabriqué : le préfixe est celui du fichier.
     expect(chef.cmuNumber).not.toMatch(/DKR-DKR-/);
     expect(chef.sourceCode).toBe('DKR_2600111.0');
@@ -371,7 +372,7 @@ describe('buildStudioMembers — conservation du code du fichier', () => {
     // Le code du PVC prime : c'est lui qui est présenté au guichet. On ne
     // remplace jamais le code d'une carte déjà imprimée par un matricule
     // calculé — la déduplication du registre traite le doublon à la lecture.
-    const [chef] = await buildStudioMembers(lignes, { existingCodes: ['DKR_2600111'] });
+    const [chef] = await buildStudioMembers(lignes, { existingCodes: ['DKR_2600111'], codeStrategy: CODE_STRATEGY.FILE });
     expect(chef.cmuNumber).toBe('DKR_2600111.0');
   });
 
