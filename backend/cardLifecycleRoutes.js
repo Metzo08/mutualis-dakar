@@ -1,7 +1,7 @@
 /**
  * cardLifecycleRoutes.js — Cycle de vie des cartes (Module 3 du cahier des charges)
  *
- * RÈGLE FONDAMENTALE : la carte et le dossier sont deux objets distincts.
+ * RˆGLE FONDAMENTALE : la carte et le dossier sont deux objets distincts.
  *   • Bloquer une carte ne suspend PAS les droits de l'assuré (status reste 'active').
  *   • Révoquer une carte n'efface NI l'historique NI le dossier.
  *   • La révocation est vérifiée par le SERVEUR à chaque vérification de carte —
@@ -12,10 +12,10 @@
  * vit dans `card_lifecycle_events`.
  *
  * Transitions autorisées :
- *   active  → blocked   (perte, vol, fraude suspectée, demande assuré)
- *   blocked → active    (déblocage, motif obligatoire)
- *   active|blocked → revoked (révocation logique, historique conservé)
- *   revoked → replaced  (nouvelle carte créée, lien ancien→nouveau)
+ *   active  †’ blocked   (perte, vol, fraude suspectée, demande assuré)
+ *   blocked †’ active    (déblocage, motif obligatoire)
+ *   active|blocked †’ revoked (révocation logique, historique conservé)
+ *   revoked †’ replaced  (nouvelle carte créée, lien ancien†’nouveau)
  *
  * Cloisonnement MSD : un agent ne peut agir que sur les cartes de SA MSD.
  * Le Super Admin (sans msdCode) supervise tout. Les actions sont journalisées
@@ -23,10 +23,30 @@
  */
 
 const express = require('express');
+const crypto = require('crypto');
 const { query } = require('./db');
 const { normalizeRole } = require('./rbac');
+const { authenticateToken } = require('./rbac');
+const { recordAudit, actorOf } = require('./auditTrail');
+const { scopeOf, canPerform } = require('./accountCardService');
+
+/**
+ * Motifs de destruction (destruction LOGIQUE d'une carte, distincte de la
+ * destruction physique du PVC et de la révocation : §3.8).
+ */
+const DESTROY_REASONS = ['CARTE_ERRONEE', 'CARTE_NON_RECUPEREE', 'CARTE_ENDOMMAGEE', 'FIN_DE_VALIDITE', 'ERREUR_ADMIN'];
 
 const router = express.Router();
+
+// Authentification portée par le router, LIMIT‰E aux préfixes du module :
+// le router est monté à la racine avec des chemins complets ; un
+// `router.use(authenticateToken)` global bloquerait toutes les routes de
+// l'application (dont les routes publiques /api/csu/*).
+const MODULE_PREFIXES = /^\/api\/(imports|studio|excel|security|accounts|cards|admin-requests)(\/|$)/;
+router.use((req, res, next) => {
+  if (!MODULE_PREFIXES.test(req.path)) return next();
+  return authenticateToken(req, res, next);
+});
 
 // Motifs de blocage autorisés (validation serveur — jamais libre)
 const BLOCK_REASONS = ['PERTE', 'VOL', 'FRAUDE_SUSPECTEE', 'DEMANDE_ASSURE', 'ERREUR_ADMIN'];
@@ -34,11 +54,7 @@ const REVOKE_REASONS = ['FRAUDE_CONFIRMEE', 'DOUBLON', 'DOSSIER_CLOSE', 'DEMANDE
 
 const clean = (v) => String(v || '').trim();
 
-const msdOfUser = (user) => {
-  if (!user) return null;
-  if (normalizeRole(user.role) === 'admin') return null; // Super Admin : tout
-  return user.msdCode ? String(user.msdCode).toUpperCase() : undefined;
-};
+const msdOfUser = (user) => scopeOf(user);
 
 // Charge la carte + son dossier, avec cloisonnement MSD.
 const loadCard = async (cmuNumber, msd) => {
@@ -57,6 +73,36 @@ const loadCard = async (cmuNumber, msd) => {
   return { card };
 };
 
+
+/**
+ * Contrôle d'une demande administrative associée à une action (§3.2).
+ * @returns {Promise<{ok:true}|{ok:false, error:number, message:string}>}
+ */
+const checkRequestRef = async (requestRef, cmuNumber) => {
+  const ref = clean(requestRef);
+  if (!ref) return { ok: true };
+  try {
+    const r = await query(
+      'SELECT reference, cmu_number, status, identity_verified FROM admin_requests WHERE reference = $1',
+      [ref]
+    );
+    const req = r.rows && r.rows[0];
+    if (!req) return { ok: false, error: 404, message: 'Référence de demande introuvable.' };
+    if (String(req.cmu_number || '') && String(req.cmu_number) !== String(cmuNumber)) {
+      return { ok: false, error: 409, message: 'La demande ne concerne pas cet assuré.' };
+    }
+    if (!req.identity_verified) {
+      return { ok: false, error: 409, message: "L'identité du demandeur n'a pas été vérifiée pour cette demande." };
+    }
+    if (!['EN_COURS', 'TRAITEE', 'EN_ATTENTE_VALIDATION'].includes(req.status)) {
+      return { ok: false, error: 409, message: `Demande ${req.status} : elle doit être prise en charge avant exécution.` };
+    }
+    return { ok: true, request: req };
+  } catch {
+    return { ok: false, error: 500, message: 'Vérification de la demande impossible.' };
+  }
+};
+
 // Journal d'événements du cycle de vie (immuable) + audit_logs.
 const logEvent = async (cmuNumber, event, actor, role, msd, reason, details, requestRef, replacementCmu) => {
   await query(
@@ -71,7 +117,7 @@ const logEvent = async (cmuNumber, event, actor, role, msd, reason, details, req
   );
 };
 
-// ── Bloquer une carte ─────────────────────────────────────────────────────
+// ”€”€ Bloquer une carte ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 // POST /api/cards/:cmuNumber/block { reason, details, requestRef }
 router.post('/api/cards/:cmuNumber/block', async (req, res) => {
   const user = req.user;
@@ -93,6 +139,8 @@ router.post('/api/cards/:cmuNumber/block', async (req, res) => {
     const found = await loadCard(req.params.cmuNumber, msd);
     if (found.error) return res.status(found.error).json({ error: found.message });
     const card = found.card;
+    const reqCheck = await checkRequestRef(requestRef, card.cmu_number);
+    if (!reqCheck.ok) return res.status(reqCheck.error).json({ error: reqCheck.message });
     if (card.card_status === 'revoked') {
       return res.status(409).json({ error: 'Une carte révoquée ne peut plus être bloquée : elle est définitivement hors service.' });
     }
@@ -119,7 +167,7 @@ router.post('/api/cards/:cmuNumber/block', async (req, res) => {
   }
 });
 
-// ── Débloquer une carte ───────────────────────────────────────────────────
+// ”€”€ Débloquer une carte ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 // POST /api/cards/:cmuNumber/unblock { reason, details }
 router.post('/api/cards/:cmuNumber/unblock', async (req, res) => {
   const user = req.user;
@@ -128,7 +176,10 @@ router.post('/api/cards/:cmuNumber/unblock', async (req, res) => {
   if (role !== 'agent' && role !== 'admin') {
     return res.status(403).json({ error: 'Réservé aux agents habilités.' });
   }
-  const { reason, details } = req.body || {};
+  if (!canPerform('DEBLOCAGE_CARTE', user)) {
+    return res.status(403).json({ error: 'Le déblocage est réservé aux administrateurs habilités.' });
+  }
+  const { reason, details, requestRef } = req.body || {};
   if (!clean(reason)) {
     return res.status(400).json({ error: 'Motif de déblocage obligatoire.' });
   }
@@ -141,6 +192,8 @@ router.post('/api/cards/:cmuNumber/unblock', async (req, res) => {
     const found = await loadCard(req.params.cmuNumber, msd);
     if (found.error) return res.status(found.error).json({ error: found.message });
     const card = found.card;
+    const reqCheck = await checkRequestRef(requestRef, card.cmu_number);
+    if (!reqCheck.ok) return res.status(reqCheck.error).json({ error: reqCheck.message });
     if (card.card_status !== 'blocked') {
       return res.status(409).json({ error: `Seule une carte bloquée peut être débloquée (statut actuel : ${card.card_status}).` });
     }
@@ -158,7 +211,7 @@ router.post('/api/cards/:cmuNumber/unblock', async (req, res) => {
   }
 });
 
-// ── Révoquer une carte ────────────────────────────────────────────────────
+// ”€”€ Révoquer une carte ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 // POST /api/cards/:cmuNumber/revoke { reason, details, requestRef }
 router.post('/api/cards/:cmuNumber/revoke', async (req, res) => {
   const user = req.user;
@@ -180,6 +233,8 @@ router.post('/api/cards/:cmuNumber/revoke', async (req, res) => {
     const found = await loadCard(req.params.cmuNumber, msd);
     if (found.error) return res.status(found.error).json({ error: found.message });
     const card = found.card;
+    const reqCheck = await checkRequestRef(requestRef, card.cmu_number);
+    if (!reqCheck.ok) return res.status(reqCheck.error).json({ error: reqCheck.message });
     if (card.card_status === 'revoked') {
       return res.status(409).json({ error: 'Carte déjà révoquée.' });
     }
@@ -206,7 +261,7 @@ router.post('/api/cards/:cmuNumber/revoke', async (req, res) => {
   }
 });
 
-// ── Remplacer une carte (ancienne → nouvelle) ─────────────────────────────
+// ”€”€ Remplacer une carte (ancienne †’ nouvelle) ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 // POST /api/cards/:cmuNumber/replace { newCmuNumber, reason, details }
 // Révoque l'ancienne et relie les deux via card_replaced_by.
 router.post('/api/cards/:cmuNumber/replace', async (req, res) => {
@@ -216,7 +271,10 @@ router.post('/api/cards/:cmuNumber/replace', async (req, res) => {
   if (role !== 'agent' && role !== 'admin') {
     return res.status(403).json({ error: 'Réservé aux agents habilités.' });
   }
-  const { newCmuNumber, reason, details } = req.body || {};
+  if (!canPerform('REMPLACEMENT_CARTE', user)) {
+    return res.status(403).json({ error: 'Le remplacement est réservé aux administrateurs habilités.' });
+  }
+  const { newCmuNumber, reason, details, requestRef } = req.body || {};
   const newCmu = clean(newCmuNumber);
   if (!newCmu) return res.status(400).json({ error: 'Matricule de la nouvelle carte requis.' });
   const msd = msdOfUser(user);
@@ -228,6 +286,8 @@ router.post('/api/cards/:cmuNumber/replace', async (req, res) => {
     const found = await loadCard(req.params.cmuNumber, msd);
     if (found.error) return res.status(found.error).json({ error: found.message });
     const oldCard = found.card;
+    const reqCheck = await checkRequestRef(requestRef, oldCard.cmu_number);
+    if (!reqCheck.ok) return res.status(reqCheck.error).json({ error: reqCheck.message });
     if (oldCard.card_status === 'revoked') {
       return res.status(409).json({ error: 'Carte déjà révoquée : impossible de la remplacer à nouveau.' });
     }
@@ -265,7 +325,7 @@ router.post('/api/cards/:cmuNumber/replace', async (req, res) => {
   }
 });
 
-// ── Historique du cycle de vie d'une carte ────────────────────────────────
+// ”€”€ Historique du cycle de vie d'une carte ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 // GET /api/cards/:cmuNumber/history — fiche complète, auth + cloisonnement.
 router.get('/api/cards/:cmuNumber/history', async (req, res) => {
   const user = req.user;
@@ -289,7 +349,67 @@ router.get('/api/cards/:cmuNumber/history', async (req, res) => {
   }
 });
 
-// ── Réinitialisation forcée du mot de passe compte assuré ─────────────────
+/**
+ * ‰met un code de réinitialisation à usage unique (haché SHA-256, 15 min).
+ * Aucun mot de passe n'est jamais généré, lu ni stocké en clair ; l'agent ne
+ * connaît QUE le code temporaire, que l'assuré doit changer à sa connexion.
+ * @returns {Promise<{code:string, expiresAt:Date, hash:string}>}
+ */
+async function issueResetCode(cmuNumber, actor) {
+  const code = crypto.randomBytes(6).toString('hex').toUpperCase();
+  const hash = crypto.createHash('sha256').update(code).digest('hex');
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+  const insert = () => query(
+    `INSERT INTO password_resets (cmu_number, code_hash, expires_at, requested_by, used, created_at)
+     VALUES ($1, $2, $3, $4, FALSE, CURRENT_TIMESTAMP)`,
+    [cmuNumber, hash, expiresAt, actor]
+  );
+  try {
+    await insert();
+  } catch {
+    await query(`CREATE TABLE IF NOT EXISTS password_resets (
+      id SERIAL PRIMARY KEY,
+      cmu_number VARCHAR(60) NOT NULL,
+      code_hash VARCHAR(64) NOT NULL,
+      expires_at TIMESTAMP NOT NULL,
+      requested_by VARCHAR(100),
+      used BOOLEAN DEFAULT FALSE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`).catch(() => {});
+    await insert();
+  }
+  // Marque le compte comme « réinitialisation en attente » (sans écraser
+  // l'état d'un compte inexistant : la table est optionnelle).
+  await query(
+    `INSERT INTO beneficiary_accounts (beneficiary_id, cmu_number, password_reset_pending, last_reset_at)
+     SELECT id, cmu_number, TRUE, CURRENT_TIMESTAMP FROM beneficiaries WHERE cmu_number = $1
+     ON CONFLICT (beneficiary_id) DO UPDATE SET password_reset_pending = TRUE, updated_at = CURRENT_TIMESTAMP`,
+    [cmuNumber]
+  ).catch(() => {});
+  // Invalidation des sessions existantes : un changement de mot de passe
+  // révoque tous les jetons de rafraîchissement de l'assuré (§3.4).
+  await query(
+    `UPDATE refresh_tokens SET revoked = TRUE
+      WHERE revoked = FALSE AND user_id IN (SELECT id FROM beneficiaries WHERE cmu_number = $1)`,
+    [cmuNumber]
+  ).catch(() => {});
+  return { code, expiresAt, hash };
+}
+
+/**
+ * Verrouille un compte assuré le temps qu'il utilise son code (5 tentatives).
+ */
+async function lockAccountBriefly(cmuNumber, attempts = 5, minutes = 15) {
+  await query(
+    `INSERT INTO beneficiary_accounts (beneficiary_id, cmu_number, account_status, password_reset_pending)
+     SELECT id, cmu_number, 'VERROUILLE_TEMPORAIRE', TRUE FROM beneficiaries WHERE cmu_number = $1
+     ON CONFLICT (beneficiary_id) DO UPDATE SET account_status = 'VERROUILLE_TEMPORAIRE', updated_at = CURRENT_TIMESTAMP`,
+    [cmuNumber]
+  ).catch(() => {});
+  return { attempts, minutes };
+}
+
+// ”€”€ Réinitialisation forcée du mot de passe compte assuré ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 // POST /api/accounts/:cmuNumber/reset-password — ne JAMAIS accepter ni
 // renvoyer un mot de passe. Génère un code temporaire à usage unique,
 // expirable, hashé en base. L'agent ne connaît jamais le mot de passe final.
@@ -309,36 +429,16 @@ router.post('/api/accounts/:cmuNumber/reset-password', async (req, res) => {
     const found = await loadCard(req.params.cmuNumber, msd);
     if (found.error) return res.status(found.error).json({ error: found.message });
     const card = found.card;
-    const crypto = require('crypto');
-    const code = crypto.randomBytes(6).toString('hex').toUpperCase(); // 12 hex
-    const hash = crypto.createHash('sha256').update(code).digest('hex');
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
-    await query(
-      `INSERT INTO password_resets (cmu_number, code_hash, expires_at, requested_by, used, created_at)
-       VALUES ($1, $2, $3, $4, FALSE, CURRENT_TIMESTAMP)`,
-      [card.cmu_number, hash, expiresAt, clean(user.username || user.id)]
-    ).catch(async () => {
-      // Table absente : créer puis réessayer une fois (migration douce).
-      await query(`CREATE TABLE IF NOT EXISTS password_resets (
-        id SERIAL PRIMARY KEY,
-        cmu_number VARCHAR(60) NOT NULL,
-        code_hash VARCHAR(64) NOT NULL,
-        expires_at TIMESTAMP NOT NULL,
-        requested_by VARCHAR(100),
-        used BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )`);
-      await query(
-        `INSERT INTO password_resets (cmu_number, code_hash, expires_at, requested_by, used, created_at)
-         VALUES ($1, $2, $3, $4, FALSE, CURRENT_TIMESTAMP)`,
-        [card.cmu_number, hash, expiresAt, clean(user.username || user.id)]
-      );
+    const action = 'DESTRUCTION_CARTE';
+    void action;
+    const { code, expiresAt } = await issueResetCode(card.cmu_number, clean(user.username || user.id));
+    await recordAudit({
+      action: 'PASSWORD_RESET', actor: actorOf(user),
+      details: `Réinitialisation forcée demandée pour ${card.cmu_number} — code temporaire émis (jamais journalisé)${requestRef ? ' (réf. ' + clean(requestRef) + ')' : ''}`,
+      objectType: 'ACCOUNT', objectRef: card.cmu_number, requestRef: clean(requestRef) || null,
+      msdCode: card.msd_code, result: 'SUCCESS', severity: 'WARNING',
     });
-    await query(
-      `INSERT INTO audit_logs (action, actor, details) VALUES ($1, $2, $3)`,
-      ['PASSWORD_RESET', clean(user.username || user.id), `Réinitialisation forcée demandée pour ${card.cmu_number}${requestRef ? ' (réf. ' + clean(requestRef) + ')' : ''}`]
-    );
-    // ⚠️ Le code est renvoyé UNE SEULE fois à l'agent habilité, qui le transmet
+    // š ï¸ Le code est renvoyé UNE SEULE fois à l'agent habilité, qui le transmet
     // à l'assuré en face-à-face. Jamais stocké en clair en base.
     return res.json({
       success: true,
@@ -352,4 +452,73 @@ router.post('/api/accounts/:cmuNumber/reset-password', async (req, res) => {
   }
 });
 
+
+// ”€”€ Détruire (logiquement) une carte ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
+// POST /api/cards/:cmuNumber/destroy { reason, details, requestRef }
+//
+// DISTINCTION (§3.8) :
+//   • révocation  †’ la carte ne vaut plus comme carte ACTIVE, remplaçable ;
+//   • destruction †’ la carte est retirée du service (PVC détruit), mais la
+//     fiche et le compte RESTENT. L'identifiant n'est jamais réattribué.
+// Ne supprime JAMAIS le compte de l'assuré.
+router.post('/api/cards/:cmuNumber/destroy', async (req, res) => {
+  const user = req.user;
+  if (!user) return res.status(401).json({ error: 'Authentification requise.' });
+  const role = normalizeRole(user.role);
+  if (role !== 'agent' && role !== 'admin') {
+    return res.status(403).json({ error: 'Réservé aux agents habilités.' });
+  }
+  if (!canPerform('SUPPRESSION_CARTE', user)) {
+    return res.status(403).json({ error: 'La destruction est réservée aux administrateurs habilités.' });
+  }
+  const { reason, details, requestRef } = req.body || {};
+  if (!DESTROY_REASONS.includes(clean(reason))) {
+    return res.status(400).json({ error: `Motif invalide. Autorisés : ${DESTROY_REASONS.join(', ')}.` });
+  }
+  const msd = msdOfUser(user);
+  if (msd === undefined) {
+    return res.status(403).json({ error: "Votre compte n'est rattaché à aucune MSD.", errorCode: 'AGENT_NOT_LINKED_TO_MSD' });
+  }
+  try {
+    const found = await loadCard(req.params.cmuNumber, msd);
+    if (found.error) return res.status(found.error).json({ error: found.message });
+    const card = found.card;
+    const reqCheck = await checkRequestRef(requestRef, card.cmu_number);
+    if (!reqCheck.ok) return res.status(reqCheck.error).json({ error: reqCheck.message });
+    if (card.card_status === 'revoked') {
+      return res.status(409).json({ error: 'Carte déjà révoquée : la destruction est enregistrée dans son historique.' });
+    }
+    // La carte est révoquée côté serveur (aucune vérification ne l'accepte)
+    // ET marquée détruite dans l'historique immuable.
+    await query(
+      `UPDATE beneficiaries SET card_status = 'revoked',
+              card_revoked_at = CURRENT_TIMESTAMP,
+              card_revoked_reason = 'DETRUITE', card_revoked_by = $2
+         WHERE id = $1`,
+      [card.id, clean(user.username || user.id)]
+    );
+    await logEvent(card.cmu_number, 'DESTROYED', clean(user.username || user.id), role, msd, clean(reason), clean(details), clean(requestRef), null);
+    await recordAudit({
+      action: 'CARD_DESTROYED', actor: actorOf(user),
+      details: `Carte ${card.cmu_number} détruite (motif ${clean(reason)}). Dossier et compte conservés.`,
+      objectType: 'CARD', objectRef: card.cmu_number, requestRef: clean(requestRef) || null,
+      msdCode: card.msd_code || msd, result: 'SUCCESS', severity: 'CRITICAL',
+    });
+    return res.json({
+      success: true,
+      cardStatus: 'revoked',
+      cmuNumber: card.cmu_number,
+      message: 'Carte détruite et révoquée côté serveur. Le dossier et le compte de l\'assuré sont conservés.',
+    });
+  } catch (err) {
+    console.error('[Cards] destruction impossible :', err.message);
+    return res.status(500).json({ error: 'Destruction impossible.' });
+  }
+});
+
 module.exports = { router, BLOCK_REASONS, REVOKE_REASONS };
+
+
+module.exports.DESTROY_REASONS = DESTROY_REASONS;
+module.exports.issueResetCode = issueResetCode;
+module.exports.checkRequestRef = checkRequestRef;

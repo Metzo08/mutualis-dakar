@@ -1,7 +1,7 @@
 /**
- * ═══════════════════════════════════════════════════════════════════════════
- *  STUDIO CARTES — hiérarchie géographique et suivi de production (Étape 2)
- * ═══════════════════════════════════════════════════════════════════════════
+ * •••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
+ *  STUDIO CARTES — hiérarchie géographique et suivi de production (‰tape 2)
+ * •••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
  *
  * Routes consommées par le nouveau panneau « Vue générale » du Studio :
  *
@@ -13,10 +13,10 @@
  *   GET /api/studio/lots             — recherche/filtrage paginé des adhésions
  *   GET /api/studio/lot/:code/production — historique de production du lot
  *
- * RÈGLE FINANCIÈRE (§4 du cahier des charges, Étape 2 — validée) :
+ * RˆGLE FINANCIˆRE (§4 du cahier des charges, ‰tape 2 — validée) :
  *   Sen-E-Carte perçoit 350 FCFA par carte dont l'impression est
- *   EFFECTIVEMENT enregistrée. Le revenu de chaque lot est FIGÉ au moment de
- *   la remise dans production_events (nombre de cartes × tarif applicable
+ *   EFFECTIVEMENT enregistrée. Le revenu de chaque lot est FIG‰ au moment de
+ *   la remise dans production_events (nombre de cartes — tarif applicable
  *   ce jour-là) : une modification ultérieure du tarif ne réécrit jamais
  *   le passé. INITIAL, REPRINT et REPLACEMENT sont facturés 350 FCFA/carte ;
  *   seul DESTROYED porte un revenu de 0. Les lots non imprimés affichent
@@ -27,7 +27,7 @@
  *   verrou existant POST /api/campaign-lots/:code/print (audit_logs
  *   REMISE_LOT_MSD, idempotent : rejouer ne double jamais le revenu).
  *
- * SÉCURITÉ :
+ * S‰CURIT‰ :
  *   - Authentification obligatoire (authenticateToken est posé par server.js
  *     sur chaque route du module).
  *   - Cloisonnement MSD : un agent (non Super Admin) ne voit QUE sa MSD
@@ -62,7 +62,7 @@ const msdDe = (user) => {
  *   - Super Admin : pas de filtre (supervision nationale) ;
  *   - agent avec msdCode : filtre sur ce code (placeholder $1, réutilisable
  *     plusieurs fois dans la même requête car c'est la même valeur) ;
- *   - agent SANS msdCode : fail-closed → clause impossible (rien ne passe).
+ *   - agent SANS msdCode : fail-closed †’ clause impossible (rien ne passe).
  *
  * @param {object} user — req.user
  * @param {string} col — colonne de rattachement (ex. 'b.msd_code', 'l.union_id')
@@ -85,9 +85,9 @@ const SQL_CONFORME = `
   AND COALESCE(b.last_name,'') <> ''
   AND COALESCE(b.birth_date,'') <> ''`;
 
-// ─────────────────────────────────────────────────────────────────────────
+// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 //  NIVEAU 1 — Vue générale nationale (§2.2)
-// ─────────────────────────────────────────────────────────────────────────
+// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 router.get('/geo/overview', async (req, res) => {
   try {
     // Le placeholder $1 est réutilisable dans chaque sous-select : c'est
@@ -96,7 +96,7 @@ router.get('/geo/overview', async (req, res) => {
     const fl = filtreMsd(req.user, 'l.union_id');
     const params = f.params.length > 0 ? f.params : fl.params;
     // Compteurs globaux — une requête, aucune boucle N+1. Le revenu est la
-    // SOMME DES REVENUS FIGÉS dans production_events (§1.3 Étape 2, règle
+    // SOMME DES REVENUS FIG‰S dans production_events (§1.3 ‰tape 2, règle
     // validée) : INITIAL + REPRINT + REPLACEMENT à 350 FCFA/carte, seul
     // DESTROYED porte un revenu de 0. Si la table n'existe pas encore
     // (ancien déploiement), repli sur l'ancien calcul.
@@ -124,7 +124,7 @@ router.get('/geo/overview', async (req, res) => {
       );
     } catch {
       // Table production_events absente (migration pas encore jouée) : repli
-      // sur le calcul historique (conformes des lots imprimés × 350).
+      // sur le calcul historique (conformes des lots imprimés — 350).
       g = await query(
         `SELECT
            (SELECT COUNT(*) FROM mutuelles) AS msd_count,
@@ -156,7 +156,7 @@ router.get('/geo/overview', async (req, res) => {
 
     // Cartes par région : les régions viennent de mutuelles (donnée réelle),
     // les lots sont rattachés par union_id (code MSD à 3 lettres). Le revenu
-    // régional = somme des REVENUS FIGÉS (INITIAL + REPRINT + REPLACEMENT).
+    // régional = somme des REVENUS FIG‰S (INITIAL + REPRINT + REPLACEMENT).
     const regionRows = await query(
       `WITH reg AS (
          SELECT region AS name, MIN(LEFT(UPPER(name),3)) AS msd_prefix,
@@ -211,9 +211,9 @@ router.get('/geo/overview', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────────────────────────────────
+// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 //  NIVEAU 2 — Départements d'une région (§2.3)
-// ─────────────────────────────────────────────────────────────────────────
+// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 router.get('/geo/region/:name', async (req, res) => {
   try {
     const { name } = req.params;
@@ -263,9 +263,9 @@ router.get('/geo/region/:name', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────
+// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 //  NIVEAU 3 — MSD d'un département (§2.4)
-// ─────────────────────────────────────────────────────────────────────────
+// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 router.get('/geo/dept/:name', async (req, res) => {
   try {
     const { name } = req.params;
@@ -296,13 +296,13 @@ router.get('/geo/dept/:name', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────────────────────────────────
-//  RECHERCHE PAGINÉE DES ADHÉSIONS DE MASSE (§1.2 — Étape 2)
+// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
+//  RECHERCHE PAGIN‰E DES ADH‰SIONS DE MASSE (§1.2 — ‰tape 2)
 //  GET /api/studio/lots?q=&msd=&status=&printed=&page=&limit=
 //  Chaque adhésion expose : référence unique, titre, date, MSD, nombre
 //  d'adhérents, états de validation/production, statistiques cartes, revenu
-//  FIGÉ (production_events si imprimé, sinon 0). Filtres combinables.
-// ─────────────────────────────────────────────────────────────────────────
+//  FIG‰ (production_events si imprimé, sinon 0). Filtres combinables.
+// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 router.get('/lots', async (req, res) => {
   try {
     const { page, limit, offset } = parsePagination(req);
@@ -379,9 +379,9 @@ router.get('/lots', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────
-//  ESPACE DÉTAILLÉ D'UNE MSD (§3.1, §3.2)
-// ─────────────────────────────────────────
+// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
+//  ESPACE D‰TAILL‰ D'UNE MSD (§3.1, §3.2)
+// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 router.get('/msd/:code', async (req, res) => {
   try {
     const { code } = req.params;
@@ -419,7 +419,7 @@ router.get('/msd/:code', async (req, res) => {
     );
 
     const k = kpi.rows[0] || {};
-    // Revenu = somme des REVENUS FIGÉS (production_events INITIAL, tarif du
+    // Revenu = somme des REVENUS FIG‰S (production_events INITIAL, tarif du
     // jour de remise). Repli sur l'ancien calcul si la table n'existe pas.
     const printedCount = lots.rows.reduce(
       (s, l) => s + (l.cartes_figees != null && (l.printed || parseInt(l.revenu_fixe || '0', 10) > 0)
@@ -466,9 +466,9 @@ router.get('/msd/:code', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────
-//  DÉTAIL D'UNE ADHÉSION DE MASSE (§3.3)
-// ─────────────────────────────────────────────────────────────────────────
+// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
+//  D‰TAIL D'UNE ADH‰SION DE MASSE (§3.3)
+// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 router.get('/lot/:code', async (req, res) => {
   try {
     const { code } = req.params;
@@ -517,7 +517,7 @@ router.get('/lot/:code', async (req, res) => {
         date: l.created_at,
         printed: l.printed,
         printedAt: l.printed_at,
-        statut: l.printed ? 'IMPRIMÉ' : 'EN_ATTENTE_PRODUCTION',
+        statut: l.printed ? 'IMPRIM‰' : 'EN_ATTENTE_PRODUCTION',
       },
       stats: {
         adherents: parseInt(s.adherents || '0', 10),
@@ -546,11 +546,11 @@ router.get('/lot/:code', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────────────────────────────────
-//  HISTORIQUE DE PRODUCTION D'UN LOT (§1.3 — Étape 2)
+// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
+//  HISTORIQUE DE PRODUCTION D'UN LOT (§1.3 — ‰tape 2)
 //  GET /api/studio/lot/:code/production — événements INITIAL, REPRINT,
 //  REPLACEMENT, DESTROYED avec tarifs figés. Lecture pure, cloisonnée MSD.
-// ─────────────────────────────────────────────────────────────────────────
+// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 router.get('/lot/:code/production', async (req, res) => {
   try {
     const { code } = req.params;
@@ -589,13 +589,13 @@ router.get('/lot/:code/production', async (req, res) => {
   }
 });
 
-// ─────────────────────────────────────────────────────────────────────────
-//  ENREGISTRER UNE RÉIMPRESSION OU UN REMPLACEMENT (§1.3 — Étape 2, validé)
+// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
+//  ENREGISTRER UNE R‰IMPRESSION OU UN REMPLACEMENT (§1.3 — ‰tape 2, validé)
 //  POST /api/studio/lot/:code/production { type: 'REPRINT'|'REPLACEMENT'|'DESTROYED', cardCount, details }
 //  Règle validée : REPRINT et REPLACEMENT facturés 350 FCFA/carte (tarif figé
 //  du jour) ; DESTROYED à revenu 0. Idempotent par type (UNIQUE lot+event) :
 //  rejouer ne double jamais le revenu. Cloisonné MSD, journalisé.
-// ─────────────────────────────────────────────────────────────────────────
+// ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
 router.post('/lot/:code/production', async (req, res) => {
   try {
     const { code } = req.params;
@@ -631,7 +631,7 @@ router.post('/lot/:code/production', async (req, res) => {
         VALUES ($1, $2, $3, $4, $5, $6, $7)
         ON CONFLICT (lot_code, event) DO NOTHING RETURNING *`,
       [code, type, cardCount, unitPrice, revenue, actor,
-        details || `${type === 'REPRINT' ? 'Réimpression' : type === 'REPLACEMENT' ? 'Remplacement' : 'Destruction'} — ${cardCount} carte(s) × ${unitPrice} FCFA`]
+        details || `${type === 'REPRINT' ? 'Réimpression' : type === 'REPLACEMENT' ? 'Remplacement' : 'Destruction'} — ${cardCount} carte(s) — ${unitPrice} FCFA`]
     );
     await query(
       `INSERT INTO audit_logs (action, actor, details) VALUES ($1, $2, $3)`,
