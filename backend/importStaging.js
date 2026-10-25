@@ -295,7 +295,6 @@ async function runControls(batchId, user) {
     );
   }
 
-  const totalOpen = conformes + aCorriger + conflits;
   // Règle : le lot n'est VALIDE que si TOUS les dossiers sont conformes.
   // Sinon il reste A_CORRIGER — l'intégration des seuls conformes est
   // toujours possible (PARTIEL), mais le lot ne se dit jamais « valide »

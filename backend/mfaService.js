@@ -137,7 +137,8 @@ async function issueChallenge(agent) {
  * Étape 2 : vérifie code + challenge, consomme le défi.
  * @returns {Promise<{ok:boolean, message?:string}>}
  */
-async function verifyChallenge(challenge, code, username) {
+// eslint-disable-next-line no-unused-vars -- signature publique, username réservé
+async function verifyChallenge(challenge, code, _username) {
   await ensureMfaSchema();
   const r = await query(
     `SELECT c.id, c.agent_id, c.code_hash, c.expires_at, c.attempts, c.used, a.username, a.email

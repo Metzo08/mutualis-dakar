@@ -32,7 +32,7 @@ router.get('/api/excel/report/:type', authenticateToken, requireRole('agent', 'a
   const neutralize = (v) => {
     // Neutralise les cellules qui pourraient être interprétées comme des
     // formules Excel (=, +, -, @) provenant de données utilisateur.
-    if (typeof v === 'string' && /^[=+@\-].*/.test(v)) return "'" + v;
+    if (typeof v === 'string' && /^[=+@-].*/.test(v)) return "'" + v;
     return v;
   };
   const addSheet = (name, columns, rows) => {
@@ -258,6 +258,7 @@ const {
 } = require('./excelWorkbook');
 const { listCards } = require('./accountCardService');
 const { securityOverview, securityAlerts } = require('./securityMonitor');
+void securityOverview; void securityAlerts; // exports documentés pour le centre de sécurité
 const { actorOf } = require('./auditTrail');
 const { recordAudit } = require('./auditTrail');
 

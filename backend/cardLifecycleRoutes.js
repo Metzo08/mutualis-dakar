@@ -398,7 +398,9 @@ async function issueResetCode(cmuNumber, actor) {
 
 /**
  * Verrouille un compte assuré le temps qu'il utilise son code (5 tentatives).
+ * Réservé à un usage futur de renforcement (runbook MFA).
  */
+// eslint-disable-next-line no-unused-vars -- conservé pour le runbook MFA
 async function lockAccountBriefly(cmuNumber, attempts = 5, minutes = 15) {
   await query(
     `INSERT INTO beneficiary_accounts (beneficiary_id, cmu_number, account_status, password_reset_pending)
@@ -438,7 +440,7 @@ router.post('/api/accounts/:cmuNumber/reset-password', async (req, res) => {
       objectType: 'ACCOUNT', objectRef: card.cmu_number, requestRef: clean(requestRef) || null,
       msdCode: card.msd_code, result: 'SUCCESS', severity: 'WARNING',
     });
-    // š ï¸ Le code est renvoyé UNE SEULE fois à l'agent habilité, qui le transmet
+    // [SECURITE] Le code est renvoyé UNE SEULE fois à l'agent habilité, qui le transmet
     // à l'assuré en face-à-face. Jamais stocké en clair en base.
     return res.json({
       success: true,
