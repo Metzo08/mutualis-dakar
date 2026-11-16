@@ -61,7 +61,7 @@ export default function Institutionnel({ lang }) {
       '───────────────────────────────────────────────────────────────',
       '',
       '  Ce document est un exemplaire officiel généré depuis',
-      '  la plateforme numérique MUTUALIS DAKAR.',
+      '  la plateforme numérique SenMutuelles.',
       '',
       '  L\'URMSCD est l\'organe fédérateur des mutuelles de santé',
       '  communautaires de la région de Dakar. Elle regroupe les',
@@ -84,7 +84,7 @@ export default function Institutionnel({ lang }) {
       '    Trésorier Gén. : Abdoulaye Sow',
       '',
       '═══════════════════════════════════════════════════════════════',
-      '  Document généré automatiquement par MUTUALIS DAKAR.',
+      '  Document généré automatiquement par SenMutuelles.',
       '  © 2026 URMSCD – Tous droits réservés.',
       '═══════════════════════════════════════════════════════════════',
     ].join('\n');

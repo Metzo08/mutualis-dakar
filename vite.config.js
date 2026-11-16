@@ -5,7 +5,13 @@ import { VitePWA } from 'vite-plugin-pwa'
 export default defineConfig({
   server: {
     port: 5173,
-    host: '0.0.0.0'
+    host: "0.0.0.0",
+    proxy: {
+      "/api": {
+        target: "http://127.0.0.1:5000",
+        changeOrigin: true
+      }
+    }
   },
   preview: {
     port: 5173,
@@ -17,8 +23,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
       manifest: {
-        name: 'MUTUALIS DAKAR — Portail CMU',
-        short_name: 'Mutualis',
+        name: 'SenMutuelles — Portail CMU',
+        short_name: 'SenMutuelles',
         description: 'Plateforme régionale de la Couverture Santé Universelle (CMU) de Dakar — adhésion, cotisation, soins et prise en charge.',
         lang: 'fr',
         dir: 'ltr',
@@ -147,4 +153,19 @@ export default defineConfig({
       }
     })
   ],
-})
+  build: {
+    chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules/xlsx")) return "vendor-xlsx";
+          if (id.includes("node_modules/docx")) return "vendor-docx";
+          if (id.includes("node_modules/recharts") || id.includes("node_modules/d3-")) return "vendor-charts";
+          if (id.includes("node_modules/jspdf") || id.includes("node_modules/html2canvas")) return "vendor-pdf";
+          if (id.includes("node_modules/@tanstack")) return "vendor-tanstack";
+          if (id.includes("node_modules/react") || id.includes("node_modules/react-dom") || id.includes("node_modules/react-router")) return "vendor-react";
+        }
+      }
+    }
+  }
+});

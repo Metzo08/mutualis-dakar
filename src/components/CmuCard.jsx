@@ -172,7 +172,7 @@ export default function CmuCard({ citizen }) {
                 Couverture Santé Universelle
               </div>
               <div style={{ fontSize: '1.25rem', fontWeight: '900', letterSpacing: '0.5px' }}>
-                MUTUALIS DAKAR 🇸🇳
+                SENMUTUELLES 🇸🇳
               </div>
             </div>
             <span style={{

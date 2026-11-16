@@ -40,7 +40,7 @@ export default function NotFound({ requestedView, setView }) {
         <p style={{ color: 'var(--text-sub)', fontSize: '0.95rem', lineHeight: 1.65, marginBottom: '0.5rem' }}>
           L'adresse <code style={{ background: 'var(--bg-card-subtle)', padding: '0.15rem 0.5rem', borderRadius: '6px', fontSize: '0.85rem' }}>
             #/{requestedView || ''}
-          </code> ne correspond à aucune section de MUTUALIS.
+          </code> ne correspond à aucune section de SenMutuelles.
           Le lien est peut-être expiré, ou l'URL a été mal recopiée.
         </p>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '2rem' }}>

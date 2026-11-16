@@ -6,7 +6,7 @@ import Footer from '../components/Footer';
 describe('Footer', () => {
   it('affiche le copyright et les liens rapides en français', () => {
     render(<Footer lang="fr" setView={() => {}} />);
-    expect(screen.getByText(/MUTUALIS DAKAR - URMSCD/i)).toBeInTheDocument();
+    expect(screen.getByText(/SenMutuelles - URMSCD/i)).toBeInTheDocument();
     expect(screen.getByText(/Liens rapides/i)).toBeInTheDocument();
   });
 

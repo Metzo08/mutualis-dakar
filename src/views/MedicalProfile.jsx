@@ -218,7 +218,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
   };
 
   const handleCopyShareLink = () => {
-    const shareUrl = `https://mutualis.sn/dossier-partage/${activeCmuNumber}?otp=${otpData.code}`;
+    const shareUrl = `https://senmutuelles.sn/dossier-partage/${activeCmuNumber}?otp=${otpData.code}`;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(shareUrl);
     }
@@ -228,14 +228,14 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
 
   const handleShareWhatsApp = (e) => {
     if (e) e.preventDefault();
-    const shareText = `Bonjour Docteur, voici l'accès sécurisé temporaire (24h) au dossier médical certifié UNAMUSC de ${activeFirstName} ${activeLastName} (${activeCmuNumber}) :\n\n🔑 Code OTP : ${otpData.code}\n🔗 Lien : https://mutualis.sn/dossier-partage/${activeCmuNumber}?otp=${otpData.code}`;
+    const shareText = `Bonjour Docteur, voici l'accès sécurisé temporaire (24h) au dossier médical certifié UNAMUSC de ${activeFirstName} ${activeLastName} (${activeCmuNumber}) :\n\n🔑 Code OTP : ${otpData.code}\n🔗 Lien : https://senmutuelles.sn/dossier-partage/${activeCmuNumber}?otp=${otpData.code}`;
     const waUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
     
     if (navigator.share) {
       navigator.share({
         title: 'Dossier Médical UNAMUSC',
         text: shareText,
-        url: `https://mutualis.sn/dossier-partage/${activeCmuNumber}?otp=${otpData.code}`
+        url: `https://senmutuelles.sn/dossier-partage/${activeCmuNumber}?otp=${otpData.code}`
       }).catch(() => {
         window.open(waUrl, '_blank', 'noopener,noreferrer');
       });
@@ -2781,7 +2781,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
             {/* QR Code Card */}
             <div className="d-flex align-items-center gap-3 p-3.5 rounded-4 mb-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
               <div className="p-2 bg-white rounded-3 border flex-shrink-0" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
-                <img src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(`https://mutualis.sn/dossier-partage/${activeCmuNumber}?otp=${otpData.code}`)}`} alt="QR Code Partage" style={{ width: '84px', height: '84px', display: 'block' }} />
+                <img src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(`https://senmutuelles.sn/dossier-partage/${activeCmuNumber}?otp=${otpData.code}`)}`} alt="QR Code Partage" style={{ width: '84px', height: '84px', display: 'block' }} />
               </div>
               <div>
                 <strong className="d-block text-success small fw-bold mb-1" style={{ fontSize: '0.88rem' }}>Scan QR code en consultation :</strong>

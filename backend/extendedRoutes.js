@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-const { query, pool } = require('./db');
+const { query } = require('./db');
 // Bus temps réel : Redis en production, PostgreSQL en secours. L'interface
 // est identique à celle de `./db`, donc cet import remplace l'ancien.
 const { publishRealtime, subscribeRealtime } = require('./realtimeBus');
@@ -12,6 +12,19 @@ const crypto = require('crypto');
 // Même secret que rbac.js : le flux SSE doit valider les jetons émis
 // ailleurs. Un secret divergent ici rejetterait tous les clients.
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_only_insecure_secret_do_not_use_in_prod_min_32_chars';
+
+const { storeDocumentImage, getStorageStatus, getMsdWhatsappDirectoryBackend, updateMsdWhatsappCache } = require('./objectStorage');
+
+/**
+ * Périmètre MSD d'un agent (AGENTS.md §4) : un agent rattaché à une MSD ne
+ * peut agir que sur les dossiers de SA MSD. Admin / Super Admin (sans
+ * msdCode dans le jeton) : null = pas de filtre (rôle de supervision).
+ */
+const agentMsdScope = (req) => {
+  const role = normalizeRole(req.user && req.user.role);
+  if (role === 'agent' && req.user.msdCode) return String(req.user.msdCode);
+  return null;
+};
 
 // ==========================================
 // 1. LETTRES DE GARANTIE (Prise en charge hospitalière)
@@ -43,6 +56,10 @@ router.get("/guarantees", authenticateToken, async (req, res) => {
     // Cloisonnement : un citoyen ne voit que SES lettres, pas la liste globale.
     // (Avant, l'absence de ce filtre exposait les lettres de garantie de tous
     // les assurés à n'importe quel compte connecté — fuite de données.)
+    if (normalizeRole(req.user.role) === 'agent' && req.user.msdCode) {
+      params.push(req.user.msdCode);
+      sql += ` AND b.msd_code = $${params.length}`;
+    }
     const role = normalizeRole(req.user.role);
     if (role === 'citizen') {
       params.push(req.user.id);
@@ -53,10 +70,10 @@ router.get("/guarantees", authenticateToken, async (req, res) => {
     // lettres ; COUNT et SELECT partagent le même WHERE pour des métadonnées
     // de pagination exactes.
     const countRes = await query(
-      `SELECT COUNT(*) FROM guarantee_letters g WHERE 1=1
+      `SELECT COUNT(*) FROM guarantee_letters g JOIN beneficiaries b ON g.beneficiary_id = b.id WHERE 1=1
         ${beneficiary_id ? ' AND g.beneficiary_id = $1' : ''}
         ${status ? ` AND g.status = $${beneficiary_id ? 2 : 1}` : ''}
-        ${role === 'citizen' ? ` AND g.beneficiary_id = $${params.length}` : ''}`,
+        ${role === 'citizen' ? ` AND g.beneficiary_id = $${params.length}` : (role === 'agent' && req.user.msdCode ? ` AND b.msd_code = $${params.length}` : '')}`,
       params
     );
     const total = parseInt(countRes.rows[0]?.count || '0', 10);
@@ -76,7 +93,8 @@ router.get("/guarantees", authenticateToken, async (req, res) => {
 
 router.post("/guarantees", authenticateToken, async (req, res) => {
   try {
-    const { beneficiary_id, partner_structure_id, medical_act, estimated_amount, document_url } = req.body;
+    const { partner_structure_id, medical_act, estimated_amount, document_url } = req.body;
+    const beneficiary_id = normalizeRole(req.user.role) === 'citizen' ? req.user.id : req.body.beneficiary_id;
     if (!beneficiary_id || !medical_act) {
       return res.status(400).json({ error: 'Le bénéficiaire et l\'acte médical sont requis.' });
     }
@@ -98,12 +116,12 @@ router.post("/guarantees", authenticateToken, async (req, res) => {
 });
 
 // Validation 100% humaine par un Agent CMU
-router.put("/guarantees/:id/status", authenticateToken, requireRole("agent"), async (req, res) => {
+router.put("/guarantees/:id/status", authenticateToken, requireRole("agent", "admin"), async (req, res) => {
   try {
     const { id } = req.params;
     const { status, guaranteed_percentage, max_amount, agent_note } = req.body;
 
-    if (!['approved', 'rejected', 'used'].includes(status)) {
+    if (!['approved', 'rejected', 'used', 'emergency_issued'].includes(status)) {
       return res.status(400).json({ error: 'Statut invalide.' });
     }
 
@@ -111,8 +129,11 @@ router.put("/guarantees/:id/status", authenticateToken, requireRole("agent"), as
       UPDATE guarantee_letters
       SET status = $1, guaranteed_percentage = COALESCE($2, guaranteed_percentage), max_amount = COALESCE($3, max_amount), agent_note = $4, updated_at = NOW()
       WHERE id = $5
+        AND ($6::text IS NULL OR EXISTS (
+          SELECT 1 FROM beneficiaries b WHERE b.id = guarantee_letters.beneficiary_id AND UPPER(b.msd_code) = UPPER($6)
+        ))
       RETURNING *
-    `, [status, guaranteed_percentage || 80, max_amount || 0, agent_note || '', id]);
+    `, [status, guaranteed_percentage || 80, max_amount || 0, agent_note || '', id, agentMsdScope(req)]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Lettre de garantie introuvable.' });
@@ -134,7 +155,7 @@ router.get("/purchase-orders", authenticateToken, async (req, res) => {
     const { beneficiary_id } = req.query;
     const { page, limit, offset } = parsePagination(req);
     let sql = `
-      SELECT p.*, b.first_name, b.last_name, b.cmu_number
+      SELECT p.*, b.first_name, b.last_name, b.cmu_number, b.phone
       FROM purchase_orders p
       JOIN beneficiaries b ON p.beneficiary_id = b.id
       WHERE 1=1
@@ -147,6 +168,10 @@ router.get("/purchase-orders", authenticateToken, async (req, res) => {
     }
 
     // Cloisonnement : un citoyen ne voit que ses propres bons de commande.
+    if (normalizeRole(req.user.role) === 'agent' && req.user.msdCode) {
+      params.push(req.user.msdCode);
+      sql += ` AND b.msd_code = $${params.length}`;
+    }
     const role = normalizeRole(req.user.role);
     if (role === 'citizen') {
       params.push(req.user.id);
@@ -156,9 +181,9 @@ router.get("/purchase-orders", authenticateToken, async (req, res) => {
     // COUNT sur le même WHERE, puis page SQL — le COUNT reste cohérent avec
     // les filtres et la table peut croître sans dégrader les réponses.
     const countRes = await query(
-      `SELECT COUNT(*) FROM purchase_orders p WHERE 1=1
+      `SELECT COUNT(*) FROM purchase_orders p JOIN beneficiaries b ON p.beneficiary_id = b.id WHERE 1=1
         ${beneficiary_id ? ' AND p.beneficiary_id = $1' : ''}
-        ${role === 'citizen' ? ` AND p.beneficiary_id = $${params.length}` : ''}`,
+        ${role === 'citizen' ? ` AND p.beneficiary_id = $${params.length}` : (role === 'agent' && req.user.msdCode ? ` AND b.msd_code = $${params.length}` : '')}`,
       params
     );
     const total = parseInt(countRes.rows[0]?.count || '0', 10);
@@ -178,7 +203,8 @@ router.get("/purchase-orders", authenticateToken, async (req, res) => {
 
 router.post("/purchase-orders", authenticateToken, async (req, res) => {
   try {
-    const { beneficiary_id, items, total_amount, partner_structure_id } = req.body;
+    const { items, total_amount, partner_structure_id } = req.body;
+    const beneficiary_id = normalizeRole(req.user.role) === 'citizen' ? req.user.id : req.body.beneficiary_id;
     if (!beneficiary_id || !items || !Array.isArray(items)) {
       return res.status(400).json({ error: 'Données invalides pour le bon de commande.' });
     }
@@ -489,7 +515,7 @@ router.get("/telemedicine/presence/stream", async (req, res) => {
 
   try {
     req.user = jwt.verify(token, JWT_SECRET);
-  } catch (err) {
+  } catch {
     return res.status(401).json({ success: false, error: 'Jeton invalide.' });
   }
 
@@ -599,7 +625,7 @@ router.get("/medical-profile/:beneficiaryId", authenticateToken, async (req, res
     const { beneficiaryId } = req.params;
     
     // Un citoyen ne peut consulter que son propre profil médical
-    if (req.user.role === "citizen" && req.user.id !== parseInt(beneficiaryId)) {
+    if (normalizeRole(req.user.role) === "citizen" && Number(req.user.id) !== Number(beneficiaryId)) {
       return res.status(403).json({ error: "Accès interdit." });
     }
 
@@ -627,6 +653,9 @@ router.post("/medical-profile/:beneficiaryId/antecedents", authenticateToken, as
   try {
     const { beneficiaryId } = req.params;
     const { blood_group, allergies, chronic_conditions, past_surgeries, emergency_contact_name, emergency_contact_phone } = req.body;
+    if (normalizeRole(req.user.role) === "citizen" && Number(req.user.id) !== Number(beneficiaryId)) {
+      return res.status(403).json({ error: "Accès interdit." });
+    }
 
     const existing = await query('SELECT id FROM medical_antecedents WHERE beneficiary_id = $1', [beneficiaryId]);
 
@@ -674,6 +703,350 @@ router.get("/institutions/coud/summary", authenticateToken, async (req, res) => 
     console.error('Erreur GET /institutions/coud/summary:', err);
     res.status(500).json({ error: 'Erreur serveur.' });
   }
+});
+
+router.put("/purchase-orders/:id/status", authenticateToken, requireRole("agent", "admin"), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    if (!['active', 'rejected', 'used', 'expired'].includes(status)) {
+      return res.status(400).json({ error: 'Statut invalide.' });
+    }
+    const result = await query(`
+      UPDATE purchase_orders
+      SET status = $1, used_at = CASE WHEN $1 = 'used' THEN NOW() ELSE used_at END
+      WHERE id = $2
+        AND ($3::text IS NULL OR EXISTS (
+          SELECT 1 FROM beneficiaries b WHERE b.id = purchase_orders.beneficiary_id AND UPPER(b.msd_code) = UPPER($3)
+        ))
+      RETURNING *
+    `, [status, id, agentMsdScope(req)]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Bon de commande introuvable.' });
+    }
+    res.json({ success: true, message: `Bon de commande mis à jour (${status}).`, data: result.rows[0] });
+  } catch (err) {
+    console.error('Erreur PUT /purchase-orders/:id/status:', err);
+    res.status(500).json({ error: 'Erreur serveur.' });
+  }
+});
+
+router.get("/verify-document/:code", async (req, res) => {
+  try {
+    const rawCode = String(req.params.code || '').trim().toUpperCase();
+    if (!rawCode) {
+      return res.status(400).json({ valid: false, error: 'Code document requis.' });
+    }
+    if (rawCode.startsWith('GAR-')) {
+      const gRes = await query(`
+        SELECT g.id, g.validation_code, g.medical_act, g.estimated_amount, g.guaranteed_percentage, g.max_amount, g.status, g.created_at,
+               b.first_name, b.last_name, b.cmu_number,
+               s.name as structure_name
+        FROM guarantee_letters g
+        JOIN beneficiaries b ON g.beneficiary_id = b.id
+        LEFT JOIN partner_structures s ON g.partner_structure_id = s.id
+        WHERE UPPER(g.validation_code) = $1
+        LIMIT 1
+      `, [rawCode]);
+      if (gRes.rows.length === 0) {
+        return res.status(404).json({ valid: false, error: 'Lettre de garantie introuvable.' });
+      }
+      const row = gRes.rows[0];
+      const est = Number(row.estimated_amount || 0);
+      const pct = Number(row.guaranteed_percentage || 80);
+      const covered = Number(row.max_amount || Math.round((est * pct) / 100));
+      return res.json({
+        valid: row.status === 'approved' || row.status === 'emergency_issued',
+        type: 'guarantee',
+        code: row.validation_code,
+        status: row.status,
+        beneficiaryName: `${row.first_name || ''} ${row.last_name || ''}`.trim(),
+        cmuNumber: row.cmu_number,
+        structureName: row.structure_name || 'Structure agréée CSU',
+        medicalAct: row.medical_act,
+        estimatedAmount: est,
+        coverageRate: pct,
+        coveredAmount: covered,
+        patientShare: Math.max(0, est - covered),
+        issuedAt: row.created_at
+      });
+    }
+    if (rawCode.startsWith('ORD-')) {
+      const numericId = parseInt(rawCode.replace(/[^0-9]/g, ''), 10);
+      if (Number.isFinite(numericId)) {
+        const pRes = await query(`
+          SELECT p.*, b.first_name, b.last_name, b.cmu_number
+          FROM purchase_orders p
+          JOIN beneficiaries b ON p.beneficiary_id = b.id
+          WHERE p.id = $1
+          LIMIT 1
+        `, [numericId]);
+        if (pRes.rows.length > 0) {
+          const row = pRes.rows[0];
+          const total = Number(row.total_amount || 0);
+          const covered = Math.round(total * 0.5);
+          return res.json({
+            valid: row.status === 'active',
+            type: 'purchase_order',
+            code: rawCode,
+            status: row.status,
+            beneficiaryName: `${row.first_name || ''} ${row.last_name || ''}`.trim(),
+            cmuNumber: row.cmu_number,
+            structureName: 'Pharmacie Partenaire Agréée CSU',
+            estimatedAmount: total,
+            coverageRate: 50,
+            coveredAmount: covered,
+            patientShare: Math.max(0, total - covered),
+            issuedAt: row.created_at
+          });
+        }
+      }
+      return res.status(404).json({ valid: false, error: 'Bon de commande introuvable.' });
+    }
+    return res.status(404).json({ valid: false, error: 'Format de code document non reconnu.' });
+  } catch (err) {
+    console.error('Erreur GET /verify-document/:code:', err);
+    res.status(500).json({ valid: false, error: 'Erreur serveur lors de la vérification.' });
+  }
+});
+
+// =========================================================================
+// 7. DEMANDE ENTRANTE DE LETTRE DE GARANTIE / BON DE COMMANDE PAR WHATSAPP
+// =========================================================================
+// Flux : l'assuré remplit la demande dans le portail → le dossier est créé
+// ici (statut « en attente », JAMAIS actif d'office : seul un agent de SA
+// MSD valide) → le frontend ouvre WhatsApp vers le guichet de SA MSD.
+//
+// Sécurité (AGENTS.md §4 / §11) :
+//  - citoyen : beneficiary_id forcé à req.user.id (anti-IDOR) ;
+//  - agent MSD : le bénéficiaire ciblé doit appartenir à SA MSD ;
+//  - autres rôles (pharmacien, médecin…) : refusés, ils ne demandent pas
+//    de prise en charge au nom d'un tiers par ce canal ;
+//  - la pièce jointe (photo devis/ordonnance) est compressée et externalisée
+//    (S3/MinIO ou disque) : aucune image Base64 n'entre dans PostgreSQL.
+const WA_ALLOWED_ROLES = new Set(['citizen', 'agent', 'admin', 'superadmin']);
+const WA_MAX_ITEMS = 30;
+
+router.get('/whatsapp/msd-directory', async (req, res) => {
+  // Numéros de guichets officiels : information publique (affichée sur les
+  // cartes). Aucune donnée personnelle. Surcharge dynamique depuis platform_settings.
+  try {
+    const sRes = await query("SELECT value FROM platform_settings WHERE key = 'msd_whatsapp_directory' LIMIT 1").catch(() => null);
+    const dbMap = sRes && sRes.rows && sRes.rows[0] && sRes.rows[0].value ? sRes.rows[0].value : null;
+    const dir = getMsdWhatsappDirectoryBackend(dbMap);
+    return res.json({ success: true, data: Object.values(dir) });
+  } catch {
+    const dir = getMsdWhatsappDirectoryBackend();
+    return res.json({ success: true, data: Object.values(dir) });
+  }
+});
+
+router.put('/whatsapp/msd-directory/:msdCode', authenticateToken, requireRole('agent', 'admin', 'superadmin'), async (req, res) => {
+  try {
+    const targetCode = String(req.params.msdCode || '').toUpperCase().trim();
+    const scope = agentMsdScope(req);
+    // Cloisonnement strict multi-MSD (AGENTS.md §4) :
+    // Un agent MSD ne peut configurer QUE le guichet de SA propre MSD.
+    // Le Super Admin (scope null) supervise et peut configurer toute MSD.
+    if (scope && scope.toUpperCase() !== targetCode) {
+      return res.status(403).json({ error: `Vous êtes rattaché à la MSD ${scope} et ne pouvez pas modifier le guichet de la MSD ${targetCode}.` });
+    }
+
+    const { phone } = req.body || {};
+    const rawDigits = String(phone || '').replace(/[^0-9]/g, '');
+    let cleanPhone = null;
+    if (rawDigits) {
+      if (rawDigits.startsWith('221') && rawDigits.length === 12) {
+        cleanPhone = `+221 ${rawDigits.slice(3, 5)} ${rawDigits.slice(5, 8)} ${rawDigits.slice(8, 10)} ${rawDigits.slice(10, 12)}`;
+      } else if (rawDigits.length === 9) {
+        cleanPhone = `+221 ${rawDigits.slice(0, 2)} ${rawDigits.slice(2, 5)} ${rawDigits.slice(5, 7)} ${rawDigits.slice(7, 9)}`;
+      } else {
+        return res.status(400).json({ error: 'Format de numéro sénégalais invalide (ex: +221 77 123 45 67).' });
+      }
+    }
+
+    let currentMap = {};
+    try {
+      const curRes = await query("SELECT value FROM platform_settings WHERE key = 'msd_whatsapp_directory' LIMIT 1").catch(() => null);
+      if (curRes && curRes.rows && curRes.rows[0] && curRes.rows[0].value) {
+        currentMap = curRes.rows[0].value;
+      }
+    } catch {
+      // Table absente lors du premier démarrage
+    }
+
+    currentMap[targetCode] = cleanPhone;
+
+    await query(`
+      INSERT INTO platform_settings (key, value, updated_at)
+      VALUES ('msd_whatsapp_directory', $1, NOW())
+      ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = NOW()
+    `, [JSON.stringify(currentMap)]).catch(() => {});
+
+    updateMsdWhatsappCache(targetCode, cleanPhone);
+
+    const fullDir = getMsdWhatsappDirectoryBackend(currentMap);
+    return res.json({
+      success: true,
+      message: `Guichet WhatsApp de la MSD ${targetCode} mis à jour : ${cleanPhone || 'Non configuré (repli guichet central)'}`,
+      data: fullDir[targetCode] || { msdCode: targetCode, whatsapp: cleanPhone }
+    });
+  } catch (err) {
+    console.error('Erreur PUT /whatsapp/msd-directory/:msdCode:', err.message);
+    return res.status(500).json({ error: 'Erreur lors de la mise à jour du guichet WhatsApp.' });
+  }
+});
+
+router.get('/storage/status', authenticateToken, requireRole('admin', 'superadmin'), (req, res) => {
+  res.json({ success: true, data: getStorageStatus() });
+});
+
+router.post('/whatsapp/request', authenticateToken, async (req, res) => {
+  try {
+    const role = normalizeRole(req.user.role);
+    if (!WA_ALLOWED_ROLES.has(role)) {
+      return res.status(403).json({ error: 'Rôle non autorisé pour une demande WhatsApp.' });
+    }
+
+    const {
+      type = 'guarantee',
+      beneficiary_id,
+      structure_name,
+      medical_act,
+      items,
+      estimated_amount,
+      attachment
+    } = req.body || {};
+
+    if (!['guarantee', 'purchase_order'].includes(type)) {
+      return res.status(400).json({ error: 'Type de demande invalide.' });
+    }
+
+    const targetBeneficiaryId = role === 'citizen' ? req.user.id : Number(beneficiary_id);
+    if (!Number.isInteger(Number(targetBeneficiaryId)) || Number(targetBeneficiaryId) <= 0) {
+      return res.status(400).json({ error: 'Bénéficiaire requis.' });
+    }
+
+    const amountNum = Math.min(50000000, Math.max(0, Number(estimated_amount) || 0));
+    const actText = String(medical_act || '').trim().slice(0, 240);
+    const structText = String(structure_name || '').trim().slice(0, 200);
+
+    // Bénéficiaire + MSD de rattachement (routage du guichet WhatsApp)
+    const bRes = await query('SELECT id, msd_code FROM beneficiaries WHERE id = $1 LIMIT 1', [targetBeneficiaryId]);
+    const benef = bRes.rows && bRes.rows[0];
+    if (!benef) {
+      return res.status(404).json({ error: 'Bénéficiaire introuvable.' });
+    }
+    const scope = agentMsdScope(req);
+    if (scope && String(benef.msd_code || '').toUpperCase() !== scope.toUpperCase()) {
+      return res.status(403).json({ error: 'Ce bénéficiaire ne relève pas de votre MSD.' });
+    }
+    const msdCode = String(benef.msd_code || 'DKR').toUpperCase();
+    const desk = getMsdWhatsappDirectoryBackend()[msdCode] || getMsdWhatsappDirectoryBackend().DKR;
+
+    // Pièce jointe optionnelle (devis / ordonnance) → stockage objet
+    let documentUrl = null;
+    if (attachment) {
+      try {
+        const stored = await storeDocumentImage({
+          dataInput: attachment,
+          folder: type === 'purchase_order' ? 'prescriptions' : 'quotes',
+          msdCode,
+          prefix: type === 'purchase_order' ? 'ord' : 'gar'
+        });
+        documentUrl = stored ? stored.url : null;
+      } catch (e) {
+        console.warn('[WhatsApp] Pièce jointe non stockée:', e.message);
+      }
+    }
+
+    let created;
+    let code;
+    if (type === 'purchase_order') {
+      const safeItems = (Array.isArray(items) && items.length > 0 ? items : [{ name: actText || 'Ordonnance (photo WhatsApp)', qty: 1, price: amountNum }])
+        .slice(0, WA_MAX_ITEMS)
+        .map((i) => ({
+          name: String(i && i.name || '').slice(0, 160) || 'Médicament',
+          qty: Math.max(1, Math.min(99, parseInt(i && i.qty, 10) || 1)),
+          price: Math.max(0, Number(i && i.price) || 0)
+        }));
+      if (documentUrl) safeItems.push({ name: 'Pièce jointe ordonnance', qty: 0, price: 0, document_url: documentUrl });
+      const pRes = await query(`
+        INSERT INTO purchase_orders (beneficiary_id, items_json, total_amount, status)
+        VALUES ($1, $2, $3, 'pending_review')
+        RETURNING *
+      `, [targetBeneficiaryId, JSON.stringify(safeItems), amountNum]);
+      created = pRes.rows[0];
+      code = `ORD-${created && created.id ? created.id : Date.now()}`;
+    } else {
+      if (!actText) {
+        return res.status(400).json({ error: 'Acte médical requis pour une demande de lettre de garantie.' });
+      }
+      const validationCode = `GAR-WA-${Date.now().toString().slice(-6)}-${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
+      const gRes = await query(`
+        INSERT INTO guarantee_letters (beneficiary_id, medical_act, estimated_amount, status, validation_code, document_url, agent_note)
+        VALUES ($1, $2, $3, 'pending', $4, $5, $6)
+        RETURNING *
+      `, [targetBeneficiaryId, actText, amountNum, validationCode, documentUrl, structText ? `Structure demandée : ${structText} (canal WhatsApp)` : 'Demande reçue via WhatsApp']);
+      created = gRes.rows[0];
+      code = (created && created.validation_code) || validationCode;
+    }
+
+    // Journal de notification : AUCUNE donnée médicale dans le corps (§5)
+    try {
+      await query(`
+        INSERT INTO notifications (beneficiary_id, recipient, channel, type, title, body, status)
+        VALUES ($1, $2, 'whatsapp', 'prise_en_charge', $3, $4, 'pending')
+      `, [
+        targetBeneficiaryId,
+        String(desk.whatsapp).replace(/[^0-9]/g, ''),
+        `Demande ${type === 'purchase_order' ? 'bon de commande' : 'lettre de garantie'} #${code}`,
+        `Nouvelle demande WhatsApp à instruire par la MSD ${msdCode}.`
+      ]);
+    } catch {
+      // Journalisation non bloquante
+    }
+
+    return res.status(201).json({
+      success: true,
+      type,
+      code,
+      msdCode,
+      desk: { msdCode: desk.msdCode, name: desk.name, whatsapp: desk.whatsapp },
+      documentUrl,
+      data: created
+    });
+  } catch (err) {
+    console.error('Erreur POST /whatsapp/request:', err.message);
+    return res.status(500).json({ error: 'Erreur lors de la création de la demande WhatsApp.' });
+  }
+});
+
+// Lecture d'une pièce jointe stockée en local (repli disque). Jamais servie
+// en statique public : ordonnances et devis sont des données de santé.
+// Accès : agent de la MSD propriétaire du dossier, ou admin.
+router.get('/documents/:folder/:msd/:file', authenticateToken, (req, res) => {
+  const role = normalizeRole(req.user && req.user.role);
+  if (!['agent', 'admin', 'superadmin', 'doctor', 'pharmacist', 'citizen'].includes(role)) {
+    return res.status(403).json({ error: 'Rôle non autorisé à consulter ce document.' });
+  }
+  const path = require('path');
+  const fs = require('fs');
+  const { UPLOADS_ROOT } = require('./objectStorage');
+  const { folder, msd, file } = req.params;
+  if (!/^[a-z0-9_-]+$/.test(folder) || !/^[A-Z0-9_-]+$/.test(msd) || !/^[a-zA-Z0-9._-]+$/.test(file) || file.includes('..')) {
+    return res.status(400).json({ error: 'Chemin de document invalide.' });
+  }
+  const scope = agentMsdScope(req);
+  if (scope && scope.toUpperCase() !== msd) {
+    return res.status(403).json({ error: 'Document hors de votre MSD.' });
+  }
+  const fullPath = path.join(UPLOADS_ROOT, folder, msd, file);
+  if (!fullPath.startsWith(UPLOADS_ROOT + path.sep) || !fs.existsSync(fullPath)) {
+    return res.status(404).json({ error: 'Document introuvable.' });
+  }
+  res.setHeader('Cache-Control', 'private, no-store');
+  return res.sendFile(fullPath);
 });
 
 module.exports = router;

@@ -83,7 +83,7 @@ export async function generateOfficialPdf({
 
   // Empreinte cryptographique infalsifiable DHIS2 & UNAMUSC (partagée PDF/Word).
   const { cleanRef, cleanDoc, cryptoHash } = computePdfFingerprint({ referenceNo, cmuNumber, docType });
-  const verifyUrl = `https://mutualis.sn/#/verify/${encodeURIComponent(cleanRef)}`;
+  const verifyUrl = `https://senmutuelles.sn/#/verify/${encodeURIComponent(cleanRef)}`;
 
   // ---------------------------------------------------------------------------
   // 1. EN-TÊTE OFFICIEL : DRAPEAU DU SÉNÉGAL (GAUCHE) & LOGO UNAMUSC (DROITE)
@@ -308,7 +308,7 @@ export async function generateOfficialPdf({
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7.5);
   doc.setTextColor(51, 65, 85);
-  const splitQrMsg = doc.splitTextToSize('Scannez ce QR code avec un smartphone pour vérifier l\'authenticité certifiée sur mutualis.sn', 84);
+  const splitQrMsg = doc.splitTextToSize('Scannez ce QR code avec un smartphone pour vérifier l\'authenticité certifiée sur senmutuelles.sn', 84);
   doc.text(splitQrMsg, 48, currentY + 14);
 
   doc.setFont('helvetica', 'bold');
@@ -357,7 +357,7 @@ export async function generateOfficialPdf({
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(6.8);
   doc.setTextColor(100, 116, 139);
-  doc.text(`Siège : Dakar, Sénégal  •  Doc n° ${cleanRef}  •  Vérification : https://mutualis.sn/verify-document  •  Émis le ${new Date().toLocaleDateString('fr-FR')}`, 14, footerY + 10);
+  doc.text(`Siège : Dakar, Sénégal  •  Doc n° ${cleanRef}  •  Vérification : https://senmutuelles.sn/verify-document  •  Émis le ${new Date().toLocaleDateString('fr-FR')}`, 14, footerY + 10);
 
   // Téléchargement du fichier PDF
   const safeFilename = filename.endsWith('.pdf') ? filename : `${filename}.pdf`;

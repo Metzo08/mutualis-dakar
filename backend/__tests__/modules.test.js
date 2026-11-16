@@ -12,8 +12,8 @@ const jwt = require('jsonwebtoken');
 const XLSX = require('xlsx');
 
 jest.mock('../db', () => {
-  const mockQuery = jest.fn();
-  const mockPool = { connect: jest.fn() };
+  const mockQuery = jest.fn().mockResolvedValue({ rows: [] });
+  const mockPool = { connect: jest.fn().mockResolvedValue({ query: jest.fn().mockResolvedValue({ rows: [] }), release: jest.fn() }) };
   return { query: mockQuery, pool: mockPool };
 });
 

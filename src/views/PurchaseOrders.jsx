@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { getBeneficiaryInfo } from '../utils/csuFormatter';
+import { formatTitleCase, formatSentenceCase } from '../utils/formatters';
+import { detectMsdCode, getMsdWhatsappInfo, refreshMsdWhatsappDirectory, compressImageFile, getMsdWhatsappDirectory } from '../utils/msdWhatsappConfig';
 
 export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, partnerUser = null, setView = null }) {
   const defaultOrders = [
@@ -25,7 +27,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
   const isPublic     = !isAgent && !isDoctor && !isMidwife && !isPharmacist && !isSuperAdmin && !isCitizen;
   const isStaff      = isDoctor || isMidwife || isAgent || isPharmacist || isSuperAdmin;
   // Peut valider les ordonnances en attente (agent gérant ou superadmin)
-  // eslint-disable-next-line no-unused-vars -- Droit de validation d'une ordonnance en attente (agent gérant ou superadmin). Le tableau de bord de validation est incomplet (`validatingOrder`, `setValidatingOrder` sont référencés plus bas sans être déclarés) : conservé, à arbitrer avec la reprise du tableau de bord.
+  // Droit de validation d'une ordonnance en attente (agent gérant ou superadmin)
   const canValidateOrders = isAgent || isSuperAdmin;
   // Peut valider la délivrance en pharmacie
   const canRedeemAtPharmacy = isPharmacist || isSuperAdmin;
@@ -49,6 +51,284 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
   const [editedPharmacyPrice, setEditedPharmacyPrice] = useState('');
   const [redeemSuccess, setRedeemSuccess] = useState('');
   const [creating, setCreating] = useState(false);
+  const [agentValidationMsg, setAgentValidationMsg] = useState('');
+  const [validatingOrder, setValidatingOrder] = useState(null);
+  const [agentRejectNote, setAgentRejectNote] = useState('');
+  const [lastCreatedOrder, setLastCreatedOrder] = useState(null);
+  const [whatsappOrderModal, setWhatsappOrderModal] = useState(null);
+  const [whatsappPhoneInput, setWhatsappPhoneInput] = useState(citizenUser?.phone || '+221 77 123 45 67');
+  const [whatsappRequestModal, setWhatsappRequestModal] = useState(false);
+  const [waReqMeds, setWaReqMeds] = useState('');
+  const [waReqPharmacy, setWaReqPharmacy] = useState('Pharmacie Partenaire Agréée CSU');
+  const [waReqAmount, setWaReqAmount] = useState('');
+  const waMsdCode = detectMsdCode({ citizenUser, agentUser, cmuNumber: activeCmuNumber });
+  const [waSelectedMsd, setWaSelectedMsd] = useState(waMsdCode);
+  const [waDesk, setWaDesk] = useState(() => getMsdWhatsappInfo(waMsdCode));
+  const [waDeskPhone, setWaDeskPhone] = useState(() => getMsdWhatsappInfo(waMsdCode)?.whatsapp || '+221 76 845 54 99');
+  const [waAttachment, setWaAttachment] = useState('');
+  const [waSending, setWaSending] = useState(false);
+  const [waSaveMsg, setWaSaveMsg] = useState('');
+
+  const handleSaveMsdWhatsappNumber = async () => {
+    if (!waDeskPhone) return;
+    try {
+      const token = localStorage.getItem('cmu-token') || localStorage.getItem('cmu-agent-token') || localStorage.getItem('token');
+      const res = await fetch(`${window.API_BASE_URL || ''}/api/whatsapp/msd-directory/${waSelectedMsd}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ phone: waDeskPhone })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setWaSaveMsg(`✓ Guichet ${waSelectedMsd} enregistré !`);
+        await refreshMsdWhatsappDirectory();
+        setTimeout(() => setWaSaveMsg(''), 4000);
+      } else {
+        alert(data.error || 'Erreur lors de l\'enregistrement.');
+      }
+    } catch {
+      alert('Erreur réseau lors de la mise à jour.');
+    }
+  };
+
+  useEffect(() => {
+    let alive = true;
+    refreshMsdWhatsappDirectory().then(() => {
+      if (alive) {
+        const info = getMsdWhatsappInfo(waSelectedMsd);
+        setWaDesk(info);
+        setWaDeskPhone(info.whatsapp);
+      }
+    });
+    return () => { alive = false; };
+  }, [waSelectedMsd]);
+
+  const handleSelectMsd = (msdCode) => {
+    setWaSelectedMsd(msdCode);
+    const info = getMsdWhatsappInfo(msdCode);
+    setWaDesk(info);
+    setWaDeskPhone(info.whatsapp);
+  };
+
+  const handleWaAttachment = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const compressed = await compressImageFile(file);
+    if (!compressed) {
+      alert('Format non reconnu : prenez une photo (JPG/PNG) de votre ordonnance médicale.');
+      return;
+    }
+    setWaAttachment(compressed);
+  };
+
+  const formatIncomingOrderWhatsAppRequestMsg = (refCode) => {
+    const estAmt = Number(waReqAmount || 0);
+    const cmuPart = Math.round(estAmt * 0.5);
+    const patientPart = Math.max(0, estAmt - cmuPart);
+    return [
+      `🇸🇳 *DEMANDE DE BON DE COMMANDE PHARMACIE (50%) — UNAMUSC*`,
+      `━━━━━━━━━━━━━━━━━━━━`,
+      `🔖 *Référence Demande :* #${refCode || 'ORD-WA-2026'}`,
+      `👤 *Assuré(e) :* ${activeFirstName} ${activeLastName}`,
+      `🪪 *N° Carte CSU :* ${activeCmuNumber}`,
+      `📱 *Téléphone Assuré :* ${whatsappPhoneInput || citizenUser?.phone || '+221 77 123 45 67'}`,
+      `🏪 *Pharmacie souhaitée :* ${waReqPharmacy || 'Pharmacie Partenaire Agréée CSU'}`,
+      `💊 *Médicaments prescrits :* ${waReqMeds || 'Selon photo ordonnance jointe'}`,
+      ``,
+      `💰 *Estimation Tiers-Payant Officine (50%) :*`,
+      `• Total estimé : ${estAmt.toLocaleString('fr-FR')} FCFA`,
+      `• Part Mutuelle (50%) : ${cmuPart.toLocaleString('fr-FR')} FCFA`,
+      `• Reste à charge assuré (50%) : ${patientPart.toLocaleString('fr-FR')} FCFA`,
+      ``,
+      `📎 *Pièce justificative :* Je joins ci-dessous la photo de mon ordonnance médicale pour recevoir mon Bon de Commande validé sur WhatsApp.`
+    ].join('\n');
+  };
+
+  const handleRequestOrderViaWhatsApp = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const medsText = formatSentenceCase(waReqMeds || 'Médicaments selon ordonnance WhatsApp').trim();
+    const amtNum = Math.max(0, parseFloat(waReqAmount) || 0);
+    const cmuPart = Math.round(amtNum * 0.5);
+    const patientPart = Math.max(0, amtNum - cmuPart);
+    const refCode = `ORD-WA-${Math.floor(1000 + Math.random() * 9000)}`;
+    const itemsArr = [{ name: medsText, qty: 1, price: amtNum }];
+
+    const token = localStorage.getItem('cmu-token') || localStorage.getItem('cmu-agent-token') || localStorage.getItem('token');
+    if (token) {
+      try {
+        await fetch(`${window.API_BASE_URL || ''}/api/whatsapp/request`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            type: 'purchase_order',
+            beneficiary_id: citizenUser?.id || 1,
+            structure_name: waReqPharmacy,
+            medical_act: medsText,
+            items: itemsArr,
+            estimated_amount: amtNum,
+            phone: whatsappPhoneInput,
+            attachment: waAttachment || null
+          })
+        });
+      } catch {
+        // Fallback local garanti
+      }
+    }
+
+    const newOrder = {
+      id: Date.now(),
+      order_code: refCode,
+      first_name: activeFirstName,
+      last_name: activeLastName,
+      cmu_number: activeCmuNumber,
+      phone: whatsappPhoneInput,
+      items_json: JSON.stringify(itemsArr),
+      total_amount: amtNum,
+      cmu_covered: cmuPart,
+      patient_pay: patientPart,
+      status: 'pending_review',
+      created_at: new Date().toISOString()
+    };
+    const updated = [newOrder, ...orders];
+    setOrders(updated);
+    try {
+      localStorage.setItem('cmu_purchase_orders', JSON.stringify(updated));
+    } catch {
+      // Ignore storage quota errors
+    }
+    setLastCreatedOrder(newOrder);
+
+    const rawDesk = String(waDeskPhone || '221770002026').replace(/[^0-9]/g, '');
+    const normalizedDesk = rawDesk.startsWith('221') ? rawDesk : (rawDesk.length === 9 ? `221${rawDesk}` : '221770002026');
+    const message = formatIncomingOrderWhatsAppRequestMsg(refCode);
+    const waUrl = `https://wa.me/${normalizedDesk}?text=${encodeURIComponent(message)}`;
+    window.open(waUrl, '_blank', 'noopener,noreferrer');
+
+    setWhatsappRequestModal(false);
+    setRedeemSuccess(`💬 Demande WhatsApp #${refCode} enregistrée et ouverte sur WhatsApp ! Joignez la photo de votre ordonnance dans la discussion.`);
+  };
+
+  const formatPurchaseOrderWhatsAppMsg = (ord) => {
+    if (!ord) return '';
+    let itemsList;
+    try {
+      itemsList = typeof ord.items_json === 'string' ? JSON.parse(ord.items_json) : (ord.items_json || []);
+    } catch {
+      itemsList = [];
+    }
+    const code = ord.order_code || `ORD-${ord.id}`;
+    const totalAmt = Number(ord.total_amount || 0);
+    const cmuAmt = Number(ord.cmu_covered || Math.round(totalAmt * 0.5));
+    const patientAmt = Number(ord.patient_pay || Math.round(totalAmt * 0.5));
+    const medsText = itemsList.length > 0
+      ? itemsList.map((i) => `• ${i.name} (x${i.qty}) : ${(Number(i.price || 0) * Number(i.qty || 1)).toLocaleString('fr-FR')} FCFA`).join('\n')
+      : '• Médicaments selon ordonnance médicale';
+    const verifyUrl = `${window.location.origin}/#/verify/${code}`;
+    return [
+      `🇸🇳 *UNAMUSC SÉNÉGAL — BON DE COMMANDE PHARMACIE (48H)*`,
+      `━━━━━━━━━━━━━━━━━━━━`,
+      `📄 *Code Bon :* #${code}`,
+      `👤 *Assuré(e) :* ${ord.first_name || activeFirstName} ${ord.last_name || activeLastName}`,
+      `🪪 *N° Carte CSU :* ${ord.cmu_number || activeCmuNumber}`,
+      `📌 *Statut :* ${ord.status === 'active' ? '✅ ACTIF (Valable 48h en pharmacie agréée)' : ord.status === 'used' ? '🔒 DÉLIVRÉ EN PHARMACIE' : '⏳ EN ATTENTE DE VALIDATION'}`,
+      ``,
+      `💊 *Médicaments prescrits :*`,
+      medsText,
+      ``,
+      `💰 *Décompte Tiers-Payant Officine (50%) :*`,
+      `• Total Ordonnance : ${totalAmt.toLocaleString('fr-FR')} FCFA`,
+      `• *Prise en charge Mutuelle (50%) : ${cmuAmt.toLocaleString('fr-FR')} FCFA*`,
+      `• *Reste à payer par l'assuré (50%) : ${patientAmt.toLocaleString('fr-FR')} FCFA*`,
+      ``,
+      `🔍 *Vérification pharmacie :* ${verifyUrl}`,
+      `_Présentez ce message WhatsApp ou le QR Code avec votre carte CSU en pharmacie partenaire._`
+    ].join('\n');
+  };
+
+  const openOrderWhatsAppModal = (ord) => {
+    setWhatsappPhoneInput(ord?.phone || citizenUser?.phone || '+221 77 123 45 67');
+    setWhatsappOrderModal(ord);
+  };
+
+  const handleSendOrderWhatsApp = async (ord, customPhone) => {
+    const targetOrder = ord || whatsappOrderModal;
+    if (!targetOrder) return;
+    const rawPhone = String(customPhone || whatsappPhoneInput || citizenUser?.phone || '221771234567').replace(/[^0-9]/g, '');
+    const normalizedPhone = rawPhone.startsWith('221') ? rawPhone : (rawPhone.length === 9 ? `221${rawPhone}` : rawPhone);
+    const message = formatPurchaseOrderWhatsAppMsg(targetOrder);
+    const token = localStorage.getItem('cmu-token') || localStorage.getItem('cmu-agent-token') || localStorage.getItem('token');
+    if (token) {
+      try {
+        await fetch(`${window.API_BASE_URL || ''}/api/notifications`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            recipient: normalizedPhone,
+            channel: 'whatsapp',
+            type: 'prise_en_charge',
+            subject: `Bon de Commande Pharmacie #${targetOrder.order_code || targetOrder.id}`,
+            body: message
+          })
+        });
+      } catch {
+        // Envoi WhatsApp direct même si la journalisation API échoue
+      }
+    }
+    const waUrl = `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(message)}`;
+    window.open(waUrl, '_blank', 'noopener,noreferrer');
+    setRedeemSuccess(`📲 Bon de commande #${targetOrder.order_code || targetOrder.id} prêt sur WhatsApp pour le +${normalizedPhone} !`);
+    setWhatsappOrderModal(null);
+  };
+
+  const handleApproveOrder = async (ord) => {
+    if (!ord) return;
+    const updatedOrder = { ...ord, status: 'active', agentNote: 'Ordonnance contrôlée et validée par un agent UNAMUSC.' };
+    const updated = orders.map((o) => (o.id === ord.id ? updatedOrder : o));
+    setOrders(updated);
+    localStorage.setItem('cmu_purchase_orders', JSON.stringify(updated));
+    const token = localStorage.getItem('cmu-agent-token') || localStorage.getItem('cmu-token') || localStorage.getItem('token');
+    if (token) {
+      try {
+        await fetch(`${window.API_BASE_URL || ''}/api/purchase-orders/${ord.id}/status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ status: 'active' })
+        });
+      } catch {
+        // Fallback local déjà mis à jour
+      }
+    }
+    setLastCreatedOrder(updatedOrder);
+    setAgentValidationMsg(`✅ Ordonnance #${ord.order_code || ord.id} de ${ord.first_name} ${ord.last_name} validée ! Vous pouvez lui envoyer son bon actif sur WhatsApp.`);
+  };
+
+  const handleRejectOrder = async (orderId, rejectReason) => {
+    if (!rejectReason || !rejectReason.trim()) {
+      alert('Veuillez préciser le motif du rejet pour informer l\'assuré.');
+      return;
+    }
+    const updated = orders.map((o) => (o.id === orderId ? { ...o, status: 'rejected', agentNote: rejectReason.trim() } : o));
+    setOrders(updated);
+    localStorage.setItem('cmu_purchase_orders', JSON.stringify(updated));
+    const token = localStorage.getItem('cmu-agent-token') || localStorage.getItem('cmu-token') || localStorage.getItem('token');
+    if (token) {
+      try {
+        await fetch(`${window.API_BASE_URL || ''}/api/purchase-orders/${orderId}/status`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ status: 'rejected' })
+        });
+      } catch {
+        // Fallback local déjà mis à jour
+      }
+    }
+    setValidatingOrder(null);
+    setAgentRejectNote('');
+    setAgentValidationMsg(`❌ Le bon de commande a été rejeté avec le motif : "${rejectReason.trim()}".`);
+  };
 
   const handlePrescriptionFileUpload = (e) => {
     const file = e.target.files && e.target.files[0];
@@ -115,7 +395,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
   // Générateur PDF / Fenêtre d'Impression A4 pour les Bons de Commande Pharmacie
   const generateAndPrintPurchaseOrderPDF = (voucher) => {
     if (!voucher) return;
-    let itemsList = [];
+    let itemsList;
     try {
       itemsList = typeof voucher.items_json === 'string' ? JSON.parse(voucher.items_json) : (voucher.items_json || []);
       // eslint-disable-next-line no-unused-vars -- Lignes de commande illisibles : le PDF est imprimé sans détail d'articles plutôt que d'échouer.
@@ -166,7 +446,9 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               </div>
               <div class="text-end">
                 <img src="/unamusc_logo.png" alt="UNAMUSC Sénégal" style="width: 85px; height: auto; object-fit: contain;" />
-                   <!-- Titre du Bon Pharmacie -->
+              </div>
+            </div>
+            <!-- Titre du Bon Pharmacie -->
             <div class="text-center my-4 p-3 rounded-3" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
               <h4 class="fw-bold mb-1" style="color: #047857; letter-spacing: 0.5px;">Bon de commande de médicaments (48h)</h4>
               <small class="text-muted fw-semibold">Système de Tiers-Payant UNAMUSC (Prise en charge 50% — Pharmacies agréées)</small><br />
@@ -292,7 +574,10 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
     setLoading(true);
     try {
       const storedLocal = JSON.parse(localStorage.getItem('cmu_purchase_orders') || '[]');
-      const res = await fetch('/api/purchase-orders');
+      const token = localStorage.getItem('cmu-token') || localStorage.getItem('cmu-agent-token') || localStorage.getItem('token');
+      const res = await fetch(`${window.API_BASE_URL || ''}/api/purchase-orders`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
       const json = await res.json();
       if (json.success && json.data && json.data.length > 0) {
         setOrders([...storedLocal, ...json.data]);
@@ -370,13 +655,17 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
       status: 'active',
       created_at: new Date().toISOString(),
       expires_at: new Date(Date.now() + 48 * 3600 * 1000).toISOString(),
-      order_code: `ORD-2026-PHARM-${Math.floor(100 + Math.random() * 900)}`
+      order_code: `ORD-2026-PHARM-${Math.floor(100 + Math.random() * 900)}`,
+      phone: citizenUser?.phone || whatsappPhoneInput || '+221 77 123 45 67'
     };
 
     try {
-      await fetch('/api/purchase-orders', {
+      const token = localStorage.getItem('cmu-token') || localStorage.getItem('cmu-agent-token') || localStorage.getItem('token');
+      await fetch(`${window.API_BASE_URL || ''}/api/purchase-orders`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+
+
         body: JSON.stringify({
           beneficiary_id: 1,
           items: items,
@@ -391,6 +680,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
     setOrders(updated);
     localStorage.setItem('cmu_purchase_orders', JSON.stringify(updated));
 
+    setLastCreatedOrder(newOrder);
     setRedeemSuccess(`🎉 Bon de commande ${newOrder.order_code} émis avec succès sous Tiers-Payant UNAMUSC (Valable 48h) !`);
     setItems([]);
     setCreating(false);
@@ -519,17 +809,132 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
         </div>
       </section>
 
+      {/* BARRE DE CONNEXION LOGIQUE : LETTRES DE GARANTIE (HÔPITAL 80%) <-> BONS DE COMMANDE (PHARMACIE 50%) */}
+      <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 p-3 rounded-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)' }}>
+        <div className="d-flex flex-wrap align-items-center gap-2">
+          <button
+            type="button"
+            className="btn fw-bold px-3.5 py-2 d-inline-flex align-items-center gap-2"
+            style={{ borderRadius: '12px', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)' }}
+            onClick={() => {
+              if (setView) setView('guarantees');
+              window.location.hash = '#/guarantees';
+            }}
+          >
+            🏥 {lang === 'wo' ? 'Bataaxalu Garantie (Hôpital 80%)' : 'Lettres de Garantie (Hôpital 80% / SESAME 100%)'}
+          </button>
+          <button
+            type="button"
+            className="btn fw-bold px-3.5 py-2 d-inline-flex align-items-center gap-2 text-white shadow-sm"
+            style={{ borderRadius: '12px', background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', border: 'none' }}
+          >
+            💊 {lang === 'wo' ? 'Bonu Garab (Pharmacie 50%)' : 'Bons de Commande Médicaments (Pharmacie 50%)'}
+          </button>
+        </div>
+        <div className="d-flex align-items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            className="btn btn-sm fw-bold px-3 py-2 d-inline-flex align-items-center gap-1.5 text-white shadow-sm"
+            style={{ borderRadius: '10px', background: '#25d366', border: '1.5px solid #25d366' }}
+            onClick={() => {
+              if (items.length > 0) {
+                setWaReqMeds(items.map((i) => `${i.name} (x${i.qty})`).join(', '));
+                setWaReqAmount(String(items.reduce((s, i) => s + Number(i.price || 0) * Number(i.qty || 1), 0)));
+              }
+              setWhatsappRequestModal(true);
+            }}
+          >
+            💬 {lang === 'wo' ? 'Laaj Bon ci WhatsApp' : 'Demander un Bon par WhatsApp'}
+          </button>
+          <button
+            type="button"
+            className="btn btn-sm fw-bold px-3 py-2 d-inline-flex align-items-center gap-1.5"
+            style={{ borderRadius: '10px', background: 'rgba(37, 211, 102, 0.14)', color: '#25d366', border: '1.5px solid #25d366' }}
+            onClick={() => openOrderWhatsAppModal(lastCreatedOrder || visibleOrders[0] || orders[0])}
+          >
+            📲 {lang === 'wo' ? 'Jot sa Bon ci WhatsApp' : 'Recevoir mon Bon sur WhatsApp'}
+          </button>
+        </div>
+      </div>
+
+      {/* GUIDE VISUEL SIMPLE EN 3 ÉTAPES POUR L'ASSURÉ */}
+      <div className="row g-3 mb-4">
+        <div className="col-md-4">
+          <div className="p-3 rounded-4 h-100 d-flex align-items-start gap-3" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <span className="badge rounded-circle d-inline-flex align-items-center justify-content-center fw-bold" style={{ width: '34px', height: '34px', background: '#059669', color: '#fff', fontSize: '0.95rem', flexShrink: 0 }}>1</span>
+            <div>
+              <strong className="d-block mb-1" style={{ color: 'var(--text-main)', fontSize: '0.92rem' }}>
+                {lang === 'wo' ? '1. Duggalal sa ordonnance' : '1. Ajoutez votre ordonnance'}
+              </strong>
+              <small style={{ color: 'var(--text-sub)', fontSize: '0.8rem', lineHeight: 1.45, display: 'block' }}>
+                {lang === 'wo' ? 'Bindal garab yi doktoor bi bind te boole ci nataalu ordonnance bi.' : 'Saisissez les médicaments prescrits par votre médecin et joignez la photo de l\'ordonnance.'}
+              </small>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-4">
+          <div className="p-3 rounded-4 h-100 d-flex align-items-start gap-3" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <span className="badge rounded-circle d-inline-flex align-items-center justify-content-center fw-bold" style={{ width: '34px', height: '34px', background: '#25d366', color: '#fff', fontSize: '0.95rem', flexShrink: 0 }}>2</span>
+            <div>
+              <strong className="d-block mb-1" style={{ color: 'var(--text-main)', fontSize: '0.92rem' }}>
+                {lang === 'wo' ? '2. Jot ko ci WhatsApp walla PDF' : '2. Recevez le Bon sur WhatsApp'}
+              </strong>
+              <small style={{ color: 'var(--text-sub)', fontSize: '0.8rem', lineHeight: 1.45, display: 'block' }}>
+                {lang === 'wo' ? 'Bon bi dafay am code #ORD ak QR Code, baax 48h ci pharmacie yépp.' : 'Recevez instantanément votre Bon certifié (valable 48h) sur votre WhatsApp ou en PDF.'}
+              </small>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-4">
+          <div className="p-3 rounded-4 h-100 d-flex align-items-start gap-3" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <span className="badge rounded-circle d-inline-flex align-items-center justify-content-center fw-bold" style={{ width: '34px', height: '34px', background: '#0ea5e9', color: '#fff', fontSize: '0.95rem', flexShrink: 0 }}>3</span>
+            <div>
+              <strong className="d-block mb-1" style={{ color: 'var(--text-main)', fontSize: '0.92rem' }}>
+                {lang === 'wo' ? '3. Fayal 50% rekk ci pharmacie' : '3. Ne payez que 50% en pharmacie'}
+              </strong>
+              <small style={{ color: 'var(--text-sub)', fontSize: '0.8rem', lineHeight: 1.45, display: 'block' }}>
+                {lang === 'wo' ? 'Wonal sa message WhatsApp ci pharmacie agréée bi : mutuelle bi dafay fay 50%.' : 'Présentez votre message WhatsApp ou PDF au pharmacien agréé : la mutuelle règle 50%.'}
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {redeemSuccess && (
         <div className="alert alert-success d-flex align-items-center mb-4 rounded-3 shadow-sm border-0">
           <span className="fs-4 me-2">✅</span>
-          <div style={{ color: 'var(--text-main)' }}>{redeemSuccess}</div>
+          <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 w-100" style={{ color: 'var(--text-main)' }}>
+            <span>{redeemSuccess}</span>
+            {(lastCreatedOrder || visibleOrders[0]) && (
+              <button
+                type="button"
+                className="btn btn-sm fw-bold px-3 py-1.5 text-white"
+                style={{ background: '#25d366', border: 'none', borderRadius: '10px' }}
+                onClick={() => openOrderWhatsAppModal(lastCreatedOrder || visibleOrders[0])}
+              >
+                📲 Recevoir / Envoyer sur WhatsApp
+              </button>
+            )}
+          </div>
         </div>
       )}
 
       {agentValidationMsg && (
         <div className="alert alert-info d-flex align-items-center mb-4 rounded-3 shadow-sm border-0">
           <span className="fs-4 me-2">🛡️</span>
-          <div style={{ color: 'var(--text-main)' }}>{agentValidationMsg}</div>
+          <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 w-100" style={{ color: 'var(--text-main)' }}>
+            <span>{agentValidationMsg}</span>
+            {lastCreatedOrder && (
+              <button
+                type="button"
+                className="btn btn-sm fw-bold px-3 py-1.5 text-white"
+                style={{ background: '#25d366', border: 'none', borderRadius: '10px' }}
+                onClick={() => openOrderWhatsAppModal(lastCreatedOrder)}
+              >
+                📲 Notifier l'assuré sur WhatsApp
+              </button>
+            )}
+          </div>
         </div>
       )}
 
@@ -720,7 +1125,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                 className="form-control input"
                 placeholder="ex: Amoxicilline 500mg, Paracétamol..."
                 value={medicineName}
-                onChange={(e) => setMedicineName(e.target.value)}
+                onChange={(e) => setMedicineName(formatSentenceCase(e.target.value))}
                 style={{ borderRadius: '10px', height: '48px' }}
                 required
               />
@@ -869,7 +1274,8 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                     items_json: JSON.stringify([{ name: 'Amoxicilline 500mg', qty: 1, price: 3500 }]),
                     total_amount: 3500,
                     status: 'active',
-                    order_code: `ORD-2026-PHARM-${Math.floor(100 + Math.random() * 900)}`
+                    order_code: `ORD-2026-PHARM-${Math.floor(100 + Math.random() * 900)}`,
+      phone: citizenUser?.phone || whatsappPhoneInput || '+221 77 123 45 67'
                   });
                 }}
               >
@@ -910,8 +1316,8 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                   </tr>
                 </thead>
                 <tbody>
-                  {visibleOrders.map((ord, idx) => {
-                    let itemsList = [];
+                  {visibleOrders.slice((Math.min(orderPage, Math.max(1, Math.ceil(visibleOrders.length / 10))) - 1) * 10, Math.min(orderPage, Math.max(1, Math.ceil(visibleOrders.length / 10))) * 10).map((ord, idx) => {
+                    let itemsList;
                     try {
                       itemsList = typeof ord.items_json === 'string' ? JSON.parse(ord.items_json) : (ord.items_json || []);
                       // eslint-disable-next-line no-unused-vars -- Lignes de commande illisibles : la ligne est rendue sans détail d'articles plutôt que de casser le tableau.
@@ -1012,6 +1418,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                           {ord.status === 'used' && <span className="badge bg-secondary px-3 py-2 text-white fw-bold d-inline-block shadow-sm" style={{ borderRadius: '12px', fontSize: '0.8rem' }}>🔒 Délivré en pharmacie</span>}
                           {ord.status === 'expired' && <span className="badge bg-danger px-3 py-2 text-white fw-bold d-inline-block shadow-sm" style={{ borderRadius: '12px', fontSize: '0.8rem' }}>⚠️ Expiré</span>}
                           {ord.status === 'pending_review' && <span className="badge px-3 py-2 fw-bold d-inline-block shadow-sm" style={{ borderRadius: '12px', background: '#f59e0b', color: '#0f172a', fontSize: '0.8rem' }}>⏳ En attente validation ordonnance</span>}
+                          {ord.status === 'rejected' && <span className="badge bg-danger px-3 py-2 text-white fw-bold d-inline-block shadow-sm" style={{ borderRadius: '12px', fontSize: '0.8rem' }}>❌ Ordonnance rejetée</span>}
                         </td>
 
                         {/* 7. Actions */}
@@ -1024,6 +1431,47 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                               style={{ borderRadius: '10px', fontSize: '0.82rem' }}
                             >
                               📄 PDF
+                            </button>
+
+                            {canValidateOrders && ord.status === 'pending_review' && (
+                              <>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-success fw-bold px-3 py-2 text-white shadow-sm hover-lift"
+                                  onClick={() => handleApproveOrder(ord)}
+                                  style={{ borderRadius: '10px', fontSize: '0.82rem', background: '#10b981', borderColor: '#10b981' }}
+                                >
+                                  ✅ Valider ordonnance
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-sm btn-danger fw-bold px-3 py-2 text-white shadow-sm hover-lift"
+                                  onClick={() => { setValidatingOrder(ord); setAgentRejectNote(''); }}
+                                  style={{ borderRadius: '10px', fontSize: '0.82rem' }}
+                                >
+                                  ❌ Rejeter
+                                </button>
+                              </>
+                            )}
+
+                            <button
+                              type="button"
+                              className="btn btn-sm fw-bold px-3 py-2 hover-lift"
+                              onClick={() => openOrderWhatsAppModal(ord)}
+                              style={{ borderRadius: '10px', fontSize: '0.82rem', background: 'rgba(37, 211, 102, 0.16)', color: '#25d366', border: '1.5px solid #25d366' }}
+                              title="Recevoir ou envoyer ce bon de commande sur WhatsApp"
+                            >
+                              📲 WhatsApp
+                            </button>
+
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-outline-info fw-bold px-3 py-2 hover-lift"
+                              onClick={() => setSelectedVoucher(ord)}
+                              style={{ borderRadius: '10px', fontSize: '0.82rem' }}
+                              title="Aperçu du bon de commande"
+                            >
+                              👁️ Bon
                             </button>
 
                             {/* Validation délivrance — Pharmacien / SuperAdmin uniquement sur bons actifs */}
@@ -1090,7 +1538,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
         {(() => {
           const pageSize = 10;
           const citizenTotalCovered = visibleOrders.reduce((sum, o) => sum + (Number(o.cmu_covered || (o.total_amount * 0.5)) || 0), 0);
-          const totalVolume = isCitizen ? visibleOrders.length : 1240;
+          const totalVolume = visibleOrders.length;
           const totalPages = Math.max(1, Math.ceil(totalVolume / pageSize));
           const safePage = Math.min(orderPage, totalPages);
           const startItem = totalVolume === 0 ? 0 : (safePage - 1) * pageSize + 1;
@@ -1354,6 +1802,31 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                 >
                   📥 Télécharger le bon PDF
                 </button>
+                <button
+                  type="button"
+                  className="btn fw-bold px-4 text-white"
+                  onClick={() => {
+                    const v = selectedVoucher;
+                    setSelectedVoucher(null);
+                    openOrderWhatsAppModal(v);
+                  }}
+                  style={{ background: '#25d366', borderColor: '#25d366', borderRadius: '12px' }}
+                >
+                  📲 Recevoir sur WhatsApp
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-outline-info fw-bold px-3"
+                  onClick={() => {
+                    const code = selectedVoucher.order_code || `ORD-${selectedVoucher.id}`;
+                    setSelectedVoucher(null);
+                    if (setView) setView('verify');
+                    window.location.hash = `#/verify/${code}`;
+                  }}
+                  style={{ borderRadius: '12px' }}
+                >
+                  🔍 Vérifier (#/verify)
+                </button>
                 <button type="button" className="btn btn-secondary fw-bold" style={{ borderRadius: '12px' }} onClick={() => setSelectedVoucher(null)}>
                   Fermer
                 </button>
@@ -1396,7 +1869,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                   className="form-control" 
                   style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                   value={editingOrderObj.first_name || ''}
-                  onChange={(e) => setEditingOrderObj({ ...editingOrderObj, first_name: e.target.value })}
+                  onChange={(e) => setEditingOrderObj({ ...editingOrderObj, first_name: formatTitleCase(e.target.value) })}
                   placeholder="Ex: Amadou"
                   required
                 />
@@ -1409,7 +1882,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                   className="form-control" 
                   style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                   value={editingOrderObj.last_name || ''}
-                  onChange={(e) => setEditingOrderObj({ ...editingOrderObj, last_name: e.target.value })}
+                  onChange={(e) => setEditingOrderObj({ ...editingOrderObj, last_name: formatTitleCase(e.target.value) })}
                   placeholder="Ex: Sow"
                   required
                 />
@@ -1482,7 +1955,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                 className="form-control" 
                 style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                 value={editingOrderObj.agentNote || ''}
-                onChange={(e) => setEditingOrderObj({ ...editingOrderObj, agentNote: e.target.value })}
+                onChange={(e) => setEditingOrderObj({ ...editingOrderObj, agentNote: formatSentenceCase(e.target.value) })}
                 placeholder="Ex: Ordonnance vérifiée et prise en charge accordée à 80%."
               />
             </div>
@@ -1510,6 +1983,342 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
         document.body
       )}
       {/* MODAL / POP-UP DE CONFIRMATION DE SUPPRESSION (React Portal) */}
+      {/* MODALE D'ENVOI / RÉCEPTION WHATSAPP DU BON DE COMMANDE (React Portal) */}
+      {whatsappOrderModal && createPortal(
+        <div
+          style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 9999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.25rem', overflowY: 'auto' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setWhatsappOrderModal(null); }}
+        >
+          <div style={{ maxWidth: '580px', width: '100%', background: 'var(--bg-card, #1e293b)', color: 'var(--text-main, #ffffff)', borderRadius: '24px', border: '2px solid #25d366', boxShadow: '0 25px 60px rgba(0,0,0,0.5)', overflow: 'hidden', margin: 'auto' }}>
+            <div className="p-3.5 d-flex justify-content-between align-items-center" style={{ background: 'linear-gradient(135deg, #128c7e 0%, #25d366 100%)', color: '#ffffff' }}>
+              <div className="d-flex align-items-center gap-2">
+                <span style={{ fontSize: '1.35rem' }}>📲</span>
+                <div>
+                  <h5 className="fw-bold mb-0" style={{ fontSize: '1.05rem', color: '#ffffff' }}>
+                    {lang === 'wo' ? 'Jot Bonu Garab bi ci WhatsApp' : 'Recevoir / Envoyer le Bon de Commande par WhatsApp'}
+                  </h5>
+                  <small style={{ opacity: 0.92, fontSize: '0.76rem' }}>
+                    Code Bon : #{whatsappOrderModal.order_code || `ORD-${whatsappOrderModal.id}`} • Tiers-Payant 50%
+                  </small>
+                </div>
+              </div>
+              <button type="button" className="btn-close btn-close-white" onClick={() => setWhatsappOrderModal(null)}></button>
+            </div>
+
+            <div className="p-4">
+              <div className="mb-3">
+                <label className="form-label small fw-bold mb-1" style={{ color: '#25d366' }}>
+                  📱 {lang === 'wo' ? 'Nimero téléphone WhatsApp assuré bi :' : 'Numéro WhatsApp de l\'assuré (Sénégal +221) :'}
+                </label>
+                <input
+                  type="tel"
+                  className="form-control fw-bold"
+                  value={whatsappPhoneInput}
+                  onChange={(e) => setWhatsappPhoneInput(e.target.value)}
+                  placeholder="Ex: +221 77 123 45 67"
+                  style={{ borderRadius: '12px', fontSize: '1.05rem', border: '1.5px solid #25d366', background: 'var(--bg-card-subtle)', color: 'var(--text-main)' }}
+                />
+                <small className="text-muted d-block mt-1" style={{ fontSize: '0.76rem' }}>
+                  Le bon officiel complet (code, médicaments, part mutuelle 50%, reste à payer et lien de vérification) sera envoyé sur ce numéro.
+                </small>
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label small fw-bold text-muted mb-1">Aperçu du message officiel WhatsApp :</label>
+                <pre
+                  className="p-3 rounded-3 mb-0"
+                  style={{ background: 'rgba(15, 23, 42, 0.55)', color: '#e2e8f0', fontSize: '0.78rem', whiteSpace: 'pre-wrap', maxHeight: '220px', overflowY: 'auto', border: '1px solid rgba(37, 211, 102, 0.3)', fontFamily: 'inherit' }}
+                >
+                  {formatPurchaseOrderWhatsAppMsg(whatsappOrderModal)}
+                </pre>
+              </div>
+
+              <div className="d-flex justify-content-end gap-2 pt-2">
+                <button
+                  type="button"
+                  className="btn btn-secondary fw-bold px-3"
+                  style={{ borderRadius: '12px' }}
+                  onClick={() => setWhatsappOrderModal(null)}
+                >
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  className="btn fw-bold px-4 text-white d-inline-flex align-items-center gap-2"
+                  style={{ background: '#25d366', border: 'none', borderRadius: '12px', boxShadow: '0 4px 14px rgba(37, 211, 102, 0.35)' }}
+                  onClick={() => handleSendOrderWhatsApp(whatsappOrderModal, whatsappPhoneInput)}
+                >
+                  📲 Ouvrir WhatsApp et Envoyer maintenant
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+      {whatsappRequestModal && createPortal(
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(15, 23, 42, 0.85)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            zIndex: 9999998,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem',
+            overflowY: 'auto'
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setWhatsappRequestModal(false); }}
+        >
+          <div
+            className="shadow-2xl d-flex flex-column"
+            style={{
+              maxWidth: '620px',
+              width: '100%',
+              maxHeight: '92vh',
+              background: 'var(--bg-card, #1e293b)',
+              color: 'var(--text-main, #ffffff)',
+              borderRadius: '24px',
+              overflow: 'hidden',
+              border: '2px solid #25d366',
+              boxShadow: '0 25px 70px rgba(37, 211, 102, 0.25), 0 10px 30px rgba(0, 0, 0, 0.5)'
+            }}
+          >
+            {/* Entête fixe */}
+            <div
+              style={{
+                flexShrink: 0,
+                background: 'linear-gradient(135deg, #075e54 0%, #128c7e 55%, #25d366 100%)',
+                padding: '1.15rem 1.4rem',
+                color: '#fff'
+              }}
+              className="d-flex justify-content-between align-items-center"
+            >
+              <div className="d-flex align-items-center gap-2">
+                <span style={{ fontSize: '1.6rem' }}>💊</span>
+                <div>
+                  <h5 className="fw-bold mb-0 text-white" style={{ fontSize: '1.05rem' }}>
+                    Demander un Bon de Commande par WhatsApp
+                  </h5>
+                  <small style={{ opacity: 0.9, fontSize: '0.78rem' }}>
+                    Guichet WhatsApp UNAMUSC • Tiers-Payant Pharmacie 50% • Validation sur ordonnance
+                  </small>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="btn-close btn-close-white"
+                onClick={() => setWhatsappRequestModal(false)}
+              />
+            </div>
+
+            {/* Corps défilable avec scrollbar visible */}
+            <form
+              onSubmit={handleRequestOrderViaWhatsApp}
+              className="d-flex flex-column"
+              style={{
+                flex: '1 1 auto',
+                overflowY: 'auto',
+                maxHeight: 'calc(92vh - 75px)',
+                padding: '1.25rem 1.5rem'
+              }}
+            >
+              {/* Choix de la MSD / Département */}
+              <div className="mb-3">
+                <label className="form-label small fw-bold mb-1" style={{ color: 'var(--text-main)' }}>
+                  🏛️ Mutuelle de Santé (MSD) / Département de rattachement :
+                </label>
+                <select
+                  className="form-select"
+                  value={waSelectedMsd}
+                  onChange={(e) => handleSelectMsd(e.target.value)}
+                  style={{ borderRadius: '10px', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}
+                >
+                  {getMsdWhatsappDirectory().map((d) => (
+                    <option key={d.msdCode} value={d.msdCode}>
+                      {d.name} ({d.region}) — {d.whatsapp}
+                    </option>
+                  ))}
+                </select>
+                <small className="text-muted d-block mt-1">
+                  Demande adressée au guichet officiel de la <strong>{waDesk?.name || 'MSD Dakar'}</strong> ({waDesk?.region}).
+                </small>
+              </div>
+
+              {/* Pharmacie et Montant */}
+              <div className="row g-2 mb-3">
+                <div className="col-md-6">
+                  <label className="form-label small fw-bold mb-1" style={{ color: 'var(--text-main)' }}>
+                    🏪 Pharmacie partenaire souhaitée :
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={waReqPharmacy}
+                    onChange={(e) => setWaReqPharmacy(formatTitleCase(e.target.value))}
+                    placeholder="Ex: Pharmacie Guigon Dakar"
+                    required
+                    style={{ borderRadius: '10px', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}
+                  />
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label small fw-bold mb-1" style={{ color: 'var(--text-main)' }}>
+                    💰 Montant estimé ordonnance (FCFA) :
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    className="form-control fw-bold"
+                    value={waReqAmount}
+                    onChange={(e) => setWaReqAmount(e.target.value)}
+                    placeholder="Ex: 18500"
+                    required
+                    style={{ borderRadius: '10px', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}
+                  />
+                </div>
+              </div>
+
+              {/* Médicaments prescrits */}
+              <div className="mb-3">
+                <label className="form-label small fw-bold mb-1" style={{ color: 'var(--text-main)' }}>
+                  💊 Médicaments prescrits sur l'ordonnance :
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={waReqMeds}
+                  onChange={(e) => setWaReqMeds(formatSentenceCase(e.target.value))}
+                  placeholder="Ex: Insuline Lantus, Metformine 850mg, Paracétamol 1g"
+                  required
+                  style={{ borderRadius: '10px', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}
+                />
+              </div>
+
+              {/* PIÈCE JOINTE : PHOTO DE L'ORDONNANCE */}
+              <div className="mb-3 p-3 rounded-3" style={{ background: 'rgba(5, 150, 105, 0.08)', border: '1.5px dashed #059669' }}>
+                <label className="form-label small fw-bold mb-1 d-flex align-items-center justify-content-between" style={{ color: 'var(--text-main)' }}>
+                  <span>📎 Joindre l'ordonnance médicale (Photo / Scan) :</span>
+                  <span className="badge bg-success" style={{ fontSize: '0.72rem' }}>Recommandé</span>
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="form-control"
+                  onChange={handleWaAttachment}
+                  style={{ borderRadius: '10px', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}
+                />
+                {waAttachment ? (
+                  <div className="d-flex align-items-center gap-2 mt-2 text-success fw-bold small">
+                    <span>✓ Photo de l'ordonnance prête et compressée ({Math.round(waAttachment.length / 1024)} Ko)</span>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-link text-danger p-0 ms-auto text-decoration-none"
+                      onClick={() => setWaAttachment('')}
+                    >
+                      ✕ Supprimer
+                    </button>
+                  </div>
+                ) : (
+                  <small className="text-muted d-block mt-1">
+                    Prenez une photo de votre ordonnance pour permettre à la mutuelle de valider immédiatement votre Bon de Commande (50%).
+                  </small>
+                )}
+              </div>
+
+              {/* Téléphones : Assuré et Guichet */}
+              <div className="row g-2 mb-3">
+                <div className="col-md-6">
+                  <label className="form-label small fw-bold mb-1" style={{ color: 'var(--text-main)' }}>
+                    📱 Votre numéro WhatsApp (pour recevoir) :
+                  </label>
+                  <input
+                    type="tel"
+                    className="form-control"
+                    value={whatsappPhoneInput}
+                    onChange={(e) => setWhatsappPhoneInput(e.target.value)}
+                    placeholder="+221 77 123 45 67"
+                    style={{ borderRadius: '10px', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}
+                  />
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label small fw-bold mb-1" style={{ color: 'var(--text-main)' }}>
+                    🏢 Guichet WhatsApp de la Mutuelle :
+                  </label>
+                  <input
+                    type="tel"
+                    className="form-control fw-bold"
+                    value={waDeskPhone}
+                    onChange={(e) => setWaDeskPhone(e.target.value)}
+                    placeholder="+221 76 845 54 99"
+                    style={{ borderRadius: '10px', background: 'var(--bg-card-subtle)', color: '#25d366', border: '1px solid #25d366' }}
+                  />
+                  {(canValidateOrders || isSuperAdmin) && (
+                    <div className="mt-1 d-flex align-items-center gap-2">
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-success py-0 px-2"
+                        style={{ fontSize: '0.74rem', borderRadius: '6px' }}
+                        onClick={handleSaveMsdWhatsappNumber}
+                        title="Enregistrer ce numéro comme contact officiel de cette MSD"
+                      >
+                        💾 Sauvegarder pour la MSD {waSelectedMsd}
+                      </button>
+                      {waSaveMsg && <span className="text-success small fw-bold">{waSaveMsg}</span>}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Aperçu message WhatsApp */}
+              <div className="mb-3">
+                <label className="form-label small fw-bold text-muted mb-1">Aperçu du message WhatsApp :</label>
+                <pre
+                  className="p-2.5 rounded-3 mb-0"
+                  style={{ background: 'rgba(15, 23, 42, 0.55)', color: '#e2e8f0', fontSize: '0.74rem', whiteSpace: 'pre-wrap', maxHeight: '130px', overflowY: 'auto', border: '1px solid rgba(37, 211, 102, 0.3)', fontFamily: 'inherit' }}
+                >
+                  {formatIncomingOrderWhatsAppRequestMsg()}
+                </pre>
+              </div>
+
+              {/* PIED DE MODALE FIXE / STICKY : TOUJOURS VISIBLE SANS AVOIR À DÉFILER */}
+              <div
+                className="d-flex justify-content-end align-items-center gap-2 pt-2 mt-auto"
+                style={{
+                  position: 'sticky',
+                  bottom: 0,
+                  background: 'var(--bg-card, #1e293b)',
+                  borderTop: '1px solid var(--border-color, #334155)',
+                  zIndex: 5,
+                  paddingTop: '0.75rem',
+                  paddingBottom: '0.25rem'
+                }}
+              >
+                <button
+                  type="button"
+                  className="btn btn-secondary fw-bold px-3"
+                  style={{ borderRadius: '12px' }}
+                  onClick={() => setWhatsappRequestModal(false)}
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="btn fw-bold px-4 text-white d-inline-flex align-items-center gap-2"
+                  style={{ background: '#25d366', border: 'none', borderRadius: '12px', boxShadow: '0 4px 14px rgba(37, 211, 102, 0.35)' }}
+                >
+                  💬 Enregistrer & Envoyer ma demande sur WhatsApp
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>,
+        document.body
+      )}
       {confirmDeleteObj && createPortal(
         <div 
           style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.82)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', zIndex: 9999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.25rem' }}

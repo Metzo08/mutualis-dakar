@@ -1,4 +1,4 @@
-import { useState, useEffect, Component } from 'react';
+import { useState, useEffect, Component, lazy, Suspense } from 'react';
 import Header from './components/Header';
 import ChatbotWidget from './components/ChatbotWidget';
 import AudioReader from './components/AudioReader';
@@ -8,45 +8,45 @@ import NotFound from './components/NotFound';
 
 // Import Views
 import Home from './views/Home';
-import Institutionnel from './views/Institutionnel';
-import Departements from './views/Departements';
-import Cartographie from './views/Cartographie';
-import BaseNationale from './views/BaseNationale';
-import ServicesEnLigne from './views/ServicesEnLigne';
-import Beneficiaries from './views/Beneficiaries';
-import Login from './views/Login';
-import Medicaments from './views/Medicaments';
-import AuditLogs from './views/AuditLogs';
-import Complaints from './views/Complaints';
-import Profile from './views/Profile';
-import ProgrammesCSU from './views/ProgrammesCSU';
-import GalerieCSU from './views/GalerieCSU';
-import InfosCSU from './views/InfosCSU';
-import BlogExperts from './views/BlogExperts';
-import ParrainageCSU from './views/ParrainageCSU';
-import Partnership from './views/Partnership';
-import VerifyCard from './views/VerifyCard';
-import AgentDashboard from './views/AgentDashboard';
-import Claims from './views/Claims';
-import Notifications from './views/Notifications';
-import Cotisations from './views/Cotisations';
-import PartnerPortal from './views/PartnerPortal';
-import RegionalStats from './views/RegionalStats';
-import Loyalty from './views/Loyalty';
-import Payments from './views/Payments';
-import RsePortal from './views/RsePortal';
-import GuaranteeLetters from './views/GuaranteeLetters';
-import PurchaseOrders from './views/PurchaseOrders';
-import Telemedicine from './views/Telemedicine';
-import MedicalProfile from './views/MedicalProfile';
-import MaternalHealth from './views/MaternalHealth';
-import InstitutionPortal from './views/InstitutionPortal';
-import SuperAdminGovernance from './views/SuperAdminGovernance';
-import CardStudio from './views/CardStudio';
-import AccountsAndCards from './views/AccountsAndCards';
-import SecurityCenter from './views/SecurityCenter';
-import ExcelReports from './views/ExcelReports';
-import ImportControl from './views/ImportControl';
+const Institutionnel = lazy(() => import('./views/Institutionnel'));
+const Departements = lazy(() => import('./views/Departements'));
+const Cartographie = lazy(() => import('./views/Cartographie'));
+const BaseNationale = lazy(() => import('./views/BaseNationale'));
+const ServicesEnLigne = lazy(() => import('./views/ServicesEnLigne'));
+const Beneficiaries = lazy(() => import('./views/Beneficiaries'));
+const Login = lazy(() => import('./views/Login'));
+const Medicaments = lazy(() => import('./views/Medicaments'));
+const AuditLogs = lazy(() => import('./views/AuditLogs'));
+const Complaints = lazy(() => import('./views/Complaints'));
+const Profile = lazy(() => import('./views/Profile'));
+const ProgrammesCSU = lazy(() => import('./views/ProgrammesCSU'));
+const GalerieCSU = lazy(() => import('./views/GalerieCSU'));
+const InfosCSU = lazy(() => import('./views/InfosCSU'));
+const BlogExperts = lazy(() => import('./views/BlogExperts'));
+const ParrainageCSU = lazy(() => import('./views/ParrainageCSU'));
+const Partnership = lazy(() => import('./views/Partnership'));
+const VerifyCard = lazy(() => import('./views/VerifyCard'));
+const AgentDashboard = lazy(() => import('./views/AgentDashboard'));
+const Claims = lazy(() => import('./views/Claims'));
+const Notifications = lazy(() => import('./views/Notifications'));
+const Cotisations = lazy(() => import('./views/Cotisations'));
+const PartnerPortal = lazy(() => import('./views/PartnerPortal'));
+const RegionalStats = lazy(() => import('./views/RegionalStats'));
+const Loyalty = lazy(() => import('./views/Loyalty'));
+const Payments = lazy(() => import('./views/Payments'));
+const RsePortal = lazy(() => import('./views/RsePortal'));
+const GuaranteeLetters = lazy(() => import('./views/GuaranteeLetters'));
+const PurchaseOrders = lazy(() => import('./views/PurchaseOrders'));
+const Telemedicine = lazy(() => import('./views/Telemedicine'));
+const MedicalProfile = lazy(() => import('./views/MedicalProfile'));
+const MaternalHealth = lazy(() => import('./views/MaternalHealth'));
+const InstitutionPortal = lazy(() => import('./views/InstitutionPortal'));
+const SuperAdminGovernance = lazy(() => import('./views/SuperAdminGovernance'));
+const CardStudio = lazy(() => import('./views/CardStudio'));
+const AccountsAndCards = lazy(() => import('./views/AccountsAndCards'));
+const SecurityCenter = lazy(() => import('./views/SecurityCenter'));
+const ExcelReports = lazy(() => import('./views/ExcelReports'));
+const ImportControl = lazy(() => import('./views/ImportControl'));
 import { syncOutbox, outboxCount, cacheSet, cacheGet } from './utils/offline';
 
 // Import Styles
@@ -155,7 +155,7 @@ purgeStaleSessions();
 
 export default function App() {
   // Liste des vues valides (pour valider le hash URL)
-  const validViews = ['home','login','beneficiaries','services','map','directory','depts','programmes','about','medicaments','audit-logs','galerie','infos-csu','blog-experts','parrainage-solidaire','partnership','complaints','profile','verify','dashboard','claims','notifications','cotisations','partner','regional-stats','loyalty','payments','guarantees','purchase-orders','telemedicine','medical-profile','maternity','superadmin-governance','rse','institution-coud','card-studio','security-center','excel-reports','accounts-cards'];
+  const validViews = ['home','login','beneficiaries','services','map','directory','depts','programmes','about','medicaments','audit-logs','galerie','infos-csu','blog-experts','parrainage-solidaire','partnership','complaints','profile','verify','dashboard','claims','notifications','cotisations','partner','regional-stats','loyalty','payments','guarantees','purchase-orders','telemedicine','medical-profile','maternity','superadmin-governance','rse','institution-coud','card-studio','security-center','excel-reports','accounts-cards','import-control'];
 
   // Initialise la vue depuis le hash URL (#/beneficiaries) pour le deep-linking.
   // Un hash inconnu n'est PLUS silencieusement remplacé par l'accueil : il est
@@ -290,52 +290,52 @@ export default function App() {
   useEffect(() => {
     const titles = {
       fr: {
-        home: 'Accueil - MUTUALIS DAKAR',
-        login: 'Connexion - MUTUALIS DAKAR',
-        beneficiaries: 'Bénéficiaires & Affiliations - MUTUALIS DAKAR',
-        services: 'Services en ligne - MUTUALIS DAKAR',
-        map: 'Cartographie sanitaire & structures de santé - MUTUALIS DAKAR',
-        directory: 'Annuaire des structures sanitaires - MUTUALIS DAKAR',
-        depts: 'Unions & Mutuelles de Dakar - MUTUALIS DAKAR',
-        programmes: 'Programmes & Offres - MUTUALIS DAKAR',
-        about: 'À propos - MUTUALIS DAKAR',
-        medicaments: 'Recherche de médicaments - MUTUALIS DAKAR',
-        galerie: 'Galerie média - MUTUALIS DAKAR',
-        'infos-csu': 'Informations CSU & Couverture Maladie - MUTUALIS DAKAR',
-        'blog-experts': 'Espace Blog & Experts - MUTUALIS DAKAR',
-        'parrainage-solidaire': 'Parrainage en masse - MUTUALIS DAKAR',
-        partnership: 'Espace Partenariat - MUTUALIS DAKAR',
-        complaints: 'Réclamations & Plaintes - MUTUALIS DAKAR',
-        profile: 'Profil utilisateur - MUTUALIS DAKAR',
-        verify: 'Vérification d\'affiliation - MUTUALIS DAKAR',
-        dashboard: 'Tableau de bord Agent - MUTUALIS DAKAR',
-        claims: 'Gestion des sinistres - MUTUALIS DAKAR',
-        notifications: 'Alertes & Notifications - MUTUALIS DAKAR',
-        cotisations: 'Cotisations & Paiements - MUTUALIS DAKAR',
-        partner: 'Portail Partenaire - MUTUALIS DAKAR',
-        'regional-stats': 'Statistiques Régionales - MUTUALIS DAKAR',
-        loyalty: 'Programme fidélité - MUTUALIS DAKAR',
-        payments: 'Paiements - MUTUALIS DAKAR',
-        guarantees: 'Lettres de Garantie - MUTUALIS DAKAR',
-        'purchase-orders': 'Bons de Commande Pharmacie - MUTUALIS DAKAR',
-        telemedicine: 'Télémédecine & Téléconsultation - MUTUALIS DAKAR',
-        'medical-profile': 'Dossier Médical & Antécédents - MUTUALIS DAKAR',
-        maternity: 'Pôle Spécialités Médicales & Pathologies - MUTUALIS DAKAR',
-        'institution-coud': 'Portail Institutionnel COUD UCAD - MUTUALIS DAKAR'
+        home: 'Accueil - SenMutuelles',
+        login: 'Connexion - SenMutuelles',
+        beneficiaries: 'Bénéficiaires & Affiliations - SenMutuelles',
+        services: 'Services en ligne - SenMutuelles',
+        map: 'Cartographie sanitaire & structures de santé - SenMutuelles',
+        directory: 'Annuaire des structures sanitaires - SenMutuelles',
+        depts: 'Unions & Mutuelles de Dakar - SenMutuelles',
+        programmes: 'Programmes & Offres - SenMutuelles',
+        about: 'À propos - SenMutuelles',
+        medicaments: 'Recherche de médicaments - SenMutuelles',
+        galerie: 'Galerie média - SenMutuelles',
+        'infos-csu': 'Informations CSU & Couverture Maladie - SenMutuelles',
+        'blog-experts': 'Espace Blog & Experts - SenMutuelles',
+        'parrainage-solidaire': 'Parrainage en masse - SenMutuelles',
+        partnership: 'Espace Partenariat - SenMutuelles',
+        complaints: 'Réclamations & Plaintes - SenMutuelles',
+        profile: 'Profil utilisateur - SenMutuelles',
+        verify: 'Vérification d\'affiliation - SenMutuelles',
+        dashboard: 'Tableau de bord Agent - SenMutuelles',
+        claims: 'Gestion des sinistres - SenMutuelles',
+        notifications: 'Alertes & Notifications - SenMutuelles',
+        cotisations: 'Cotisations & Paiements - SenMutuelles',
+        partner: 'Portail Partenaire - SenMutuelles',
+        'regional-stats': 'Statistiques Régionales - SenMutuelles',
+        loyalty: 'Programme fidélité - SenMutuelles',
+        payments: 'Paiements - SenMutuelles',
+        guarantees: 'Lettres de Garantie - SenMutuelles',
+        'purchase-orders': 'Bons de Commande Pharmacie - SenMutuelles',
+        telemedicine: 'Télémédecine & Téléconsultation - SenMutuelles',
+        'medical-profile': 'Dossier Médical & Antécédents - SenMutuelles',
+        maternity: 'Pôle Spécialités Médicales & Pathologies - SenMutuelles',
+        'institution-coud': 'Portail Institutionnel COUD UCAD - SenMutuelles'
       },
       wo: {
-        home: 'Kër - MUTUALIS DAKAR',
-        login: 'Duggal - MUTUALIS DAKAR',
-        beneficiaries: 'Bénéficiaires & Affiliations - MUTUALIS DAKAR',
-        services: 'Services en ligne - MUTUALIS DAKAR',
-        map: 'Cartographie sanitaire - MUTUALIS DAKAR',
-        directory: 'Annuaire - MUTUALIS DAKAR',
-        depts: 'Unions & Mutuelles - MUTUALIS DAKAR',
-        about: 'À propos - MUTUALIS DAKAR',
-        partnership: 'Partenariat - MUTUALIS DAKAR'
+        home: 'Kër - SenMutuelles',
+        login: 'Duggal - SenMutuelles',
+        beneficiaries: 'Bénéficiaires & Affiliations - SenMutuelles',
+        services: 'Services en ligne - SenMutuelles',
+        map: 'Cartographie sanitaire - SenMutuelles',
+        directory: 'Annuaire - SenMutuelles',
+        depts: 'Unions & Mutuelles - SenMutuelles',
+        about: 'À propos - SenMutuelles',
+        partnership: 'Partenariat - SenMutuelles'
       }
     };
-    const defaultTitle = 'MUTUALIS DAKAR - Portail de la Mutualité de Santé Communautaire';
+    const defaultTitle = 'SenMutuelles — Portail de la Mutualité de Santé Communautaire';
     const langTitles = titles[lang] || titles.fr;
     document.title = langTitles[view] || defaultTitle;
   }, [view, lang]);
@@ -345,14 +345,60 @@ export default function App() {
   const [servicesTab, setServicesTab] = useState('register'); // track tab of services (register, renew, donate)
   const [showNotifications, setShowNotifications] = useState(false);
 
-  const notifications = portalMode === 'agent' ? [
-    { id: 1, type: 'complaint', title: 'Nouvelle réclamation', desc: 'Amadou Sow signale un problème de prise en charge à la polyclinique de Dakar.', time: 'Il y a 5 min' },
-    { id: 2, type: 'system', title: 'Adhésion validée', desc: 'La famille Diop a été enregistrée avec succès.', time: 'Il y a 22 min' },
-    { id: 3, type: 'alert', title: 'Alerte stock', desc: 'Rupture de stock signalée au point de vente Parcelles Assainies.', time: 'Il y a 2h' }
-  ] : [
-    { id: 4, type: 'system', title: 'Paiement reçu', desc: 'Votre cotisation annuelle (4 500 FCFA) a bien été reçue.', time: 'Aujourd\'hui, 10:30' },
-    { id: 5, type: 'complaint', title: 'Mise à jour réclamation', desc: 'Votre réclamation #REC-42 est actuellement en cours de traitement.', time: 'Hier' }
-  ];
+  // Notifications RÉELLES : fil calculé par le backend selon le profil connecté
+  // (citoyen : ses dossiers ; agent : sa MSD ; Super Admin : toutes les MSD).
+  // Aucune donnée fictive : visiteur non connecté = liste vide.
+  const notifUserKey = portalMode === 'agent'
+    ? (agentUser ? `agent-${agentUser.id || agentUser.username}` : null)
+    : (citizenUser ? `citizen-${citizenUser.id || citizenUser.cmuNumber}` : null);
+  // Le fil reçu est rattaché à l'utilisateur qui l'a demandé : un changement
+  // de compte n'affiche jamais les notifications du précédent.
+  const [notifFeed, setNotifFeed] = useState({ key: null, items: [], fetchedAt: 0 });
+  const notifications = notifUserKey && notifFeed.key === notifUserKey ? notifFeed.items : [];
+  const [notifSeen, setNotifSeen] = useState({ key: null, at: 0 });
+  const notifSeenAt = !notifUserKey ? 0
+    : (notifSeen.key === notifUserKey ? notifSeen.at : Number(localStorage.getItem(`cmu-notif-seen-${notifUserKey}`) || 0));
+
+  useEffect(() => {
+    if (!notifUserKey) return undefined;
+    let cancelled = false;
+    const load = () => {
+      const token = localStorage.getItem('cmu-token');
+      if (!token) return;
+      fetch(`${window.API_BASE_URL || ''}/api/notifications/feed`, { headers: { Authorization: `Bearer ${token}` } })
+        .then((r) => (r.ok ? r.json() : { data: [] }))
+        .then((payload) => {
+          if (cancelled) return;
+          const data = Array.isArray(payload) ? payload : (payload.data || []);
+          setNotifFeed({ key: notifUserKey, items: data, fetchedAt: Date.now() });
+        })
+        .catch(() => { /* hors ligne : on conserve la dernière liste reçue */ });
+    };
+    load();
+    const timer = setInterval(load, 60000);
+    return () => { cancelled = true; clearInterval(timer); };
+  }, [notifUserKey]);
+
+  const unreadNotifications = notifications.filter((n) => new Date(n.at).getTime() > notifSeenAt).length;
+  const formatNotifTime = (at) => {
+    const d = new Date(at);
+    if (Number.isNaN(d.getTime())) return '';
+    // Référence = heure de réception du fil (rendu pur, rafraîchi chaque minute)
+    const diffMin = Math.round(((notifFeed.fetchedAt || d.getTime()) - d.getTime()) / 60000);
+    if (diffMin < 1) return "À l'instant";
+    if (diffMin < 60) return `Il y a ${diffMin} min`;
+    if (diffMin < 1440) return `Il y a ${Math.round(diffMin / 60)} h`;
+    return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+  };
+  const toggleNotifications = () => {
+    const next = !showNotifications;
+    setShowNotifications(next);
+    if (next && notifUserKey) {
+      const now = Date.now();
+      localStorage.setItem(`cmu-notif-seen-${notifUserKey}`, String(now));
+      setNotifSeen({ key: notifUserKey, at: now });
+    }
+  };
 
   const [servicesPackage, setServicesPackage] = useState('individuel');
 
@@ -1111,6 +1157,18 @@ export default function App() {
               {view === 'loyalty' && (lang === 'fr' ? 'Programme fidélité' : 'Fidélité')}
               {view === 'payments' && (lang === 'fr' ? 'Paiement en ligne' : 'Fay')}
               {view === 'superadmin-governance' && (lang === 'fr' ? 'Gouvernance & Supervision Super Admin 👑' : 'Gouvernance Super Admin 👑')}
+              {view === 'guarantees' && (lang === 'fr' ? 'Lettres de garantie & prises en charge (80%)' : 'Bataaxalu garantie')}
+              {view === 'purchase-orders' && (lang === 'fr' ? 'Bons de commande pharmacie (50%)' : 'Bonu garab pharmacie')}
+              {view === 'telemedicine' && (lang === 'fr' ? 'Télémédecine & consultations vidéo' : 'Téléconsultation')}
+              {view === 'medical-profile' && (lang === 'fr' ? 'Dossier médical partagé (DMP)' : 'Dossier médical')}
+              {view === 'maternity' && (lang === 'fr' ? 'Suivi maternité & CPN' : 'Maternité & CPN')}
+              {view === 'rse' && (lang === 'fr' ? 'Partenariats RSE & mécénat' : 'RSE & mécénat')}
+              {view === 'institution-coud' && (lang === 'fr' ? 'Guichet institutionnel COUD / UCAD' : 'COUD / UCAD')}
+              {view === 'card-studio' && (lang === 'fr' ? 'Studio d\'impression des cartes CSU' : 'Studio cartes CSU')}
+              {view === 'security-center' && (lang === 'fr' ? 'Centre de sécurité & surveillance' : 'Centre de sécurité')}
+              {view === 'excel-reports' && (lang === 'fr' ? 'Rapports & exports Excel' : 'Rapports Excel')}
+              {view === 'accounts-cards' && (lang === 'fr' ? 'Gestion des comptes & cartes CSU' : 'Comptes & cartes CSU')}
+              {view === 'import-control' && (lang === 'fr' ? 'Importation contrôlée des lots' : 'Importation contrôlée')}
             </div>
           </div>
 
@@ -1171,10 +1229,10 @@ export default function App() {
               <button 
                 className="top-navbar-icon-btn" 
                 aria-label="Notifications" 
-                onClick={() => setShowNotifications(!showNotifications)}
+                onClick={toggleNotifications}
               >
                 🔔
-                {notifications.length > 0 && <span className="top-navbar-dot"></span>}
+                {unreadNotifications > 0 && <span className="top-navbar-dot"></span>}
               </button>
               
               {showNotifications && (
@@ -1194,11 +1252,11 @@ export default function App() {
                 }}>
                   <div style={{ padding: '1rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <h4 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-main)' }}>Notifications</h4>
-                    <span className="badge badge-warning" style={{ fontSize: '0.7rem' }}>{notifications.length} nouvelles</span>
+                    <span className="badge badge-warning" style={{ fontSize: '0.7rem' }}>{notifications.length} {notifications.length > 1 ? 'éléments' : 'élément'}</span>
                   </div>
                   <div style={{ maxHeight: '350px', overflowY: 'auto' }}>
                     {notifications.length === 0 ? (
-                      <p style={{ padding: '1rem', textAlign: 'center', margin: 0, fontSize: '0.85rem' }}>Aucune notification.</p>
+                      <p style={{ padding: '1rem', textAlign: 'center', margin: 0, fontSize: '0.85rem' }}>{notifUserKey ? 'Aucune notification pour le moment.' : 'Connectez-vous pour voir vos notifications.'}</p>
                     ) : (
                       notifications.map(notif => (
                         <div 
@@ -1212,21 +1270,19 @@ export default function App() {
                           onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-card-subtle)'}
                           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                           onClick={() => {
-                            // Redirection selon le type de notification
-                            if (notif.type === 'complaint') setView('complaints');
-                            else if (notif.type === 'system') setView(portalMode === 'agent' || portalMode === 'superadmin' ? 'dashboard' : 'profile');
-                            else if (notif.type === 'alert') setView('medicaments');
+                            // Redirection vers le module réel du dossier concerné
+                            if (notif.view) setView(notif.view);
                             setShowNotifications(false);
                           }}
                         >
                           <div style={{ display: 'flex', gap: '0.75rem' }}>
                             <div style={{ fontSize: '1.25rem' }}>
-                              {notif.type === 'complaint' ? '📝' : notif.type === 'alert' ? '⚠️' : '✅'}
+                              {({ complaint: '📝', alert: '⚠️', guarantee: '🏥', order: '💊', claim: '🧾', adhesion: '🪪', security: '🔐', message: '💬' })[notif.type] || '🔔'}
                             </div>
                             <div style={{ flex: 1, textAlign: 'left' }}>
                               <h5 style={{ margin: '0 0 0.25rem 0', fontSize: '0.9rem', color: 'var(--text-main)' }}>{notif.title}</h5>
                               <p style={{ margin: '0 0 0.4rem 0', fontSize: '0.8rem', color: 'var(--text-sub)' }}>{notif.desc}</p>
-                              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{notif.time}</span>
+                              <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{formatNotifTime(notif.at)}</span>
                             </div>
                           </div>
                         </div>
@@ -1252,7 +1308,9 @@ export default function App() {
 
         {/* Current View Wrapper */}
         <div className="view-container">
-          {renderView()}
+          <Suspense fallback={<div style={{ padding: "3rem", textAlign: "center", color: "var(--text-muted)" }}>Chargement…</div>}>
+            {renderView()}
+          </Suspense>
 
           {/* Global Footer */}
           <footer style={{
@@ -1264,7 +1322,7 @@ export default function App() {
             color: 'var(--text-muted)'
           }}>
             <p style={{ margin: 0 }}>
-              &copy; {new Date().getFullYear()} MUTUALIS. Solution développée par <a href="https://www.senecarte.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', fontWeight: 'bold', textDecoration: 'none' }}>Sen-E-Carte</a>. 
+              &copy; {new Date().getFullYear()} SenMutuelles. Solution développée par <a href="https://www.senecarte.com" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', fontWeight: 'bold', textDecoration: 'none' }}>Sen-E-Carte</a>. 
               {' '}&bull; Contact développeur : <a href="tel:+221776026783" style={{ color: 'var(--primary)', fontWeight: 'bold', textDecoration: 'none' }}>77 602 67 83</a>
             </p>
           </footer>

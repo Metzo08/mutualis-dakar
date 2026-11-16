@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
-import { generateOfficialDocx } from '../utils/docxGenerator';
 import { getBeneficiaryInfo } from '../utils/csuFormatter';
+import { detectMsdCode, getMsdWhatsappInfo, refreshMsdWhatsappDirectory, compressImageFile, getMsdWhatsappDirectory } from '../utils/msdWhatsappConfig';
+import { formatTitleCase, formatSentenceCase } from '../utils/formatters';
 
 /**
  * Détermine le contexte temporel de délivrance d'une Lettre de Garantie :
@@ -317,14 +318,297 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
   const [guaranteedPct, setGuaranteedPct] = useState(80);
   const [maxAmount, setMaxAmount] = useState('');
   const [agentNote, setAgentNote] = useState('Prise en charge validée par l\'agent UNAMUSC sous le système de Tiers-payant UNAMUSC.');
+  const [whatsappLetterModal, setWhatsappLetterModal] = useState(null);
+  const [whatsappPhoneInput, setWhatsappPhoneInput] = useState(citizenUser?.phone || '+221 77 123 45 67');
+  const [lastCreatedItem, setLastCreatedItem] = useState(null);
+  const [whatsappRequestModal, setWhatsappRequestModal] = useState(false);
+  const [waReqType, setWaReqType] = useState('guarantee'); // 'guarantee' | 'purchase_order'
+  const [waReqStructure, setWaReqStructure] = useState('Hôpital Universitaire de Fann (Dakar)');
+  const [waReqAct, setWaReqAct] = useState('');
+  const [waReqAmount, setWaReqAmount] = useState('');
+  // Guichet WhatsApp de la MSD de rattachement de l'assuré (routage multi-MSD départemental)
+  const [waMsdCode] = useState(() => detectMsdCode({ citizenUser, agentUser, cmuNumber: activeCmuNumber }));
+  const [waSelectedMsd, setWaSelectedMsd] = useState(() => detectMsdCode({ citizenUser, agentUser, cmuNumber: activeCmuNumber }));
+  const [waDesk, setWaDesk] = useState(() => getMsdWhatsappInfo(detectMsdCode({ citizenUser, agentUser, cmuNumber: activeCmuNumber })));
+  const [waDeskPhone, setWaDeskPhone] = useState(() => getMsdWhatsappInfo(detectMsdCode({ citizenUser, agentUser, cmuNumber: activeCmuNumber }))?.whatsapp || '+221 76 845 54 99');
+  const [waAttachment, setWaAttachment] = useState('');
+  const [waSending, setWaSending] = useState(false);
+  const [waSaveMsg, setWaSaveMsg] = useState('');
+
+  const handleSaveMsdWhatsappNumber = async () => {
+    if (!waDeskPhone) return;
+    try {
+      const token = localStorage.getItem('cmu-token') || localStorage.getItem('cmu-agent-token') || localStorage.getItem('token');
+      const res = await fetch(`${window.API_BASE_URL || ''}/api/whatsapp/msd-directory/${waSelectedMsd}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ phone: waDeskPhone })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setWaSaveMsg(`✓ Guichet ${waSelectedMsd} enregistré !`);
+        await refreshMsdWhatsappDirectory();
+        setTimeout(() => setWaSaveMsg(''), 4000);
+      } else {
+        alert(data.error || 'Erreur lors de l\'enregistrement.');
+      }
+    } catch {
+      alert('Erreur réseau lors de la mise à jour.');
+    }
+  };
+
+  const handleSelectMsd = (msdCode) => {
+    setWaSelectedMsd(msdCode);
+    const info = getMsdWhatsappInfo(msdCode);
+    setWaDesk(info);
+    setWaDeskPhone(info.whatsapp);
+  };
+
+  useEffect(() => {
+    let alive = true;
+    refreshMsdWhatsappDirectory().then(() => {
+      if (alive) setWaDesk(getMsdWhatsappInfo(waMsdCode));
+    });
+    return () => { alive = false; };
+  }, [waMsdCode]);
+
+  const handleWaAttachment = async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const compressed = await compressImageFile(file);
+    if (!compressed) {
+      alert('Format non reconnu : prenez une photo (JPG/PNG) de votre devis ou ordonnance.');
+      return;
+    }
+    setWaAttachment(compressed);
+  };
+
+  const formatIncomingWhatsAppRequestMsg = (refCode) => {
+    const isOrder = waReqType === 'purchase_order';
+    const estAmt = Number(waReqAmount || 0);
+    const rate = isOrder ? 50 : (isSeniorSesame ? 100 : 80);
+    const cmuPart = Math.round(estAmt * (rate / 100));
+    const patientPart = Math.max(0, estAmt - cmuPart);
+    return [
+      `🇸🇳 *DEMANDE ${isOrder ? 'DE BON DE COMMANDE PHARMACIE (50%)' : 'DE LETTRE DE GARANTIE HOSPITALIÈRE (80%)'} — UNAMUSC*`,
+      `━━━━━━━━━━━━━━━━━━━━`,
+      `🔖 *Référence Demande :* #${refCode || (isOrder ? 'ORD-WA-2026' : 'GAR-WA-2026')}`,
+      `👤 *Assuré(e) :* ${applicantFirstName || activeFirstName} ${applicantLastName || activeLastName}`,
+      `🪪 *N° Carte CSU :* ${applicantCmu || activeCmuNumber}`,
+      `📱 *Téléphone Assuré :* ${whatsappPhoneInput || citizenUser?.phone || '+221 77 123 45 67'}`,
+      `🏥 *${isOrder ? 'Pharmacie / Officine' : 'Hôpital / Structure'} :* ${waReqStructure || (isOrder ? 'Pharmacie Partenaire Agréée CSU' : structureName)}`,
+      `🩺 *${isOrder ? 'Médicaments demandés' : 'Acte médical / Motif'} :* ${waReqAct || medicalAct || 'À préciser sur pièce jointe'}`,
+      ``,
+      `💰 *Estimation Tiers-Payant :*`,
+      `• Montant estimé : ${estAmt.toLocaleString('fr-FR')} FCFA`,
+      `• Part Mutuelle (${rate}%) : ${cmuPart.toLocaleString('fr-FR')} FCFA`,
+      `• Ticket modérateur (${100 - rate}%) : ${patientPart.toLocaleString('fr-FR')} FCFA`,
+      ``,
+      `📎 *Pièce justificative :* Je joins ci-dessous la photo de mon ${isOrder ? 'ordonnance médicale' : 'devis hospitalier / bulletin d\'admission'} pour recevoir mon document validé sur WhatsApp.`
+    ].join('\n');
+  };
+
+  const handleRequestViaWhatsApp = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    const isOrder = waReqType === 'purchase_order';
+    const actText = formatSentenceCase(waReqAct || medicalAct || (isOrder ? 'Ordonnance médicale WhatsApp' : 'Consultation / Hospitalisation')).trim();
+    const structText = (waReqStructure || structureName || (isOrder ? 'Pharmacie Partenaire Agréée CSU' : 'Hôpital Universitaire de Fann (Dakar)')).trim();
+    const amtNum = Math.max(0, parseFloat(waReqAmount || estimatedAmount) || 0);
+    const suffix = Math.floor(1000 + Math.random() * 9000);
+    const refCode = isOrder ? `ORD-WA-2026-${suffix}` : `GAR-WA-2026-${suffix}`;
+
+    const token = localStorage.getItem('cmu-token') || localStorage.getItem('cmu-agent-token') || localStorage.getItem('token');
+    if (token) {
+      try {
+        await fetch(`${window.API_BASE_URL || ''}/api/whatsapp/request`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            type: isOrder ? 'purchase_order' : 'guarantee',
+            beneficiary_id: citizenUser?.id || 1,
+            structure_name: structText,
+            medical_act: actText,
+            items: isOrder ? [{ name: actText, qty: 1, price: amtNum }] : undefined,
+            estimated_amount: amtNum,
+            phone: whatsappPhoneInput
+          })
+        });
+      } catch {
+        // Sauvegarde locale garantie même hors-ligne
+      }
+    }
+
+    if (isOrder) {
+      const cmuCovered = Math.round(amtNum * 0.5);
+      const newOrder = {
+        id: Date.now(),
+        order_code: refCode,
+        first_name: applicantFirstName || activeFirstName,
+        last_name: applicantLastName || activeLastName,
+        cmu_number: applicantCmu || activeCmuNumber,
+        phone: whatsappPhoneInput,
+        items: [{ name: actText, qty: 1, price: amtNum }],
+        total_amount: amtNum,
+        cmu_covered: cmuCovered,
+        patient_share: Math.max(0, amtNum - cmuCovered),
+        status: 'pending_review',
+        created_at: new Date().toISOString()
+      };
+      try {
+        const storedOrders = JSON.parse(localStorage.getItem('cmu_purchase_orders') || '[]');
+        localStorage.setItem('cmu_purchase_orders', JSON.stringify([newOrder, ...storedOrders]));
+      } catch {
+        // Ignore storage quota errors
+      }
+      setLastCreatedItem(newOrder);
+    } else {
+      const rate = isSeniorSesame ? 100 : 80;
+      const maxAmt = Math.round(amtNum * (rate / 100));
+      const newLetter = {
+        id: Date.now(),
+        validation_code: refCode,
+        first_name: applicantFirstName || activeFirstName,
+        last_name: applicantLastName || activeLastName,
+        cmu_number: applicantCmu || activeCmuNumber,
+        phone: whatsappPhoneInput,
+        structure_name: structText,
+        medical_act: actText,
+        estimated_amount: amtNum,
+        guaranteed_percentage: rate,
+        max_amount: maxAmt,
+        patient_rest: Math.max(0, amtNum - maxAmt),
+        status: emergencyTimeInfo.isEmergency ? 'emergency_issued' : 'pending',
+        created_at: new Date().toISOString()
+      };
+      const updated = [newLetter, ...letters];
+      setLetters(updated);
+      try {
+        localStorage.setItem('unamusc_guarantee_letters', JSON.stringify(updated));
+      } catch {
+        // Ignore storage quota errors
+      }
+      setLastCreatedItem(newLetter);
+    }
+
+    const rawDesk = String(waDeskPhone || '221770002026').replace(/[^0-9]/g, '');
+    const normalizedDesk = rawDesk.startsWith('221') ? rawDesk : (rawDesk.length === 9 ? `221${rawDesk}` : '221770002026');
+    const message = formatIncomingWhatsAppRequestMsg(refCode);
+    const waUrl = `https://wa.me/${normalizedDesk}?text=${encodeURIComponent(message)}`;
+    window.open(waUrl, '_blank', 'noopener,noreferrer');
+
+    setWhatsappRequestModal(false);
+    setSuccessMsg(`💬 Demande WhatsApp #${refCode} enregistrée dans la plateforme et ouverte sur WhatsApp ! Joignez la photo de votre ${isOrder ? 'ordonnance' : 'devis hospitalier'} dans la discussion.`);
+  };
+
+  const formatGuaranteeLetterWhatsAppMsg = (letter) => {
+    if (!letter) return '';
+    const isOrder = Boolean(letter.order_code && !letter.validation_code);
+    if (isOrder) {
+      const code = letter.order_code || `ORD-${letter.id}`;
+      const totalAmt = Number(letter.total_amount || 0);
+      const cmuAmt = Number(letter.cmu_covered || Math.round(totalAmt * 0.5));
+      const patientAmt = Number(letter.patient_pay || Math.round(totalAmt * 0.5));
+      return [
+        `🇸🇳 *UNAMUSC SÉNÉGAL — BON DE COMMANDE PHARMACIE (48H)*`,
+        `━━━━━━━━━━━━━━━━━━━━`,
+        `📄 *Code Bon :* #${code}`,
+        `👤 *Assuré(e) :* ${letter.first_name || activeFirstName} ${letter.last_name || activeLastName}`,
+        `🪪 *N° Carte CSU :* ${letter.cmu_number || activeCmuNumber}`,
+        `💰 *Total Ordonnance :* ${totalAmt.toLocaleString('fr-FR')} FCFA`,
+        `• *Prise en charge Mutuelle (50%) : ${cmuAmt.toLocaleString('fr-FR')} FCFA*`,
+        `• *Reste à payer assuré (50%) : ${patientAmt.toLocaleString('fr-FR')} FCFA*`,
+        `🔍 *Vérification :* ${window.location.origin}/#/verify/${code}`
+      ].join('\n');
+    }
+    const code = letter.validation_code || `GAR-${letter.id}`;
+    const estAmt = Number(letter.estimated_amount || 0);
+    const pct = Number(letter.guaranteed_percentage || (letter.is_sesame || letter.is_senior ? 100 : 80));
+    const coveredAmt = Number(letter.max_amount || Math.round((estAmt * pct) / 100));
+    const patientRest = Math.max(0, estAmt - coveredAmt);
+    const statusLabel = letter.status === 'approved'
+      ? '✅ HOMOLOGUÉE & VALIDÉE'
+      : letter.status === 'emergency_issued'
+      ? '🚨 DÉLIVRÉE D\'URGENCE (Soins immédiats 7j/7)'
+      : letter.status === 'rejected'
+      ? '❌ REJETÉE'
+      : '⏳ EN INSTRUCTION AGENT';
+    const verifyUrl = `${window.location.origin}/#/verify/${code}`;
+    return [
+      `🇸🇳 *UNAMUSC SÉNÉGAL — LETTRE DE GARANTIE HOSPITALIÈRE*`,
+      `━━━━━━━━━━━━━━━━━━━━`,
+      `📜 *Code Garantie :* #${code}`,
+      `👤 *Assuré(e) :* ${letter.first_name || activeFirstName} ${letter.last_name || activeLastName}`,
+      `🪪 *N° Carte CSU :* ${letter.cmu_number || activeCmuNumber}`,
+      `🏥 *Établissement :* ${letter.hospital_name || letter.structure_name || 'Hôpital Conventionné CSU'}`,
+      `🩺 *Acte médical :* ${letter.medical_act || 'Soins hospitaliers'}`,
+      `📌 *Statut :* ${statusLabel}`,
+      ``,
+      `💰 *Décompte Tiers-Payant Hospitalier (${pct}%) :*`,
+      `• Devis soumis : ${estAmt.toLocaleString('fr-FR')} FCFA`,
+      `• *Montant garanti par la mutuelle (${pct}%) : ${coveredAmt.toLocaleString('fr-FR')} FCFA*`,
+      `• *Reste à charge assuré (${100 - pct}%) : ${patientRest.toLocaleString('fr-FR')} FCFA*`,
+      ``,
+      `🔍 *Vérification hôpital :* ${verifyUrl}`,
+      `_Présentez ce message WhatsApp ou le certificat PDF avec votre carte CSU au bureau des entrées de l'hôpital._`
+    ].join('\n');
+  };
+
+  const openLetterWhatsAppModal = (letter) => {
+    setWhatsappPhoneInput(letter?.phone || citizenUser?.phone || '+221 77 123 45 67');
+    setWhatsappLetterModal(letter);
+  };
+
+  const handleSendLetterWhatsApp = async (letter, customPhone) => {
+    const target = letter || whatsappLetterModal;
+    if (!target) return;
+    const rawPhone = String(customPhone || whatsappPhoneInput || citizenUser?.phone || '221771234567').replace(/[^0-9]/g, '');
+    const normalizedPhone = rawPhone.startsWith('221') ? rawPhone : (rawPhone.length === 9 ? `221${rawPhone}` : rawPhone);
+    const message = formatGuaranteeLetterWhatsAppMsg(target);
+    const code = target.validation_code || target.order_code || target.id;
+    const token = localStorage.getItem('cmu-token') || localStorage.getItem('cmu-agent-token') || localStorage.getItem('token');
+    if (token) {
+      try {
+        await fetch(`${window.API_BASE_URL || ''}/api/notifications`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            recipient: normalizedPhone,
+            channel: 'whatsapp',
+            type: 'prise_en_charge',
+            subject: `Lettre de Garantie #${code}`,
+            body: message
+          })
+        });
+      } catch {
+        // Envoi WhatsApp direct même si l'API de journalisation est hors ligne
+      }
+    }
+    const waUrl = `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(message)}`;
+    window.open(waUrl, '_blank', 'noopener,noreferrer');
+    setSuccessMsg(`📲 Document #${code} envoyé sur WhatsApp au +${normalizedPhone} !`);
+    setWhatsappLetterModal(null);
+  };
 
   const fetchLetters = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/guarantees');
+      const storedLocal = JSON.parse(localStorage.getItem('unamusc_guarantee_letters') || '[]');
+      const token = localStorage.getItem('cmu-token') || localStorage.getItem('cmu-agent-token') || localStorage.getItem('token');
+      const res = await fetch(`${window.API_BASE_URL || ''}/api/guarantees`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      });
       const json = await res.json();
       // Une réponse vide est une réponse vide : aucune ligne de remplacement.
-      if (json.success && Array.isArray(json.data)) {
+      if (json.success && Array.isArray(json.data) && json.data.length > 0) {
+        const mergedIds = new Set(storedLocal.map((l) => l.validation_code || l.id));
+        const apiFiltered = json.data.filter((l) => !mergedIds.has(l.validation_code || l.id));
+        setLetters([...storedLocal, ...apiFiltered]);
+      } else if (storedLocal.length > 0) {
+        setLetters(storedLocal);
+      } else if (json.success && Array.isArray(json.data)) {
         setLetters(json.data);
       } else {
         setLetters([]);
@@ -528,9 +812,10 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
   // Export Word éditable : exactement les mêmes données que le PDF, pour que la
   // structure de santé puisse compléter le document sur son propre papier.
-  const handleDownloadDocx = () => {
+  const handleDownloadDocx = async () => {
     const letter = selectedLetter || letters[0];
     if (!letter) return;
+    const { generateOfficialDocx } = await import("../utils/docxGenerator");
     generateOfficialDocx({
       filename: `lettre_garantie_${letter.validation_code}.docx`,
       ...buildLetterPayload(letter)
@@ -557,7 +842,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
     return false;
   });
 
-  // eslint-disable-next-line no-unused-vars -- Régularisation/homologation d'une prise en charge d'urgence (action métier complète, avec trace d'audit dans agent_note). Aucun écran ne l'appelle encore : à arbitrer.
+  // Régularisation/homologation d'une prise en charge d'urgence par l'agent UNAMUSC
   const handleRegularizeEmergency = (letterItem) => {
     const updatedLetters = letters.map(l => {
       if (l.id === letterItem.id) {
@@ -632,9 +917,10 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
       };
 
       try {
-        await fetch('/api/guarantees', {
+        const token = localStorage.getItem('cmu-token') || localStorage.getItem('cmu-agent-token') || localStorage.getItem('token');
+        await fetch(`${window.API_BASE_URL || ''}/api/guarantees`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
           body: JSON.stringify({
             beneficiary_id: 1,
             medical_act: newLetter.medical_act,
@@ -646,7 +932,10 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
         console.warn(err);
       }
 
-      setLetters([newLetter, ...letters]);
+      const updatedList = [newLetter, ...letters];
+      setLetters(updatedList);
+      try { localStorage.setItem('unamusc_guarantee_letters', JSON.stringify(updatedList)); } catch { /* ignore */ }
+      setLastCreatedItem(newLetter);
       setSuccessMsg(lang === 'wo' 
         ? 'Demande bi yónnee nañu ko ak jamm. Fajukaay bi mën na la fajj léegi.' 
         : isEmerg 
@@ -676,6 +965,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
       const currentOrders = JSON.parse(localStorage.getItem('cmu_purchase_orders') || '[]');
       localStorage.setItem('cmu_purchase_orders', JSON.stringify([newOrder, ...currentOrders]));
+      setLastCreatedItem(newOrder);
 
       setSuccessMsg(prescriptionPhoto 
         ? `Votre Bon de Commande Pharmacie (${newOrder.order_code}) et votre ordonnance ont été soumis. Le gérant UNAMUSC vérifiera l'ordonnance avant d'activer votre bon (Tiers-payant 50%). Vous serez notifié dès validation.`
@@ -706,12 +996,15 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
     };
 
     const updated = letters.map(l => l.id === selectedLetter.id ? updatedLetter : l);
+    try { localStorage.setItem('unamusc_guarantee_letters', JSON.stringify(updated)); } catch { /* ignore */ }
+    setLastCreatedItem(updatedLetter);
     setLetters(updated);
 
     try {
-      await fetch(`/api/guarantees/${selectedLetter.id}/status`, {
+      const token = localStorage.getItem('cmu-agent-token') || localStorage.getItem('cmu-token') || localStorage.getItem('token');
+      await fetch(`${window.API_BASE_URL || ''}/api/guarantees/${selectedLetter.id}/status`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
         body: JSON.stringify({
           status,
           guaranteed_percentage: finalPct,
@@ -1462,7 +1755,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     borderRadius: '22px', 
                     boxShadow: '0 8px 24px rgba(5, 150, 105, 0.12)' 
                   }} 
-                  onClick={() => (window.location.hash = '#/purchase-orders')}
+                  onClick={() => { if (setView) setView('purchase-orders'); window.location.hash = '#/purchase-orders'; }}
                 >
                   <div className="d-flex align-items-start justify-content-between mb-3">
                     <div style={{ width: '48px', height: '48px', borderRadius: '15px', background: 'linear-gradient(135deg, #059669, #10b981)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', boxShadow: '0 6px 16px rgba(5,150,105,0.35)' }}>
@@ -1489,7 +1782,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     border: '1px solid var(--border-color)', 
                     borderRadius: '22px' 
                   }} 
-                  onClick={() => (window.location.hash = '#/verify')}
+                  onClick={() => { if (setView) setView('verify'); window.location.hash = '#/verify'; }}
                 >
                   <div className="d-flex align-items-start justify-content-between mb-3">
                     <div style={{ width: '48px', height: '48px', borderRadius: '15px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
@@ -1516,7 +1809,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     border: '1px solid var(--border-color)', 
                     borderRadius: '22px' 
                   }} 
-                  onClick={() => (window.location.hash = '#/health-structures')}
+                  onClick={() => { if (setView) setView('map'); window.location.hash = '#/map'; }}
                 >
                   <div className="d-flex align-items-start justify-content-between mb-3">
                     <div style={{ width: '48px', height: '48px', borderRadius: '15px', background: 'rgba(2, 132, 199, 0.15)', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', border: '1px solid rgba(2, 132, 199, 0.3)' }}>
@@ -1543,7 +1836,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     border: '1px solid var(--border-color)', 
                     borderRadius: '22px' 
                   }} 
-                  onClick={() => (window.location.hash = '#/statistics')}
+                  onClick={() => { if (setView) setView('depts'); window.location.hash = '#/depts'; }}
                 >
                   <div className="d-flex align-items-start justify-content-between mb-3">
                     <div style={{ width: '48px', height: '48px', borderRadius: '15px', background: 'rgba(217, 119, 6, 0.15)', color: '#d97706', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', border: '1px solid rgba(217, 119, 6, 0.3)' }}>
@@ -1795,6 +2088,97 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
         </div>
       </section>
 
+      {/* BARRE DE CONNEXION LOGIQUE : LETTRES DE GARANTIE (HÔPITAL 80%) <-> BONS DE COMMANDE (PHARMACIE 50%) */}
+      <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4 p-3 rounded-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)' }}>
+        <div className="d-flex flex-wrap align-items-center gap-2">
+          <button
+            type="button"
+            className="btn fw-bold px-3.5 py-2 d-inline-flex align-items-center gap-2 text-white shadow-sm"
+            style={{ borderRadius: '12px', background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', border: 'none' }}
+          >
+            🏥 {lang === 'wo' ? 'Bataaxalu Garantie (Hôpital 80%)' : 'Lettres de Garantie (Hôpital 80% / SESAME 100%)'}
+          </button>
+          <button
+            type="button"
+            className="btn fw-bold px-3.5 py-2 d-inline-flex align-items-center gap-2"
+            style={{ borderRadius: '12px', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)' }}
+            onClick={() => {
+              if (setView) setView('purchase-orders');
+              window.location.hash = '#/purchase-orders';
+            }}
+          >
+            💊 {lang === 'wo' ? 'Bonu Garab (Pharmacie 50%)' : 'Bons de Commande Médicaments (Pharmacie 50%)'}
+          </button>
+        </div>
+        <div className="d-flex align-items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            className="btn btn-sm fw-bold px-3 py-2 d-inline-flex align-items-center gap-1.5 text-white shadow-sm"
+            style={{ borderRadius: '10px', background: '#25d366', border: '1.5px solid #25d366' }}
+            onClick={() => {
+              setWaReqType(requestCategory === 'pharmacy' ? 'purchase_order' : 'guarantee');
+              setWaReqStructure(structureName || 'Hôpital Universitaire de Fann (Dakar)');
+              setWaReqAct(medicalAct || '');
+              setWaReqAmount(estimatedAmount || '');
+              setWhatsappRequestModal(true);
+            }}
+          >
+            💬 {lang === 'wo' ? 'Laaj Bataaxal walla Bon ci WhatsApp' : 'Demander par WhatsApp'}
+          </button>
+          <button
+            type="button"
+            className="btn btn-sm fw-bold px-3 py-2 d-inline-flex align-items-center gap-1.5"
+            style={{ borderRadius: '10px', background: 'rgba(37, 211, 102, 0.14)', color: '#25d366', border: '1.5px solid #25d366' }}
+            onClick={() => openLetterWhatsAppModal(lastCreatedItem || visibleLetters[0] || letters[0])}
+          >
+            📲 {lang === 'wo' ? 'Jot sa Bataaxal ci WhatsApp' : 'Recevoir ma Lettre sur WhatsApp'}
+          </button>
+        </div>
+      </div>
+
+      {/* GUIDE VISUEL SIMPLE EN 3 ÉTAPES POUR L'ASSURÉ */}
+      <div className="row g-3 mb-4">
+        <div className="col-md-4">
+          <div className="p-3 rounded-4 h-100 d-flex align-items-start gap-3" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <span className="badge rounded-circle d-inline-flex align-items-center justify-content-center fw-bold" style={{ width: '34px', height: '34px', background: '#059669', color: '#fff', fontSize: '0.95rem', flexShrink: 0 }}>1</span>
+            <div>
+              <strong className="d-block mb-1" style={{ color: 'var(--text-main)', fontSize: '0.92rem' }}>
+                {lang === 'wo' ? '1. Yónneel sa devis d\'hôpital' : '1. Demandez votre prise en charge'}
+              </strong>
+              <small style={{ color: 'var(--text-sub)', fontSize: '0.8rem', lineHeight: 1.45, display: 'block' }}>
+                {lang === 'wo' ? 'Tànnal fajukaay bi te duggalal devis bi (80% mutuelle, 100% Plan SESAME).' : 'Indiquez l\'hôpital conventionné et le montant du devis (ou délivrance d\'urgence 24h/24).'}
+              </small>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-4">
+          <div className="p-3 rounded-4 h-100 d-flex align-items-start gap-3" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <span className="badge rounded-circle d-inline-flex align-items-center justify-content-center fw-bold" style={{ width: '34px', height: '34px', background: '#25d366', color: '#fff', fontSize: '0.95rem', flexShrink: 0 }}>2</span>
+            <div>
+              <strong className="d-block mb-1" style={{ color: 'var(--text-main)', fontSize: '0.92rem' }}>
+                {lang === 'wo' ? '2. Jot ko ci WhatsApp walla PDF' : '2. Recevez la Lettre sur WhatsApp'}
+              </strong>
+              <small style={{ color: 'var(--text-sub)', fontSize: '0.8rem', lineHeight: 1.45, display: 'block' }}>
+                {lang === 'wo' ? 'Bataaxal bi dafay ñëw ci sa WhatsApp ak code #GAR ak QR Code.' : 'Recevez votre Lettre homologuée avec code #GAR et lien de vérification directement sur WhatsApp.'}
+              </small>
+            </div>
+          </div>
+        </div>
+        <div className="col-md-4">
+          <div className="p-3 rounded-4 h-100 d-flex align-items-start gap-3" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+            <span className="badge rounded-circle d-inline-flex align-items-center justify-content-center fw-bold" style={{ width: '34px', height: '34px', background: '#0ea5e9', color: '#fff', fontSize: '0.95rem', flexShrink: 0 }}>3</span>
+            <div>
+              <strong className="d-block mb-1" style={{ color: 'var(--text-main)', fontSize: '0.92rem' }}>
+                {lang === 'wo' ? '3. Fayal 20% rekk (0 FCFA SESAME)' : '3. Admission immédiate à l\'hôpital'}
+              </strong>
+              <small style={{ color: 'var(--text-sub)', fontSize: '0.8rem', lineHeight: 1.45, display: 'block' }}>
+                {lang === 'wo' ? 'Wonal sa message WhatsApp : mutuelle bi dafay fay 80% (walla 100% ci Plan SESAME).' : 'Présentez votre message WhatsApp ou PDF à l\'hôpital : vous ne payez que 20% (0 FCFA en Plan SESAME).'}
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* RANGÉE KPIS EXÉCUTIF GARANTIES (Rôle Assuré vs Agent/SuperAdmin) */}
       {(() => {
         const citizenPendingCount = visibleLetters.filter(l => l.status === 'pending').length;
@@ -1994,7 +2378,34 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
       {successMsg && (
         <div className="alert alert-success d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm">
           <span className="fs-4 me-2">✅</span>
-          <div style={{ color: 'var(--text-main)' }}>{successMsg}</div>
+          <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 w-100" style={{ color: 'var(--text-main)' }}>
+            <span>{successMsg}</span>
+            <div className="d-flex align-items-center gap-2 flex-wrap">
+              {(lastCreatedItem || visibleLetters[0]) && (
+                <button
+                  type="button"
+                  className="btn btn-sm fw-bold px-3 py-1.5 text-white"
+                  style={{ background: '#25d366', border: 'none', borderRadius: '10px' }}
+                  onClick={() => openLetterWhatsAppModal(lastCreatedItem || visibleLetters[0])}
+                >
+                  📲 Recevoir sur WhatsApp
+                </button>
+              )}
+              {lastCreatedItem?.order_code && (
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-success fw-bold px-3 py-1.5"
+                  style={{ borderRadius: '10px' }}
+                  onClick={() => {
+                    if (setView) setView('purchase-orders');
+                    window.location.hash = '#/purchase-orders';
+                  }}
+                >
+                  💊 Voir mes Bons de Commande Pharmacie
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
@@ -2162,7 +2573,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     ? 'Ex: Intervention chirurgicale ORL, hospitalisation 5 jours en médecine interne...' 
                     : 'Ex: Amoxicilline 500mg (2 boîtes), Paracétamol 1g (1 boîte), Spasfon...'}
                   value={medicalAct}
-                  onChange={(e) => setMedicalAct(e.target.value)}
+                  onChange={(e) => setMedicalAct(formatSentenceCase(e.target.value))}
                   style={{ borderRadius: '10px' }}
                   required
                 />
@@ -2680,7 +3091,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   </tr>
                 </thead>
                 <tbody>
-                  {visibleLetters.map((item, idx) => {
+                  {visibleLetters.slice((Math.min(letterPage, Math.max(1, Math.ceil(visibleLetters.length / 10))) - 1) * 10, Math.min(letterPage, Math.max(1, Math.ceil(visibleLetters.length / 10))) * 10).map((item, idx) => {
                     const bInfo = getBeneficiaryInfo(`${item.first_name} ${item.last_name}`, item.cmu_number || activeCmuNumber);
                     return (
                       <tr 
@@ -2859,6 +3270,36 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                                 style={{ background: '#059669', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.84rem' }}
                               >
                                 🖨️ Certificat PDF
+                              </button>
+                            )}
+
+                            {/* Bouton WHATSAPP : Recevoir / Envoyer la Lettre de Garantie */}
+                            <button
+                              type="button"
+                              className="btn btn-sm fw-bold px-3 py-2 d-inline-flex align-items-center gap-1.5 hover-lift"
+                              style={{
+                                background: 'rgba(37, 211, 102, 0.16)',
+                                color: '#25d366',
+                                border: '1.5px solid #25d366',
+                                borderRadius: '10px',
+                                fontSize: '0.84rem'
+                              }}
+                              title="Recevoir ou envoyer cette lettre de garantie sur WhatsApp"
+                              onClick={() => openLetterWhatsAppModal(item)}
+                            >
+                              📲 WhatsApp
+                            </button>
+
+                            {/* Régularisation d'urgence par l'Agent / SuperAdmin */}
+                            {(canInstruire || isSuperAdmin) && item.status === 'emergency_issued' && (
+                              <button
+                                type="button"
+                                className="btn btn-sm fw-bold px-3 py-2 text-white hover-lift"
+                                style={{ background: '#7c3aed', border: 'none', borderRadius: '10px', fontSize: '0.82rem' }}
+                                title="Homologuer et régulariser cette prise en charge d'urgence"
+                                onClick={() => handleRegularizeEmergency(item)}
+                              >
+                                ✅ Régulariser
                               </button>
                             )}
 
@@ -3055,6 +3496,22 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
             <div className="modal-body p-4" style={{ flex: 1, overflowY: 'auto' }}>
               {/* ONGLET 1 : INSTRUCTION & CALCUL DE PRISE EN CHARGE */}
+              {modalTab === 'certificate' && (
+                <div className="d-flex justify-content-end mb-2">
+                  <button
+                    type="button"
+                    className="btn fw-bold px-4 py-2 text-white shadow-sm"
+                    onClick={() => {
+                      const letterToShare = selectedLetter;
+                      setSelectedLetter(null);
+                      openLetterWhatsAppModal(letterToShare);
+                    }}
+                    style={{ background: '#25d366', borderColor: '#25d366', borderRadius: '10px', textTransform: 'none' }}
+                  >
+                    📲 Recevoir / Envoyer sur WhatsApp
+                  </button>
+                </div>
+              )}
               {modalTab === 'instruction' && (
                 <div className="fade-in-up">
                   <div className="row g-4 mb-4">
@@ -3379,6 +3836,22 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 Fermer
               </button>
 
+              {modalTab === 'certificate' && (
+                <div className="d-flex justify-content-end mb-2">
+                  <button
+                    type="button"
+                    className="btn fw-bold px-4 py-2 text-white shadow-sm"
+                    onClick={() => {
+                      const letterToShare = selectedLetter;
+                      setSelectedLetter(null);
+                      openLetterWhatsAppModal(letterToShare);
+                    }}
+                    style={{ background: '#25d366', borderColor: '#25d366', borderRadius: '10px', textTransform: 'none' }}
+                  >
+                    📲 Recevoir / Envoyer sur WhatsApp
+                  </button>
+                </div>
+              )}
               {modalTab === 'instruction' && (
                 <div className="d-flex gap-3">
                   <button 
@@ -3439,7 +3912,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   className="form-control" 
                   style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                   value={editingLetterObj.first_name || ''}
-                  onChange={(e) => setEditingLetterObj({ ...editingLetterObj, first_name: e.target.value })}
+                  onChange={(e) => setEditingLetterObj({ ...editingLetterObj, first_name: formatTitleCase(e.target.value) })}
                   placeholder="Ex: Amadou"
                   required
                 />
@@ -3452,7 +3925,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   className="form-control" 
                   style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                   value={editingLetterObj.last_name || ''}
-                  onChange={(e) => setEditingLetterObj({ ...editingLetterObj, last_name: e.target.value })}
+                  onChange={(e) => setEditingLetterObj({ ...editingLetterObj, last_name: formatTitleCase(e.target.value) })}
                   placeholder="Ex: Sow"
                   required
                 />
@@ -3494,7 +3967,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 className="form-control" 
                 style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                 value={editingLetterObj.hospital_name || ''}
-                onChange={(e) => setEditingLetterObj({ ...editingLetterObj, hospital_name: e.target.value })}
+                onChange={(e) => setEditingLetterObj({ ...editingLetterObj, hospital_name: formatTitleCase(e.target.value) })}
                 placeholder="Ex: Hôpital Universitaire de Fann (Dakar)"
                 required
               />
@@ -3507,7 +3980,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 className="form-control" 
                 style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                 value={editingLetterObj.medical_act || ''}
-                onChange={(e) => setEditingLetterObj({ ...editingLetterObj, medical_act: e.target.value })}
+                onChange={(e) => setEditingLetterObj({ ...editingLetterObj, medical_act: formatSentenceCase(e.target.value) })}
                 placeholder="Ex: Intervention chirurgicale ORL, 5 jours d'hospitalisation"
                 required
               />
@@ -3563,7 +4036,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 rows={2}
                 style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                 value={editingLetterObj.agent_note || ''}
-                onChange={(e) => setEditingLetterObj({ ...editingLetterObj, agent_note: e.target.value })}
+                onChange={(e) => setEditingLetterObj({ ...editingLetterObj, agent_note: formatSentenceCase(e.target.value) })}
                 placeholder="Ex: Prise en charge 80% validée sous le système de Tiers-payant UNAMUSC Dakar."
               />
             </div>
@@ -3587,6 +4060,387 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
             </div>
 
           </form>
+        </div>,
+        document.body
+      )}
+      {/* MODALE D'ENVOI / RÉCEPTION WHATSAPP DE LA LETTRE DE GARANTIE (React Portal) */}
+      {whatsappLetterModal && createPortal(
+        <div
+          style={{ position: 'fixed', inset: 0, width: '100vw', height: '100vh', background: 'rgba(15, 23, 42, 0.85)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 9999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.25rem', overflowY: 'auto' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setWhatsappLetterModal(null); }}
+        >
+          <div style={{ maxWidth: '580px', width: '100%', background: 'var(--bg-card, #1e293b)', color: 'var(--text-main, #ffffff)', borderRadius: '24px', border: '2px solid #25d366', boxShadow: '0 25px 60px rgba(0,0,0,0.5)', overflow: 'hidden', margin: 'auto' }}>
+            <div className="p-3.5 d-flex justify-content-between align-items-center" style={{ background: 'linear-gradient(135deg, #128c7e 0%, #25d366 100%)', color: '#ffffff' }}>
+              <div className="d-flex align-items-center gap-2">
+                <span style={{ fontSize: '1.35rem' }}>📲</span>
+                <div>
+                  <h5 className="fw-bold mb-0" style={{ fontSize: '1.05rem', color: '#ffffff' }}>
+                    {lang === 'wo' ? 'Jot Bataaxalu Garantie bi ci WhatsApp' : 'Recevoir / Envoyer la Lettre de Garantie par WhatsApp'}
+                  </h5>
+                  <small style={{ opacity: 0.92, fontSize: '0.76rem' }}>
+                    Code : #{whatsappLetterModal.validation_code || whatsappLetterModal.order_code || whatsappLetterModal.id} • Tiers-Payant UNAMUSC
+                  </small>
+                </div>
+              </div>
+              <button type="button" className="btn-close btn-close-white" onClick={() => setWhatsappLetterModal(null)}></button>
+            </div>
+
+            <div className="p-4">
+              <div className="mb-3">
+                <label className="form-label small fw-bold mb-1" style={{ color: '#25d366' }}>
+                  📱 {lang === 'wo' ? 'Nimero téléphone WhatsApp assuré bi :' : 'Numéro WhatsApp de l\'assuré (Sénégal +221) :'}
+                </label>
+                <input
+                  type="tel"
+                  className="form-control fw-bold"
+                  value={whatsappPhoneInput}
+                  onChange={(e) => setWhatsappPhoneInput(e.target.value)}
+                  placeholder="Ex: +221 77 123 45 67"
+                  style={{ borderRadius: '12px', fontSize: '1.05rem', border: '1.5px solid #25d366', background: 'var(--bg-card-subtle)', color: 'var(--text-main)' }}
+                />
+                <small className="text-muted d-block mt-1" style={{ fontSize: '0.76rem' }}>
+                  L'assuré reçoit immédiatement sa Lettre de Garantie (code, hôpital, montant garanti, reste à charge et lien de vérification) sur son WhatsApp.
+                </small>
+              </div>
+
+              <div className="mb-3">
+                <label className="form-label small fw-bold text-muted mb-1">Aperçu du message officiel WhatsApp :</label>
+                <pre
+                  className="p-3 rounded-3 mb-0"
+                  style={{ background: 'rgba(15, 23, 42, 0.55)', color: '#e2e8f0', fontSize: '0.78rem', whiteSpace: 'pre-wrap', maxHeight: '220px', overflowY: 'auto', border: '1px solid rgba(37, 211, 102, 0.3)', fontFamily: 'inherit' }}
+                >
+                  {formatGuaranteeLetterWhatsAppMsg(whatsappLetterModal)}
+                </pre>
+              </div>
+
+              <div className="d-flex justify-content-end gap-2 pt-2">
+                <button
+                  type="button"
+                  className="btn btn-secondary fw-bold px-3"
+                  style={{ borderRadius: '12px' }}
+                  onClick={() => setWhatsappLetterModal(null)}
+                >
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  className="btn fw-bold px-4 text-white d-inline-flex align-items-center gap-2"
+                  style={{ background: '#25d366', border: 'none', borderRadius: '12px', boxShadow: '0 4px 14px rgba(37, 211, 102, 0.35)' }}
+                  onClick={() => handleSendLetterWhatsApp(whatsappLetterModal, whatsappPhoneInput)}
+                >
+                  📲 Ouvrir WhatsApp et Envoyer maintenant
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+      {whatsappRequestModal && createPortal(
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(15, 23, 42, 0.85)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            zIndex: 9999998,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem',
+            overflowY: 'auto'
+          }}
+          onClick={(e) => { if (e.target === e.currentTarget) setWhatsappRequestModal(false); }}
+        >
+          <div
+            className="shadow-2xl d-flex flex-column"
+            style={{
+              maxWidth: '620px',
+              width: '100%',
+              maxHeight: '92vh',
+              background: 'var(--bg-card, #1e293b)',
+              color: 'var(--text-main, #ffffff)',
+              borderRadius: '24px',
+              overflow: 'hidden',
+              border: '2px solid #25d366',
+              boxShadow: '0 25px 70px rgba(37, 211, 102, 0.25), 0 10px 30px rgba(0, 0, 0, 0.5)'
+            }}
+          >
+            {/* Entête fixe */}
+            <div
+              style={{
+                flexShrink: 0,
+                background: 'linear-gradient(135deg, #075e54 0%, #128c7e 55%, #25d366 100%)',
+                padding: '1.15rem 1.4rem',
+                color: '#fff'
+              }}
+              className="d-flex justify-content-between align-items-center"
+            >
+              <div className="d-flex align-items-center gap-2">
+                <span style={{ fontSize: '1.6rem' }}>💬</span>
+                <div>
+                  <h5 className="fw-bold mb-0 text-white" style={{ fontSize: '1.05rem' }}>
+                    Demander une Lettre ou un Bon par WhatsApp
+                  </h5>
+                  <small style={{ opacity: 0.9, fontSize: '0.78rem' }}>
+                    Guichet WhatsApp UNAMUSC • Tiers-Payant Hôpital 80% & Pharmacie 50%
+                  </small>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="btn-close btn-close-white"
+                onClick={() => setWhatsappRequestModal(false)}
+              />
+            </div>
+
+            {/* Formulaire défilable avec scrollbar visible */}
+            <form
+              onSubmit={handleRequestViaWhatsApp}
+              className="d-flex flex-column"
+              style={{
+                flex: '1 1 auto',
+                overflowY: 'auto',
+                maxHeight: 'calc(92vh - 75px)',
+                padding: '1.25rem 1.5rem'
+              }}
+            >
+              {/* Type de demande */}
+              <div className="mb-3">
+                <label className="form-label small fw-bold mb-1" style={{ color: 'var(--text-main)' }}>
+                  Type de prise en charge demandée :
+                </label>
+                <div className="d-flex gap-2">
+                  <button
+                    type="button"
+                    className="btn btn-sm fw-bold flex-grow-1 py-2"
+                    style={{
+                      borderRadius: '10px',
+                      background: waReqType === 'guarantee' ? '#059669' : 'var(--bg-card-subtle)',
+                      color: waReqType === 'guarantee' ? '#fff' : 'var(--text-main)',
+                      border: '1.5px solid #059669'
+                    }}
+                    onClick={() => {
+                      setWaReqType('guarantee');
+                      if (!waReqStructure || waReqStructure.includes('Pharmacie')) {
+                        setWaReqStructure('Hôpital Universitaire de Fann (Dakar)');
+                      }
+                    }}
+                  >
+                    🏥 Lettre de Garantie (Hôpital 80%)
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-sm fw-bold flex-grow-1 py-2"
+                    style={{
+                      borderRadius: '10px',
+                      background: waReqType === 'purchase_order' ? '#059669' : 'var(--bg-card-subtle)',
+                      color: waReqType === 'purchase_order' ? '#fff' : 'var(--text-main)',
+                      border: '1.5px solid #059669'
+                    }}
+                    onClick={() => {
+                      setWaReqType('purchase_order');
+                      if (!waReqStructure || waReqStructure.includes('Hôpital')) {
+                        setWaReqStructure('Pharmacie Partenaire Agréée CSU');
+                      }
+                    }}
+                  >
+                    💊 Bon de Commande (Pharmacie 50%)
+                  </button>
+                </div>
+              </div>
+
+              {/* Choix de la MSD / Département */}
+              <div className="mb-3">
+                <label className="form-label small fw-bold mb-1" style={{ color: 'var(--text-main)' }}>
+                  🏛️ Mutuelle de Santé (MSD) / Département de rattachement :
+                </label>
+                <select
+                  className="form-select"
+                  value={waSelectedMsd}
+                  onChange={(e) => handleSelectMsd(e.target.value)}
+                  style={{ borderRadius: '10px', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}
+                >
+                  {getMsdWhatsappDirectory().map((d) => (
+                    <option key={d.msdCode} value={d.msdCode}>
+                      {d.name} ({d.region}) — {d.whatsapp}
+                    </option>
+                  ))}
+                </select>
+                <small className="text-muted d-block mt-1">
+                  Demande transmise au guichet officiel de la <strong>{waDesk?.name || 'MSD Dakar'}</strong> ({waDesk?.region}).
+                </small>
+              </div>
+
+              {/* Structure et Montant */}
+              <div className="row g-2 mb-3">
+                <div className="col-md-6">
+                  <label className="form-label small fw-bold mb-1" style={{ color: 'var(--text-main)' }}>
+                    {waReqType === 'purchase_order' ? 'Pharmacie agréée :' : 'Hôpital / Structure de santé :'}
+                  </label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={waReqStructure}
+                    onChange={(e) => setWaReqStructure(formatTitleCase(e.target.value))}
+                    placeholder={waReqType === 'purchase_order' ? 'Ex: Pharmacie Guigon Dakar' : 'Ex: Hôpital Principal de Dakar'}
+                    required
+                    style={{ borderRadius: '10px', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}
+                  />
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label small fw-bold mb-1" style={{ color: 'var(--text-main)' }}>
+                    Montant estimé devis/ordonnance (FCFA) :
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    className="form-control fw-bold"
+                    value={waReqAmount}
+                    onChange={(e) => setWaReqAmount(e.target.value)}
+                    placeholder="Ex: 75000"
+                    required
+                    style={{ borderRadius: '10px', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}
+                  />
+                </div>
+              </div>
+
+              {/* Acte / Médicaments */}
+              <div className="mb-3">
+                <label className="form-label small fw-bold mb-1" style={{ color: 'var(--text-main)' }}>
+                  {waReqType === 'purchase_order' ? 'Médicaments prescrits sur l\'ordonnance :' : 'Acte médical / Motif d\'hospitalisation :'}
+                </label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={waReqAct}
+                  onChange={(e) => setWaReqAct(formatSentenceCase(e.target.value))}
+                  placeholder={waReqType === 'purchase_order' ? 'Ex: Insuline Lantus, Metformine 850mg, Amoxicilline' : 'Ex: Chirurgie appendicite / Accouchement / Scanner'}
+                  required
+                  style={{ borderRadius: '10px', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}
+                />
+              </div>
+
+              {/* PIÈCE JOINTE : DEVIS OU ORDONNANCE */}
+              <div className="mb-3 p-3 rounded-3" style={{ background: 'rgba(5, 150, 105, 0.08)', border: '1.5px dashed #059669' }}>
+                <label className="form-label small fw-bold mb-1 d-flex align-items-center justify-content-between" style={{ color: 'var(--text-main)' }}>
+                  <span>📎 Joindre {waReqType === 'purchase_order' ? 'l\'ordonnance' : 'le devis hospitalier'} (Photo / Scan) :</span>
+                  <span className="badge bg-success" style={{ fontSize: '0.72rem' }}>Recommandé</span>
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="form-control"
+                  onChange={handleWaAttachment}
+                  style={{ borderRadius: '10px', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}
+                />
+                {waAttachment ? (
+                  <div className="d-flex align-items-center gap-2 mt-2 text-success fw-bold small">
+                    <span>✓ Pièce jointe prête et compressée ({Math.round(waAttachment.length / 1024)} Ko)</span>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-link text-danger p-0 ms-auto text-decoration-none"
+                      onClick={() => setWaAttachment('')}
+                    >
+                      ✕ Supprimer
+                    </button>
+                  </div>
+                ) : (
+                  <small className="text-muted d-block mt-1">
+                    Prenez une photo de votre devis ou ordonnance pour permettre à la mutuelle de valider votre prise en charge.
+                  </small>
+                )}
+              </div>
+
+              {/* Téléphones : Assuré et Guichet */}
+              <div className="row g-2 mb-3">
+                <div className="col-md-6">
+                  <label className="form-label small fw-bold mb-1" style={{ color: 'var(--text-main)' }}>
+                    📱 Votre numéro WhatsApp (pour recevoir) :
+                  </label>
+                  <input
+                    type="tel"
+                    className="form-control"
+                    value={whatsappPhoneInput}
+                    onChange={(e) => setWhatsappPhoneInput(e.target.value)}
+                    placeholder="+221 77 123 45 67"
+                    style={{ borderRadius: '10px', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}
+                  />
+                </div>
+                <div className="col-md-6">
+                  <label className="form-label small fw-bold mb-1" style={{ color: 'var(--text-main)' }}>
+                    🏢 Guichet WhatsApp de la Mutuelle :
+                  </label>
+                  <input
+                    type="tel"
+                    className="form-control fw-bold"
+                    value={waDeskPhone}
+                    onChange={(e) => setWaDeskPhone(e.target.value)}
+                    placeholder="+221 76 845 54 99"
+                    style={{ borderRadius: '10px', background: 'var(--bg-card-subtle)', color: '#25d366', border: '1px solid #25d366' }}
+                  />
+                  {(isAgent || isSuperAdmin) && (
+                    <div className="mt-1 d-flex align-items-center gap-2">
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-outline-success py-0 px-2"
+                        style={{ fontSize: '0.74rem', borderRadius: '6px' }}
+                        onClick={handleSaveMsdWhatsappNumber}
+                        title="Enregistrer ce numéro comme contact officiel de cette MSD"
+                      >
+                        💾 Sauvegarder pour la MSD {waSelectedMsd}
+                      </button>
+                      {waSaveMsg && <span className="text-success small fw-bold">{waSaveMsg}</span>}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Aperçu message WhatsApp */}
+              <div className="mb-3">
+                <label className="form-label small fw-bold text-muted mb-1">Aperçu du message WhatsApp :</label>
+                <pre
+                  className="p-2.5 rounded-3 mb-0"
+                  style={{ background: 'rgba(15, 23, 42, 0.55)', color: '#e2e8f0', fontSize: '0.74rem', whiteSpace: 'pre-wrap', maxHeight: '130px', overflowY: 'auto', border: '1px solid rgba(37, 211, 102, 0.3)', fontFamily: 'inherit' }}
+                >
+                  {formatIncomingWhatsAppRequestMsg()}
+                </pre>
+              </div>
+
+              {/* PIED DE MODALE FIXE / STICKY */}
+              <div
+                className="d-flex justify-content-end align-items-center gap-2 pt-2 mt-auto"
+                style={{
+                  position: 'sticky',
+                  bottom: 0,
+                  background: 'var(--bg-card, #1e293b)',
+                  borderTop: '1px solid var(--border-color, #334155)',
+                  zIndex: 5,
+                  paddingTop: '0.75rem',
+                  paddingBottom: '0.25rem'
+                }}
+              >
+                <button
+                  type="button"
+                  className="btn btn-secondary fw-bold px-3"
+                  style={{ borderRadius: '12px' }}
+                  onClick={() => setWhatsappRequestModal(false)}
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="btn fw-bold px-4 text-white d-inline-flex align-items-center gap-2"
+                  style={{ background: '#25d366', border: 'none', borderRadius: '12px', boxShadow: '0 4px 14px rgba(37, 211, 102, 0.35)' }}
+                >
+                  💬 Enregistrer & Envoyer ma demande sur WhatsApp
+                </button>
+              </div>
+            </form>
+          </div>
         </div>,
         document.body
       )}

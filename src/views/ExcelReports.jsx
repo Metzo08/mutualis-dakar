@@ -107,7 +107,7 @@ export default function ExcelReports() { // props historiques conservées par Ap
               {REPORT_TYPES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
             </select>
             <button className="btn btn-primary btn-sm" disabled={!!downloading}
-              onClick={() => download('type', `/api/excel/report/${type}`, `mutualis-${type}-${stamp}.xlsx`)}>
+              onClick={() => download('type', `/api/excel/report/${type}`, `senmutuelles-${type}-${stamp}.xlsx`)}>
               {downloading === 'type' ? '⏳ Génération…' : '⬇️ Télécharger le .xlsx'}
             </button>
           </div>
@@ -173,7 +173,7 @@ export default function ExcelReports() { // props historiques conservées par Ap
               Jamais de secret, de jeton ni de mot de passe.
             </p>
             <button className="btn btn-outline-danger btn-sm" disabled={!!downloading}
-              onClick={() => download('security', '/api/security/export', `securite-mutualis-${stamp}.xlsx`)}>
+              onClick={() => download('security', '/api/security/export', `securite-senmutuelles-${stamp}.xlsx`)}>
               {downloading === 'security' ? '⏳ Génération…' : '⬇️ Rapport de sécurité'}
             </button>
           </div>

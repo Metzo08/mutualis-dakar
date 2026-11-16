@@ -4,22 +4,22 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MUTUALIS DAKAR - Portail Intégré de la Mutualité de Santé Communautaire</title>
+    <title>SenMutuelles — Portail Intégré de la Mutualité de Santé Communautaire</title>
     <meta name="description" content="Portail officiel de l'Union Régionale des Mutuelles de Santé Communautaires de Dakar (URMSCD). Adhésion en ligne, paiement de cotisations par Wave/Orange Money, cartographie des hôpitaux et chatbot IA." />
-    <meta name="keywords" content="mutualis dakar, csu dakar, csu sénégal, mutuelle santé dakar, adhésion csu wave, urmsd, cartographie hôpitaux dakar" />
+    <meta name="keywords" content="senmutuelles, senmutuelles.sn, mutualis dakar, csu dakar, csu sénégal, mutuelle santé dakar, adhésion csu wave, urmsd, cartographie hôpitaux dakar" />
     <meta name="robots" content="index, follow" />
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://mutualis.sn/" />
-    <meta property="og:title" content="MUTUALIS DAKAR - Portail de la Mutualité de Santé Communautaire" />
+    <meta property="og:url" content="https://senmutuelles.sn/" />
+    <meta property="og:title" content="SenMutuelles — Portail de la Mutualité de Santé Communautaire" />
     <meta property="og:description" content="Adhésion en ligne, cotisations mobiles par Wave/Orange Money et cartographie sanitaire de Dakar." />
     <meta property="og:image" content="/msdd_logo_corrected.png" />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://mutualis.sn/" />
-    <meta property="twitter:title" content="MUTUALIS DAKAR - Portail de la Mutualité de Santé Communautaire" />
+    <meta property="twitter:url" content="https://senmutuelles.sn/" />
+    <meta property="twitter:title" content="SenMutuelles — Portail de la Mutualité de Santé Communautaire" />
     <meta property="twitter:description" content="Adhésion en ligne, cotisations mobiles par Wave/Orange Money et cartographie sanitaire de Dakar." />
     <meta property="twitter:image" content="/msdd_logo_corrected.png" />
 
@@ -43,7 +43,12 @@
       // Base URL de l'API backend — DÉRIVÉE du hostname courant pour que le mobile
       // (qui charge la page via l'IP LAN, ex: http://192.168.1.5:5180) appelle bien
       // le backend du PC (http://192.168.1.5:5000) et non son propre localhost.
-      window.API_BASE_URL = 'http://' + window.location.hostname + ':5000';
+      (function () {
+        var h = window.location.hostname;
+        var p = window.location.port;
+        var isLocalDev = (h === 'localhost' || h === '127.0.0.1') && p && p !== '80' && p !== '443';
+        window.API_BASE_URL = isLocalDev ? ('http://' + h + ':5000') : '';
+      })();
     </script>
     <script>
       // ── Garde-fou d'incident global ─────────────────────────────────────────

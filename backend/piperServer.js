@@ -101,15 +101,19 @@ const server = http.createServer(async (req, res) => {
 
   // Adaptation phonétique pour prononciation Wolof naturelle par le moteur neural
   const adaptForSpeech = (rawText, lang) => {
-    let t = String(rawText || '')
-      .replace(/100%/g, 'cent pour cent')
-      .replace(/80%/g, 'quatre-vingts pour cent')
-      .replace(/50%/g, 'cinquante pour cent')
-      .replace(/20%/g, 'vingt pour cent')
-      .replace(/%/g, ' pour cent')
-      .replace(/FCFA/gi, 'francs cfa')
-      .replace(/[\(\)\[\]\{\}]/g, ' ')
-      .replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '') // Emojis
+    let t = String(rawText || "")
+      .replace(/\*+/g, "")
+      .replace(/`+/g, "")
+      .replace(/100%/g, "cent pour cent")
+      .replace(/80%/g, "quatre-vingts pour cent")
+      .replace(/50%/g, "cinquante pour cent")
+      .replace(/20%/g, "vingt pour cent")
+      .replace(/%/g, " pour cent")
+      .replace(/FCFA/gi, "francs cfa")
+      .replace(/UNAMUSC/gi, "ounamousk")
+      .replace(/CSU/gi, "cé ess ou")
+      .replace(/[�-�][�-�]/g, "")
+      .replace(/[\(\)\[\]\{\}#]/g, " ")
       .trim();
 
     if (lang === 'wo' || lang === 'wolof') {
@@ -121,38 +125,41 @@ const server = http.createServer(async (req, res) => {
         .replace(/naka nga defee/gi, 'naka nga défé')
         .replace(/jàmm/gi, 'djam')
         .replace(/ndakaaru/gi, 'dakar')
-        .replace(/fajukaay/gi, 'fadiou kay')
-        .replace(/garab/gi, 'garap')
-        .replace(/wér-gi-yaram/gi, 'wer gui yaram')
+        .replace(/fajukaay/gi, 'fadiou kaye')
+        .replace(/garab/gi, 'garape')
+        .replace(/wér-gi-yaram/gi, 'wèr gui yaram')
         .replace(/kër/gi, 'keur')
-        .replace(/mën nga/gi, 'meune nga')
+        .replace(/mën nga/gi, 'meun nga')
         .replace(/mënuñu/gi, 'meunou gnou')
+        .replace(/mën nañu/gi, 'meun nagnou')
+        .replace(/mën na/gi, 'meun na')
         .replace(/mënë/gi, 'meuné')
-        .replace(/mën/gi, 'meune')
+        .replace(/mën/gi, 'meun')
         .replace(/ñoo/gi, 'gnio')
         .replace(/ñaar/gi, 'gnar')
+        .replace(/ñaata/gi, 'niata')
         .replace(/ñibási/gi, 'gnibassi')
         .replace(/ñépp|nepp/gi, 'gnèp')
         .replace(/ñu/gi, 'gnou')
         .replace(/ñi/gi, 'gni')
-        .replace(/xaalis/gi, 'haliss')
-        .replace(/bëggàm/gi, 'bègue am')
-        .replace(/bëgg/gi, 'bègue')
+        .replace(/xaalis/gi, 'khaaliss')
+        .replace(/bëggàm/gi, 'beuge am')
+        .replace(/bëgg/gi, 'beuge')
         .replace(/mungi/gi, 'moungui')
         .replace(/demal/gi, 'démale')
-        .replace(/xoolal/gi, 'hola l')
-        .replace(/xool/gi, 'hol')
+        .replace(/xoolal/gi, 'khoolale')
+        .replace(/xool/gi, 'khool')
         .replace(/yónnee|yonnee/gi, 'yonné')
         .replace(/lépp|lepp/gi, 'lèp')
         .replace(/bokk/gi, 'bok')
-        .replace(/wax/gi, 'ouax')
-        .replace(/mooy/gi, 'mo-é')
+        .replace(/wax/gi, 'wakh')
+        .replace(/mooy/gi, 'moye')
         .replace(/jokkoo/gi, 'djoko')
-        .replace(/baax/gi, 'bah')
-        .replace(/bu neex/gi, 'bou né')
+        .replace(/baax/gi, 'baakh')
+        .replace(/bu neex/gi, 'bou nekh')
         .replace(/suba/gi, 'souba')
         .replace(/bindal/gi, 'bindale')
-        .replace(/xam/gi, 'ham')
+        .replace(/xam/gi, 'kham')
         .replace(/tey/gi, 'tè');
     }
     return t;
@@ -241,14 +248,12 @@ const server = http.createServer(async (req, res) => {
   res.end(JSON.stringify({ error: 'Endpoint inconnu. Utilisez POST /api/tts.' }));
 });
 
-(async () => {
-  await waitForEngine(90);
-  server.listen(PORT, '127.0.0.1', () => {
-    console.log(`🎙️  Serveur Piper TTS démarré sur http://127.0.0.1:${PORT}`);
-    console.log(`    Moteur persistant : port ${PIPER_HTTP_PORT} (modèle en RAM)`);
-    console.log(`    Endpoint : POST http://127.0.0.1:${PORT}/api/tts  { "text": "...", "language": "fr" }`);
-  });
-})();
+server.listen(PORT, "0.0.0.0", () => {
+  waitForEngine(90);
+  console.log("🎙️  Serveur Piper TTS démarré sur http://127.0.0.1:" + PORT);
+  console.log("    Moteur persistant : port " + PIPER_HTTP_PORT + " (modèle en RAM)");
+  console.log("    Endpoint : POST http://127.0.0.1:" + PORT + "/api/tts");
+});
 
 process.on('SIGINT', () => { try { piperCore.kill(); } catch (e) {} process.exit(0); });
 process.on('SIGTERM', () => { try { piperCore.kill(); } catch (e) {} process.exit(0); });

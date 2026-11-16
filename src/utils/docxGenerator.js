@@ -118,7 +118,7 @@ export async function generateOfficialDocx({
 }) {
   // Empreinte strictement identique à la variante PDF (contrôlée par src/test/fingerprintParity.test.js).
   const { cleanRef, cleanDoc, cryptoHash } = computeDocxFingerprint({ referenceNo, cmuNumber, docType });
-  const verifyUrl = `https://mutualis.sn/#/verify/${encodeURIComponent(cleanRef)}`;
+  const verifyUrl = `https://senmutuelles.sn/#/verify/${encodeURIComponent(cleanRef)}`;
 
   // QR d'authenticité pointant vers la même vérification publique que le PDF.
   let qrImage = null;
@@ -268,7 +268,7 @@ export async function generateOfficialDocx({
           children: [
             ...(qrImage ? [new Paragraph({ spacing: { after: 80 }, children: [qrImage] })] : []),
             cellPara('Authenticité et vérification infalsifiable UNAMUSC', { bold: true, size: 16, color: GREEN }),
-            cellPara("Scannez ce QR code avec un smartphone pour vérifier l'authenticité certifiée sur mutualis.sn", { size: 14, color: '334155' }),
+            cellPara("Scannez ce QR code avec un smartphone pour vérifier l'authenticité certifiée sur senmutuelles.sn", { size: 14, color: '334155' }),
             cellPara(`Empreinte cryptographique : ${cryptoHash}`, { bold: true, size: 14 }),
             cellPara('Statut : certifié conforme et infalsifiable', { bold: true, size: 14, color: GREEN }),
             cellPara('Union des mutuelles de santé communautaires du Sénégal', { italic: true, size: 13, color: MUTED })
@@ -291,7 +291,7 @@ export async function generateOfficialDocx({
 
   // 7. Assemblage et téléchargement (Blob local, aucune requête réseau)
   const doc = new Document({
-    creator: 'UNAMUSC Sénégal — MUTUALIS',
+    creator: 'UNAMUSC Sénégal — SenMutuelles',
     title: `${cleanDoc} — ${cleanRef}`,
     description: cleanDocText(notes),
     sections: [{

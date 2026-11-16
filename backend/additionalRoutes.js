@@ -79,7 +79,7 @@ router.get('/api/cotisations', authenticateToken, async (req, res) => {
       params.push(req.user.id, req.user.phone || '');
       paramIdx += 2;
     } else if (req.user && req.user.role !== 'Super Admin' && req.user.msdCode) {
-      whereSql += ` AND beneficiary_id IN (SELECT id FROM beneficiaries WHERE department = $${paramIdx})`;
+      whereSql += ` AND beneficiary_id IN (SELECT id FROM beneficiaries WHERE msd_code = $${paramIdx})`;
       params.push(req.user.msdCode);
       paramIdx++;
     }

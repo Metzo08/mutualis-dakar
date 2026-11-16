@@ -538,7 +538,104 @@ export default function VerifyCard({ setView = null, citizenUser = null }) {
 
     if (isDocCode) {
       // Seuls les documents RÉELLEMENT enregistrés sont reconnus.
-      const docMatch = demoDocuments[upperTarget] || null;
+      let docMatch = demoDocuments[upperTarget] || null;
+      if (!docMatch) {
+        try {
+          const localLetters = JSON.parse(localStorage.getItem('unamusc_guarantee_letters') || '[]');
+          const foundLetter = localLetters.find((l) => String(l.validation_code || '').toUpperCase() === upperTarget);
+          if (foundLetter) {
+            const est = Number(foundLetter.estimated_amount || 0);
+            const pct = Number(foundLetter.guaranteed_percentage || 80);
+            const cov = Number(foundLetter.max_amount || Math.round((est * pct) / 100));
+            const rest = Math.max(0, est - cov);
+            docMatch = {
+              title: 'Attestation Officielle de Prise en Charge Hospitalière',
+              docType: `Lettre de Garantie UNAMUSC (${pct}%)`,
+              referenceNo: foundLetter.validation_code,
+              beneficiaryName: `${foundLetter.first_name || ''} ${foundLetter.last_name || ''}`.trim() || 'Assuré CSU',
+              cmuNumber: foundLetter.cmu_number || 'CSU-DKR-2026',
+              hospitalName: foundLetter.hospital_name || foundLetter.structure_name || 'Hôpital Conventionné CSU',
+              medicalAct: foundLetter.medical_act || 'Soins hospitaliers',
+              estimatedAmount: `${est.toLocaleString('fr-FR')} FCFA`,
+              guaranteedAmount: `${cov.toLocaleString('fr-FR')} FCFA (${pct}%)`,
+              patientRest: `${rest.toLocaleString('fr-FR')} FCFA (${100 - pct}%)`,
+              status: foundLetter.status === 'approved' ? 'VALIDE — HOMOLOGUÉE UNAMUSC' : foundLetter.status === 'emergency_issued' ? 'VALIDE — DÉLIVRANCE D\'URGENCE 7J/7' : 'EN INSTRUCTION AGENT',
+              cryptoHash: `SHA256-UNAMUSC-${foundLetter.validation_code}`,
+              notes: foundLetter.agent_note || 'Titre de prise en charge vérifié et certifié par le système Tiers-Payant UNAMUSC.',
+              details: [
+                { label: 'Établissement Récepteur', value: foundLetter.hospital_name || 'Hôpital Conventionné CSU' },
+                { label: 'Acte Médical', value: foundLetter.medical_act || 'Soins hospitaliers' },
+                { label: 'Montant Garanti', value: `${cov.toLocaleString('fr-FR')} FCFA (${pct}%)` },
+                { label: 'Ticket Modérateur Patient', value: `${rest.toLocaleString('fr-FR')} FCFA` }
+              ]
+            };
+          }
+          if (!docMatch) {
+            const localOrders = JSON.parse(localStorage.getItem('cmu_purchase_orders') || '[]');
+            const foundOrder = localOrders.find((o) => String(o.order_code || `ORD-${o.id}`).toUpperCase() === upperTarget);
+            if (foundOrder) {
+              const total = Number(foundOrder.total_amount || 0);
+              const cov = Number(foundOrder.cmu_covered || Math.round(total * 0.5));
+              const rest = Number(foundOrder.patient_pay || Math.round(total * 0.5));
+              docMatch = {
+                title: 'Bon de Commande de Médicaments Certifié (48h)',
+                docType: 'Bon Pharmacie Tiers-Payant UNAMUSC (50%)',
+                referenceNo: foundOrder.order_code || `ORD-${foundOrder.id}`,
+                beneficiaryName: `${foundOrder.first_name || ''} ${foundOrder.last_name || ''}`.trim() || 'Assuré CSU',
+                cmuNumber: foundOrder.cmu_number || 'CSU-DKR-2026',
+                hospitalName: 'Pharmacie Partenaire Agréée UNAMUSC',
+                medicalAct: 'Ordonnance médicale prescrite (Médicaments essentiels)',
+                estimatedAmount: `${total.toLocaleString('fr-FR')} FCFA`,
+                guaranteedAmount: `${cov.toLocaleString('fr-FR')} FCFA (50%)`,
+                patientRest: `${rest.toLocaleString('fr-FR')} FCFA (50%)`,
+                status: foundOrder.status === 'active' ? 'ACTIF — VALABLE 48H EN PHARMACIE' : foundOrder.status === 'used' ? 'DÉJÀ DÉLIVRÉ EN PHARMACIE' : 'EN ATTENTE DE VALIDATION',
+                cryptoHash: `SHA256-PHARM-${foundOrder.order_code || foundOrder.id}`,
+                notes: 'Ce bon certifié permet la délivrance des médicaments prescrits avec prise en charge directe de 50% en officine agréée.',
+                details: [
+                  { label: 'Réseau Officine', value: 'Pharmacie Partenaire Agréée UNAMUSC' },
+                  { label: 'Montant Total Ordonnance', value: `${total.toLocaleString('fr-FR')} FCFA` },
+                  { label: 'Part Mutuelle UNAMUSC (50%)', value: `${cov.toLocaleString('fr-FR')} FCFA` },
+                  { label: 'Part Patient (50%)', value: `${rest.toLocaleString('fr-FR')} FCFA` }
+                ]
+              };
+            }
+          }
+          if (!docMatch) {
+            const apiRes = await fetch(`${window.API_BASE_URL || ''}/api/verify-document/${encodeURIComponent(upperTarget)}`);
+            if (apiRes.ok) {
+              const apiDoc = await apiRes.json();
+              if (apiDoc && apiDoc.code) {
+                const est = Number(apiDoc.estimatedAmount || 0);
+                const pct = Number(apiDoc.coverageRate || 80);
+                const cov = Number(apiDoc.coveredAmount || 0);
+                const rest = Number(apiDoc.patientShare || 0);
+                docMatch = {
+                  title: apiDoc.type === 'purchase_order' ? 'Bon de Commande de Médicaments Certifié (48h)' : 'Attestation Officielle de Prise en Charge Hospitalière',
+                  docType: apiDoc.type === 'purchase_order' ? 'Bon Pharmacie Tiers-Payant UNAMUSC (50%)' : `Lettre de Garantie UNAMUSC (${pct}%)`,
+                  referenceNo: apiDoc.code,
+                  beneficiaryName: apiDoc.beneficiaryName || 'Assuré CSU',
+                  cmuNumber: apiDoc.cmuNumber || 'CSU-DKR-2026',
+                  hospitalName: apiDoc.structureName || 'Structure agréée CSU',
+                  medicalAct: apiDoc.medicalAct || 'Prestation médicale certifiée',
+                  estimatedAmount: `${est.toLocaleString('fr-FR')} FCFA`,
+                  guaranteedAmount: `${cov.toLocaleString('fr-FR')} FCFA (${pct}%)`,
+                  patientRest: `${rest.toLocaleString('fr-FR')} FCFA (${100 - pct}%)`,
+                  status: apiDoc.valid ? 'VALIDE — HOMOLOGUÉ UNAMUSC' : `STATUT : ${String(apiDoc.status || '').toUpperCase()}`,
+                  cryptoHash: `SHA256-UNAMUSC-${apiDoc.code}`,
+                  notes: 'Document vérifié auprès du registre central UNAMUSC Sénégal.',
+                  details: [
+                    { label: 'Établissement', value: apiDoc.structureName || 'Structure agréée CSU' },
+                    { label: 'Montant Garanti', value: `${cov.toLocaleString('fr-FR')} FCFA (${pct}%)` },
+                    { label: 'Reste à charge assuré', value: `${rest.toLocaleString('fr-FR')} FCFA` }
+                  ]
+                };
+              }
+            }
+          }
+        } catch {
+          // Fallback silencieux si stockage local ou API indisponible
+        }
+      }
       if (docMatch) {
         setDocResult(docMatch);
         setLoading(false);
@@ -639,6 +736,28 @@ export default function VerifyCard({ setView = null, citizenUser = null }) {
     const patientName = selectedTargetBeneficiary ? selectedTargetBeneficiary.name : `${result?.firstName} ${result?.lastName}`;
     const targetCode = selectedTargetBeneficiary ? selectedTargetBeneficiary.cmuCode : result?.cmuNumber;
     const refNo = `GAR-2026-${Math.floor(10000 + Math.random() * 90000)}`;
+    try {
+      const estAmt = Number(guaranteeAmount) || 0;
+      const pctNum = parseInt(String(guaranteeRate).replace(/[^0-9]/g, ''), 10) || 80;
+      const newGuarantee = {
+        id: Date.now(),
+        first_name: (patientName || '').split(' ')[0] || 'Assuré',
+        last_name: (patientName || '').split(' ').slice(1).join(' ') || 'CSU',
+        cmu_number: targetCode,
+        hospital_name: guaranteeHospital,
+        medical_act: `${guaranteeService} — (${guaranteeHospital})`,
+        estimated_amount: estAmt,
+        guaranteed_percentage: pctNum,
+        max_amount: Math.round((estAmt * pctNum) / 100),
+        patient_rest: Math.max(0, estAmt - Math.round((estAmt * pctNum) / 100)),
+        status: 'approved',
+        validation_code: refNo,
+        created_at: new Date().toISOString(),
+        agent_note: `Lettre de garantie émise après contrôle de carte CSU auprès de ${guaranteeHospital}.`
+      };
+      const existingGuarantees = JSON.parse(localStorage.getItem('unamusc_guarantee_letters') || '[]');
+      localStorage.setItem('unamusc_guarantee_letters', JSON.stringify([newGuarantee, ...existingGuarantees]));
+    } catch { /* ignore */ }
     setActionSuccess(`Lettre de garantie ${refNo} de ${Number(guaranteeAmount).toLocaleString()} FCFA (${guaranteeRate}) émise avec succès pour ${patientName} (${targetCode}) auprès de ${guaranteeHospital}. Service : ${guaranteeService}.`);
     setActiveModal(null);
   };
@@ -1405,7 +1524,7 @@ export default function VerifyCard({ setView = null, citizenUser = null }) {
             </div>
           </div>
           
-          {/* CARTE NUMÉRIQUE CSU EXCLUSIVE MUTUALIS DAKAR — FOND COMPATIBLE MODE CLAIR & SOMBRE */}
+          {/* CARTE NUMÉRIQUE CSU EXCLUSIVE SenMutuelles — FOND COMPATIBLE MODE CLAIR & SOMBRE */}
           <div 
             className="p-4 p-md-5 rounded-4 shadow-lg position-relative overflow-hidden mb-5 cursor-pointer"
             style={{
@@ -1432,7 +1551,7 @@ export default function VerifyCard({ setView = null, citizenUser = null }) {
                   Couverture Santé Universelle
                 </span>
                 <h4 className="fw-extrabold mb-0" style={{ fontSize: '1.55rem', color: 'var(--text-main)', letterSpacing: '0.5px' }}>
-                  MUTUALIS DAKAR 🇸🇳
+                  SenMutuelles 🇸🇳
                 </h4>
               </div>
 

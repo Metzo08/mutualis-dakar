@@ -586,7 +586,7 @@ export default function RegionalStats({ lang }) {
               <span className="badge bg-warning-subtle text-warning fw-extrabold px-2.5 py-1" style={{ fontSize: '0.76rem', borderRadius: '8px' }}>
                 ⚡ 100% connectées
               </span>
-              <small className="text-muted" style={{ fontSize: '0.74rem' }}>via MUTUALIS</small>
+              <small className="text-muted" style={{ fontSize: '0.74rem' }}>via SenMutuelles</small>
             </div>
           </div>
 

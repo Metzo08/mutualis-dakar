@@ -107,8 +107,8 @@ export default function InfosCSU({ lang }) {
     },
     {
       year: '2026',
-      title_fr: 'Lancement de MUTUALIS DAKAR',
-      title_wo: 'Plateforme Mutualis',
+      title_fr: 'Lancement de SenMutuelles',
+      title_wo: 'Plateforme SenMutuelles',
       description_fr: 'Digitalisation complète de l\'enrôlement, paiement mobile des cotisations (Wave/OM) et déploiement de la carte de santé QR à Dakar.',
       description_wo: 'Digitalisé mbindu, fay mobile ak carte QR santé ci région Dakar.'
     }
@@ -253,7 +253,7 @@ export default function InfosCSU({ lang }) {
                   <div style={{ width: `${digitalRate}%`, height: '100%', backgroundColor: 'var(--secondary)', borderRadius: '5px' }}></div>
                 </div>
                 <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.35rem' }}>
-                  {lang === 'fr' ? 'Part des nouvelles adhésions effectuées via le portail Mutualis Dakar.' : 'Mbindu yi soti ci internet bi.'}
+                  {lang === 'fr' ? 'Part des nouvelles adhésions effectuées via le portail SenMutuelles.' : 'Mbindu yi soti ci internet bi.'}
                 </p>
               </div>
 

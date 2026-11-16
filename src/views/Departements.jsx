@@ -16,7 +16,7 @@ const generateMockMutuelle = (communeName, regionName) => {
   const manager = managers[id % managers.length];
   const phone = `+221 33 8${(id % 900) + 100} ${(id % 90) + 10} ${(id % 90) + 10}`;
   const agreement = `AG-COMM-${regionName.substring(0, 3).toUpperCase()}-${(id % 9000) + 1000}`;
-  const email = `mutuelle.${communeName.toLowerCase().replace(/[^a-z0-9]/g, '')}@mutualis.sn`;
+  const email = `mutuelle.${communeName.toLowerCase().replace(/[^a-z0-9]/g, '')}@senmutuelles.sn`;
   
   let lat = 14.6937;
   let lng = -17.4474;

@@ -4,16 +4,16 @@
 const { resolveProfile, buildSystemPrompt, isClinicalRole } = require('./clinicalAi');
 
 const cases = [
-  { role: 'doctor',      requested: null,     expected: 'doctor' },
-  { role: 'doctor',      requested: 'nurse',  expected: 'nurse'  },
-  { role: 'médecin',     requested: 'doctor', expected: 'doctor' },
-  { role: 'infirmier',   requested: 'doctor', expected: 'nurse'  },
-  { role: 'infirmier',   requested: null,     expected: 'nurse'  },
-  { role: 'sage-femme',  requested: 'doctor', expected: 'nurse'  },
-  { role: 'midwife',     requested: 'doctor', expected: 'nurse'  },
-  { role: 'agent',       requested: 'doctor', expected: 'nurse'  },
-  { role: 'admin',       requested: 'nurse',  expected: 'nurse'  },
-  { role: 'Super Admin', requested: 'doctor', expected: 'nurse'  }
+  { role: 'doctor', requested: null, expected: 'doctor' },
+  { role: 'doctor', requested: 'nurse', expected: 'nurse' },
+  { role: 'médecin', requested: 'doctor', expected: 'doctor' },
+  { role: 'infirmier', requested: 'doctor', expected: 'nurse' },
+  { role: 'infirmier', requested: null, expected: 'nurse' },
+  { role: 'sage-femme', requested: 'doctor', expected: 'nurse' },
+  { role: 'midwife', requested: 'doctor', expected: 'nurse' },
+  { role: 'agent', requested: 'doctor', expected: 'nurse' },
+  { role: 'admin', requested: 'nurse', expected: 'nurse' },
+  { role: 'Super Admin', requested: 'doctor', expected: 'nurse' }
 ];
 
 let pass = 0;

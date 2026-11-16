@@ -1287,7 +1287,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                                 const url = URL.createObjectURL(blob);
                                 const link = document.createElement('a');
                                 link.href = url;
-                                link.download = 'mutualis_modele_import.csv';
+                                link.download = 'senmutuelles_modele_import.csv';
                                 document.body.appendChild(link);
                                 link.click();
                                 document.body.removeChild(link);
@@ -1725,7 +1725,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                   <div className="digital-health-card">
                     <div className="digital-card-pattern"></div>
                     <div className="digital-card-logo">
-                      <span style={{ fontWeight: '800', fontSize: '1.1rem', letterSpacing: '1px' }}>MUTUALIS DAKAR</span>
+                      <span style={{ fontWeight: '800', fontSize: '1.1rem', letterSpacing: '1px' }}>SenMutuelles</span>
                       <div className="digital-card-chip"></div>
                     </div>
                     

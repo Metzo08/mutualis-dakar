@@ -438,8 +438,7 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
         createCampaignLot, buildStructuredCode, lastSequenceFor,
         regionCodeFor, currentCampaignYear
       } = await import('../utils/bulkImport');
-      const { resolveUnion } = await import('../utils/cardPrograms');
-
+      
       const lot = await createCampaignLot({
         label: `Recodage manuel — ${list.length} dossier(s)`,
         unionId,
@@ -575,8 +574,7 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
       // 1. Base de données (uniquement les fiches réellement présentes).
       let serverDone = 0;
       try {
-        const { apiFetch } = await import('../utils/api');
-        for (const m of list) {
+                for (const m of list) {
           const srvId = String(m.id || '').startsWith('SRV-') ? String(m.id).slice(4) : null;
           if (!srvId) continue;
           try {
@@ -890,8 +888,7 @@ const [printLotConfirmed, setPrintLotConfirmed] = useState(false);
     if (!file || memberOptions.length === 0) return;
     setSponsorLogoBusy(true);
     try {
-      const { readLogoFileOptimized } = await import('../utils/sponsorLogos');
-      const { dataUrl, width, height, format } = await readLogoFileOptimized(file);
+            const { dataUrl, width, height, format } = await readLogoFileOptimized(file);
       if (!dataUrl) {
         setSponsorNotice({ type: 'error', text: '❌ Image illisible ou format non supporté.' });
         return;
@@ -992,8 +989,7 @@ const [printLotConfirmed, setPrintLotConfirmed] = useState(false);
     try {
       let serverDone = 0;
       try {
-        const { apiFetch } = await import('../utils/api');
-        for (const m of list) {
+                for (const m of list) {
           const srvId = String(m.id || '').startsWith('SRV-') ? String(m.id).slice(4) : null;
           try {
             const res = srvId
@@ -1061,8 +1057,7 @@ const [printLotConfirmed, setPrintLotConfirmed] = useState(false);
     // PostgreSQL subsisterait et la fusion du démarrage réinjecterait les
     // fiches supprimées — avec leurs mauvais codes — au rechargement.
     try {
-      const { apiFetch } = await import('../utils/api');
-      for (const member of targets) {
+            for (const member of targets) {
         const srvId = String(member.id || '').startsWith('SRV-')
           ? String(member.id).slice(4)
           : null;
@@ -1643,7 +1638,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
     let verifyUrl = `${origin}/#/verify/${cardData.cmuNumber}?${academicQrData.toString()}`;
 
     if (qrTargetMode === 'HTTPS') {
-      const publicBase = (customPublicUrl || (typeof window !== 'undefined' ? localStorage.getItem('cmu-public-url') : '') || 'https://mutualis.sn').replace(/\/$/, '');
+      const publicBase = (customPublicUrl || (typeof window !== 'undefined' ? localStorage.getItem('cmu-public-url') : '') || 'https://senmutuelles.sn').replace(/\/$/, '');
       verifyUrl = `${publicBase}/#/verify/${cardData.cmuNumber}?${academicQrData.toString()}`;
     } else if (qrTargetMode === 'WIFI_IP') {
       if (customWifiIp) localStorage.setItem('cmu-wifi-ip', customWifiIp);
@@ -1898,8 +1893,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
       //    refuser par les proxys.
       let serverInfo = '';
       try {
-        const { apiFetch } = await import('../utils/api');
-        const BATCH = 40;
+                const BATCH = 40;
         let inserted = 0;
         let updated = 0;
         let failed = 0;
@@ -3467,7 +3461,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   }}
                   onClick={() => setQrTargetMode('HTTPS')}
                 >
-                  🌐 URL web (https://mutualis.sn)
+                  🌐 URL web (https://senmutuelles.sn)
                 </button>
 
                 <button
@@ -3512,7 +3506,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                     <input
                       type="text"
                       className="form-control fw-mono fw-bold py-2.5 px-3 flex-grow-1"
-                      placeholder="https://mutualis.sn ou https://votre-tunnel.loca.lt"
+                      placeholder="https://senmutuelles.sn ou https://votre-tunnel.loca.lt"
                       style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '12px', minHeight: '46px', minWidth: '220px' }}
                       value={customPublicUrl}
                       onChange={(e) => {

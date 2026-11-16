@@ -21,7 +21,7 @@ export default function Footer({ lang, setView }) {
       newsletterPlaceholder: 'Votre adresse email...',
       subscribe: 'S\'abonner',
       subsSuccess: 'Merci pour votre abonnement !',
-      copyright: '© 2026 MUTUALIS DAKAR - URMSCD. Tous droits réservés.',
+      copyright: '© 2026 SenMutuelles - URMSCD. Tous droits réservés.',
       legal: 'Mentions légales | CGU | confidentialité'
     },
     wo: {
@@ -40,7 +40,7 @@ export default function Footer({ lang, setView }) {
       newsletterPlaceholder: 'Sa email...',
       subscribe: 'Bokk',
       subsSuccess: 'Jërëjëf, dugal nanu la !',
-      copyright: '© 2026 MUTUALIS DAKAR - URMSCD. Ñëpp am nanu sañ-sañ.',
+      copyright: '© 2026 SenMutuelles - URMSCD. Ñëpp am nanu sañ-sañ.',
       legal: 'Sart yi | Sutura | Yoon'
     }
   };
@@ -66,7 +66,7 @@ export default function Footer({ lang, setView }) {
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--secondary)' }}>
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
               </svg>
-              Mutualis
+              SenMutuelles
             </h3>
             <p style={{ color: '#94a3b8', fontSize: '0.9rem', lineHeight: '1.5', marginBottom: '1.5rem' }}>{t.desc}</p>
             {/* Social handles mockup */}

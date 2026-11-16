@@ -1,6 +1,8 @@
 export const isWolofText = (text) => {
   if (!text) return false;
   const clean = text.normalize('NFC').toLowerCase();
+  // Amorces et salutations wolof immediates
+  if (/^(ngoon ak j[aà]mm|suba ak j[aà]mm|b[eë]cc[eë]k ak j[aà]mm|guddi ak j[aà]mm|j[aà]mm rekk|nanga def|naka nga|salaam|asalaa|j[eë]rej[eë]f|waaw)/i.test(clean.trim())) return true;
 
   // 1. Absolute Wolof indicators (characters unique to Wolof in this project's context)
   if (clean.includes('ë') || clean.includes('ñ')) {
@@ -69,6 +71,11 @@ export const isWolofText = (text) => {
 };
 
 export const convertWolofToFrenchPhonetics = (text) => {
+  if (!text) return '';
+  text = String(text)
+    .replace(/\bCSU\b/gi, 'cé ess ou')
+    .replace(/\bUNAMUSC\b/gi, 'ounamousk')
+    .replace(/\bFCFA\b/gi, 'francs cfa');
   const bypassWords = new Set([
     'le', 'la', 'les', 'de', 'des', 'du', 'un', 'une', 'et', 'en', 'est', 'a', 'à', 'pour', 'dans', 'par', 'sur', 'avec', 'sans', 'sous',
     'ce', 'cette', 'ces', 'mon', 'ma', 'mes', 'ton', 'ta', 'tes', 'son', 'ses', 'notre', 'votre', 'leur', 'nos', 'vos', 'leurs',
@@ -79,7 +86,7 @@ export const convertWolofToFrenchPhonetics = (text) => {
     'mutuelle', 'mutuelles', 'mutuel', 'mutuels', 'cotisation', 'cotisations', 'adhésion', 'adhésions', 'adhesion', 'adhesions',
     'carte', 'cartes', 'cartographie', 'hôpital', 'hopital', 'hôpitaux', 'hopitaux', 'clinique', 'cliniques', 'pharmacie', 'pharmacies',
     'centre', 'centres', 'poste', 'postes', 'santé', 'sante', 'soin', 'soins', 'médicament', 'médicaments', 'medicament', 'medicaments',
-    'prise', 'charge', 'taux', 'pourcent', 'pourcentage', 'fcfa', 'cmu', 'couverture', 'maladie', 'universelle', 'dakar',
+    'prise', 'charge', 'taux', 'pourcent', 'pourcentage', 'fcfa', 'cmu', 'csu', 'couverture', 'maladie', 'universelle', 'dakar',
     'orange', 'money', 'wave', 'zahara', 'mariama', 'virtuel', 'virtuelle', 'virtuels', 'virtuelles', 'assistant', 'assistante',
     'assistants', 'assistantes', 'intelligence', 'artificielle', 'officiel', 'officielle', 'officiels', 'officielles',
     'régional', 'régionale', 'regionale', 'régionales', 'communautaire', 'communautaires', 'sénégal', 'senegal',
@@ -106,7 +113,7 @@ export const convertWolofToFrenchPhonetics = (text) => {
     'remplit', 'remplissez', 'payer', 'paye', 'payez', 'paie', 'paient', 'enregistrer', 'enregistré', 'enregistrée', 'enregistres',
     'enregistrez', 'dossier', 'dossiers', 'bénéficiaire', 'bénéficiaires', 'assuré', 'assurés', 'assurée', 'assurées', 'citoyen',
     'citoyens', 'agent', 'agents', 'administrateur', 'administrateurs', 'connexion', 'déconnexion', 'authentification', 'mot', 'passe',
-    'mutualis', 'internet', 'photo', 'identité', 'nouveau', 'nouvelle', 'renouvellement',
+    'senmutuelles', 'mutualis', 'internet', 'photo', 'identité', 'nouveau', 'nouvelle', 'renouvellement',
     'intelligente', 'intelligent', 'intelligents', 'intelligentes', 'aussi', 'comment', 'puis',
     'aujourd', 'hui', 'faye', 'côte', 'entre', 'aussi', 'comme', 'chez', 'encore', 'depuis',
     'alors', 'même', 'autre', 'autres', 'ici', 'vers', 'après', 'avant', 'pendant',
@@ -974,3 +981,78 @@ export const decodeWolofSpeechInput = (rawText, force = false) => {
   decoded = decoded.replace(/\s+/g, ' ').trim();
   return decoded;
 };
+
+export function convertWolofToAntiNasalPhonetics(text) {
+  if (!text) return '';
+  let str = String(text)
+    .normalize('NFC')
+    .replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '')
+    .replace(/[\(\)\[\]\{\}\*\#_~]/g, ' ')
+    .replace(/\bCSU\b/gi, 'C S U')
+    .replace(/\bUNAMUSC\b/gi, 'Ounamusk')
+    .replace(/\bFCFA\b/gi, 'francs CFA')
+    .replace(/100%/g, 'cent pour cent')
+    .replace(/80%/g, 'quatre-vingts pour cent')
+    .replace(/50%/g, 'cinquante pour cent')
+    .replace(/\b4\s*500\b/g, 'quatre mille cinq cents')
+    .replace(/\b1\s*000\b/g, 'mille')
+    .replace(/\b3\s*500\b/g, 'trois mille cinq cents')
+    .replace(/\b0\b/g, 'zéro');
+
+  const wolofReplacements = [
+    [/\b(?:salamaalekum|salam aleykoum|salamalekoum|salaam)\b/gi, 'Salamaalekoume'],
+    [/\b(?:nanga def|na nga def)\b/gi, 'nann-ga def'],
+    [/\b(?:naka nga def|naka nga)\b/gi, 'naka nann-ga def'],
+    [/\b(?:jamm rekk|jàmm rekk|diam rekk)\b/gi, 'djamm rek'],
+    [/\b(?:jamm|jàmm|diam)\b/gi, 'djamm'],
+    [/\b(?:man la|mann la)\b/gi, 'mann la'],
+    [/\b(?:man|sama)\b/gi, (m) => m.toLowerCase() === 'man' ? 'mann' : 'sama'],
+    [/\b(?:lan laa la|lan la)\b/gi, 'lann la'],
+    [/\bmënee\b/gi, 'meuné'],
+    [/\bmën\b/gi, 'meun'],
+    [/\bmën nga\b/gi, 'meun nann-ga'],
+    [/\bdimbali\b/gi, 'dimbili'],
+    [/\btey\b/gi, 'teye'],
+    [/\bbëgg\b/gi, 'beug'],
+    [/\bxam\b/gi, 'khamm'],
+    [/\bxamal\b/gi, 'khamal'],
+    [/\bxool\b/gi, 'kholl'],
+    [/\bwax\b/gi, 'wakh'],
+    [/\bci\b/gi, 'tchi'],
+    [/\bngir\b/gi, "n'guir"],
+    [/\bwér-gi-yaram\b/gi, 'wèr-gui-yaram'],
+    [/\bwer-gi-yaram\b/gi, 'wèr-gui-yaram'],
+    [/\bfajukaay\b/gi, 'fadjou-kay'],
+    [/\bfaju\b/gi, 'fadjou'],
+    [/\bfay\b/gi, 'faye'],
+    [/\bfayal\b/gi, 'fayal'],
+    [/\bgarab\b/gi, 'garab'],
+    [/\bndax\b/gi, "n'dakh"],
+    [/\bwaaw\b/gi, 'waow'],
+    [/\bdéedéet\b/gi, 'dédète'],
+    [/\bjërejëf\b/gi, 'djéré-djeuf'],
+    [/\bndakaaru\b/gi, "n'dakarou"],
+    [/\bñata\b/gi, 'niata'],
+    [/\bñaata\b/gi, 'niata'],
+    [/\bñu\b/gi, 'gnou'],
+    [/\bdañuy\b/gi, 'dagnouy'],
+    [/\bdafa\b/gi, 'dafa'],
+    [/\bléegi\b/gi, 'léégui'],
+    [/\byeneen\b/gi, 'yènènne'],
+    [/\blaaj\b/gi, 'ladj'],
+    [/\btontu\b/gi, 'tontou'],
+    [/\bmoy\b/gi, 'moy'],
+    [/\bmooy\b/gi, 'moy'],
+    [/\bci at mi\b/gi, 'tchi atte mi'],
+    [/\bpar nit\b/gi, 'par nitt'],
+    [/\bngoon ak jàmm\b/gi, "n'gonne ak djamm"],
+    [/\bsuba ak jàmm\b/gi, 'souba ak djamm'],
+    [/\bguddi ak jàmm\b/gi, 'goudi ak djamm']
+  ];
+
+  for (const [re, rep] of wolofReplacements) {
+    str = str.replace(re, rep);
+  }
+
+  return str.replace(/\s+/g, ' ').trim();
+}

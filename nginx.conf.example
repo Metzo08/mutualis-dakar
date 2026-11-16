@@ -1,9 +1,9 @@
-# Exemple de configuration de Proxy Inverse Nginx pour MUTUALIS DAKAR
-# Ce fichier doit être placé dans /etc/nginx/sites-available/mutualis.conf sur votre serveur Linux de production.
+# Exemple de configuration de Proxy Inverse Nginx pour SenMutuelles
+# Ce fichier doit être placé dans /etc/nginx/sites-available/senmutuelles.conf sur votre serveur Linux de production.
 
 server {
     listen 80;
-    server_name mutualis.sn www.mutualis.sn;
+    server_name senmutuelles.sn www.senmutuelles.sn;
 
     # Redirection automatique de HTTP vers HTTPS
     return 301 https://$host$request_uri;
@@ -11,11 +11,11 @@ server {
 
 server {
     listen 443 ssl http2;
-    server_name mutualis.sn www.mutualis.sn;
+    server_name senmutuelles.sn www.senmutuelles.sn;
 
     # Chemins vers vos certificats SSL (ex: Certbot Let's Encrypt)
-    ssl_certificate /etc/letsencrypt/live/mutualis.sn/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/mutualis.sn/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/senmutuelles.sn/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/senmutuelles.sn/privkey.pem;
 
     # Paramètres de sécurité SSL robustes
     ssl_protocols TLSv1.2 TLSv1.3;
@@ -26,7 +26,7 @@ server {
 
     # 1. Dossier racine contenant le build du frontend (React SPA)
     location / {
-        root /var/www/mutualis-dakar/dist;
+        root /var/www/senmutuelles/dist;
         index index.html;
         # Redirection vers index.html pour gérer les routes virtuelles de React Router/SPA
         try_files $uri $uri/ /index.html;

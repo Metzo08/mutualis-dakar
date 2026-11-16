@@ -84,19 +84,24 @@ export function primeAudioPlayback() {
  * Nettoyage phonétique strict : supprime émojis, symboles, crochets, tirets.
  * Le texte propre améliore drastiquement la prononciation des moteurs TTS.
  */
-export function sanitizeSpeechText(text) {
+export function sanitizeSpeechText(text, lang = 'fr') {
   if (!text) return '';
   let str = String(text);
+  if (lang === 'fr') {
+    str = str
+      .replace(/100%/g, 'cent pour cent')
+      .replace(/80%/g, 'quatre-vingts pour cent')
+      .replace(/50%/g, 'cinquante pour cent')
+      .replace(/20%/g, 'vingt pour cent')
+      .replace(/%/g, ' pour cent');
+  } else if (lang === 'en' || lang === 'english') {
+    str = str.replace(/%/g, ' percent');
+  }
   return str
-    .replace(/100%/g, 'cent pour cent')
-    .replace(/80%/g, 'quatre-vingts pour cent')
-    .replace(/50%/g, 'cinquante pour cent')
-    .replace(/20%/g, 'vingt pour cent')
-    .replace(/%/g, ' pour cent')
     .replace(/[\(\)\[\]\{\}]/g, ' ')
-    .replace(/[!?,;:\-\—•]/g, ' ')
-    .replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '') // émojis
-    .replace(/[^\w\sàâäéèêëîïôöùûüçñŋɛɛɔɔÀÂÄÉÈÊËÎÏÔÖÙÛÜÇ']/gi, ' ')
+    .replace(/[\—•*#_~]/g, ' ')
+    .replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '')
+    .replace(/[^\w\s\.,!\?%\'’àâäáéèêëíîïóôöúùûüçñŋɛɔÀÂÄÁÉÈÊËÍÎÏÓÔÖÚÙÛÜÇÑŊ-]/gi, ' ')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -151,7 +156,7 @@ export function stopAllVoicePlayback() {
   }
 }
 
-import { convertWolofToFrenchPhonetics } from '../utils/phonetics';
+import { convertWolofToFrenchPhonetics, convertWolofToAntiNasalPhonetics } from '../utils/phonetics';
 
 /**
  * Synthèse vocale via le backend TTS (ElevenLabs ou Open-Source).
@@ -198,9 +203,10 @@ async function speakViaBackendTTS(text, provider, lang, seqId, onStart, onEnd) {
       };
 
       // Watchdog de DÉMARRAGE uniquement (jamais pendant la lecture)
+      const timeoutMs = (lang === 'wo' || lang === 'wolof') ? 45000 : 12000;
       startWatchdog = setTimeout(() => {
         if (!started) finish(false);
-      }, 4000);
+      }, timeoutMs);
 
       audio.onplay = () => {
         started = true;
@@ -237,21 +243,22 @@ function speakViaBrowserFallback(text, lang, seqId, onStart, onEnd) {
   if (seqId !== currentSpeechSeq) return;
 
   try {
-    // Le texte Wolof a déjà été converti en phonétique française : on utilise
-    // fr-FR (locale toujours disponible) plutôt que fr-SN (voix souvent absente).
-    const phoneticText = lang === 'wolof' ? convertWolofToFrenchPhonetics(text) : text;
+    // Le texte Wolof est converti en phonétique française si nécessaire pour une prononciation fluide
+    const isWolof = (lang === 'wolof' || lang === 'wo');
+    const isEnglish = (lang === 'en' || lang === 'english');
+    const phoneticText = isWolof ? (convertWolofToAntiNasalPhonetics ? convertWolofToAntiNasalPhonetics(text) : text) : text;
     const utterance = new SpeechSynthesisUtterance(phoneticText);
-    utterance.lang = 'fr-FR';
+    utterance.lang = isEnglish ? 'en-US' : 'fr-FR';
 
     if (lang === 'wolof') {
       utterance.rate = 0.88;
-      utterance.pitch = 1.05;
+      utterance.pitch = 1.0;
     } else if (lang === 'pulaar') {
       utterance.rate = 0.86;
       utterance.pitch = 1.04;
     } else {
-      utterance.rate = 0.95;
-      utterance.pitch = 1.02;
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
     }
 
     let utterStarted = false;
@@ -274,11 +281,25 @@ function speakViaBrowserFallback(text, lang, seqId, onStart, onEnd) {
 
     const startSpeaking = () => {
       if (seqId !== currentSpeechSeq) return;
-      const voices = window.speechSynthesis.getVoices();
+            const voices = window.speechSynthesis.getVoices();
       if (voices && voices.length > 0) {
-        const bestVoice = voices.find(v => (v.lang.startsWith('fr') || v.lang.startsWith('wo')) && (v.name.includes('Google') || v.name.includes('Natural') || v.name.includes('Amélie') || v.name.includes('Denise') || v.name.includes('Céline')))
-          || voices.find(v => v.lang.startsWith('fr') && v.name.toLowerCase().includes('female'))
-          || voices.find(v => v.lang.startsWith('fr'));
+        const isKnownFemale = (v) => {
+          const n = (v.name || "").toLowerCase();
+          const femaleNames = ["hortense", "julie", "denise", "henriette", "amélie", "amelie", "céline", "celine", "audrey", "aurélie", "aurelie", "virginie", "siwis", "female", "femme", "zahara", "natural", "clair", "zira"];
+          return femaleNames.some(fn => n.includes(fn));
+        };
+        const isKnownMale = (v) => {
+          const n = (v.name || "").toLowerCase();
+          const maleNames = ["paul", "claude", "alain", "guillaume", "georges", "david", "male", "homme"];
+          return maleNames.some(mn => n.includes(mn));
+        };
+
+        const frenchVoices = voices.filter(v => (isEnglish ? v.lang.startsWith("en") : (v.lang.startsWith("fr") || v.lang.startsWith("wo"))));
+        const bestVoice = frenchVoices.find(v => isKnownFemale(v) && (v.name.includes("Online") || v.name.includes("Natural") || v.name.includes("Google")))
+          || frenchVoices.find(v => isKnownFemale(v))
+          || frenchVoices.find(v => !isKnownMale(v))
+          || frenchVoices[0];
+
         if (bestVoice) utterance.voice = bestVoice;
       }
       try {
@@ -322,16 +343,18 @@ export async function speakCleanText(textToSpeak, lang = 'fr', onStart = null, o
   stopAllVoicePlayback();
   const thisSeq = currentSpeechSeq;
 
-  const cleanedText = sanitizeSpeechText(textToSpeak);
+  const cleanedText = sanitizeSpeechText(textToSpeak, lang);
   if (!cleanedText) {
     if (onEnd) onEnd();
     return;
   }
 
   // Chaîne de providers à essayer dans l'ordre (du plus naturel au repli)
-  const providers = PREFERRED_PROVIDER === 'opensource'
-    ? ['opensource', 'elevenlabs']
-    : ['elevenlabs', 'opensource'];
+  const isWolof = (lang === 'wo' || lang === 'wolof');
+  const isEnglish = (lang === 'en' || lang === 'english');
+  const providers = (isWolof || isEnglish)
+    ? ['opensource']
+    : (PREFERRED_PROVIDER === 'opensource' ? ['opensource', 'elevenlabs'] : ['elevenlabs', 'opensource']);
 
   for (const provider of providers) {
     if (thisSeq !== currentSpeechSeq) return;
@@ -339,8 +362,12 @@ export async function speakCleanText(textToSpeak, lang = 'fr', onStart = null, o
     if (ok && thisSeq === currentSpeechSeq) return;
   }
 
-  // Repli final : voix synthèse navigateur (instantanée)
+  // Repli navigateur (fr-FR) uniquement pour le français : INTERDIT en Wolof !
   if (thisSeq === currentSpeechSeq) {
+    if (lang === 'wo' || lang === 'wolof') {
+      if (onEnd) onEnd();
+      return;
+    }
     speakViaBrowserFallback(cleanedText, lang, thisSeq, onStart, onEnd);
   }
 }

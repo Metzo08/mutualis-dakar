@@ -1,0 +1,100 @@
+{
+  "name": "SenMutuelles — Sentinelle 24/7 -> WhatsApp Ahmed Tall (77 602 67 83)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "senmutuelles-sentinel-alert",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "webhook-sentinel",
+      "name": "Webhook Sentinelle SenMutuelles",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "phone",
+              "name": "to",
+              "value": "={{ $json.body.contact || '+221776026783' }}",
+              "type": "string"
+            },
+            {
+              "id": "text",
+              "name": "message",
+              "value": "={{ $json.body.message }}",
+              "type": "string"
+            },
+            {
+              "id": "severity",
+              "name": "severity",
+              "value": "={{ $json.body.severity || 'ALERTE' }}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "format-alert",
+      "name": "Preparer Message Ahmed Tall",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.WHATSAPP_GATEWAY_URL || 'http://evolution-api:8080/message/sendText/senmutuelles' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $env.WHATSAPP_GATEWAY_APIKEY || '' }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ number: $json.to.replace(/[^0-9]/g, ''), text: $json.message }) }}"
+      },
+      "id": "send-whatsapp",
+      "name": "Envoyer WhatsApp (77 602 67 83)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [740, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Sentinelle SenMutuelles": {
+      "main": [
+        [
+          {
+            "node": "Preparer Message Ahmed Tall",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparer Message Ahmed Tall": {
+      "main": [
+        [
+          {
+            "node": "Envoyer WhatsApp (77 602 67 83)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

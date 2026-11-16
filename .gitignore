@@ -85,11 +85,11 @@ probe.txt
 *_dump.csv
 scripts/_*.mjs
 
-# Dumps et sauvegardes de la base — données de santé, JAMAIS sur le dépôt
+# Dumps et sauvegardes de la base ï¿½ donnï¿½es de santï¿½, JAMAIS sur le dï¿½pï¿½t
 *.dump
 *.sql.gz
 
-# Outils d'agents IA pour le développement (agency-agents) — pas du produit
+# Outils d'agents IA pour le dï¿½veloppement (agency-agents) ï¿½ pas du produit
 .claude/
 .codex/
 .dsh/
@@ -97,3 +97,30 @@ scripts/_*.mjs
 .qwen/
 .zcode/
 gui-test-screenshots/
+
+# === SENMUTUELLES PRIVACY & HYGIENE ===
+# DonnÃ©es & photos bÃ©nÃ©ficiaires (NE JAMAIS pousser sur GitHub)
+ASS LONASE/
+MSD DAKAR/
+MSD de Grand Yoff/
+Photos AMEVI ville de Dakar/
+Photos AMEVI ville de Dakar RENOMMEES/
+modele cartes cmu-eleves et daara/
+backend/uploads/
+backend/lot-*-photos-manquantes.*
+backend/reports/
+backend/data/sentinel-incidents.jsonl
+*.xlsx
+*.csv
+~$*.xlsx
+
+# Secrets, jetons de diagnostic & logs locaux
+diag-token.txt
+*.log
+vitest*.xml
+vitest*.json
+backend/jest-result.json
+jest-etat.txt
+gui-test-screenshots/
+_backup_regression/
+__pycache__/

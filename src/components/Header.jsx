@@ -277,11 +277,19 @@ export default function Header({
 
         {/* Bons de commande & Lettres de garantie (Vue unique combinée) */}
         <button 
-          className={`nav-item ${currentView === 'guarantees' ? 'active' : ''}`}
+          className={`nav-item ${currentView === 'guarantees' || currentView === 'purchase-orders' ? 'active' : ''}`}
           onClick={() => navigateTo('guarantees')}
         >
           <span className="nav-icon">📜</span>
-          {lang === 'fr' ? 'Bons de commande & lettres de garantie' : 'Bons de commande & garansi'}
+          {lang === 'fr' ? 'Lettres de garantie (Hôpital 80%)' : 'Bataaxalu garansi (Hôpital)'}
+        </button>
+
+        <button
+          className={`nav-item ${currentView === 'purchase-orders' ? 'active' : ''}`}
+          onClick={() => navigateTo('purchase-orders')}
+        >
+          <span className="nav-icon">💊</span>
+          {lang === 'fr' ? 'Bons de commande (Pharmacie 50%)' : 'Bonu garab (Pharmacie)'}
         </button>
 
         {/* Télémédecine WebRTC */}

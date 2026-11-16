@@ -6,7 +6,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
 
   useEffect(() => {
     if (citizenUser) {
-      QRCode.toDataURL(citizenUser.cmuNumber || citizenUser.phone || 'MUTUALIS', {
+      QRCode.toDataURL(citizenUser.cmuNumber || citizenUser.phone || 'SENMUTUELLES', {
         margin: 1,
         width: 150,
         color: {
@@ -236,7 +236,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
             <div class="row mt-5 pt-3 border-top align-items-center">
               <div class="col-8">
                 <small class="text-muted d-block fw-semibold" style="line-height: 1.5;">
-                  Ce rapport officiel est généré dynamiquement par le système d'information <strong>MUTUALIS SÉNÉGAL</strong>.<br />
+                  Ce rapport officiel est généré dynamiquement par le système d'information <strong>SenMutuelles</strong>.<br />
                   Toutes les données de couverture maladie sont certifiées et authentifiées par l'UNAMUSC.
                 </small>
               </div>
@@ -967,7 +967,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
               {lang === 'fr' ? 'Fonctionnement de la plateforme' : 'Naka la plateforme bi di doxé'}
             </h2>
             <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', margin: '4px 0 0 0' }}>
-              {lang === 'fr' ? 'Découvrez comment Mutualis facilite votre couverture maladie en 4 étapes simples' : 'Xoolal naka nga mënë amé sa assurance'}
+              {lang === 'fr' ? 'Découvrez comment SenMutuelles facilite votre couverture maladie en 4 étapes simples' : 'Xoolal naka nga mënë amé sa assurance'}
             </p>
           </div>
         </div>
@@ -1192,7 +1192,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
                 }}>
                   <div className="digital-card-pattern"></div>
                   <div className="digital-card-logo">
-                    <span style={{ fontWeight: '800', fontSize: '1.2rem', letterSpacing: '1px' }}>MUTUALIS DAKAR</span>
+                    <span style={{ fontWeight: '800', fontSize: '1.2rem', letterSpacing: '1px' }}>SenMutuelles</span>
                     <div className="digital-card-chip"></div>
                   </div>
                   

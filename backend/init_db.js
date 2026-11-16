@@ -1102,6 +1102,10 @@ const newsData = [
 ];
 
 async function initializeDatabase() {
+  if (process.env.NODE_ENV === 'production' && process.env.ALLOW_DESTRUCTIVE_INIT_DB !== 'I_CONFIRM_DATA_LOSS') {
+    console.error('REFUS DE SECURITE : init_db.js contient DROP TABLE ... CASCADE et ne peut pas tourner en production sans ALLOW_DESTRUCTIVE_INIT_DB=I_CONFIRM_DATA_LOSS.');
+    process.exit(1);
+  }
   try {
     console.log('Connexion à la base de données...');
     // Create tables

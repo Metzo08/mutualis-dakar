@@ -99,7 +99,7 @@ if (require.main === module) {
       console.log(`[Optim] index appliqués : ${r.applied.length}${r.failed.length ? ` — reportés : ${r.failed.join(', ')}` : ''}`);
     }
     const p = require('./db').pool;
-    await p.end().catch(() => {});
+    await p.end().catch(() => { });
     process.exit(0);
   })().catch((e) => { console.error('[Optim] échec :', e.message); process.exit(1); });
 }

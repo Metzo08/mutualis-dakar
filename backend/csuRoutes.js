@@ -5,7 +5,7 @@ const express = require('express');
 const { query } = require('./db');
 const { validate } = require('./validateMiddleware');
 const { parsePagination } = require('./pagination');
-const { authenticateToken, requireRole } = require('./rbac');
+const { authenticateToken, requireRole, normalizeRole } = require('./rbac');
 const {
   claimCreateSchema,
   claimStatusSchema,
@@ -125,7 +125,7 @@ router.get('/api/claims', authenticateToken, async (req, res) => {
   try {
     const { status } = req.query;
     const { page, limit, offset } = parsePagination(req);
-    const isAgent = ['agent', 'admin'].includes(req.user.role);
+    const isAgent = ['agent', 'admin'].includes(normalizeRole(req.user.role)); // libellés historiques ('Super Admin', 'Admin Régional') normalisés
     let whereSql = ' WHERE 1=1';
     const params = [];
     let paramIdx = 1;
@@ -228,11 +228,14 @@ router.post('/api/notifications', authenticateToken, requireRole('agent', 'admin
   }
 });
 
+// Fil réel de la cloche (citoyen : ses dossiers ; agent : sa MSD ; Super Admin : tout)
+router.get('/api/notifications/feed', authenticateToken, require('./notificationFeed').notificationFeedHandler);
+
 // Historique des notifications (agent/admin : tout ; citoyen : seulement les siennes)
 router.get('/api/notifications', authenticateToken, async (req, res) => {
   try {
     const { page, limit, offset } = parsePagination(req);
-    const isAgent = ['agent', 'admin'].includes(req.user.role);
+    const isAgent = ['agent', 'admin'].includes(normalizeRole(req.user.role)); // libellés historiques ('Super Admin', 'Admin Régional') normalisés
     let whereSql = ' WHERE 1=1';
     const params = [];
     let paramIdx = 1;
@@ -362,7 +365,7 @@ router.get('/api/dashboard/demo-stats', async (req, res) => {
 
 router.get('/api/dashboard/stats', authenticateToken, requireRole('agent', 'admin', 'Super Admin'), async (req, res) => {
   try {
-    const isAgent = ['agent', 'admin'].includes(req.user.role);
+    const isAgent = ['agent', 'admin'].includes(normalizeRole(req.user.role)); // libellés historiques ('Super Admin', 'Admin Régional') normalisés
     const isSuperAdmin = req.user.role === 'Super Admin';
     const dept = (isAgent && !isSuperAdmin && req.user.msdCode) ? req.user.msdCode : null;
 
@@ -616,7 +619,7 @@ router.get('/api/parrainages/demo-sponsors', async (req, res) => {
 // GET /api/parrainages/sponsors (List of sponsors for agent dashboard)
 router.get('/api/parrainages/sponsors', authenticateToken, requireRole('agent', 'admin'), async (req, res) => {
   try {
-    const isAgent = ['agent', 'admin'].includes(req.user.role);
+    const isAgent = ['agent', 'admin'].includes(normalizeRole(req.user.role)); // libellés historiques ('Super Admin', 'Admin Régional') normalisés
     const isSuperAdmin = req.user.role === 'Super Admin';
     const dept = (isAgent && !isSuperAdmin && req.user.msdCode) ? req.user.msdCode : null;
 

@@ -146,7 +146,7 @@ function buildWorkbook(sheets) {
     usedNames.add(name);
     XLSX.utils.book_append_sheet(wb, s.sheet, name);
   }
-  wb.Props = { Title: 'Rapport MUTUALIS', Author: 'MUTUALIS / Sen-E-Carte' };
+  wb.Props = { Title: 'Rapport SenMutuelles', Author: 'SenMutuelles / Sen-E-Carte' };
   return XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
 }
 

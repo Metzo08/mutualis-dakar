@@ -176,7 +176,7 @@ router.post('/api/blog/articles', authenticateToken, requireRole('agent', 'admin
 });
 
 // PUT /api/blog/articles/:id (Modifier un article de blog)
-router.put('/api/blog/articles/:id', async (req, res) => {
+router.put('/api/blog/articles/:id', authenticateToken, requireRole('agent', 'admin'), async (req, res) => {
   try {
     const { id } = req.params;
     const { titleFr, titleWo, author, roleFr, roleWo, avatar, readTimeFr, readTimeWo, previewFr, previewWo, contentFr, contentWo, imageUrl } = req.body;

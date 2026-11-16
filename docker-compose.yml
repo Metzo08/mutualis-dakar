@@ -1,5 +1,5 @@
 # ═════════════════════════════════════════════════════════════════════════════
-# MUTUALIS DAKAR — STACK DE PRODUCTION
+# SENMUTUELLES — STACK DE PRODUCTION (senmutuelles.sn)
 # ═════════════════════════════════════════════════════════════════════════════
 #
 # Démarrage :    docker compose up -d
@@ -53,13 +53,19 @@ services:
       - -c
       - max_connections=200
       - -c
-      - shared_buffers=512MB
+      - shared_buffers=${PG_SHARED_BUFFERS:-4GB}
       - -c
-      - work_mem=8MB
+      - work_mem=${PG_WORK_MEM:-16MB}
       - -c
-      - maintenance_work_mem=128MB
+      - maintenance_work_mem=${PG_MAINT_WORK_MEM:-512MB}
       - -c
-      - effective_cache_size=1536MB
+      - effective_cache_size=${PG_EFFECTIVE_CACHE:-10GB}
+      - -c
+      - max_worker_processes=4
+      - -c
+      - max_parallel_workers=4
+      - -c
+      - wal_compression=lz4
     healthcheck:
       # `pg_isready` seul renvoie OK avant que le serveur n'accepte vraiment
       # les connexions. On attend la version, servie une fois prêt.
@@ -73,6 +79,77 @@ services:
       timeout: 5s
       retries: 10
       start_period: 30s
+    networks: [privnet]
+
+  # ── PgBouncer (Pooler de connexions pour 1M → 5M d'assurés) ──────────────
+  # Multiplexe jusqu'à 2000 connexions clientes simultanées (scans QR,
+  # requêtes des mutuelles, téléconsultation) vers 50 connexions réelles PostgreSQL.
+  pgbouncer:
+    image: edoburu/pgbouncer:v1.22.1
+    restart: unless-stopped
+    environment:
+      DB_USER: ${DB_USER:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD obligatoire}
+      DB_HOST: pgbouncer
+      DB_PORT: 5432
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-mutualis}
+      POOL_MODE: transaction
+      MAX_CLIENT_CONN: 2000
+      DEFAULT_POOL_SIZE: 50
+      MIN_POOL_SIZE: 10
+      RESERVE_POOL_SIZE: 5
+      SERVER_IDLE_TIMEOUT: 60
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-p", "5432"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [privnet]
+
+  # ── MinIO (stockage objet S3 local) ──────────────────────────────────────
+  # Reçoit les photos d'identité CSU, les scans d'ordonnances et les devis
+  # hospitaliers. PostgreSQL ne stocke que l'URL de l'objet : à 1 million
+  # d'assurés (~200-350 Go d'images), les 400 Go NVMe ne seraient pas
+  # tenables si les fichiers vivaient sur le disque ou en Base64 en base.
+  # Le bucket reste PRIVÉ : lecture uniquement via GET /api/documents/...
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY:?S3_ACCESS_KEY obligatoire (backend/.env)}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:?S3_SECRET_KEY obligatoire (backend/.env)}
+    ports:
+      - "127.0.0.1:9001:9001"   # Console d'admin : UNIQUEMENT en local sur le VPS (ssh -L)
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks: [privnet]
+
+  # Création automatique du bucket privé mutualis-csu au démarrage
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD &&
+      mc mb --ignore-existing local/${S3_BUCKET:-mutualis-csu} &&
+      mc anonymous set none local/${S3_BUCKET:-mutualis-csu}
+      "
+    environment:
+      MINIO_ROOT_USER: ${S3_ACCESS_KEY:?}
+      MINIO_ROOT_PASSWORD: ${S3_SECRET_KEY:?}
     networks: [privnet]
 
   # ── Redis ─────────────────────────────────────────────────────────────────
@@ -90,7 +167,7 @@ services:
       - --appendonly
       - "no"
       - --maxmemory
-      - 256mb
+      - ${REDIS_MAX_MEMORY:-512mb}
       # `allkeys-lru` convient : tout ce qu'on y met est reproductible depuis
       # PostgreSQL, rien n'est irremplaçable.
       - --maxmemory-policy
@@ -124,7 +201,7 @@ services:
       - --fingerprint
       - --use-auth-secret
       - --static-auth-secret=${TURN_STATIC_AUTH_SECRET:?TURN_STATIC_AUTH_SECRET est obligatoire — identique côté backend}
-      - --realm=${TURN_REALM:-mutualis-dakar.sn}
+      - --realm=${TURN_REALM:-senmutuelles.sn}
       # Plages de relais : à autoriser dans le pare-feu, sans chevauchement
       # avec les autres ports de l'hôte.
       - --min-port=${TURN_MIN_PORT:-49160}
@@ -162,18 +239,25 @@ services:
       REDIS_URL: redis://redis:6379
       REALTIME_DRIVER: redis
       NODE_ENV: production
+      # Stockage objet (photos CSU, ordonnances, devis) : MinIO du réseau Docker.
+      # En l'absence de ces variables, le repli se fait sur le disque local
+      # (backend/uploads), non viable à grande échelle (voir objectStorage.js).
+      S3_ENDPOINT: http://minio:9000
+      S3_BUCKET: ${S3_BUCKET:-mutualis-csu}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+      S3_SECRET_KEY: ${S3_SECRET_KEY}
       # Dérivation des identifiants TURN exposés aux navigateurs. Doit être
       # identique à celui du service coturn, sinon les clients reçoivent 401
       # et la téléconsultation échoue en 4G sans explication visible.
       TURN_STATIC_AUTH_SECRET: ${TURN_STATIC_AUTH_SECRET:?TURN_STATIC_AUTH_SECRET est obligatoire — identique côté coturn}
-      TURN_REALM: ${TURN_REALM:-mutualis-dakar.sn}
+      TURN_REALM: ${TURN_REALM:-senmutuelles.sn}
       TURN_PUBLIC_URL: ${TURN_PUBLIC_URL:-}
     # `depends_on` attend la SANTÉ du conteneur, pas son démarrage. La sonde
     # `health/ready` prend le relais : c'est elle qui décide si l'on peut
     # envoyer du trafic. Sans elle, le répartiteur viserait une instance dont
     # la base n'est pas prête.
     depends_on:
-      postgres:
+      pgbouncer:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -241,11 +325,48 @@ services:
       while :; do certbot renew --webroot -w /var/www/certbot --quiet;
       sleep 12h & wait $${!}; done"
 
+  # ── Sauvegarde automatique PostgreSQL vers MinIO (rétention 30 jours) ─────
+  postgres-backup:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    environment:
+      PGHOST: postgres
+      PGUSER: ${DB_USER:-postgres}
+      PGPASSWORD: ${DB_PASSWORD:?DB_PASSWORD obligatoire}
+      PGDATABASE: ${DB_NAME:-mutualis}
+      MINIO_USER: ${S3_ACCESS_KEY:?}
+      MINIO_PASS: ${S3_SECRET_KEY:?}
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-30}
+    entrypoint: >
+      /bin/sh -c "
+      apk add --no-cache curl &&
+      curl -fsSL https://dl.min.io/client/mc/release/linux-amd64/mc -o /usr/local/bin/mc &&
+      chmod +x /usr/local/bin/mc &&
+      mc alias set local http://minio:9000 \"${MINIO_USER}\" \"${MINIO_PASS}\" &&
+      mc mb --ignore-existing local/mutualis-backups &&
+      mc anonymous set none local/mutualis-backups &&
+      while true; do
+        TS=$(date -u +%Y%m%d-%H%M%S);
+        pg_dump --no-owner --no-acl | gzip -9 > \"/tmp/mutualis-${TS}.sql.gz\" &&
+        mc cp \"/tmp/mutualis-${TS}.sql.gz\" \"local/mutualis-backups/postgres/mutualis-${TS}.sql.gz\" &&
+        rm -f \"/tmp/mutualis-${TS}.sql.gz\" &&
+        mc rm --recursive --force --older-than \"${BACKUP_RETENTION_DAYS}d\" local/mutualis-backups/postgres/ || true;
+        sleep 86400;
+      done
+      "
+    networks: [privnet]
+
 networks:
   privnet:
     driver: bridge
 
 volumes:
   pgdata:
+  minio_data:
   certbot_conf:
   certbot_www:

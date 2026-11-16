@@ -84,7 +84,7 @@ async function sendMail(to, subject, text) {
   if (!t) return false;
   try {
     await t.sendMail({
-      from: process.env.SMTP_FROM || 'MUTUALIS <no-reply@mutualis.sn>',
+      from: process.env.SMTP_FROM || 'SenMutuelles <no-reply@senmutuelles.sn>',
       to, subject, text,
     });
     return true;
@@ -119,7 +119,7 @@ async function issueChallenge(agent) {
   );
   const sent = await sendMail(
     agent.email,
-    'Code de vérification MUTUALIS',
+    'Code de vérification SenMutuelles',
     `Votre code de vérification est : ${code}\n\nIl expire dans ${CODE_TTL_MIN} minutes et ne sert qu'une fois.\nSi vous n'êtes pas à l'origine de cette demande, contactez immédiatement l'administrateur.`
   );
   await recordAudit({

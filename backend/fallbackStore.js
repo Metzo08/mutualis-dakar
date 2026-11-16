@@ -24,6 +24,18 @@ const STORE_PATH = path.join(DATA_DIR, 'store.json');
 
 const COLLECTIONS = ['adhesions', 'cotisations', 'donations', 'complaints', 'beneficiaries'];
 
+// ============================================================================
+// GARDE-FOU PRODUCTION (§4 du plan d'évolution) : au-delà de ce seuil, réécrire
+// un JSON de plusieurs centaines de Mo bloquerait le thread Node.js à chaque
+// adhésion (fs.writeFileSync synchrone). En production, au-delà du seuil, le
+// repli fichier est REFUSÉ : l'adhésion échoue bruyamment, ce qui est plus sûr
+// qu'une écriture fichier qui gèle tout le serveur. Variables :
+//   FALLBACK_FILE_DISABLED=1 → désactive totalement (sauvegarde DB fiable)
+//   FALLBACK_MAX_RECORDS=10000 → seuil au-delà duquel l'écriture est refusée
+// ============================================================================
+const isFallbackFileDisabled = () =>
+  process.env.FALLBACK_FILE_DISABLED === '1' || process.env.NODE_ENV === 'production' && process.env.FALLBACK_FILE_DISABLED !== '0';
+
 function ensureStore() {
   try {
     if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -59,7 +71,17 @@ function writeStore(store) {
  */
 function addRecord(collection, record) {
   if (!COLLECTIONS.includes(collection)) throw new Error(`Collection inconnue : ${collection}`);
+  // Garde-fou production : au-delà du seuil, l'écriture fichier est refusée
+  // (risque de gel du thread Node.js sur un store.json de plusieurs centaines
+  // de Mo). Une désactivation totale reste possible via FALLBACK_FILE_DISABLED=1.
+  const maxRecords = parseInt(process.env.FALLBACK_MAX_RECORDS || '10000', 10) || 10000;
+  if (isFallbackFileDisabled()) {
+    throw new Error('FALLBACK_FILE_DISABLED : base indisponible et repli fichier désactivé — l\'enregistrement doit être retraité une fois PostgreSQL rétabli.');
+  }
   const store = readStore();
+  if ((store[collection] || []).length >= maxRecords) {
+    throw new Error(`FALLBACK_MAX_RECORDS (${maxRecords}) atteint pour ${collection} : repli fichier refusé — retraiter l'enregistrement une fois PostgreSQL rétabli.`);
+  }
   const entry = {
     ...record,
     _fallback: true,

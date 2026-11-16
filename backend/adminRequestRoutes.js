@@ -6,7 +6,7 @@
  * remplacement, réinitialisation de mot de passe, modification de fiche)
  * peut être enregistrée comme DEMANDE avant d'être exécutée :
  *
- *   EN_ATTENTE †’ IDENTITE_A_VERIFIER †’ EN_COURS †’ TRAITEE | REFUSEE | ANNULEE
+ *   EN_ATTENTE → IDENTITE_A_VERIFIER → EN_COURS → TRAITEE | REFUSEE | ANNULEE
  *
  * La vérification d'identité est une étape OBLIGATOIRE avant toute action
  * sensible : le nom + la pièce d'identité ne suffisent JAMAIS à authentifier
@@ -44,7 +44,7 @@ const IDENTITY_METHODS = [
 const msdOfUser = (user) => {
   if (!user) return null;
   if (normalizeRole(user.role) === 'admin') return null; // Super Admin : tout
-  return user.msdCode ? String(user.msdCode).toUpperCase() : null; // Super Admin sans MSD = portï¿½e totale (son rï¿½le)
+  return user.msdCode ? String(user.msdCode).toUpperCase() : undefined;
 };
 
 /** Migration douce de la table si absente (idempotent). */
@@ -69,7 +69,7 @@ async function ensureTable() {
   )`);
 }
 
-// ”€”€ Créer une demande ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
+// ── Créer une demande ───────────────────────────────────────────────────────
 // POST /api/admin-requests { cmuNumber, operationType, reason, identityMethod }
 router.post('/api/admin-requests', async (req, res) => {
   const user = req.user;
@@ -86,6 +86,9 @@ router.post('/api/admin-requests', async (req, res) => {
     return res.status(400).json({ error: 'Motif obligatoire.' });
   }
   const msd = msdOfUser(user);
+  if (msd === undefined) {
+    return res.status(403).json({ error: "Votre compte n'est rattaché à aucune MSD.", errorCode: 'AGENT_NOT_LINKED_TO_MSD' });
+  }
 
   try {
     await ensureTable();
@@ -110,13 +113,13 @@ router.post('/api/admin-requests', async (req, res) => {
          identity_verified, requested_by, requested_by_role, msd_code)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
       [reference, clean(cmuNumber) || null, clean(operationType), status,
-       clean(reason), identMethod || null, verified,
-       clean(user.username || user.id), role, msd || null]
+        clean(reason), identMethod || null, verified,
+        clean(user.username || user.id), role, msd || null]
     );
     await query(
       `INSERT INTO audit_logs (action, actor, details) VALUES ($1,$2,$3)`,
       ['DEMANDE_ADMIN_CREEE', clean(user.username || user.id),
-       `${reference} — ${clean(operationType)} — assuré ${clean(cmuNumber) || 'n/a'} — identité : ${verified ? 'vérifiée (' + (identMethod) + ')' : 'NON vérifiée'}`]
+        `${reference} — ${clean(operationType)} — assuré ${clean(cmuNumber) || 'n/a'} — identité : ${verified ? 'vérifiée (' + (identMethod) + ')' : 'NON vérifiée'}`]
     );
     return res.json({ success: true, reference, status });
   } catch (err) {
@@ -125,7 +128,7 @@ router.post('/api/admin-requests', async (req, res) => {
   }
 });
 
-// ”€”€ Lister / rechercher les demandes (paginé, cloisonné MSD) ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
+// ── Lister / rechercher les demandes (paginé, cloisonné MSD) ────────────────
 // GET /api/admin-requests?status=&type=&q=&page=&limit=
 router.get('/api/admin-requests', async (req, res) => {
   const user = req.user;
@@ -135,6 +138,9 @@ router.get('/api/admin-requests', async (req, res) => {
     return res.status(403).json({ error: 'Réservé aux agents habilités.' });
   }
   const msd = msdOfUser(user);
+  if (msd === undefined) {
+    return res.status(403).json({ error: "Votre compte n'est rattaché à aucune MSD.", errorCode: 'AGENT_NOT_LINKED_TO_MSD' });
+  }
   const { status, type, q } = req.query;
   const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
   const limit = Math.min(parseInt(req.query.limit, 10) || 25, 100);
@@ -176,7 +182,7 @@ router.get('/api/admin-requests', async (req, res) => {
   }
 });
 
-// ”€”€ Faire évoluer le statut d'une demande ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
+// ── Faire évoluer le statut d'une demande ───────────────────────────────────
 // PATCH /api/admin-requests/:reference { status, resolutionNote }
 router.patch('/api/admin-requests/:reference', async (req, res) => {
   const user = req.user;
@@ -191,6 +197,9 @@ router.patch('/api/admin-requests/:reference', async (req, res) => {
     return res.status(400).json({ error: `Statut invalide. Autorisés : ${STATUSES.join(', ')}.` });
   }
   const msd = msdOfUser(user);
+  if (msd === undefined) {
+    return res.status(403).json({ error: "Votre compte n'est rattaché à aucune MSD.", errorCode: 'AGENT_NOT_LINKED_TO_MSD' });
+  }
   try {
     await ensureTable();
     const sel = msd
@@ -213,7 +222,7 @@ router.patch('/api/admin-requests/:reference', async (req, res) => {
     );
     await query(
       `INSERT INTO audit_logs (action, actor, details) VALUES ($1,$2,$3)`,
-      ['DEMANDE_ADMIN_MAJ', clean(user.username || user.id), `${clean(req.params.reference)} †’ ${newStatus}${clean(resolutionNote) ? ' — ' + clean(resolutionNote) : ''}`]
+      ['DEMANDE_ADMIN_MAJ', clean(user.username || user.id), `${clean(req.params.reference)} → ${newStatus}${clean(resolutionNote) ? ' — ' + clean(resolutionNote) : ''}`]
     );
     return res.json({ success: true, reference: clean(req.params.reference), status: newStatus });
   } catch (err) {
@@ -222,7 +231,7 @@ router.patch('/api/admin-requests/:reference', async (req, res) => {
   }
 });
 
-// ”€”€ Statistiques (pour le centre de sécurité) ”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€”€
+// ── Statistiques (pour le centre de sécurité) ───────────────────────────────
 // GET /api/admin-requests/stats
 router.get('/api/admin-requests/stats', async (req, res) => {
   const user = req.user;
@@ -232,6 +241,9 @@ router.get('/api/admin-requests/stats', async (req, res) => {
     return res.status(403).json({ error: 'Réservé aux agents habilités.' });
   }
   const msd = msdOfUser(user);
+  if (msd === undefined) {
+    return res.status(403).json({ error: "Votre compte n'est rattaché à aucune MSD.", errorCode: 'AGENT_NOT_LINKED_TO_MSD' });
+  }
   try {
     await ensureTable();
     const pending = msd

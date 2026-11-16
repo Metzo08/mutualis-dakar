@@ -385,7 +385,7 @@ router.get('/api/security/export', async (req, res) => {
       objectType: 'REPORT', objectRef: ref, msdCode: scope, result: 'SUCCESS', severity: 'WARNING',
     });
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', `attachment; filename="securite-mutualis-${new Date().toISOString().slice(0, 10)}.xlsx"`);
+    res.setHeader('Content-Disposition', `attachment; filename="securite-senmutuelles-${new Date().toISOString().slice(0, 10)}.xlsx"`);
     res.send(buffer);
   } catch (err) {
     console.error('[SecurityCenter] export impossible :', err.message);

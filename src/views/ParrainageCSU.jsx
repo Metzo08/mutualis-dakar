@@ -385,7 +385,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
     doc.setTextColor(5, 150, 105);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(22);
-    doc.text("MUTUALIS DAKAR", 20, 25);
+    doc.text("SenMutuelles", 20, 25);
     
     doc.setTextColor(100, 116, 139);
     doc.setFont("helvetica", "normal");
@@ -548,11 +548,11 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
       doc.setFont("helvetica", "italic");
       doc.setFontSize(8);
       doc.setTextColor(148, 163, 184);
-      doc.text("Mutualis Dakar - Portail Régional CMU - support@mutualisdakar.sn", 20, 288);
+      doc.text("SenMutuelles - Portail Régional CMU - support@senmutuelles.sn", 20, 288);
       doc.text(`Page ${i} sur ${pageCount}`, 175, 288);
     }
     
-    doc.save(`recu_parrainage_${generatedCmuNumber || 'MUTUALIS'}.pdf`);
+    doc.save(`recu_parrainage_${generatedCmuNumber || 'SENMUTUELLES'}.pdf`);
   };
 
   if (isAgent && !showWizard) {
@@ -1495,7 +1495,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                             const url = URL.createObjectURL(blob);
                             const link = document.createElement('a');
                             link.href = url;
-                            link.download = 'mutualis_modele_import.csv';
+                            link.download = 'senmutuelles_modele_import.csv';
                             document.body.appendChild(link);
                             link.click();
                             document.body.removeChild(link);
@@ -1821,7 +1821,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
               <div className="digital-health-card" style={{ margin: '0 auto 2rem auto' }}>
                 <div className="digital-card-pattern"></div>
                 <div className="digital-card-logo">
-                  <span style={{ fontWeight: '800', fontSize: '1.1rem', letterSpacing: '1px' }}>MUTUALIS DAKAR</span>
+                  <span style={{ fontWeight: '800', fontSize: '1.1rem', letterSpacing: '1px' }}>SenMutuelles</span>
                   <div className="digital-card-chip"></div>
                 </div>
 

@@ -202,7 +202,7 @@ export default function SecurityCenter() { // props historiques conservées par 
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `securite-mutualis-${new Date().toISOString().slice(0, 10)}.xlsx`;
+      a.download = `securite-senmutuelles-${new Date().toISOString().slice(0, 10)}.xlsx`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
