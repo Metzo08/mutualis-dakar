@@ -607,32 +607,44 @@ export default function Payments({
                 </span>
               </div>
 
-              <div className="d-flex align-items-center gap-3 p-2.5 rounded-3" style={{ background: '#f0fdf4', border: '1px solid #a7f3d0' }}>
-                {activeMember?.photoUrl ? (
-                  <img 
-                    src={activeMember.photoUrl} 
-                    alt={formattedHeadName} 
-                    onError={(e) => { e.target.onerror = null; e.target.src = '/csu_profile_hero_real.png'; }}
-                    style={{ width: '48px', height: '48px', borderRadius: '12px', objectFit: 'cover', border: '2px solid #059669', flexShrink: 0 }}
-                  />
-                ) : (
-                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#059669', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '1.2rem', flexShrink: 0 }}>
-                    {formattedHeadName.charAt(0)}
-                  </div>
-                )}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="fw-extrabold text-truncate" style={{ fontSize: '1.02rem', color: '#065f46' }}>
-                    {formattedHeadName}
-                  </div>
-                  <div className="text-muted small d-flex align-items-center gap-2 flex-wrap" style={{ fontSize: '0.82rem' }}>
-                    <span>Code bénéficiaire: <strong>{activeMember?.cmuNumber}</strong></span>
-                    <span>•</span>
-                    <span>Tél : <strong>{activeMember?.phone || 'Non renseigné'}</strong></span>
+              <div className="p-3 rounded-4" style={{ background: '#f0fdf4', border: '1px solid #a7f3d0', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+                  {activeMember?.photoUrl ? (
+                    <img
+                      src={activeMember.photoUrl}
+                      alt={formattedHeadName}
+                      onError={(e) => { e.target.onerror = null; e.target.src = '/csu_profile_hero_real.png'; }}
+                      style={{ width: '56px', height: '56px', borderRadius: '14px', objectFit: 'cover', border: '2.5px solid #059669', flexShrink: 0 }}
+                    />
+                  ) : (
+                    <div style={{ width: '56px', height: '56px', borderRadius: '14px', background: '#059669', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', fontSize: '1.3rem', flexShrink: 0 }}>
+                      {formattedHeadName.charAt(0)}
+                    </div>
+                  )}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="fw-extrabold" style={{ fontSize: '1.08rem', color: '#065f46', lineHeight: 1.25, wordBreak: 'break-word' }}>
+                      {formattedHeadName}
+                    </div>
+                    <span className="badge mt-1 d-inline-block" style={{ background: '#059669', color: '#ffffff', fontSize: '0.72rem', borderRadius: '999px', padding: '0.22rem 0.65rem', fontWeight: 700 }}>
+                      ● Droits Actifs
+                    </span>
                   </div>
                 </div>
-                <span className="badge bg-success" style={{ fontSize: '0.72rem', borderRadius: '6px' }}>
-                  Droits Actifs
-                </span>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.5rem' }}>
+                  <div style={{ background: '#ffffff', border: '1px solid #d1fae5', borderRadius: '10px', padding: '0.45rem 0.65rem' }}>
+                    <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Code bénéficiaire</div>
+                    <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#0f172a', fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                      {activeMember?.cmuNumber || '—'}
+                    </div>
+                  </div>
+                  <div style={{ background: '#ffffff', border: '1px solid #d1fae5', borderRadius: '10px', padding: '0.45rem 0.65rem' }}>
+                    <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Téléphone</div>
+                    <div style={{ fontSize: '0.84rem', fontWeight: 800, color: '#0f172a' }}>
+                      📞 {activeMember?.phone || 'Non renseigné'}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
