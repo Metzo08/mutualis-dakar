@@ -369,7 +369,7 @@ router.get('/api/accounts/:cmuNumber/access-code', async (req, res) => {
     const b = rowRes.rows[0];
     let code = clean(b.access_code);
     if (!code) {
-      const bcrypt = require('bcryptjs');
+      const bcrypt = require('bcrypt');
       code = generateSixDigitCode();
       const hashed = await bcrypt.hash(code, 10);
       await query('UPDATE beneficiaries SET access_code = $1, pin_code = $2 WHERE id = $3', [code, hashed, b.id]);
@@ -401,7 +401,7 @@ router.post('/api/accounts/:cmuNumber/access-code', async (req, res) => {
       return res.status(400).json({ error: "Le code d'accès doit contenir entre 4 et 16 caractères." });
     }
     const newCode = customCode || generateSixDigitCode();
-    const bcrypt = require('bcryptjs');
+    const bcrypt = require('bcrypt');
     const hashed = await bcrypt.hash(newCode, 10);
     await query('UPDATE beneficiaries SET access_code = $1, pin_code = $2 WHERE cmu_number = $3', [newCode, hashed, canonicalCmu]);
     await recordAudit({

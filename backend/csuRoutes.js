@@ -397,7 +397,7 @@ router.get('/api/cmu-card/:cmuNumber', async (req, res) => {
 // Vérifie le code d'accès personnel (pin_code bcrypt/legacy ou code temporaire émis par l'agent MSD)
 router.post('/api/cmu-card/:cmuNumber/unlock', async (req, res) => {
   try {
-    const bcrypt = require('bcryptjs');
+    const bcrypt = require('bcrypt');
     const jwt = require('jsonwebtoken');
     const rawParam = decodeURIComponent(String(req.params.cmuNumber || '')).trim();
     const cleanCode = rawParam.split('?')[0].trim();
