@@ -147,6 +147,9 @@ const purgeStaleSessions = () => {
       localStorage.removeItem('cmu-agent-user');
       localStorage.removeItem('cmu-citizen-user');
       localStorage.removeItem('cmu-partner-user');
+    } else if (localStorage.getItem('cmu-agent-user') && !localStorage.getItem('cmu-token')) {
+      // Empêcher une session fantôme agent/Super Admin sans jeton JWT valide
+      localStorage.removeItem('cmu-agent-user');
     }
     // eslint-disable-next-line no-unused-vars -- purge best-effort : un stockage indisponible ne doit pas empêcher le rendu.
   } catch (e) {}

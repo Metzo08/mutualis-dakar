@@ -102,24 +102,30 @@ export async function apiFetch(path, options = {}) {
   if (accessToken) {
     headers['Authorization'] = `Bearer ${accessToken}`;
   }
+  if (typeof options.body === 'string' && !headers['Content-Type'] && !headers['content-type']) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   let res = await fetch(path.startsWith('http') ? path : `${API_BASE}${path}`, {
     ...options,
     headers
   });
 
-  // Si 401 et qu'on a un refresh token, on tente le renouvellement
-  if (res.status === 401 && getRefreshToken()) {
-    const refreshed = await refreshAccessToken();
-    if (refreshed) {
-      // Rejoue la requête initiale avec le nouvel access token
-      headers['Authorization'] = `Bearer ${getAccessToken()}`;
-      res = await fetch(path.startsWith('http') ? path : `${API_BASE}${path}`, {
-        ...options,
-        headers
-      });
+  // Si 401 : tenter le renouvellement via refreshToken ; sinon purger la session fantôme et rediriger vers Login
+  if (res.status === 401) {
+    if (getRefreshToken()) {
+      const refreshed = await refreshAccessToken();
+      if (refreshed) {
+        headers['Authorization'] = `Bearer ${getAccessToken()}`;
+        res = await fetch(path.startsWith('http') ? path : `${API_BASE}${path}`, {
+          ...options,
+          headers
+        });
+      } else {
+        window.dispatchEvent(new CustomEvent('cmu-session-expired'));
+      }
     } else {
-      // Refresh impossible : notifie l'application pour déconnexion
+      clearTokens();
       window.dispatchEvent(new CustomEvent('cmu-session-expired'));
     }
   }
