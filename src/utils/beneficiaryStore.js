@@ -668,6 +668,8 @@ export const addMemberFromAdhesion = (adhesionData) => {
     // passer une personne réelle pour un autre individu. L'agent doit
     // téléverser la véritable pièce d'identité.
     photoUrl: adhesionData.photoUrl || '',
+    hasOfficialPhoto: Boolean(adhesionData.photoUrl),
+    lotCode: adhesionData.lotCode || 'ADH-EN-LIGNE',
     allergies: adhesionData.allergies || '',
     antecedents: adhesionData.antecedents || '',
     // Ayants droit : on ne fabrique ni date de naissance, ni photo, ni

@@ -430,6 +430,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
         address: formData.address || 'Dakar',
         mutuelleOrigine: selectedMutuelle || 'Mutuelle de Santé Départementale de Dakar',
         package: selectedPackage === 'csu_eleves' ? 'Gratuité Élèves 100%' : 'UNAMUSC 80%',
+        lotCode: 'ADH-EN-LIGNE',
         photoUrl: formData.photoDataUrl || photoPreview || '',
         dependents: (familyMembers || []).map(f => ({
           name: f.name,
@@ -527,17 +528,19 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
             const lastId = localStorage.getItem('unamusc_last_created_member_id');
             const idx = stored.findIndex(m => m.id === lastId);
             if (idx >= 0) {
+              const hasUploadedPhoto = Boolean(data.hasPhoto || formData.photoDataUrl || photoPreview);
               stored[idx] = {
                 ...stored[idx],
                 cmuNumber: data.cmuNumber,
                 adherentCode: data.cmuNumber,
+                lotCode: data.lotCode || 'ADH-EN-LIGNE',
                 verificationStatus: 'VERIFIED_SERVER',
                 // L'ID serveur permet au Studio de cibler PUT/DELETE.
                 serverId: data.beneficiaryId,
                 // L'URL de lecture remplace la data-URL (strippée de toute
                 // façon) : la photo se recharge depuis la base à l'affichage.
-                photoUrl: data.beneficiaryId ? `/api/beneficiaries/${data.beneficiaryId}/photo` : stored[idx].photoUrl,
-                hasOfficialPhoto: Boolean(data.beneficiaryId && (formData.photoDataUrl || photoPreview))
+                photoUrl: (data.beneficiaryId && hasUploadedPhoto) ? `/api/beneficiaries/${data.beneficiaryId}/photo` : '',
+                hasOfficialPhoto: Boolean(data.beneficiaryId && hasUploadedPhoto)
               };
               saveStoredMembers(stored);
             }

@@ -798,10 +798,14 @@ app.post('/api/adhesions', validate(adhesionSchema), async (req, res) => {
       sponsorPhone,
       schoolName,
       parrainageType,
-      sponsoredHouseholds
+      sponsoredHouseholds,
+      photoUrl
     } = req.body;
 
     // La validation zod a déjà vérifié les champs obligatoires
+    const photoValue = (typeof photoUrl === 'string' && photoUrl.trim().length > 0) ? photoUrl.trim() : null;
+    const ONLINE_LOT_CODE = 'ADH-EN-LIGNE';
+    const ONLINE_LOT_LABEL = 'Adhésions en ligne (Portail adhérent)';
 
     // Matricule CMU unique et séquentiel par MSD (remplace le tirage
     // Math.random() qui produisait des collisions sur 9 000 valeurs).
@@ -814,8 +818,19 @@ app.post('/api/adhesions', validate(adhesionSchema), async (req, res) => {
         : 'CLASSIC',
       mutuelleName
     });
+    const msdCode = (String(cmuNumber || '').split('-')[0] || 'DKR').toUpperCase();
 
     await client.query('BEGIN');
+
+    // Regroupe automatiquement toutes les adhésions issues du portail en ligne
+    // (individuelles, familiales, élèves, daara, parrainage, masse) dans un seul
+    // lot unifié visible dans le Studio Cartes.
+    await client.query(
+      `INSERT INTO campaign_lots (code, label, source_file, union_id, card_count)
+       VALUES ($1, $2, $3, $4, 0)
+       ON CONFLICT (code) DO NOTHING`,
+      [ONLINE_LOT_CODE, ONLINE_LOT_LABEL, 'Portail Adhésion en ligne', msdCode]
+    );
 
     // PIN à 4 chiffres, unique par adhérent : on rejette les PIN déjà
     // attribués (sinon deux familles partagent le même code d'accès).
@@ -830,10 +845,10 @@ app.post('/api/adhesions', validate(adhesionSchema), async (req, res) => {
     const pinSalt = await bcrypt.genSalt(10);
     const hashedPin = await bcrypt.hash(generatedPin, pinSalt);
 
-    // Insert Beneficiary
+    // Insert Beneficiary (avec photo_url, lot_code unifié et msd_code)
     const beneficiaryInsert = `
-      INSERT INTO beneficiaries (first_name, last_name, birth_date, phone, email, address, mutuelle_name, package_type, payment_method, cmu_number, status, sponsor_phone, school_name, pin_code)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      INSERT INTO beneficiaries (first_name, last_name, birth_date, phone, email, address, mutuelle_name, package_type, payment_method, cmu_number, status, sponsor_phone, school_name, pin_code, access_code, photo_url, lot_code, msd_code)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
       RETURNING id
     `;
     const bResult = await client.query(beneficiaryInsert, [
@@ -850,7 +865,11 @@ app.post('/api/adhesions', validate(adhesionSchema), async (req, res) => {
       'pending', // Initial status is pending, requiring agent validation
       sponsorPhone || null,
       schoolName || null,
-      hashedPin
+      hashedPin,
+      generatedPin,
+      photoValue,
+      ONLINE_LOT_CODE,
+      msdCode
     ]);
 
     const beneficiaryId = bResult.rows[0].id;
@@ -868,9 +887,9 @@ app.post('/api/adhesions', validate(adhesionSchema), async (req, res) => {
           const lName = nameParts.slice(1).join(' ') || 'Ménage';
 
           const chefRes = await client.query(
-            `INSERT INTO beneficiaries (first_name, last_name, birth_date, phone, email, address, mutuelle_name, package_type, payment_method, cmu_number, status, sponsor_phone)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING id`,
-            [fName, lName, '1980-01-01', hh.chefPhone || phone, '', address, mutuelleName, 'familial', paymentMethod, chefCmu, 'pending', phone]
+            `INSERT INTO beneficiaries (first_name, last_name, birth_date, phone, email, address, mutuelle_name, package_type, payment_method, cmu_number, status, sponsor_phone, lot_code, msd_code)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING id`,
+            [fName, lName, '1980-01-01', hh.chefPhone || phone, '', address, mutuelleName, 'familial', paymentMethod, chefCmu, 'pending', phone, ONLINE_LOT_CODE, msdCode]
           );
           const chefId = chefRes.rows[0].id;
 
@@ -896,9 +915,9 @@ app.post('/api/adhesions', validate(adhesionSchema), async (req, res) => {
           const lName = nameParts.slice(1).join(' ') || (parrainageType === 'eleves' ? 'Scolaire' : parrainageType === 'collectif' ? 'Collectif' : 'Parrainé');
 
           await client.query(
-            `INSERT INTO beneficiaries (first_name, last_name, birth_date, phone, email, address, mutuelle_name, package_type, payment_method, cmu_number, status, sponsor_phone, school_name)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
-            [fName, lName, '2000-01-01', phone, '', address, mutuelleName, 'individuel', paymentMethod, bCmu, 'pending', phone, schoolName || null]
+            `INSERT INTO beneficiaries (first_name, last_name, birth_date, phone, email, address, mutuelle_name, package_type, payment_method, cmu_number, status, sponsor_phone, school_name, lot_code, msd_code)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
+            [fName, lName, '2000-01-01', phone, '', address, mutuelleName, 'individuel', paymentMethod, bCmu, 'pending', phone, schoolName || null, ONLINE_LOT_CODE, msdCode]
           );
         }
       }
@@ -923,21 +942,28 @@ app.post('/api/adhesions', validate(adhesionSchema), async (req, res) => {
             const lName = nameParts.slice(1).join(' ') || (packageType === 'adhesion_masse' ? 'Collectif' : 'Scolaire');
 
             await client.query(
-              `INSERT INTO beneficiaries (first_name, last_name, birth_date, phone, email, address, mutuelle_name, package_type, payment_method, cmu_number, status, school_name)
-               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
-              [fName, lName, '2015-01-01', phone, '', address, mutuelleName, 'individuel', paymentMethod, bCmu, 'pending', schoolName || 'Établissement']
+              `INSERT INTO beneficiaries (first_name, last_name, birth_date, phone, email, address, mutuelle_name, package_type, payment_method, cmu_number, status, school_name, lot_code, msd_code)
+               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)`,
+              [fName, lName, '2015-01-01', phone, '', address, mutuelleName, 'individuel', paymentMethod, bCmu, 'pending', schoolName || 'Établissement', ONLINE_LOT_CODE, msdCode]
             );
           }
         }
       }
     }
 
+    await client.query(
+      `UPDATE campaign_lots
+          SET card_count = (SELECT COUNT(*) FROM beneficiaries WHERE lot_code = $1)
+        WHERE code = $1`,
+      [ONLINE_LOT_CODE]
+    );
+
     await client.query('COMMIT');
 
     // Audit log
     await query(
       `INSERT INTO audit_logs (action, actor, details) VALUES ($1, $2, $3)`,
-      ['DEPOS_PRE_INSCRIPTION', phone, `Nouveau dossier d'adhésion en ligne déposé pour ${firstName} ${lastName} (CMU généré: ${cmuNumber}).`]
+      ['DEPOS_PRE_INSCRIPTION', phone, `Nouveau dossier d'adhésion en ligne déposé pour ${firstName} ${lastName} (CMU généré: ${cmuNumber}, Lot: ${ONLINE_LOT_CODE}).`]
     );
 
     // Points de fidélité si parrainage
@@ -950,6 +976,9 @@ app.post('/api/adhesions', validate(adhesionSchema), async (req, res) => {
       message: 'Adhésion enregistrée avec succès.',
       cmuNumber,
       beneficiaryId,
+      lotCode: ONLINE_LOT_CODE,
+      hasPhoto: Boolean(photoValue),
+      photoUrl: photoValue ? `/api/beneficiaries/${beneficiaryId}/photo` : null,
       // PIN temporaire (en production : envoi par SMS, jamais retourné en clair après ça)
       pinCode: generatedPin
     });
