@@ -971,3 +971,100 @@
 }
 
 
+
+
+/* ============================================================================
+   100% RESPONSIVE MOBILE GLOBAL (320px - 768px) — PRIORITÉ MAXIMALE
+   Importé en dernier dans App.jsx : garantit zéro débordement horizontal,
+   zéro texte coupé et une ergonomie smartphone fluide sur toutes les vues.
+   ============================================================================ */
+html, body, #root {
+  max-width: 100vw !important;
+  overflow-x: hidden !important;
+}
+
+@media (max-width: 768px) {
+  .app-layout,
+  .main-content,
+  .view-container {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  .view-container {
+    padding: 0.5rem 0.45rem 6rem 0.45rem !important;
+  }
+
+  .view-container .container,
+  .view-container .container-fluid {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 0.45rem !important;
+    padding-right: 0.45rem !important;
+  }
+
+  .view-container .card {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    padding: 0.95rem 0.8rem !important;
+    border-radius: 18px !important;
+  }
+
+  .view-container .row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .view-container [class*="col-"] {
+    min-width: 0 !important;
+  }
+
+  .view-container h1 { font-size: 1.35rem !important; line-height: 1.25 !important; word-break: break-word !important; }
+  .view-container h2 { font-size: 1.2rem !important; line-height: 1.25 !important; word-break: break-word !important; }
+  .view-container h3 { font-size: 1.1rem !important; line-height: 1.3 !important; word-break: break-word !important; }
+  .view-container h4,
+  .view-container h5 { font-size: 1rem !important; line-height: 1.3 !important; word-break: break-word !important; }
+
+  .view-container p,
+  .view-container span,
+  .view-container strong,
+  .view-container small,
+  .view-container .badge,
+  .view-container button,
+  .view-container .btn {
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+    max-width: 100% !important;
+  }
+
+  .view-container .badge {
+    white-space: normal !important;
+    line-height: 1.35 !important;
+  }
+
+  .view-container table {
+    display: block !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .view-container img,
+  .view-container video,
+  .view-container canvas,
+  .view-container svg {
+    max-width: 100% !important;
+  }
+
+  /* Éviter que le bouton flottant Zahara recouvre la barre d'onglets mobile */
+  .chatbot-fab,
+  .chatbot-toggle-btn,
+  button[aria-label*="Zahara"],
+  div[class*="chatbot-widget"] > button {
+    bottom: 76px !important;
+    right: 12px !important;
+  }
+}

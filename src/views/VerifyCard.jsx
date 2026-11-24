@@ -1016,6 +1016,176 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
     });
   };
 
+  // 🔐 PORTAIL D'ACCÈS IMMÉDIAT AU SCAN DU QR CODE
+  // Dès qu'un assuré scanne sa carte (hors session agent/médecin/admin), il tombe
+  // directement en haut de l'écran sur ce portail 100% responsive pour saisir son code d'accès.
+  if (result && result.valid && !isMobileSpaceUnlocked) {
+    return (
+      <div
+        className="verify-view verify-lock-portal fade-in-up"
+        style={{
+          width: '100%',
+          maxWidth: '460px',
+          margin: '0 auto',
+          padding: '1rem 0.75rem 100px 0.75rem',
+          minHeight: '85vh',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          boxSizing: 'border-box'
+        }}
+      >
+        <div
+          className="card shadow-lg border-0"
+          style={{
+            borderRadius: '24px',
+            background: 'var(--bg-card, #ffffff)',
+            border: '2px solid #059669',
+            overflow: 'hidden',
+            padding: 0
+          }}
+        >
+          {/* En-tête vert émeraude compact */}
+          <div
+            style={{
+              background: 'linear-gradient(135deg, #047857 0%, #059669 100%)',
+              color: '#ffffff',
+              padding: '1.25rem 1rem',
+              textAlign: 'center'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem', gap: '0.5rem' }}>
+              <span style={{ fontSize: '0.78rem', fontWeight: 800, opacity: 0.95 }}>SenMutuelles 🇸🇳</span>
+              <span style={{ background: 'rgba(255,255,255,0.2)', padding: '0.2rem 0.65rem', borderRadius: '999px', fontSize: '0.74rem', fontWeight: 800 }}>
+                ● Carte Active
+              </span>
+            </div>
+
+            {result.photoUrl ? (
+              <SecurePhoto
+                photoUrl={result.photoUrl}
+                serverId={result.id || result.cmuNumber}
+                alt={`${result.firstName} ${result.lastName}`}
+                style={{
+                  width: '78px',
+                  height: '78px',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  border: '3px solid #ffffff',
+                  margin: '0 auto 0.65rem auto',
+                  display: 'block',
+                  boxShadow: '0 6px 18px rgba(0,0,0,0.25)'
+                }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: '74px',
+                  height: '74px',
+                  borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.2)',
+                  border: '3px solid #ffffff',
+                  margin: '0 auto 0.65rem auto',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '2rem'
+                }}
+              >
+                👤
+              </div>
+            )}
+
+            <h2 style={{ fontSize: '1.2rem', fontWeight: 900, margin: '0 0 0.25rem 0', color: '#ffffff', wordBreak: 'break-word' }}>
+              {result.firstName} {result.lastName}
+            </h2>
+            <div style={{ fontSize: '0.78rem', opacity: 0.92, fontWeight: 600 }}>
+              {result.mutuelleName || 'MSD Dakar'} · <span style={{ fontFamily: 'monospace' }}>{result.cmuNumber}</span>
+            </div>
+          </div>
+
+          {/* Formulaire de code d'accès personnel */}
+          <div style={{ padding: '1.25rem 1.1rem' }}>
+            <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+              <div style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>🔐</div>
+              <h3 style={{ fontSize: '1.05rem', fontWeight: 800, margin: '0 0 0.35rem 0', color: 'var(--text-main, #0f172a)' }}>
+                Accès à votre espace mobile assuré
+              </h3>
+              <p style={{ fontSize: '0.82rem', color: 'var(--text-sub, #475569)', margin: 0, lineHeight: 1.45 }}>
+                Saisissez votre <strong>code d&apos;accès personnel</strong> communiqué par votre agent MSD pour ouvrir votre carte, votre dossier médical et vos services.
+              </p>
+            </div>
+
+            <form onSubmit={handleUnlockMobileSpace} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <input
+                type="password"
+                autoComplete="one-time-code"
+                autoFocus
+                value={accessCodeInput}
+                onChange={(e) => { setAccessCodeInput(e.target.value); setAccessCodeError(''); }}
+                placeholder="Code d'accès assuré"
+                className="form-control text-center fw-bold"
+                style={{
+                  minHeight: '50px',
+                  borderRadius: '14px',
+                  fontSize: '1.15rem',
+                  letterSpacing: '0.16em',
+                  border: '2px solid #059669',
+                  background: 'var(--bg-card-subtle, #f8fafc)',
+                  color: 'var(--text-main, #0f172a)',
+                  width: '100%'
+                }}
+                required
+              />
+
+              {accessCodeError && (
+                <div className="alert alert-danger py-2 px-3 mb-0 fw-bold" style={{ borderRadius: '12px', fontSize: '0.8rem' }}>
+                  ⚠️ {accessCodeError}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={unlocking}
+                className="btn text-white fw-bold w-100"
+                style={{
+                  background: '#059669',
+                  border: 'none',
+                  borderRadius: '14px',
+                  padding: '0.85rem 1rem',
+                  fontSize: '0.95rem',
+                  boxShadow: '0 6px 18px rgba(5, 150, 105, 0.28)'
+                }}
+              >
+                {unlocking ? '⏳ Vérification en cours...' : '🔓 Ouvrir mon espace assuré'}
+              </button>
+            </form>
+
+            <div style={{ marginTop: '1rem', paddingTop: '0.85rem', borderTop: '1px solid var(--border-color, #e2e8f0)', textAlign: 'center', fontSize: '0.76rem', color: 'var(--text-sub, #64748b)', lineHeight: 1.5 }}>
+              <div>💡 Code remis par votre agent MSD (ou 4 derniers chiffres de votre téléphone si premier accès).</div>
+              <button
+                type="button"
+                onClick={() => { if (setView) setView('login'); else window.location.hash = '#/login'; }}
+                style={{
+                  marginTop: '0.6rem',
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#0284c7',
+                  fontWeight: 700,
+                  fontSize: '0.78rem',
+                  textDecoration: 'underline',
+                  cursor: 'pointer'
+                }}
+              >
+                Agent MSD / Médecin ? Connexion professionnelle ›
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="verify-view fade-in-up container py-3 py-md-5" style={{ maxWidth: '1080px', margin: '0 auto', background: 'var(--bg-main, #f8fafc)', color: 'var(--text-main, #0f172a)', minHeight: '100vh', paddingBottom: '105px' }}>
       
