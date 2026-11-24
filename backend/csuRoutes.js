@@ -268,32 +268,122 @@ router.get('/api/notifications', authenticateToken, async (req, res) => {
 // CARTE CMU NUMÉRIQUE (vérifiable publiquement par le numéro CMU)
 // ============================================================================
 
-// Vérification publique d'une carte CMU par son numéro (pour les structures de soins)
+// Vérification publique d'une carte CMU par son numéro (pour les structures de soins & espace mobile assuré)
 router.get('/api/cmu-card/:cmuNumber', async (req, res) => {
   try {
-    const { cmuNumber } = req.params;
-    const bRes = await query(
-      `SELECT id, first_name, last_name, birth_date, phone, mutuelle_name, package_type, cmu_number, status, photo_url
-       FROM beneficiaries WHERE cmu_number = $1 LIMIT 1`,
-      [cmuNumber]
-    );
-    if (bRes.rows.length === 0) {
+    const rawParam = decodeURIComponent(String(req.params.cmuNumber || '')).trim();
+    const cleanCode = rawParam.split('?')[0].trim();
+    const upperCode = cleanCode.toUpperCase();
+    const normCode = upperCode.replace(/[^A-Z0-9]/g, '');
+    // Base sans suffixe (.0, .1, .11, .M1...) pour tolérer les variantes de code ou un ayant droit
+    const baseCode = upperCode.replace(/\.(0|M\d+|\d+)$/i, '');
+    const normBase = baseCode.replace(/[^A-Z0-9]/g, '');
+
+    let b = null;
+    let familyRows = [];
+    let cotisationsRows = [];
+    let guaranteeRows = [];
+    let orderRows = [];
+
+    try {
+      const bRes = await query(
+        `SELECT *
+         FROM beneficiaries
+         WHERE UPPER(TRIM(cmu_number)) = $1
+            OR UPPER(TRIM(COALESCE(numero_adherent, ''))) = $1
+            OR UPPER(TRIM(COALESCE(source_code, ''))) = $1
+            OR REGEXP_REPLACE(UPPER(COALESCE(cmu_number, '')), '[^A-Z0-9]', '', 'g') = $2
+            OR REGEXP_REPLACE(UPPER(COALESCE(cmu_number, '')), '[^A-Z0-9]', '', 'g') = $3
+            OR UPPER(TRIM(cmu_number)) = $4
+         LIMIT 1`,
+        [upperCode, normCode, normBase, `${baseCode}.0`]
+      );
+      if (bRes.rows.length > 0) {
+        b = bRes.rows[0];
+        const [fRes, cRes, gRes, oRes] = await Promise.all([
+          query('SELECT id, name, relation, age FROM family_members WHERE beneficiary_id = $1 ORDER BY id ASC', [b.id]).catch(() => ({ rows: [] })),
+          query('SELECT id, amount, payment_method, period_start, period_end, status, created_at FROM cotisations WHERE beneficiary_id = $1 ORDER BY created_at DESC LIMIT 5', [b.id]).catch(() => ({ rows: [] })),
+          query('SELECT id, validation_code, medical_act, estimated_amount, guaranteed_percentage, max_amount, status, created_at FROM guarantee_letters WHERE beneficiary_id = $1 ORDER BY created_at DESC LIMIT 5', [b.id]).catch(() => ({ rows: [] })),
+          query('SELECT id, total_amount, status, created_at FROM purchase_orders WHERE beneficiary_id = $1 ORDER BY created_at DESC LIMIT 5', [b.id]).catch(() => ({ rows: [] }))
+        ]);
+        familyRows = fRes.rows || [];
+        cotisationsRows = cRes.rows || [];
+        guaranteeRows = gRes.rows || [];
+        orderRows = oRes.rows || [];
+      }
+    } catch (dbLookupErr) {
+      console.warn('[cmu-card] Fallback store utilisé suite erreur DB :', dbLookupErr.message);
+    }
+
+    // Repli sur fallbackStore (store.json) si introuvable en base ou DB indisponible
+    if (!b) {
+      try {
+        const fsStore = require('./fallbackStore');
+        const all = typeof fsStore.getAllBeneficiaries === 'function' ? fsStore.getAllBeneficiaries() : [];
+        const match = all.find((item) => {
+          const candidates = [item.cmu_number, item.cmuNumber, item.numero_adherent, item.source_code, item.id]
+            .filter(Boolean)
+            .map((v) => String(v).trim().toUpperCase());
+          return candidates.some((c) => c === upperCode || c === `${baseCode}.0` || c.replace(/[^A-Z0-9]/g, '') === normCode || c.replace(/[^A-Z0-9]/g, '') === normBase);
+        });
+        if (match) {
+          b = match;
+          familyRows = match.family_members || match.familyMembers || [];
+        }
+      } catch (fbErr) {
+        console.warn('[cmu-card] fallbackStore indisponible :', fbErr.message);
+      }
+    }
+
+    if (!b) {
       return res.status(404).json({ valid: false, error: 'Carte CMU introuvable.' });
     }
-    const b = bRes.rows[0];
-    const fRes = await query('SELECT name, relation, age FROM family_members WHERE beneficiary_id = $1 ORDER BY id ASC', [b.id]);
+
+    const isCardBlocked = String(b.card_status || '').toLowerCase() === 'blocked' || String(b.card_status || '').toLowerCase() === 'revoked';
+    const effectiveStatus = isCardBlocked ? 'suspended' : (b.status || 'active');
+    const isValid = effectiveStatus === 'active' && !isCardBlocked;
+
+    const normalizedFamily = (familyRows || []).map((f, idx) => {
+      const ageNum = Number(f.age || 0);
+      const isMajor = ageNum >= 18;
+      return {
+        id: f.id || `fam_${idx + 1}`,
+        name: f.name,
+        relation: f.relation || (isMajor ? 'Ayant droit' : 'Enfant mineur'),
+        age: ageNum,
+        isMajor,
+        codeSuffix: isMajor ? `.1${idx + 1}` : `.M${idx + 1}`,
+        cmuCode: `${String(b.cmu_number || b.cmuNumber || cleanCode).replace(/\.0$/, '')}.${isMajor ? `1${idx + 1}` : `M${idx + 1}`}`
+      };
+    });
+
     res.json({
-      valid: b.status === 'active',
-      status: b.status,
-      firstName: b.first_name,
-      lastName: b.last_name,
-      birthDate: b.birth_date,
-      phone: b.phone,
-      mutuelleName: b.mutuelle_name,
-      packageType: b.package_type,
-      cmuNumber: b.cmu_number,
-      photoUrl: b.photo_url,
-      familyMembers: fRes.rows,
+      id: b.id,
+      valid: isValid,
+      status: effectiveStatus,
+      cardStatus: b.card_status || 'active',
+      firstName: b.first_name || b.firstName || '',
+      lastName: b.last_name || b.lastName || '',
+      birthDate: b.birth_date || b.birthDate || '',
+      birthPlace: b.birth_place || b.birthPlace || '',
+      gender: b.gender || '',
+      bloodGroup: b.blood_group || b.bloodGroup || 'Non renseigné',
+      phone: b.phone || '',
+      address: b.address || '',
+      mutuelleName: b.mutuelle_name || b.mutuelleName || 'Mutuelle de santé départementale de Dakar',
+      department: b.department || 'Dakar',
+      msdCode: b.msd_code || b.msdCode || 'DKR',
+      packageType: b.package_type || b.packageType || 'Tiers-payant 80%',
+      cmuNumber: b.cmu_number || b.cmuNumber || cleanCode,
+      adherentCode: b.numero_adherent || b.cmu_number || b.cmuNumber || cleanCode,
+      schoolName: b.school_name || b.schoolName || '',
+      photoUrl: b.photo_url || b.photoUrl || null,
+      familyMembers: normalizedFamily,
+      dependents: normalizedFamily,
+      minorDependents: normalizedFamily.filter((f) => !f.isMajor),
+      cotisations: cotisationsRows,
+      guaranteeLetters: guaranteeRows,
+      purchaseOrders: orderRows,
       checkedAt: new Date().toISOString()
     });
   } catch (err) {

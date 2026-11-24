@@ -161,15 +161,25 @@ export default function App() {
   // Un hash inconnu n'est PLUS silencieusement remplacé par l'accueil : il est
   // conservé dans `unknownView` et la page 404 s'affiche — l'utilisateur voit
   // ainsi pourquoi son lien ne fonctionne pas (favori périmé, QR code obsolète).
+  const extractRouteSegment = () => {
+    const hash = (window.location.hash || '').replace(/^#\/?/, '');
+    if (hash) {
+      return hash.split('?')[0].split('/')[0];
+    }
+    const pathname = (window.location.pathname || '').replace(/^\/+/, '');
+    if (pathname.startsWith('verify')) {
+      return 'verify';
+    }
+    return '';
+  };
+
   const [unknownView, setUnknownView] = useState(() => {
-    const hash = window.location.hash.replace(/^#\/?/, '');
-    const firstSegment = hash.split('/')[0];
+    const firstSegment = extractRouteSegment();
     return validViews.includes(firstSegment) ? null : (firstSegment || null);
   });
 
   const initialViewFromHash = () => {
-    const hash = window.location.hash.replace(/^#\/?/, '');
-    const firstSegment = hash.split('/')[0];
+    const firstSegment = extractRouteSegment();
     return validViews.includes(firstSegment) ? firstSegment : 'home';
   };
 
@@ -525,8 +535,11 @@ export default function App() {
   useEffect(() => {
     const currentHash = window.location.hash;
     const expectedHash = `#/${view}`;
-    // Si on est en train de vérifier une carte et que le hash contient le paramètre, on ne l'écrase pas
-    if (view === 'verify' && currentHash.startsWith('#/verify/')) {
+    // Si on est en train de vérifier une carte (via #/verify/..., #verify/..., #/verify?... ou /verify/...), on ne l'écrase jamais
+    if (
+      view === 'verify' &&
+      (/^#\/?verify(\/|\?)/i.test(currentHash) || /^\/verify\//i.test(window.location.pathname || ''))
+    ) {
       return;
     }
     if (currentHash !== expectedHash) {
@@ -538,7 +551,7 @@ export default function App() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace(/^#\/?/, '');
-      const firstSegment = hash.split('/')[0];
+      const firstSegment = hash.split('?')[0].split('/')[0];
       if (!validViews.includes(firstSegment)) {
         // Vue inconnue → page 404 (au lieu d'un retour silencieux à l'accueil).
         setUnknownView(firstSegment || null);

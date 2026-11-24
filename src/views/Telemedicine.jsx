@@ -5275,7 +5275,7 @@ export default function Telemedicine({
                             style={{ background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.4rem 0.85rem', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer' }}
                             onClick={() => {
                               setActiveModal(null);
-                              setView('guarantee_letters');
+                              setView('guarantees');
                             }}
                           >
                             📄 Consulter mes lettres de garantie ›
@@ -5308,7 +5308,7 @@ export default function Telemedicine({
                             style={{ background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 0.85rem', fontWeight: '800', fontSize: '0.8rem', cursor: 'pointer' }}
                             onClick={() => {
                               setActiveModal(null);
-                              setView('purchase_orders');
+                              setView('purchase-orders');
                             }}
                           >
                             💊 Ouvrir dans mes bons de commande ›

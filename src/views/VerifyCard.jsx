@@ -1,5 +1,6 @@
 import { getCardByCode, resolveCodeAlias, isLegacyCode } from '../utils/beneficiaryStore';
 import jsQR from 'jsqr';
+import QRCode from 'qrcode';
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
@@ -114,6 +115,7 @@ export default function VerifyCard({ setView = null, citizenUser = null }) {
   // Compte à rebours 15 secondes pour rotation dynamique du QR Code
   const [qrSecondsLeft, setQrSecondsLeft] = useState(15);
   const [qrOtpToken, setQrOtpToken] = useState(() => Math.floor(Date.now() / 15000));
+  const [qrDataUrl, setQrDataUrl] = useState('');
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -127,6 +129,23 @@ export default function VerifyCard({ setView = null, citizenUser = null }) {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Génération locale du QR Code HD (fonctionne hors-ligne, aucune fuite vers un serveur tiers)
+  useEffect(() => {
+    if (!result || !result.cmuNumber) {
+      setQrDataUrl('');
+      return;
+    }
+    const verifyUrl = `${window.location.origin}/#/verify/${encodeURIComponent(result.cmuNumber)}?otp=${qrOtpToken}`;
+    QRCode.toDataURL(verifyUrl, {
+      margin: 2,
+      width: 280,
+      errorCorrectionLevel: 'H',
+      color: { dark: '#000000', light: '#ffffff' }
+    })
+      .then(setQrDataUrl)
+      .catch(() => setQrDataUrl(''));
+  }, [result?.cmuNumber, qrOtpToken]);
 
   const videoRef = React.useRef(null);
   const streamRef = React.useRef(null);
@@ -415,9 +434,15 @@ export default function VerifyCard({ setView = null, citizenUser = null }) {
 
       let queryRef = urlParams.get('ref') || urlParams.get('cmu') || urlParams.get('code') || urlParams.get('doc');
       if (!queryRef) {
-        const match = hashStr.match(/#\/?verify\/?([^?#]+)/i);
+        const match = hashStr.match(/#\/?verify\/([^?#]+)/i);
         if (match && match[1]) {
           queryRef = decodeURIComponent(match[1].trim());
+        }
+      }
+      if (!queryRef) {
+        const pathMatch = (window.location.pathname || '').match(/\/verify\/([^?#]+)/i);
+        if (pathMatch && pathMatch[1]) {
+          queryRef = decodeURIComponent(pathMatch[1].trim());
         }
       }
 
@@ -676,30 +701,54 @@ export default function VerifyCard({ setView = null, citizenUser = null }) {
       }
     }
 
-    // 2. Recherche prioritaire dans le store centralisé des assurés (beneficiaryStore / MSD Dakar)
+    // 2. Recherche prioritaire dans le store local ET dans la base centrale backend (/api/cmu-card/:cmuNumber)
+    // Indispensable lors d'un scan QR sur smartphone (localStorage vide) pour charger tout l'espace mobile de l'assuré !
     const storeCard = getCardByCode(target);
     const isGlobalSuspended = (localStorage.getItem('cmu-portal-mode') === 'citizen_suspended' || localStorage.getItem('cmu-cotisation-suspended') === 'true');
-    
-    if (storeCard && storeCard.firstName) {
-      let cleanFirst = (storeCard.firstName || '').trim();
-      let cleanLast = (storeCard.lastName || '').trim();
+
+    let apiCard = null;
+    if (target) {
+      try {
+        const apiBase = (typeof window !== 'undefined' && window.API_BASE_URL) ? window.API_BASE_URL : '';
+        const res = await fetch(`${apiBase}/api/cmu-card/${encodeURIComponent(target)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && (data.firstName || data.cmuNumber)) {
+            apiCard = data;
+          }
+        }
+      } catch (apiErr) {
+        console.warn('[VerifyCard] Fallback local utilisé (API indisponible) :', apiErr?.message || apiErr);
+      }
+    }
+
+    const mergedCard = apiCard
+      ? { ...(storeCard || {}), ...apiCard }
+      : storeCard;
+
+    if (mergedCard && (mergedCard.firstName || mergedCard.lastName)) {
+      let cleanFirst = (mergedCard.firstName || '').trim();
+      let cleanLast = (mergedCard.lastName || '').trim();
       if (cleanFirst.toLowerCase().endsWith(cleanLast.toLowerCase()) && cleanFirst.toLowerCase() !== cleanLast.toLowerCase()) {
         cleanFirst = cleanFirst.slice(0, cleanFirst.length - cleanLast.length).trim();
       }
 
-      const storedOverride = localStorage.getItem(`cmu-status-${storeCard.cmuNumber}`);
-      const finalStatus = isGlobalSuspended ? 'suspended' : (storedOverride || 'active');
-      const finalValid = (finalStatus === 'active');
+      const storedOverride = localStorage.getItem(`cmu-status-${mergedCard.cmuNumber}`);
+      const baseStatus = apiCard ? apiCard.status : (storedOverride || mergedCard.status || 'active');
+      const finalStatus = isGlobalSuspended ? 'suspended' : baseStatus;
+      const finalValid = finalStatus === 'active' && mergedCard.cardStatus !== 'blocked';
 
       setResult({
-        ...storeCard,
+        ...mergedCard,
         firstName: cleanFirst,
         lastName: cleanLast,
         status: finalStatus,
         valid: finalValid,
         audioReminder: {
-          subtitle: `Assuré : ${cleanFirst} ${cleanLast} • Statut CSU : Actif`,
-          transcript: `"Nanga def ${cleanFirst} ${cleanLast}! Votre carte CSU est active. Prise en charge Tiers-Payant 80% autorisée auprès de toutes les structures conventionnées."`,
+          subtitle: `Assuré : ${cleanFirst} ${cleanLast} • Statut CSU : ${finalValid ? 'Actif' : 'Suspendu'}`,
+          transcript: finalValid
+            ? `"Nanga def ${cleanFirst} ${cleanLast}! Votre carte CSU est active. Prise en charge Tiers-Payant 80% autorisée auprès de toutes les structures conventionnées."`
+            : `"Nanga def ${cleanFirst} ${cleanLast}. Votre couverture CSU est actuellement suspendue. Veuillez régulariser votre cotisation pour réactiver vos droits."`,
           due: 'Contrôle Annuel • UDMS Dakar'
         }
       });
@@ -707,15 +756,7 @@ export default function VerifyCard({ setView = null, citizenUser = null }) {
       return;
     }
 
-    // ────────────────────────────────────────────────────────────────────
-    //  3. Code non retrouvé dans le registre → REFUS EXPLICITE.
-    //  Auparavant, toute saisie de 3 caractères et plus était « complétée »
-    //  en une fausse fiche (nom « Fatou Diallo », groupe B+, IPP calculé)
-    //  avec le statut par défaut « active ». Un pharmacien obtenait donc
-    //  une prise en charge valable pour un code écrit à la main : c'était
-    //  une faille d'authentification, pas une commodité de démonstration.
-    //  Un code inconnu doit maintenant échouer, et échouer visiblement.
-    // ────────────────────────────────────────────────────────────────────
+    // 3. Code non retrouvé ni en base centrale ni dans le registre local → REFUS EXPLICITE.
     setError(
       'Carte non reconnue : le code « ' + (target || '—') + ' » ne correspond à aucun assuré enregistré. ' +
       'Ne délivrez AUCUNE prise en charge. Vérifiez la saisie, ou scannez la carte physique sans la plier.'
@@ -1562,18 +1603,9 @@ export default function VerifyCard({ setView = null, citizenUser = null }) {
                   color: '#ffffff',
                   borderRadius: '22px',
                   fontSize: '0.9rem',
-                  boxShadow: '0 4px 14px rgba(5, 150, 105, 0.25)',
-                  cursor: 'pointer'
+                  boxShadow: '0 4px 14px rgba(5, 150, 105, 0.25)'
                 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setResult(prev => ({
-                    ...prev,
-                    valid: !(prev.valid && prev.status !== 'suspended' && prev.status !== 'suspendu'),
-                    status: (prev.valid && prev.status !== 'suspended' && prev.status !== 'suspendu') ? 'suspended' : 'active'
-                  }));
-                }}
-                title="Cliquer pour basculer le statut d'inactif à actif pour le test"
+                title="Statut officiel certifié par le registre UNAMUSC"
               >
                 {(result.valid && result.status !== 'suspended' && result.status !== 'suspendu') ? '● Actif' : '🔴 Suspendu'}
               </span>
@@ -1749,16 +1781,22 @@ export default function VerifyCard({ setView = null, citizenUser = null }) {
 
               <div className="d-flex justify-content-center align-items-center w-100 my-3.5">
                 <div className="p-3 rounded-4 shadow-sm border position-relative" style={{ background: '#ffffff', borderColor: 'var(--border-color)', overflow: 'hidden', display: 'inline-flex', justifyContent: 'center', alignItems: 'center' }}>
-                  <img 
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(`${window.location.origin}/#/verify/${result.cmuNumber}?otp=${qrOtpToken}`)}`} 
-                    alt="QR Code CSU" 
-                    style={{ 
-                      width: '140px', 
-                      height: '140px', 
-                      display: 'block',
-                      margin: '0 auto'
-                    }} 
-                  />
+                  {qrDataUrl ? (
+                    <img
+                      src={qrDataUrl}
+                      alt="QR Code CSU certifié"
+                      style={{
+                        width: '140px',
+                        height: '140px',
+                        display: 'block',
+                        margin: '0 auto'
+                      }}
+                    />
+                  ) : (
+                    <div style={{ width: '140px', height: '140px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.78rem', color: '#475569' }}>
+                      Génération QR...
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1841,7 +1879,98 @@ export default function VerifyCard({ setView = null, citizenUser = null }) {
               </div>
             </div>
           ) : (
-            <div className="verified-cards-wrapper" style={{ background: 'var(--bg-card-subtle)', padding: '2rem 1.75rem', borderRadius: '30px', border: '1px solid var(--border-color)', marginBottom: '3rem' }}>
+            <div className="verified-cards-wrapper" style={{ background: 'var(--bg-card-subtle)', padding: '1.5rem 1.25rem', borderRadius: '30px', border: '1px solid var(--border-color)', marginBottom: '3rem' }}>
+
+              {/* 📱 ESPACE MOBILE DE L'ASSURÉ — VUE COMPLÈTE 1-CLIC APRÈS SCAN QR */}
+              <div className="card shadow-sm border-0 p-4 mb-4" style={{ borderRadius: '24px', background: 'var(--bg-card)', border: '1.5px solid rgba(5, 150, 105, 0.28)' }}>
+                <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+                  <div>
+                    <span className="badge fw-bold px-3 py-1 mb-1" style={{ background: 'rgba(5, 150, 105, 0.14)', color: '#059669', borderRadius: '10px', fontSize: '0.76rem' }}>
+                      📱 Espace mobile assuré · Accès direct
+                    </span>
+                    <h5 className="fw-extrabold mb-0" style={{ fontSize: '1.2rem', color: 'var(--text-main)' }}>
+                      Tableau de bord de {result.firstName} {result.lastName}
+                    </h5>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-sm fw-bold text-white px-3 py-2"
+                    style={{ background: '#059669', borderRadius: '12px', border: 'none' }}
+                    onClick={handlePrintCertificate}
+                  >
+                    📥 Attestation PDF
+                  </button>
+                </div>
+
+                {/* Synthèse rapide : Mutuelle, Téléphone, Groupe sanguin, Cotisations, Garanties, Bons */}
+                <div className="row g-2.5 mb-3">
+                  <div className="col-6 col-md-3">
+                    <div className="p-3 rounded-4 h-100" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+                      <small className="text-muted fw-bold d-block" style={{ fontSize: '0.72rem' }}>📞 Téléphone</small>
+                      <strong style={{ fontSize: '0.88rem', color: 'var(--text-main)' }}>{result.phone || 'Non renseigné'}</strong>
+                    </div>
+                  </div>
+                  <div className="col-6 col-md-3">
+                    <div className="p-3 rounded-4 h-100" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+                      <small className="text-muted fw-bold d-block" style={{ fontSize: '0.72rem' }}>🩸 Groupe sanguin</small>
+                      <strong style={{ fontSize: '0.88rem', color: '#dc2626' }}>{result.bloodGroup || 'Non renseigné'}</strong>
+                    </div>
+                  </div>
+                  <div className="col-6 col-md-3">
+                    <div className="p-3 rounded-4 h-100" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+                      <small className="text-muted fw-bold d-block" style={{ fontSize: '0.72rem' }}>👨‍👩‍👧‍👦 Ayants droit</small>
+                      <strong style={{ fontSize: '0.88rem', color: '#059669' }}>
+                        {(result.dependents || result.familyMembers || []).length} enregistré(s)
+                      </strong>
+                    </div>
+                  </div>
+                  <div className="col-6 col-md-3">
+                    <div className="p-3 rounded-4 h-100" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
+                      <small className="text-muted fw-bold d-block" style={{ fontSize: '0.72rem' }}>💳 Cotisation</small>
+                      <strong style={{ fontSize: '0.88rem', color: '#0284c7' }}>
+                        {Array.isArray(result.cotisations) && result.cotisations.length > 0
+                          ? `À jour (${Number(result.cotisations[0].amount || 0).toLocaleString('fr-FR')} F)`
+                          : 'Droits actifs 2026'}
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Boutons d'accès direct aux 6 services de l'espace mobile assuré */}
+                <div className="row g-2">
+                  {[
+                    { id: 'payments', icon: '💳', label: 'Cotisations & Wave/OM', sub: 'Payer ou renouveler', color: '#0284c7' },
+                    { id: 'guarantees', icon: '🏥', label: `Lettres de garantie (${(result.guaranteeLetters || []).length})`, sub: 'Tiers-payant 80%', color: '#059669' },
+                    { id: 'purchase-orders', icon: '💊', label: `Bons pharmacie (${(result.purchaseOrders || []).length})`, sub: 'Prise en charge 50%', color: '#7c3aed' },
+                    { id: 'medical-profile', icon: '🩺', label: 'Dossier médical', sub: 'Antécédents & suivi', color: '#dc2626' },
+                    { id: 'telemedicine', icon: '📹', label: 'Télémédecine 24/7', sub: 'Médecin en visio', color: '#0d9488' },
+                    { id: 'map', icon: '📍', label: 'Structures agréées', sub: 'Hôpitaux & pharmacies', color: '#d97706' }
+                  ].map((item) => (
+                    <div key={item.id} className="col-6 col-md-4">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (setView) setView(item.id);
+                          else window.location.hash = `#/${item.id}`;
+                        }}
+                        className="w-100 text-start p-3 rounded-4 border-0 shadow-xs"
+                        style={{
+                          background: 'var(--bg-card-subtle)',
+                          border: '1px solid var(--border-color)',
+                          cursor: 'pointer',
+                          transition: 'transform 0.15s ease'
+                        }}
+                      >
+                        <div className="d-flex align-items-center gap-2 mb-1">
+                          <span style={{ fontSize: '1.15rem' }}>{item.icon}</span>
+                          <span className="fw-extrabold" style={{ fontSize: '0.82rem', color: item.color }}>{item.label}</span>
+                        </div>
+                        <small className="text-muted d-block" style={{ fontSize: '0.73rem' }}>{item.sub}</small>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
               
               {/* 🔊 RAPPEL VOCAL SANTE & SUIVI VACCINAL DYNAMIQUE (WOLOF / FR) */}
               {(() => {
