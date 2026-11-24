@@ -340,4 +340,90 @@ router.patch('/api/accounts/:cmuNumber', async (req, res) => {
   }
 });
 
+
+// ── 3.4bis Consultation / génération / modification du code d'accès mobile assuré ──
+// Permet à l'agent MSD et au Super Admin de voir le code d'accès de tout assuré
+// (y compris sans numéro de téléphone), de le lui communiquer à nouveau ou de le changer.
+async function ensureAccessCodeColumn() {
+  try {
+    await query('ALTER TABLE beneficiaries ADD COLUMN IF NOT EXISTS access_code VARCHAR(32)');
+  } catch { /* ignore si DB lecture seule ou déjà créée */ }
+}
+
+function generateSixDigitCode() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+router.get('/api/accounts/:cmuNumber/access-code', async (req, res) => {
+  const scope = guard(req, res);
+  if (scope === false) return;
+  try {
+    await ensureAccessCodeColumn();
+    const result = await loadAccountCard(req.params.cmuNumber, req.user);
+    if (!result.ok) return res.status(result.error).json({ error: result.message, errorCode: result.errorCode });
+    const canonicalCmu = result.fiche.identite.cmuNumber;
+    const rowRes = await query('SELECT id, cmu_number, phone, access_code FROM beneficiaries WHERE cmu_number = $1 LIMIT 1', [canonicalCmu]);
+    if (!rowRes.rows || rowRes.rows.length === 0) {
+      return res.status(404).json({ error: 'Assuré introuvable.' });
+    }
+    const b = rowRes.rows[0];
+    let code = clean(b.access_code);
+    if (!code) {
+      const bcrypt = require('bcryptjs');
+      code = generateSixDigitCode();
+      const hashed = await bcrypt.hash(code, 10);
+      await query('UPDATE beneficiaries SET access_code = $1, pin_code = $2 WHERE id = $3', [code, hashed, b.id]);
+    }
+    return res.json({
+      ok: true,
+      cmuNumber: canonicalCmu,
+      accessCode: code,
+      phone: b.phone || '',
+      hasPhone: Boolean(clean(b.phone))
+    });
+  } catch (err) {
+    console.error('[Accounts] GET access-code impossible :', err.message);
+    return res.status(500).json({ error: "Impossible de lire le code d'accès de l'assuré." });
+  }
+});
+
+router.post('/api/accounts/:cmuNumber/access-code', async (req, res) => {
+  const scope = guard(req, res);
+  if (scope === false) return;
+  try {
+    await ensureAccessCodeColumn();
+    const result = await loadAccountCard(req.params.cmuNumber, req.user);
+    if (!result.ok) return res.status(result.error).json({ error: result.message, errorCode: result.errorCode });
+    const canonicalCmu = result.fiche.identite.cmuNumber;
+    const body = req.body || {};
+    const customCode = clean(body.customCode || body.accessCode || '');
+    if (customCode && (customCode.length < 4 || customCode.length > 16)) {
+      return res.status(400).json({ error: "Le code d'accès doit contenir entre 4 et 16 caractères." });
+    }
+    const newCode = customCode || generateSixDigitCode();
+    const bcrypt = require('bcryptjs');
+    const hashed = await bcrypt.hash(newCode, 10);
+    await query('UPDATE beneficiaries SET access_code = $1, pin_code = $2 WHERE cmu_number = $3', [newCode, hashed, canonicalCmu]);
+    await recordAudit({
+      action: 'CODE_ACCES_MODIFIE',
+      actor: actorOf(req.user),
+      details: `Code d'accès mobile défini/renouvelé pour ${canonicalCmu} par ${actorOf(req.user)}.`,
+      objectType: 'ACCOUNT',
+      objectRef: canonicalCmu,
+      msdCode: result.fiche.identite.msdCode || scope,
+      result: 'SUCCESS',
+      severity: 'INFO',
+    });
+    return res.json({
+      ok: true,
+      cmuNumber: canonicalCmu,
+      accessCode: newCode,
+      message: "Nouveau code d'accès enregistré et actif immédiatement."
+    });
+  } catch (err) {
+    console.error('[Accounts] POST access-code impossible :', err.message);
+    return res.status(500).json({ error: "Impossible de modifier le code d'accès." });
+  }
+});
+
 module.exports = { router, EDITABLE_FIELDS, ADMIN_ONLY_FIELDS };

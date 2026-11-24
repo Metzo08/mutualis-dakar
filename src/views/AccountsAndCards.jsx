@@ -72,14 +72,14 @@ function ActionForm({ title, description, reasons, confirmLabel, danger, onSubmi
   const [requestRef, setRequestRef] = useState('');
   return (
     <form
-      className="border rounded p-2 mb-2"
+      className="border rounded-4 p-3 mb-3"
       style={{ background: danger ? 'rgba(220,38,38,.03)' : 'var(--bg-subtle, #f8fafc)' }}
       onSubmit={(e) => { e.preventDefault(); onSubmit({ reason, details, requestRef }); }}
     >
       <div className="fw-bold small mb-1" style={{ color: danger ? '#b91c1c' : 'inherit' }}>{title}</div>
-      {description && <div className="small text-muted mb-2">{description}</div>}
+      {description && <div className="small text-muted mb-3">{description}</div>}
       {children}
-      <div className="row g-2">
+      <div className="row g-3 mb-3">
         <div className="col-md-4">
           <select className="form-select form-select-sm" value={reason} onChange={(e) => setReason(e.target.value)} required>
             <option value="">— Motif —</option>
@@ -95,10 +95,12 @@ function ActionForm({ title, description, reasons, confirmLabel, danger, onSubmi
             onChange={(e) => setDetails(e.target.value)} />
         </div>
       </div>
-      <button className="btn btn-sm mt-2" disabled={busy || !reason}
-        style={{ background: danger ? '#dc2626' : '#2563eb', color: '#fff', fontWeight: 700 }}>
-        {busy ? '⏳ Traitement…' : confirmLabel}
-      </button>
+      <div className="d-flex flex-wrap gap-2 pt-1">
+        <button className="btn btn-sm px-3 py-2" disabled={busy || !reason}
+          style={{ background: danger ? '#dc2626' : '#2563eb', color: '#fff', fontWeight: 700, borderRadius: '10px' }}>
+          {busy ? '⏳ Traitement…' : confirmLabel}
+        </button>
+      </div>
     </form>
   );
 }
@@ -117,6 +119,52 @@ export default function AccountsAndCards() {
   const [fiche, setFiche] = useState(null);
   const [ficheLoading, setFicheLoading] = useState(false);
   const [ficheError, setFicheError] = useState('');
+  const [insuredAccessCode, setInsuredAccessCode] = useState('');
+  const [insuredPhone, setInsuredPhone] = useState('');
+  const [showAccessCode, setShowAccessCode] = useState(true);
+  const [customAccessCode, setCustomAccessCode] = useState('');
+  const [accessCodeBusy, setAccessCodeBusy] = useState(false);
+  const [accessCodeMsg, setAccessCodeMsg] = useState('');
+
+  const loadInsuredAccessCode = useCallback(async (targetCmu) => {
+    if (!targetCmu) return;
+    setAccessCodeBusy(true);
+    setAccessCodeMsg('');
+    try {
+      const res = await apiFetch(`/api/accounts/${encodeURIComponent(targetCmu)}/access-code`);
+      if (res.ok) {
+        const data = await res.json();
+        setInsuredAccessCode(data.accessCode || '');
+        setInsuredPhone(data.phone || '');
+      }
+    } catch { /* ignore */ }
+    finally { setAccessCodeBusy(false); }
+  }, []);
+
+  const updateInsuredAccessCode = async (useCustom) => {
+    if (!cmu) return;
+    setAccessCodeBusy(true);
+    setAccessCodeMsg('');
+    try {
+      const res = await apiFetch(`/api/accounts/${encodeURIComponent(cmu)}/access-code`, {
+        method: 'POST',
+        body: JSON.stringify(useCustom ? { customCode: customAccessCode.trim() } : {})
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.ok) {
+        setInsuredAccessCode(data.accessCode);
+        setCustomAccessCode('');
+        setShowAccessCode(true);
+        setAccessCodeMsg(`Nouveau code d'accès enregistré : ${data.accessCode}`);
+      } else {
+        setAccessCodeMsg(data.error || "Impossible de modifier le code d'accès.");
+      }
+    } catch {
+      setAccessCodeMsg("Erreur réseau lors de la mise à jour du code.");
+    } finally {
+      setAccessCodeBusy(false);
+    }
+  };
 
   // Vérification d'identité
   const [verif, setVerif] = useState({ method: '', declaredLastName: '', declaredFirstName: '', declaredNin: '' });
@@ -165,6 +213,7 @@ export default function AccountsAndCards() {
       const payload = res ? await res.json().catch(() => ({})) : {};
       if (!res || !res.ok) throw new Error(payload.error || `Erreur ${res ? res.status : 'réseau'}`);
       setFiche(payload);
+      loadInsuredAccessCode(payload?.identite?.cmuNumber || code);
       setCmu(code);
       setVerifResult(null);
       setEditForm({ phone: '', address: '', reason: '' });
@@ -434,6 +483,96 @@ export default function AccountsAndCards() {
                 <div className="small">Droits : {droits.statut || '—'} · couverture jusqu'au {formatDate(droits.coverageEnd)}</div>
               </div>
             </div>
+          </div>
+
+          {/* 2bis — Code d'accès mobile de l'assuré (visible & modifiable par Agent MSD / Super Admin) */}
+          <div className="card mb-4 p-4" style={{ border: '2px solid #059669', borderRadius: '18px', background: 'rgba(5, 150, 105, 0.04)' }}>
+            <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+              <div>
+                <h5 className="mb-1 fw-bold" style={{ color: '#047857' }}>🔑 Code d&apos;accès mobile de l&apos;assuré</h5>
+                <div className="small text-muted">
+                  Permet à l&apos;assuré (même sans numéro de téléphone) d&apos;ouvrir son espace mobile après scan de sa carte QR.
+                </div>
+              </div>
+              <span className="badge bg-success text-white px-3 py-2" style={{ borderRadius: '10px' }}>
+                Actif immédiatement
+              </span>
+            </div>
+
+            <div className="d-flex align-items-center flex-wrap gap-3 mb-3 p-3 rounded-4 bg-white border">
+              <div>
+                <small className="text-muted fw-bold d-block">Code d&apos;accès actuel :</small>
+                <code style={{ fontSize: '1.35rem', fontWeight: 900, letterSpacing: '0.16em', color: '#0f172a' }}>
+                  {accessCodeBusy ? '…' : (showAccessCode ? (insuredAccessCode || '—') : '••••••')}
+                </code>
+              </div>
+              <div className="d-flex flex-wrap gap-2 ms-auto">
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-secondary fw-bold px-3 py-2"
+                  style={{ borderRadius: '10px' }}
+                  onClick={() => setShowAccessCode((v) => !v)}
+                >
+                  {showAccessCode ? '🙈 Masquer' : '👁️ Afficher'}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline-dark fw-bold px-3 py-2"
+                  style={{ borderRadius: '10px' }}
+                  disabled={!insuredAccessCode}
+                  onClick={() => {
+                    navigator.clipboard?.writeText(insuredAccessCode);
+                    setAccessCodeMsg(`Code ${insuredAccessCode} copié dans le presse-papiers.`);
+                  }}
+                >
+                  📋 Copier
+                </button>
+                <a
+                  className="btn btn-sm btn-success text-white fw-bold px-3 py-2"
+                  style={{ borderRadius: '10px' }}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={`https://wa.me/${String(insuredPhone || '').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Bonjour ${id.firstName || ''} ${id.lastName || ''}, voici votre code d'accès personnel SenMutuelles pour ouvrir votre carte mobile (${id.cmuNumber}) : ${insuredAccessCode}`)}`}
+                >
+                  💬 Envoyer par WhatsApp
+                </a>
+              </div>
+            </div>
+
+            <div className="d-flex flex-wrap align-items-center gap-2">
+              <input
+                type="text"
+                className="form-control form-control-sm fw-bold"
+                style={{ maxWidth: '240px', borderRadius: '10px', padding: '0.45rem 0.75rem' }}
+                placeholder="Nouveau code personnalisé (4-16 car.)"
+                value={customAccessCode}
+                onChange={(e) => setCustomAccessCode(e.target.value)}
+              />
+              <button
+                type="button"
+                className="btn btn-sm btn-primary fw-bold px-3 py-2"
+                style={{ borderRadius: '10px' }}
+                disabled={accessCodeBusy || customAccessCode.trim().length < 4}
+                onClick={() => updateInsuredAccessCode(true)}
+              >
+                💾 Définir ce code
+              </button>
+              <button
+                type="button"
+                className="btn btn-sm btn-outline-success fw-bold px-3 py-2"
+                style={{ borderRadius: '10px' }}
+                disabled={accessCodeBusy}
+                onClick={() => updateInsuredAccessCode(false)}
+              >
+                🔄 Générer un nouveau code aléatoire
+              </button>
+            </div>
+
+            {accessCodeMsg && (
+              <div className="alert alert-success py-2 px-3 mt-3 mb-0 small fw-bold" style={{ borderRadius: '10px' }}>
+                ✅ {accessCodeMsg}
+              </div>
+            )}
           </div>
 
           {/* 3 — Vérification d'identité */}

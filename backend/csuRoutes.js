@@ -449,9 +449,15 @@ router.post('/api/cmu-card/:cmuNumber/unlock', async (req, res) => {
 
     let valid = false;
 
-    // 1. Vérification du pin_code enregistré sur la fiche assuré
+    // 1. Vérification du code d'accès explicite (access_code) défini/consulté par l'agent MSD ou le Super Admin
+    const explicitAccessCode = String(b.access_code || b.accessCode || '').trim();
+    if (explicitAccessCode && explicitAccessCode.toUpperCase() === accessCode.toUpperCase()) {
+      valid = true;
+    }
+
+    // 2. Vérification du pin_code enregistré sur la fiche assuré (bcrypt ou clair)
     const storedPin = b.pin_code || b.pinCode || null;
-    if (storedPin) {
+    if (!valid && storedPin) {
       if (typeof storedPin === 'string' && storedPin.startsWith('$2')) {
         valid = await bcrypt.compare(accessCode, storedPin);
       } else {
@@ -459,7 +465,7 @@ router.post('/api/cmu-card/:cmuNumber/unlock', async (req, res) => {
       }
     }
 
-    // 2. Vérification d'un code temporaire émis par l'agent MSD / Super Admin (card_reset_codes / password_reset_tokens)
+    // 3. Vérification d'un code temporaire émis par l'agent MSD / Super Admin
     if (!valid && b.cmu_number) {
       try {
         const rRes = await query(
@@ -479,9 +485,9 @@ router.post('/api/cmu-card/:cmuNumber/unlock', async (req, res) => {
       } catch { /* table absente sur anciennes DB */ }
     }
 
-    // 3. Premier accès (si aucun pin_code personnalisé n'a encore été défini sur cette ancienne fiche) :
-    // accepter les 4 derniers chiffres du téléphone enregistré sur la carte
-    if (!valid && !storedPin) {
+    // 4. Premier accès : tant qu'aucun access_code explicite n'a été changé par l'agent MSD,
+    // accepter les 4 derniers chiffres du téléphone de l'assuré (ex: 1289)
+    if (!valid && !explicitAccessCode) {
       const phoneDigits = String(b.phone || '').replace(/[^0-9]/g, '');
       if (phoneDigits.length >= 4 && accessCode === phoneDigits.slice(-4)) {
         valid = true;
