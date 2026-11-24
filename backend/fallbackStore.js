@@ -318,42 +318,63 @@ const buildPrefix = (program, unionCode) =>
  * @param {string} [opts.department='']        — département de rattachement
  * @returns {Promise<string>} matricule unique
  */
+const { resolveRegionDepartment, buildDependentCmuNumber } = require('./senegalGeoCodes');
+
 async function generateCmuNumber(opts = {}) {
-  const { query, program = 'CLASSIC', mutuelleName = '', unionCode = '', department = '' } = opts;
+  const {
+    query,
+    mutuelleName = '',
+    region = '',
+    department = '',
+    address = '',
+    year = new Date().getFullYear(),
+    memberIndex = 1
+  } = opts;
   if (typeof query !== 'function') {
     throw new TypeError('generateCmuNumber requiert une fonction query().');
   }
 
-  const union = String(unionCode || unionCodeFrom(mutuelleName) || unionCodeFrom(department) || 'DKR')
-    .toUpperCase()
-    .slice(0, 3);
-  const prefix = buildPrefix(program, union);
+  // Nomenclature officielle nationale Sénégal : {REGION}-{DEPARTEMENT}-{ANNEE}-{SEQ}.{MEMBRE}
+  // Ex. DKR-DKR-2026-2404.1 (adhérent principal), .2 / .3 (ayants droit), TH-TS-2026-0001.1 (Thiès/Tasset)
+  const geo = resolveRegionDepartment({ region, department, mutuelleName, address });
+  const geoPrefix = `${geo.regionCode}-${geo.departmentCode}-${year}`;
+  const suffix = Math.max(1, parseInt(memberIndex, 10) || 1);
 
-  // 1) Séquence continue : on repart du dernier matricule de ce préfixe.
-  //    Le motif LIKE est toujours paramétré (jamais de concaténation SQL).
-  const lastRes = await query(
+  // 1) Séquence numérique continue : on récupère le MAX existant pour ce préfixe géo-annuel.
+  const rowsRes = await query(
     `SELECT cmu_number FROM beneficiaries
-      WHERE cmu_number LIKE $1
-      ORDER BY cmu_number DESC
-      LIMIT 1`,
-    [`${prefix}-%`]
+      WHERE cmu_number LIKE $1`,
+    [`${geoPrefix}-%`]
   );
-  const last = lastRes && lastRes.rows && lastRes.rows[0] && lastRes.rows[0].cmu_number;
-  const lastSeq = last ? parseInt(String(last).split('-').pop(), 10) : 0;
-  let seq = Number.isFinite(lastSeq) && lastSeq > 0 ? lastSeq : 0;
+  let maxSeq = 0;
+  const prefixWithDash = `${geoPrefix}-`.toUpperCase();
+  for (const row of (rowsRes && rowsRes.rows) || []) {
+    const code = String(row.cmu_number || '').trim().toUpperCase();
+    if (!code.startsWith(prefixWithDash)) continue;
+    const rest = code.slice(prefixWithDash.length);
+    const numPart = rest.split('.')[0];
+    if (/^\d+$/.test(numPart)) {
+      const n = parseInt(numPart, 10);
+      if (Number.isFinite(n) && n > maxSeq) maxSeq = n;
+    }
+  }
+  let seq = maxSeq;
 
-  // 2) Boucle bornée : garantit l'unicité même si la base contient des
-  //    matricules hors séquence (imports Excel, reprises de données…).
+  // 2) Boucle bornée : garantit l'unicité stricte (y compris en cas d'accès concurrent).
   const MAX_ATTEMPTS = 50;
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     seq += 1;
-    const candidate = `${prefix}-${String(seq).padStart(7, '0')}`;
-    const exists = await query('SELECT 1 FROM beneficiaries WHERE cmu_number = $1 LIMIT 1', [candidate]);
+    const seqStr = String(seq).padStart(4, '0');
+    const candidate = `${geoPrefix}-${seqStr}.${suffix}`;
+    const exists = await query(
+      'SELECT 1 FROM beneficiaries WHERE cmu_number = $1 OR cmu_number LIKE $2 LIMIT 1',
+      [candidate, `${geoPrefix}-${seqStr}.%`]
+    );
     if (!exists || !exists.rows || !exists.rows.length) return candidate;
   }
 
-  // 3) Filet de sécurité : suffixe temporel (jamais de doublon même saturé).
-  return `${prefix}-${String(seq).padStart(7, '0')}-${Date.now().toString(36).toUpperCase().slice(-4)}`;
+  // 3) Filet de sécurité : suffixe temporel numérique
+  return `${geoPrefix}-${String(Date.now()).slice(-6)}.${suffix}`;
 }
 
 // Nombre d'enregistrements encore en attente de rejeu vers la DB (toutes
@@ -377,6 +398,8 @@ module.exports = {
   STORE_PATH,
   // Génération de matricules CMU
   generateCmuNumber,
+  buildDependentCmuNumber,
+  resolveRegionDepartment,
   unionCodeFrom,
   buildPrefix,
   CMU_PREFIXES,

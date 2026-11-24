@@ -295,6 +295,11 @@ router.get('/api/cmu-card/:cmuNumber', async (req, res) => {
             OR REGEXP_REPLACE(UPPER(COALESCE(cmu_number, '')), '[^A-Z0-9]', '', 'g') = $2
             OR REGEXP_REPLACE(UPPER(COALESCE(cmu_number, '')), '[^A-Z0-9]', '', 'g') = $3
             OR UPPER(TRIM(cmu_number)) = $4
+            OR UPPER(TRIM(cmu_number)) IN (
+              SELECT UPPER(TRIM(canonical_code))
+                FROM beneficiary_code_aliases
+               WHERE UPPER(TRIM(alias_code)) = $1
+            )
          LIMIT 1`,
         [upperCode, normCode, normBase, `${baseCode}.0`]
       );
@@ -340,20 +345,45 @@ router.get('/api/cmu-card/:cmuNumber', async (req, res) => {
     }
 
     const isCardBlocked = String(b.card_status || '').toLowerCase() === 'blocked' || String(b.card_status || '').toLowerCase() === 'revoked';
-    const effectiveStatus = isCardBlocked ? 'suspended' : (b.status || 'active');
+    const rawStatus = String(b.status || 'active').toLowerCase();
+
+    // Calcul de la période d'observation légale (30 jours à partir du 1er jour de cotisation)
+    const OBSERVATION_DAYS = 30;
+    const paidCotisations = (cotisationsRows || []).filter((c) => String(c.status || '').toLowerCase() === 'paid');
+    const earliestCot = paidCotisations.length > 0 ? paidCotisations[paidCotisations.length - 1] : null;
+    const obsStartRaw = (earliestCot && (earliestCot.period_start || earliestCot.created_at)) || b.created_at || null;
+    const obsStartDate = obsStartRaw ? new Date(obsStartRaw) : null;
+    const hasValidObsStart = obsStartDate && !Number.isNaN(obsStartDate.getTime());
+    const daysElapsed = hasValidObsStart ? Math.max(0, Math.floor((Date.now() - obsStartDate.getTime()) / 86400000)) : 0;
+    const daysRemaining = Math.max(0, OBSERVATION_DAYS - daysElapsed);
+    const obsEndDate = hasValidObsStart ? new Date(obsStartDate.getTime() + OBSERVATION_DAYS * 86400000) : null;
+
+    let effectiveStatus = isCardBlocked ? 'suspended' : rawStatus;
+    let inObservation = false;
+    if (!isCardBlocked && (rawStatus === 'observation' || rawStatus === 'pending')) {
+      if (daysRemaining > 0) {
+        effectiveStatus = 'observation';
+        inObservation = true;
+      } else {
+        effectiveStatus = 'active';
+      }
+    }
     const isValid = effectiveStatus === 'active' && !isCardBlocked;
 
+    // Nomenclature officielle des pris en charge : .1 (adhérent) → .2, .3, .4...
+    const principalBaseCode = String(b.cmu_number || b.cmuNumber || cleanCode).replace(/\.\d+$/, '');
     const normalizedFamily = (familyRows || []).map((f, idx) => {
       const ageNum = Number(f.age || 0);
       const isMajor = ageNum >= 18;
+      const memberPos = idx + 2;
       return {
         id: f.id || `fam_${idx + 1}`,
         name: f.name,
         relation: f.relation || (isMajor ? 'Ayant droit' : 'Enfant mineur'),
         age: ageNum,
         isMajor,
-        codeSuffix: isMajor ? `.1${idx + 1}` : `.M${idx + 1}`,
-        cmuCode: `${String(b.cmu_number || b.cmuNumber || cleanCode).replace(/\.0$/, '')}.${isMajor ? `1${idx + 1}` : `M${idx + 1}`}`
+        codeSuffix: `.${memberPos}`,
+        cmuCode: `${principalBaseCode}.${memberPos}`
       };
     });
 
@@ -361,6 +391,12 @@ router.get('/api/cmu-card/:cmuNumber', async (req, res) => {
       id: b.id,
       valid: isValid,
       status: effectiveStatus,
+      inObservation,
+      observationDaysTotal: OBSERVATION_DAYS,
+      observationDaysElapsed: Math.min(OBSERVATION_DAYS, daysElapsed),
+      observationDaysRemaining: inObservation ? daysRemaining : 0,
+      observationStartDate: hasValidObsStart ? obsStartDate.toISOString().split('T')[0] : null,
+      observationEndDate: obsEndDate ? obsEndDate.toISOString().split('T')[0] : null,
       cardStatus: b.card_status || 'active',
       firstName: b.first_name || b.firstName || '',
       lastName: b.last_name || b.lastName || '',

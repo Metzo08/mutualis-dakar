@@ -807,16 +807,15 @@ app.post('/api/adhesions', validate(adhesionSchema), async (req, res) => {
     const ONLINE_LOT_CODE = 'ADH-EN-LIGNE';
     const ONLINE_LOT_LABEL = 'Adhésions en ligne (Portail adhérent)';
 
-    // Matricule CMU unique et séquentiel par MSD (remplace le tirage
-    // Math.random() qui produisait des collisions sur 9 000 valeurs).
+    // Matricule CMU officiel national Sénégal : {REGION}-{DEPARTEMENT}-{ANNEE}-{SEQ}.1
+    // Ex. DKR-DKR-2026-2404.1, TH-TS-2026-0001.1 (.1 adhérent, .2/.3 ayants droit)
     const cmuNumber = await fallbackStore.generateCmuNumber({
       query,
-      program:
-        packageType === 'csu_eleves' ? 'ELEVES'
-        : packageType === 'csu_daara' ? 'DAARA'
-        : packageType === 'adhesion_masse' ? 'GROUPE'
-        : 'CLASSIC',
-      mutuelleName
+      mutuelleName,
+      region: req.body.region || '',
+      department: req.body.department || '',
+      address: address || '',
+      memberIndex: 1
     });
     const msdCode = (String(cmuNumber || '').split('-')[0] || 'DKR').toUpperCase();
 
@@ -862,7 +861,7 @@ app.post('/api/adhesions', validate(adhesionSchema), async (req, res) => {
       packageType,
       paymentMethod,
       cmuNumber,
-      'pending', // Initial status is pending, requiring agent validation
+      'observation', // Période d'observation légale de 30 jours à compter du 1er jour de cotisation
       sponsorPhone || null,
       schoolName || null,
       hashedPin,
@@ -873,6 +872,21 @@ app.post('/api/adhesions', validate(adhesionSchema), async (req, res) => {
     ]);
 
     const beneficiaryId = bResult.rows[0].id;
+
+    // Enregistre automatiquement la première cotisation (déclenche la période d'observation de 30 jours)
+    const initialAmount = packageType === 'familial'
+      ? 1000 + 3500 * (1 + (Array.isArray(familyMembers) ? familyMembers.length : 0))
+      : packageType === 'csu_eleves' || packageType === 'csu_daara'
+        ? 1000
+        : 4500;
+    const todayIso = new Date().toISOString().split('T')[0];
+    const nextYearIso = new Date(Date.now() + 365 * 86400000).toISOString().split('T')[0];
+    const effectiveDateIso = new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0];
+    await client.query(
+      `INSERT INTO cotisations (beneficiary_id, amount, payment_method, period_start, period_end, status)
+       VALUES ($1, $2, $3, $4, $5, 'paid')`,
+      [beneficiaryId, initialAmount, paymentMethod || 'wave', todayIso, nextYearIso]
+    ).catch(() => {});
 
     // Insert Family Members & Create Sub-accounts for Sponsoring/Students
     if (packageType === 'parrainage') {
@@ -973,9 +987,13 @@ app.post('/api/adhesions', validate(adhesionSchema), async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'Adhésion enregistrée avec succès.',
+      message: 'Adhésion enregistrée avec succès (période d\'observation de 30 jours activée).',
       cmuNumber,
       beneficiaryId,
+      status: 'observation',
+      observationDaysTotal: 30,
+      observationDaysRemaining: 30,
+      effectiveDate: effectiveDateIso,
       lotCode: ONLINE_LOT_CODE,
       hasPhoto: Boolean(photoValue),
       photoUrl: photoValue ? `/api/beneficiaries/${beneficiaryId}/photo` : null,
@@ -2514,6 +2532,47 @@ app.get('/api/beneficiaries/:id/photo', authenticateToken, requireRole('agent', 
   } catch (err) {
     console.error('[Photo] lecture impossible :', err.message);
     res.status(500).json({ error: 'Photo indisponible.' });
+  }
+});
+
+// 10b. PUT /api/beneficiaries/:id/photo — Enregistre/met à jour la photo officielle en base PostgreSQL
+app.put('/api/beneficiaries/:id/photo', authenticateToken, requireRole('agent', 'admin'), async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (!Number.isInteger(id) || id < 1) return res.status(400).json({ error: 'Identifiant invalide.' });
+
+    const photoUrl = String((req.body && req.body.photoUrl) || '').trim();
+    if (!photoUrl || photoUrl.length > 5_000_000) {
+      return res.status(400).json({ error: 'Photo manquante ou trop volumineuse (max 5 Mo).' });
+    }
+    if (!photoUrl.startsWith('data:image/') && !photoUrl.startsWith('/') && !photoUrl.startsWith('https://')) {
+      return res.status(400).json({ error: 'Format de photo non autorisé.' });
+    }
+
+    let where = 'id = $2 AND merged_into IS NULL';
+    const params = [photoUrl, id];
+    if (req.user && req.user.role !== 'Super Admin' && req.user.msdCode) {
+      params.push(req.user.msdCode);
+      where += ` AND (msd_code = $${params.length} OR msd_code IS NULL)`;
+    }
+
+    const r = await query(
+      `UPDATE beneficiaries SET photo_url = $1 WHERE ${where} RETURNING id, cmu_number`,
+      params
+    );
+    if (!r.rows.length) {
+      return res.status(404).json({ error: 'Bénéficiaire introuvable ou hors de votre MSD.' });
+    }
+
+    return res.json({
+      success: true,
+      id: r.rows[0].id,
+      cmuNumber: r.rows[0].cmu_number,
+      photoUrl: `/api/beneficiaries/${r.rows[0].id}/photo`
+    });
+  } catch (err) {
+    console.error('[Photo] écriture impossible :', err.message);
+    res.status(500).json({ error: 'Enregistrement de la photo impossible.' });
   }
 });
 

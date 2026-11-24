@@ -839,19 +839,28 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
       const storedOverride = localStorage.getItem(`cmu-status-${mergedCard.cmuNumber}`);
       const baseStatus = apiCard ? apiCard.status : (storedOverride || mergedCard.status || 'active');
       const finalStatus = isGlobalSuspended ? 'suspended' : baseStatus;
+      const isObservation = finalStatus === 'observation' || finalStatus === 'pending' || Boolean(mergedCard.inObservation);
       const finalValid = finalStatus === 'active' && mergedCard.cardStatus !== 'blocked';
+      const obsRem = Number.isFinite(Number(mergedCard.observationDaysRemaining)) ? Number(mergedCard.observationDaysRemaining) : 30;
+      const obsElapsed = Number.isFinite(Number(mergedCard.observationDaysElapsed)) ? Number(mergedCard.observationDaysElapsed) : 0;
 
       setResult({
         ...mergedCard,
         firstName: cleanFirst,
         lastName: cleanLast,
-        status: finalStatus,
+        status: isObservation && !isGlobalSuspended ? 'observation' : finalStatus,
+        inObservation: isObservation && !isGlobalSuspended,
+        observationDaysTotal: mergedCard.observationDaysTotal || 30,
+        observationDaysElapsed: obsElapsed,
+        observationDaysRemaining: obsRem,
         valid: finalValid,
         audioReminder: {
-          subtitle: `Assuré : ${cleanFirst} ${cleanLast} • Statut CSU : ${finalValid ? 'Actif' : 'Suspendu'}`,
+          subtitle: `Assuré : ${cleanFirst} ${cleanLast} • Statut CSU : ${finalValid ? 'Actif' : (isObservation && !isGlobalSuspended ? `Période d'observation (${obsRem} j restants)` : 'Suspendu')}`,
           transcript: finalValid
             ? `"Nanga def ${cleanFirst} ${cleanLast}! Votre carte CSU est active. Prise en charge Tiers-Payant 80% autorisée auprès de toutes les structures conventionnées."`
-            : `"Nanga def ${cleanFirst} ${cleanLast}. Votre couverture CSU est actuellement suspendue. Veuillez régulariser votre cotisation pour réactiver vos droits."`,
+            : (isObservation && !isGlobalSuspended)
+              ? `"Nanga def ${cleanFirst} ${cleanLast}! Votre adhésion est bien enregistrée. Vous êtes en période d'observation de 30 jours à compter de votre premier jour de cotisation (${obsRem} jour(s) restant(s))."`
+              : `"Nanga def ${cleanFirst} ${cleanLast}. Votre couverture CSU est actuellement suspendue. Veuillez régulariser votre cotisation pour réactiver vos droits."`,
           due: 'Contrôle Annuel • UDMS Dakar'
         }
       });
@@ -1056,8 +1065,12 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem', gap: '0.5rem' }}>
               <span style={{ fontSize: '0.78rem', fontWeight: 800, opacity: 0.95 }}>SenMutuelles 🇸🇳</span>
-              <span style={{ background: 'rgba(255,255,255,0.2)', padding: '0.2rem 0.65rem', borderRadius: '999px', fontSize: '0.74rem', fontWeight: 800 }}>
-                ● Carte Active
+              <span style={{ background: result.status === 'observation' ? 'rgba(245,158,11,0.92)' : result.valid ? 'rgba(255,255,255,0.2)' : 'rgba(220,38,38,0.88)', padding: '0.2rem 0.65rem', borderRadius: '999px', fontSize: '0.74rem', fontWeight: 800 }}>
+                {result.status === 'observation'
+                  ? `⏳ Observation (${result.observationDaysRemaining ?? 30} j)`
+                  : result.valid
+                    ? '● Carte Active'
+                    : '🔴 Suspendue'}
               </span>
             </div>
 
@@ -1777,17 +1790,52 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
               <span 
                 className="badge px-4 py-2.5 fw-extrabold shadow-sm d-inline-flex align-items-center gap-2"
                 style={{
-                  background: (result.valid && result.status !== 'suspended' && result.status !== 'suspendu') ? '#059669' : '#dc2626',
+                  background: result.status === 'observation'
+                    ? '#d97706'
+                    : (result.valid && result.status !== 'suspended' && result.status !== 'suspendu')
+                      ? '#059669'
+                      : '#dc2626',
                   color: '#ffffff',
                   borderRadius: '22px',
-                  fontSize: '0.9rem',
-                  boxShadow: '0 4px 14px rgba(5, 150, 105, 0.25)'
+                  fontSize: '0.88rem',
+                  boxShadow: result.status === 'observation'
+                    ? '0 4px 14px rgba(217, 119, 6, 0.28)'
+                    : '0 4px 14px rgba(5, 150, 105, 0.25)'
                 }}
                 title="Statut officiel certifié par le registre UNAMUSC"
               >
-                {(result.valid && result.status !== 'suspended' && result.status !== 'suspendu') ? '● Actif' : '🔴 Suspendu'}
+                {result.status === 'observation'
+                  ? `⏳ Période d'observation (${result.observationDaysRemaining ?? 30} j)`
+                  : (result.valid && result.status !== 'suspended' && result.status !== 'suspendu')
+                    ? '● Actif'
+                    : '🔴 Suspendu'}
               </span>
             </div>
+
+            {result.status === 'observation' && (
+              <div
+                className="mb-3"
+                style={{
+                  background: 'rgba(245, 158, 11, 0.12)',
+                  border: '1px solid rgba(217, 119, 6, 0.45)',
+                  borderRadius: '14px',
+                  padding: '0.8rem 1rem',
+                  color: '#92400e',
+                  fontSize: '0.84rem',
+                  lineHeight: 1.45,
+                  position: 'relative',
+                  zIndex: 2
+                }}
+              >
+                <div style={{ fontWeight: 800, marginBottom: '0.2rem' }}>
+                  ⏳ Période d&apos;observation réglementaire de {result.observationDaysTotal || 30} jours
+                </div>
+                <div>
+                  Jour <strong>{Math.min(result.observationDaysTotal || 30, (result.observationDaysElapsed || 0) + 1)}/{result.observationDaysTotal || 30}</strong> à compter du 1er jour de cotisation
+                  {result.observationEndDate ? <> · Droits pleinement actifs le <strong>{new Date(result.observationEndDate).toLocaleDateString('fr-FR')}</strong></> : null}.
+                </div>
+              </div>
+            )}
 
             <hr className="my-4" style={{ borderColor: 'var(--border-color)', opacity: 0.6 }} />
 
