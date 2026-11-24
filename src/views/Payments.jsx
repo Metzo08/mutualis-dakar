@@ -129,9 +129,41 @@ export default function Payments({
     return () => window.removeEventListener('unamusc_card_scanned', handleCardScan);
   }, [allMembers]);
 
+  const scannedCardFallback = React.useMemo(() => {
+    try {
+      const raw = localStorage.getItem('cmu-last-verified-card') || localStorage.getItem('cmu-active-insured');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && (parsed.firstName || parsed.lastName || parsed.cmuNumber)) {
+          return parsed;
+        }
+      }
+    } catch { /* ignore */ }
+    return null;
+  }, [selectedMemberId, citizenUser]);
+
   const activeMember = React.useMemo(() => {
-    return allMembers.find(m => m.id === selectedMemberId) || allMembers[0];
-  }, [allMembers, selectedMemberId]);
+    const fromStore = allMembers.find(m => m.id === selectedMemberId);
+    if (fromStore) return fromStore;
+    if (citizenUser && (citizenUser.firstName || citizenUser.lastName || citizenUser.cmuNumber)) {
+      return {
+        ...scannedCardFallback,
+        ...citizenUser,
+        id: citizenUser.id || citizenUser.cmuNumber || 'citizen-active',
+        cmuNumber: citizenUser.cmuNumber || citizenUser.cmuId || scannedCardFallback?.cmuNumber || '',
+        phone: citizenUser.phone || scannedCardFallback?.phone || '',
+        dependents: citizenUser.dependents || citizenUser.familyMembers || scannedCardFallback?.dependents || scannedCardFallback?.familyMembers || []
+      };
+    }
+    if (scannedCardFallback) {
+      return {
+        ...scannedCardFallback,
+        id: scannedCardFallback.id || scannedCardFallback.cmuNumber || 'scanned-active',
+        dependents: scannedCardFallback.dependents || scannedCardFallback.familyMembers || []
+      };
+    }
+    return allMembers[0] || null;
+  }, [allMembers, selectedMemberId, citizenUser, scannedCardFallback]);
 
   // Liste des membres du foyer (Titulaire + Ayants droit) avec mise en forme propre des noms
   //
@@ -155,20 +187,27 @@ export default function Payments({
       coverage: '80% Tiers-payant'
     };
 
-    const deps = resolveMinorDependents(allMembers, activeMember).map((d, idx) => {
-      const suffix = d.codeSuffix || `.M${idx + 1}`;
-      const depCode = d.cmuNumber || `${activeMember.adherentCode || activeMember.cmuNumber.replace('.0', '')}${suffix}`;
+    const resolvedMinors = resolveMinorDependents(allMembers, activeMember);
+    const directFamily = Array.isArray(activeMember.familyMembers) && activeMember.familyMembers.length > 0
+      ? activeMember.familyMembers
+      : (Array.isArray(activeMember.dependents) ? activeMember.dependents : []);
+    const mergedDeps = resolvedMinors.length > 0 ? resolvedMinors : directFamily;
+    const baseCode = String(activeMember.adherentCode || activeMember.cmuNumber || '').replace(/\.0$/, '');
+
+    const deps = mergedDeps.map((d, idx) => {
+      const suffix = d.codeSuffix || (d.isMajor ? `.1${idx + 1}` : `.M${idx + 1}`);
+      const depCode = d.cmuCode || d.cmuNumber || (baseCode ? `${baseCode}${suffix}` : `AYANT-${idx + 1}`);
       return {
         id: `dep_${idx}`,
         name: formatProperCase(d.name || `${d.firstName || ''} ${d.lastName || ''}`),
-        relation: d.relation || 'Enfant mineur (pris en charge)',
+        relation: d.relation || (d.isMajor ? 'Ayant droit majeur' : 'Enfant mineur (pris en charge)'),
         code: depCode,
-        isMajor: false,
+        isMajor: Boolean(d.isMajor),
         isTitulaire: false,
         photoUrl: d.photoUrl,
-        status: '100% Pédiatrie gratuite',
-        coverage: '100% Gratuité',
-        prisEnCharge: true
+        status: d.isMajor ? 'Actif' : '100% Pédiatrie gratuite',
+        coverage: d.isMajor ? '80% Tiers-payant' : '100% Gratuité',
+        prisEnCharge: !d.isMajor
       };
     });
 
@@ -179,10 +218,10 @@ export default function Payments({
   const [selectedMemberIds, setSelectedMemberIds] = useState(() => familyList.map(m => m.id));
   const [cotisationDuration, setCotisationDuration] = useState('1'); // '1' = 1 an (3500 FCFA), '2' = 2 ans (7000 FCFA), '3' = 3 ans (10500 FCFA)
 
-  // Recalculer la sélection si la famille change
+  // Recalculer la sélection si la famille ou l'assuré change
   useEffect(() => {
     setSelectedMemberIds(familyList.map(m => m.id));
-  }, [activeMember?.id]);
+  }, [activeMember?.id, activeMember?.cmuNumber, familyList.length]);
 
   const COTISATION_BASE = 3500;
   const rateMultiplier = parseFloat(cotisationDuration) || 1;
@@ -191,7 +230,12 @@ export default function Payments({
 
   // Mode de paiement & Formulaire
   const [provider, setProvider] = useState('wave'); // 'wave' | 'orange_money'
-  const [phone, setPhone] = useState(activeMember?.phone || '77 602 67 83');
+  const [phone, setPhone] = useState(activeMember?.phone || '');
+  useEffect(() => {
+    if (activeMember?.phone) {
+      setPhone(activeMember.phone);
+    }
+  }, [activeMember?.phone, activeMember?.cmuNumber]);
   const [loading, setLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(null);
   const [showUssdModal, setShowUssdModal] = useState(false);
@@ -583,7 +627,7 @@ export default function Payments({
                   <div className="text-muted small d-flex align-items-center gap-2 flex-wrap" style={{ fontSize: '0.82rem' }}>
                     <span>Code bénéficiaire: <strong>{activeMember?.cmuNumber}</strong></span>
                     <span>•</span>
-                    <span>Tél : <strong>{activeMember?.phone || '77 308 23 03'}</strong></span>
+                    <span>Tél : <strong>{activeMember?.phone || 'Non renseigné'}</strong></span>
                   </div>
                 </div>
                 <span className="badge bg-success" style={{ fontSize: '0.72rem', borderRadius: '6px' }}>
@@ -938,7 +982,7 @@ export default function Payments({
                     className="form-control form-control-lg fw-bold" 
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="Ex : 77 602 67 83 ou 76 271 76 77"
+                    placeholder="Votre numéro Wave ou Orange Money (ex : 77 xxx xx xx)"
                     style={{ borderRadius: '14px', fontSize: '1rem', padding: '0.9rem 1.2rem' }}
                   />
                   <small className="text-muted d-block mt-2" style={{ fontSize: '0.78rem', lineHeight: '1.5' }}>
