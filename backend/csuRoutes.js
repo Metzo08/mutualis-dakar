@@ -392,6 +392,133 @@ router.get('/api/cmu-card/:cmuNumber', async (req, res) => {
   }
 });
 
+
+// Déverrouillage sécurisé de l'espace mobile assuré après scan du QR code
+// Vérifie le code d'accès personnel (pin_code bcrypt/legacy ou code temporaire émis par l'agent MSD)
+router.post('/api/cmu-card/:cmuNumber/unlock', async (req, res) => {
+  try {
+    const bcrypt = require('bcryptjs');
+    const jwt = require('jsonwebtoken');
+    const rawParam = decodeURIComponent(String(req.params.cmuNumber || '')).trim();
+    const cleanCode = rawParam.split('?')[0].trim();
+    const upperCode = cleanCode.toUpperCase();
+    const normCode = upperCode.replace(/[^A-Z0-9]/g, '');
+    const baseCode = upperCode.replace(/\.(0|M\d+|\d+)$/i, '');
+    const normBase = baseCode.replace(/[^A-Z0-9]/g, '');
+
+    const accessCode = String((req.body && (req.body.accessCode || req.body.pinCode || req.body.code)) || '').trim();
+    if (!accessCode || accessCode.length < 4) {
+      return res.status(400).json({ ok: false, error: "Veuillez saisir votre code d'accès (4 caractères minimum)." });
+    }
+
+    let b = null;
+    try {
+      const bRes = await query(
+        `SELECT *
+         FROM beneficiaries
+         WHERE UPPER(TRIM(cmu_number)) = $1
+            OR UPPER(TRIM(COALESCE(numero_adherent, ''))) = $1
+            OR UPPER(TRIM(COALESCE(source_code, ''))) = $1
+            OR REGEXP_REPLACE(UPPER(COALESCE(cmu_number, '')), '[^A-Z0-9]', '', 'g') = $2
+            OR REGEXP_REPLACE(UPPER(COALESCE(cmu_number, '')), '[^A-Z0-9]', '', 'g') = $3
+            OR UPPER(TRIM(cmu_number)) = $4
+         LIMIT 1`,
+        [upperCode, normCode, normBase, `${baseCode}.0`]
+      );
+      if (bRes.rows.length > 0) b = bRes.rows[0];
+    } catch (dbErr) {
+      console.warn('[cmu-card/unlock] Fallback store :', dbErr.message);
+    }
+
+    if (!b) {
+      try {
+        const fsStore = require('./fallbackStore');
+        const all = typeof fsStore.getAllBeneficiaries === 'function' ? fsStore.getAllBeneficiaries() : [];
+        b = all.find((item) => {
+          const candidates = [item.cmu_number, item.cmuNumber, item.numero_adherent, item.source_code, item.id]
+            .filter(Boolean)
+            .map((v) => String(v).trim().toUpperCase());
+          return candidates.some((c) => c === upperCode || c === `${baseCode}.0` || c.replace(/[^A-Z0-9]/g, '') === normCode || c.replace(/[^A-Z0-9]/g, '') === normBase);
+        }) || null;
+      } catch { /* ignore */ }
+    }
+
+    if (!b) {
+      return res.status(404).json({ ok: false, error: 'Carte assuré introuvable.' });
+    }
+
+    let valid = false;
+
+    // 1. Vérification du pin_code enregistré sur la fiche assuré
+    const storedPin = b.pin_code || b.pinCode || null;
+    if (storedPin) {
+      if (typeof storedPin === 'string' && storedPin.startsWith('$2')) {
+        valid = await bcrypt.compare(accessCode, storedPin);
+      } else {
+        valid = String(storedPin).trim().toUpperCase() === accessCode.toUpperCase();
+      }
+    }
+
+    // 2. Vérification d'un code temporaire émis par l'agent MSD / Super Admin (card_reset_codes / password_reset_tokens)
+    if (!valid && b.cmu_number) {
+      try {
+        const rRes = await query(
+          `SELECT id, code_hash, expires_at FROM card_reset_codes
+           WHERE UPPER(TRIM(cmu_number)) = $1 AND used_at IS NULL AND expires_at > NOW()
+           ORDER BY created_at DESC LIMIT 3`,
+          [String(b.cmu_number).trim().toUpperCase()]
+        );
+        for (const row of (rRes.rows || [])) {
+          const match = await bcrypt.compare(accessCode, row.code_hash).catch(() => false);
+          if (match) {
+            valid = true;
+            await query('UPDATE card_reset_codes SET used_at = NOW() WHERE id = $1', [row.id]).catch(() => {});
+            break;
+          }
+        }
+      } catch { /* table absente sur anciennes DB */ }
+    }
+
+    // 3. Premier accès (si aucun pin_code personnalisé n'a encore été défini sur cette ancienne fiche) :
+    // accepter les 4 derniers chiffres du téléphone enregistré sur la carte
+    if (!valid && !storedPin) {
+      const phoneDigits = String(b.phone || '').replace(/[^0-9]/g, '');
+      if (phoneDigits.length >= 4 && accessCode === phoneDigits.slice(-4)) {
+        valid = true;
+      }
+    }
+
+    if (!valid) {
+      return res.status(401).json({
+        ok: false,
+        error: "Code d'accès incorrect. Demandez votre code personnel à votre agent MSD."
+      });
+    }
+
+    const secret = process.env.JWT_SECRET || 'senmutuelles-secret-key-2026';
+    const token = jwt.sign(
+      {
+        id: b.id,
+        cmuNumber: b.cmu_number || b.cmuNumber || cleanCode,
+        phone: b.phone || '',
+        role: 'citizen'
+      },
+      secret,
+      { expiresIn: '12h' }
+    );
+
+    return res.json({
+      ok: true,
+      unlocked: true,
+      token,
+      cmuNumber: b.cmu_number || b.cmuNumber || cleanCode
+    });
+  } catch (err) {
+    console.error('[cmu-card/unlock] Erreur :', err.message);
+    return res.status(500).json({ ok: false, error: 'Impossible de vérifier le code pour le moment.' });
+  }
+});
+
 // ============================================================================
 // TABLEAU DE BORD AGENT — KPIs CSU
 // ============================================================================

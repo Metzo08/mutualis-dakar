@@ -1125,3 +1125,85 @@
 .dark-theme .info-box-coverage .info-box-value {
   color: #34d399 !important;
 }
+
+
+/* ============================================================================
+   100% MOBILE RESPONSIVE — CARTE ASSURÉ & ESPACE MOBILE (/verify)
+   Empêche tout débordement horizontal, coupe de texte ou compression sur 320-480px
+   ============================================================================ */
+.verify-view {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.verify-view * {
+  box-sizing: border-box;
+}
+
+@media (max-width: 640px) {
+  .verify-view.container {
+    padding-left: 0.65rem !important;
+    padding-right: 0.65rem !important;
+  }
+
+  .verify-view .banner-mini {
+    padding: 1.5rem 1rem !important;
+    border-radius: 18px !important;
+    margin-bottom: 1.25rem !important;
+  }
+
+  .verify-view .banner-mini h1 {
+    font-size: 1.3rem !important;
+    line-height: 1.25 !important;
+  }
+
+  .verify-view .card,
+  .verify-view .p-4,
+  .verify-view .p-md-5 {
+    padding: 1rem 0.85rem !important;
+    border-radius: 20px !important;
+  }
+
+  .verify-view .verified-cards-wrapper {
+    padding: 0.65rem 0.5rem !important;
+    border-radius: 20px !important;
+  }
+
+  .verify-view h3,
+  .verify-view h4 {
+    font-size: 1.2rem !important;
+    word-break: break-word !important;
+  }
+
+  .verify-view h5,
+  .verify-view h6 {
+    font-size: 1rem !important;
+    word-break: break-word !important;
+  }
+
+  .verify-view .badge {
+    white-space: normal !important;
+    text-align: left !important;
+    line-height: 1.35 !important;
+    max-width: 100% !important;
+    word-break: break-word !important;
+  }
+
+  .verify-view code {
+    word-break: break-all !important;
+    max-width: 100% !important;
+  }
+
+  .verify-view .row {
+    --bs-gutter-x: 0.65rem;
+    --bs-gutter-y: 0.65rem;
+  }
+
+  .verify-view button,
+  .verify-view .btn {
+    white-space: normal !important;
+    word-break: break-word !important;
+  }
+}

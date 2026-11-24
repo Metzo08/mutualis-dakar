@@ -116,6 +116,82 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
   const [qrSecondsLeft, setQrSecondsLeft] = useState(15);
   const [qrOtpToken, setQrOtpToken] = useState(() => Math.floor(Date.now() / 15000));
   const [qrDataUrl, setQrDataUrl] = useState('');
+  // Verrouillage par code d'accès personnel de l'assuré (communiqué par l'agent MSD)
+  const [accessCodeInput, setAccessCodeInput] = useState('');
+  const [accessCodeError, setAccessCodeError] = useState('');
+  const [unlocking, setUnlocking] = useState(false);
+  const [unlockedCmu, setUnlockedCmu] = useState('');
+
+  const isStaffLoggedIn = typeof window !== 'undefined' && Boolean(
+    localStorage.getItem('cmu-agent-user') || localStorage.getItem('cmu-partner-user')
+  );
+  const isMobileSpaceUnlocked = Boolean(
+    result && (
+      isStaffLoggedIn ||
+      unlockedCmu === result.cmuNumber ||
+      (typeof window !== 'undefined' && sessionStorage.getItem(`cmu-unlocked-${result.cmuNumber}`) === '1')
+    )
+  );
+
+  const handleUnlockMobileSpace = async (e) => {
+    e.preventDefault();
+    if (!result || !result.cmuNumber) return;
+    const code = accessCodeInput.trim();
+    if (code.length < 4) {
+      setAccessCodeError("Saisissez votre code d'accès personnel (4 caractères minimum).");
+      return;
+    }
+    setUnlocking(true);
+    setAccessCodeError('');
+    try {
+      const apiBase = (typeof window !== 'undefined' && window.API_BASE_URL) ? window.API_BASE_URL : '';
+      const res = await fetch(`${apiBase}/api/cmu-card/${encodeURIComponent(result.cmuNumber)}/unlock`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessCode: code })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.ok) {
+        if (data.token) {
+          try { localStorage.setItem('cmu-token', data.token); } catch {}
+        }
+        try { sessionStorage.setItem(`cmu-unlocked-${result.cmuNumber}`, '1'); } catch {}
+        setUnlockedCmu(result.cmuNumber);
+        setAccessCodeInput('');
+        if (typeof setCitizenUser === 'function') {
+          setCitizenUser({
+            id: result.id || result.cmuNumber,
+            cmuNumber: result.cmuNumber,
+            firstName: result.firstName || '',
+            lastName: result.lastName || '',
+            phone: result.phone || '',
+            birthDate: result.birthDate || '',
+            mutuelleName: result.mutuelleName || 'MSD Dakar',
+            packageType: result.packageType || 'individuel',
+            status: result.status || 'active',
+            photoUrl: result.photoUrl || null,
+            bloodGroup: result.bloodGroup || '',
+            familyMembers: result.familyMembers || result.dependents || [],
+            role: 'citizen'
+          });
+        }
+      } else {
+        setAccessCodeError(data.error || "Code d'accès incorrect. Demandez votre code à votre agent MSD.");
+      }
+    } catch {
+      // Fallback hors-ligne : si le backend est injoignable, vérifier les 4 derniers chiffres du téléphone
+      const phoneDigits = String(result.phone || '').replace(/[^0-9]/g, '');
+      if (phoneDigits.length >= 4 && code === phoneDigits.slice(-4)) {
+        try { sessionStorage.setItem(`cmu-unlocked-${result.cmuNumber}`, '1'); } catch {}
+        setUnlockedCmu(result.cmuNumber);
+        setAccessCodeInput('');
+      } else {
+        setAccessCodeError("Impossible de joindre le serveur. Vérifiez votre code ou votre connexion.");
+      }
+    } finally {
+      setUnlocking(false);
+    }
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -417,9 +493,10 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
         } else if (result.cmuNumber) {
           localStorage.setItem('cmu-active-insured-cmu', result.cmuNumber);
         }
-        // Connecter automatiquement l'assuré scanné dans son espace mobile (si aucun agent/partenaire n'est connecté)
+        // Connecter automatiquement l'assuré uniquement une fois son code d'accès validé
         const hasStaffSession = Boolean(localStorage.getItem('cmu-agent-user') || localStorage.getItem('cmu-partner-user'));
-        if (!hasStaffSession && typeof setCitizenUser === 'function') {
+        const alreadyUnlocked = sessionStorage.getItem(`cmu-unlocked-${result.cmuNumber}`) === '1';
+        if (!hasStaffSession && alreadyUnlocked && typeof setCitizenUser === 'function') {
           const currentCmu = citizenUser?.cmuNumber || '';
           if (currentCmu !== result.cmuNumber) {
             setCitizenUser({
@@ -1903,6 +1980,54 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                   💳 Renouveler ma cotisation
                 </button>
               </div>
+            </div>
+          ) : !isMobileSpaceUnlocked ? (
+            <div className="card shadow-sm border-0 p-4 p-md-5 mb-5 text-center" style={{ borderRadius: '24px', background: 'var(--bg-card)', border: '2px solid #059669', maxWidth: '540px', margin: '0 auto 2.5rem auto' }}>
+              <div className="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle" style={{ width: '64px', height: '64px', background: 'rgba(5, 150, 105, 0.14)', fontSize: '1.9rem' }}>
+                🔐
+              </div>
+              <h4 className="fw-extrabold mb-2" style={{ fontSize: '1.22rem', color: 'var(--text-main)' }}>
+                Accès sécurisé à l&apos;espace assuré
+              </h4>
+              <p className="text-muted mb-3" style={{ fontSize: '0.88rem', lineHeight: 1.55 }}>
+                Pour protéger vos données médicales et familiales, saisissez le <strong>code d&apos;accès</strong> communiqué par votre agent MSD pour ouvrir l&apos;application mobile de <strong>{result.firstName} {result.lastName}</strong>.
+              </p>
+              <form onSubmit={handleUnlockMobileSpace} className="d-flex flex-column gap-3">
+                <input
+                  type="password"
+                  autoComplete="one-time-code"
+                  value={accessCodeInput}
+                  onChange={(e) => { setAccessCodeInput(e.target.value); setAccessCodeError(''); }}
+                  placeholder="Entrez votre code d'accès"
+                  className="form-control text-center fw-bold"
+                  style={{
+                    minHeight: '52px',
+                    borderRadius: '14px',
+                    fontSize: '1.15rem',
+                    letterSpacing: '0.18em',
+                    border: '2px solid #059669',
+                    background: 'var(--bg-card-subtle)',
+                    color: 'var(--text-main)'
+                  }}
+                  required
+                />
+                {accessCodeError && (
+                  <div className="alert alert-danger py-2 px-3 mb-0 small fw-bold" style={{ borderRadius: '12px' }}>
+                    ⚠️ {accessCodeError}
+                  </div>
+                )}
+                <button
+                  type="submit"
+                  disabled={unlocking}
+                  className="btn text-white fw-bold py-3 w-100"
+                  style={{ background: '#059669', border: 'none', borderRadius: '14px', fontSize: '0.96rem' }}
+                >
+                  {unlocking ? '⏳ Vérification du code...' : '🔓 Déverrouiller mon espace assuré'}
+                </button>
+              </form>
+              <small className="text-muted d-block mt-3" style={{ fontSize: '0.78rem' }}>
+                💡 Code remis par votre agent MSD (ou 4 derniers chiffres de votre téléphone si premier accès).
+              </small>
             </div>
           ) : (
             <div className="verified-cards-wrapper" style={{ background: 'var(--bg-card-subtle)', padding: '1rem 0.75rem', borderRadius: '26px', border: '1px solid var(--border-color)', marginBottom: '2.5rem', overflow: 'hidden' }}>
