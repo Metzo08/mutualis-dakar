@@ -189,7 +189,7 @@ export const fetchServerBeneficiaries = async () => {
         // apparaîtrait « hors lot » alors qu'elle appartient à un import.
         lotCode: b.lot_code || b.lotCode || '',
         gender: String(b.gender || b.sexe || 'M').toUpperCase().startsWith('F') ? 'F' : 'M',
-        bloodGroup: b.blood_group || b.bloodGroup || 'O+',
+        bloodGroup: b.blood_group || b.bloodGroup || '',
         address: b.address || '',
         commune: b.commune || 'Dakar',
         departmentUnionId: 'DKR',
@@ -1428,7 +1428,7 @@ export const buildStudioMembers = async (records, opts = {}) => {
       // reconnaître un assuré d'un import à l'autre.
       nin: (r.nin || '').toString().trim(),
       gender: r.sexe || 'M',
-      bloodGroup: (r.bloodGroup || '').toString().trim() || 'O+',
+      bloodGroup: (r.bloodGroup || '').toString().trim() || '',
       address: r.address || 'Dakar',
       commune: 'Dakar',
       departmentUnionId: unionId,
@@ -1556,7 +1556,7 @@ export const buildStudioMembers = async (records, opts = {}) => {
         codeSuffix,
         householdCode: withHouseholdRank(chefCode, 1),
         isMajor: d.isMajor !== false,
-        bloodGroup: d.bloodGroup || 'O+',
+        bloodGroup: d.bloodGroup || '',
         allergies: d.allergies || 'Aucune connue',
         vaccines: d.vaccines || 'Vaccination à jour',
         antecedents: d.antecedents || 'À compléter'

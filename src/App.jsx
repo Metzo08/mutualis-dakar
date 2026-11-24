@@ -769,7 +769,7 @@ export default function App() {
         case 'rse':
           return <RsePortal lang={lang} setView={setView} portalMode={portalMode} agentUser={agentUser} />;
         case 'verify':
-          return <VerifyCard lang={lang} setView={setView} citizenUser={citizenUser} />;
+          return <VerifyCard lang={lang} setView={setView} citizenUser={citizenUser} setCitizenUser={setCitizenUser} />;
         case 'dashboard':
           if (!agentUser && portalMode !== 'agent' && portalMode !== 'superadmin') {
             return (

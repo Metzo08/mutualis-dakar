@@ -30,7 +30,7 @@ const calculateAge = (birthDateStr) => {
   return 54;
 };
 
-export default function VerifyCard({ setView = null, citizenUser = null }) {
+export default function VerifyCard({ setView = null, citizenUser = null, setCitizenUser = null }) {
   const [cmuNumber, setCmuNumber] = useState('');
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -89,7 +89,7 @@ export default function VerifyCard({ setView = null, citizenUser = null }) {
 
   // Valeurs d'antécédents lues par `handleUpdateAntecedents` (ligne ~710) et affichées sur la carte. Le formulaire de saisie correspondant n'est pas rendu : setters conservés, à arbitrer.
   // eslint-disable-next-line no-unused-vars -- Setters non appelés (pas de champ de saisie d'antécédents dans le rendu actuel) ; la valeur est lue plus bas.
-  const [bloodGroup, setBloodGroup] = useState('O Rhésus positif (O+)');
+  const [bloodGroup, setBloodGroup] = useState('');
   // eslint-disable-next-line no-unused-vars -- Idem `setBloodGroup` : la valeur `allergies` est lue par `handleUpdateAntecedents`.
   const [allergies, setAllergies] = useState('Pénicilline');
   // eslint-disable-next-line no-unused-vars -- Idem `setBloodGroup` : la valeur `chronicCond` est lue par `handleUpdateAntecedents`.
@@ -417,6 +417,28 @@ export default function VerifyCard({ setView = null, citizenUser = null }) {
         } else if (result.cmuNumber) {
           localStorage.setItem('cmu-active-insured-cmu', result.cmuNumber);
         }
+        // Connecter automatiquement l'assuré scanné dans son espace mobile (si aucun agent/partenaire n'est connecté)
+        const hasStaffSession = Boolean(localStorage.getItem('cmu-agent-user') || localStorage.getItem('cmu-partner-user'));
+        if (!hasStaffSession && typeof setCitizenUser === 'function') {
+          const currentCmu = citizenUser?.cmuNumber || '';
+          if (currentCmu !== result.cmuNumber) {
+            setCitizenUser({
+              id: result.id || result.cmuNumber,
+              cmuNumber: result.cmuNumber,
+              firstName: result.firstName || '',
+              lastName: result.lastName || '',
+              phone: result.phone || '',
+              birthDate: result.birthDate || '',
+              mutuelleName: result.mutuelleName || 'MSD Dakar',
+              packageType: result.packageType || 'individuel',
+              status: result.status || 'active',
+              photoUrl: result.photoUrl || null,
+              bloodGroup: result.bloodGroup || '',
+              familyMembers: result.familyMembers || result.dependents || [],
+              role: 'citizen'
+            });
+          }
+        }
         window.dispatchEvent(new Event('unamusc_card_scanned'));
         // eslint-disable-next-line no-unused-vars -- Persistance best-effort de la carte scannée : un stockage indisponible ne doit pas empêcher l'affichage du résultat.
       } catch (e) {}
@@ -457,7 +479,11 @@ export default function VerifyCard({ setView = null, citizenUser = null }) {
         const ia = urlParams.get('ia') || '';
         const ief = urlParams.get('ief') || '';
         const cardProgram = urlParams.get('cardProgram') || '';
-        if (academicYear || classLevel || schoolName || ine) {
+        const isSchoolCard =
+          cardProgram === 'CMU_ELEVES' ||
+          cardProgram === 'CMU_DAARA' ||
+          String(queryRef || '').toUpperCase().startsWith('EDU_');
+        if (isSchoolCard && (academicYear || classLevel || schoolName || ine)) {
           setScannedAcademic({ academicYear, classLevel, schoolName, ine, ia, ief, cardProgram });
         } else {
           setScannedAcademic(null);
@@ -914,7 +940,7 @@ export default function VerifyCard({ setView = null, citizenUser = null }) {
   };
 
   return (
-    <div className="verify-view fade-in-up container py-4 py-md-5" style={{ maxWidth: '1080px', margin: '0 auto', background: 'var(--bg-main, #f8fafc)', color: 'var(--text-main, #0f172a)', minHeight: '100vh' }}>
+    <div className="verify-view fade-in-up container py-3 py-md-5" style={{ maxWidth: '1080px', margin: '0 auto', background: 'var(--bg-main, #f8fafc)', color: 'var(--text-main, #0f172a)', minHeight: '100vh', paddingBottom: '105px' }}>
       
       {/* Banner signature moderne */}
       <section className="banner-mini text-white mb-5 rounded-4 overflow-hidden position-relative text-center" style={{
@@ -1879,95 +1905,94 @@ export default function VerifyCard({ setView = null, citizenUser = null }) {
               </div>
             </div>
           ) : (
-            <div className="verified-cards-wrapper" style={{ background: 'var(--bg-card-subtle)', padding: '1.5rem 1.25rem', borderRadius: '30px', border: '1px solid var(--border-color)', marginBottom: '3rem' }}>
+            <div className="verified-cards-wrapper" style={{ background: 'var(--bg-card-subtle)', padding: '1rem 0.75rem', borderRadius: '26px', border: '1px solid var(--border-color)', marginBottom: '2.5rem', overflow: 'hidden' }}>
 
-              {/* 📱 ESPACE MOBILE DE L'ASSURÉ — VUE COMPLÈTE 1-CLIC APRÈS SCAN QR */}
-              <div className="card shadow-sm border-0 p-4 mb-4" style={{ borderRadius: '24px', background: 'var(--bg-card)', border: '1.5px solid rgba(5, 150, 105, 0.28)' }}>
-                <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
-                  <div>
-                    <span className="badge fw-bold px-3 py-1 mb-1" style={{ background: 'rgba(5, 150, 105, 0.14)', color: '#059669', borderRadius: '10px', fontSize: '0.76rem' }}>
-                      📱 Espace mobile assuré · Accès direct
+              {/* 📱 ESPACE MOBILE DE L'ASSURÉ — DESIGN ÉPURÉ & SANS DÉBORDEMENT */}
+              <div className="card shadow-sm border-0 p-3 p-md-4 mb-4" style={{ borderRadius: '22px', background: 'var(--bg-card)', border: '1.5px solid rgba(5, 150, 105, 0.28)', overflow: 'hidden' }}>
+                <div className="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-3 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
+                  <div style={{ minWidth: 0 }}>
+                    <span className="badge fw-bold px-2.5 py-1 mb-1.5 d-inline-block" style={{ background: 'rgba(5, 150, 105, 0.14)', color: '#059669', borderRadius: '10px', fontSize: '0.74rem' }}>
+                      📱 Espace mobile assuré · Connecté
                     </span>
-                    <h5 className="fw-extrabold mb-0" style={{ fontSize: '1.2rem', color: 'var(--text-main)' }}>
-                      Tableau de bord de {result.firstName} {result.lastName}
+                    <h5 className="fw-extrabold mb-0" style={{ fontSize: '1.12rem', color: 'var(--text-main)', lineHeight: 1.3, wordBreak: 'break-word' }}>
+                      {result.firstName} {result.lastName}
                     </h5>
                   </div>
                   <button
                     type="button"
-                    className="btn btn-sm fw-bold text-white px-3 py-2"
-                    style={{ background: '#059669', borderRadius: '12px', border: 'none' }}
+                    className="btn btn-sm fw-bold text-white px-3 py-2 flex-shrink-0"
+                    style={{ background: '#059669', borderRadius: '12px', border: 'none', fontSize: '0.8rem' }}
                     onClick={handlePrintCertificate}
                   >
                     📥 Attestation PDF
                   </button>
                 </div>
 
-                {/* Synthèse rapide : Mutuelle, Téléphone, Groupe sanguin, Cotisations, Garanties, Bons */}
-                <div className="row g-2.5 mb-3">
-                  <div className="col-6 col-md-3">
-                    <div className="p-3 rounded-4 h-100" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
-                      <small className="text-muted fw-bold d-block" style={{ fontSize: '0.72rem' }}>📞 Téléphone</small>
-                      <strong style={{ fontSize: '0.88rem', color: 'var(--text-main)' }}>{result.phone || 'Non renseigné'}</strong>
-                    </div>
+                {/* Synthèse rapide 2x2 propre et aérée */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '0.65rem', marginBottom: '0.85rem' }}>
+                  <div className="p-2.5 p-md-3 rounded-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', minWidth: 0 }}>
+                    <small className="text-muted fw-bold d-block mb-1" style={{ fontSize: '0.72rem' }}>📞 Téléphone</small>
+                    <strong style={{ fontSize: '0.84rem', color: 'var(--text-main)', wordBreak: 'break-word', display: 'block' }}>{result.phone || 'Non renseigné'}</strong>
                   </div>
-                  <div className="col-6 col-md-3">
-                    <div className="p-3 rounded-4 h-100" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
-                      <small className="text-muted fw-bold d-block" style={{ fontSize: '0.72rem' }}>🩸 Groupe sanguin</small>
-                      <strong style={{ fontSize: '0.88rem', color: '#dc2626' }}>{result.bloodGroup || 'Non renseigné'}</strong>
-                    </div>
+                  <div className="p-2.5 p-md-3 rounded-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', minWidth: 0 }}>
+                    <small className="text-muted fw-bold d-block mb-1" style={{ fontSize: '0.72rem' }}>🩸 Groupe sanguin</small>
+                    <strong style={{ fontSize: '0.82rem', color: result.bloodGroup && result.bloodGroup !== 'Non renseigné' ? '#dc2626' : '#64748b', wordBreak: 'break-word', display: 'block' }}>
+                      {result.bloodGroup && result.bloodGroup !== 'Non renseigné' ? result.bloodGroup : 'Non renseigné'}
+                    </strong>
                   </div>
-                  <div className="col-6 col-md-3">
-                    <div className="p-3 rounded-4 h-100" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
-                      <small className="text-muted fw-bold d-block" style={{ fontSize: '0.72rem' }}>👨‍👩‍👧‍👦 Ayants droit</small>
-                      <strong style={{ fontSize: '0.88rem', color: '#059669' }}>
-                        {(result.dependents || result.familyMembers || []).length} enregistré(s)
-                      </strong>
-                    </div>
+                  <div className="p-2.5 p-md-3 rounded-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', minWidth: 0 }}>
+                    <small className="text-muted fw-bold d-block mb-1" style={{ fontSize: '0.72rem' }}>👨‍👩‍👧‍👦 Ayants droit</small>
+                    <strong style={{ fontSize: '0.84rem', color: '#059669', display: 'block' }}>
+                      {(result.dependents || result.familyMembers || []).length} enregistré(s)
+                    </strong>
                   </div>
-                  <div className="col-6 col-md-3">
-                    <div className="p-3 rounded-4 h-100" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
-                      <small className="text-muted fw-bold d-block" style={{ fontSize: '0.72rem' }}>💳 Cotisation</small>
-                      <strong style={{ fontSize: '0.88rem', color: '#0284c7' }}>
-                        {Array.isArray(result.cotisations) && result.cotisations.length > 0
-                          ? `À jour (${Number(result.cotisations[0].amount || 0).toLocaleString('fr-FR')} F)`
-                          : 'Droits actifs 2026'}
-                      </strong>
-                    </div>
+                  <div className="p-2.5 p-md-3 rounded-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', minWidth: 0 }}>
+                    <small className="text-muted fw-bold d-block mb-1" style={{ fontSize: '0.72rem' }}>💳 Cotisation</small>
+                    <strong style={{ fontSize: '0.82rem', color: '#0284c7', display: 'block' }}>
+                      {Array.isArray(result.cotisations) && result.cotisations.length > 0
+                        ? `À jour (${Number(result.cotisations[0].amount || 0).toLocaleString('fr-FR')} F)`
+                        : 'Droits actifs 2026'}
+                    </strong>
                   </div>
                 </div>
 
-                {/* Boutons d'accès direct aux 6 services de l'espace mobile assuré */}
-                <div className="row g-2">
+                {/* Boutons d'accès direct — grille CSS 2 colonnes sans aucun débordement */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(138px, 1fr))', gap: '0.65rem' }}>
                   {[
-                    { id: 'payments', icon: '💳', label: 'Cotisations & Wave/OM', sub: 'Payer ou renouveler', color: '#0284c7' },
-                    { id: 'guarantees', icon: '🏥', label: `Lettres de garantie (${(result.guaranteeLetters || []).length})`, sub: 'Tiers-payant 80%', color: '#059669' },
-                    { id: 'purchase-orders', icon: '💊', label: `Bons pharmacie (${(result.purchaseOrders || []).length})`, sub: 'Prise en charge 50%', color: '#7c3aed' },
+                    { id: 'payments', icon: '💳', label: 'Cotisations Wave/OM', sub: 'Payer ou renouveler', color: '#0284c7' },
+                    { id: 'guarantees', icon: '🏥', label: `Garanties (${(result.guaranteeLetters || []).length})`, sub: 'Tiers-payant 80%', color: '#059669' },
+                    { id: 'purchase-orders', icon: '💊', label: `Pharmacie (${(result.purchaseOrders || []).length})`, sub: 'Bons 50%', color: '#7c3aed' },
                     { id: 'medical-profile', icon: '🩺', label: 'Dossier médical', sub: 'Antécédents & suivi', color: '#dc2626' },
-                    { id: 'telemedicine', icon: '📹', label: 'Télémédecine 24/7', sub: 'Médecin en visio', color: '#0d9488' },
-                    { id: 'map', icon: '📍', label: 'Structures agréées', sub: 'Hôpitaux & pharmacies', color: '#d97706' }
+                    { id: 'telemedicine', icon: '📹', label: 'Télémédecine', sub: 'Médecin 24/7', color: '#0d9488' },
+                    { id: 'map', icon: '📍', label: 'Structures', sub: 'Hôpitaux & officines', color: '#d97706' }
                   ].map((item) => (
-                    <div key={item.id} className="col-6 col-md-4">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (setView) setView(item.id);
-                          else window.location.hash = `#/${item.id}`;
-                        }}
-                        className="w-100 text-start p-3 rounded-4 border-0 shadow-xs"
-                        style={{
-                          background: 'var(--bg-card-subtle)',
-                          border: '1px solid var(--border-color)',
-                          cursor: 'pointer',
-                          transition: 'transform 0.15s ease'
-                        }}
-                      >
-                        <div className="d-flex align-items-center gap-2 mb-1">
-                          <span style={{ fontSize: '1.15rem' }}>{item.icon}</span>
-                          <span className="fw-extrabold" style={{ fontSize: '0.82rem', color: item.color }}>{item.label}</span>
-                        </div>
-                        <small className="text-muted d-block" style={{ fontSize: '0.73rem' }}>{item.sub}</small>
-                      </button>
-                    </div>
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => {
+                        if (setView) setView(item.id);
+                        else window.location.hash = `#/${item.id}`;
+                      }}
+                      className="text-start p-3 rounded-4 shadow-xs"
+                      style={{
+                        background: 'var(--bg-card-subtle)',
+                        border: '1px solid var(--border-color)',
+                        cursor: 'pointer',
+                        minWidth: 0,
+                        overflow: 'hidden',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.25rem'
+                      }}
+                    >
+                      <span style={{ fontSize: '1.25rem', lineHeight: 1 }}>{item.icon}</span>
+                      <span className="fw-extrabold" style={{ fontSize: '0.82rem', color: item.color, lineHeight: 1.25, wordBreak: 'break-word' }}>
+                        {item.label}
+                      </span>
+                      <small className="text-muted" style={{ fontSize: '0.72rem', lineHeight: 1.25 }}>
+                        {item.sub}
+                      </small>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -2149,7 +2174,7 @@ export default function VerifyCard({ setView = null, citizenUser = null }) {
                       photoUrl: child.photoUrl || '/csu_profile_hero_real.png',
                       hasOfficialPhoto: child.hasOfficialPhoto,
                       photoStatus: child.photoStatus || 'PHOTO_OK',
-                      bloodGroup: child.bloodGroup || 'O+',
+                      bloodGroup: child.bloodGroup || '',
                       vaccines: child.vaccines || 'PEV 100% à jour',
                       antecedents: child.antecedents || 'Développement pédiatrique normal'
                     }))) || result.familyMembers || [];
@@ -2743,7 +2768,7 @@ export default function VerifyCard({ setView = null, citizenUser = null }) {
                         </div>
                         <div className="d-flex align-items-center gap-3 flex-wrap pt-2">
                           <div className="p-3 px-4 rounded-4 fw-extrabold shadow-sm d-inline-flex align-items-center gap-2" style={{ background: '#ef4444', color: '#ffffff', fontSize: '1.15rem', borderRadius: '18px' }}>
-                            <span>🔴</span> Groupe Sanguin : {result.bloodGroup || 'O+'}
+                            <span>🩸</span> Groupe sanguin : {result.bloodGroup && result.bloodGroup !== 'Non renseigné' ? result.bloodGroup : 'Non renseigné (à remplir par un soignant)'}
                           </div>
                           <div className="p-3 px-4 rounded-4 fw-bold d-inline-flex align-items-center gap-2" style={{ background: 'rgba(220, 38, 38, 0.12)', color: 'var(--text-main)', border: '2px solid rgba(239, 68, 68, 0.35)', fontSize: '1rem', borderRadius: '18px' }}>
                             <span>🛡️</span> Allergies : {result.allergies || 'Aucune connue'}

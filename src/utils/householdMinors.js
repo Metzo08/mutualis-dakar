@@ -110,7 +110,7 @@ const normalizeFlatMinor = (m) => {
     phone: m.phone || '',
     photoUrl: m.photoUrl || '',
     hasOfficialPhoto: !!m.photoUrl,
-    bloodGroup: m.bloodGroup || 'O+',
+    bloodGroup: m.bloodGroup || '',
     allergies: m.allergies || 'Aucune connue',
     vaccines: m.vaccines || 'PEV 100% à jour',
     antecedents: m.antecedents || 'Antécédents normaux',

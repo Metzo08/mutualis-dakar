@@ -300,7 +300,7 @@ export default function Payments({
       photoUrl: '',
       hasOfficialPhoto: false,
       photoStatus: 'PENDING_UPLOAD',
-      bloodGroup: activeMember.bloodGroup || 'O+',
+      bloodGroup: activeMember.bloodGroup || '',
       allergies: 'Aucune connue',
       vaccines: newDepIsMajor ? 'Vaccination à jour' : 'PEV 100% à jour',
       antecedents: newDepIsMajor ? 'Bilan régulier' : 'Développement normal'

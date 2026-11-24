@@ -5221,7 +5221,7 @@ export default function Telemedicine({
                         <div style={{ background: '#1e293b', padding: '0.65rem', borderRadius: '8px', border: '1px solid #334155' }}>
                           <strong style={{ color: '#fde047', fontSize: '0.78rem', display: 'block', marginBottom: '2px' }}>Antécédents &amp; allergies :</strong>
                           <span style={{ color: '#ffffff', fontSize: '0.82rem', fontWeight: '700' }}>Aucune allergie connue</span>
-                          <small style={{ color: '#94a3b8', display: 'block', fontSize: '0.72rem' }}>Groupe sanguin : O+</small>
+                          <small style={{ color: '#94a3b8', display: 'block', fontSize: '0.72rem' }}>Groupe sanguin : Non renseigné</small>
                         </div>
                       </div>
 

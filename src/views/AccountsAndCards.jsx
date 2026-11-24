@@ -489,11 +489,29 @@ export default function AccountsAndCards() {
             )}
             {oneTimeCode && (
               <div className="alert alert-warning small">
-                <div className="fw-bold">Code de réinitialisation à usage unique — à remettre en main propre</div>
-                <div className="mt-1"><code style={{ fontSize: '1.1rem' }}>{oneTimeCode.code}</code></div>
-                <div>
-                  Expire le {formatDate(oneTimeCode.expiresAt)}. Ne le conservez pas : le mot de passe de l'assuré
-                  doit rester inconnu de l'agent.
+                <div className="fw-bold">🔑 Code d'accès assuré généré — à communiquer à l'assuré</div>
+                <div className="mt-2 d-flex align-items-center gap-2 flex-wrap">
+                  <code style={{ fontSize: '1.2rem', fontWeight: 800, padding: '4px 10px', background: '#fff', borderRadius: '8px', border: '1px solid #f59e0b' }}>
+                    {oneTimeCode.code}
+                  </code>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-dark fw-bold"
+                    onClick={() => navigator.clipboard?.writeText(String(oneTimeCode.code || ''))}
+                  >
+                    📋 Copier le code
+                  </button>
+                  <a
+                    className="btn btn-sm btn-success text-white fw-bold"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href={`https://wa.me/?text=${encodeURIComponent(`Bonjour, voici votre code d'accès personnel SenMutuelles / UNAMUSC pour votre carte ${cmu} : ${oneTimeCode.code} (valable jusqu'au ${formatDate(oneTimeCode.expiresAt)}).`)}`}
+                  >
+                    💬 Communiquer par WhatsApp
+                  </a>
+                </div>
+                <div className="mt-1">
+                  Expire le {formatDate(oneTimeCode.expiresAt)}. Remettez ce code à l'assuré pour qu'il active son accès mobile.
                 </div>
               </div>
             )}

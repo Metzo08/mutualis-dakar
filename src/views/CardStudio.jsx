@@ -1619,21 +1619,23 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
       origin = `http://${effectiveIp}:${currentPort}`;
     }
 
-    // Le QR porte TOUJOURS l'année scolaire et la classe : ces deux données
-    // changent chaque année et doivent rester lisibles par un agent (contrôle
-    // de scolarité) même si la page web est inaccessible.
+    // Les données scolaires (année scolaire, classe, établissement, INE, IA/IEF)
+    // sont encodées dans le QR UNIQUEMENT pour les cartes CMU-Élèves et CMU-Daara —
+    // jamais pour les cartes classiques adultes !
+    const isSchoolProgram = cardData.cardProgram === 'CMU_ELEVES' || cardData.cardProgram === 'CMU_DAARA';
     const academicQrData = new URLSearchParams({
       otp: String(studioOtp),
-      cardProgram: cardData.cardProgram,
-      academicYear: cardData.academicData.academicYear || '',
-      classLevel: cardData.academicData.classLevel || '',
-      schoolName: cardData.academicData.schoolName || ''
+      cardProgram: cardData.cardProgram || 'CLASSIQUE'
     });
-    if (cardData.academicData.ine) academicQrData.set('ine', cardData.academicData.ine);
-    // IA / IEF : circuit de l'école publique uniquement (absent sur CMU-Daara).
-    if (resolveCardProgram(cardData.cardProgram).showIef) {
-      academicQrData.set('ia', cardData.academicData.ia || '');
-      academicQrData.set('ief', cardData.academicData.ief || '');
+    if (isSchoolProgram) {
+      if (cardData.academicData.academicYear) academicQrData.set('academicYear', cardData.academicData.academicYear);
+      if (cardData.academicData.classLevel) academicQrData.set('classLevel', cardData.academicData.classLevel);
+      if (cardData.academicData.schoolName) academicQrData.set('schoolName', cardData.academicData.schoolName);
+      if (cardData.academicData.ine) academicQrData.set('ine', cardData.academicData.ine);
+      if (resolveCardProgram(cardData.cardProgram).showIef) {
+        if (cardData.academicData.ia) academicQrData.set('ia', cardData.academicData.ia);
+        if (cardData.academicData.ief) academicQrData.set('ief', cardData.academicData.ief);
+      }
     }
     let verifyUrl = `${origin}/#/verify/${cardData.cmuNumber}?${academicQrData.toString()}`;
 
@@ -2264,7 +2266,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
       isMajor: false,
       codeSuffix: `.M${(editForm.dependents ? editForm.dependents.filter(d => !d.isMajor).length : 0) + 1}`,
       photoUrl: 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=200&auto=format&fit=crop&q=80',
-      bloodGroup: editForm.bloodGroup || 'O+',
+      bloodGroup: editForm.bloodGroup || '',
       allergies: 'Aucune connue',
       vaccines: 'PEV 100% à jour',
       antecedents: 'Antécédents normaux'
@@ -3806,9 +3808,10 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                 <label>🩸 Groupe sanguin :</label>
                 <select
                   className="form-select fw-bold"
-                  value={editForm.bloodGroup || 'O+'}
+                  value={editForm.bloodGroup || ''}
                   onChange={(e) => handleEditChange('bloodGroup', e.target.value)}
                 >
+                  <option value="">— Non renseigné (à remplir par un soignant) —</option>
                   <option value="O+">O Rh+ (O+)</option>
                   <option value="O-">O Rh- (O-)</option>
                   <option value="A+">A Rh+ (A+)</option>
@@ -4166,9 +4169,10 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                     <label>🩸 Groupe sanguin :</label>
                     <select 
                       className="form-select fw-bold"
-                      value={child.bloodGroup || 'O+'}
+                      value={child.bloodGroup || ''}
                       onChange={(e) => handleUpdateChildField(cIdx, 'bloodGroup', e.target.value)}
                     >
+                      <option value="">— Non renseigné —</option>
                       <option value="O+">O Rh+ (O+)</option>
                       <option value="O-">O Rh- (O-)</option>
                       <option value="A+">A Rh+ (A+)</option>

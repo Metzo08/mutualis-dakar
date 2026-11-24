@@ -458,7 +458,7 @@ export default function Header({
         </button>
 
         {/* Option 8: Departmental stats (Agent & Citizen modes) */}
-        {((portalMode === 'agent' && agentUser) || (portalMode === 'citizen' && citizenUser)) && (
+        {(((portalMode === 'agent' || portalMode === 'superadmin') && agentUser) || (portalMode === 'citizen' && citizenUser)) && (
           <button 
             className={`nav-item ${currentView === 'depts' ? 'active' : ''}`}
             onClick={() => navigateTo('depts')}
@@ -494,8 +494,8 @@ export default function Header({
           </>
         )}
 
-        {/* Option 10: Tableau de bord CSU (Agent mode only) */}
-        {portalMode === 'agent' && agentUser && (
+        {/* Option 10: Tableau de bord CSU (Agent MSD & Super Admin) */}
+        {(portalMode === 'agent' || portalMode === 'superadmin') && agentUser && (
           <button
             className={`nav-item ${currentView === 'dashboard' ? 'active' : ''}`}
             onClick={() => setView('dashboard')}
@@ -505,20 +505,19 @@ export default function Header({
           </button>
         )}
 
-        {/* Option 10bis: Gestion des comptes et des cartes (Module 3.9 — agent & admin) */}
-        {portalMode === 'agent' && agentUser && (agentUser.role === 'agent' || agentUser.role === 'admin' || agentUser.role === 'Super Admin') && (
+        {/* Option 10bis: Gestion des comptes, cartes & codes d'accès assurés (Agent MSD & Super Admin) */}
+        {(portalMode === 'agent' || portalMode === 'superadmin') && agentUser && (
           <button
             className={`nav-item ${currentView === 'accounts-cards' ? 'active' : ''}`}
-            onClick={() => setView('accounts-cards')}
+            onClick={() => navigateTo('accounts-cards')}
           >
-            <span className="nav-icon">🗂️</span>
-            {lang === 'fr' ? 'Comptes & cartes' : 'Kompte ak kart'}
+            <span className="nav-icon">🔑</span>
+            {lang === 'fr' ? "Comptes, cartes & codes d'accès" : 'Kompte ak koodu assuré'}
           </button>
         )}
 
-        {/* Modules 2 & 4 : importation contrôlée, sécurité, rapports Excel
-            (agents, administrateurs et Super Admin). */}
-        {portalMode === 'agent' && agentUser && (agentUser.role === 'agent' || agentUser.role === 'admin' || agentUser.role === 'Super Admin') && (
+        {/* Modules 2 & 4 : importation contrôlée, sécurité, rapports Excel (Agent MSD & Super Admin) */}
+        {(portalMode === 'agent' || portalMode === 'superadmin') && agentUser && (
           <>
             <button
               className={`nav-item ${currentView === 'import-control' ? 'active' : ''}`}
@@ -545,7 +544,7 @@ export default function Header({
         )}
 
         {/* Option 11: Prise en charge (Agent & Citizen modes) */}
-        {(portalMode === 'agent' ? agentUser : citizenUser) && (
+        {((portalMode === 'agent' || portalMode === 'superadmin') ? agentUser : citizenUser) && (
           <button
             className={`nav-item ${currentView === 'claims' ? 'active' : ''}`}
             onClick={() => setView('claims')}
@@ -555,8 +554,8 @@ export default function Header({
           </button>
         )}
 
-        {/* Option 12: Notifications (Agent mode only) */}
-        {portalMode === 'agent' && agentUser && (
+        {/* Option 12: Notifications (Agent MSD & Super Admin) */}
+        {(portalMode === 'agent' || portalMode === 'superadmin') && agentUser && (
           <button
             className={`nav-item ${currentView === 'notifications' ? 'active' : ''}`}
             onClick={() => setView('notifications')}
