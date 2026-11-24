@@ -1009,7 +1009,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
         { label: 'Formule souscrite', value: result.packageType },
         { label: 'Identifiant Patient (IPP)', value: result.ippNumber },
         { label: 'Téléphone assuré', value: result.phone },
-        { label: 'Groupe sanguin & allergies', value: `${result.bloodGroup} (Allergies: ${result.allergies || 'Aucune'})` },
+        { label: 'Groupe sanguin & allergies', value: `${result.bloodGroup && result.bloodGroup !== 'Non renseigné' ? result.bloodGroup : 'Non renseigné'} (Allergies: ${result.allergies || 'Aucune'})` },
         { label: 'Ayants droit rattachés', value: result.familyMembers && result.familyMembers.length > 0 ? result.familyMembers.map(f => `${f.name} (${f.relation})`).join(', ') : 'Aucun' }
       ],
       notes: 'Ce certificat atteste de la validité des droits à la date de vérification. Il permet la dispense d\'avance de frais auprès de toutes les structures conventionnées UNAMUSC.'
@@ -1703,141 +1703,46 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
       {result && (
         <div className="fade-in-up" style={{ maxWidth: '100%', overflowX: 'hidden' }}>
 
-          {/* BANDEAU DE DÉFILEMENT SPONSORS & PROGRAMME NATIONAL (DÉFILEMENT CONTINU SANS FIN) */}
-          <div 
-            className="p-4 mb-5 rounded-4 shadow-sm border overflow-hidden position-relative" 
-            style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)', borderRadius: '24px' }}
+          {/* BANDEAU SPONSORS & PROGRAMME NATIONAL — 100% RESPONSIVE SANS CHEVAUCHEMENT */}
+          <div
+            className="p-3 p-md-4 mb-4 rounded-4 shadow-sm border"
+            style={{ background: 'var(--bg-card)', borderColor: 'var(--border-color)', borderRadius: '20px' }}
           >
-            <div className="d-flex align-items-center justify-content-between gap-4">
-              <div className="marquee-container" style={{ flex: 1, overflow: 'hidden' }}>
-                <div className="marquee-content d-flex align-items-center gap-5">
-                  <span className="fw-bold d-inline-flex align-items-center gap-3" style={{ fontSize: '0.92rem', color: '#0284c7', whiteSpace: 'nowrap' }}>
-                    <div className="d-inline-flex align-items-center gap-2.5">
-                      <img 
-                        src="/logo_wave.png" 
-                        alt="Wave" 
-                        style={{ 
-                          height: '32px', 
-                          borderRadius: '8px', 
-                          background: '#ffffff', 
-                          padding: '4px 10px', 
-                          border: '1px solid #cbd5e1', 
-                          boxShadow: '0 2px 5px rgba(0,0,0,0.08)', 
-                          objectFit: 'contain',
-                          verticalAlign: 'middle'
-                        }} 
-                      />
-                      <img 
-                        src="/logo_partner_patisen.png" 
-                        alt="Patisen" 
-                        onError={(e) => { e.target.onerror = null; e.target.src = '/logo_patisen.png'; }}
-                        style={{ 
-                          height: '32px', 
-                          borderRadius: '8px', 
-                          background: '#ffffff', 
-                          padding: '4px 10px', 
-                          border: '1px solid #cbd5e1', 
-                          boxShadow: '0 2px 5px rgba(0,0,0,0.08)', 
-                          objectFit: 'contain',
-                          verticalAlign: 'middle'
-                        }} 
-                      />
-                    </div>
-                    <span className="d-inline-flex align-items-center gap-2.5">
-                      Sponsorisé par Patisen & Wave — République du Sénégal
-                      <img 
-                        src="/drapeau_senegal.png" 
-                        alt="Sénégal" 
-                        onError={(e) => { e.target.onerror = null; e.target.src = '/senegal_flag.png'; }}
-                        style={{ 
-                          height: '22px', 
-                          borderRadius: '4px', 
-                          boxShadow: '0 2px 5px rgba(0,0,0,0.2)', 
-                          objectFit: 'cover',
-                          verticalAlign: 'middle'
-                        }} 
-                      />
-                    </span>
-                  </span>
-                  <span className="fw-bold d-inline-flex align-items-center gap-3" style={{ fontSize: '0.92rem', color: 'var(--text-main)', whiteSpace: 'nowrap' }}>
-                    <span className="d-inline-flex align-items-center gap-2.5">
-                      <img 
-                        src="/drapeau_senegal.png" 
-                        alt="Sénégal" 
-                        onError={(e) => { e.target.onerror = null; e.target.src = '/senegal_flag.png'; }}
-                        style={{ 
-                          height: '22px', 
-                          borderRadius: '4px', 
-                          boxShadow: '0 2px 5px rgba(0,0,0,0.2)', 
-                          objectFit: 'cover',
-                          verticalAlign: 'middle'
-                        }} 
-                      />
-                      Programme national de la couverture sanitaire universelle du Sénégal (UNAMUSC)
-                    </span>
-                  </span>
-                  <span className="fw-bold d-inline-flex align-items-center gap-3" style={{ fontSize: '0.92rem', color: '#0284c7', whiteSpace: 'nowrap' }}>
-                    <div className="d-inline-flex align-items-center gap-2.5">
-                      <img 
-                        src="/logo_wave.png" 
-                        alt="Wave" 
-                        style={{ 
-                          height: '32px', 
-                          borderRadius: '8px', 
-                          background: '#ffffff', 
-                          padding: '4px 10px', 
-                          border: '1px solid #cbd5e1', 
-                          boxShadow: '0 2px 5px rgba(0,0,0,0.08)', 
-                          objectFit: 'contain',
-                          verticalAlign: 'middle'
-                        }} 
-                      />
-                      <img 
-                        src="/logo_partner_patisen.png" 
-                        alt="Patisen" 
-                        onError={(e) => { e.target.onerror = null; e.target.src = '/logo_patisen.png'; }}
-                        style={{ 
-                          height: '32px', 
-                          borderRadius: '8px', 
-                          background: '#ffffff', 
-                          padding: '4px 10px', 
-                          border: '1px solid #cbd5e1', 
-                          boxShadow: '0 2px 5px rgba(0,0,0,0.08)', 
-                          objectFit: 'contain',
-                          verticalAlign: 'middle'
-                        }} 
-                      />
-                    </div>
-                    <span className="d-inline-flex align-items-center gap-2.5">
-                      Sponsorisé par Patisen & Wave — République du Sénégal
-                      <img 
-                        src="/drapeau_senegal.png" 
-                        alt="Sénégal" 
-                        onError={(e) => { e.target.onerror = null; e.target.src = '/senegal_flag.png'; }}
-                        style={{ 
-                          height: '22px', 
-                          borderRadius: '4px', 
-                          boxShadow: '0 2px 5px rgba(0,0,0,0.2)', 
-                          objectFit: 'cover',
-                          verticalAlign: 'middle'
-                        }} 
-                      />
-                    </span>
-                  </span>
-                </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', flex: '1 1 200px', minWidth: 0 }}>
+                <img
+                  src="/logo_wave.png"
+                  alt="Wave"
+                  style={{ height: '26px', borderRadius: '6px', background: '#ffffff', padding: '2px 7px', border: '1px solid #cbd5e1', objectFit: 'contain' }}
+                />
+                <img
+                  src="/logo_partner_patisen.png"
+                  alt="Patisen"
+                  onError={(e) => { e.target.onerror = null; e.target.src = '/logo_patisen.png'; }}
+                  style={{ height: '26px', borderRadius: '6px', background: '#ffffff', padding: '2px 7px', border: '1px solid #cbd5e1', objectFit: 'contain' }}
+                />
+                <img
+                  src="/drapeau_senegal.png"
+                  alt="Sénégal"
+                  onError={(e) => { e.target.onerror = null; e.target.src = '/senegal_flag.png'; }}
+                  style={{ height: '18px', borderRadius: '4px', objectFit: 'cover' }}
+                />
+                <span style={{ fontSize: '0.82rem', fontWeight: 700, color: '#0369a1', lineHeight: 1.35 }}>
+                  Sponsorisé par Patisen &amp; Wave · Programme CSU Sénégal (UNAMUSC)
+                </span>
               </div>
 
-              <button 
-                type="button" 
-                className="btn btn-outline-secondary btn-sm fw-bold py-2 px-3.5 flex-shrink-0 ms-3"
-                style={{ fontSize: '0.86rem', borderRadius: '14px', background: 'var(--bg-card)' }}
+              <button
+                type="button"
+                className="btn btn-outline-secondary btn-sm fw-bold py-1.5 px-3 flex-shrink-0"
+                style={{ fontSize: '0.8rem', borderRadius: '12px', background: 'var(--bg-card)' }}
                 onClick={() => setShowAdModal(true)}
               >
                 ▶️ Vidéo
               </button>
             </div>
           </div>
-          
+
           {/* CARTE NUMÉRIQUE CSU EXCLUSIVE SenMutuelles — FOND COMPATIBLE MODE CLAIR & SOMBRE */}
           <div 
             className="p-4 p-md-5 rounded-4 shadow-lg position-relative overflow-hidden mb-5 cursor-pointer"
