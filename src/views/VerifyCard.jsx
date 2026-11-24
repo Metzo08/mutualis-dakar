@@ -2255,11 +2255,19 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(138px, 1fr))', gap: '0.65rem' }}>
                   {[
                     { id: 'payments', icon: '💳', label: 'Cotisations Wave/OM', sub: 'Payer ou renouveler', color: '#0284c7' },
-                    { id: 'guarantees', icon: '🏥', label: `Garanties (${(result.guaranteeLetters || []).length})`, sub: 'Tiers-payant 80%', color: '#059669' },
-                    { id: 'purchase-orders', icon: '💊', label: `Pharmacie (${(result.purchaseOrders || []).length})`, sub: 'Bons 50%', color: '#7c3aed' },
+                    { id: 'guarantees', icon: '📄', label: `Garanties (${(result.guaranteeLetters || []).length})`, sub: 'Hôpital tiers-payant 80%', color: '#059669' },
+                    { id: 'purchase-orders', icon: '💊', label: `Pharmacie (${(result.purchaseOrders || []).length})`, sub: 'Bons médicaments 50%', color: '#7c3aed' },
                     { id: 'medical-profile', icon: '🩺', label: 'Dossier médical', sub: 'Antécédents & suivi', color: '#dc2626' },
-                    { id: 'telemedicine', icon: '📹', label: 'Télémédecine', sub: 'Médecin 24/7', color: '#0d9488' },
-                    { id: 'map', icon: '📍', label: 'Structures', sub: 'Hôpitaux & officines', color: '#d97706' }
+                    { id: 'telemedicine', icon: '📹', label: 'Télémédecine', sub: 'Médecin visio 24/7', color: '#0d9488' },
+                    { id: 'maternity', icon: '🤰', label: 'Maternité & CPN', sub: 'Suivi mère & enfant', color: '#db2777' },
+                    { id: 'map', icon: '🏥', label: 'Structures agréées', sub: 'Hôpitaux & cliniques', color: '#d97706' },
+                    { id: 'medicaments', icon: '🧪', label: 'Médicaments CSU', sub: 'Tarifs & panier soins', color: '#2563eb' },
+                    { id: 'programmes', icon: '🛡️', label: 'Programmes CSU', sub: 'Offres & couvertures', color: '#047857' },
+                    { id: 'directory', icon: '📁', label: 'Annuaire mutuelles', sub: 'Unions & contacts', color: '#4f46e5' },
+                    { id: 'parrainage-solidaire', icon: '🤝', label: 'Parrainage', sub: 'Solidarité & dons', color: '#0891b2' },
+                    { id: 'complaints', icon: '💬', label: 'Réclamations', sub: 'Assistance & suivi', color: '#b45309' },
+                    { id: 'profile', icon: '👤', label: 'Mon Profil', sub: 'Infos & compte assuré', color: '#0f766e' },
+                    { id: 'home', icon: '🏠', label: 'Portail Accueil', sub: 'Vue générale CSU', color: '#334155' }
                   ].map((item) => (
                     <button
                       key={item.id}

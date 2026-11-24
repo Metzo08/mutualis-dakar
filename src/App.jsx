@@ -1188,13 +1188,13 @@ export default function App() {
           <div className="top-navbar-actions">
             {/* Display logged in status quick indicator */}
             {portalMode === 'citizen' && citizenUser && (
-              <span className="badge badge-success" style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>
+              <span className="badge badge-success topbar-user-badge" style={{ fontSize: '0.75rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
                 💚 {citizenUser.firstName} {citizenUser.lastName} (Connecté)
               </span>
             )}
 
             {portalMode === 'agent' && agentUser && (
-              <span className="badge badge-success" style={{ fontSize: '0.75rem', fontWeight: 'bold', backgroundColor: 'rgba(59, 130, 246, 0.15)', color: 'var(--primary)' }}>
+              <span className="badge badge-success topbar-user-badge" style={{ fontSize: '0.75rem', fontWeight: 'bold', backgroundColor: 'rgba(59, 130, 246, 0.15)', color: 'var(--primary)', whiteSpace: 'nowrap' }}>
                 💼 {agentUser.firstName} {agentUser.lastName} (Agent)
               </span>
             )}
