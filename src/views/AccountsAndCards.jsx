@@ -132,12 +132,17 @@ export default function AccountsAndCards() {
     setAccessCodeMsg('');
     try {
       const res = await apiFetch(`/api/accounts/${encodeURIComponent(targetCmu)}/access-code`);
-      if (res.ok) {
+      if (res && res.ok) {
         const data = await res.json();
         setInsuredAccessCode(data.accessCode || '');
         setInsuredPhone(data.phone || '');
+      } else {
+        const errData = res ? await res.json().catch(() => ({})) : {};
+        setAccessCodeMsg(errData.error || "Redémarrez le serveur backend (node server.js) pour activer les codes d'accès.");
       }
-    } catch { /* ignore */ }
+    } catch {
+      setAccessCodeMsg("Serveur backend injoignable — vérifiez que node server.js est démarré.");
+    }
     finally { setAccessCodeBusy(false); }
   }, []);
 
@@ -528,8 +533,15 @@ export default function AccountsAndCards() {
                   📋 Copier
                 </button>
                 <a
-                  className="btn btn-sm btn-success text-white fw-bold px-3 py-2"
-                  style={{ borderRadius: '10px' }}
+                  className="btn btn-sm fw-bold px-3 py-2"
+                  style={{
+                    borderRadius: '10px',
+                    background: insuredAccessCode ? '#059669' : '#94a3b8',
+                    color: '#ffffff',
+                    border: 'none',
+                    pointerEvents: insuredAccessCode ? 'auto' : 'none',
+                    textDecoration: 'none'
+                  }}
                   target="_blank"
                   rel="noopener noreferrer"
                   href={`https://wa.me/${String(insuredPhone || '').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Bonjour ${id.firstName || ''} ${id.lastName || ''}, voici votre code d'accès personnel SenMutuelles pour ouvrir votre carte mobile (${id.cmuNumber}) : ${insuredAccessCode}`)}`}
