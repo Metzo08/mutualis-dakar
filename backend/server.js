@@ -13,6 +13,7 @@ const {
 } = require('./realtimeBus');
 const telemedWs = require('./telemedWs');
 const fallbackStore = require('./fallbackStore');
+const { validateUploadedImage, applySafeMediaHeaders } = require('./uploadSecurity');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -803,7 +804,15 @@ app.post('/api/adhesions', validate(adhesionSchema), async (req, res) => {
     } = req.body;
 
     // La validation zod a déjà vérifié les champs obligatoires
-    const photoValue = (typeof photoUrl === 'string' && photoUrl.trim().length > 0) ? photoUrl.trim() : null;
+    // Protection anti-images piégées (magic bytes, limite 2 Mo, anti-polyglot)
+    let photoValue = null;
+    if (typeof photoUrl === 'string' && photoUrl.trim().length > 0) {
+      const photoCheck = validateUploadedImage(photoUrl);
+      if (!photoCheck.ok) {
+        return res.status(400).json({ error: photoCheck.error });
+      }
+      photoValue = photoCheck.normalizedUrl;
+    }
     const ONLINE_LOT_CODE = 'ADH-EN-LIGNE';
     const ONLINE_LOT_LABEL = 'Adhésions en ligne (Portail adhérent)';
 
@@ -2519,10 +2528,10 @@ app.get('/api/beneficiaries/:id/photo', authenticateToken, requireRole('agent', 
     const photo = r.rows[0] && r.rows[0].photo_url;
     if (!photo) return res.status(404).json({ error: 'Aucune photo pour ce dossier.' });
 
-    // Valeur déjà en base64 : on la renvoie telle quelle.
+    // Valeur déjà en base64 : en-têtes anti-exécution (nosniff + CSP sandbox).
     if (photo.startsWith('data:')) {
       const [, mime = 'image/jpeg'] = photo.match(/^data:([^;]+)/) || [];
-      res.set('Content-Type', mime);
+      applySafeMediaHeaders(res, mime);
       res.set('Cache-Control', 'private, max-age=86400');
       return res.send(Buffer.from(photo.split(',')[1] || '', 'base64'));
     }
@@ -2541,13 +2550,12 @@ app.put('/api/beneficiaries/:id/photo', authenticateToken, requireRole('agent', 
     const id = parseInt(req.params.id, 10);
     if (!Number.isInteger(id) || id < 1) return res.status(400).json({ error: 'Identifiant invalide.' });
 
-    const photoUrl = String((req.body && req.body.photoUrl) || '').trim();
-    if (!photoUrl || photoUrl.length > 5_000_000) {
-      return res.status(400).json({ error: 'Photo manquante ou trop volumineuse (max 5 Mo).' });
+    const rawPhotoUrl = String((req.body && req.body.photoUrl) || '').trim();
+    const photoCheck = validateUploadedImage(rawPhotoUrl);
+    if (!photoCheck.ok) {
+      return res.status(400).json({ error: photoCheck.error });
     }
-    if (!photoUrl.startsWith('data:image/') && !photoUrl.startsWith('/') && !photoUrl.startsWith('https://')) {
-      return res.status(400).json({ error: 'Format de photo non autorisé.' });
-    }
+    const photoUrl = photoCheck.normalizedUrl;
 
     let where = 'id = $2 AND merged_into IS NULL';
     const params = [photoUrl, id];

@@ -13,6 +13,7 @@ export default function CmuCard({ citizen }) {
   const [otpHash, setOtpHash] = useState('SEC-84920');
   const [isFlashing, setIsFlashing] = useState(false);
   const [showZoomModal, setShowZoomModal] = useState(false);
+  const [tilt, setTilt] = useState({ rx: 0, ry: 0, gx: 50, gy: 50, active: false });
 
   // Détection automatique de l'IP LAN réelle du PC pour un QR scannable
   // depuis les smartphones du réseau Wi-Fi (repli : valeurs locales).
@@ -121,10 +122,24 @@ export default function CmuCard({ citizen }) {
         </button>
       </div>
 
-      {/* CARTE PHYSIQUE VIRTUELLE 3D */}
+      {/* CARTE PHYSIQUE VIRTUELLE 3D INTERACTIVE (Skill threejs-3d-animations) */}
       <div
         className="cmu-card"
         onClick={() => setFlipped(!flipped)}
+        onMouseMove={(e) => {
+          if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+          const rect = e.currentTarget.getBoundingClientRect();
+          const x = (e.clientX - rect.left) / rect.width;
+          const y = (e.clientY - rect.top) / rect.height;
+          setTilt({
+            rx: Number(((0.5 - y) * 12).toFixed(2)),
+            ry: Number(((x - 0.5) * 14).toFixed(2)),
+            gx: Math.round(x * 100),
+            gy: Math.round(y * 100),
+            active: true
+          });
+        }}
+        onMouseLeave={() => setTilt({ rx: 0, ry: 0, gx: 50, gy: 50, active: false })}
         style={{
           position: 'relative',
           width: '100%',
@@ -132,13 +147,27 @@ export default function CmuCard({ citizen }) {
           height: '275px',
           margin: '0 auto',
           transformStyle: 'preserve-3d',
-          transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-          transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+          transition: tilt.active ? 'transform 0.08s ease-out' : 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+          transform: `${flipped ? 'rotateY(180deg)' : 'rotateY(0deg)'} rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg)`,
           cursor: 'pointer',
           borderRadius: '20px',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.25)'
+          boxShadow: tilt.active ? '0 26px 48px rgba(5,150,105,0.32)' : '0 20px 40px rgba(0,0,0,0.22)'
         }}
       >
+        {/* Reflet holographique de sécurité 3D */}
+        <div
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            borderRadius: '20px',
+            pointerEvents: 'none',
+            zIndex: 5,
+            opacity: tilt.active ? 0.32 : 0,
+            transition: 'opacity 0.25s ease',
+            background: `radial-gradient(circle at ${tilt.gx}% ${tilt.gy}%, rgba(255,255,255,0.65) 0%, rgba(16,185,129,0.18) 38%, transparent 72%)`
+          }}
+        />
         {/* RECTO : Informations de l'assuré */}
         <div
           style={{
