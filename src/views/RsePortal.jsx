@@ -154,7 +154,7 @@ export default function RsePortal({ portalMode, agentUser }) {
             borderRadius: '50px',
             fontSize: '0.8rem',
             fontWeight: '700',
-            textTransform: 'uppercase',
+            textTransform: 'none',
             letterSpacing: '1px',
             marginBottom: '1rem',
             display: 'inline-block'
@@ -193,7 +193,7 @@ export default function RsePortal({ portalMode, agentUser }) {
               <div style={{ fontSize: '2rem' }}><ProIcon name="handshake" /></div>
               <h3 style={{ fontSize: '1.1rem', fontWeight: '700', margin: 0 }}>Valorisation RSE</h3>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', margin: 0, lineHeight: '1.5' }}>
-                Obtenez un label "Partenaire Solidaire National" décerné par l'UNAMUSC pour valoriser votre impact social auprès de vos clients et partenaires.
+                Obtenez un label "partenaire solidaire national" décerné par l'UNAMUSC pour valoriser votre impact social auprès de vos clients et partenaires.
               </p>
             </div>
           </div>
@@ -221,7 +221,7 @@ export default function RsePortal({ portalMode, agentUser }) {
                       onChange={(e) => setBeneficiariesCount(Math.max(0, parseInt(e.target.value) || 0))} 
                       style={{ width: '100px', padding: '0.25rem 0.5rem', fontSize: '0.9rem', fontWeight: '700', textAlign: 'right', border: '1px solid var(--border-color)', borderRadius: '6px' }}
                     />
-                    <span style={{ color: 'var(--primary)', fontWeight: '700', fontSize: '0.9rem' }}>bénéficiaires</span>
+                    <span style={{ color: 'var(--primary)', fontWeight: '700', fontSize: '0.9rem' }}>Bénéficiaires</span>
                   </div>
                 </div>
                 <input 
@@ -235,8 +235,8 @@ export default function RsePortal({ portalMode, agentUser }) {
                 />
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-sub)', marginTop: '0.25rem' }}>
                   <span>10 (PME)</span>
-                  <span>1 000 (ETI)</span>
-                  <span>10 000 (Grande Entreprise)</span>
+                  <span>1 000 (eti)</span>
+                  <span>10 000 (grande entreprise)</span>
                 </div>
               </div>
 
@@ -277,7 +277,7 @@ export default function RsePortal({ portalMode, agentUser }) {
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.85rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ color: 'var(--text-sub)' }}>Coût unitaire d'enrôlement par personne / an</span>
+                    <span style={{ color: 'var(--text-sub)' }}>Coût unitaire d'enrôlement par personne / An</span>
                     <span style={{ fontWeight: '600' }}>4 500 FCFA</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -285,7 +285,7 @@ export default function RsePortal({ portalMode, agentUser }) {
                     <span style={{ fontWeight: '700', fontSize: '0.95rem' }}>{new Intl.NumberFormat('fr-FR').format(totalCost)} FCFA</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
-                    <span style={{ color: 'var(--text-sub)' }}>Plafond de déduction fiscale RSE (0.5% du CA)</span>
+                    <span style={{ color: 'var(--text-sub)' }}>Plafond de déduction fiscale RSE (0.5% du ca)</span>
                     <span style={{ fontWeight: '600', color: '#3b82f6' }}>{new Intl.NumberFormat('fr-FR').format(maxTaxDeductionLimit)} FCFA</span>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -331,7 +331,7 @@ export default function RsePortal({ portalMode, agentUser }) {
                 
                 <form onSubmit={handlePledgeSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   <div>
-                    <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-sub)' }}>Nom de l'entreprise *</label>
+                    <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'none', color: 'var(--text-sub)' }}>Nom de l'entreprise *</label>
                     <input 
                       className="input" 
                       required 
@@ -342,7 +342,7 @@ export default function RsePortal({ portalMode, agentUser }) {
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                     <div>
-                      <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-sub)' }}>Email Contact *</label>
+                      <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'none', color: 'var(--text-sub)' }}>Email contact *</label>
                       <input 
                         className="input" 
                         type="email" 
@@ -353,7 +353,7 @@ export default function RsePortal({ portalMode, agentUser }) {
                       />
                     </div>
                     <div>
-                      <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-sub)' }}>Téléphone</label>
+                      <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'none', color: 'var(--text-sub)' }}>Téléphone</label>
                       <input 
                         className="input" 
                         placeholder="+221 77..." 
@@ -363,7 +363,7 @@ export default function RsePortal({ portalMode, agentUser }) {
                     </div>
                   </div>
                   <div>
-                    <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-sub)' }}>Notes / Instructions spécifiques</label>
+                    <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'none', color: 'var(--text-sub)' }}>Notes / Instructions spécifiques</label>
                     <textarea 
                       className="input" 
                       rows={3} 
@@ -410,7 +410,7 @@ export default function RsePortal({ portalMode, agentUser }) {
               
               <form onSubmit={handlePledgeSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                 <div>
-                  <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-sub)', display: 'block', marginBottom: '0.35rem' }}>Nom de l'entreprise *</label>
+                  <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'none', color: 'var(--text-sub)', display: 'block', marginBottom: '0.35rem' }}>Nom de l'entreprise *</label>
                   <input 
                     className="input" 
                     required 
@@ -423,7 +423,7 @@ export default function RsePortal({ portalMode, agentUser }) {
                 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                   <div>
-                    <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-sub)', display: 'block', marginBottom: '0.35rem' }}>Nombre de personnes à enrôler *</label>
+                    <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'none', color: 'var(--text-sub)', display: 'block', marginBottom: '0.35rem' }}>Nombre de personnes à enrôler *</label>
                     <input 
                       className="input" 
                       type="number" 
@@ -435,7 +435,7 @@ export default function RsePortal({ portalMode, agentUser }) {
                     />
                   </div>
                   <div>
-                    <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-sub)', display: 'block', marginBottom: '0.35rem' }}>Département ciblé *</label>
+                    <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'none', color: 'var(--text-sub)', display: 'block', marginBottom: '0.35rem' }}>Département ciblé *</label>
                     <select className="input" value={selectedDept} onChange={(e) => setSelectedDept(e.target.value)} style={{ width: '100%' }}>
                       <option value="Dakar">MSD mutuelle de santé départementale de Dakar</option>
                       <option value="Pikine">MSD mutuelle de santé départementale de Pikine</option>
@@ -453,7 +453,7 @@ export default function RsePortal({ portalMode, agentUser }) {
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                   <div>
-                    <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-sub)', display: 'block', marginBottom: '0.35rem' }}>Email Contact *</label>
+                    <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'none', color: 'var(--text-sub)', display: 'block', marginBottom: '0.35rem' }}>Email contact *</label>
                     <input 
                       className="input" 
                       type="email" 
@@ -465,7 +465,7 @@ export default function RsePortal({ portalMode, agentUser }) {
                     />
                   </div>
                   <div>
-                    <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-sub)', display: 'block', marginBottom: '0.35rem' }}>Téléphone</label>
+                    <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'none', color: 'var(--text-sub)', display: 'block', marginBottom: '0.35rem' }}>Téléphone</label>
                     <input 
                       className="input" 
                       placeholder="+221 77..." 
@@ -477,7 +477,7 @@ export default function RsePortal({ portalMode, agentUser }) {
                 </div>
 
                 <div>
-                  <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-sub)', display: 'block', marginBottom: '0.35rem' }}>Notes / Instructions spécifiques</label>
+                  <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'none', color: 'var(--text-sub)', display: 'block', marginBottom: '0.35rem' }}>Notes / Instructions spécifiques</label>
                   <textarea 
                     className="input" 
                     rows={3} 
@@ -547,7 +547,7 @@ export default function RsePortal({ portalMode, agentUser }) {
               <form onSubmit={handleCreateAdvocacy} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div>
-                    <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-sub)', display: 'block', marginBottom: '0.35rem' }}>Titre du plaidoyer *</label>
+                    <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'none', color: 'var(--text-sub)', display: 'block', marginBottom: '0.35rem' }}>Titre du plaidoyer *</label>
                     <input 
                       className="input" 
                       required 
@@ -558,7 +558,7 @@ export default function RsePortal({ portalMode, agentUser }) {
                     />
                   </div>
                   <div>
-                    <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-sub)', display: 'block', marginBottom: '0.35rem' }}>Initié par *</label>
+                    <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'none', color: 'var(--text-sub)', display: 'block', marginBottom: '0.35rem' }}>Initié par *</label>
                     <input 
                       className="input" 
                       required 
@@ -571,7 +571,7 @@ export default function RsePortal({ portalMode, agentUser }) {
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div>
-                    <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-sub)', display: 'block', marginBottom: '0.35rem' }}>Nombre de personnes à enrôler *</label>
+                    <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'none', color: 'var(--text-sub)', display: 'block', marginBottom: '0.35rem' }}>Nombre de personnes à enrôler *</label>
                     <input 
                       className="input" 
                       type="number"
@@ -583,7 +583,7 @@ export default function RsePortal({ portalMode, agentUser }) {
                     />
                   </div>
                   <div>
-                    <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-sub)', display: 'block', marginBottom: '0.35rem' }}>Département ciblé *</label>
+                    <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'none', color: 'var(--text-sub)', display: 'block', marginBottom: '0.35rem' }}>Département ciblé *</label>
                     <select 
                       className="input" 
                       value={newAdvocacy.targetDept} 
@@ -604,7 +604,7 @@ export default function RsePortal({ portalMode, agentUser }) {
                   </div>
                 </div>
                 <div>
-                  <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-sub)', display: 'block', marginBottom: '0.35rem' }}>Description détaillée du plaidoyer *</label>
+                  <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'none', color: 'var(--text-sub)', display: 'block', marginBottom: '0.35rem' }}>Description détaillée du plaidoyer *</label>
                   <textarea 
                     className="input" 
                     required 
@@ -647,7 +647,7 @@ export default function RsePortal({ portalMode, agentUser }) {
                     fontWeight: '800',
                     padding: '0.25rem 0.5rem',
                     borderRadius: '4px',
-                    textTransform: 'uppercase'
+                    textTransform: 'none'
                   }}>
                     En cours de signature <ProIcon name="check-circle" color="#059669" />
                   </div>
@@ -714,9 +714,9 @@ export default function RsePortal({ portalMode, agentUser }) {
                   <tr style={{ backgroundColor: 'var(--bg-alt)', borderBottom: '1px solid var(--border-color)' }}>
                     <th style={{ padding: '1rem', textAlign: 'left' }}>Entreprise</th>
                     <th style={{ padding: '1rem', textAlign: 'left' }}>Type</th>
-                    <th style={{ padding: '1rem', textAlign: 'left' }}>MSD Cible</th>
+                    <th style={{ padding: '1rem', textAlign: 'left' }}>MSD cible</th>
                     <th style={{ padding: '1rem', textAlign: 'center' }}>Bénéficiaires</th>
-                    <th style={{ padding: '1rem', textAlign: 'right' }}>Montant Annuel</th>
+                    <th style={{ padding: '1rem', textAlign: 'right' }}>Montant annuel</th>
                     <th style={{ padding: '1rem', textAlign: 'center' }}>Statut</th>
                   </tr>
                 </thead>
@@ -779,7 +779,7 @@ export default function RsePortal({ portalMode, agentUser }) {
 
             <form onSubmit={handlePledgeSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div>
-                <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-sub)' }}>Nom de votre entreprise *</label>
+                <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'none', color: 'var(--text-sub)' }}>Nom de votre entreprise *</label>
                 <input 
                   className="input" 
                   required 
@@ -789,7 +789,7 @@ export default function RsePortal({ portalMode, agentUser }) {
                 />
               </div>
               <div>
-                <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-sub)' }}>Email Contact *</label>
+                <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'none', color: 'var(--text-sub)' }}>Email contact *</label>
                 <input 
                   className="input" 
                   type="email" 
@@ -800,7 +800,7 @@ export default function RsePortal({ portalMode, agentUser }) {
                 />
               </div>
               <div>
-                <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase', color: 'var(--text-sub)' }}>Téléphone</label>
+                <label style={{ fontSize: '0.75rem', fontWeight: '700', textTransform: 'none', color: 'var(--text-sub)' }}>Téléphone</label>
                 <input 
                   className="input" 
                   placeholder="+221..." 

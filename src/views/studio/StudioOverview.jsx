@@ -38,7 +38,7 @@ function StatCard({ icon, label, value, sub, color = '#059669', small = false })
         <div style={{ fontSize: small ? '1.2rem' : '1.6rem', fontWeight: 900, color: 'var(--text-main, #0f172a)', lineHeight: 1.1 }}>
           {value}
         </div>
-        <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-sub, #64748b)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+        <div style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--text-sub, #64748b)', textTransform: 'none', letterSpacing: '0.04em' }}>
           {label}
         </div>
         {sub && <div style={{ fontSize: '0.7rem', color: 'var(--text-sub, #94a3b8)', marginTop: '0.1rem' }}>{sub}</div>}
@@ -97,7 +97,7 @@ function RegionCard({ region, onSelect }) {
         ].map(item => (
           <div key={item.label} style={{ textAlign: 'center', background: 'var(--bg-subtle, #f8fafc)', borderRadius: '8px', padding: '0.35rem 0.2rem' }}>
             <div style={{ fontWeight: 800, fontSize: '0.95rem', color: 'var(--text-main, #0f172a)' }}>{item.val}</div>
-            <div style={{ fontSize: '0.62rem', color: 'var(--text-sub, #94a3b8)', textTransform: 'uppercase' }}>{item.label}</div>
+            <div style={{ fontSize: '0.62rem', color: 'var(--text-sub, #94a3b8)', textTransform: 'none' }}>{item.label}</div>
           </div>
         ))}
       </div>
@@ -242,7 +242,7 @@ export default function StudioOverview({ onSelectRegion }) {
       {/* En-tête */}
       <div style={{ marginBottom: '1.5rem' }}>
         <h2 style={{ margin: 0, fontWeight: 900, fontSize: '1.35rem', color: 'var(--text-main, #0f172a)' }}>
-          <ProIcon name="bar-chart" /> Vue générale — Studio Cartes
+          <ProIcon name="bar-chart" /> Vue générale — Studio cartes
         </h2>
         <p style={{ margin: '0.3rem 0 0', fontSize: '0.85rem', color: 'var(--text-sub, #64748b)' }}>
           Production des cartes CSU sur l'ensemble des régions · Tarif unitaire : {PRIX_CARTE_FCFA} FCFA/carte imprimée

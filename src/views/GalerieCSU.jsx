@@ -379,7 +379,7 @@ export default function GalerieCSU({ lang }) {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'var(--bg-card-subtle)', padding: '0.75rem 1rem', borderRadius: '14px', marginTop: '0.5rem', border: '1px solid var(--border-color)' }}>
                       <span style={{ fontSize: '1.4rem' }}><ProIcon name="trending-up" /></span>
                       <div>
-                        <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-sub)', fontWeight: '700', letterSpacing: '0.5px' }}>{t.impact}</div>
+                        <div style={{ fontSize: '0.7rem', textTransform: 'none', color: 'var(--text-sub)', fontWeight: '700', letterSpacing: '0.5px' }}>{t.impact}</div>
                         <div style={{ fontWeight: '850', color: '#10b981', fontSize: '1rem' }}>{selectedItem.impact}</div>
                       </div>
                     </div>

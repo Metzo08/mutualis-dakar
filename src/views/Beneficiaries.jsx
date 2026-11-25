@@ -479,7 +479,7 @@ export default function Beneficiaries({ lang, agentUser }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
           <span style={{ fontSize: '1.2rem' }}><ProIcon name="bar-chart" /></span>
           <div>
-            <strong style={{ color: 'var(--text-main)' }}>Registre Régional des Assurés CSU :</strong>{' '}
+            <strong style={{ color: 'var(--text-main)' }}>Registre régional des assurés CSU :</strong>{' '}
             {/* Total issu de la PAGINATION du serveur, pas du tableau affiché :
                 le tableau ne contient qu'une page. L'ancien code affichait
                 beneficiaries.length, qui montrait la taille de page et laissait
@@ -616,7 +616,7 @@ export default function Beneficiaries({ lang, agentUser }) {
                   </td>
                   <td style={{ padding: '1.2rem 1.5rem', fontSize: '0.85rem', color: 'var(--text-main)' }}>
                     <div style={{ fontWeight: '600' }}>{b.mutuelleName || 'Mutuelle de Dakar'}</div>
-                    <small style={{ color: 'var(--text-sub)' }}>Union Régionale Dakar</small>
+                    <small style={{ color: 'var(--text-sub)' }}>Union régionale Dakar</small>
                   </td>
                   <td style={{ padding: '1.2rem 1.5rem', fontSize: '0.85rem' }}>
                     <span className="badge" style={{ 
@@ -629,7 +629,7 @@ export default function Beneficiaries({ lang, agentUser }) {
                     </span>
                   </td>
                   <td style={{ padding: '1.2rem 1.5rem', fontSize: '0.85rem' }}>
-                    <span className="badge badge-outline" style={{ textTransform: 'capitalize' }}>
+                    <span className="badge badge-outline" style={{ textTransform: 'none' }}>
                       {b.packageType || 'Individuel'}
                     </span>
                   </td>
@@ -815,7 +815,7 @@ export default function Beneficiaries({ lang, agentUser }) {
                 padding: '1rem'
               }}>
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>CARTE CSU DAKAR</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Carte CSU Dakar</div>
                   <div style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--text-main)', marginTop: '0.2rem' }}>
                     {selectedBeneficiary.firstName} {selectedBeneficiary.lastName}
                   </div>
@@ -837,7 +837,7 @@ export default function Beneficiaries({ lang, agentUser }) {
               {/* Grid 2 Column detailed attributes */}
               <div className="grid grid-2" style={{ gap: '1rem' }}>
                 <div>
-                  <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>
+                  <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'none', display: 'block' }}>
                     {t.modalCivilInfo}
                   </strong>
                   <span style={{ fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: '600' }}>
@@ -846,7 +846,7 @@ export default function Beneficiaries({ lang, agentUser }) {
                 </div>
 
                 <div>
-                  <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>
+                  <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'none', display: 'block' }}>
                     {selectedBeneficiary.isFamilyMember ? 'Âge & Relation' : t.modalBirthDate}
                   </strong>
                   <span style={{ fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: '600' }}>
@@ -855,7 +855,7 @@ export default function Beneficiaries({ lang, agentUser }) {
                 </div>
 
                 <div>
-                  <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>
+                  <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'none', display: 'block' }}>
                     {t.modalContact}
                   </strong>
                   <span style={{ fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: '600' }}>
@@ -865,7 +865,7 @@ export default function Beneficiaries({ lang, agentUser }) {
                 </div>
 
                 <div>
-                  <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>
+                  <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'none', display: 'block' }}>
                     {t.modalAddress}
                   </strong>
                   <span style={{ fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: '600' }}>
@@ -874,7 +874,7 @@ export default function Beneficiaries({ lang, agentUser }) {
                 </div>
 
                 <div>
-                  <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>
+                  <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'none', display: 'block' }}>
                     {t.thMutuelle}
                   </strong>
                   <span style={{ fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: '600' }}>
@@ -883,10 +883,10 @@ export default function Beneficiaries({ lang, agentUser }) {
                 </div>
 
                 <div>
-                  <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block' }}>
+                  <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'none', display: 'block' }}>
                     {t.modalPayment}
                   </strong>
-                  <span style={{ fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: '600', textTransform: 'uppercase' }}>
+                  <span style={{ fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: '600', textTransform: 'none' }}>
                     <ProIcon name="credit-card" /> {selectedBeneficiary.paymentMethod} ({selectedBeneficiary.packageType})
                   </span>
                 </div>
@@ -895,7 +895,7 @@ export default function Beneficiaries({ lang, agentUser }) {
                {/* Ayants droit section (if not a sponsor and not family member itself) */}
               {selectedBeneficiary.packageType !== 'parrainage' && !selectedBeneficiary.isFamilyMember && (
                 <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
-                  <strong style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '0.5rem' }}>
+                  <strong style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'none', display: 'block', marginBottom: '0.5rem' }}>
                     {t.modalFamily} ({selectedBeneficiary.familyMembers ? selectedBeneficiary.familyMembers.length : 0})
                   </strong>
                   
@@ -927,7 +927,7 @@ export default function Beneficiaries({ lang, agentUser }) {
               {/* Chef details (if it is a family member) */}
               {selectedBeneficiary.isFamilyMember && (
                 <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
-                  <strong style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '0.5rem' }}>
+                  <strong style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'none', display: 'block', marginBottom: '0.5rem' }}>
                     Chef de famille rattaché
                   </strong>
                   <div style={{
@@ -948,7 +948,7 @@ export default function Beneficiaries({ lang, agentUser }) {
               {selectedBeneficiary.packageType === 'parrainage' && (
                 <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                    <strong style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                    <strong style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'none' }}>
                       Filleuls parrainés ({beneficiaries.filter(b => b.sponsorPhone === selectedBeneficiary.phone && b.id !== selectedBeneficiary.id).length})
                     </strong>
                     <button 
@@ -956,7 +956,7 @@ export default function Beneficiaries({ lang, agentUser }) {
                       onClick={() => handleDownloadSponsorReceipt(selectedBeneficiary)}
                       style={{ fontSize: '0.75rem', padding: '0.3rem 0.75rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}
                     >
-                      <ProIcon name="file-text" /> Reçu Parrainage (PDF)
+                      <ProIcon name="file-text" /> Reçu parrainage (PDF)
                     </button>
                   </div>
                   
@@ -988,8 +988,8 @@ export default function Beneficiaries({ lang, agentUser }) {
                 <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'var(--bg-card-subtle)', padding: '0.75rem 1rem', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
                     <div>
-                      <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: '0.2rem' }}>
-                        Parrainage Social / Sponsor
+                      <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'none', display: 'block', marginBottom: '0.2rem' }}>
+                        Parrainage social / Sponsor
                       </strong>
                       <span style={{ fontSize: '0.85rem', color: 'var(--text-main)', fontWeight: '700' }}>
                         <ProIcon name="user" /> {
@@ -1015,7 +1015,7 @@ export default function Beneficiaries({ lang, agentUser }) {
                       }}
                       style={{ fontSize: '0.75rem', padding: '0.3rem 0.75rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}
                     >
-                      <ProIcon name="file-text" /> Reçu du Parrain (PDF)
+                      <ProIcon name="file-text" /> Reçu du parrain (PDF)
                     </button>
                   </div>
                 </div>

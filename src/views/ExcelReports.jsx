@@ -91,7 +91,7 @@ export default function ExcelReports() { // props historiques conservées par Ap
       <h1 className="h4 mb-1"><ProIcon name="bar-chart" /> Rapports Excel</h1>
       <p className="text-muted small mb-3">
         Tous les rapports sont générés côté serveur, filtrés selon votre périmètre MSD et journalisés.
-        Le format <strong>.xlsx</strong> est le format de référence ; les montants sont calculés et vérifiés par le serveur.
+        Le format <strong>.XLSX</strong> est le format de référence ; les montants sont calculés et vérifiés par le serveur.
       </p>
 
       {status && (
@@ -117,12 +117,12 @@ export default function ExcelReports() { // props historiques conservées par Ap
         {/* 2 — Studio Cartes */}
         <div className="col-md-6">
           <div className="card h-100">
-            <h5 className="mb-2">Studio Cartes — synthèse complète</h5>
+            <h5 className="mb-2">Studio cartes — Synthèse complète</h5>
             <p className="small text-muted mb-2">
-              7 feuilles : Synthèse, Régions, Départements, MSD, Adhésions de masse, Production des cartes,
-              Revenus Sen-E-Carte.
+              7 feuilles : synthèse, régions, départements, MSD, adhésions de masse, production des cartes,
+              revenus Sen-E-Carte.
             </p>
-            <label className="form-label small text-muted">Périmètre (vide = national / votre MSD)</label>
+            <label className="form-label small text-muted">Périmètre (vide = national / Votre MSD)</label>
             <input className="form-control form-control-sm mb-2" placeholder="Code MSD (ex. DKR)" value={msdCode}
               onChange={(e) => setMsdCode(e.target.value.toUpperCase())} />
             <button className="btn btn-outline-primary btn-sm" disabled={!!downloading}
@@ -137,7 +137,7 @@ export default function ExcelReports() { // props historiques conservées par Ap
           <div className="card h-100">
             <h5 className="mb-2">Rapport d'une MSD</h5>
             <p className="small text-muted mb-2">
-              5 feuilles : Synthèse, Adhésions de masse, Cartes imprimées, Revenus, Dossiers restant à traiter.
+              5 feuilles : synthèse, adhésions de masse, cartes imprimées, revenus, dossiers restant à traiter.
             </p>
             <label className="form-label small text-muted">Code MSD</label>
             <input className="form-control form-control-sm mb-2" placeholder="Ex. DKR" value={msdCode}
@@ -155,8 +155,8 @@ export default function ExcelReports() { // props historiques conservées par Ap
           <div className="card h-100">
             <h5 className="mb-2">Gestion des cartes</h5>
             <p className="small text-muted mb-2">
-              4 feuilles : Synthèse, Cartes (statuts, blocages, révocations, remplacements), Opérations carte,
-              Réinitialisations.
+              4 feuilles : synthèse, cartes (statuts, blocages, révocations, remplacements), opérations carte,
+              réinitialisations.
             </p>
             <button className="btn btn-outline-primary btn-sm" disabled={!!downloading}
               onClick={() => download('cards', '/api/excel/cards-report', `gestion-cartes-${stamp}.xlsx`)}>
@@ -170,7 +170,7 @@ export default function ExcelReports() { // props historiques conservées par Ap
           <div className="card h-100">
             <h5 className="mb-2">Rapport de sécurité</h5>
             <p className="small text-muted mb-2">
-              5 feuilles : Synthèse, Alertes, Événements d'audit, Cartes bloquées/révoquées, Contrôles.
+              5 feuilles : synthèse, alertes, événements d'audit, cartes bloquées/révoquées, contrôles.
               Jamais de secret, de jeton ni de mot de passe.
             </p>
             <button className="btn btn-outline-danger btn-sm" disabled={!!downloading}
@@ -185,8 +185,8 @@ export default function ExcelReports() { // props historiques conservées par Ap
           <div className="card h-100">
             <h5 className="mb-2">Rapport d'importation</h5>
             <p className="small text-muted mb-2">
-              6 feuilles : Résumé, Dossiers conformes, Anomalies, Photos non associées, Doublons et conflits,
-              Résultat de l'intégration.
+              6 feuilles : résumé, dossiers conformes, anomalies, photos non associées, doublons et conflits,
+              résultat de l'intégration.
             </p>
             <label className="form-label small text-muted">Lot d'importation</label>
             <select className="form-select form-select-sm mb-2" value={importId} onChange={(e) => setImportId(e.target.value)}>

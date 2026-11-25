@@ -530,7 +530,7 @@ export default function Payments({
             >
               <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
                 <span className="badge bg-primary text-white" style={{ fontSize: '0.76rem', borderRadius: '8px', padding: '5px 10px', fontWeight: '700' }}>
-                  <ProIcon name="user" />‍<ProIcon name="briefcase" /> Espace Agent / Super Admin
+                  <ProIcon name="user" />‍<ProIcon name="briefcase" /> Espace agent / Super admin
                 </span>
                 <span className="text-muted fw-bold" style={{ fontSize: '0.82rem' }}>
                   Foyer actif : <strong style={{ color: '#065f46' }}>{activeMember?.cmuNumber}</strong>
@@ -601,7 +601,7 @@ export default function Payments({
             >
               <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
                 <span className="badge" style={{ background: '#059669', color: '#ffffff', fontSize: '0.76rem', borderRadius: '8px', padding: '5px 10px', fontWeight: '700' }}>
-                  <ProIcon name="lock" /> Espace Privé Assuré • Données Sécurisées
+                  <ProIcon name="lock" /> Espace privé assuré • Données sécurisées
                 </span>
                 <span className="badge" style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', fontSize: '0.76rem', borderRadius: '8px', padding: '4px 8px', fontWeight: '700' }}>
                   {(activeMember?.dependents || []).length === 0 ? '👤 Assuré Seul (0 ayant droit)' : `👨‍👩‍👧‍👦 Foyer (${1 + (activeMember?.dependents || []).length} pers.)`}
@@ -627,20 +627,20 @@ export default function Payments({
                       {formattedHeadName}
                     </div>
                     <span className="badge mt-1 d-inline-block" style={{ background: '#059669', color: '#ffffff', fontSize: '0.72rem', borderRadius: '999px', padding: '0.22rem 0.65rem', fontWeight: 700 }}>
-                      ● Droits Actifs
+                      ● droits actifs
                     </span>
                   </div>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.5rem' }}>
                   <div style={{ background: '#ffffff', border: '1px solid #d1fae5', borderRadius: '10px', padding: '0.45rem 0.65rem' }}>
-                    <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Code bénéficiaire</div>
+                    <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#64748b', textTransform: 'none' }}>Code bénéficiaire</div>
                     <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#0f172a', fontFamily: 'monospace', wordBreak: 'break-all' }}>
                       {activeMember?.cmuNumber || '—'}
                     </div>
                   </div>
                   <div style={{ background: '#ffffff', border: '1px solid #d1fae5', borderRadius: '10px', padding: '0.45rem 0.65rem' }}>
-                    <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Téléphone</div>
+                    <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#64748b', textTransform: 'none' }}>Téléphone</div>
                     <div style={{ fontSize: '0.84rem', fontWeight: 800, color: '#0f172a' }}>
                       <ProIcon name="phone" /> {activeMember?.phone || 'Non renseigné'}
                     </div>
@@ -764,7 +764,7 @@ export default function Payments({
                     onClick={() => setShowAddDependentModal(true)}
                   >
                     <span><ProIcon name="plus" /></span>
-                    <span>Rattacher un enfant / ayant droit</span>
+                    <span>Rattacher un enfant / Ayant droit</span>
                   </button>
                 </div>
               </div>
@@ -1161,10 +1161,10 @@ export default function Payments({
                   onChange={(e) => setSponsoringCause(e.target.value)}
                   style={{ borderRadius: '14px', fontSize: '0.92rem', padding: '0.85rem 1.2rem' }}
                 >
-                  <option value="Daara Serigne Fallou Fann Hock (10 talibés pris en charge)">🕌 Daara Serigne Fallou Fann Hock (10 talibés pris en charge)</option>
-                  <option value="Orphelinat de la Médina (Enfants vulnérables)">Orphelinat de la Médina (Enfants vulnérables)</option>
-                  <option value="Centre pédiatrique & Foyer social de Pikine">Centre pédiatrique & Foyer social de Pikine</option>
-                  <option value="Daara Thiaroye Gare & Yeumbeul Nord">🕌 Daara Thiaroye Gare & Yeumbeul Nord</option>
+                  <option value="Daara Serigne Fallou Fann Hock (10 talibés pris en charge)">🕌 Daara serigne fallou Fann hock (10 talibés pris en charge)</option>
+                  <option value="Orphelinat de la Médina (Enfants vulnérables)">Orphelinat de la Médina (enfants vulnérables)</option>
+                  <option value="Centre pédiatrique & Foyer social de Pikine">Centre pédiatrique & foyer social de Pikine</option>
+                  <option value="Daara Thiaroye Gare & Yeumbeul Nord">🕌 Daara thiaroye gare & yeumbeul nord</option>
                   <option value="Fonds d'urgence hospitalière & dialyse UNAMUSC Dakar">Fonds d'urgence hospitalière & dialyse UNAMUSC Dakar</option>
                   <option value="Attribution prioritaire aux familles les plus démunies de Dakar">Attribution prioritaire aux familles les plus démunies de Dakar</option>
                 </select>
@@ -1173,7 +1173,7 @@ export default function Payments({
               {/* NOM DU DONATEUR POUR LA QUITTANCE OFFICIELLE */}
               <div className="mb-4">
                 <label className="fw-bold mb-2 d-block" style={{ fontSize: '0.88rem' }}>
-                  3. Nom du parrain / donateur pour le reçu fiscal & attestation officielle :
+                  3. Nom du parrain / Donateur pour le reçu fiscal & attestation officielle :
                 </label>
                 <input 
                   type="text" 
@@ -1208,7 +1208,7 @@ export default function Payments({
                   >
                     <img src="/logo_wave.png" alt="Wave" style={{ height: '24px' }} />
                     <span style={{ fontSize: '0.95rem', fontWeight: '800', color: provider === 'wave' ? '#0077b6' : 'var(--text-main)' }}>
-                      Wave Mobile
+                      Wave mobile
                     </span>
                   </button>
                   <button
@@ -1292,13 +1292,13 @@ export default function Payments({
                 <div className="p-3.5 rounded-4 shadow-sm" style={{ background: 'var(--bg-body)', border: '1px solid var(--border-color)' }}>
                   <span className="text-muted fw-bold d-block mb-1" style={{ fontSize: '0.78rem' }}>Couverture médicale :</span>
                   <h4 className="fw-extrabold mb-0" style={{ color: '#10b981', fontSize: '1.2rem' }}>
-                    <ProIcon name="shield-check" /> Tiers-payant 80% Actif
+                    <ProIcon name="shield-check" /> Tiers-payant 80% actif
                   </h4>
                 </div>
                 <div className="p-3.5 rounded-4 shadow-sm" style={{ background: 'var(--bg-body)', border: '1px solid var(--border-color)' }}>
                   <span className="text-muted fw-bold d-block mb-1" style={{ fontSize: '0.78rem' }}>Échéance de validité :</span>
                   <h4 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.2rem' }}>
-                    <ProIcon name="calendar" /> 31 Décembre 2026
+                    <ProIcon name="calendar" /> 31 décembre 2026
                   </h4>
                 </div>
               </div>
@@ -1338,7 +1338,7 @@ export default function Payments({
                                 {p.type}
                               </h5>
                               <span className="badge" style={{ background: 'rgba(5, 150, 105, 0.12)', color: '#059669', fontSize: '0.74rem', fontWeight: '700', borderRadius: '8px', padding: '4px 8px' }}>
-                                <ProIcon name="check-circle" color="#059669" /> Validé & Homologué
+                                <ProIcon name="check-circle" color="#059669" /> Validé & homologué
                               </span>
                             </div>
                             <div className="text-muted mt-1" style={{ fontSize: '0.8rem' }}>
@@ -1509,8 +1509,8 @@ export default function Payments({
                       onChange={(e) => setNewDepGender(e.target.value)}
                       style={{ borderRadius: '14px', padding: '0.8rem 1.1rem' }}
                     >
-                      <option value="M">Masculin (Garçon / Homme)</option>
-                      <option value="F">Féminin (Fille / Femme)</option>
+                      <option value="M">Masculin (garçon / Homme)</option>
+                      <option value="F">Féminin (fille / Femme)</option>
                     </select>
                   </div>
                 </div>

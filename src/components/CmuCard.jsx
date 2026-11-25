@@ -117,7 +117,7 @@ export default function CmuCard({ citizen }) {
           }}
           onClick={() => setShowZoomModal(true)}
         >
-          <ProIcon name="search" /> Agrandir le QR Code
+          <ProIcon name="search" /> Agrandir le QR code
         </button>
       </div>
 
@@ -169,8 +169,8 @@ export default function CmuCard({ citizen }) {
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 1 }}>
             <div>
-              <div style={{ fontSize: '0.72rem', opacity: 0.9, letterSpacing: '1px', textTransform: 'uppercase', fontWeight: '800' }}>
-                Couverture Santé Universelle
+              <div style={{ fontSize: '0.72rem', opacity: 0.9, letterSpacing: '1px', textTransform: 'none', fontWeight: '800' }}>
+                Couverture santé universelle
               </div>
               <div style={{ fontSize: '1.25rem', fontWeight: '900', letterSpacing: '0.5px' }}>
                 SENMUTUELLES <ProIcon name="senegal-flag" />
@@ -211,13 +211,13 @@ export default function CmuCard({ citizen }) {
             border: '1px solid rgba(255,255,255,0.18)'
           }}>
             <div>
-              <div style={{ fontSize: '0.62rem', opacity: 0.9, textTransform: 'uppercase', fontWeight: '750' }}>Code bénéficiaire / Code Patient IPP</div>
+              <div style={{ fontSize: '0.62rem', opacity: 0.9, textTransform: 'none', fontWeight: '750' }}>Code bénéficiaire / Code patient IPP</div>
               <div style={{ fontSize: '0.92rem', fontWeight: '900', fontFamily: 'monospace', letterSpacing: '0.5px', color: '#fef08a' }}>
                 {cmuDisplay} {citizen.patientCode ? `| IPP: ${citizen.patientCode}` : '| IPP: IPP-DKR-2026-88'}
               </div>
             </div>
             <div style={{ fontSize: '0.72rem', fontWeight: '800', color: '#ffffff', textAlign: 'right', opacity: 0.95 }}>
-              <ProIcon name="scan" /> Toucher pour<br />le QR Code
+              <ProIcon name="scan" /> Toucher pour<br />Le QR code
             </div>
           </div>
         </div>
@@ -244,7 +244,7 @@ export default function CmuCard({ citizen }) {
           {/* En-tête Verso */}
           <div className="d-flex justify-content-between align-items-center w-100 px-1">
             <span style={{ fontSize: '0.70rem', fontWeight: '850', color: '#000000', letterSpacing: '0.2px' }}>
-              UNAMUSC SENEGAL - CARTE NATIONALE D’ASSURANCE SANTÉ
+              UNAMUSC senegal - carte nationale D’ASSURANCE santé
             </span>
             <span className="badge" style={{ backgroundColor: '#059669', color: '#ffffff', fontSize: '0.72rem', borderRadius: '10px', padding: '0.3rem 0.65rem', fontWeight: '800' }}>
               <ProIcon name="clock" /> {secondsLeft}s
@@ -307,7 +307,7 @@ export default function CmuCard({ citizen }) {
             className="btn btn-outline-success btn-sm fw-bold px-3 py-2 hover-lift"
             style={{ fontSize: '0.84rem', borderRadius: '12px', textDecoration: 'none' }}
           >
-            ⬇️ Télécharger le QR Code PNG HD
+            ⬇️ télécharger le QR code PNG hd
           </a>
         )}
       </div>
@@ -344,7 +344,7 @@ export default function CmuCard({ citizen }) {
           >
             <div className="d-flex justify-content-between align-items-center mb-3">
               <span className="badge" style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)', color: '#059669', padding: '0.5rem 1rem', borderRadius: '12px', fontSize: '0.85rem', fontWeight: '800' }}>
-                <ProIcon name="lock" /> QR Code Certifié ANACSU
+                <ProIcon name="lock" /> QR code certifié anacsu
               </span>
               <button 
                 type="button" 

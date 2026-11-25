@@ -508,7 +508,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
               <div className="card shadow-lg border-0 p-4 p-md-5 h-100 rounded-4 text-left d-flex flex-column justify-content-between" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', borderTop: '6px solid #059669', padding: '3rem 2.5rem' }}>
                 <div>
                   <span className="badge bg-success-subtle text-success border border-success px-3.5 py-2 fw-bold mb-4 d-inline-block" style={{ borderRadius: '20px', fontSize: '0.85rem' }}>
-                    <ProIcon name="hospital" /> PORTAIL OFFICIEL DES STRUCTURES DE SANTÉ CONVENTIONNÉES
+                    <ProIcon name="hospital" /> Portail officiel des structures de santé conventionnées
                   </span>
                   
                   <h2 className="fw-extrabold mb-3.5" style={{ color: 'var(--primary)', fontSize: '2rem', lineHeight: '1.3', letterSpacing: '-0.01em' }}>
@@ -516,14 +516,14 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                   </h2>
                   
                   <p className="text-muted mb-4" style={{ lineHeight: '1.7', fontSize: '1.02rem', opacity: 0.9 }}>
-                    Cet espace est réservé aux hôpitaux publics, cliniques privées, officines de pharmacie, centres d'imagerie et praticiens médicaux agréés par l'Union Nationale des Mutuelles de Santé Communautaires (UNAMUSC).
+                    Cet espace est réservé aux hôpitaux publics, cliniques privées, officines de pharmacie, centres d'imagerie et praticiens médicaux agréés par l'union nationale des mutuelles de santé communautaires (UNAMUSC).
                   </p>
 
                   <div className="d-flex flex-column gap-3.5 mb-4">
                     <div className="d-flex gap-3.5 align-items-start p-3.5 rounded-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
                       <div style={{ fontSize: '1.85rem', color: '#059669', minWidth: '40px' }}><ProIcon name="credit-card" /></div>
                       <div>
-                        <h5 className="fw-bold mb-1.5" style={{ color: 'var(--primary)', fontSize: '1.05rem' }}>Télétransmission & Tiers-payant (80% à 100%)</h5>
+                        <h5 className="fw-bold mb-1.5" style={{ color: 'var(--primary)', fontSize: '1.05rem' }}>Télétransmission & tiers-payant (80% à 100%)</h5>
                         <p className="text-muted mb-0" style={{ fontSize: '0.88rem', lineHeight: '1.55' }}>Validation en temps réel des cartes CMU et remboursement sous 72h des bordereaux d'actes médicaux.</p>
                       </div>
                     </div>
@@ -531,7 +531,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                     <div className="d-flex gap-3.5 align-items-start p-3.5 rounded-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
                       <div style={{ fontSize: '1.85rem', color: '#059669', minWidth: '40px' }}><ProIcon name="landmark" /></div>
                       <div>
-                        <h5 className="fw-bold mb-1.5" style={{ color: 'var(--primary)', fontSize: '1.05rem' }}>Habilitation des Unions Départementales (UDMS)</h5>
+                        <h5 className="fw-bold mb-1.5" style={{ color: 'var(--primary)', fontSize: '1.05rem' }}>Habilitation des unions départementales (UDMS)</h5>
                         <p className="text-muted mb-0" style={{ fontSize: '0.88rem', lineHeight: '1.55' }}>Gestion du conventionnement local des médecins, des tarifs réglementés et du contrôle médical.</p>
                       </div>
                     </div>
@@ -550,7 +550,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                       style={{ fontSize: '0.82rem', borderRadius: '10px' }}
                       onClick={() => setLoginForm({ username: 'AGR-2026-DKR-101', password: 'partenaire2026' })}
                     >
-                      <ProIcon name="stethoscope" /> Dr. Ousmane Ndiaye (AGR-2026-DKR-101)
+                      <ProIcon name="stethoscope" /> Dr. ousmane ndiaye (agr-2026-DKR-101)
                     </button>
                     <button 
                       type="button" 
@@ -558,7 +558,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                       style={{ fontSize: '0.82rem', borderRadius: '10px' }}
                       onClick={() => setLoginForm({ username: 'AGR-2026-DKR-404', password: 'partenaire2026' })}
                     >
-                      <ProIcon name="pill" /> Pharmacie de la Médina (AGR-2026-DKR-404)
+                      <ProIcon name="pill" /> Pharmacie de la Médina (agr-2026-DKR-404)
                     </button>
                     <button 
                       type="button" 
@@ -581,7 +581,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                     <ProIcon name="lock" />
                   </div>
                   <h3 className="fw-bold mb-2" style={{ color: 'var(--text-main)', fontSize: '1.5rem' }}>Connexion espace prestataires</h3>
-                  <p className="small text-muted mb-0" style={{ fontSize: '0.9rem', lineHeight: '1.5' }}>Accès réservé aux praticiens de santé agréés et administrateurs d'Unions Départementales (UDMS).</p>
+                  <p className="small text-muted mb-0" style={{ fontSize: '0.9rem', lineHeight: '1.5' }}>Accès réservé aux praticiens de santé agréés et administrateurs d'unions départementales (UDMS).</p>
                 </div>
 
                 {loginError && <div className="alert alert-danger py-2.5 px-3 small mb-4 rounded-3 fw-bold">{loginError}</div>}
@@ -646,7 +646,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
               <div style={{ fontSize: '2.4rem', marginBottom: '0.75rem' }}><ProIcon name="pill" /></div>
               <h5 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.5rem' }}>Officines de pharmacie</h5>
               <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', margin: 0, lineHeight: '1.6' }}>
-                Saisie des bons de commande pharmacie (50%) et remboursement direct du Tiers-payant.
+                Saisie des bons de commande pharmacie (50%) et remboursement direct du tiers-payant.
               </p>
             </div>
 
@@ -654,7 +654,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
               <div style={{ fontSize: '2.4rem', marginBottom: '0.75rem' }}><ProIcon name="scan" /></div>
               <h5 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.5rem' }}>Imagerie & laboratoires</h5>
               <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', margin: 0, lineHeight: '1.6' }}>
-                Télétransmission des clichés radiologiques DICOM HD et des comptes-rendus d'examens biologiques.
+                Télétransmission des clichés radiologiques dicom hd et des comptes-rendus d'examens biologiques.
               </p>
             </div>
 
@@ -688,7 +688,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
               style={{ background: '#dc2626', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1.1rem', fontSize: '0.88rem', boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3)' }}
               onClick={handleLogout}
             >
-              🚪 Déconnexion
+              🚪 déconnexion
             </button>
           </div>
 
@@ -717,7 +717,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                     }}
                     style={{ width: '220px', borderRadius: '10px' }}
                   >
-                    <option value="Toutes">Toutes les UDMS (Région)</option>
+                    <option value="Toutes">Toutes les UDMS (région)</option>
                     <option value="UDMS Dakar">UDMS Dakar</option>
                     <option value="UDMS Pikine">UDMS Pikine</option>
                     <option value="UDMS Guédiawaye">UDMS Guédiawaye</option>
@@ -786,12 +786,12 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                           onChange={(e) => setNewPrestataire({ ...newPrestataire, role: e.target.value })}
                           style={{ borderRadius: '10px' }}
                         >
-                          <option value="Médecin Généraliste / Spécialiste">Médecin Généraliste / Spécialiste</option>
-                          <option value="Pharmacie d'Officine (Bons 48h)">Pharmacie d'Officine (Bons 48h)</option>
-                          <option value="Centre d'Imagerie & Radiologie (DICOM)">Centre d'Imagerie & Radiologie (DICOM)</option>
-                          <option value="Laboratoire d'Analyses Médicales">Laboratoire d'Analyses Médicales</option>
-                          <option value="Hôpital / Structure Sanitaire">Hôpital / Structure Sanitaire</option>
-                          <option value="Sage-Femme / Infirmier (CPN Maternité)">Sage-Femme / Infirmier (CPN Maternité)</option>
+                          <option value="Médecin Généraliste / Spécialiste">Médecin généraliste / Spécialiste</option>
+                          <option value="Pharmacie d'Officine (Bons 48h)">Pharmacie d'officine (bons 48h)</option>
+                          <option value="Centre d'Imagerie & Radiologie (DICOM)">Centre d'imagerie & radiologie (dicom)</option>
+                          <option value="Laboratoire d'Analyses Médicales">Laboratoire d'analyses médicales</option>
+                          <option value="Hôpital / Structure Sanitaire">Hôpital / Structure sanitaire</option>
+                          <option value="Sage-Femme / Infirmier (CPN Maternité)">Sage-femme / Infirmier (CPN maternité)</option>
                         </select>
                       </div>
 
@@ -816,10 +816,10 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                             onChange={(e) => setNewPrestataire({ ...newPrestataire, rate: e.target.value })}
                             style={{ borderRadius: '10px' }}
                           >
-                            <option value="80">80% (Général)</option>
-                            <option value="85">85% (Spécialités)</option>
+                            <option value="80">80% (général)</option>
+                            <option value="85">85% (spécialités)</option>
                             <option value="90">90% (Examens/Radios)</option>
-                            <option value="100">100% (Gratuité / Maternité)</option>
+                            <option value="100">100% (gratuité / Maternité)</option>
                           </select>
                         </div>
                       </div>
@@ -1005,7 +1005,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                     <table className="table table-hover align-middle mb-0" style={{ color: 'var(--text-main)' }}>
                       <thead>
                         <tr style={{ background: 'var(--card-bg)', borderBottom: '2px solid var(--border-color)' }}>
-                          <th style={{ padding: '0.75rem' }}>Praticien / structure</th>
+                          <th style={{ padding: '0.75rem' }}>Praticien / Structure</th>
                           <th style={{ padding: '0.75rem' }}>Rôle & spécialité</th>
                           <th style={{ padding: '0.75rem' }}>Union & agrément</th>
                           <th style={{ padding: '0.75rem' }}>Taux</th>
@@ -1117,7 +1117,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                 <form onSubmit={declareTierPayant}>
                   <div className="row g-2 mb-2">
                     <div className="col-6">
-                      <label className="form-label small fw-semibold">N° CMU Patient</label>
+                      <label className="form-label small fw-semibold">N° CMU patient</label>
                       <input className="form-control input" required value={tpForm.cmuNumber} onChange={(e) => setTpForm({ ...tpForm, cmuNumber: e.target.value })} style={{ borderRadius: '10px' }} />
                     </div>
                     <div className="col-6">

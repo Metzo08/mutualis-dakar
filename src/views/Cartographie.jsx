@@ -461,7 +461,7 @@ export default function Cartographie({ lang }) {
           <div style="min-width:240px; font-family:'Outfit',sans-serif; color:#0f172a; padding:4px;">
             <div style="font-weight:800; font-size:1rem; color:#059669; margin-bottom:6px;"><ProIcon name="pill" /> ${loc.name}</div>
             <div style="font-size:0.8rem; background:#f0fdf4; border-radius:6px; padding:6px 8px; margin-bottom:8px; color:#065f46;">
-              <ProIcon name="check" color="#059669" /> Pharmacies Agréées CMU
+              <ProIcon name="check" color="#059669" /> Pharmacies agréées CMU
             </div>
             <table style="font-size:0.78rem; width:100%; border-collapse:collapse;">
               ${loc.titulaire ? `<tr><td style="color:#64748b; padding:2px 4px 2px 0; white-space:nowrap;"><ProIcon name="user" /></td><td style="color:#0f172a; padding:2px 0;">${loc.titulaire}</td></tr>` : ''}
@@ -511,7 +511,7 @@ export default function Cartographie({ lang }) {
 
         // Add Tile Layer (OpenStreetMap)
         window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">Openstreetmap</a> contributors'
         }).addTo(mapRef.current);
 
         // Reset markers group ref to ensure it gets recreated and added to the new map!
@@ -1116,7 +1116,7 @@ export default function Cartographie({ lang }) {
                                 calculateRoute(loc);
                               }}
                             >
-                              🚙 Itinéraire
+                              🚙 itinéraire
                             </button>
                           </div>
                         </div>
@@ -1276,7 +1276,7 @@ export default function Cartographie({ lang }) {
 
                   {/* Filtered list results in floating panel */}
                   <div>
-                    <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.8rem', color: 'var(--text-sub)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t.resultsTitle}</h4>
+                    <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.8rem', color: 'var(--text-sub)', textTransform: 'none', letterSpacing: '0.5px' }}>{t.resultsTitle}</h4>
                     <div className="map-list-results custom-scrollbar" style={{ maxHeight: '180px', display: 'flex', flexDirection: 'column', gap: '0.4rem', overflowY: 'auto' }}>
                       {filteredLocations.length === 0 ? (
                         <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-sub)', fontSize: '0.75rem', lineHeight: '1.3' }}>
@@ -1331,7 +1331,7 @@ export default function Cartographie({ lang }) {
                           borderRadius: '4px', 
                           fontSize: '0.75rem', 
                           fontWeight: '700', 
-                          textTransform: 'uppercase',
+                          textTransform: 'none',
                           marginRight: '0.5rem',
                           display: 'inline-block',
                           marginBottom: '0.5rem'
@@ -1365,7 +1365,7 @@ export default function Cartographie({ lang }) {
                           className="btn btn-outline btn-sm"
                           style={{ textDecoration: 'none' }}
                         >
-                          <ProIcon name="navigation" /> Google Maps
+                          <ProIcon name="navigation" /> Google maps
                         </a>
                         {selectedItem.phone && (
                           <a
@@ -1397,7 +1397,7 @@ export default function Cartographie({ lang }) {
                       <div className="info-box-landmark" style={{ marginTop: '1rem', padding: '1rem', borderRadius: '12px', display: 'flex', alignItems: 'flex-start', gap: '0.75rem', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
                         <span style={{ fontSize: '1.5rem', marginTop: '-2px' }}><ProIcon name="map-pin" /></span>
                         <div>
-                          <strong className="info-box-title" style={{ fontSize: '0.8rem', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px', marginBottom: '0.25rem' }}>Point de repère pour s'orienter</strong>
+                          <strong className="info-box-title" style={{ fontSize: '0.8rem', textTransform: 'none', display: 'block', letterSpacing: '0.5px', marginBottom: '0.25rem' }}>Point de repère pour s'orienter</strong>
                           <span className="info-box-text" style={{ fontSize: '0.9rem', fontWeight: '500' }}>{selectedItem.landmark}</span>
                         </div>
                       </div>
@@ -1408,7 +1408,7 @@ export default function Cartographie({ lang }) {
                       <div className="info-box-tips" style={{ marginTop: '1rem', padding: '1rem', borderRadius: '12px', display: 'flex', alignItems: 'flex-start', gap: '0.75rem', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
                         <span style={{ fontSize: '1.5rem', marginTop: '-2px' }}><ProIcon name="lightbulb" /></span>
                         <div>
-                          <strong className="info-box-title" style={{ fontSize: '0.8rem', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px', marginBottom: '0.25rem' }}>Conseils utiles aux Sénégalais</strong>
+                          <strong className="info-box-title" style={{ fontSize: '0.8rem', textTransform: 'none', display: 'block', letterSpacing: '0.5px', marginBottom: '0.25rem' }}>Conseils utiles aux sénégalais</strong>
                           <span className="info-box-text" style={{ fontSize: '0.9rem', lineHeight: '1.45', display: 'block' }}>{selectedItem.localInfo}</span>
                         </div>
                       </div>
@@ -1427,7 +1427,7 @@ export default function Cartographie({ lang }) {
                     {/* Services / Specialities */}
                     {selectedItem.services && (
                       <div style={{ marginTop: '1rem' }}>
-                        <strong style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--neutral-gray)', textTransform: 'uppercase' }}>Services & spécialités</strong>
+                        <strong style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.85rem', color: 'var(--neutral-gray)', textTransform: 'none' }}>Services & spécialités</strong>
                         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                           {selectedItem.services.split(',').map((service, idx) => (
                             <span key={idx} style={{ 
@@ -1451,11 +1451,11 @@ export default function Cartographie({ lang }) {
                     <div style={{ marginTop: '1.5rem', padding: '1.25rem', backgroundColor: 'var(--card-bg-subtle)', borderRadius: '8px', borderLeft: '3px solid var(--success)' }}>
                       <div style={{ display: 'flex', gap: '2rem', marginBottom: '0.5rem' }}>
                         <div>
-                          <span style={{ fontSize: '0.8rem', color: 'var(--neutral-gray)', textTransform: 'uppercase' }}>{t.distanceLabel}</span>
+                          <span style={{ fontSize: '0.8rem', color: 'var(--neutral-gray)', textTransform: 'none' }}>{t.distanceLabel}</span>
                           <div style={{ fontWeight: '700', fontSize: '1.2rem', color: 'var(--success)' }}>{routeInfo.distance}</div>
                         </div>
                         <div>
-                          <span style={{ fontSize: '0.8rem', color: 'var(--neutral-gray)', textTransform: 'uppercase' }}>{t.timeLabel}</span>
+                          <span style={{ fontSize: '0.8rem', color: 'var(--neutral-gray)', textTransform: 'none' }}>{t.timeLabel}</span>
                           <div style={{ fontWeight: '700', fontSize: '1.2rem', color: 'var(--success)' }}>{routeInfo.duration}</div>
                         </div>
                       </div>

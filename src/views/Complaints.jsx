@@ -526,24 +526,24 @@ export default function Complaints({ lang, portalMode, citizenUser, agentUser, p
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.9rem' }}>
               <div>
-                <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase' }}>Assuré</strong>
+                <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', textTransform: 'none' }}>Assuré</strong>
                 <span style={{ color: 'var(--text-main)', fontWeight: '600' }}>{selectedComplaint.beneficiary_name}</span>
               </div>
               <div>
-                <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase' }}>Téléphone</strong>
+                <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', textTransform: 'none' }}>Téléphone</strong>
                 <span style={{ color: 'var(--text-main)', fontWeight: '600' }}>{selectedComplaint.phone}</span>
               </div>
               <div>
-                <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase' }}>Objet</strong>
+                <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', textTransform: 'none' }}>Objet</strong>
                 <span style={{ color: 'var(--primary)', fontWeight: '700' }}>{selectedComplaint.title}</span>
               </div>
               <div>
-                <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase' }}>Description de l'incident</strong>
+                <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', textTransform: 'none' }}>Description de l'incident</strong>
                 <p style={{ color: 'var(--text-sub)', margin: '0.2rem 0 0 0', lineHeight: '1.5' }}>{selectedComplaint.description}</p>
               </div>
               
               <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem', marginTop: '0.5rem' }}>
-                <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Statut du dossier</strong>
+                <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', textTransform: 'none', marginBottom: '0.25rem' }}>Statut du dossier</strong>
                 <span className={`badge ${selectedComplaint.status === 'resolved' ? 'badge-success' : 'badge-warning'}`}>
                   {selectedComplaint.status === 'resolved' ? 'Résolu' : 'Ouvert / En cours'}
                 </span>
@@ -551,7 +551,7 @@ export default function Complaints({ lang, portalMode, citizenUser, agentUser, p
 
               {selectedComplaint.status === 'resolved' && (
                 <div style={{ backgroundColor: 'rgba(16, 185, 129, 0.05)', padding: '0.75rem 1rem', borderRadius: '8px', borderLeft: '4px solid var(--success)', marginTop: '0.5rem' }}>
-                  <strong style={{ fontSize: '0.75rem', color: 'var(--success)', display: 'block', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Notes d'intervention de l'agent</strong>
+                  <strong style={{ fontSize: '0.75rem', color: 'var(--success)', display: 'block', textTransform: 'none', marginBottom: '0.25rem' }}>Notes d'intervention de l'agent</strong>
                   <p style={{ color: 'var(--text-main)', margin: '0 0 0.5rem 0', fontStyle: 'italic', fontSize: '0.85rem' }}>
                     "{selectedComplaint.resolution_notes || 'Aucun détail fourni.'}"
                   </p>

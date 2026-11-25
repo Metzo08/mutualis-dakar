@@ -154,7 +154,7 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
             <h5 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>Bons & garanties <ProIcon name="senegal-flag" /></h5>
             <span style={{ height: '16px', width: '1.5px', background: 'var(--border-color)' }} />
             <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '20px', fontSize: '0.78rem', fontWeight: '700', padding: '0.35rem 0.9rem' }}>
-              ● Session sécurisée UNAMUSC
+              ● session sécurisée UNAMUSC
             </span>
           </div>
 
@@ -165,7 +165,7 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
               className="form-select form-select-sm fw-bold"
               style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '12px', padding: '0.5rem 1rem', fontSize: '0.84rem', cursor: 'pointer', minHeight: '40px' }}
             >
-              <option value="">Filtrer par statut (Tous)</option>
+              <option value="">Filtrer par statut (tous)</option>
               <option value="pending">En attente</option>
               <option value="approved">Validé</option>
               <option value="rejected">Refusé</option>
@@ -197,7 +197,7 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
                 Gestion des prises en charge
               </h1>
               <p className="text-white-50 mb-0" style={{ fontSize: '1rem', maxWidth: '700px', lineHeight: '1.6', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
-                Effectuez vos demandes de bons de commande pharmacie (50%) et lettres de garantie hospitalisation (80%) en quelques clics sous le Tiers-payant UNAMUSC.
+                Effectuez vos demandes de bons de commande pharmacie (50%) et lettres de garantie hospitalisation (80%) en quelques clics sous le tiers-payant UNAMUSC.
               </p>
             </div>
           </div>
@@ -223,7 +223,7 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
                       <ProIcon name="zap" /> Tiers-payant actif
                     </span>
                     <span style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '20px', fontSize: '0.76rem', fontWeight: '700', padding: '0.3rem 0.75rem' }}>
-                      80% Hospit • 50% Pharma
+                      80% hospit • 50% pharma
                     </span>
                   </div>
                 </div>
@@ -344,11 +344,11 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
                         value={form.structureName}
                         onChange={(e) => setForm({ ...form, structureName: e.target.value })}
                       >
-                        <option value="Hôpital Universitaire de Fann (Dakar)">Hôpital Universitaire de Fann (Dakar)</option>
-                        <option value="Hôpital Aristide Le Dantec">Hôpital Aristide Le Dantec</option>
-                        <option value="Hôpital Général Idrissa Pouye (Pikine)">Hôpital Général Idrissa Pouye (Pikine)</option>
-                        <option value="Centre Hospitalier Abass Ndao">Centre Hospitalier Abass Ndao</option>
-                        <option value="Hôpital d'Enfants Albert Royer">Hôpital d'Enfants Albert Royer</option>
+                        <option value="Hôpital Universitaire de Fann (Dakar)">Hôpital universitaire de Fann (Dakar)</option>
+                        <option value="Hôpital Aristide Le Dantec">Hôpital aristide le Dantec</option>
+                        <option value="Hôpital Général Idrissa Pouye (Pikine)">Hôpital général idrissa pouye (Pikine)</option>
+                        <option value="Centre Hospitalier Abass Ndao">Centre hospitalier abass ndao</option>
+                        <option value="Hôpital d'Enfants Albert Royer">Hôpital d'enfants albert royer</option>
                       </select>
                     ) : (
                       <select 
@@ -357,10 +357,10 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
                         value={form.structureName}
                         onChange={(e) => setForm({ ...form, structureName: e.target.value })}
                       >
-                        <option value="Pharmacie Cheikh Anta Diop">Pharmacie Cheikh Anta Diop</option>
-                        <option value="Pharmacie de la Nation (Dakar)">Pharmacie de la Nation (Dakar)</option>
-                        <option value="Pharmacie Universelle Pikine">Pharmacie Universelle Pikine</option>
-                        <option value="Pharmacie Populaire Guédiawaye">Pharmacie Populaire Guédiawaye</option>
+                        <option value="Pharmacie Cheikh Anta Diop">Pharmacie cheikh anta diop</option>
+                        <option value="Pharmacie de la Nation (Dakar)">Pharmacie de la nation (Dakar)</option>
+                        <option value="Pharmacie Universelle Pikine">Pharmacie universelle Pikine</option>
+                        <option value="Pharmacie Populaire Guédiawaye">Pharmacie populaire Guédiawaye</option>
                       </select>
                     )}
                   </div>
@@ -453,7 +453,7 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
                 {/* Upload Dropzone */}
                 <div className="mb-4">
                   <label className="form-label small fw-extrabold mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}>
-                    Pièce justificative (Devis ou ordonnance)
+                    Pièce justificative (devis ou ordonnance)
                   </label>
                   <div 
                     className="p-4 text-center rounded-4 d-flex flex-column align-items-center justify-content-center gap-2.5 hover-lift"
@@ -601,7 +601,7 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
                     style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', padding: '0.75rem 1.15rem', minHeight: '46px', width: '100%', fontSize: '0.86rem' }}
                     onClick={() => alert("Mise en relation avec un agent UNAMUSC...")}
                   >
-                    <span>🎧 Contacter un agent</span>
+                    <span>🎧 contacter un agent</span>
                     <span style={{ fontSize: '1.1rem' }}>›</span>
                   </button>
 
@@ -646,7 +646,7 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
                   <th scope="col" className="fw-extrabold py-3.5" style={{ minWidth: '220px' }}>Type / N° demande</th>
                   <th scope="col" className="fw-extrabold py-3.5" style={{ minWidth: '180px' }}>Bénéficiaire</th>
                   <th scope="col" className="fw-extrabold py-3.5" style={{ minWidth: '240px' }}>Structure de santé</th>
-                  <th scope="col" className="fw-extrabold py-3.5" style={{ minWidth: '200px' }}>Montant (Prise en charge)</th>
+                  <th scope="col" className="fw-extrabold py-3.5" style={{ minWidth: '200px' }}>Montant (prise en charge)</th>
                   <th scope="col" className="fw-extrabold py-3.5 text-center" style={{ minWidth: '140px' }}>Statut</th>
                   <th scope="col" className="fw-extrabold text-end py-3.5" style={{ minWidth: '220px', whiteSpace: 'nowrap' }}>Actions</th>
                 </tr>

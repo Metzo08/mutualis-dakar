@@ -166,8 +166,8 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
 
                 <div>
                   <h6 class="fw-bold mb-0" style="color: #047857; font-size: 0.95rem;">République du Sénégal</h6>
-                  <small class="text-muted fw-semibold d-block" style="font-size: 0.78rem;">Un Peuple — Un But — Une Foi</small>
-                  <strong class="d-block mt-0.5" style="color: #0f172a; font-size: 0.82rem;">Agence nationale de la couverture maladie universelle (SEN-CSU)</strong>
+                  <small class="text-muted fw-semibold d-block" style="font-size: 0.78rem;">Un peuple — Un but — Une foi</small>
+                  <strong class="d-block mt-0.5" style="color: #0f172a; font-size: 0.82rem;">Agence nationale de la couverture maladie universelle (sen-CSU)</strong>
                 </div>
               </div>
 
@@ -195,7 +195,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
               </p>
               <div class="d-flex justify-content-center gap-3 mt-2">
                 <span class="badge bg-success text-white px-3 py-1.5 fw-bold" style="font-size: 0.82rem;">Date d'édition : ${new Date().toLocaleDateString('fr-FR')}</span>
-                <span class="badge bg-dark text-white px-3 py-1.5 fw-bold" style="font-size: 0.82rem;">Mois en cours : Août 2026</span>
+                <span class="badge bg-dark text-white px-3 py-1.5 fw-bold" style="font-size: 0.82rem;">Mois en cours : août 2026</span>
               </div>
             </div>
 
@@ -204,7 +204,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
               <table class="table align-middle" style="width: 100%; border-collapse: collapse;">
                 <thead>
                   <tr style="background: #f8fafc; border-bottom: 2px solid #cbd5e1;">
-                    <th style="padding: 1.1rem 1rem; font-size: 0.9rem; font-weight: 800;">Type de mutuelle / organisme</th>
+                    <th style="padding: 1.1rem 1rem; font-size: 0.9rem; font-weight: 800;">Type de mutuelle / Organisme</th>
                     <th style="padding: 1.1rem 1rem; font-size: 0.9rem; font-weight: 800; text-align: right;">Bénéficiaires couverts</th>
                     <th style="padding: 1.1rem 1rem; font-size: 0.9rem; font-weight: 800; text-align: right;">Part relat. (%)</th>
                     <th style="padding: 1.1rem 1rem; font-size: 0.9rem; font-weight: 800; text-align: center;">Taux d'efficience</th>
@@ -218,7 +218,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
                     <td style="padding: 1.1rem 1rem; text-align: center;"><span class="badge bg-success px-3 py-1.5 text-white fw-bold" style="font-size: 0.8rem; border-radius: 8px;">Excellent (>80%)</span></td>
                   </tr>
                   <tr style="border-bottom: 1px solid #f1f5f9;">
-                    <td style="padding: 1.1rem 1rem; font-weight: 700; font-size: 0.96rem;"><ProIcon name="status-green" color="#3b82f6" fill="#3b82f6" size={10} /> IPM-Tiers (Secteur privé & entreprises)</td>
+                    <td style="padding: 1.1rem 1rem; font-weight: 700; font-size: 0.96rem;"><ProIcon name="status-green" color="#3b82f6" fill="#3b82f6" size={10} /> IPM-tiers (secteur privé & entreprises)</td>
                     <td style="padding: 1.1rem 1rem; text-align: right; font-weight: 800; color: #2563eb; font-size: 1.1rem;">${ipmCount}</td>
                     <td style="padding: 1.1rem 1rem; text-align: right; font-weight: 800; color: #2563eb; font-size: 1.05rem;">${ipmPct}%</td>
                     <td style="padding: 1.1rem 1rem; text-align: center;"><span class="badge bg-primary px-3 py-1.5 text-white fw-bold" style="font-size: 0.8rem; border-radius: 8px;">Bon (60%-80%)</span></td>
@@ -244,7 +244,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
               <div class="col-4 text-end">
                 <div class="border border-success rounded-3 p-3 d-inline-block text-center" style="background: #f0fdf4; border-width: 2px !important;">
                   <strong class="d-block" style="font-size: 0.78rem; color: #047857;">Cachet officiel UNAMUSC</strong>
-                  <span style="font-size: 0.72rem; color: #059669; font-weight: 700;"><ProIcon name="check" color="#059669" /> Certifié Conforme</span>
+                  <span style="font-size: 0.72rem; color: #059669; font-weight: 700;"><ProIcon name="check" color="#059669" /> Certifié conforme</span>
                 </div>
               </div>
             </div>
@@ -665,7 +665,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
 
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
-                    <span>IPM-Tiers (entreprises)</span>
+                    <span>IPM-tiers (entreprises)</span>
                     <strong>{stats.coverageDetails?.ipm?.count ? stats.coverageDetails.ipm.count.toLocaleString('fr-FR') : '650 290'} <span style={{ color: 'var(--text-muted)' }}>({stats.coverageDetails?.ipm?.pct || '18.8'}%)</span></strong>
                   </div>
                   <div style={{ height: '6px', backgroundColor: 'var(--border-color)', borderRadius: '3px', overflow: 'hidden' }}>
@@ -1076,10 +1076,10 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
                     <ProIcon name="megaphone" /> Des questions sur la CMU ?
                   </h2>
                   <p style={{ color: 'var(--text-sub)', lineHeight: '1.6', marginBottom: '1rem' }}>
-                    La Couverture Maladie Universelle vous permet de bénéficier d'une prise en charge des frais de consultations, de médicaments et d'hospitalisations.
+                    La couverture maladie universelle vous permet de bénéficier d'une prise en charge des frais de consultations, de médicaments et d'hospitalisations.
                   </p>
                   <p style={{ color: 'var(--text-sub)', lineHeight: '1.6' }}>
-                    Utilisez le **Chatbot IA** en bas à droite pour poser vos questions en français ou en **Wolof**. Notre assistant répond instantanément à toutes vos interrogations.
+                    Utilisez le **chatbot IA** en bas à droite pour poser vos questions en Français ou en **Wolof**. Notre assistant répond instantanément à toutes vos interrogations.
                   </p>
                 </div>
                 
@@ -1150,21 +1150,21 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
                     <span style={{ fontSize: '1.5rem' }}><ProIcon name="user" /></span>
                     <div>
                       <strong style={{ display: 'block', color: '#a7f3d0' }}>{lang === 'fr' ? 'Individuel' : 'Individuel'}</strong>
-                      <span style={{ color: '#cbd5e1' }}>4 500 FCFA / pers.</span>
+                      <span style={{ color: '#cbd5e1' }}>4 500 FCFA / Pers.</span>
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <span style={{ fontSize: '1.5rem' }}><ProIcon name="users" /></span>
                     <div>
                       <strong style={{ display: 'block', color: '#fde047' }}>{lang === 'fr' ? 'Ménages' : 'Njaboot'}</strong>
-                      <span style={{ color: '#cbd5e1' }}>1 000 FCFA + 3 500 FCFA / pers.</span>
+                      <span style={{ color: '#cbd5e1' }}>1 000 FCFA + 3 500 FCFA / Pers.</span>
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <span style={{ fontSize: '1.5rem' }}><ProIcon name="graduation-cap" /></span>
                     <div>
                       <strong style={{ display: 'block', color: '#a5f3fc' }}>{lang === 'fr' ? 'Écoles & daaras' : 'Daara & Écoles'}</strong>
-                      <span style={{ color: '#cbd5e1' }}>1 000 FCFA / élève</span>
+                      <span style={{ color: '#cbd5e1' }}>1 000 FCFA / Élève</span>
                     </div>
                   </div>
                 </div>
@@ -1201,7 +1201,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                       <div className="digital-card-label">Adhérent</div>
-                      <div className="digital-card-value" style={{ fontSize: '1.3rem', textTransform: 'uppercase' }}>
+                      <div className="digital-card-value" style={{ fontSize: '1.3rem', textTransform: 'none' }}>
                         {citizenUser.firstName} {citizenUser.lastName}
                       </div>
                       <div className="digital-card-label" style={{ marginTop: '0.75rem' }}>Mutuelle</div>
@@ -1447,7 +1447,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
 
                   <div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.4rem' }}>
-                      <span>IPM-Tiers (entreprises)</span>
+                      <span>IPM-tiers (entreprises)</span>
                       <strong>{stats.coverageDetails?.ipm?.count ? stats.coverageDetails.ipm.count.toLocaleString('fr-FR') : '650 290'} <span style={{ color: 'var(--text-muted)' }}>({stats.coverageDetails?.ipm?.pct || '18.8'}%)</span></strong>
                     </div>
                     <div style={{ height: '6px', backgroundColor: 'var(--border-color)', borderRadius: '3px', overflow: 'hidden' }}>

@@ -843,7 +843,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                     >
                       <div style={{ fontSize: '2rem' }}><ProIcon name="user" /></div>
                       <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem' }}>{t.packageIndiv}</h3>
-                      <div className="stat-number" style={{ fontSize: '1.5rem', margin: '0.5rem 0', color: 'var(--primary)' }}>4 500 FCFA / an</div>
+                      <div className="stat-number" style={{ fontSize: '1.5rem', margin: '0.5rem 0', color: 'var(--primary)' }}>4 500 FCFA / An</div>
                       <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? '1 000 FCFA pour la carte + 3 500 FCFA de cotisation.' : '1 000 FCFA carte bi + 3 500 FCFA de cotisation.'}</p>
                     </div>
 
@@ -855,7 +855,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                     >
                       <div style={{ fontSize: '2rem' }}><ProIcon name="users" /></div>
                       <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem' }}>{t.packageFam}</h3>
-                      <div className="stat-number" style={{ fontSize: '1.5rem', margin: '0.5rem 0', color: 'var(--secondary)' }}>1 000 FCFA + 3 500 FCFA / pers.</div>
+                      <div className="stat-number" style={{ fontSize: '1.5rem', margin: '0.5rem 0', color: 'var(--secondary)' }}>1 000 FCFA + 3 500 FCFA / Pers.</div>
                       <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Une seule carte à 1 000 FCFA pour l\'adhérent, puis 3 500 FCFA par membre.' : 'Benn carte 1 000 FCFA ngir adhérent bi, ak 3 500 FCFA par bokk.'}</p>
                     </div>
 
@@ -875,7 +875,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                     >
                       <div style={{ fontSize: '2rem' }}><ProIcon name="handshake" /></div>
                       <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem' }}>{lang === 'fr' ? 'Parrainage solidaire' : 'Parrainage solidaire'}</h3>
-                      <div className="stat-number" style={{ fontSize: '1.5rem', margin: '0.5rem 0', color: 'var(--success)' }}>4 500 FCFA / filleul</div>
+                      <div className="stat-number" style={{ fontSize: '1.5rem', margin: '0.5rem 0', color: 'var(--success)' }}>4 500 FCFA / Filleul</div>
                       <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Offrez la couverture maladie complète (carte + cotisation) à un ou plusieurs bénéficiaires.' : 'Mayé assurance wér-gi-yaram (carte + cotisation) ngir ñu bari.'}</p>
                     </div>
 
@@ -887,7 +887,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                     >
                       <div style={{ fontSize: '2rem' }}><ProIcon name="graduation-cap" /></div>
                       <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem' }}>{lang === 'fr' ? 'CSU élèves ou Daara' : 'CSU élèves ak Daara'}</h3>
-                      <div className="stat-number" style={{ fontSize: '1.5rem', margin: '0.5rem 0', color: 'var(--info)' }}>1 000 FCFA / élève</div>
+                      <div className="stat-number" style={{ fontSize: '1.5rem', margin: '0.5rem 0', color: 'var(--info)' }}>1 000 FCFA / Élève</div>
                       <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Tarif collectif scolaire subventionné par l\'État pour les écoles et Daaras.' : 'Fay subventionné par État bi ngir daara yi ak écoles yi.'}</p>
                     </div>
 
@@ -899,7 +899,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                     >
                       <div style={{ fontSize: '2rem' }}><ProIcon name="bar-chart" /></div>
                       <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem' }}>{lang === 'fr' ? 'Adhésion groupe / masse' : 'Mbindum mboloo'}</h3>
-                      <div className="stat-number" style={{ fontSize: '1.5rem', margin: '0.5rem 0', color: 'var(--primary)' }}>4 500 FCFA / pers.</div>
+                      <div className="stat-number" style={{ fontSize: '1.5rem', margin: '0.5rem 0', color: 'var(--primary)' }}>4 500 FCFA / Pers.</div>
                       <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Importez un fichier CSV ou saisissez une liste pour inscrire tout un groupe (carte + cotisation).' : 'Importé listou mboloo (carte + cotisation) ci CSV.'}</p>
                     </div>
                   </div>
@@ -1483,7 +1483,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                     {photoPreview && (
                       <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <img src={photoPreview} alt="Aperçu photo" style={{ width: '84px', height: '84px', objectFit: 'cover', borderRadius: '12px', border: '1px solid var(--border-color)' }} />
-                        <small style={{ color: '#047857', fontWeight: 700 }}><ProIcon name="check-circle" color="#059669" /> Photo prête — elle apparaîtra sur votre carte.</small>
+                        <small style={{ color: '#047857', fontWeight: 700 }}><ProIcon name="check-circle" color="#059669" /> Photo prête — Elle apparaîtra sur votre carte.</small>
                       </div>
                     )}
                   </div>
@@ -1503,11 +1503,11 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                   
                   <div style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '1rem', border: '1px solid var(--border-color)', padding: '1.5rem', borderRadius: '12px' }}>
                     <div>
-                      <span style={{ color: 'var(--neutral-gray)', textTransform: 'uppercase', fontSize: '0.75rem' }}>Mutuelle</span>
+                      <span style={{ color: 'var(--neutral-gray)', textTransform: 'none', fontSize: '0.75rem' }}>Mutuelle</span>
                       <div style={{ fontWeight: '700' }}>{selectedMutuelle}</div>
                     </div>
                     <div>
-                      <span style={{ color: 'var(--neutral-gray)', textTransform: 'uppercase', fontSize: '0.75rem' }}>Formule</span>
+                      <span style={{ color: 'var(--neutral-gray)', textTransform: 'none', fontSize: '0.75rem' }}>Formule</span>
                       <div style={{ fontWeight: '700' }}>
                         {selectedPackage === 'individuel' ? t.packageIndiv : 
                          selectedPackage === 'familial' ? t.packageFam : 
@@ -1521,12 +1521,12 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                     </div>
                     {schoolName && (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || selectedPackage === 'adhesion_masse' || (selectedPackage === 'parrainage' && parrainageType === 'eleves')) && (
                       <div>
-                        <span style={{ color: 'var(--neutral-gray)', textTransform: 'uppercase', fontSize: '0.75rem' }}>{selectedPackage === 'adhesion_masse' ? (lang === 'fr' ? 'Organisation' : 'Mboloo') : (lang === 'fr' ? 'Établissement' : 'Établissement')}</span>
+                        <span style={{ color: 'var(--neutral-gray)', textTransform: 'none', fontSize: '0.75rem' }}>{selectedPackage === 'adhesion_masse' ? (lang === 'fr' ? 'Organisation' : 'Mboloo') : (lang === 'fr' ? 'Établissement' : 'Établissement')}</span>
                         <div style={{ fontWeight: '700' }}>{schoolName}</div>
                       </div>
                     )}
                     <div>
-                      <span style={{ color: 'var(--neutral-gray)', textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                      <span style={{ color: 'var(--neutral-gray)', textTransform: 'none', fontSize: '0.75rem' }}>
                         {selectedPackage === 'parrainage' ? 'Parrain / sponsor' : 
                           (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || selectedPackage === 'adhesion_masse') ? 'Responsable groupe / établissement' : 
                          'Adhérent principal'}
@@ -1534,13 +1534,13 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                       <div style={{ fontWeight: '700' }}>{formData.firstName} {formData.lastName}</div>
                     </div>
                     <div>
-                      <span style={{ color: 'var(--neutral-gray)', textTransform: 'uppercase', fontSize: '0.75rem' }}>Téléphone</span>
+                      <span style={{ color: 'var(--neutral-gray)', textTransform: 'none', fontSize: '0.75rem' }}>Téléphone</span>
                       <div style={{ fontWeight: '700' }}>{formData.phone}</div>
                     </div>
                     
                     {selectedPackage === 'parrainage' && parrainageType === 'menages' && sponsoredHouseholds.length > 0 && (
                       <div>
-                        <span style={{ color: 'var(--neutral-gray)', textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                        <span style={{ color: 'var(--neutral-gray)', textTransform: 'none', fontSize: '0.75rem' }}>
                           {lang === 'fr' ? `Ménages parrainés (${sponsoredHouseholds.length})` : `Njaboot yi parrainer (${sponsoredHouseholds.length})`}
                         </span>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>
@@ -1563,7 +1563,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
 
                     {familyMembers.length > 0 && (selectedPackage !== 'parrainage' || parrainageType !== 'menages') && (
                       <div>
-                        <span style={{ color: 'var(--neutral-gray)', textTransform: 'uppercase', fontSize: '0.75rem' }}>
+                        <span style={{ color: 'var(--neutral-gray)', textTransform: 'none', fontSize: '0.75rem' }}>
                           {selectedPackage === 'parrainage' ? `Filleuls parrainés (${familyMembers.length})` : 
                             (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara') ? `Élèves / Talibés inscrits (${familyMembers.length})` : selectedPackage === 'adhesion_masse' ? `Membres inscrits (${familyMembers.length})` : 
                            `Membres rattachés (${familyMembers.length})`}
@@ -1586,7 +1586,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
 
                     {/* Cost Breakdown */}
                     <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem', marginTop: '0.5rem' }}>
-                      <span style={{ color: 'var(--neutral-gray)', textTransform: 'uppercase', fontSize: '0.75rem' }}>Coût total de l'adhésion</span>
+                      <span style={{ color: 'var(--neutral-gray)', textTransform: 'none', fontSize: '0.75rem' }}>Coût total de l'adhésion</span>
                       <div style={{ fontSize: '1.4rem', fontWeight: '900', color: 'var(--secondary)' }}>
                         {calculateTotalCost().toLocaleString('fr-FR')} FCFA
                       </div>
@@ -1608,7 +1608,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                   <div style={{ marginTop: '1.5rem', textAlign: 'left', display: 'flex', alignItems: 'flex-start', gap: '0.5rem', backgroundColor: 'var(--card-bg-subtle)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                     <input type="checkbox" id="gdpr-consent" checked={gdprConsent} onChange={(e) => setGdprConsent(e.target.checked)} style={{ marginTop: '0.25rem', transform: 'scale(1.2)' }} />
                     <label htmlFor="gdpr-consent" style={{ fontSize: '0.85rem', color: 'var(--text-main)', lineHeight: '1.4' }}>
-                      J'accepte que mes données personnelles et médicales soient traitées dans le cadre de mon adhésion à la Couverture Maladie Universelle, conformément au Règlement Général sur la Protection des Données (RGPD) et aux normes sur les données de santé (HDS).
+                      J'accepte que mes données personnelles et médicales soient traitées dans le cadre de mon adhésion à la couverture maladie universelle, conformément au règlement général sur la protection des données (RGPD) et aux normes sur les données de santé (hds).
                     </label>
                   </div>
 
@@ -1785,7 +1785,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
 
                     <div className="digital-card-details">
                       <div>
-                        <div className="digital-card-label">ID Membre</div>
+                        <div className="digital-card-label">ID membre</div>
                         {/* PAS de faux code : sans matricule serveur, on affiche
                             l'état d'attente (file hors-ligne en cours de rejeu). */}
                         <div className="digital-card-value">{generatedCmuNumber || 'En attente de synchronisation…'}</div>

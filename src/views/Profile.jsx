@@ -539,7 +539,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
       }}>
         <div style={{ textAlign: 'left', position: 'relative', zIndex: 2 }}>
           <span className="badge badge-info" style={{ marginBottom: '0.75rem', background: 'rgba(255, 255, 255, 0.25)', color: '#fff', border: 'none' }}>
-            <ProIcon name="user" /> CSU DAKAR ACCOUNT & ACCESS GOVERNANCE
+            <ProIcon name="user" /> CSU Dakar account & access governance
           </span>
           <h1 style={{ fontSize: '1.9rem', color: '#fff', marginBottom: '0.5rem', fontWeight: '800', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
             {user ? (portalMode === 'citizen' ? t.titleCitizen : portalMode === 'partner' ? 'Mon profil prestataire CSU' : t.titleAgent) : 'Mon Compte & Niveaux d\'Accès CSU'}
@@ -562,20 +562,20 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
                 <h3 style={{ fontSize: '1.1rem', color: 'var(--primary)', marginBottom: '1rem' }}><ProIcon name="hospital" /> Informations de la structure</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', fontSize: '0.9rem' }}>
                   <div>
-                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Nom du responsable</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'none', marginBottom: '0.2rem' }}>Nom du responsable</div>
                     <div style={{ fontWeight: '700', fontSize: '1.05rem' }}>{user.contactName}</div>
                   </div>
                   <div>
-                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Identifiant professionnel</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'none', marginBottom: '0.2rem' }}>Identifiant professionnel</div>
                     <div style={{ fontWeight: '600', fontFamily: 'monospace', color: 'var(--primary)' }}>{user.username}</div>
                   </div>
                   <div>
-                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Structure conventionnée</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'none', marginBottom: '0.2rem' }}>Structure conventionnée</div>
                     <div style={{ fontWeight: '600' }}>{user.structureName}</div>
                   </div>
                   <div>
-                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Rôle d'accès</div>
-                    <div style={{ fontWeight: '600', textTransform: 'capitalize' }}>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'none', marginBottom: '0.2rem' }}>Rôle d'accès</div>
+                    <div style={{ fontWeight: '600', textTransform: 'none' }}>
                       <span className="badge badge-info">{user.role || 'Prestataire Sante'}</span>
                     </div>
                   </div>
@@ -583,21 +583,21 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
               </div>
 
               <div className="card text-left" style={{ padding: '1.5rem' }}>
-                <h3 style={{ fontSize: '1.1rem', color: 'var(--primary)', marginBottom: '1rem' }}><ProIcon name="credit-card" /> Habilitations & Tiers-Payant CSU</h3>
+                <h3 style={{ fontSize: '1.1rem', color: 'var(--primary)', marginBottom: '1rem' }}><ProIcon name="credit-card" /> Habilitations & tiers-payant CSU</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', fontSize: '0.9rem' }}>
                   <div>
-                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Taux de prise en charge</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'none', marginBottom: '0.2rem' }}>Taux de prise en charge</div>
                     <div style={{ fontWeight: '800', fontSize: '2.2rem', color: 'var(--primary)', lineHeight: 1.1 }}>
                       {user.coverageRate || 80}%
                     </div>
                     <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>Prise en charge directe CSU</div>
                   </div>
                   <div>
-                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Statut conventionnement</div>
-                    <span className="badge badge-success" style={{ fontSize: '0.8rem' }}><ProIcon name="check" color="#059669" /> Homologué ANACSU & URMSCD</span>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'none', marginBottom: '0.2rem' }}>Statut conventionnement</div>
+                    <span className="badge badge-success" style={{ fontSize: '0.8rem' }}><ProIcon name="check" color="#059669" /> Homologué anacsu & URMSCD</span>
                   </div>
                   <div>
-                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Accès Tiers-Payant</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'none', marginBottom: '0.2rem' }}>Accès tiers-payant</div>
                     <div style={{ fontWeight: '600', color: 'var(--success)' }}><ProIcon name="check-circle" color="#059669" /> Tiers-payant actif pour assurés CSU</div>
                   </div>
                 </div>
@@ -664,28 +664,28 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem', fontSize: '0.9rem' }}>
                 <div>
-                  <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>{t.nameLabel}</div>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'none' }}>{t.nameLabel}</div>
                   <div style={{ fontWeight: '600' }}>{user.firstName} {user.lastName}</div>
                 </div>
                 <div>
-                  <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>{t.phoneLabel}</div>
+                  <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'none' }}>{t.phoneLabel}</div>
                   <div style={{ fontWeight: '600' }}>{user.phone || user.username}</div>
                 </div>
                 {user.email && (
                   <div>
-                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>{t.emailLabel}</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'none' }}>{t.emailLabel}</div>
                     <div style={{ fontWeight: '600', wordBreak: 'break-all' }}>{user.email}</div>
                   </div>
                 )}
                 {user.birthDate && (
                   <div>
-                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>{t.birthLabel}</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'none' }}>{t.birthLabel}</div>
                     <div style={{ fontWeight: '600' }}>{formatDate(user.birthDate)}</div>
                   </div>
                 )}
                 {user.address && (
                   <div>
-                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>{t.addressLabel}</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'none' }}>{t.addressLabel}</div>
                     <div style={{ fontWeight: '600' }}>{user.address}</div>
                   </div>
                 )}
@@ -719,20 +719,20 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
                     <h3 style={{ fontSize: '1.1rem', color: 'var(--primary)', marginBottom: '1rem' }}><ProIcon name="hospital" /> {t.cardMutuelle}</h3>
                     <div className="grid grid-2" style={{ gap: '1rem', fontSize: '0.9rem' }}>
                       <div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>{t.mutuelleNameLabel}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'none' }}>{t.mutuelleNameLabel}</div>
                         <div style={{ fontWeight: '600' }}>{user.mutuelleName}</div>
                       </div>
                       <div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>{t.mutuelleRates}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'none' }}>{t.mutuelleRates}</div>
                         <div style={{ fontWeight: '600' }}>{t.mutuelleRatesVal}</div>
                       </div>
                       <div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>{t.packageLabel}</div>
-                        <div style={{ fontWeight: '600', textTransform: 'capitalize' }}>{user.packageType}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'none' }}>{t.packageLabel}</div>
+                        <div style={{ fontWeight: '600', textTransform: 'none' }}>{user.packageType}</div>
                       </div>
                       <div>
-                        <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>{t.paymentLabel}</div>
-                        <div style={{ fontWeight: '600', textTransform: 'uppercase' }}>{user.paymentMethod}</div>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'none' }}>{t.paymentLabel}</div>
+                        <div style={{ fontWeight: '600', textTransform: 'none' }}>{user.paymentMethod}</div>
                       </div>
                     </div>
                   </div>
@@ -742,19 +742,19 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
                   <h3 style={{ fontSize: '1.1rem', color: 'var(--primary)', marginBottom: '1rem' }}><ProIcon name="briefcase" /> Renseignements professionnels CSU</h3>
                   <div className="grid grid-2" style={{ gap: '1rem', fontSize: '0.9rem' }}>
                     <div>
-                      <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>{t.agentRole}</div>
+                      <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'none' }}>{t.agentRole}</div>
                       <div style={{ fontWeight: '600' }}>{user.role}</div>
                     </div>
                     <div>
-                      <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>{t.agentId}</div>
+                      <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'none' }}>{t.agentId}</div>
                       <div style={{ fontWeight: '600' }}>{user.username}</div>
                     </div>
                     <div>
-                      <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Région administrative</div>
+                      <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'none' }}>Région administrative</div>
                       <div style={{ fontWeight: '600' }}>Dakar (URMSCD)</div>
                     </div>
                     <div>
-                      <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Habilitation CSU</div>
+                      <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'none' }}>Habilitation CSU</div>
                       <div style={{ fontWeight: '600', color: 'var(--success)' }}><ProIcon name="check" color="#059669" /> Valide</div>
                     </div>
                   </div>
@@ -772,7 +772,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
         <div style={{ marginBottom: '1.75rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
-              <span className="badge badge-info" style={{ marginBottom: '0.5rem' }}><ProIcon name="globe" /> ARCHITECTURE SÉCURISÉE CSU SÉNÉGAL</span>
+              <span className="badge badge-info" style={{ marginBottom: '0.5rem' }}><ProIcon name="globe" /> Architecture sécurisée CSU Sénégal</span>
               <h2 style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--text-main)' }}>
                 Niveaux d'accès & points de connexion CSU (13 profils rôles)
               </h2>
@@ -818,7 +818,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
                 <h3 style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--text-main)', marginBottom: '0.35rem' }}>
                   {lvl.title}
                 </h3>
-                <div style={{ fontSize: '0.72rem', fontWeight: '600', color: lvl.color, textTransform: 'uppercase', marginBottom: '0.4rem', letterSpacing: '0.5px' }}>
+                <div style={{ fontSize: '0.72rem', fontWeight: '600', color: lvl.color, textTransform: 'none', marginBottom: '0.4rem', letterSpacing: '0.5px' }}>
                   {lvl.cat}
                 </div>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>

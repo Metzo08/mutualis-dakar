@@ -542,7 +542,7 @@
   font-weight: 700;
   color: var(--primary);
   letter-spacing: 0.5px;
-  text-transform: uppercase;
+  text-transform: none;
 }
 
 .chatbot-msg-speak {

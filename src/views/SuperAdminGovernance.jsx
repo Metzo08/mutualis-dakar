@@ -71,7 +71,7 @@ function MaintenancePanel() {
       </h3>
       <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', marginBottom: '1.5rem', lineHeight: 1.6 }}>
         Le mode maintenance ferme l'accès à tous les utilisateurs sauf vous. Les sondes de santé
-        restent actives (le répartiteur ne retire pas les instances) et le SAMU 1515 est affiché
+        restent actives (le répartiteur ne retire pas les instances) et le samu 1515 est affiché
         aux visiteurs en cas d'urgence médicale.
       </p>
 
@@ -518,7 +518,7 @@ export default function SuperAdminGovernance({ setView }) {
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255, 255, 255, 0.18)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', padding: '6px 16px', borderRadius: '30px', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '1rem', border: '1px solid rgba(255, 255, 255, 0.25)' }}>
               <span style={{ animation: 'float-crown 2s ease-in-out infinite' }}><ProIcon name="crown" /></span>
-              <span>SUPER ADMIN PLATEFORME CMU</span>
+              <span>Super admin plateforme CMU</span>
             </div>
 
             <div className="d-flex align-items-center gap-3 mb-2">
@@ -526,7 +526,7 @@ export default function SuperAdminGovernance({ setView }) {
                 <ProIcon name="shield-check" />
               </div>
               <h1 style={{ color: '#fff', fontSize: '2.1rem', fontWeight: '850', margin: 0, textShadow: '0 3px 8px rgba(0,0,0,0.4)', letterSpacing: '-0.02em' }}>
-                Gouvernance & Supervision Intégrale
+                Gouvernance & supervision intégrale
               </h1>
             </div>
 
@@ -537,10 +537,10 @@ export default function SuperAdminGovernance({ setView }) {
           
           <div style={{ background: 'rgba(255, 255, 255, 0.15)', backdropFilter: 'blur(15px)', WebkitBackdropFilter: 'blur(15px)', padding: '1.2rem 1.8rem', borderRadius: '18px', border: '1.5px solid rgba(255, 255, 255, 0.25)', textAlign: 'right', boxShadow: '0 8px 20px rgba(0,0,0,0.15)' }}>
             <div style={{ fontSize: '0.75rem', color: '#c7d2fe', fontWeight: 600 }}>Connecté en tant que</div>
-            <div style={{ fontSize: '1.05rem', fontWeight: 'bold', color: '#fff', marginTop: '4px' }}>Super Administrateur</div>
+            <div style={{ fontSize: '1.05rem', fontWeight: 'bold', color: '#fff', marginTop: '4px' }}>Super administrateur</div>
             <div style={{ fontSize: '0.76rem', color: '#34d399', fontWeight: 'bold', marginTop: '6px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
               <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34d399', boxShadow: '0 0 12px #34d399', animation: 'pulse-super 1.5s ease-in-out infinite' }} />
-              Accès Total Illimité
+              Accès total illimité
             </div>
           </div>
         </div>
@@ -740,7 +740,7 @@ export default function SuperAdminGovernance({ setView }) {
                             <div style={{ fontSize: '1.3rem', fontWeight: '800', color: 'var(--primary)' }}>
                               {count.toLocaleString('fr-FR')}
                             </div>
-                            <div style={{ fontSize: '0.78rem', color: 'var(--text-sub)', textTransform: 'capitalize', fontWeight: '600' }}>
+                            <div style={{ fontSize: '0.78rem', color: 'var(--text-sub)', textTransform: 'none', fontWeight: '600' }}>
                               {String(pkg)}
                             </div>
                           </button>
@@ -754,7 +754,7 @@ export default function SuperAdminGovernance({ setView }) {
               {/* Métadonnées de la requête */}
               <div style={{ padding: '1rem', borderRadius: '10px', background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.15)', fontSize: '0.8rem', color: 'var(--text-sub)' }}>
                 <ProIcon name="lightbulb" /> Les données sont récupérées en temps réel depuis le backend via <code>/api/dashboard/stats</code>.
-                {!statsError && <span style={{ color: '#10b981' }}> ● Synchronisé</span>}
+                {!statsError && <span style={{ color: '#10b981' }}> ● synchronisé</span>}
               </div>
             </>
           )}
@@ -775,10 +775,10 @@ export default function SuperAdminGovernance({ setView }) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
             <div>
               <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--primary)', margin: 0 }}>
-                <ProIcon name="users" /> Annuaire Centralisé des Utilisateurs & Rôles
+                <ProIcon name="users" /> Annuaire centralisé des utilisateurs & rôles
               </h3>
               <span style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>
-                Gestion et émission de comptes pour les 13 profils d'accès sur toutes les Unions Départementales & Régionales
+                Gestion et émission de comptes pour les 13 profils d'accès sur toutes les unions départementales & régionales
               </span>
             </div>
             
@@ -788,7 +788,7 @@ export default function SuperAdminGovernance({ setView }) {
                 style={{ borderRadius: '10px', fontWeight: '700', fontSize: '0.85rem' }}
                 onClick={() => setShowCreateModal(true)}
               >
-                <ProIcon name="plus" /> Créer un compte universel (13 Profils & Unions)
+                <ProIcon name="plus" /> Créer un compte universel (13 profils & unions)
               </button>
 
               <input
@@ -807,10 +807,10 @@ export default function SuperAdminGovernance({ setView }) {
                 style={{ fontSize: '0.85rem' }}
               >
                 <option value="all">Tous les types de rôles</option>
-                <option value="citizen">Citoyens Assurés</option>
-                <option value="partner">Prestataires de Santé</option>
+                <option value="citizen">Citoyens assurés</option>
+                <option value="partner">Prestataires de santé</option>
                 <option value="agent">Agents CMU / UDMS</option>
-                <option value="superadmin">Super Admins</option>
+                <option value="superadmin">Super admins</option>
               </select>
             </div>
           </div>
@@ -824,9 +824,9 @@ export default function SuperAdminGovernance({ setView }) {
                   <th style={{ padding: '0.75rem' }}>Nom / Structure</th>
                   <th style={{ padding: '0.75rem' }}>Identifiant / Email</th>
                   <th style={{ padding: '0.75rem' }}>Matricule CMU</th>
-                  <th style={{ padding: '0.75rem' }}>Rôle Attribué</th>
+                  <th style={{ padding: '0.75rem' }}>Rôle attribué</th>
                   <th style={{ padding: '0.75rem' }}>Statut</th>
-                  <th style={{ padding: '0.75rem' }}>Actions Super Admin</th>
+                  <th style={{ padding: '0.75rem' }}>Actions super admin</th>
                 </tr>
               </thead>
               <tbody>
@@ -862,7 +862,7 @@ export default function SuperAdminGovernance({ setView }) {
                         }}
                         style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}
                       >
-                        <ProIcon name="edit" /> Éditer Rôle & Correctifs
+                        <ProIcon name="edit" /> Éditer rôle & correctifs
                       </button>
                     </td>
                   </tr>
@@ -888,27 +888,27 @@ export default function SuperAdminGovernance({ setView }) {
                 </h4>
 
                 <div className="form-group">
-                  <label className="form-label">Rôle d'Accès Attribué</label>
+                  <label className="form-label">Rôle d'accès attribué</label>
                   <select
                     className="form-control"
                     value={editRoleForm.role}
                     onChange={(e) => setEditRoleForm({ ...editRoleForm, role: e.target.value })}
                   >
-                    <option value="Citoyen Assuré">Citoyen Assuré (Accès Citoyen)</option>
-                    <option value="Prestataire de Santé">Prestataire de Santé (Accès Privé Santé)</option>
-                    <option value="Superviseur Régional">Superviseur Régional (Accès Agent)</option>
-                    <option value="Super Admin">Super Admin (Accès Total)</option>
+                    <option value="Citoyen Assuré">Citoyen assuré (accès citoyen)</option>
+                    <option value="Prestataire de Santé">Prestataire de santé (accès privé santé)</option>
+                    <option value="Superviseur Régional">Superviseur régional (accès agent)</option>
+                    <option value="Super Admin">Super admin (accès total)</option>
                   </select>
                 </div>
 
                 <div className="form-group" style={{ marginTop: '1rem' }}>
-                  <label className="form-label">Statut du Compte</label>
+                  <label className="form-label">Statut du compte</label>
                   <select
                     className="form-control"
                     value={editRoleForm.status}
                     onChange={(e) => setEditRoleForm({ ...editRoleForm, status: e.target.value })}
                   >
-                    <option value="active">Actif & Autorisé</option>
+                    <option value="active">Actif & autorisé</option>
                     <option value="suspended">Suspendu pour révision</option>
                   </select>
                 </div>
@@ -918,7 +918,7 @@ export default function SuperAdminGovernance({ setView }) {
                     Annuler
                   </button>
                   <button className="btn btn-primary btn-sm" onClick={() => handleApplyUserCorrection(selectedUserEdit.id)}>
-                    <ProIcon name="save" /> Enregistrer Correctif
+                    <ProIcon name="save" /> Enregistrer correctif
                   </button>
                 </div>
               </div>
@@ -932,7 +932,7 @@ export default function SuperAdminGovernance({ setView }) {
       {activeTab === 'requests' && (
         <div className="card text-left" style={{ padding: '2rem', borderRadius: '16px' }}>
           <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--primary)', marginBottom: '0.5rem' }}>
-            <ProIcon name="edit" /> Demandes d'Ouverture de Compte en Attente de Validation
+            <ProIcon name="edit" /> Demandes d'ouverture de compte en attente de validation
           </h3>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', marginBottom: '1.5rem' }}>
             Examinez et accordez l'ouverture de compte pour les assurés et prestataires ayant entamé la procédure sur la plateforme.
@@ -948,11 +948,11 @@ export default function SuperAdminGovernance({ setView }) {
                 <thead>
                   <tr style={{ borderBottom: '2px solid var(--border-color)', textAlign: 'left', background: 'var(--bg-card-subtle)' }}>
                     <th style={{ padding: '0.75rem' }}>Demandeur</th>
-                    <th style={{ padding: '0.75rem' }}>E-mail & Téléphone</th>
-                    <th style={{ padding: '0.75rem' }}>Profil Souhaité</th>
-                    <th style={{ padding: '0.75rem' }}>Union Départementale (UDMS)</th>
+                    <th style={{ padding: '0.75rem' }}>E-mail & téléphone</th>
+                    <th style={{ padding: '0.75rem' }}>Profil souhaité</th>
+                    <th style={{ padding: '0.75rem' }}>Union départementale (UDMS)</th>
                     <th style={{ padding: '0.75rem' }}>Statut</th>
-                    <th style={{ padding: '0.75rem', textAlign: 'right' }}>Action Super Admin</th>
+                    <th style={{ padding: '0.75rem', textAlign: 'right' }}>Action super admin</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1015,10 +1015,10 @@ export default function SuperAdminGovernance({ setView }) {
       {activeTab === 'communications' && (
         <div className="card text-left" style={{ padding: '2rem', borderRadius: '16px' }}>
           <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--primary)', marginBottom: '1rem' }}>
-            <ProIcon name="lock" /> Registre Global des Communications Privées Prestataires
+            <ProIcon name="lock" /> Registre global des communications privées prestataires
           </h3>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', marginBottom: '1.5rem' }}>
-            En tant que Super Admin, vous disposez d'un droit de regard complet sur toutes les communications chiffrées/privées envoyées par les prestataires de santé aux destinataires spécifiés.
+            En tant que super admin, vous disposez d'un droit de regard complet sur toutes les communications chiffrées/privées envoyées par les prestataires de santé aux destinataires spécifiés.
           </p>
 
           <div className="table-responsive">
@@ -1026,10 +1026,10 @@ export default function SuperAdminGovernance({ setView }) {
               <thead>
                 <tr style={{ borderBottom: '2px solid var(--border-color)', textAlign: 'left', background: 'var(--bg-card-subtle)' }}>
                   <th style={{ padding: '0.75rem' }}>Code</th>
-                  <th style={{ padding: '0.75rem' }}>Expéditeur (Prestataire)</th>
-                  <th style={{ padding: '0.75rem' }}>Destinataire Exclusif</th>
+                  <th style={{ padding: '0.75rem' }}>Expéditeur (prestataire)</th>
+                  <th style={{ padding: '0.75rem' }}>Destinataire exclusif</th>
                   <th style={{ padding: '0.75rem' }}>Objet / Sujet</th>
-                  <th style={{ padding: '0.75rem' }}>Message Privé</th>
+                  <th style={{ padding: '0.75rem' }}>Message privé</th>
                   <th style={{ padding: '0.75rem' }}>Date</th>
                   <th style={{ padding: '0.75rem' }}>Statut</th>
                 </tr>
@@ -1065,7 +1065,7 @@ export default function SuperAdminGovernance({ setView }) {
       {activeTab === 'pages' && (
         <div className="card text-left" style={{ padding: '2rem', borderRadius: '16px' }}>
           <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--primary)', marginBottom: '1rem' }}>
-            <ProIcon name="map" /> Navigateur d'Inspection de Toutes les Vues de la Plateforme
+            <ProIcon name="map" /> Navigateur d'inspection de toutes les vues de la plateforme
           </h3>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', marginBottom: '1.5rem' }}>
             Accédez directement à n'importe quelle page de l'application en mode super-utilisateur pour vérifier la conformité du design et des données.
@@ -1138,7 +1138,7 @@ export default function SuperAdminGovernance({ setView }) {
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
               <h3 style={{ fontSize: '1.15rem', fontWeight: '800', color: 'var(--primary)', margin: 0 }}>
-                <ProIcon name="plus" /> Création Universelle de Compte CSU (13 Profils & Unions)
+                <ProIcon name="plus" /> Création universelle de compte CSU (13 profils & unions)
               </h3>
               <button className="btn btn-outline btn-sm" onClick={() => setShowCreateModal(false)} style={{ borderRadius: '8px' }}>
                 <ProIcon name="x" />️
@@ -1198,40 +1198,40 @@ export default function SuperAdminGovernance({ setView }) {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                 <div>
-                  <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: '700' }}>Rôle d'Accès (13 Profils) *</label>
+                  <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: '700' }}>Rôle d'accès (13 profils) *</label>
                   <select
                     className="form-control"
                     value={createForm.roleCode}
                     onChange={(e) => setCreateForm({ ...createForm, roleCode: e.target.value })}
                   >
-                    <option value="ACC-01">ACC-01 • Assuré individuel / famille</option>
-                    <option value="ACC-02">ACC-02 • Élève / étudiant (CSU jeunes)</option>
+                    <option value="ACC-01">ACC-01 • Assuré individuel / Famille</option>
+                    <option value="ACC-02">ACC-02 • Élève / Étudiant (CSU jeunes)</option>
                     <option value="ACC-03">ACC-03 • Bénéficiaire BSF (filet social)</option>
-                    <option value="ACC-04">ACC-04 • Médecin / praticien traitant</option>
-                    <option value="ACC-05">ACC-05 • Infirmier / sage-femme</option>
+                    <option value="ACC-04">ACC-04 • Médecin / Praticien traitant</option>
+                    <option value="ACC-05">ACC-05 • Infirmier / Sage-femme</option>
                     <option value="ACC-06">ACC-06 • Pharmacien d'officine</option>
                     <option value="ACC-07">ACC-07 • Biologie & radiologie</option>
                     <option value="ACC-08">ACC-08 • Direction EPS & gestion hôpital</option>
                     <option value="ACC-09">ACC-09 • Agent mutuelle UDMS</option>
                     <option value="ACC-10">ACC-10 • Superviseur régional URMSCD</option>
-                    <option value="ACC-11">ACC-11 • Super admin ANACSU</option>
-                    <option value="ACC-12">ACC-12 • Entreprise / employeur</option>
+                    <option value="ACC-11">ACC-11 • Super admin anacsu</option>
+                    <option value="ACC-12">ACC-12 • Entreprise / Employeur</option>
                     <option value="ACC-13">ACC-13 • Parrain solidaire RSE</option>
                   </select>
                 </div>
                 <div>
-                  <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: '700' }}>Union Départementale / Régionale *</label>
+                  <label className="form-label" style={{ fontSize: '0.78rem', fontWeight: '700' }}>Union départementale / Régionale *</label>
                   <select
                     className="form-control"
                     value={createForm.udmsName}
                     onChange={(e) => setCreateForm({ ...createForm, udmsName: e.target.value })}
                   >
                     <option value="UDMS Dakar Plateau">UDMS Dakar Plateau</option>
-                    <option value="UDMS Pikine Ouest">UDMS Pikine Ouest</option>
+                    <option value="UDMS Pikine Ouest">UDMS Pikine ouest</option>
                     <option value="UDMS Guédiawaye">UDMS Guédiawaye</option>
                     <option value="UDMS Rufisque">UDMS Rufisque</option>
-                    <option value="URMSCD Région de Dakar">URMSCD Région de Dakar</option>
-                    <option value="ANACSU Siège National">ANACSU Siège National</option>
+                    <option value="URMSCD Région de Dakar">URMSCD région de Dakar</option>
+                    <option value="ANACSU Siège National">Anacsu siège national</option>
                   </select>
                 </div>
               </div>
@@ -1241,7 +1241,7 @@ export default function SuperAdminGovernance({ setView }) {
                   Annuler
                 </button>
                 <button type="submit" className="btn btn-success" style={{ flex: 1, fontWeight: '800' }}>
-                  <ProIcon name="zap" /> Créer & Activer le Compte
+                  <ProIcon name="zap" /> Créer & activer le compte
                 </button>
               </div>
             </form>

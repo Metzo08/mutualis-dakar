@@ -492,10 +492,10 @@ export default function RegionalStats({ lang }) {
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                 >
-                  <option value="BENEF">Effectif Assurés (Décroissant)</option>
+                  <option value="BENEF">Effectif assurés (décroissant)</option>
                   <option value="REIMB">Remboursements (FCFA)</option>
                   <option value="RATE">Taux d'activité (%)</option>
-                  <option value="NAME">🔤 Nom Région (A-Z)</option>
+                  <option value="NAME">🔤 nom région (a-z)</option>
                 </select>
               </div>
             </div>
@@ -570,7 +570,7 @@ export default function RegionalStats({ lang }) {
               <span className="badge bg-primary-subtle text-primary fw-extrabold px-2.5 py-1" style={{ fontSize: '0.76rem', borderRadius: '8px' }}>
                 <ProIcon name="hospital" /> {fmt(dynamicData.kpis.totalClaims)} actes
               </span>
-              <small className="text-muted" style={{ fontSize: '0.74rem' }}>pris en charge</small>
+              <small className="text-muted" style={{ fontSize: '0.74rem' }}>Pris en charge</small>
             </div>
           </div>
 
@@ -587,7 +587,7 @@ export default function RegionalStats({ lang }) {
               <span className="badge bg-warning-subtle text-warning fw-extrabold px-2.5 py-1" style={{ fontSize: '0.76rem', borderRadius: '8px' }}>
                 <ProIcon name="zap" /> 100% connectées
               </span>
-              <small className="text-muted" style={{ fontSize: '0.74rem' }}>via SenMutuelles</small>
+              <small className="text-muted" style={{ fontSize: '0.74rem' }}>Via SenMutuelles</small>
             </div>
           </div>
 
@@ -602,9 +602,9 @@ export default function RegionalStats({ lang }) {
             </div>
             <div className="d-flex align-items-center gap-2 mt-2">
               <span className="badge bg-info-subtle text-info fw-extrabold px-2.5 py-1" style={{ fontSize: '0.76rem', borderRadius: '8px' }}>
-                🌍 557 Communes
+                🌍 557 communes
               </span>
-              <small className="text-muted" style={{ fontSize: '0.74rem' }}>interopérables</small>
+              <small className="text-muted" style={{ fontSize: '0.74rem' }}>Interopérables</small>
             </div>
           </div>
         </div>
@@ -825,11 +825,11 @@ export default function RegionalStats({ lang }) {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
               <div className="p-3 rounded-3" style={{ background: 'var(--bg-card-subtle)' }}>
-                <span className="text-sub small d-block mb-1">Adhérents Totaux</span>
+                <span className="text-sub small d-block mb-1">Adhérents totaux</span>
                 <strong className="text-primary" style={{ fontSize: '1.2rem' }}>{fmt(selectedRegionDetail.beneficiaries)}</strong>
               </div>
               <div className="p-3 rounded-3" style={{ background: 'var(--bg-card-subtle)' }}>
-                <span className="text-sub small d-block mb-1">Assurés Actifs</span>
+                <span className="text-sub small d-block mb-1">Assurés actifs</span>
                 <strong className="text-success" style={{ fontSize: '1.2rem' }}>{fmt(selectedRegionDetail.active)}</strong>
               </div>
               <div className="p-3 rounded-3" style={{ background: 'var(--bg-card-subtle)' }}>
@@ -841,7 +841,7 @@ export default function RegionalStats({ lang }) {
                 <strong className="text-emerald" style={{ fontSize: '1.2rem' }}>{fmt(selectedRegionDetail.reimbursed)} FCFA</strong>
               </div>
               <div className="p-3 rounded-3" style={{ background: 'var(--bg-card-subtle)' }}>
-                <span className="text-sub small d-block mb-1">Mutuelles Référencées</span>
+                <span className="text-sub small d-block mb-1">Mutuelles référencées</span>
                 <strong className="text-info" style={{ fontSize: '1.2rem' }}>{selectedRegionDetail.mutuelles}</strong>
               </div>
             </div>

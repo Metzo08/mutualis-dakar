@@ -429,7 +429,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
         </head>
         <body>
           <div class="no-print">
-            <button onclick="window.print()" class="btn btn-success fw-bold px-4 py-2 me-2" style="background: #059669; border-color: #059669;"><ProIcon name="printer" /> Imprimer / Télécharger le Bon PDF A4</button>
+            <button onclick="window.print()" class="btn btn-success fw-bold px-4 py-2 me-2" style="background: #059669; border-color: #059669;"><ProIcon name="printer" /> Imprimer / Télécharger le bon PDF a4</button>
             <button onclick="window.close()" class="btn btn-secondary fw-bold px-3 py-2">Fermer la fenêtre</button>
           </div>
 
@@ -440,7 +440,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                 <img src="/senegal_flag.png" alt="Drapeau du Sénégal" style="width: 54px; height: 36px; object-fit: cover; border-radius: 4px; border: 1.5px solid #d97706;" />
                 <div>
                   <h6 class="fw-bold mb-0" style="color: #047857;">République du Sénégal</h6>
-                  <small class="text-muted fw-semibold" style="font-size: 0.75rem;">Un Peuple — Un But — Une Foi</small><br />
+                  <small class="text-muted fw-semibold" style="font-size: 0.75rem;">Un peuple — Un but — Une foi</small><br />
                   <strong class="small" style="color: #0f172a; font-size: 0.82rem;">Union nationale des mutuelles de santé communautaires (UNAMUSC)</strong><br />
                   <span class="badge bg-success-subtle text-success border border-success fw-semibold" style="font-size: 0.72rem;">Programme national de la couverture sanitaire du Sénégal</span>
                 </div>
@@ -452,7 +452,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
             <!-- Titre du Bon Pharmacie -->
             <div class="text-center my-4 p-3 rounded-3" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
               <h4 class="fw-bold mb-1" style="color: #047857; letter-spacing: 0.5px;">Bon de commande de médicaments (48h)</h4>
-              <small class="text-muted fw-semibold">Système de Tiers-Payant UNAMUSC (Prise en charge 50% — Pharmacies agréées)</small><br />
+              <small class="text-muted fw-semibold">Système de tiers-payant UNAMUSC (prise en charge 50% — Pharmacies agréées)</small><br />
               <code class="mt-2 d-inline-block px-3 py-1 bg-white text-success border border-success rounded-3 fw-bold fs-6">Code Bon : #${voucher.order_code || `ORD-${voucher.id}`}</code>
             </div>
 
@@ -466,7 +466,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               <div class="col-6 text-end">
                 <span class="small fw-bold d-block text-muted"><ProIcon name="calendar" /> Date d'émission & validité :</span>
                 <strong class="d-block" style="color: #0f172a;">${new Date(voucher.created_at || Date.now()).toLocaleDateString('fr-FR')}</strong>
-                <span class="badge bg-warning text-dark fw-bold">Valide 48 Heures</span>
+                <span class="badge bg-warning text-dark fw-bold">Valide 48 heures</span>
               </div>
             </div>
 
@@ -475,10 +475,10 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
             <table class="table table-bordered align-middle mb-4">
               <thead style="background: #f1f5f9;">
                 <tr>
-                  <th>Désignation Médicament</th>
+                  <th>Désignation médicament</th>
                   <th class="text-center">Quantité</th>
-                  <th class="text-end">Prix Unitaire Officine</th>
-                  <th class="text-end">Total TTC (FCFA)</th>
+                  <th class="text-end">Prix unitaire officine</th>
+                  <th class="text-end">Total ttc (FCFA)</th>
                 </tr>
               </thead>
               <tbody>
@@ -497,15 +497,15 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
             <div class="p-3 rounded-3 mb-4" style="background: #0f172a; color: #ffffff;">
               <div class="row text-center align-items-center">
                 <div class="col-4">
-                  <span class="small text-white-50 d-block">Montant Réel Officine</span>
+                  <span class="small text-white-50 d-block">Montant réel officine</span>
                   <strong class="fs-6 text-white">${Number(totalAmt).toLocaleString()} FCFA</strong>
                 </div>
                 <div class="col-4 border-start border-end border-secondary">
-                  <span class="small text-success d-block">Prise en Charge UNAMUSC (50%)</span>
+                  <span class="small text-success d-block">Prise en charge UNAMUSC (50%)</span>
                   <strong class="fs-4 text-success">${Number(cmuAmt).toLocaleString()} FCFA</strong>
                 </div>
                 <div class="col-4">
-                  <span class="small text-warning d-block">Ticket Modérateur Patient (50%)</span>
+                  <span class="small text-warning d-block">Ticket modérateur patient (50%)</span>
                   <strong class="fs-6 text-warning">${Number(patientAmt).toLocaleString()} FCFA</strong>
                 </div>
               </div>
@@ -514,7 +514,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
             <!-- Validation Pharmacien & QR Code -->
             <div class="row g-4 align-items-center border-top pt-3" style="border-color: #cbd5e1 !important;">
               <div class="col-8">
-                <strong class="small d-block text-success mb-1 fw-bold">Certification Officine & Tiers-Payant :</strong>
+                <strong class="small d-block text-success mb-1 fw-bold">Certification officine & tiers-payant :</strong>
                 <p class="small text-muted mb-0" style="line-height: 1.5;">
                   Ce bon certifié permet la délivrance immédiate des médicaments prescrits dans toute pharmacie agréée UNAMUSC. Le montant pris en charge (50%) est réglé directement par l'UNAMUSC au pharmacien sous présentation du bon signé.
                 </p>
@@ -797,7 +797,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               border: '1px solid rgba(255, 255, 255, 0.3)'
             }}
           >
-            <ProIcon name="senegal-flag" /> UNAMUSC Sénégal — Bons de Commande Médicaments (Prise en charge 50%)
+            <ProIcon name="senegal-flag" /> UNAMUSC Sénégal — Bons de commande médicaments (prise en charge 50%)
           </span>
           <h1 className="fw-bold mb-2 text-white text-center" style={{ fontSize: '2rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
             {lang === 'wo' ? '💊 Bonu Garab Pharmacie Tiers-Payant' : '💊 Bons de Commande de Médicaments'}
@@ -1007,7 +1007,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                 <div className="card shadow-sm border-0 p-3.5 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)' }}>
                   <span className="small text-muted mb-1 d-block fw-bold">Prise en charge pharmacie</span>
                   <h3 className="fw-extrabold mb-0 text-success" style={{ fontSize: '1.55rem' }}>{citizenTotalCovered.toLocaleString('fr-FR')} FCFA</h3>
-                  <small className="text-success fw-bold" style={{ fontSize: '0.74rem' }}>Économie Tiers-payant 50%</small>
+                  <small className="text-success fw-bold" style={{ fontSize: '0.74rem' }}>Économie tiers-payant 50%</small>
                 </div>
               </div>
             </div>
@@ -1058,7 +1058,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
         <div className="mb-4 p-3.5 rounded-4" style={{ background: 'var(--bg-body)', border: '1.5px dashed var(--primary)' }}>
           <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
             <label className="form-label small fw-extrabold mb-0 d-flex align-items-center gap-2 text-primary" style={{ fontSize: '0.95rem' }}>
-              <span><ProIcon name="camera" /> Photo / Scan de l'ordonnance médicale (Smartphone, Tablette ou Ordinateur) *</span>
+              <span><ProIcon name="camera" /> Photo / Scan de l'ordonnance médicale (smartphone, tablette ou ordinateur) *</span>
             </label>
             {prescriptionPhoto && <span className="badge bg-success text-white"><ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Ordonnance originale numérisée & jointe</span>}
           </div>
@@ -1193,7 +1193,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
             <div className="p-3 bg-dark text-white rounded-3 mb-3 border border-success">
               <div className="row g-2 text-center">
                 <div className="col-4">
-                  <span className="small text-white-50 d-block">Prix Public Total</span>
+                  <span className="small text-white-50 d-block">Prix public total</span>
                   <strong className="fs-6">{items.reduce((a, b) => a + (b.price * b.qty), 0).toLocaleString()} FCFA</strong>
                 </div>
                 <div className="col-4 border-start border-end border-secondary">
@@ -1229,13 +1229,13 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
           <div className="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-2">
             {setView && (
               <button className="btn fw-bold px-4 py-2.5" onClick={() => setView('login')} style={{ borderRadius: '12px', background: '#ffffff', color: '#047857' }}>
-                <ProIcon name="lock" /> Se connecter à mon espace assuré / pharmacie
+                <ProIcon name="lock" /> Se connecter à mon espace assuré / Pharmacie
               </button>
             )}
           </div>
 
           <div className="mt-4 pt-3 border-top mx-auto" style={{ maxWidth: '520px', borderColor: 'var(--border-color)' }}>
-            <label className="form-label small text-muted fw-bold mb-2">Rechercher directement votre bon avec votre N° de Carte CSU :</label>
+            <label className="form-label small text-muted fw-bold mb-2">Rechercher directement votre bon avec votre n° de carte CSU :</label>
             <div className="input-group">
               <input 
                 type="text" 
@@ -1308,7 +1308,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                 <thead>
                   <tr style={{ background: 'var(--card-bg)' }}>
                     <th style={{ padding: '1.1rem 1rem', fontSize: '0.85rem', fontWeight: '800', border: '1px solid rgba(255, 255, 255, 0.25)', textTransform: 'none', letterSpacing: 'normal' }}>Code & date</th>
-                    <th style={{ padding: '1.1rem 1rem', fontSize: '0.85rem', fontWeight: '800', border: '1px solid rgba(255, 255, 255, 0.25)', textTransform: 'none', letterSpacing: 'normal' }}>Assuré / bénéficiaire</th>
+                    <th style={{ padding: '1.1rem 1rem', fontSize: '0.85rem', fontWeight: '800', border: '1px solid rgba(255, 255, 255, 0.25)', textTransform: 'none', letterSpacing: 'normal' }}>Assuré / Bénéficiaire</th>
                     <th style={{ padding: '1.1rem 1rem', fontSize: '0.85rem', fontWeight: '800', border: '1px solid rgba(255, 255, 255, 0.25)', textTransform: 'none', letterSpacing: 'normal' }}>Médicaments prescrits</th>
                     <th style={{ padding: '1.1rem 1rem', fontSize: '0.85rem', fontWeight: '800', border: '1px solid rgba(255, 255, 255, 0.25)', textTransform: 'none', letterSpacing: 'normal' }}>Prise en charge CSU</th>
                     <th style={{ padding: '1.1rem 1rem', fontSize: '0.85rem', fontWeight: '800', border: '1px solid rgba(255, 255, 255, 0.25)', textTransform: 'none', letterSpacing: 'normal' }}>Chrono validité</th>
@@ -1415,7 +1415,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
 
                         {/* 6. Statut & homologation */}
                         <td style={{ padding: '1.1rem 1rem', border: '1px solid rgba(255, 255, 255, 0.2)', verticalAlign: 'top' }}>
-                          {ord.status === 'active' && <span className="badge bg-success px-3 py-2 text-white fw-bold d-inline-block shadow-sm" style={{ borderRadius: '12px', fontSize: '0.8rem' }}><ProIcon name="check-circle" color="#059669" /> Actif (Prêt)</span>}
+                          {ord.status === 'active' && <span className="badge bg-success px-3 py-2 text-white fw-bold d-inline-block shadow-sm" style={{ borderRadius: '12px', fontSize: '0.8rem' }}><ProIcon name="check-circle" color="#059669" /> Actif (prêt)</span>}
                           {ord.status === 'used' && <span className="badge bg-secondary px-3 py-2 text-white fw-bold d-inline-block shadow-sm" style={{ borderRadius: '12px', fontSize: '0.8rem' }}><ProIcon name="lock" /> Délivré en pharmacie</span>}
                           {ord.status === 'expired' && <span className="badge bg-danger px-3 py-2 text-white fw-bold d-inline-block shadow-sm" style={{ borderRadius: '12px', fontSize: '0.8rem' }}><ProIcon name="alert-triangle" color="#d97706" /> Expiré</span>}
                           {ord.status === 'pending_review' && <span className="badge px-3 py-2 fw-bold d-inline-block shadow-sm" style={{ borderRadius: '12px', background: '#f59e0b', color: '#0f172a', fontSize: '0.8rem' }}><ProIcon name="hourglass" /> En attente validation ordonnance</span>}
@@ -1622,7 +1622,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
             </div>
             <div className="p-4" style={{ background: 'var(--bg-card, #1e293b)' }}>
               <p className="small mb-3" style={{ color: 'var(--text-sub)', lineHeight: 1.5 }}>
-                Vous êtes sur le point de <strong style={{ color: '#ef4444' }}>rejeter</strong> le bon de commande de
+                Vous êtes sur le point de <strong style={{ color: '#ef4444' }}>Rejeter</strong> le bon de commande de
                 <strong style={{ color: 'var(--text-main)' }}> {validatingOrder.first_name} {validatingOrder.last_name}</strong> ({validatingOrder.cmu_number}).
                 L'assuré sera notifié et devra corriger son ordonnance.
               </p>
@@ -1855,7 +1855,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                     {isNewOrderObj ? 'Émettre un bon de commande pharmacie (48h)' : 'Modifier le bon de commande'}
                   </h5>
                   <span className="badge bg-success-subtle text-success border border-success fw-bold" style={{ borderRadius: '6px', fontSize: '0.74rem' }}>
-                    UNAMUSC • Tiers-Payant Officine
+                    UNAMUSC • Tiers-payant officine
                   </span>
                 </div>
               </div>
@@ -1892,7 +1892,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
 
             <div className="row g-3 mb-3">
               <div className="col-md-6">
-                <label className="form-label small fw-bold mb-1">N° de Carte CSU *</label>
+                <label className="form-label small fw-bold mb-1">N° de carte CSU *</label>
                 <input 
                   type="text" 
                   className="form-control" 
@@ -1905,7 +1905,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               </div>
 
               <div className="col-md-6">
-                <label className="form-label small fw-bold mb-1">Code Bon de Commande *</label>
+                <label className="form-label small fw-bold mb-1">Code bon de commande *</label>
                 <input 
                   type="text" 
                   className="form-control" 
@@ -1940,7 +1940,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                   value={editingOrderObj.status || 'active'}
                   onChange={(e) => setEditingOrderObj({ ...editingOrderObj, status: e.target.value })}
                 >
-                  <option value="active">Actif (Prêt pour pharmacie)</option>
+                  <option value="active">Actif (prêt pour pharmacie)</option>
                   <option value="used">Délivré en pharmacie</option>
                   <option value="pending_review">En attente validation ordonnance</option>
                   <option value="rejected">Rejeté</option>
@@ -2049,7 +2049,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                   style={{ background: '#25d366', border: 'none', borderRadius: '12px', boxShadow: '0 4px 14px rgba(37, 211, 102, 0.35)' }}
                   onClick={() => handleSendOrderWhatsApp(whatsappOrderModal, whatsappPhoneInput)}
                 >
-                  <ProIcon name="smartphone" /> Ouvrir WhatsApp et Envoyer maintenant
+                  <ProIcon name="smartphone" /> Ouvrir WhatsApp et envoyer maintenant
                 </button>
               </div>
             </div>
@@ -2104,10 +2104,10 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                 <span style={{ fontSize: '1.6rem' }}><ProIcon name="pill" /></span>
                 <div>
                   <h5 className="fw-bold mb-0 text-white" style={{ fontSize: '1.05rem' }}>
-                    Demander un Bon de Commande par WhatsApp
+                    Demander un bon de commande par WhatsApp
                   </h5>
                   <small style={{ opacity: 0.9, fontSize: '0.78rem' }}>
-                    Guichet WhatsApp UNAMUSC • Tiers-Payant Pharmacie 50% • Validation sur ordonnance
+                    Guichet WhatsApp UNAMUSC • Tiers-payant pharmacie 50% • Validation sur ordonnance
                   </small>
                 </div>
               </div>
@@ -2132,7 +2132,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               {/* Choix de la MSD / Département */}
               <div className="mb-3">
                 <label className="form-label small fw-bold mb-1" style={{ color: 'var(--text-main)' }}>
-                  <ProIcon name="landmark" /> Mutuelle de Santé (MSD) / Département de rattachement :
+                  <ProIcon name="landmark" /> Mutuelle de santé (MSD) / Département de rattachement :
                 </label>
                 <select
                   className="form-select"
@@ -2155,7 +2155,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               <div className="row g-2 mb-3">
                 <div className="col-md-6">
                   <label className="form-label small fw-bold mb-1" style={{ color: 'var(--text-main)' }}>
-                    🏪 Pharmacie partenaire souhaitée :
+                    🏪 pharmacie partenaire souhaitée :
                   </label>
                   <input
                     type="text"
@@ -2203,7 +2203,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               {/* PIÈCE JOINTE : PHOTO DE L'ORDONNANCE */}
               <div className="mb-3 p-3 rounded-3" style={{ background: 'rgba(5, 150, 105, 0.08)', border: '1.5px dashed #059669' }}>
                 <label className="form-label small fw-bold mb-1 d-flex align-items-center justify-content-between" style={{ color: 'var(--text-main)' }}>
-                  <span><ProIcon name="paperclip" /> Joindre l'ordonnance médicale (Photo / Scan) :</span>
+                  <span><ProIcon name="paperclip" /> Joindre l'ordonnance médicale (photo / Scan) :</span>
                   <span className="badge bg-success" style={{ fontSize: '0.72rem' }}>Recommandé</span>
                 </label>
                 <input
@@ -2226,7 +2226,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                   </div>
                 ) : (
                   <small className="text-muted d-block mt-1">
-                    Prenez une photo de votre ordonnance pour permettre à la mutuelle de valider immédiatement votre Bon de Commande (50%).
+                    Prenez une photo de votre ordonnance pour permettre à la mutuelle de valider immédiatement votre bon de commande (50%).
                   </small>
                 )}
               </div>
@@ -2248,7 +2248,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                 </div>
                 <div className="col-md-6">
                   <label className="form-label small fw-bold mb-1" style={{ color: 'var(--text-main)' }}>
-                    <ProIcon name="building2" /> Guichet WhatsApp de la Mutuelle :
+                    <ProIcon name="building2" /> Guichet WhatsApp de la mutuelle :
                   </label>
                   <input
                     type="tel"
@@ -2312,7 +2312,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                   className="btn fw-bold px-4 text-white d-inline-flex align-items-center gap-2"
                   style={{ background: '#25d366', border: 'none', borderRadius: '12px', boxShadow: '0 4px 14px rgba(37, 211, 102, 0.35)' }}
                 >
-                  <ProIcon name="message-square" /> Enregistrer & Envoyer ma demande sur WhatsApp
+                  <ProIcon name="message-square" /> Enregistrer & envoyer ma demande sur WhatsApp
                 </button>
               </div>
             </form>

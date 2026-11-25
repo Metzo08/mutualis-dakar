@@ -732,7 +732,7 @@ export default function App() {
               <div className="card text-center fade-in-up" style={{ padding: '3rem', margin: '2rem auto', maxWidth: '600px', borderRadius: '16px', borderTop: '4px solid var(--danger)' }}>
                 <div style={{ fontSize: '3rem', marginBottom: '1rem' }}><ProIcon name="ban" color="#dc2626" /></div>
                 <h2 style={{ color: 'var(--danger)', fontWeight: '850' }}>Accès refusé</h2>
-                <p style={{ color: 'var(--text-sub)', marginTop: '0.5rem' }}>Seul le Super Admin est autorisé à consulter le journal d'audit complet de la plateforme.</p>
+                <p style={{ color: 'var(--text-sub)', marginTop: '0.5rem' }}>Seul le super admin est autorisé à consulter le journal d'audit complet de la plateforme.</p>
                 <button className="btn btn-primary" style={{ marginTop: '1.5rem', fontWeight: 'bold' }} onClick={() => setView('home')}>
                   Retour à l'accueil
                 </button>
@@ -780,8 +780,8 @@ export default function App() {
               <div className="container py-5 text-center">
                 <div className="card shadow-lg border-0 p-5 mx-auto" style={{ maxWidth: '500px', borderRadius: '24px', background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
                   <div style={{ fontSize: '3rem', marginBottom: '1rem' }}><ProIcon name="shield-check" /></div>
-                  <h4 className="fw-bold mb-2">Accès Restreint : Espace Agent & Administration</h4>
-                  <p className="small text-muted mb-4">Cette section est réservée aux agents mutualistes et administrateurs d'Unions Régionales (URMSCD).</p>
+                  <h4 className="fw-bold mb-2">Accès restreint : espace agent & administration</h4>
+                  <p className="small text-muted mb-4">Cette section est réservée aux agents mutualistes et administrateurs d'unions régionales (URMSCD).</p>
                   <button
                     className="btn btn-primary fw-bold py-2 px-4 text-white"
                     style={{ borderRadius: '12px' }}
@@ -790,7 +790,7 @@ export default function App() {
                       setView('login');
                     }}
                   >
-                    <ProIcon name="lock" /> Se Connecter comme Agent
+                    <ProIcon name="lock" /> Se connecter comme agent
                   </button>
                 </div>
               </div>
@@ -883,10 +883,10 @@ export default function App() {
           return (
             <div className="card text-center fade-in-up" style={{ padding: '3rem', margin: '2rem auto', maxWidth: '600px', borderRadius: '16px', borderTop: '4px solid var(--danger)' }}>
               <div style={{ fontSize: '3rem', marginBottom: '1rem' }}><ProIcon name="ban" color="#dc2626" /></div>
-              <h2 style={{ color: 'var(--danger)', fontWeight: '850' }}>Accès réservé au Super Admin</h2>
+              <h2 style={{ color: 'var(--danger)', fontWeight: '850' }}>Accès réservé au super admin</h2>
               <p style={{ color: 'var(--text-sub)', marginTop: '0.5rem' }}>
-                Le tableau de bord de Gouvernance (comptes utilisateurs, statistiques financières, habilitations médicales)
-                n'est accessible qu'après authentification avec un compte Super Administrateur (ANACSU / Ministère).
+                Le tableau de bord de gouvernance (comptes utilisateurs, statistiques financières, habilitations médicales)
+                n'est accessible qu'après authentification avec un compte super administrateur (anacsu / Ministère).
               </p>
               <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '1.5rem', flexWrap: 'wrap' }}>
                 <button
@@ -894,7 +894,7 @@ export default function App() {
                   style={{ fontWeight: 'bold' }}
                   onClick={() => { setPortalMode('agent'); setView('login'); }}
                 >
-                  <ProIcon name="lock" /> Se connecter en Super Admin
+                  <ProIcon name="lock" /> Se connecter en super admin
                 </button>
                 <button className="btn btn-outline" style={{ fontWeight: 'bold' }} onClick={() => setView('home')}>
                   Retour à l'accueil
@@ -917,7 +917,7 @@ export default function App() {
               </p>
               <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '1.5rem', flexWrap: 'wrap' }}>
                 <button className="btn btn-primary fw-bold py-2 px-4 text-white" style={{ borderRadius: '12px' }} onClick={() => { setPortalMode('agent'); setView('login'); }}>
-                  <ProIcon name="lock" /> Se Connecter en Agent
+                  <ProIcon name="lock" /> Se connecter en agent
                 </button>
                 <button className="btn btn-outline" style={{ fontWeight: 'bold' }} onClick={() => setView('home')}>
                   Retour à l'accueil
@@ -945,8 +945,8 @@ export default function App() {
               <div style={{ fontSize: '3rem', marginBottom: '1rem' }}><ProIcon name="shield-check" /></div>
               <h2 style={{ color: 'var(--danger)', fontWeight: '850' }}>Accès réservé à l'administration</h2>
               <p style={{ color: 'var(--text-sub)', marginTop: '0.5rem' }}>
-                Le Centre de sécurité est accessible par les agents et administrateurs de l'Union Régionale (URMSCD).
-                Super Admin : vous pouvez aussi utiliser la Gouvernance Super Admin.
+                Le centre de sécurité est accessible par les agents et administrateurs de l'union régionale (URMSCD).
+                Super admin : vous pouvez aussi utiliser la gouvernance super admin.
               </p>
               <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '1.5rem', flexWrap: 'wrap' }}>
                 <button
@@ -957,7 +957,7 @@ export default function App() {
                     setView('login');
                   }}
                 >
-                  <ProIcon name="lock" /> Se Connecter en Agent
+                  <ProIcon name="lock" /> Se connecter en agent
                 </button>
                 <button className="btn btn-outline" style={{ fontWeight: 'bold' }} onClick={() => setView('home')}>
                   Retour à l'accueil
@@ -985,8 +985,8 @@ export default function App() {
               <div style={{ fontSize: '3rem', marginBottom: '1rem' }}><ProIcon name="bar-chart" /></div>
               <h2 style={{ color: 'var(--danger)', fontWeight: '850' }}>Accès réservé à l'administration</h2>
               <p style={{ color: 'var(--text-sub)', marginTop: '0.5rem' }}>
-                Les rapports Excel sont générés côté serveur (backend) et exportés en fichier .xlsx cloisonné par MSD.
-                Disponibles pour les agents, administrateurs et Super Admin.
+                Les rapports Excel sont générés côté serveur (backend) et exportés en fichier .XLSX cloisonné par MSD.
+                Disponibles pour les agents, administrateurs et super admin.
               </p>
               <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '1.5rem', flexWrap: 'wrap' }}>
                 <button
@@ -997,7 +997,7 @@ export default function App() {
                     setView('login');
                   }}
                 >
-                  <ProIcon name="lock" /> Se Connecter en Agent
+                  <ProIcon name="lock" /> Se connecter en agent
                 </button>
                 <button className="btn btn-outline" style={{ fontWeight: 'bold' }} onClick={() => setView('home')}>
                   Retour à l'accueil
@@ -1068,8 +1068,8 @@ export default function App() {
             return (
               <div className="card text-center fade-in-up" style={{ padding: '3rem', margin: '2rem auto', maxWidth: '600px', borderRadius: '16px', borderTop: '4px solid var(--danger)' }}>
                 <div style={{ fontSize: '3rem', marginBottom: '1rem' }}><ProIcon name="ban" color="#dc2626" /></div>
-                <h2 style={{ color: 'var(--danger)', fontWeight: '850' }}>Accès réservé au Super Admin</h2>
-                <p style={{ color: 'var(--text-sub)', marginTop: '0.5rem' }}>Le studio de conception et d'impression des cartes d'assurés CSU est strictement réservé à la gouvernance Super Admin.</p>
+                <h2 style={{ color: 'var(--danger)', fontWeight: '850' }}>Accès réservé au super admin</h2>
+                <p style={{ color: 'var(--text-sub)', marginTop: '0.5rem' }}>Le studio de conception et d'impression des cartes d'assurés CSU est strictement réservé à la gouvernance super admin.</p>
                 <button className="btn btn-primary" style={{ marginTop: '1.5rem', fontWeight: 'bold' }} onClick={() => setView('home')}>
                   Retour à l'accueil
                 </button>
@@ -1206,7 +1206,7 @@ export default function App() {
             {/* Offline Indicator */}
             {isOffline && (
               <span className="badge badge-danger" style={{ fontSize: '0.75rem', fontWeight: 'bold', backgroundColor: 'var(--danger)', color: '#fff', animation: 'pulse 2s infinite' }}>
-                <ProIcon name="alert-triangle" color="#d97706" /> Mode Hors Ligne
+                <ProIcon name="alert-triangle" color="#d97706" /> Mode hors ligne
               </span>
             )}
 

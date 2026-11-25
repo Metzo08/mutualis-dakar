@@ -545,19 +545,19 @@ export default function Departements({ lang, setView }) {
                           
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', fontSize: '0.9rem', marginTop: '0.25rem' }}>
                             <div>
-                              <strong style={{ color: 'var(--neutral-gray)', display: 'block', fontSize: '0.75rem', textTransform: 'uppercase' }}>{t.modalManager}</strong>
+                              <strong style={{ color: 'var(--neutral-gray)', display: 'block', fontSize: '0.75rem', textTransform: 'none' }}>{t.modalManager}</strong>
                               <span style={{ fontWeight: '600', color: 'var(--neutral-dark)' }}>{activeDeptUnion.manager}</span>
                             </div>
                             <div>
-                              <strong style={{ color: 'var(--neutral-gray)', display: 'block', fontSize: '0.75rem', textTransform: 'uppercase' }}>{t.modalContact}</strong>
+                              <strong style={{ color: 'var(--neutral-gray)', display: 'block', fontSize: '0.75rem', textTransform: 'none' }}>{t.modalContact}</strong>
                               <span style={{ fontWeight: '600', color: 'var(--neutral-dark)' }}>{activeDeptUnion.phone}</span>
                             </div>
                             <div>
-                              <strong style={{ color: 'var(--neutral-gray)', display: 'block', fontSize: '0.75rem', textTransform: 'uppercase' }}>{t.modalEmail}</strong>
+                              <strong style={{ color: 'var(--neutral-gray)', display: 'block', fontSize: '0.75rem', textTransform: 'none' }}>{t.modalEmail}</strong>
                               <span style={{ fontWeight: '600', color: 'var(--neutral-dark)', fontFamily: 'monospace' }}>{activeDeptUnion.email}</span>
                             </div>
                             <div>
-                              <strong style={{ color: 'var(--neutral-gray)', display: 'block', fontSize: '0.75rem', textTransform: 'uppercase' }}>Agrément Faitière</strong>
+                              <strong style={{ color: 'var(--neutral-gray)', display: 'block', fontSize: '0.75rem', textTransform: 'none' }}>Agrément faitière</strong>
                               <span style={{ fontWeight: '600', color: 'var(--secondary)' }}>{activeDeptUnion.agreement}</span>
                             </div>
                           </div>
@@ -575,7 +575,7 @@ export default function Departements({ lang, setView }) {
                                   className="btn btn-secondary btn-xs"
                                   style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', textDecoration: 'none', padding: '0.35rem 0.75rem', fontSize: '0.75rem', fontWeight: '600', borderRadius: '6px' }}
                                 >
-                                  <ProIcon name="map" /> Google Maps
+                                  <ProIcon name="map" /> Google maps
                                 </a>
                               )}
                             </div>
@@ -650,7 +650,7 @@ export default function Departements({ lang, setView }) {
                     <h3 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}><ProIcon name="users" /> {t.bureauTitle}</h3>
                     
                     <div>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--neutral-gray)', textTransform: 'uppercase' }}>Président / coordinateur</div>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--neutral-gray)', textTransform: 'none' }}>Président / Coordinateur</div>
                       <div style={{ fontWeight: '700', color: 'var(--neutral-dark)' }}>{stats.president}</div>
                     </div>
                   </div>
@@ -685,27 +685,27 @@ export default function Departements({ lang, setView }) {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>
               <div>
-                <strong style={{ fontSize: '0.85rem', color: 'var(--neutral-gray)', textTransform: 'uppercase', display: 'block' }}>{t.modalManager}</strong>
+                <strong style={{ fontSize: '0.85rem', color: 'var(--neutral-gray)', textTransform: 'none', display: 'block' }}>{t.modalManager}</strong>
                 <span style={{ fontWeight: '600', color: 'var(--neutral-dark)' }}>{selectedMutuelle.manager}</span>
               </div>
               
               <div>
-                <strong style={{ fontSize: '0.85rem', color: 'var(--neutral-gray)', textTransform: 'uppercase', display: 'block' }}>{t.modalContact}</strong>
+                <strong style={{ fontSize: '0.85rem', color: 'var(--neutral-gray)', textTransform: 'none', display: 'block' }}>{t.modalContact}</strong>
                 <span style={{ fontWeight: '600', color: 'var(--neutral-dark)' }}>{selectedMutuelle.phone}</span>
               </div>
 
               <div>
-                <strong style={{ fontSize: '0.85rem', color: 'var(--neutral-gray)', textTransform: 'uppercase', display: 'block' }}>{t.modalEmail}</strong>
+                <strong style={{ fontSize: '0.85rem', color: 'var(--neutral-gray)', textTransform: 'none', display: 'block' }}>{t.modalEmail}</strong>
                 <span style={{ fontWeight: '600', color: 'var(--neutral-dark)', fontFamily: 'monospace' }}>{selectedMutuelle.email}</span>
               </div>
 
               <div>
-                <strong style={{ fontSize: '0.85rem', color: 'var(--neutral-gray)', textTransform: 'uppercase', display: 'block' }}>{t.modalRates}</strong>
+                <strong style={{ fontSize: '0.85rem', color: 'var(--neutral-gray)', textTransform: 'none', display: 'block' }}>{t.modalRates}</strong>
                 <span style={{ fontWeight: '600', color: 'var(--secondary)' }}>{selectedMutuelle.rates}</span>
               </div>
 
               <div>
-                <strong style={{ fontSize: '0.85rem', color: 'var(--neutral-gray)', textTransform: 'uppercase', display: 'block' }}>{t.modalServices}</strong>
+                <strong style={{ fontSize: '0.85rem', color: 'var(--neutral-gray)', textTransform: 'none', display: 'block' }}>{t.modalServices}</strong>
                 <span style={{ fontSize: '0.9rem', color: 'var(--neutral-dark)', lineHeight: '1.4' }}>{selectedMutuelle.services}</span>
               </div>
 
@@ -713,7 +713,7 @@ export default function Departements({ lang, setView }) {
                 <div className="info-box-landmark" style={{ padding: '0.85rem', display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginTop: '0.25rem', borderRadius: '10px' }}>
                   <span style={{ fontSize: '1.2rem' }}><ProIcon name="map-pin" /></span>
                   <div>
-                    <strong className="info-box-title" style={{ fontSize: '0.75rem', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px' }}>Point de repère</strong>
+                    <strong className="info-box-title" style={{ fontSize: '0.75rem', textTransform: 'none', display: 'block', letterSpacing: '0.5px' }}>Point de repère</strong>
                     <span className="info-box-text" style={{ fontSize: '0.85rem', fontWeight: '500' }}>{selectedMutuelle.landmark}</span>
                   </div>
                 </div>
@@ -723,7 +723,7 @@ export default function Departements({ lang, setView }) {
                 <div className="info-box-tips" style={{ padding: '0.85rem', display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginTop: '0.25rem', borderRadius: '10px' }}>
                   <span style={{ fontSize: '1.2rem' }}><ProIcon name="lightbulb" /></span>
                   <div>
-                    <strong className="info-box-title" style={{ fontSize: '0.75rem', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px' }}>Infos zone</strong>
+                    <strong className="info-box-title" style={{ fontSize: '0.75rem', textTransform: 'none', display: 'block', letterSpacing: '0.5px' }}>Infos zone</strong>
                     <span className="info-box-text" style={{ fontSize: '0.85rem', lineHeight: '1.4' }}>{selectedMutuelle.localInfo}</span>
                   </div>
                 </div>

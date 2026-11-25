@@ -1003,7 +1003,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                   </h5>
                   <span style={{ color: 'var(--text-sub)', fontSize: '0.78rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                     <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
-                    Loi N° 2008-12 sur les données personnelles
+                    Loi n° 2008-12 sur les données personnelles
                   </span>
                 </div>
               </div>
@@ -1174,7 +1174,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
               </div>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', borderRadius: '20px', padding: '5px 14px', marginTop: '0.25rem' }}>
                 <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#60a5fa', display: 'inline-block', animation: 'pulse 2s ease-in-out infinite' }} />
-                <small style={{ color: 'rgba(255,255,255,0.9)', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.03em' }}>SECRET MÉDICAL PROTÉGÉ</small>
+                <small style={{ color: 'rgba(255,255,255,0.9)', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.03em' }}>Secret médical protégé</small>
               </div>
             </div>
           </div>
@@ -1187,14 +1187,14 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(29,78,216,0.08))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', border: '1px solid rgba(59,130,246,0.2)' }}><ProIcon name="folder-open" /></div>
-                  <small style={{ color: 'var(--text-sub)', fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Dossier CSU</small>
+                  <small style={{ color: 'var(--text-sub)', fontSize: '0.7rem', fontWeight: 600, textTransform: 'none', letterSpacing: '0.05em' }}>Dossier CSU</small>
                 </div>
                 <span style={{ color: '#3b82f6', fontSize: '1.1rem', opacity: 0.6 }}>→</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(16,185,129,0.1)', color: '#10b981', fontSize: '0.76rem', fontWeight: 700, padding: '4px 12px', borderRadius: '20px', border: '1px solid rgba(16,185,129,0.2)' }}>
                   <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
-                  ACTIF
+                  Actif
                 </span>
               </div>
               <div style={{ marginTop: '0.75rem', padding: '6px 10px', background: 'var(--bg-card-subtle)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -1212,16 +1212,16 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'linear-gradient(135deg, rgba(16,185,129,0.15), rgba(5,150,105,0.08))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', border: '1px solid rgba(16,185,129,0.2)' }}><ProIcon name="hospital" /></div>
-                  <small style={{ color: 'var(--text-sub)', fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Examens médicaux</small>
+                  <small style={{ color: 'var(--text-sub)', fontSize: '0.7rem', fontWeight: 600, textTransform: 'none', letterSpacing: '0.05em' }}>Examens médicaux</small>
                 </div>
                 <span style={{ color: '#10b981', fontSize: '1.1rem', opacity: 0.6 }}>→</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
                 <span style={{ fontSize: '2.2rem', fontWeight: 800, color: '#10b981', lineHeight: 1 }}>{exams.length}</span>
-                <small style={{ color: 'var(--text-sub)', fontSize: '0.72rem', fontWeight: 600 }}>certifiés</small>
+                <small style={{ color: 'var(--text-sub)', fontSize: '0.72rem', fontWeight: 600 }}>Certifiés</small>
               </div>
               <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <small style={{ color: 'var(--text-sub)', fontSize: '0.68rem' }}>Validés CNOM / UNAMUSC</small>
+                <small style={{ color: 'var(--text-sub)', fontSize: '0.68rem' }}>Validés cnom / UNAMUSC</small>
                 <small style={{ color: '#10b981', fontSize: '0.65rem', fontWeight: 600 }}>Consulter ›</small>
               </div>
             </div>
@@ -1232,13 +1232,13 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'linear-gradient(135deg, rgba(245,158,11,0.15), rgba(217,119,6,0.08))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', border: '1px solid rgba(245,158,11,0.2)' }}><ProIcon name="bar-chart" /></div>
-                  <small style={{ color: 'var(--text-sub)', fontSize: '0.7rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Historique</small>
+                  <small style={{ color: 'var(--text-sub)', fontSize: '0.7rem', fontWeight: 600, textTransform: 'none', letterSpacing: '0.05em' }}>Historique</small>
                 </div>
                 <span style={{ color: '#f59e0b', fontSize: '1.1rem', opacity: 0.6 }}>→</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
                 <span style={{ fontSize: '2.2rem', fontWeight: 800, color: '#f59e0b', lineHeight: 1 }}>{historyEntries.length}</span>
-                <small style={{ color: 'var(--text-sub)', fontSize: '0.72rem', fontWeight: 600 }}>consultations</small>
+                <small style={{ color: 'var(--text-sub)', fontSize: '0.72rem', fontWeight: 600 }}>Consultations</small>
               </div>
               <div style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <small style={{ color: 'var(--text-sub)', fontSize: '0.68rem' }}>Enregistrées au système</small>
@@ -1266,7 +1266,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                   <small style={{ color: 'var(--text-sub)', fontSize: '0.76rem' }}>Assuré social CSU — UNAMUSC Sénégal</small>
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <small style={{ color: 'var(--text-sub)', fontSize: '0.65rem', display: 'block', marginBottom: '4px' }}>N° Carte CSU</small>
+                  <small style={{ color: 'var(--text-sub)', fontSize: '0.65rem', display: 'block', marginBottom: '4px' }}>N° carte CSU</small>
                   <span style={{ display: 'inline-block', background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)', color: '#fff', fontSize: '0.76rem', fontWeight: 700, padding: '4px 12px', borderRadius: '8px', fontFamily: 'monospace', letterSpacing: '0.03em' }}>{activeCmuNumber}</span>
                 </div>
               </div>
@@ -1278,7 +1278,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                   <div>
                     <strong style={{ color: '#60a5fa', fontSize: '0.85rem', display: 'block', marginBottom: '4px' }}>Contenu médical protégé par le secret médical</strong>
                     <small style={{ color: 'var(--text-sub)', fontSize: '0.76rem', lineHeight: '1.55', display: 'block' }}>
-                      Le groupe sanguin, les allergies, les radiographies DICOM et résultats de laboratoire sont protégés par le secret médical. Seuls les professionnels de santé habilités (médecins, sages-femmes) peuvent y accéder.
+                      Le groupe sanguin, les allergies, les radiographies dicom et résultats de laboratoire sont protégés par le secret médical. Seuls les professionnels de santé habilités (médecins, sages-femmes) peuvent y accéder.
                     </small>
                   </div>
                 </div>
@@ -1304,10 +1304,10 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
           }}>
             <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}><ProIcon name="stethoscope" /></div>
             <span className="badge mb-2" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.82rem', fontWeight: 'bold' }}>
-              Dossier médical partagé & radiographies DICOM
+              Dossier médical partagé & radiographies dicom
             </span>
             <h2 className="fw-bold mb-2" style={{ color: '#fff', fontSize: '2rem' }}>
-              Espace confidentialité — données médicales protégées
+              Espace confidentialité — Données médicales protégées
             </h2>
             <p className="small mb-4" style={{ color: '#ecfdf5', maxWidth: '680px', margin: '0 auto', lineHeight: '1.6', fontSize: '0.95rem' }}>
               Les données contenues dans le dossier médical partagé (groupe sanguin, allergies, radiographies certifiées, examens de laboratoire) sont protégées par le secret médical. Veuillez vous connecter ou saisir votre code d'accès sécurisé.
@@ -1359,12 +1359,12 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
           <div className="grid grid-3" style={{ gap: '1.25rem' }}>
             <div className="card p-3 text-left" style={{ borderRadius: '16px', background: 'var(--bg-card-subtle)' }}>
               <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}><ProIcon name="folder" /></div>
-              <h5 style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.25rem' }}>Interopérabilité DHIS2</h5>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)', margin: 0 }}>Dossier synchronisé avec le Système National d'Information Sanitaire du Ministère de la Santé du Sénégal.</p>
+              <h5 style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.25rem' }}>Interopérabilité dhis2</h5>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)', margin: 0 }}>Dossier synchronisé avec le système national d'information sanitaire du ministère de la santé du Sénégal.</p>
             </div>
             <div className="card p-3 text-left" style={{ borderRadius: '16px', background: 'var(--bg-card-subtle)' }}>
               <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}><ProIcon name="scan" /></div>
-              <h5 style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.25rem' }}>Clichés HD DICOM 3.0</h5>
+              <h5 style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.25rem' }}>Clichés hd dicom 3.0</h5>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)', margin: 0 }}>Visualisation haute définition des scanners, IRM et radiographies certifiées par des praticiens agréés.</p>
             </div>
             <div className="card p-3 text-left" style={{ borderRadius: '16px', background: 'var(--bg-card-subtle)' }}>
@@ -1401,7 +1401,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
               <span style={{ fontSize: '2.2rem' }}><ProIcon name="alert-triangle" color="#d97706" /></span>
             </div>
             
-            <h3 className="fw-bold mb-2 text-danger" style={{ fontSize: '1.4rem' }}><ProIcon name="alert-triangle" color="#d97706" /> Accès au dossier restreint : Couverture CSU suspendue</h3>
+            <h3 className="fw-bold mb-2 text-danger" style={{ fontSize: '1.4rem' }}><ProIcon name="alert-triangle" color="#d97706" /> Accès au dossier restreint : couverture CSU suspendue</h3>
             
             <div className="mb-3">
               <code className="px-3 py-1.5 bg-dark text-warning border border-warning rounded-3 fw-bold d-inline-block" style={{ fontSize: '1.05rem', color: '#f59e0b' }}>
@@ -1545,7 +1545,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                     }} 
                     onClick={() => setActiveTab('maternity')}
                   >
-                    <ProIcon name="heart-pulse" /> Maternité & Grossesse
+                    <ProIcon name="heart-pulse" /> Maternité & grossesse
                   </button>
 
                   <button 
@@ -1566,7 +1566,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                     }} 
                     onClick={() => setActiveTab('maternity_pathology')}
                   >
-                    <ProIcon name="stethoscope" /> Pathologies & Spécialités
+                    <ProIcon name="stethoscope" /> Pathologies & spécialités
                   </button>
                 </>
               ) : (
@@ -1656,7 +1656,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
           <div className="d-flex flex-wrap gap-4" style={{ alignItems: 'flex-start' }}>
             <div style={{ flex: '1 1 320px' }}>
               <span style={{ background: 'rgba(255, 255, 255, 0.22)', color: '#ffffff', padding: '0.5rem 1.15rem', borderRadius: '20px', fontSize: '0.88rem', fontWeight: '750', display: 'inline-block', marginBottom: '1.15rem', border: '1px solid rgba(255,255,255,0.35)' }}>
-                <ProIcon name="senegal-flag" /> Certifié CNOM & UNAMUSC Sénégal
+                <ProIcon name="senegal-flag" /> Certifié cnom & UNAMUSC Sénégal
               </span>
               <h1 className="fw-extrabold text-white mb-3" style={{ fontSize: '2.3rem', letterSpacing: '-0.015em' }}>Dossier médical & radiographies certifiées</h1>
               <p className="text-white mb-0" style={{ fontSize: '1.08rem', maxWidth: '780px', lineHeight: '1.75', opacity: 0.95 }}>
@@ -1702,7 +1702,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
 
                 {isLabUser && (
                   <span style={{ background: 'rgba(2, 132, 199, 0.35)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '14px', padding: '0.8rem 1.35rem', fontSize: '0.88rem', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
-                    <ProIcon name="flask" /> Mode Laboratoire & Biologie : Édition des examens & DICOM
+                    <ProIcon name="flask" /> Mode laboratoire & biologie : édition des examens & dicom
                   </span>
                 )}
 
@@ -1714,7 +1714,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
 
                 {isSuperAdmin && (
                   <span style={{ background: 'rgba(234,179,8,0.35)', color: '#fef08a', border: '1px solid rgba(234,179,8,0.5)', borderRadius: '14px', padding: '0.8rem 1.35rem', fontSize: '0.88rem', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
-                    <ProIcon name="crown" /> SuperAdmin : accès total
+                    <ProIcon name="crown" /> Superadmin : accès total
                   </span>
                 )}
               </div>
@@ -1803,11 +1803,11 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                         <textarea className="form-control" rows={2} style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.94rem', padding: '0.95rem 1.2rem' }} value={antecedents.allergies} onChange={(e) => setAntecedents({ ...antecedents, allergies: e.target.value })} placeholder="Ex: Pénicilline (sévère), Pollen, Arachide..." />
                       </div>
                       <div>
-                        <label className="small fw-bold d-block mb-2.5" style={{ color: 'var(--text-sub)', fontSize: '0.9rem' }}><ProIcon name="hospital" /> Affections longue durée (ALD) :</label>
+                        <label className="small fw-bold d-block mb-2.5" style={{ color: 'var(--text-sub)', fontSize: '0.9rem' }}><ProIcon name="hospital" /> Affections longue durée (ald) :</label>
                         <textarea className="form-control" rows={2} style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.94rem', padding: '0.95rem 1.2rem' }} value={antecedents.chronicConditions} onChange={(e) => setAntecedents({ ...antecedents, chronicConditions: e.target.value })} placeholder="Ex: HTA, Diabète type 2, Drépanocytose..." />
                       </div>
                       <div>
-                        <label className="small fw-bold d-block mb-2.5" style={{ color: 'var(--text-sub)', fontSize: '0.9rem' }}>🔧 Interventions chirurgicales :</label>
+                        <label className="small fw-bold d-block mb-2.5" style={{ color: 'var(--text-sub)', fontSize: '0.9rem' }}>🔧 interventions chirurgicales :</label>
                         <textarea className="form-control" rows={2} style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.94rem', padding: '0.95rem 1.2rem' }} value={antecedents.surgeries || ''} onChange={(e) => setAntecedents({ ...antecedents, surgeries: e.target.value })} placeholder="Ex: Appendicectomie (2021), Césarienne (2018)..." />
                       </div>
                       <div>
@@ -1834,13 +1834,13 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                       ))}
                       {antecedents.chronicConditions && (
                         <div className="p-3.5" style={{ background: 'rgba(220, 38, 38, 0.06)', border: '1.5px solid rgba(220, 38, 38, 0.2)', borderRadius: '18px', padding: '1.2rem 1.45rem' }}>
-                          <span className="fw-bold text-danger d-inline-block me-2" style={{ fontSize: '0.9rem' }}><ProIcon name="stethoscope" /> Affection longue durée (ALD) : </span>
+                          <span className="fw-bold text-danger d-inline-block me-2" style={{ fontSize: '0.9rem' }}><ProIcon name="stethoscope" /> Affection longue durée (ald) : </span>
                           <span className="small fw-semibold" style={{ color: 'var(--text-main)', fontSize: '0.96rem' }}>{antecedents.chronicConditions}</span>
                         </div>
                       )}
                       {antecedents.surgeries && (
                         <div className="p-3.5" style={{ background: 'var(--bg-card-subtle)', border: '1.5px solid var(--border-color)', borderRadius: '18px', padding: '1.2rem 1.45rem' }}>
-                          <span className="fw-bold text-secondary d-inline-block me-2" style={{ fontSize: '0.9rem' }}>🔧 Interventions chirurgicales : </span>
+                          <span className="fw-bold text-secondary d-inline-block me-2" style={{ fontSize: '0.9rem' }}>🔧 interventions chirurgicales : </span>
                           <span className="small fw-semibold" style={{ color: 'var(--text-main)', fontSize: '0.96rem' }}>{antecedents.surgeries}</span>
                         </div>
                       )}
@@ -1888,18 +1888,18 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                 <div style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '26px', padding: '1.75rem 1.5rem', boxShadow: '0 12px 35px rgba(0,0,0,0.08)' }}>
                   <div className="d-flex align-items-center gap-3 mb-3 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
                     <span style={{ fontSize: '1.6rem' }}><ProIcon name="globe" /></span>
-                    <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.2rem' }}>Interopérabilité DHIS2</h6>
+                    <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.2rem' }}>Interopérabilité dhis2</h6>
                   </div>
 
                   <div className="d-flex flex-column" style={{ gap: '1rem' }}>
                     <div className="d-flex align-items-start gap-3.5" style={{ background: 'var(--bg-card-subtle)', border: '1.5px solid var(--border-color)', borderRadius: '20px', padding: '1.1rem 1.25rem' }}>
                       <div style={{ width: '46px', height: '46px', background: 'var(--text-sub)', color: '#ffffff', fontWeight: '800', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', flexShrink: 0 }}><ProIcon name="globe" /></div>
                       <div style={{ minWidth: 0 }}>
-                        <strong className="d-block text-main fw-bold" style={{ color: 'var(--text-main)', fontSize: '1.02rem', marginBottom: '0.3rem' }}>Connexion DHIS2 non configurée</strong>
+                        <strong className="d-block text-main fw-bold" style={{ color: 'var(--text-main)', fontSize: '1.02rem', marginBottom: '0.3rem' }}>Connexion dhis2 non configurée</strong>
                         <span className="fw-semibold text-muted d-block" style={{ fontSize: '0.88rem', lineHeight: 1.6 }}>
-                          Aucun identifiant de patient n'a été attribué dans le Système national
+                          Aucun identifiant de patient n'a été attribué dans le système national
                           d'information sanitaire. Les données de ce dossier ne sont ni
-                          transmises ni stockées côté Ministère de la Santé.
+                          transmises ni stockées côté ministère de la santé.
                         </span>
                       </div>
                     </div>
@@ -1920,7 +1920,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                     <span style={{ fontSize: '1.75rem' }}><ProIcon name="scan" /></span>
                     <div>
                       <h5 className="fw-bold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.35rem' }}>Imagerie & examens certifiés</h5>
-                      <small className="text-muted" style={{ fontSize: '0.88rem' }}>Radiographies, scanners, IRM & échographies — liste complète dans l'onglet « Radios & Imagerie »</small>
+                      <small className="text-muted" style={{ fontSize: '0.88rem' }}>Radiographies, scanners, IRM & échographies — Liste complète dans l'onglet « radios & imagerie »</small>
                     </div>
                   </div>
                   <span className="badge px-3 py-2" style={{ background: 'rgba(139, 92, 246, 0.15)', color: '#7c3aed', borderRadius: '12px', fontSize: '0.82rem', fontWeight: '800' }}>
@@ -2055,7 +2055,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                 </div>
                 <div>
                   <h3 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.5rem' }}>
-                    Radios & Imagerie DICOM
+                    Radios & imagerie dicom
                   </h3>
                   <p className="text-muted mb-0" style={{ fontSize: '0.92rem' }}>
                     Examens d'imagerie médicale certifiés • Scanner • IRM • Échographies • Radiographies
@@ -2137,7 +2137,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                     {exams.reduce((sum, ex) => sum + (ex.cliches || 0), 0)}
                   </h4>
                   <p className="text-muted mb-0" style={{ fontSize: '0.88rem', fontWeight: '600' }}>
-                    Clichés HD disponibles
+                    Clichés hd disponibles
                   </p>
                 </div>
               </div>
@@ -2341,7 +2341,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                           }}>
                             <small className="fw-bold text-muted d-block mb-2" style={{ 
                               fontSize: '0.78rem', 
-                              textTransform: 'uppercase', 
+                              textTransform: 'none', 
                               letterSpacing: '0.05em'
                             }}>
                               <ProIcon name="clipboard-list" /> Conclusion clinique certifiée
@@ -2466,7 +2466,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
               </div>
               <div>
                 <h4 style={{ fontSize: '1.3rem', fontWeight: '850', color: 'var(--text-main)', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  Suivi Maternité, Grossesse & Santé Maternelle
+                  Suivi maternité, grossesse & santé maternelle
                 </h4>
                 <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', margin: '0.25rem 0 0 0' }}>
                   Prise en charge à 100% CSU UNAMUSC Sénégal pour l'assurée {activeFirstName} {activeLastName} ({activeCmuNumber})
@@ -2479,7 +2479,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
               style={{ borderRadius: '14px', background: 'linear-gradient(135deg, #db2777 0%, #ec4899 100%)', border: 'none', boxShadow: '0 4px 15px rgba(219, 39, 119, 0.35)', fontSize: '0.9rem' }}
               onClick={() => setView ? setView('maternity') : (window.location.hash = '#/maternity')}
             >
-              <ProIcon name="book-open" /> Accéder au Carnet Maternité Complet
+              <ProIcon name="book-open" /> Accéder au carnet maternité complet
             </button>
           </div>
 
@@ -2488,11 +2488,11 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
               <div style={{ padding: '1.5rem', borderRadius: '20px', background: 'rgba(219, 39, 119, 0.06)', border: '1.5px solid rgba(219, 39, 119, 0.25)', height: '100%' }}>
                 <div className="d-flex align-items-center justify-content-between mb-2">
                   <span style={{ fontSize: '1.6rem' }}><ProIcon name="calendar-days" /></span>
-                  <span className="badge" style={{ background: '#db2777', color: '#fff', fontSize: '0.75rem', fontWeight: '800' }}>100% Gratuit CSU</span>
+                  <span className="badge" style={{ background: '#db2777', color: '#fff', fontSize: '0.75rem', fontWeight: '800' }}>100% gratuit CSU</span>
                 </div>
-                <strong style={{ color: '#db2777', fontSize: '1.05rem', display: 'block', marginBottom: '0.35rem' }}>Consultations Prénatales (4 CPN)</strong>
+                <strong style={{ color: '#db2777', fontSize: '1.05rem', display: 'block', marginBottom: '0.35rem' }}>Consultations prénatales (4 CPN)</strong>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', lineHeight: '1.55', marginBottom: '0.75rem' }}>
-                  CPN 1 (T1) & CPN 2 (T2) validées. Suivi obstétrical rigoureux, dépistage de l'anémie, prise de tension et calcul de la DPA.
+                  CPN 1 (t1) & CPN 2 (t2) validées. Suivi obstétrical rigoureux, dépistage de l'anémie, prise de tension et calcul de la dpa.
                 </p>
                 <div className="d-flex align-items-center gap-2">
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }}></span>
@@ -2505,13 +2505,13 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
               <div style={{ padding: '1.5rem', borderRadius: '20px', background: 'rgba(14, 165, 233, 0.06)', border: '1.5px solid rgba(14, 165, 233, 0.25)', height: '100%' }}>
                 <div className="d-flex align-items-center justify-content-between mb-2">
                   <span style={{ fontSize: '1.6rem' }}><ProIcon name="scan" /></span>
-                  <span className="badge" style={{ background: '#0ea5e9', color: '#fff', fontSize: '0.75rem', fontWeight: '800' }}>Échographies HD</span>
+                  <span className="badge" style={{ background: '#0ea5e9', color: '#fff', fontSize: '0.75rem', fontWeight: '800' }}>Échographies hd</span>
                 </div>
-                <strong style={{ color: '#0ea5e9', fontSize: '1.05rem', display: 'block', marginBottom: '0.35rem' }}>Échographies Obstétricales</strong>
+                <strong style={{ color: '#0ea5e9', fontSize: '1.05rem', display: 'block', marginBottom: '0.35rem' }}>Échographies obstétricales</strong>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', lineHeight: '1.55', marginBottom: '0.75rem' }}>
-                  Échographie T1 morphologique et T2 effectuées à l'Hôpital Abass Ndao. Développement foetal harmonieux et biométrie conforme.
+                  Échographie t1 morphologique et t2 effectuées à l'hôpital abass ndao. Développement foetal harmonieux et biométrie conforme.
                 </p>
-                <small className="text-muted d-block" style={{ fontSize: '0.82rem' }}>Rapports et clichés consultables dans l'onglet Radios.</small>
+                <small className="text-muted d-block" style={{ fontSize: '0.82rem' }}>Rapports et clichés consultables dans l'onglet radios.</small>
               </div>
             </div>
 
@@ -2521,9 +2521,9 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                   <span style={{ fontSize: '1.6rem' }}><ProIcon name="pill" /></span>
                   <span className="badge" style={{ background: '#10b981', color: '#fff', fontSize: '0.75rem', fontWeight: '800' }}>Pharmacie 100%</span>
                 </div>
-                <strong style={{ color: '#10b981', fontSize: '1.05rem', display: 'block', marginBottom: '0.35rem' }}>Kit Maternité & Supplémentation</strong>
+                <strong style={{ color: '#10b981', fontSize: '1.05rem', display: 'block', marginBottom: '0.35rem' }}>Kit maternité & supplémentation</strong>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', lineHeight: '1.55', marginBottom: '0.75rem' }}>
-                  Délivrance de Fer + Acide Folique, Moustiquaire imprégnée (MILDA), TPI paludisme et Kit d'accouchement propre sans reste à charge.
+                  Délivrance de fer + acide folique, moustiquaire imprégnée (milda), tpi paludisme et kit d'accouchement propre sans reste à charge.
                 </p>
                 <small className="text-success fw-bold d-block" style={{ fontSize: '0.82rem' }}>Prise en charge intégrale UNAMUSC</small>
               </div>
@@ -2556,7 +2556,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
               style={{ borderRadius: '12px', background: 'transparent', color: '#047857', border: '1.5px solid rgba(5, 150, 105, 0.45)', fontSize: '0.88rem' }}
               onClick={() => setView ? setView('maternity') : (window.location.hash = '#/maternity')}
             >
-              <ProIcon name="book-open" /> Protocoles ALD
+              <ProIcon name="book-open" /> Protocoles ald
             </button>
           </div>
 
@@ -2566,15 +2566,15 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
               <div className="h-100 d-flex flex-column" style={{ padding: '1.6rem 1.5rem', borderRadius: '22px', background: 'var(--bg-card-subtle)', border: '1.5px solid var(--border-color)', transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease' }}>
                 <div className="d-flex align-items-center justify-content-between mb-3">
                   <div style={{ width: '46px', height: '46px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', background: 'rgba(14,165,233,0.14)', color: '#0ea5e9', border: '1px solid rgba(14,165,233,0.3)' }}><ProIcon name="droplet" color="#dc2626" /></div>
-                  <span className="badge" style={{ background: 'rgba(14,165,233,0.14)', color: '#0369a1', border: '1px solid rgba(14,165,233,0.3)', fontSize: '0.72rem', fontWeight: '800', borderRadius: '999px', padding: '0.35rem 0.7rem' }}>ALD 80 % / 100 %</span>
+                  <span className="badge" style={{ background: 'rgba(14,165,233,0.14)', color: '#0369a1', border: '1px solid rgba(14,165,233,0.3)', fontSize: '0.72rem', fontWeight: '800', borderRadius: '999px', padding: '0.35rem 0.7rem' }}>Ald 80 % / 100 %</span>
                 </div>
-                <strong style={{ color: 'var(--text-main)', fontSize: '1.02rem', display: 'block', marginBottom: '0.4rem' }}>Pathologies Chroniques (ALD)</strong>
+                <strong style={{ color: 'var(--text-main)', fontSize: '1.02rem', display: 'block', marginBottom: '0.4rem' }}>Pathologies chroniques (ald)</strong>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', lineHeight: '1.6', marginBottom: '1rem', flex: 1 }}>
-                  Diabète de type 2 et hypertension d'effort — suivi trimestriel avec délivrance de bandelettes et ordonnances sécurisées sous le tiers-payant.
+                  Diabète de type 2 et hypertension d'effort — Suivi trimestriel avec délivrance de bandelettes et ordonnances sécurisées sous le tiers-payant.
                 </p>
                 <div className="d-flex align-items-center gap-2 pt-3" style={{ borderTop: '1px solid var(--border-color)' }}>
                   <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#0ea5e9', display: 'inline-block', flexShrink: 0 }}></span>
-                  <small style={{ color: '#0369a1', fontWeight: '700', fontSize: '0.8rem' }}>ALD pris en charge selon protocole</small>
+                  <small style={{ color: '#0369a1', fontWeight: '700', fontSize: '0.8rem' }}>Ald pris en charge selon protocole</small>
                 </div>
               </div>
             </div>
@@ -2585,9 +2585,9 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                   <div style={{ width: '46px', height: '46px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', background: 'rgba(245,158,11,0.14)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)' }}><ProIcon name="heart" color="#dc2626" /></div>
                   <span className="badge" style={{ background: 'rgba(245,158,11,0.14)', color: '#b45309', border: '1px solid rgba(245,158,11,0.3)', fontSize: '0.72rem', fontWeight: '800', borderRadius: '999px', padding: '0.35rem 0.7rem' }}>Cardiologie</span>
                 </div>
-                <strong style={{ color: 'var(--text-main)', fontSize: '1.02rem', display: 'block', marginBottom: '0.4rem' }}>Cardiologie & Santé Vasculaire</strong>
+                <strong style={{ color: 'var(--text-main)', fontSize: '1.02rem', display: 'block', marginBottom: '0.4rem' }}>Cardiologie & santé vasculaire</strong>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', lineHeight: '1.6', marginBottom: '1rem', flex: 1 }}>
-                  Électrocardiogramme de repos annuel, échocardiographie Doppler et surveillance tensionnelle auprès des cardiologues conventionnés UNAMUSC.
+                  Électrocardiogramme de repos annuel, échocardiographie doppler et surveillance tensionnelle auprès des cardiologues conventionnés UNAMUSC.
                 </p>
                 <div className="d-flex align-items-center gap-2 pt-3" style={{ borderTop: '1px solid var(--border-color)' }}>
                   <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#f59e0b', display: 'inline-block', flexShrink: 0 }}></span>
@@ -2602,9 +2602,9 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                   <div style={{ width: '46px', height: '46px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', background: 'rgba(16,185,129,0.14)', color: '#10b981', border: '1px solid rgba(16,185,129,0.3)' }}><ProIcon name="baby" /></div>
                   <span className="badge" style={{ background: 'rgba(16,185,129,0.14)', color: '#047857', border: '1px solid rgba(16,185,129,0.3)', fontSize: '0.72rem', fontWeight: '800', borderRadius: '999px', padding: '0.35rem 0.7rem' }}>100 % gratuit PEV</span>
                 </div>
-                <strong style={{ color: 'var(--text-main)', fontSize: '1.02rem', display: 'block', marginBottom: '0.4rem' }}>Santé Infantile & PEV (Ayants Droit)</strong>
+                <strong style={{ color: 'var(--text-main)', fontSize: '1.02rem', display: 'block', marginBottom: '0.4rem' }}>Santé infantile & PEV (ayants droit)</strong>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', lineHeight: '1.6', marginBottom: '1rem', flex: 1 }}>
-                  Programme élargi de vaccination (BCG, Pentavalent 1 à 3, Rougeole-Rubéole), carnet pédiatrique et suivi de croissance des enfants.
+                  Programme élargi de vaccination (BCG, pentavalent 1 à 3, rougeole-rubéole), carnet pédiatrique et suivi de croissance des enfants.
                 </p>
                 <div className="d-flex align-items-center gap-2 pt-3" style={{ borderTop: '1px solid var(--border-color)' }}>
                   <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#10b981', display: 'inline-block', flexShrink: 0 }}></span>
@@ -2619,7 +2619,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                   <div style={{ width: '46px', height: '46px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', background: 'rgba(99,102,241,0.14)', color: '#6366f1', border: '1px solid rgba(99,102,241,0.3)' }}><ProIcon name="activity" /></div>
                   <span className="badge" style={{ background: 'rgba(99,102,241,0.14)', color: '#4338ca', border: '1px solid rgba(99,102,241,0.3)', fontSize: '0.72rem', fontWeight: '800', borderRadius: '999px', padding: '0.35rem 0.7rem' }}>Pneumologie</span>
                 </div>
-                <strong style={{ color: 'var(--text-main)', fontSize: '1.02rem', display: 'block', marginBottom: '0.4rem' }}>Pneumologie & Voies Respiratoires</strong>
+                <strong style={{ color: 'var(--text-main)', fontSize: '1.02rem', display: 'block', marginBottom: '0.4rem' }}>Pneumologie & voies respiratoires</strong>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', lineHeight: '1.6', marginBottom: '1rem', flex: 1 }}>
                   Spirométries, radiographies thoraciques et suivi des pathologies respiratoires au sein du réseau conventionné UNAMUSC.
                 </p>
@@ -2636,7 +2636,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                   <div style={{ width: '46px', height: '46px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', background: 'rgba(236,72,153,0.14)', color: '#ec4899', border: '1px solid rgba(236,72,153,0.3)' }}><ProIcon name="microscope" /></div>
                   <span className="badge" style={{ background: 'rgba(236,72,153,0.14)', color: '#be185d', border: '1px solid rgba(236,72,153,0.3)', fontSize: '0.72rem', fontWeight: '800', borderRadius: '999px', padding: '0.35rem 0.7rem' }}>Chirurgie</span>
                 </div>
-                <strong style={{ color: 'var(--text-main)', fontSize: '1.02rem', display: 'block', marginBottom: '0.4rem' }}>Chirurgie Ambulatoire</strong>
+                <strong style={{ color: 'var(--text-main)', fontSize: '1.02rem', display: 'block', marginBottom: '0.4rem' }}>Chirurgie ambulatoire</strong>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', lineHeight: '1.6', marginBottom: '1rem', flex: 1 }}>
                   Consultations pré-opératoires, actes mineurs ambulatoires et contrôle post-opératoire dans les structures conventionnées.
                 </p>
@@ -2653,7 +2653,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                   <div style={{ width: '46px', height: '46px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', background: 'rgba(139,92,246,0.14)', color: '#8b5cf6', border: '1px solid rgba(139,92,246,0.3)' }}><ProIcon name="eye" /></div>
                   <span className="badge" style={{ background: 'rgba(139,92,246,0.14)', color: '#6d28d9', border: '1px solid rgba(139,92,246,0.3)', fontSize: '0.72rem', fontWeight: '800', borderRadius: '999px', padding: '0.35rem 0.7rem' }}>Optique</span>
                 </div>
-                <strong style={{ color: 'var(--text-main)', fontSize: '1.02rem', display: 'block', marginBottom: '0.4rem' }}>Ophtalmologie & Optique</strong>
+                <strong style={{ color: 'var(--text-main)', fontSize: '1.02rem', display: 'block', marginBottom: '0.4rem' }}>Ophtalmologie & optique</strong>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', lineHeight: '1.6', marginBottom: '1rem', flex: 1 }}>
                   Dépistage du glaucome, des cataracts et des troubles de la vue ; correction optique dans le cadre du tiers-payant.
                 </p>
@@ -2700,7 +2700,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                 <div className="d-flex justify-content-center flex-wrap gap-2 mt-3 p-2.5 rounded-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', rowGap: '0.65rem', columnGap: '0.65rem' }}>
                   <button type="button" className="hover-lift" style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.5rem 0.95rem', fontSize: '0.84rem', fontWeight: '600' }} onClick={() => setDicomZoom(dicomZoom + 0.2)}><ProIcon name="search" /> Zoom +</button>
                   <button type="button" className="hover-lift" style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.5rem 0.95rem', fontSize: '0.84rem', fontWeight: '600' }} onClick={() => setDicomZoom(1)}><ProIcon name="refresh" /> Réinitialiser</button>
-                  <button type="button" className="hover-lift" style={{ background: dicomInvert ? '#f59e0b' : 'var(--bg-card)', color: dicomInvert ? '#ffffff' : 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.5rem 0.95rem', fontSize: '0.84rem', fontWeight: '600' }} onClick={() => setDicomInvert(!dicomInvert)}>🌗 Négatif</button>
+                  <button type="button" className="hover-lift" style={{ background: dicomInvert ? '#f59e0b' : 'var(--bg-card)', color: dicomInvert ? '#ffffff' : 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.5rem 0.95rem', fontSize: '0.84rem', fontWeight: '600' }} onClick={() => setDicomInvert(!dicomInvert)}>🌗 négatif</button>
                   <button type="button" className="hover-lift" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.5rem 1rem', fontSize: '0.84rem', fontWeight: '700', boxShadow: '0 4px 10px rgba(16,185,129,0.25)' }} onClick={() => setActiveCliche(prev => (prev >= viewingExam.cliches ? 1 : prev + 1))}>🖼 Cliché suivant</button>
                 </div>
               </div>
@@ -2742,7 +2742,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                 </div>
                 <div>
                   <h5 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>Partager mon dossier médical</h5>
-                  <p className="small mb-0" style={{ color: 'var(--text-sub)', fontSize: '0.82rem' }}>UNAMUSC & DHIS2 — Accès temporaire sécurisé (24h)</p>
+                  <p className="small mb-0" style={{ color: 'var(--text-sub)', fontSize: '0.82rem' }}>UNAMUSC & dhis2 — Accès temporaire sécurisé (24h)</p>
                 </div>
               </div>
               <button type="button" className="btn-close" onClick={() => setShowShareModal(false)}></button>
@@ -2762,7 +2762,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                   {isOtpExpired ? '🔴 Code OTP expiré' : `⏳ Valable encore ${getRemainingTime()}`}
                 </span>
                 <span className="badge bg-secondary bg-opacity-20 text-white fw-bold px-3 py-1.5 rounded-pill" style={{ fontSize: '0.75rem' }}>
-                  <ProIcon name="lock" /> Chiffrement de bout en bout DHIS2 & UNAMUSC
+                  <ProIcon name="lock" /> Chiffrement de bout en bout dhis2 & UNAMUSC
                 </span>
               </div>
 
@@ -2772,7 +2772,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                   className="btn btn-sm btn-warning fw-bold mt-3 px-3 py-2 rounded-3 text-dark"
                   onClick={generateNewOtp}
                 >
-                  <ProIcon name="refresh" /> Générer un nouveau code OTP (Valable 24h)
+                  <ProIcon name="refresh" /> Générer un nouveau code OTP (valable 24h)
                 </button>
               )}
             </div>
@@ -2845,7 +2845,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                 </div>
                 <div>
                   <h5 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>Ajouter un examen certifié :</h5>
-                  <small className="text-muted" style={{ fontSize: '0.82rem' }}>(Cliché DICOM, Scanner, Radio ou Rapport PDF)</small>
+                  <small className="text-muted" style={{ fontSize: '0.82rem' }}>(Cliché dicom, scanner, radio ou rapport PDF)</small>
                 </div>
               </div>
               <button type="button" className="btn-close" onClick={() => setShowAddExamModal(false)}></button>
@@ -2860,15 +2860,15 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
               <div className="col-md-6">
                 <label className="form-label small fw-bold d-block mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}>Type d'imagerie / Analyse *</label>
                 <select className="form-select" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.92rem', padding: '0.85rem 1.15rem' }} value={newExamType} onChange={(e) => setNewExamType(e.target.value)}>
-                  <option value="Scanner">Scanner (DICOM)</option>
-                  <option value="IRM">IRM (DICOM)</option>
+                  <option value="Scanner">Scanner (dicom)</option>
+                  <option value="IRM">IRM (dicom)</option>
                   <option value="Radio">Radiographie</option>
                   <option value="Échographie">Échographie</option>
                   <option value="Analyse">Bilan biologique</option>
                 </select>
               </div>
               <div className="col-md-6">
-                <label className="form-label small fw-bold d-block mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}>Nombre de clichés DICOM</label>
+                <label className="form-label small fw-bold d-block mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}>Nombre de clichés dicom</label>
                 <input type="number" min="1" max="50" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.92rem', padding: '0.85rem 1.15rem' }} value={newExamCliches} onChange={(e) => setNewExamCliches(e.target.value)} />
               </div>
             </div>
@@ -2879,13 +2879,13 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
             </div>
 
             <div className="mb-4">
-              <label className="form-label small fw-bold d-block mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}>Médecin ou Biologiste prescripteur</label>
+              <label className="form-label small fw-bold d-block mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}>Médecin ou biologiste prescripteur</label>
               <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.92rem', padding: '0.85rem 1.15rem' }} value={newExamDoctor} onChange={(e) => setNewExamDoctor(e.target.value)} placeholder="Ex: Dr. Ousmane Sow (Hôpital Fann)" />
             </div>
 
             {/* File Selector Dropzone */}
             <div className="mb-4">
-              <label className="form-label small fw-bold d-block mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}><ProIcon name="folder" /> Fichier cliché DICOM / PDF (.DCM, .ZIP, .PDF, image)</label>
+              <label className="form-label small fw-bold d-block mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}><ProIcon name="folder" /> Fichier cliché dicom / PDF (.dcm, .zip, .PDF, image)</label>
               <div style={{ border: '2px dashed #10b981', borderRadius: '16px', padding: '1.35rem', textAlign: 'center', background: 'var(--bg-card-subtle)' }}>
                 <input 
                   type="file" 
@@ -2899,25 +2899,25 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                   <span className="fw-bold d-block text-primary" style={{ fontSize: '0.92rem' }}>
                     {newExamFileName ? `✓ Fichier sélectionné : ${newExamFileName}` : 'Cliquez pour sélectionner le fichier DICOM / Image'}
                   </span>
-                  <small className="text-muted d-block mt-1" style={{ fontSize: '0.78rem' }}>Formats acceptés: .DCM, .ZIP, .PDF, PNG, JPG</small>
+                  <small className="text-muted d-block mt-1" style={{ fontSize: '0.78rem' }}>Formats acceptés: .dcm, .zip, .PDF, PNG, JPG</small>
                 </label>
               </div>
               {newExamFilePreview && (
                 <div className="mt-3 text-center">
-                  <small className="text-success fw-bold d-block mb-1.5">Aperçu du cliché / fichier :</small>
+                  <small className="text-success fw-bold d-block mb-1.5">Aperçu du cliché / Fichier :</small>
                   <img src={newExamFilePreview} alt="Aperçu DICOM" style={{ maxHeight: '120px', borderRadius: '12px', border: '1.5px solid var(--border-color)' }} onError={(e) => { e.target.style.display = 'none'; }} />
                 </div>
               )}
             </div>
 
             <div className="mb-4.5">
-              <label className="form-label small fw-bold d-block mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}>Conclusions & Compte-rendu diagnostique</label>
+              <label className="form-label small fw-bold d-block mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}>Conclusions & compte-rendu diagnostique</label>
               <textarea className="form-control" rows={3} style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.92rem', padding: '0.85rem 1.15rem' }} value={newExamConclusion} onChange={(e) => setNewExamConclusion(e.target.value)} placeholder="Ex: Imagerie thoracique de contrôle satisfaisante. Absence de foyer parenchymateux évolutif." />
             </div>
 
             <div className="d-flex justify-content-between align-items-center pt-4 border-top w-100" style={{ borderColor: 'var(--border-color)', gap: '1.25rem' }}>
               <button type="button" className="btn px-4 py-3 fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.9rem' }} onClick={() => setShowAddExamModal(false)}>Annuler</button>
-              <button type="submit" className="btn px-4 py-3 fw-bold text-white hover-lift" style={{ background: '#059669', border: 'none', borderRadius: '14px', fontSize: '0.92rem', boxShadow: '0 4px 14px rgba(5,150,105,0.3)' }}><ProIcon name="plus" /> Créer l'examen DICOM</button>
+              <button type="submit" className="btn px-4 py-3 fw-bold text-white hover-lift" style={{ background: '#059669', border: 'none', borderRadius: '14px', fontSize: '0.92rem', boxShadow: '0 4px 14px rgba(5,150,105,0.3)' }}><ProIcon name="plus" /> Créer l'examen dicom</button>
             </div>
           </form>
         </div>,
@@ -2954,7 +2954,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                   <ProIcon name="edit" />
                 </div>
                 <div>
-                  <h5 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>Modifier l'examen / DICOM :</h5>
+                  <h5 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>Modifier l'examen / Dicom :</h5>
                   <small className="text-muted" style={{ fontSize: '0.82rem' }}>{editingExamTarget.title}</small>
                 </div>
               </div>
@@ -2984,7 +2984,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
 
             {/* Replace File Picker */}
             <div className="mb-4">
-              <label className="form-label small fw-bold d-block mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}><ProIcon name="folder" /> Remplacer le fichier DICOM / Image</label>
+              <label className="form-label small fw-bold d-block mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}><ProIcon name="folder" /> Remplacer le fichier dicom / Image</label>
               <div style={{ border: '2px dashed #10b981', borderRadius: '16px', padding: '1.15rem', textAlign: 'center', background: 'var(--bg-card-subtle)' }}>
                 <input 
                   type="file" 
@@ -3007,7 +3007,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
             </div>
 
             <div className="mb-4.5">
-              <label className="form-label small fw-bold d-block mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}>Conclusions & Compte-rendu *</label>
+              <label className="form-label small fw-bold d-block mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}>Conclusions & compte-rendu *</label>
               <textarea className="form-control" rows={3} style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.92rem', padding: '0.85rem 1.15rem' }} value={editingExamTarget.conclusion || ''} onChange={(e) => setEditingExamTarget({ ...editingExamTarget, conclusion: e.target.value })} required />
             </div>
 
@@ -3133,7 +3133,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                 </div>
                 <div>
                   <h5 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.2rem' }}>
-                    Répertoire des assurés & examens DICOM de l'établissement
+                    Répertoire des assurés & examens dicom de l'établissement
                   </h5>
                   <small className="text-muted" style={{ fontSize: '0.84rem' }}>
                     {partnerUser?.structureName || 'Laboratoire / Établissement de santé conventionné'} ({facilityPatients.length} dossiers actifs au Sénégal)
@@ -3210,7 +3210,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                       </div>
 
                       <div className="p-2.5 rounded-3 mb-3" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-                        <small className="text-muted d-block" style={{ fontSize: '0.75rem' }}>Dernier examen / bilan prescrit :</small>
+                        <small className="text-muted d-block" style={{ fontSize: '0.75rem' }}>Dernier examen / Bilan prescrit :</small>
                         <strong className="d-block text-primary" style={{ fontSize: '0.85rem' }}>{pat.lastExam}</strong>
                         <small className="text-secondary d-block mt-0.5" style={{ fontSize: '0.75rem' }}><ProIcon name="stethoscope" /> {pat.doctor}</small>
                       </div>

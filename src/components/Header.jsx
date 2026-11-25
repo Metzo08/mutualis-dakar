@@ -182,7 +182,7 @@ export default function Header({
           République du Sénégal
         </span>
         <small className="text-success fw-semibold d-block" style={{ fontSize: '0.62rem', marginTop: '0.15rem' }}>
-          Un Peuple - Un But - Une Foi
+          Un peuple - un but - une foi
         </small>
       </div>
 
@@ -197,7 +197,7 @@ export default function Header({
           UNAMUSC Sénégal
         </span>
         <small className="text-white-50 d-block" style={{ fontSize: '0.66rem', marginTop: '0.15rem' }}>
-          Union Nationale des Mutuelles de Santé
+          Union nationale des mutuelles de santé
         </small>
       </div>
 

@@ -298,7 +298,7 @@ export default function Partnership({ lang, portalMode, agentUser }) {
           }
         `}</style>
         
-        <h4 style={{ fontSize: '0.85rem', fontWeight: '750', color: 'var(--text-sub)', marginBottom: '0.75rem', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <h4 style={{ fontSize: '0.85rem', fontWeight: '750', color: 'var(--text-sub)', marginBottom: '0.75rem', textAlign: 'left', textTransform: 'none', letterSpacing: '0.05em' }}>
           <ProIcon name="handshake" /> {lang === 'fr' ? 'Nos partenaires institutionnels & RSE' : 'Giñ bokk liggéey (Partenaires)'}
         </h4>
         
@@ -359,7 +359,7 @@ export default function Partnership({ lang, portalMode, agentUser }) {
                     <tr key={req.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
                       <td style={{ padding: '0.75rem', whiteSpace: 'nowrap' }}>{req.date}</td>
                       <td style={{ padding: '0.75rem' }}><strong>{req.companyName || req.company_name}</strong></td>
-                      <td style={{ padding: '0.75rem', textTransform: 'capitalize' }}>{req.sector}</td>
+                      <td style={{ padding: '0.75rem', textTransform: 'none' }}>{req.sector}</td>
                       <td style={{ padding: '0.75rem' }}>{req.contactPerson || req.contact_person}</td>
                       <td style={{ padding: '0.75rem' }}>{req.phone}</td>
                       <td style={{ padding: '0.75rem', maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis' }}>{req.message}</td>
@@ -567,7 +567,7 @@ export default function Partnership({ lang, portalMode, agentUser }) {
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.85rem', color: 'var(--text-sub)' }}>
                 <p style={{ margin: 0 }}>
-                  <strong>RSE & Impact Social</strong> : Associez l'image de votre entreprise à la santé solidaire à Dakar.
+                  <strong>RSE & impact social</strong> : Associez l'image de votre entreprise à la santé solidaire à Dakar.
                 </p>
                 <p style={{ margin: 0 }}>
                   <strong>Réseau de soins</strong> : Connectez votre clinique ou hôpital à notre base d'assurés.

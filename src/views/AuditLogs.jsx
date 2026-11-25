@@ -407,7 +407,7 @@ export default function AuditLogs({ lang = 'fr' }) {
               <ProIcon name="laptop" />
             </div>
             <span className="badge px-3 py-1.5 fw-extrabold" style={{ background: 'rgba(168, 85, 247, 0.2)', color: '#a855f7', border: '1px solid rgba(168, 85, 247, 0.4)', borderRadius: '12px', fontSize: '0.74rem' }}>
-              <ProIcon name="senegal-flag" /> CNOM agréé
+              <ProIcon name="senegal-flag" /> Cnom agréé
             </span>
           </div>
 
@@ -416,7 +416,7 @@ export default function AuditLogs({ lang = 'fr' }) {
               {allLogs.filter(l => (l.action || '').includes('TELE') || (l.action || '').includes('DICOM')).length}
             </div>
             <strong className="d-block mt-2 mb-1" style={{ color: 'var(--text-main)', fontSize: '0.96rem', fontWeight: '800' }}>
-              Télémédecine & DICOM
+              Télémédecine & dicom
             </strong>
             <small style={{ color: 'var(--text-sub)', fontSize: '0.78rem', lineHeight: '1.4', display: 'block' }}>
               Praticiens spécialistes accrédités
@@ -666,12 +666,12 @@ export default function AuditLogs({ lang = 'fr' }) {
               </div>
 
               <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
-                <span className="text-muted fw-bold">Acteur / initiateur :</span>
+                <span className="text-muted fw-bold">Acteur / Initiateur :</span>
                 <strong><ProIcon name="user" /> {selectedLogModal.actor}</strong>
               </div>
 
               <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
-                <span className="text-muted fw-bold">Origine IP & réseau :</span>
+                <span className="text-muted fw-bold">Origine ip & réseau :</span>
                 <span className="fw-mono"><ProIcon name="map-pin" /> {selectedLogModal.ip || '196.207.240.12 (Dakar Plateau)'}</span>
               </div>
 

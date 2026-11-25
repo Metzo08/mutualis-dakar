@@ -1070,7 +1070,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                 {result.status === 'observation'
                   ? <><ProIcon name="hourglass" size={13} /> Observation ({result.observationDaysRemaining ?? 30} j)</>
                   : result.valid
-                    ? <><ProIcon name="check-circle" size={13} /> Carte Active</>
+                    ? <><ProIcon name="check-circle" size={13} /> Carte active</>
                     : <><ProIcon name="x-circle" size={13} /> Suspendue</>}
               </span>
             </div>
@@ -1126,7 +1126,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                 Accès à votre espace mobile assuré
               </h3>
               <p style={{ fontSize: '0.82rem', color: 'var(--text-sub, #475569)', margin: 0, lineHeight: 1.45 }}>
-                Saisissez votre <strong>code d&apos;accès personnel</strong> communiqué par votre agent MSD pour ouvrir votre carte, votre dossier médical et vos services.
+                Saisissez votre <strong>Code d&apos;accès personnel</strong> communiqué par votre agent MSD pour ouvrir votre carte, votre dossier médical et vos services.
               </p>
             </div>
 
@@ -1226,7 +1226,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             Vérification de la carte CSU
           </h1>
           <p style={{ color: '#f8fafc', fontSize: '0.95rem', fontWeight: '500', maxWidth: '680px', margin: '0 auto', opacity: 0.95, lineHeight: '1.6' }}>
-            Contrôlez instantanément la validité et les droits de tiers-payant d'un assuré de la Couverture Santé Universelle.
+            Contrôlez instantanément la validité et les droits de tiers-payant d'un assuré de la couverture santé universelle.
           </p>
         </div>
       </section>
@@ -1303,7 +1303,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h5 className="fw-extrabold mb-0 text-success d-flex align-items-center gap-2" style={{ fontSize: '1.1rem' }}>
                 <span><ProIcon name="camera" /></span>
-                <span>Scanner un QR Code CSU</span>
+                <span>Scanner un QR code CSU</span>
               </h5>
               <button type="button" className="btn-close" onClick={stopCameraScan}></button>
             </div>
@@ -1337,7 +1337,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
               {(!cameraActive || cameraError) && (
                 <div className="p-3 text-center" style={{ position: 'relative', zIndex: 2, color: '#f8fafc' }}>
                   <div style={{ fontSize: '2.6rem', marginBottom: '0.3rem' }}><ProIcon name="camera" /></div>
-                  <h6 className="fw-extrabold mb-1" style={{ fontSize: '1.05rem', color: '#34d399' }}>Numérisation Rapide par Photo</h6>
+                  <h6 className="fw-extrabold mb-1" style={{ fontSize: '1.05rem', color: '#34d399' }}>Numérisation rapide par photo</h6>
                   <p className="small mb-0" style={{ fontSize: '0.84rem', color: '#cbd5e1' }}>
                     {cameraError === 'PHOTO_NO_QR'
                       ? 'Aucun QR Code détecté. Prenez la photo bien de face et nette.'
@@ -1354,7 +1354,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                 style={{ background: '#059669', borderColor: '#059669', borderRadius: '14px', padding: '0.85rem', fontSize: '0.95rem', cursor: 'pointer' }}
               >
                 <span><ProIcon name="camera" /></span>
-                <span>Prendre le QR Code en photo</span>
+                <span>Prendre le QR code en photo</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -1391,7 +1391,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                   style={{ fontSize: '0.75rem', borderRadius: '8px' }}
                   onClick={() => handleDecoded('DKR_2600027.0')}
                 >
-                  Ursule Diame (DKR_2600027.0)
+                  Ursule diame (DKR_2600027.0)
                 </button>
                 <button
                   type="button"
@@ -1399,7 +1399,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                   style={{ fontSize: '0.75rem', borderRadius: '8px' }}
                   onClick={() => handleDecoded('DKR_2600011.0')}
                 >
-                  Bineta Sow (DKR_2600011.0)
+                  Bineta sow (DKR_2600011.0)
                 </button>
                 <button
                   type="button"
@@ -1407,7 +1407,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                   style={{ fontSize: '0.75rem', borderRadius: '8px' }}
                   onClick={() => handleDecoded('CMU-DKR-2026-4401')}
                 >
-                  Fatou Diop
+                  Fatou diop
                 </button>
               </div>
             </div>
@@ -1564,7 +1564,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                     <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> UNAMUSC 2026
                   </span>
                   <span className="badge bg-blue-600 text-white px-3 py-1.5 fw-bold" style={{ borderRadius: '10px', fontSize: '0.8rem', background: '#1e40af' }}>
-                    <ProIcon name="building2" /> Groupe Patisen & Wave SA
+                    <ProIcon name="building2" /> Groupe Patisen & Wave sa
                   </span>
                 </div>
               </div>
@@ -1573,7 +1573,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             {/* Pied du popup */}
             <div style={{ padding: '1.25rem', textAlign: 'center', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-card-subtle)', flexWrap: 'wrap', gap: '0.5rem', borderTop: '1px solid var(--border-color)' }}>
               <div style={{ fontSize: '0.85rem', color: 'var(--text-sub)' }}>
-                <ProIcon name="lightbulb" /> Présentation officielle de la Couverture Santé Universelle
+                <ProIcon name="lightbulb" /> Présentation officielle de la couverture santé universelle
               </div>
               <button 
                 type="button" 
@@ -1606,7 +1606,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
               {docResult.title}
             </h3>
             <p className="mb-0 text-emerald-100 small">
-              Homologué par l'Union Nationale des Mutuelles de Santé Communautaires (UNAMUSC) — République du Sénégal
+              Homologué par l'union nationale des mutuelles de santé communautaires (UNAMUSC) — République du Sénégal
             </p>
           </div>
 
@@ -1641,27 +1641,27 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                 </thead>
                 <tbody>
                   <tr>
-                    <td className="fw-bold text-secondary">Établissement Récepteur</td>
+                    <td className="fw-bold text-secondary">Établissement récepteur</td>
                     <td className="fw-bold text-dark">{docResult.hospitalName}</td>
                   </tr>
                   <tr>
-                    <td className="fw-bold text-secondary">Acte Médical Pris en Charge</td>
+                    <td className="fw-bold text-secondary">Acte médical pris en charge</td>
                     <td className="fw-bold text-dark">{docResult.medicalAct}</td>
                   </tr>
                   <tr>
-                    <td className="fw-bold text-secondary">Montant Devis / Estimation</td>
+                    <td className="fw-bold text-secondary">Montant devis / Estimation</td>
                     <td className="fw-bold text-dark">{docResult.estimatedAmount}</td>
                   </tr>
                   <tr>
-                    <td className="fw-bold text-secondary">Prise en Charge UNAMUSC</td>
+                    <td className="fw-bold text-secondary">Prise en charge UNAMUSC</td>
                     <td className="fw-bold text-success fs-6">{docResult.guaranteedAmount}</td>
                   </tr>
                   <tr>
-                    <td className="fw-bold text-secondary">Ticket Modérateur Patient</td>
+                    <td className="fw-bold text-secondary">Ticket modérateur patient</td>
                     <td className="fw-bold text-warning-emphasis">{docResult.patientRest}</td>
                   </tr>
                   <tr>
-                    <td className="fw-bold text-secondary">Statut du Titre</td>
+                    <td className="fw-bold text-secondary">Statut du titre</td>
                     <td>
                       <span className="badge bg-success-subtle text-success border border-success fw-bold px-3 py-1">
                         {docResult.status}
@@ -1674,7 +1674,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
 
             {/* Note officielle d'engagement */}
             <div className="p-3 rounded-3 mb-4" style={{ background: '#f0fdf4', border: '1px solid #86efac' }}>
-              <strong className="small text-success fw-bold d-block mb-1">Notice d'Engagement UNAMUSC :</strong>
+              <strong className="small text-success fw-bold d-block mb-1">Notice d'engagement UNAMUSC :</strong>
               <p className="small mb-0 text-dark" style={{ lineHeight: 1.5 }}>
                 {docResult.notes}
               </p>
@@ -1706,7 +1706,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                   });
                 }}
               >
-                <ProIcon name="download" /> Télécharger le PDF Certifié Officiel
+                <ProIcon name="download" /> Télécharger le PDF certifié officiel
               </button>
             </div>
           </div>
@@ -1783,7 +1783,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             <div className="d-flex justify-content-between align-items-start mb-4 position-relative" style={{ zIndex: 2 }}>
               <div>
                 <span className="d-block fw-bold mb-1.5" style={{ fontSize: '0.84rem', letterSpacing: '1px', color: '#10b981' }}>
-                  Couverture Santé Universelle
+                  Couverture santé universelle
                 </span>
                 <h4 className="fw-extrabold mb-0" style={{ fontSize: '1.55rem', color: 'var(--text-main)', letterSpacing: '0.5px' }}>
                   SenMutuelles <ProIcon name="senegal-flag" />
@@ -1893,7 +1893,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                     </span>
                   ) : (
                     <span className="badge fw-bold px-3.5 py-1.5" style={{ background: 'rgba(16, 185, 129, 0.18)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.35)', borderRadius: '12px', fontSize: '0.84rem' }}>
-                      <ProIcon name="shield-check" /> Adhérent Principal
+                      <ProIcon name="shield-check" /> Adhérent principal
                     </span>
                   )}
                 </div>
@@ -1952,25 +1952,25 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                         <span className="badge fw-bold px-2 py-1" style={{ background: 'rgba(180, 83, 9, 0.16)', color: '#b45309', borderRadius: '10px', fontSize: '0.72rem' }}>CMU-Daara</span>
                       )}
                       {scannedAcademic.cardProgram === 'CMU_ELEVES' && (
-                        <span className="badge fw-bold px-2 py-1" style={{ background: 'rgba(37, 99, 235, 0.16)', color: '#1d4ed8', borderRadius: '10px', fontSize: '0.72rem' }}>CMU-Élèves</span>
+                        <span className="badge fw-bold px-2 py-1" style={{ background: 'rgba(37, 99, 235, 0.16)', color: '#1d4ed8', borderRadius: '10px', fontSize: '0.72rem' }}>CMU-élèves</span>
                       )}
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(165px, 1fr))', gap: '0.6rem' }}>
                       {scannedAcademic.academicYear && (
                         <div>
-                          <span className="d-block text-muted" style={{ fontSize: '0.7rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Année scolaire</span>
+                          <span className="d-block text-muted" style={{ fontSize: '0.7rem', fontWeight: '700', textTransform: 'none', letterSpacing: '0.03em' }}>Année scolaire</span>
                           <strong style={{ fontSize: '0.92rem' }}>{scannedAcademic.academicYear}</strong>
                         </div>
                       )}
                       {scannedAcademic.classLevel && (
                         <div>
-                          <span className="d-block text-muted" style={{ fontSize: '0.7rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Classe / Niveau</span>
+                          <span className="d-block text-muted" style={{ fontSize: '0.7rem', fontWeight: '700', textTransform: 'none', letterSpacing: '0.03em' }}>Classe / Niveau</span>
                           <strong style={{ fontSize: '0.92rem' }}>{scannedAcademic.classLevel}</strong>
                         </div>
                       )}
                       {scannedAcademic.schoolName && (
                         <div>
-                          <span className="d-block text-muted" style={{ fontSize: '0.7rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                          <span className="d-block text-muted" style={{ fontSize: '0.7rem', fontWeight: '700', textTransform: 'none', letterSpacing: '0.03em' }}>
                             {scannedAcademic.cardProgram === 'CMU_DAARA' ? 'Daara' : 'Établissement'}
                           </span>
                           <strong style={{ fontSize: '0.92rem' }}>{scannedAcademic.schoolName}</strong>
@@ -1978,7 +1978,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                       )}
                       {scannedAcademic.ine && (
                         <div>
-                          <span className="d-block text-muted" style={{ fontSize: '0.7rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                          <span className="d-block text-muted" style={{ fontSize: '0.7rem', fontWeight: '700', textTransform: 'none', letterSpacing: '0.03em' }}>
                             {scannedAcademic.cardProgram === 'CMU_DAARA' ? 'N° IEN' : 'N° INE'}
                           </span>
                           <strong className="font-monospace" style={{ fontSize: '0.9rem' }}>{scannedAcademic.ine}</strong>
@@ -1988,7 +1988,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                           présent sur une carte CMU-Daara. */}
                       {scannedAcademic.cardProgram !== 'CMU_DAARA' && (scannedAcademic.ia || scannedAcademic.ief) && (
                         <div style={{ gridColumn: '1 / -1' }}>
-                          <span className="d-block text-muted" style={{ fontSize: '0.7rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.03em' }}>IA / IEF</span>
+                          <span className="d-block text-muted" style={{ fontSize: '0.7rem', fontWeight: '700', textTransform: 'none', letterSpacing: '0.03em' }}>IA / IEF</span>
                           <strong style={{ fontSize: '0.92rem' }}>
                             {[scannedAcademic.ia, scannedAcademic.ief].filter(Boolean).join(' — ') || 'Non renseigné'}
                           </strong>
@@ -2042,7 +2042,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
 
               <div className="d-flex justify-content-center flex-wrap gap-2.5 mb-2.5">
                 <span className="badge bg-success text-white fw-bold px-3 py-1.5" style={{ fontSize: '0.76rem', borderRadius: '10px' }}>
-                  <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Signature Cryptographique Valide
+                  <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Signature cryptographique valide
                 </span>
                 <span className="badge fw-bold px-3 py-1.5" style={{ fontSize: '0.76rem', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.18)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.35)' }}>
                   <ProIcon name="landmark" /> URMSCD Dakar
@@ -2165,7 +2165,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                 Accès sécurisé à l&apos;espace assuré
               </h4>
               <p className="text-muted mb-3" style={{ fontSize: '0.88rem', lineHeight: 1.55 }}>
-                Pour protéger vos données médicales et familiales, saisissez le <strong>code d&apos;accès</strong> communiqué par votre agent MSD pour ouvrir l&apos;application mobile de <strong>{result.firstName} {result.lastName}</strong>.
+                Pour protéger vos données médicales et familiales, saisissez le <strong>Code d&apos;accès</strong> communiqué par votre agent MSD pour ouvrir l&apos;application mobile de <strong>{result.firstName} {result.lastName}</strong>.
               </p>
               <form onSubmit={handleUnlockMobileSpace} className="d-flex flex-column gap-3">
                 <input
@@ -2382,10 +2382,10 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                           <div className="p-4 p-md-5 rounded-4 h-100 shadow-sm" style={{ background: 'var(--bg-card)', border: '2.5px solid #10b981', boxShadow: '0 8px 24px rgba(16, 185, 129, 0.12)', borderRadius: '26px' }}>
                             <div className="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4 pb-3 border-bottom" style={{ borderColor: 'rgba(16, 185, 129, 0.2)' }}>
                               <span className="badge fw-extrabold px-4 py-2.5" style={{ fontSize: '0.92rem', borderRadius: '14px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-                                <ProIcon name="baby" /> Vaccins 0 à 5 ans (PEV Pédiatrique)
+                                <ProIcon name="baby" /> Vaccins 0 à 5 ans (PEV pédiatrique)
                               </span>
                               <span className="badge bg-success text-white fw-bold px-3.5 py-2" style={{ fontSize: '0.84rem', borderRadius: '12px' }}>
-                                100% Gratuit
+                                100% gratuit
                               </span>
                             </div>
                             
@@ -2400,7 +2400,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                             </p>
                             
                             <div className="p-3.5 rounded-3 fw-bold" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1.5px solid rgba(16, 185, 129, 0.25)', color: 'var(--text-main)', fontSize: '0.88rem', borderRadius: '16px', lineHeight: '1.6' }}>
-                              <ProIcon name="stethoscope" /> Suivi de croissance & supplémentation Vitamine A programmés au Centre de Santé.
+                              <ProIcon name="stethoscope" /> Suivi de croissance & supplémentation vitamine a programmés au centre de santé.
                             </div>
                           </div>
                         </div>
@@ -2412,7 +2412,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                           <div className="p-4 p-md-5 rounded-4 h-100 shadow-sm" style={{ background: 'var(--bg-card)', border: '2.5px solid #ec4899', boxShadow: '0 8px 24px rgba(236, 72, 153, 0.12)', borderRadius: '26px' }}>
                             <div className="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4 pb-3 border-bottom" style={{ borderColor: 'rgba(236, 72, 153, 0.2)' }}>
                               <span className="badge fw-extrabold px-4 py-2.5" style={{ fontSize: '0.92rem', borderRadius: '14px', background: 'rgba(236, 72, 153, 0.15)', color: '#f472b6', border: '1px solid rgba(236, 72, 153, 0.3)' }}>
-                                <ProIcon name="heart-pulse" color="#ec4899" /> Anti-VPH (Col de l'utérus) • Filles 9-14 ans
+                                <ProIcon name="heart-pulse" color="#ec4899" /> Anti-VPH (col de l'utérus) • Filles 9-14 ans
                               </span>
                               <span className="badge text-white fw-bold px-3.5 py-2" style={{ fontSize: '0.84rem', borderRadius: '12px', background: '#ec4899' }}>
                                 Prévention VPH
@@ -2452,7 +2452,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                       <div className="d-flex align-items-center gap-2">
                         <span className="fs-5"><ProIcon name="calendar" /></span>
                         <span style={{ color: 'var(--text-sub)', fontSize: '0.95rem' }}>
-                          Prochaine échéance : <strong style={{ color: 'var(--text-main)' }}>Suivi pédiatrique & vaccination • Centre de Santé de Dakar</strong>
+                          Prochaine échéance : <strong style={{ color: 'var(--text-main)' }}>Suivi pédiatrique & vaccination • Centre de santé de Dakar</strong>
                         </span>
                       </div>
 
@@ -2501,7 +2501,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                         </span>
                       </div>
                       <span className="badge bg-success-subtle text-success border border-success px-4 py-2.5 fw-bold" style={{ borderRadius: '16px', fontSize: '0.9rem' }}>
-                        <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> 100% Gratuité pédiatrique & PEV
+                        <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> 100% gratuité pédiatrique & PEV
                       </span>
                     </div>
 
@@ -2581,7 +2581,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
 
                                 <div className="p-4 rounded-4 mb-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', fontSize: '0.92rem', borderRadius: '18px', lineHeight: '1.7', color: 'var(--text-main)' }}>
                                   <div className="mb-2"><strong><ProIcon name="syringe" /> Vaccins :</strong> <span className="fw-bold ms-2" style={{ color: '#10b981' }}>{child.vaccines || 'PEV 100% à jour'}</span></div>
-                                  <div><strong><ProIcon name="stethoscope" /> Antécédents & Suivi :</strong> <span className="ms-2" style={{ color: 'var(--text-sub)' }}>{child.antecedents || 'Développement pédiatrique normal'}</span></div>
+                                  <div><strong><ProIcon name="stethoscope" /> Antécédents & suivi :</strong> <span className="ms-2" style={{ color: 'var(--text-sub)' }}>{child.antecedents || 'Développement pédiatrique normal'}</span></div>
                                 </div>
                               </div>
 
@@ -2592,7 +2592,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                                     {child.hasOfficialPhoto ? '🟢 Photo certifiée MSD Dakar' : '🟡 Photo certifiée en attente'}
                                   </span>
                                   <span className="badge bg-success text-white fw-bold px-3.5 py-2" style={{ borderRadius: '12px', fontSize: '0.84rem' }}>
-                                    Gratuité Pédiatrique 100%
+                                    Gratuité pédiatrique 100%
                                   </span>
                                 </div>
                               </div>
@@ -2613,7 +2613,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                   <div className="d-flex align-items-center gap-2.5 mb-3.5">
                     <span className="fs-4"><ProIcon name="hospital" /></span>
                     <h6 className="fw-extrabold mb-0" style={{ color: '#38bdf8', fontSize: '1.05rem', letterSpacing: '0.02em' }}>
-                      Sélectionner le bénéficiaire des soins (Médecin / Pharmacien) :
+                      Sélectionner le bénéficiaire des soins (médecin / Pharmacien) :
                     </h6>
                   </div>
                   
@@ -2666,7 +2666,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                     </span>
                   </div>
                   <span className="badge bg-success text-white px-4 py-2.5 fw-bold" style={{ borderRadius: '16px', fontSize: '0.9rem' }}>
-                    <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Droits Ouverts UNAMUSC
+                    <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Droits ouverts UNAMUSC
                   </span>
                 </div>
 
@@ -2735,7 +2735,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                             <span style={{ width: '46px', height: '46px', background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}><ProIcon name="pill" /></span>
                             <span className="fw-extrabold" style={{ fontSize: '1.1rem', color: 'var(--text-main)', wordBreak: 'break-word', overflowWrap: 'break-word' }}>Bon pharmacie</span>
                           </div>
-                          <span className="badge fw-bold px-3 py-1.5" style={{ background: 'rgba(245, 158, 11, 0.2)', color: '#fbbf24', border: '1px solid #f59e0b', fontSize: '0.78rem', borderRadius: '12px', flexShrink: 0 }}>48h Tiers-Payant</span>
+                          <span className="badge fw-bold px-3 py-1.5" style={{ background: 'rgba(245, 158, 11, 0.2)', color: '#fbbf24', border: '1px solid #f59e0b', fontSize: '0.78rem', borderRadius: '12px', flexShrink: 0 }}>48h tiers-payant</span>
                         </div>
                         <p className="text-muted fw-semibold mb-0" style={{ fontSize: '0.9rem', lineHeight: '1.5', wordBreak: 'break-word' }}>
                           Ordonnance et médicaments pris en charge en officine
@@ -2809,9 +2809,9 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                         <div className="d-flex align-items-center justify-content-between w-100 mb-3 flex-wrap gap-2">
                           <div className="d-flex align-items-center gap-2.5" style={{ minWidth: 0 }}>
                             <span style={{ width: '46px', height: '46px', background: 'rgba(168, 85, 247, 0.15)', color: '#c084fc', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}><ProIcon name="scan" /></span>
-                            <span className="fw-extrabold" style={{ fontSize: '1.1rem', color: 'var(--text-main)', wordBreak: 'break-word', overflowWrap: 'break-word' }}>Radios & Labo</span>
+                            <span className="fw-extrabold" style={{ fontSize: '1.1rem', color: 'var(--text-main)', wordBreak: 'break-word', overflowWrap: 'break-word' }}>Radios & labo</span>
                           </div>
-                          <span className="badge text-white px-3 py-1.5" style={{ background: '#9333ea', fontSize: '0.78rem', borderRadius: '12px', flexShrink: 0 }}>DICOM</span>
+                          <span className="badge text-white px-3 py-1.5" style={{ background: '#9333ea', fontSize: '0.78rem', borderRadius: '12px', flexShrink: 0 }}>Dicom</span>
                         </div>
                         <p className="text-muted fw-semibold mb-0" style={{ fontSize: '0.9rem', lineHeight: '1.5', wordBreak: 'break-word' }}>
                           Transmettre imageries médicales, scanners ou bilans labo
@@ -2885,16 +2885,16 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                         <div className="d-flex align-items-center justify-content-between w-100 mb-3 flex-wrap gap-2">
                           <div className="d-flex align-items-center gap-2.5" style={{ minWidth: 0 }}>
                             <span style={{ width: '46px', height: '46px', background: 'rgba(236, 72, 153, 0.15)', color: '#f472b6', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}><ProIcon name="activity" /></span>
-                            <span className="fw-extrabold" style={{ fontSize: '1.1rem', color: 'var(--text-main)', wordBreak: 'break-word', overflowWrap: 'break-word' }}>Pathologies ALD</span>
+                            <span className="fw-extrabold" style={{ fontSize: '1.1rem', color: 'var(--text-main)', wordBreak: 'break-word', overflowWrap: 'break-word' }}>Pathologies ald</span>
                           </div>
                           <span className="badge text-white px-3 py-1.5" style={{ background: '#db2777', fontSize: '0.78rem', borderRadius: '12px', flexShrink: 0 }}>100%</span>
                         </div>
                         <p className="text-muted fw-semibold mb-0" style={{ fontSize: '0.9rem', lineHeight: '1.5', wordBreak: 'break-word' }}>
-                          Protocole d'Affection Longue Durée & prise en charge totale
+                          Protocole d'affection longue durée & prise en charge totale
                         </p>
                       </div>
                       <div className="d-flex align-items-center justify-content-between pt-3 border-top w-100 mt-3 flex-wrap gap-1" style={{ borderColor: 'rgba(219, 39, 119, 0.2)', color: '#f472b6' }}>
-                        <span className="fw-bold" style={{ fontSize: '0.82rem', lineHeight: '1.3', wordBreak: 'break-word', flex: '1 1 auto', minWidth: 0 }}>Déclarer une ALD</span>
+                        <span className="fw-bold" style={{ fontSize: '0.82rem', lineHeight: '1.3', wordBreak: 'break-word', flex: '1 1 auto', minWidth: 0 }}>Déclarer une ald</span>
                         <span className="fs-5 flex-shrink-0 ms-1">→</span>
                       </div>
                     </button>
@@ -2951,7 +2951,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                         </h6>
                         <div className="pt-2">
                           <span className="badge px-3 py-1.5 fw-semibold" style={{ background: 'rgba(5, 150, 105, 0.12)', color: '#10b981', borderRadius: '10px', fontSize: '0.82rem' }}>
-                            Agrément N° MSD-DKR-2026 • Réseau National UNAMUSC
+                            Agrément n° MSD-DKR-2026 • Réseau national UNAMUSC
                           </span>
                         </div>
                       </div>
@@ -3146,7 +3146,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             onClick={(e) => e.stopPropagation()}
           >
             <div className="d-flex justify-content-between align-items-center mb-3">
-              <h5 className="fw-extrabold mb-0 text-success" style={{ fontSize: '1.15rem' }}><ProIcon name="smartphone" /> QR Code CSU Certifié</h5>
+              <h5 className="fw-extrabold mb-0 text-success" style={{ fontSize: '1.15rem' }}><ProIcon name="smartphone" /> QR code CSU certifié</h5>
               <button type="button" className="btn-close" onClick={() => setShowQrModal(false)}></button>
             </div>
 
@@ -3186,7 +3186,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
 
               <div className="d-flex justify-content-center flex-wrap gap-2 mb-2">
                 <span className="badge bg-success text-white fw-bold px-2.5 py-1" style={{ fontSize: '0.75rem', borderRadius: '8px' }}>
-                  <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Signature Cryptographique Valide
+                  <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Signature cryptographique valide
                 </span>
                 <span className="badge fw-bold px-2.5 py-1" style={{ fontSize: '0.75rem', borderRadius: '8px', background: '#d1fae5', color: '#065f46' }}>
                   IPP : {result.ippNumber || 'IPP-DKR-2026-88'}
@@ -3194,8 +3194,8 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
               </div>
 
               <small className="d-block text-muted fw-semibold" style={{ fontSize: '0.76rem', lineHeight: '1.45', color: '#475569' }}>
-                <ProIcon name="landmark" /> <strong>Union Régionale des Mutuelles (URMSCD Dakar)</strong><br />
-                Empreinte digitale anti-falsification • Horodatage certifié Ministère
+                <ProIcon name="landmark" /> <strong>Union régionale des mutuelles (URMSCD Dakar)</strong><br />
+                Empreinte digitale anti-falsification • Horodatage certifié ministère
               </small>
             </div>
 
@@ -3232,12 +3232,12 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             <div className="mb-3.5">
               <label className="form-label small fw-bold mb-1.5">Établissement récepteur conventionné UNAMUSC *</label>
               <select className="form-select input fw-bold" value={guaranteeHospital} onChange={(e) => setGuaranteeHospital(e.target.value)} style={{ borderRadius: '14px', minHeight: '48px' }}>
-                <option value="Hôpital Universitaire de Fann (Dakar)">Hôpital Universitaire de Fann (Dakar)</option>
-                <option value="Hôpital Aristide Le Dantec">Hôpital Aristide Le Dantec (Dakar)</option>
-                <option value="Hôpital Général Idrissa Pouye (Pikine)">Hôpital Général Idrissa Pouye (Pikine)</option>
-                <option value="Centre Hospitalier Abass Ndao">Centre Hospitalier Abass Ndao</option>
-                <option value="Hôpital d'Enfants Albert Royer">Hôpital d'Enfants Albert Royer (Pédiatrie)</option>
-                <option value="Centre de Santé Gaspard Camara">Centre de Santé Gaspard Camara</option>
+                <option value="Hôpital Universitaire de Fann (Dakar)">Hôpital universitaire de Fann (Dakar)</option>
+                <option value="Hôpital Aristide Le Dantec">Hôpital aristide le Dantec (Dakar)</option>
+                <option value="Hôpital Général Idrissa Pouye (Pikine)">Hôpital général idrissa pouye (Pikine)</option>
+                <option value="Centre Hospitalier Abass Ndao">Centre hospitalier abass ndao</option>
+                <option value="Hôpital d'Enfants Albert Royer">Hôpital d'enfants albert royer (pédiatrie)</option>
+                <option value="Centre de Santé Gaspard Camara">Centre de santé gaspard camara</option>
               </select>
             </div>
 
@@ -3245,17 +3245,17 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
               <div className="col-12 col-md-6">
                 <label className="form-label small fw-bold mb-1.5">Service / Nature de l'admission *</label>
                 <select className="form-select input" value={guaranteeService} onChange={(e) => setGuaranteeService(e.target.value)} style={{ borderRadius: '14px', minHeight: '48px' }}>
-                  <option value="Hospitalisation & Chirurgie (80%)">Hospitalisation & Chirurgie (80%)</option>
-                  <option value="Urgence Médicale Vital (100%)">Urgence Médicale Vitale (100%)</option>
-                  <option value="Chirurgie Programmée (80%)">Chirurgie Programmée (80%)</option>
-                  <option value="Soins Intensifs / Réanimation (80%)">Soins Intensifs / Réanimation (80%)</option>
+                  <option value="Hospitalisation & Chirurgie (80%)">Hospitalisation & chirurgie (80%)</option>
+                  <option value="Urgence Médicale Vital (100%)">Urgence médicale vitale (100%)</option>
+                  <option value="Chirurgie Programmée (80%)">Chirurgie programmée (80%)</option>
+                  <option value="Soins Intensifs / Réanimation (80%)">Soins intensifs / Réanimation (80%)</option>
                 </select>
               </div>
               <div className="col-12 col-md-6">
                 <label className="form-label small fw-bold mb-1.5">Taux de couverture UNAMUSC *</label>
                 <select className="form-select input fw-bold" value={guaranteeRate} onChange={(e) => setGuaranteeRate(e.target.value)} style={{ borderRadius: '14px', minHeight: '48px' }}>
-                  <option value="80%">80% Tiers-Payant Standard</option>
-                  <option value="100%">100% Prise en Charge Totale (Gratuité / Exonéré)</option>
+                  <option value="80%">80% tiers-payant standard</option>
+                  <option value="100%">100% prise en charge totale (gratuité / Exonéré)</option>
                 </select>
               </div>
             </div>
@@ -3302,7 +3302,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             {/* Téléversement / Capture Photo de l'ordonnance médicale */}
             <div className="mb-4 p-3.5 rounded-4" style={{ background: 'var(--bg-card-subtle)', border: '1.5px dashed #f59e0b' }}>
               <label className="form-label small fw-extrabold mb-2 d-flex align-items-center justify-content-between text-warning" style={{ fontSize: '0.92rem' }}>
-                <span><ProIcon name="camera" /> Photo / Scan de l'ordonnance médicale (Mobile / PC / Tablette) *</span>
+                <span><ProIcon name="camera" /> Photo / Scan de l'ordonnance médicale (mobile / Pc / Tablette) *</span>
                 {prescriptionPhoto && <span className="badge bg-success text-white"><ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Ordonnance jointe</span>}
               </label>
 
@@ -3365,14 +3365,14 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                 <label className="form-label small fw-bold mb-1.5">Officine de pharmacie conventionnée *</label>
                 <select className="form-select input fw-bold" value={medPharmacy} onChange={(e) => setMedPharmacy(e.target.value)} style={{ borderRadius: '14px', minHeight: '48px' }}>
                   <option value="Pharmacie de la Médina">Pharmacie de la Médina (Dakar)</option>
-                  <option value="Pharmacie de Fann">Pharmacie de Fann (Fann Résidence)</option>
-                  <option value="Grande Pharmacie Cheikh Anta Diop">Grande Pharmacie Cheikh Anta Diop</option>
-                  <option value="Pharmacie de la République">Pharmacie de la République (Plateau)</option>
+                  <option value="Pharmacie de Fann">Pharmacie de Fann (Fann résidence)</option>
+                  <option value="Grande Pharmacie Cheikh Anta Diop">Grande pharmacie cheikh anta diop</option>
+                  <option value="Pharmacie de la République">Pharmacie de la république (Plateau)</option>
                   <option value="Pharmacie de Pikine">Pharmacie de Pikine (Pikine)</option>
                 </select>
               </div>
               <div className="col-12 col-md-6">
-                <label className="form-label small fw-bold mb-1.5">Médecin Prescripteur / Structure *</label>
+                <label className="form-label small fw-bold mb-1.5">Médecin prescripteur / Structure *</label>
                 <input 
                   type="text" 
                   className="form-control input" 
@@ -3387,7 +3387,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
 
             <div className="row g-3 mb-3.5">
               <div className="col-12 col-md-8">
-                <label className="form-label small fw-bold mb-1.5">Nom du médicament / DSI *</label>
+                <label className="form-label small fw-bold mb-1.5">Nom du médicament / Dsi *</label>
                 <input type="text" className="form-control input" value={medName} onChange={(e) => setMedName(e.target.value)} placeholder="ex: Amoxicilline 500mg" required style={{ borderRadius: '14px', minHeight: '48px' }} />
               </div>
               <div className="col-12 col-md-4">
@@ -3450,10 +3450,10 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             <div className="mb-3.5">
               <label className="form-label small fw-bold mb-1.5">Médecin téléconsultant certifié UNAMUSC *</label>
               <select className="form-select input fw-bold" value={telemedDoctor} onChange={(e) => setTelemedDoctor(e.target.value)} style={{ borderRadius: '14px', minHeight: '48px' }}>
-                <option value="Dr. Ousmane Sow (Médecin Généraliste UNAMUSC)">Dr. Ousmane Sow — Médecin Généraliste (En ligne )</option>
-                <option value="Dr. Mariama Ba (Pédiatre CHU Fann)">Dr. Mariama Ba — Pédiatre & Néonatalogie (En ligne )</option>
-                <option value="Dr. Aminata Diop (Gynécologue-Obstétricienne)">Dr. Aminata Diop — Gynécologie & Maternité (En ligne )</option>
-                <option value="Dr. Fatou Diome (Sage-femme DKR)">Dr. Fatou Diome — Sage-femme d'État (En ligne )</option>
+                <option value="Dr. Ousmane Sow (Médecin Généraliste UNAMUSC)">Dr. ousmane sow — Médecin généraliste (en ligne )</option>
+                <option value="Dr. Mariama Ba (Pédiatre CHU Fann)">Dr. mariama ba — Pédiatre & néonatalogie (en ligne )</option>
+                <option value="Dr. Aminata Diop (Gynécologue-Obstétricienne)">Dr. aminata diop — Gynécologie & maternité (en ligne )</option>
+                <option value="Dr. Fatou Diome (Sage-femme DKR)">Dr. fatou diome — Sage-femme d'état (en ligne )</option>
               </select>
             </div>
 
@@ -3466,16 +3466,16 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
               <div className="col-12 col-md-6">
                 <label className="form-label small fw-bold mb-1.5">Niveau d'urgence *</label>
                 <select className="form-select input" value={telemedUrgency} onChange={(e) => setTelemedUrgency(e.target.value)} style={{ borderRadius: '14px', minHeight: '48px' }}>
-                  <option value="Urgence Standard (RDV sous 15 min)">Urgence Standard (≤ 15 min)</option>
+                  <option value="Urgence Standard (RDV sous 15 min)">Urgence standard (≤ 15 min)</option>
                   <option value="Prioritaire (Sous 5 min)">Prioritaire (≤ 5 min)</option>
-                  <option value="Urgence Vitale 24/7 (Immédiat)">Urgence Vitale 24/7 (Immédiat)</option>
+                  <option value="Urgence Vitale 24/7 (Immédiat)">Urgence vitale 24/7 (immédiat)</option>
                 </select>
               </div>
               <div className="col-12 col-md-6">
                 <label className="form-label small fw-bold mb-1.5">Canal de visio *</label>
                 <select className="form-select input" value={telemedMode} onChange={(e) => setTelemedMode(e.target.value)} style={{ borderRadius: '14px', minHeight: '48px' }}>
-                  <option value="Visio HD WebRTC en direct">Visio HD WebRTC Sécurisée</option>
-                  <option value="Consultation Audio Téléphonique">Consultation Audio Directe</option>
+                  <option value="Visio HD WebRTC en direct">Visio hd webrtc sécurisée</option>
+                  <option value="Consultation Audio Téléphonique">Consultation audio directe</option>
                 </select>
               </div>
             </div>
@@ -3485,14 +3485,14 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                 <span><ProIcon name="lock" /></span> Connexion médicale WebRTC de bout en bout
               </div>
               <small className="text-muted" style={{ fontSize: '0.78rem' }}>
-                Couverture 100% Tiers-Payant UNAMUSC : aucune avance de frais requise.
+                Couverture 100% tiers-payant UNAMUSC : aucune avance de frais requise.
               </small>
             </div>
 
             <div className="d-flex justify-content-end gap-3 mt-4 pt-2 border-top" style={{ borderColor: 'var(--border-color)' }}>
               <button type="button" className="btn btn-outline-secondary fw-semibold px-3.5 py-2" style={{ borderRadius: '12px' }} onClick={() => setActiveModal(null)}>Annuler</button>
               <button type="submit" className="btn btn-primary fw-bold px-4 py-2 text-white" style={{ borderRadius: '12px', background: '#1e40af', borderColor: '#1e40af' }}>
-                <ProIcon name="video" /> Démarrer la visio-consultation HD →
+                <ProIcon name="video" /> Démarrer la visio-consultation hd →
               </button>
             </div>
           </form>
@@ -3520,10 +3520,10 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             <div className="mb-3.5">
               <label className="form-label small fw-bold mb-1.5">Centre d'imagerie ou laboratoire *</label>
               <select className="form-select input fw-bold" value={examCenter} onChange={(e) => setExamCenter(e.target.value)} style={{ borderRadius: '14px', minHeight: '48px' }}>
-                <option value="Centre d'Imagerie de Fann">Centre d'Imagerie de Fann (Dakar)</option>
-                <option value="Laboratoire BioMed Dakar">Laboratoire BioMed Dakar</option>
-                <option value="Centre de Radiologie Le Dantec">Centre de Radiologie Le Dantec</option>
-                <option value="Labo d'Analyses Médina">Labo d'Analyses Médina</option>
+                <option value="Centre d'Imagerie de Fann">Centre d'imagerie de Fann (Dakar)</option>
+                <option value="Laboratoire BioMed Dakar">Laboratoire biomed Dakar</option>
+                <option value="Centre de Radiologie Le Dantec">Centre de radiologie le Dantec</option>
+                <option value="Labo d'Analyses Médina">Labo d'analyses Médina</option>
               </select>
             </div>
 
@@ -3535,9 +3535,9 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
               <div className="col-12 col-md-4">
                 <label className="form-label small fw-bold mb-1.5">Type *</label>
                 <select className="form-select input" value={examType} onChange={(e) => setExamType(e.target.value)} style={{ borderRadius: '14px', minHeight: '48px' }}>
-                  <option value="Scanner">Scanner HD</option>
-                  <option value="Radio">Radiographie RX</option>
-                  <option value="Analyse">Analyse Bio / Labo</option>
+                  <option value="Scanner">Scanner hd</option>
+                  <option value="Radio">Radiographie rx</option>
+                  <option value="Analyse">Analyse bio / Labo</option>
                   <option value="IRM">IRM 1.5T</option>
                   <option value="Échographie">Échographie</option>
                 </select>
@@ -3578,12 +3578,12 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             <div className="mb-3.5">
               <label className="form-label small fw-bold mb-1.5">Discipline spécialisée *</label>
               <select className="form-select input fw-bold" value={specialtyType} onChange={(e) => setSpecialtyType(e.target.value)} style={{ borderRadius: '14px', minHeight: '48px' }}>
-                <option value="Pédiatrie & Néo-natologie">Pédiatrie & Néo-natologie (Gratuité 100%)</option>
-                <option value="Gynécologie & Obstétrique">Gynécologie & Maternité 100%</option>
-                <option value="Cardiologie & Vasculaire">Cardiologie & Prévention HTA</option>
-                <option value="Ophtalmologie & Optique">Ophtalmologie & Soins visuels</option>
-                <option value="Dermatologie & Vénérologie">Dermatologie & Soins cutanés</option>
-                <option value="ORL & Chirurgie Cervico-Faciale">ORL & Audition</option>
+                <option value="Pédiatrie & Néo-natologie">Pédiatrie & néo-natologie (gratuité 100%)</option>
+                <option value="Gynécologie & Obstétrique">Gynécologie & maternité 100%</option>
+                <option value="Cardiologie & Vasculaire">Cardiologie & prévention HTA</option>
+                <option value="Ophtalmologie & Optique">Ophtalmologie & soins visuels</option>
+                <option value="Dermatologie & Vénérologie">Dermatologie & soins cutanés</option>
+                <option value="ORL & Chirurgie Cervico-Faciale">Orl & audition</option>
               </select>
             </div>
 
@@ -3624,16 +3624,16 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             </div>
 
             <div className="mb-3.5">
-              <label className="form-label small fw-bold mb-1.5">Nom de la pathologie ou protocole ALD *</label>
+              <label className="form-label small fw-bold mb-1.5">Nom de la pathologie ou protocole ald *</label>
               <input type="text" className="form-control input fw-bold" value={pathologyName} onChange={(e) => setPathologyName(e.target.value)} placeholder="ex: Hypertension artérielle (HTA), Diabète Type 2" required style={{ borderRadius: '14px', minHeight: '48px' }} />
             </div>
 
             <div className="mb-3.5">
               <label className="form-label small fw-bold mb-1.5">Niveau de prise en charge UNAMUSC *</label>
               <select className="form-select input fw-bold" value={pathologyProtocol} onChange={(e) => setPathologyProtocol(e.target.value)} style={{ borderRadius: '14px', minHeight: '48px' }}>
-                <option value="Prise en charge 100% Universelle UNAMUSC">100% Gratuité Universelle (Tiers-payant total)</option>
-                <option value="Prise en charge ALD 80% (Affection Longue Durée)">80% Prise en charge Affection Longue Durée (ALD)</option>
-                <option value="Programme PEV Pédiatrique Gratuit">Programme Élargi de Vaccination (PEV) 100% Gratuit</option>
+                <option value="Prise en charge 100% Universelle UNAMUSC">100% gratuité universelle (tiers-payant total)</option>
+                <option value="Prise en charge ALD 80% (Affection Longue Durée)">80% prise en charge affection longue durée (ald)</option>
+                <option value="Programme PEV Pédiatrique Gratuit">Programme élargi de vaccination (PEV) 100% gratuit</option>
               </select>
             </div>
 

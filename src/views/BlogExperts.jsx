@@ -699,8 +699,8 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
                     onChange={(e) => setNewArticle({ ...newArticle, avatar: e.target.value })}
                   >
                     <option value="🩺">Stéthoscope</option>
-                    <option value="👩‍⚕️">Médecin (F)</option>
-                    <option value="👨‍⚕️">Médecin (H)</option>
+                    <option value="👩‍⚕️">Médecin (f)</option>
+                    <option value="👨‍⚕️">Médecin (h)</option>
                     <option value="📝">Note / Crayon</option>
                     <option value="🏥">Hôpital</option>
                     <option value="❤️">Cœur</option>

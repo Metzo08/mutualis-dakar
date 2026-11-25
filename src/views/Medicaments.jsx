@@ -153,7 +153,7 @@ export default function Medicaments({ lang }) {
       }}>
         <div style={{ textAlign: 'left', position: 'relative', zIndex: 2 }}>
           <span className="badge badge-info" style={{ marginBottom: '0.75rem', background: 'rgba(255, 255, 255, 0.15)', color: '#fff' }}>
-            <ProIcon name="hospital" /> ANNUAIRE CMU SÉNÉGAL
+            <ProIcon name="hospital" /> Annuaire CMU Sénégal
           </span>
           <h1 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '0.5rem' }}>{t.title}</h1>
           <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.9rem', maxWidth: '800px', lineHeight: '1.5' }}>{t.subtitle}</p>
@@ -191,9 +191,9 @@ export default function Medicaments({ lang }) {
                 value={calcType}
                 onChange={(e) => setCalcType(e.target.value)}
               >
-                <option value="80">80% (Taux standard CMU Sénégal)</option>
-                <option value="50">50% (Médicaments de spécialité)</option>
-                <option value="100">100% (accouchements, césariennes, ACT paludisme)</option>
+                <option value="80">80% (taux standard CMU Sénégal)</option>
+                <option value="50">50% (médicaments de spécialité)</option>
+                <option value="100">100% (accouchements, césariennes, act paludisme)</option>
               </select>
             </div>
 

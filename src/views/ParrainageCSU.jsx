@@ -905,7 +905,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
       {/* Top Banner */}
       <div className="hero-banner" style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.38) 0%, rgba(16, 185, 129, 0.18) 100%), url("/csu_parrainage_hero_real.png") center/cover no-repeat', border: '1px solid rgba(255, 255, 255, 0.45)', borderRadius: '24px', padding: '3.75rem 2.5rem', minHeight: '240px', marginBottom: '3.5rem', boxShadow: '0 14px 40px rgba(0, 0, 0, 0.25)' }}>
         <div className="hero-content">
-          <span className="badge" style={{ padding: '0.4rem 0.9rem', backgroundColor: 'rgba(255, 255, 255, 0.22)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '700' }}><ProIcon name="handshake" /> CMU SOLIDARITÉ</span>
+          <span className="badge" style={{ padding: '0.4rem 0.9rem', backgroundColor: 'rgba(255, 255, 255, 0.22)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '700' }}><ProIcon name="handshake" /> CMU solidarité</span>
           <h1 style={{ fontSize: '2.35rem', fontWeight: '900', margin: '0.5rem 0', color: '#ffffff', letterSpacing: '-0.02em', textShadow: '0 3px 6px rgba(0,0,0,0.4)' }}>
             {lang === 'fr' ? 'Parrainage solidaire' : 'Dimbalé ak Parrainage'}
           </h1>
@@ -1057,7 +1057,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                 >
                   <div style={{ fontSize: '2.5rem' }}><ProIcon name="user" /></div>
                   <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem', fontWeight: '700' }}>{lang === 'fr' ? 'Filleuls individuels' : 'Filleuls individuels'}</h3>
-                  <div style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--primary)', margin: '0.5rem 0' }}>4 500 FCFA <span style={{ fontSize: '0.8rem', fontWeight: 'normal' }}>/ pers.</span></div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--primary)', margin: '0.5rem 0' }}>4 500 FCFA <span style={{ fontSize: '0.8rem', fontWeight: 'normal' }}>/ Pers.</span></div>
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Idéal pour parrainer une ou des personnes spécifiques dans le besoin.' : 'Fayal sa filleul sa cotisation ak sa carte.'}</p>
                 </div>
 
@@ -1078,7 +1078,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                 >
                   <div style={{ fontSize: '2.5rem' }}><ProIcon name="users" /></div>
                   <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem', fontWeight: '700' }}>{lang === 'fr' ? 'Ménages & familles' : 'Ménages & familles'}</h3>
-                  <div style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--secondary)', margin: '0.5rem 0' }}>Tarif Familial</div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--secondary)', margin: '0.5rem 0' }}>Tarif familial</div>
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? '1 000 FCFA la carte du chef + 3 500 FCFA/pers. Couvrez une famille complète.' : 'Fayal ay njaboot yu bari.'}</p>
                 </div>
 
@@ -1099,7 +1099,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                 >
                   <div style={{ fontSize: '2.5rem' }}><ProIcon name="graduation-cap" /></div>
                   <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem', fontWeight: '700' }}>{lang === 'fr' ? 'Élèves / daara' : 'Élèves / daara'}</h3>
-                  <div style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--success)', margin: '0.5rem 0' }}>1 000 FCFA <span style={{ fontSize: '0.8rem', fontWeight: 'normal' }}>/ élève</span></div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--success)', margin: '0.5rem 0' }}>1 000 FCFA <span style={{ fontSize: '0.8rem', fontWeight: 'normal' }}>/ Élève</span></div>
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Tarif groupe subventionné par l\'État pour les écoles élémentaires et Daaras.' : 'Fay subventionné par État bi ngir daara yi ak écoles yi.'}</p>
                 </div>
 
@@ -1129,7 +1129,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                 >
                   <div style={{ fontSize: '2.5rem' }}><ProIcon name="gift" /></div>
                   <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem', fontWeight: '700' }}>{lang === 'fr' ? 'Packs collectifs' : 'Packs collectifs'}</h3>
-                  <div style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--primary)', margin: '0.5rem 0' }}>10 000 FCFA <span style={{ fontSize: '0.8rem', fontWeight: 'normal' }}>/ pack 10</span></div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--primary)', margin: '0.5rem 0' }}>10 000 FCFA <span style={{ fontSize: '0.8rem', fontWeight: 'normal' }}>/ Pack 10</span></div>
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Parrainez directement un lot d\'élèves ou talibés sans devoir saisir de données.' : 'Parrainer un lot d\'enfants.'}</p>
                 </div>
 
@@ -1639,21 +1639,21 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                   <h4 style={{ marginTop: 0, fontWeight: 'bold', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>{lang === 'fr' ? 'Détails du dossier' : 'Détails dossier'}</h4>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.9rem', marginTop: '0.75rem' }}>
                     <div>
-                      <span style={{ color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase' }}>Sponsor / Parrain</span>
+                      <span style={{ color: '#64748b', fontSize: '0.75rem', textTransform: 'none' }}>Sponsor / Parrain</span>
                       <div style={{ fontWeight: 'bold' }}>{formData.firstName} {formData.lastName} ({formData.phone})</div>
                     </div>
                     <div>
-                      <span style={{ color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase' }}>Mutuelle Cible</span>
+                      <span style={{ color: '#64748b', fontSize: '0.75rem', textTransform: 'none' }}>Mutuelle cible</span>
                       <div style={{ fontWeight: 'bold' }}>{selectedMutuelle}</div>
                     </div>
                     {schoolName && parrainageType === 'eleves' && (
                       <div>
-                        <span style={{ color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase' }}>Établissement scolaire</span>
+                        <span style={{ color: '#64748b', fontSize: '0.75rem', textTransform: 'none' }}>Établissement scolaire</span>
                         <div style={{ fontWeight: 'bold' }}>{schoolName}</div>
                       </div>
                     )}
                     <div>
-                      <span style={{ color: '#64748b', fontSize: '0.75rem', textTransform: 'uppercase' }}>Type de Parrainage</span>
+                      <span style={{ color: '#64748b', fontSize: '0.75rem', textTransform: 'none' }}>Type de parrainage</span>
                       <div style={{ fontWeight: 'bold' }}>
                         {parrainageType === 'menages' ? 'Ménages / familles 🤝' :
                          parrainageType === 'eleves' ? 'Élèves scolaires (écoles/daaras) 🎓' :
@@ -1697,7 +1697,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
 
               {/* Cost breakdown banner */}
               <div className="card" style={{ borderLeft: '4px solid var(--secondary)', background: 'rgba(244, 63, 94, 0.05)', padding: '1.25rem', textAlign: 'left', marginBottom: '2rem' }}>
-                <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#64748b' }}>Montant total à régler</span>
+                <span style={{ fontSize: '0.75rem', textTransform: 'none', color: '#64748b' }}>Montant total à régler</span>
                 <div style={{ fontSize: '1.8rem', fontWeight: '900', color: 'var(--secondary)', margin: '0.25rem 0' }}>
                   {calculateTotalCost().toLocaleString('fr-FR')} FCFA
                 </div>
@@ -1851,7 +1851,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
 
                 <div className="digital-card-details">
                   <div>
-                    <div className="digital-card-label">ID Sponsoring</div>
+                    <div className="digital-card-label">ID sponsoring</div>
                     <div className="digital-card-value">{generatedCmuNumber || 'SN-DK-SPN-1001'}</div>
                   </div>
                   <div>

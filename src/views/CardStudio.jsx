@@ -144,7 +144,7 @@ function SchoolCardFront({ cardData, currentUnion, getMsdLogo, customLogo = null
     backgroundSize: `${cardData.cardDesign.watermarkScale}%`,
     backgroundPosition: cardData.cardDesign.watermarkPosition === 'TOP' ? 'center 26%' : cardData.cardDesign.watermarkPosition === 'BOTTOM' ? 'center 74%' : 'center'
   } : { opacity: Math.min(0.9, Number(cardData.cardDesign.watermarkOpacity || 0.12) * 2.6) };
-  const labelStyle = { color: '#64748b', fontSize: '0.53rem', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.04em', lineHeight: 1.1 };
+  const labelStyle = { color: '#64748b', fontSize: '0.53rem', fontWeight: '900', textTransform: 'none', letterSpacing: '0.04em', lineHeight: 1.1 };
   const valueStyle = { color: '#0f172a', fontSize: '0.86rem', fontWeight: '900', lineHeight: 1.1, overflowWrap: 'anywhere' };
 
   return <>
@@ -156,7 +156,7 @@ function SchoolCardFront({ cardData, currentUnion, getMsdLogo, customLogo = null
       <div className="school-card-government">
         <SenegalFlagSvg style={{ width: '28px', height: '18px', marginBottom: '2px' }} />
         <strong>République du Sénégal</strong>
-        <strong>Ministère de l'Éducation nationale</strong>
+        <strong>Ministère de l'éducation nationale</strong>
         <b>{cardData.unionName}</b>
       </div>
       <img src="/sencsu_logo.png" alt="SEN-CSU" className="school-card-brand" onError={(e) => { e.currentTarget.src = '/logo_csu_official.png'; }} />
@@ -171,7 +171,7 @@ function SchoolCardFront({ cardData, currentUnion, getMsdLogo, customLogo = null
       <div className="school-card-details">
         <div><span style={labelStyle}>Prénom(s)</span><strong style={valueStyle}>{cardData.firstName}</strong></div>
         <div><span style={labelStyle}>Nom</span><strong style={valueStyle}>{cardData.lastName}</strong></div>
-        <div className="school-card-wide"><span style={labelStyle}>🎂 Né(e) le & Lieu • Sexe</span><strong style={valueStyle}>{cardData.birthDate} à {cardData.birthPlace} • {cardData.gender === 'F' ? 'Féminin' : 'Masculin'}</strong></div>
+        <div className="school-card-wide"><span style={labelStyle}>🎂 Né(e) le & lieu • Sexe</span><strong style={valueStyle}>{cardData.birthDate} à {cardData.birthPlace} • {cardData.gender === 'F' ? 'Féminin' : 'Masculin'}</strong></div>
         <div className="school-card-wide"><span style={labelStyle}>{program.idLabel}</span><strong style={valueStyle}>{idValue}</strong></div>
         <div className="school-card-wide"><span style={labelStyle}>{program.schoolWord}</span><strong style={valueStyle}>{cardData.academicData.schoolName || cardData.mutuelleOrigine}</strong></div>
         {/* IA / IEF : uniquement pour les élèves de l'école publique.
@@ -187,7 +187,7 @@ function SchoolCardFront({ cardData, currentUnion, getMsdLogo, customLogo = null
             exigent un jeton que <img> ne peut pas envoyer — elles
             s'affichaient toutes cassées. Ce composant télécharge avec
             l'en-tête Authorization puis rend une URL locale. */}
-        {cardData.photoUrl ? <SecurePhoto photoUrl={cardData.photoUrl} serverId={cardData.serverId || cardData.cmuNumber} alt={cardData.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span>Photo<br />à importer</span>}
+        {cardData.photoUrl ? <SecurePhoto photoUrl={cardData.photoUrl} serverId={cardData.serverId || cardData.cmuNumber} alt={cardData.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span>Photo<br />À importer</span>}
       </div>
     </div>
     <div className="school-card-footer"><span>{program.frontFooter}</span><span>DÉLIVRÉE PAR LA MSD DE {currentUnion.region.toUpperCase()}</span></div>
@@ -211,7 +211,7 @@ function SchoolCardBack({ cardData, qrCodeDataUrl, customLogo = null }) {
     </div>
     <div className="school-card-header school-card-back-header">
       <img src="/logo_unamusc.png" alt="UNAMUSC" className="school-card-brand" />
-      <div className="school-card-government"><SenegalFlagSvg style={{ width: '28px', height: '18px', marginBottom: '2px' }} /><strong>Couverture Sanitaire Universelle</strong><b>{program.backBanner}</b></div>
+      <div className="school-card-government"><SenegalFlagSvg style={{ width: '28px', height: '18px', marginBottom: '2px' }} /><strong>Couverture sanitaire universelle</strong><b>{program.backBanner}</b></div>
       <img src="/sencsu_logo.png" alt="SEN-CSU" className="school-card-brand" onError={(e) => { e.currentTarget.src = '/logo_csu_official.png'; }} />
     </div>
     <div className="school-card-tricolor" />
@@ -261,7 +261,7 @@ function StudioOverviewPanel() {
           <span style={{ fontSize: '1.35rem' }}><ProIcon name="map" /></span>
           <span>
             <span className="fw-extrabold d-block" style={{ fontSize: '1.02rem', color: 'var(--text-main)' }}>
-              Vue générale — production des cartes par région, département et MSD
+              Vue générale — Production des cartes par région, département et MSD
             </span>
             <span className="text-sub d-block" style={{ fontSize: '0.8rem' }}>
               Adhésions de masse, cartes imprimées et revenus Sen-E-Carte (350 F/carte imprimée)
@@ -2580,14 +2580,14 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                 <ProIcon name="crown" /> Restreint super admin
               </span>
               <span className="badge fw-extrabold px-3.5 py-2" style={{ borderRadius: '20px', fontSize: '0.82rem', backgroundColor: '#0369a1', color: '#e0f2fe', border: '1px solid #38bdf8' }}>
-                <ProIcon name="printer" /> Calibré PVC Epson L8050
+                <ProIcon name="printer" /> Calibré pvc epson l8050
               </span>
             </div>
             <h2 style={{ fontSize: '2.2rem', color: '#fff', marginBottom: '0.5rem', fontWeight: '900', textShadow: '0 3px 6px rgba(0,0,0,0.5)', letterSpacing: '-0.02em' }}>
               Conception des cartes UNAMUSC (format CNI 85.6mm × 53.98mm)
             </h2>
             <p style={{ color: 'rgba(255,255,255,0.92)', fontSize: '1rem', maxWidth: '880px', lineHeight: '1.55', textShadow: '0 1px 3px rgba(0,0,0,0.4)', marginBottom: 0 }}>
-              Design épuré et lisse sans aucun trait parasite. QR code 100% centré au verso et entièrement scannable via Wi-Fi ou HTTPS officiel.
+              Design épuré et lisse sans aucun trait parasite. QR code 100% centré au verso et entièrement scannable via wi-fi ou HTTPS officiel.
             </p>
           </div>
 
@@ -2676,10 +2676,10 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
               <span><ProIcon name="download" /></span> 0. Import en masse — création de cartes à partir d'un fichier Excel
             </h5>
             <p className="text-sub small mb-0" style={{ fontSize: '0.88rem' }}>
-              Chargez le fichier MSD Dakar (ex : <strong>MSD de Grand Yoff.xlsx</strong>) puis le dossier de photos.
-              Les photos sont appariées automatiquement par <strong>nom, code du fichier ou téléphone</strong>.
-              Les colonnes <strong>NUMERO_ADHERENT</strong> et <strong>CODE_BENEFICIAIRE</strong> ne sont pas reprises comme matricule :
-              chaque assuré reçoit un <strong>code unique généré par le système</strong> (aucun doublon possible).
+              Chargez le fichier MSD Dakar (ex : <strong>MSD de grand Yoff.xlsx</strong>) puis le dossier de photos.
+              Les photos sont appariées automatiquement par <strong>Nom, code du fichier ou téléphone</strong>.
+              Les colonnes <strong>Numero_adherent</strong> et <strong>CODE_BENEFICIAIRE</strong> ne sont pas reprises comme matricule :
+              chaque assuré reçoit un <strong>Code unique généré par le système</strong> (aucun doublon possible).
               Les personnes partageant une même base de code dans le fichier sont regroupées : le chef reçoit ses ayants droit.
             </p>
           </div>
@@ -2721,7 +2721,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
               disabled={bulkImporting}
               onClick={() => { if (photosInputRef.current) photosInputRef.current.click(); }}
             >
-              <ProIcon name="archive" /> 1️⃣ Dossier de photos…
+              <ProIcon name="archive" /> 1️⃣ dossier de photos…
             </button>
             <button
               type="button"
@@ -2848,8 +2848,8 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   }}
                   style={{ maxWidth: '420px', fontWeight: '700' }}
                 >
-                  <option value="SYSTEM">Système — générer les matricules (lot non imprimé)</option>
-                  <option value="FILE">Fichier — conserver les codes du classeur (lot déjà imprimé)</option>
+                  <option value="SYSTEM">Système — Générer les matricules (lot non imprimé)</option>
+                  <option value="FILE">Fichier — Conserver les codes du classeur (lot déjà imprimé)</option>
                 </select>
                 <div style={{ fontSize: '0.78rem', color: 'var(--text-sub)', lineHeight: 1.45, marginTop: '6px' }}>
                   {importCodeStrategy === 'SYSTEM' ? (
@@ -3076,7 +3076,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                     <div className="d-flex align-items-center gap-2">
                       <span style={{ fontSize: '1.1rem' }}><ProIcon name="bar-chart" /></span>
                       <strong style={{ fontSize: '0.95rem', color: 'var(--text-main)' }}>
-                        Centre de contrôle — enrôlements de masse par MSD
+                        Centre de contrôle — Enrôlements de masse par MSD
                       </strong>
                     </div>
                     {(() => {
@@ -3194,7 +3194,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                                       onClick={() => setRemiseTarget({ code: l.code })}
                                       title={`Marquer ${conformes} carte(s) conforme(s) comme remise(s) à la MSD ${s ? s.msd : 'DKR'} — gain : ${fmtFcfa(gain)}`}
                                     >
-                                      💸 Remise MSD
+                                      💸 remise MSD
                                     </button>
                                   )}
                                   <button
@@ -3293,7 +3293,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
               </button>
               {lotFilter === 'ALL' && memberOptions.length > 0 && (
                 <small className="d-block mt-1" style={{ fontSize: '0.72rem', color: '#b91c1c', fontWeight: '700' }}>
-                  <ProIcon name="alert-triangle" color="#d97706" /> Voulez-vous retirer les cartes DÉJÀ IMPRIMÉES ? Choisissez d’abord leur lot dans la liste ci-dessus.
+                  <ProIcon name="alert-triangle" color="#d97706" /> Voulez-vous retirer les cartes déjà imprimées ? Choisissez d’abord leur lot dans la liste ci-dessus.
                 </small>
               )}
 
@@ -3391,7 +3391,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                       <ProIcon name="check-circle" color="#059669" /> Tout cocher ({multiFiltered.length})
                     </button>
                     <button type="button" className="btn btn-sm fw-bold" onClick={() => setCheckedIds(new Set())}>
-                      ⬜ Tout décocher
+                      ⬜ tout décocher
                     </button>
                     <span className="align-self-center fw-extrabold" style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>
                       {checkedIds.size} sélectionnée(s)
@@ -3480,7 +3480,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   }}
                   onClick={() => setQrTargetMode('WIFI_IP')}
                 >
-                  📶 IP Wi-Fi PC (192.168.x.x)
+                  📶 ip wi-fi pc (192.168.x.x)
                 </button>
 
                 <button
@@ -3503,7 +3503,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
               {qrTargetMode === 'HTTPS' && (
                 <div className="mt-3.5 pt-1">
                   <label className="form-label text-sub fw-bold mb-2.5 d-block" style={{ fontSize: '0.82rem' }}>
-                    <ProIcon name="globe" /> URL Publique / Tunnel / En Ligne (Accessible depuis TOUT Wi-Fi & 4G/5G) :
+                    <ProIcon name="globe" /> URL publique / Tunnel / En ligne (accessible depuis tout wi-fi & 4G/5G) :
                   </label>
                   <div className="d-flex gap-2.5 mb-2 flex-wrap">
                     <input
@@ -3519,7 +3519,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                     />
                   </div>
                   <small className="text-muted d-block mt-1" style={{ fontSize: '0.76rem' }}>
-                    <ProIcon name="rocket" /> <strong>Accès Universel</strong> : Ce mode encode une URL accessible depuis <strong>n'importe quel smartphone, sur n'importe quel réseau Wi-Fi ou connexion mobile 4G/5G</strong> dans le monde !
+                    <ProIcon name="rocket" /> <strong>Accès universel</strong> : Ce mode encode une URL accessible depuis <strong>N'importe quel smartphone, sur n'importe quel réseau wi-fi ou connexion mobile 4G/5G</strong> dans le monde !
                   </small>
                 </div>
               )}
@@ -3557,23 +3557,23 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                         });
                       }}
                     >
-                      <ProIcon name="zap" /> Actualiser IP
+                      <ProIcon name="zap" /> Actualiser ip
                     </button>
                   </div>
                   <small className="text-muted d-block mt-1" style={{ fontSize: '0.76rem' }}>
                     {isValidLanIp(customWifiIp) ? (
                       <>💡 Votre smartphone ouvrira directement <code>http://{customWifiIp}:{typeof window !== 'undefined' && window.location.port ? window.location.port : '5173'}/#/verify/{cardData.cmuNumber}</code> lorsqu'il est connecté au même réseau Wi-Fi !</>
                     ) : (
-                      <>⚠️ Aucune IP Wi-Fi exploitable détectée : le QR encodera l'adresse courante du PC, qui <strong>ne sera pas joignable depuis un téléphone</strong>. Vérifiez que le backend est démarré, cliquez sur « ⚡ Actualiser IP », ou saisissez l'IP manuellement (tapez <code>ipconfig</code> sur le PC).</>
+                      <>⚠️ Aucune IP Wi-Fi exploitable détectée : le QR encodera l'adresse courante du PC, qui <strong>Ne sera pas joignable depuis un téléphone</strong>. Vérifiez que le backend est démarré, cliquez sur « ⚡ Actualiser IP », ou saisissez l'IP manuellement (tapez <code>ipconfig</code> sur le PC).</>
                     )}
                   </small>
                 </div>
               )}
 
               <div className="alert alert-warning p-3.5 mt-3.5 mb-0 rounded-4 border-0" style={{ fontSize: '0.82rem', background: 'rgba(245, 158, 11, 0.15)', color: '#d97706', lineHeight: '1.55' }}>
-                <strong><ProIcon name="lightbulb" /> Pour scanner sur Wi-Fi local :</strong>
+                <strong><ProIcon name="lightbulb" /> Pour scanner sur wi-fi local :</strong>
                 <div className="mt-1">
-                  Vérifiez que votre PC et votre smartphone sont sur le même réseau Wi-Fi avec l'IP <strong>{isValidLanIp(customWifiIp) ? customWifiIp : 'non détectée'}</strong>. Pour scanner depuis <strong>n'importe quel réseau Wi-Fi ou en 4G/5G</strong>, utilisez le mode <strong><ProIcon name="globe" /> URL web / Tunnel</strong> ci-dessus !
+                  Vérifiez que votre PC et votre smartphone sont sur le même réseau Wi-Fi avec l'IP <strong>{isValidLanIp(customWifiIp) ? customWifiIp : 'non détectée'}</strong>. Pour scanner depuis <strong>N'importe quel réseau wi-fi ou en 4G/5G</strong>, utilisez le mode <strong><ProIcon name="globe" /> URL web / Tunnel</strong> ci-dessus !
                 </div>
               </div>
             </div>
@@ -3813,14 +3813,14 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   onChange={(e) => handleEditChange('bloodGroup', e.target.value)}
                 >
                   <option value="">— Non renseigné (à remplir par un soignant) —</option>
-                  <option value="O+">O Rh+ (O+)</option>
-                  <option value="O-">O Rh- (O-)</option>
-                  <option value="A+">A Rh+ (A+)</option>
-                  <option value="A-">A Rh- (A-)</option>
-                  <option value="B+">B Rh+ (B+)</option>
-                  <option value="B-">B Rh- (B-)</option>
-                  <option value="AB+">AB Rh+ (AB+)</option>
-                  <option value="AB-">AB Rh- (AB-)</option>
+                  <option value="O+">O rh+ (o+)</option>
+                  <option value="O-">O rh- (o-)</option>
+                  <option value="A+">A rh+ (a+)</option>
+                  <option value="A-">A rh- (a-)</option>
+                  <option value="B+">B rh+ (b+)</option>
+                  <option value="B-">B rh- (b-)</option>
+                  <option value="AB+">Ab rh+ (ab+)</option>
+                  <option value="AB-">Ab rh- (ab-)</option>
                 </select>
               </div>
 
@@ -3860,7 +3860,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
         </div>
         {cardProgram !== 'CLASSIC' && <div className="studio-form-grid-3 mb-0">
           <div className="studio-form-group"><label>Année scolaire *</label><input className="form-control fw-bold" value={academicData.academicYear} onChange={(e) => updateAcademicData({ academicYear: e.target.value })} placeholder="2026-2027" /></div>
-          <div className="studio-form-group"><label>Classe / niveau *</label><input className="form-control fw-bold" value={academicData.classLevel} onChange={(e) => updateAcademicData({ classLevel: e.target.value })} placeholder={cardProgram === 'CMU_DAARA' ? 'Niveau 2 (Coran)' : '3ème'} /></div>
+          <div className="studio-form-group"><label>Classe / Niveau *</label><input className="form-control fw-bold" value={academicData.classLevel} onChange={(e) => updateAcademicData({ classLevel: e.target.value })} placeholder={cardProgram === 'CMU_DAARA' ? 'Niveau 2 (Coran)' : '3ème'} /></div>
           <div className="studio-form-group"><label>{cardProgram === 'CMU_DAARA' ? 'Daara' : 'Établissement'} *</label><input className="form-control fw-bold" value={academicData.schoolName} onChange={(e) => updateAcademicData({ schoolName: e.target.value })} placeholder={cardProgram === 'CMU_DAARA' ? 'Daara Serigne...' : 'Lycée / école...'} /></div>
           {/* N° INE / IEN : identifiant scolaire imprimé au recto (il peut différer
               du code bénéficiaire CMU porté au verso, ex. SN-INE-2025-009341). */}
@@ -4144,7 +4144,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                         }}
                         onClick={() => handleUpdateChildField(cIdx, 'gender', 'F')}
                       >
-                        👧 Fille
+                        👧 fille
                       </button>
                       <button 
                         type="button" 
@@ -4160,7 +4160,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                         }}
                         onClick={() => handleUpdateChildField(cIdx, 'gender', 'M')}
                       >
-                        👦 Garçon
+                        👦 garçon
                       </button>
                     </div>
                   </div>
@@ -4174,14 +4174,14 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                       onChange={(e) => handleUpdateChildField(cIdx, 'bloodGroup', e.target.value)}
                     >
                       <option value="">— Non renseigné —</option>
-                      <option value="O+">O Rh+ (O+)</option>
-                      <option value="O-">O Rh- (O-)</option>
-                      <option value="A+">A Rh+ (A+)</option>
-                      <option value="A-">A Rh- (A-)</option>
-                      <option value="B+">B Rh+ (B+)</option>
-                      <option value="B-">B Rh- (B-)</option>
-                      <option value="AB+">AB Rh+ (AB+)</option>
-                      <option value="AB-">AB Rh- (AB-)</option>
+                      <option value="O+">O rh+ (o+)</option>
+                      <option value="O-">O rh- (o-)</option>
+                      <option value="A+">A rh+ (a+)</option>
+                      <option value="A-">A rh- (a-)</option>
+                      <option value="B+">B rh+ (b+)</option>
+                      <option value="B-">B rh- (b-)</option>
+                      <option value="AB+">Ab rh+ (ab+)</option>
+                      <option value="AB-">Ab rh- (ab-)</option>
                     </select>
                   </div>
 
@@ -4199,7 +4199,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
 
                   {/* Statut Vaccinal PEV */}
                   <div className="studio-form-group">
-                    <label><ProIcon name="syringe" /> PEV / carnet vaccinal :</label>
+                    <label><ProIcon name="syringe" /> PEV / Carnet vaccinal :</label>
                     <input 
                       type="text" 
                       className="form-control fw-bold" 
@@ -4268,7 +4268,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
         <div className="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
           <div>
             <h4 className="fw-extrabold mb-1 text-success" style={{ fontSize: '1.4rem' }}>
-              Aperçu numérique HD — Format CNI standard (85.6mm × 53.98mm)
+              Aperçu numérique hd — Format CNI standard (85.6mm × 53.98mm)
             </h4>
             <small style={{ color: 'var(--text-sub)', fontSize: '0.9rem' }}>
               Carte imprimable pour l'Union : <strong className="text-emerald">{cardData.unionName}</strong> • Bénéficiaire : <strong>{cardData.fullName}</strong>
@@ -4277,7 +4277,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
 
           <div className="d-flex align-items-center gap-2.5 flex-wrap">
             <span className="badge bg-success-subtle text-success border border-success px-3 py-2 fw-bold" style={{ borderRadius: '12px', fontSize: '0.82rem' }}>
-              🛈 Format CNI 85.6 × 53.98mm
+              🛈 format CNI 85.6 × 53.98mm
             </span>
             
             {/* Télécharger PNG Recto & Verso */}
@@ -4289,7 +4289,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
               disabled={isGeneratingPdf}
               title="Télécharger les fichiers PNG 600 DPI pour le bac d'impression PVC Epson L8050"
             >
-              <ProIcon name="image" /> PNG Recto/Verso (600 DPI)
+              <ProIcon name="image" /> PNG Recto/Verso (600 dpi)
             </button>
 
             {/* Télécharger PDF 2 Pages */}
@@ -4321,7 +4321,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
           {/* RECTO (PAGE 1 DU PDF) — PHOTO À DROITE, ÉPURÉ SANS AUCUN TRAIT NI ENCADRÉ PARASITE */}
           <div className="d-flex flex-column align-items-center w-100">
             <div className="d-flex align-items-center justify-content-between w-100 mb-3 px-2 flex-wrap gap-2" style={{ maxWidth: '520px' }}>
-              <h6 className="fw-extrabold text-sub mb-0" style={{ fontSize: '0.95rem' }}><ProIcon name="file-text" /> Recto (page 1 du PDF / Face PVC)</h6>
+              <h6 className="fw-extrabold text-sub mb-0" style={{ fontSize: '0.95rem' }}><ProIcon name="file-text" /> Recto (page 1 du PDF / Face pvc)</h6>
               <div className="d-flex gap-2">
                 <button
                   type="button"
@@ -4331,7 +4331,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   disabled={isGeneratingPdf}
                   title="Télécharger le Recto en PNG Ultra HD 600 DPI"
                 >
-                  <ProIcon name="image" /> PNG Recto (600 DPI)
+                  <ProIcon name="image" /> PNG recto (600 dpi)
                 </button>
                 <button
                   type="button"
@@ -4341,7 +4341,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   disabled={isGeneratingPdf}
                   title="Télécharger le Recto seul en PDF 1 page CNI"
                 >
-                  <ProIcon name="file-text" /> PDF Recto
+                  <ProIcon name="file-text" /> PDF recto
                 </button>
               </div>
             </div>
@@ -4407,10 +4407,10 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                 {/* Bloc CENTRE : Drapeau du Sénégal au-dessus + Texte République du Sénégal juste en-dessous */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', flex: 1, padding: '0 8px', minWidth: 0 }}>
                   <SenegalFlagSvg style={{ height: '14px', width: '22px', marginBottom: '2px', flexShrink: 0 }} />
-                  <div style={{ fontSize: '0.48rem', fontWeight: '900', letterSpacing: '0.04em', color: '#064e3b', textTransform: 'uppercase', lineHeight: 1 }}>
+                  <div style={{ fontSize: '0.48rem', fontWeight: '900', letterSpacing: '0.04em', color: '#064e3b', textTransform: 'none', lineHeight: 1 }}>
                     République du Sénégal
                   </div>
-                  <div style={{ fontSize: '0.74rem', fontWeight: '900', color: '#047857', letterSpacing: '-0.01em', textTransform: 'uppercase', lineHeight: 1.1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }}>
+                  <div style={{ fontSize: '0.74rem', fontWeight: '900', color: '#047857', letterSpacing: '-0.01em', textTransform: 'none', lineHeight: 1.1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }}>
                     {cardData.unionName}
                   </div>
                 </div>
@@ -4451,8 +4451,8 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                     {cardData.cmuNumber}
                   </span>
                 </div>
-                <div style={{ fontSize: '0.58rem', color: '#047857', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>
-                  CARTE NATIONALE CSU
+                <div style={{ fontSize: '0.58rem', color: '#047857', fontWeight: '900', textTransform: 'none', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>
+                  Carte nationale CSU
                 </div>
               </div>
 
@@ -4465,14 +4465,14 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   {/* Prénom & Nom */}
                   <div style={{ display: 'flex', gap: '16px', marginBottom: '4px' }}>
                     <div>
-                      <span style={{ fontSize: '0.48rem', color: '#64748b', fontWeight: '800', display: 'block', lineHeight: 1, textTransform: 'uppercase' }}>Prénom(s)</span>
-                      <strong style={{ fontSize: '0.88rem', fontWeight: '900', color: '#0f172a', textTransform: 'uppercase', lineHeight: 1.15 }}>
+                      <span style={{ fontSize: '0.48rem', color: '#64748b', fontWeight: '800', display: 'block', lineHeight: 1, textTransform: 'none' }}>Prénom(s)</span>
+                      <strong style={{ fontSize: '0.88rem', fontWeight: '900', color: '#0f172a', textTransform: 'none', lineHeight: 1.15 }}>
                         {cardData.firstName}
                       </strong>
                     </div>
                     <div>
-                      <span style={{ fontSize: '0.48rem', color: '#64748b', fontWeight: '800', display: 'block', lineHeight: 1, textTransform: 'uppercase' }}>Nom</span>
-                      <strong style={{ fontSize: '0.88rem', fontWeight: '900', color: '#0f172a', textTransform: 'uppercase', lineHeight: 1.15 }}>
+                      <span style={{ fontSize: '0.48rem', color: '#64748b', fontWeight: '800', display: 'block', lineHeight: 1, textTransform: 'none' }}>Nom</span>
+                      <strong style={{ fontSize: '0.88rem', fontWeight: '900', color: '#0f172a', textTransform: 'none', lineHeight: 1.15 }}>
                         {cardData.lastName}
                       </strong>
                     </div>
@@ -4480,7 +4480,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
 
                   {/* Date & Lieu de Naissance */}
                   <div style={{ marginBottom: '4px' }}>
-                    <span style={{ fontSize: '0.48rem', color: '#047857', fontWeight: '900', display: 'block', textTransform: 'uppercase', lineHeight: 1 }}><ProIcon name="calendar" /> Né(e) le & Lieu de naissance</span>
+                    <span style={{ fontSize: '0.48rem', color: '#047857', fontWeight: '900', display: 'block', textTransform: 'none', lineHeight: 1 }}><ProIcon name="calendar" /> Né(e) le & lieu de naissance</span>
                     <strong style={{ fontSize: '0.80rem', fontWeight: '900', color: '#064e3b', lineHeight: 1.15, display: 'block', marginTop: '1px' }}>
                       {cardData.birthDate} {cardData.birthPlace ? `à ${cardData.birthPlace}` : ''}
                     </strong>
@@ -4488,7 +4488,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
 
                   {/* Adresse */}
                   <div style={{ marginBottom: '4px' }}>
-                    <span style={{ fontSize: '0.48rem', color: '#64748b', fontWeight: '800', display: 'block', lineHeight: 1, textTransform: 'uppercase' }}>Adresse</span>
+                    <span style={{ fontSize: '0.48rem', color: '#64748b', fontWeight: '800', display: 'block', lineHeight: 1, textTransform: 'none' }}>Adresse</span>
                     <strong style={{ fontSize: '0.72rem', fontWeight: '800', color: '#334155', lineHeight: 1.15, display: 'block' }}>
                       {cardData.address}
                     </strong>
@@ -4496,7 +4496,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
 
                   {/* Mutuelle d'origine */}
                   <div style={{ marginBottom: '4px' }}>
-                    <span style={{ fontSize: '0.48rem', color: '#64748b', fontWeight: '800', display: 'block', lineHeight: 1, textTransform: 'uppercase' }}>Mutuelle d'origine</span>
+                    <span style={{ fontSize: '0.48rem', color: '#64748b', fontWeight: '800', display: 'block', lineHeight: 1, textTransform: 'none' }}>Mutuelle d'origine</span>
                     <strong style={{ fontSize: '0.72rem', fontWeight: '800', color: '#047857', lineHeight: 1.15, display: 'block' }}>
                       {cardData.mutuelleOrigine}
                     </strong>
@@ -4504,7 +4504,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
 
                   {!cardData.isPrincipal && (
                     <div style={{ marginBottom: '4px' }}>
-                      <span style={{ fontSize: '0.48rem', color: '#64748b', fontWeight: '800', display: 'block', lineHeight: 1, textTransform: 'uppercase' }}>Adhérent garant</span>
+                      <span style={{ fontSize: '0.48rem', color: '#64748b', fontWeight: '800', display: 'block', lineHeight: 1, textTransform: 'none' }}>Adhérent garant</span>
                       <strong style={{ fontSize: '0.72rem', fontWeight: '800', color: '#0284c7', lineHeight: 1.15, display: 'block' }}>
                         {cardData.sponsorName}
                       </strong>
@@ -4513,7 +4513,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
 
                   {/* Téléphone — formaté + 100% visible et dégagé au-dessus du pied de carte */}
                   <div style={{ marginBottom: '2px' }}>
-                    <span style={{ fontSize: '0.48rem', color: '#64748b', fontWeight: '800', display: 'block', lineHeight: 1, textTransform: 'uppercase' }}>Téléphone</span>
+                    <span style={{ fontSize: '0.48rem', color: '#64748b', fontWeight: '800', display: 'block', lineHeight: 1, textTransform: 'none' }}>Téléphone</span>
                     <strong style={{ fontSize: '0.74rem', fontWeight: '800', color: '#0f172a', display: 'block', lineHeight: 1.2, wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
                       {formatPhoneCard(cardData.phone)}
                     </strong>
@@ -4534,8 +4534,8 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                     ) : (
                       <div style={{ width: '100%', height: '100%', background: 'linear-gradient(145deg, #f8fafc 0%, #e2e8f0 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#475569', textAlign: 'center', padding: '4px' }}>
                         <span style={{ fontSize: '2.4rem', lineHeight: 1, marginBottom: '4px' }}><ProIcon name="user" /></span>
-                        <span style={{ fontSize: '0.45rem', fontWeight: '800', textTransform: 'uppercase', color: '#0f172a', letterSpacing: '0.02em' }}>PHOTO EN ATTENTE</span>
-                        <span style={{ fontSize: '0.38rem', fontWeight: '700', color: '#059669', marginTop: '2px' }}>UNAMUSC SÉNÉGAL</span>
+                        <span style={{ fontSize: '0.45rem', fontWeight: '800', textTransform: 'none', color: '#0f172a', letterSpacing: '0.02em' }}>Photo en attente</span>
+                        <span style={{ fontSize: '0.38rem', fontWeight: '700', color: '#059669', marginTop: '2px' }}>UNAMUSC Sénégal</span>
                       </div>
                     )}
                   </div>
@@ -4548,7 +4548,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   jamais se superposer aux textes du pied, quelle que soit la carte. */}
               <div style={{ position: 'absolute', bottom: '8px', left: '16px', right: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', paddingTop: '5px', borderTop: '1px dashed #cbd5e1', background: '#ffffff', zIndex: 6 }}>
                 <div style={{ fontSize: '0.50rem', color: '#000000', fontWeight: '800', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flexShrink: 1 }}>
-                  UNAMUSC SENEGAL - CARTE NATIONALE D’ASSURANCE SANTÉ
+                  UNAMUSC senegal - carte nationale D’ASSURANCE santé
                 </div>
                 <div style={{ fontSize: '0.48rem', color: '#64748b', fontWeight: '700', whiteSpace: 'nowrap', flexShrink: 0 }}>
                   {`DÉLIVRÉE PAR LE MSD DE ${currentUnion.region.toUpperCase()}`}
@@ -4562,7 +4562,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
           {/* VERSO (PAGE 2 DU PDF) — DESIGN ÉPURÉ LISSE SANS ROCNAGE NI DÉBORDEMENT */}
           <div className="d-flex flex-column align-items-center w-100">
             <div className="d-flex align-items-center justify-content-between w-100 mb-3 px-2 flex-wrap gap-2" style={{ maxWidth: '520px' }}>
-              <h6 className="fw-extrabold text-sub mb-0" style={{ fontSize: '0.95rem' }}><ProIcon name="file-text" /> Verso (page 2 du PDF / Face PVC)</h6>
+              <h6 className="fw-extrabold text-sub mb-0" style={{ fontSize: '0.95rem' }}><ProIcon name="file-text" /> Verso (page 2 du PDF / Face pvc)</h6>
               <div className="d-flex gap-2">
                 <button
                   type="button"
@@ -4572,7 +4572,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   disabled={isGeneratingPdf}
                   title="Télécharger le Verso en PNG Ultra HD 600 DPI"
                 >
-                  <ProIcon name="image" /> PNG Verso (600 DPI)
+                  <ProIcon name="image" /> PNG verso (600 dpi)
                 </button>
                 <button
                   type="button"
@@ -4582,7 +4582,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   disabled={isGeneratingPdf}
                   title="Télécharger le Verso seul en PDF 1 page CNI"
                 >
-                  <ProIcon name="file-text" /> PDF Verso
+                  <ProIcon name="file-text" /> PDF verso
                 </button>
               </div>
             </div>
@@ -4624,11 +4624,11 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                 {/* Bloc CENTRE : Drapeau du Sénégal au-dessus + Texte Couverture Sanitaire Universelle */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', flex: 1, padding: '0 8px', minWidth: 0 }}>
                   <SenegalFlagSvg style={{ height: '14px', width: '22px', marginBottom: '2px', flexShrink: 0 }} />
-                  <div style={{ fontSize: '0.62rem', fontWeight: '900', color: '#064e3b', textTransform: 'uppercase', letterSpacing: '0.02em', lineHeight: 1.1 }}>
-                    Couverture Sanitaire Universelle
+                  <div style={{ fontSize: '0.62rem', fontWeight: '900', color: '#064e3b', textTransform: 'none', letterSpacing: '0.02em', lineHeight: 1.1 }}>
+                    Couverture sanitaire universelle
                   </div>
                   <div style={{ fontSize: '0.58rem', fontWeight: '900', color: '#059669', lineHeight: 1.1, whiteSpace: 'nowrap', letterSpacing: '0.02em' }}>
-                    UNAMUSC • CARTE NUMÉRIQUE SÉCURISÉE
+                    UNAMUSC • Carte numérique sécurisée
                   </div>
                 </div>
 
@@ -4671,7 +4671,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                 <div style={{ width: '100%', background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: '9px', padding: '6px 10px', boxSizing: 'border-box', textAlign: 'left', boxShadow: '0 2px 6px rgba(0,0,0,0.03)' }}>
                   
                   {/* Titre du Coupon de Garantie */}
-                  <div style={{ fontSize: '0.54rem', color: '#047857', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
+                  <div style={{ fontSize: '0.54rem', color: '#047857', fontWeight: '900', textTransform: 'none', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
                     <span><ProIcon name="scroll-text" /></span> COUPON DE GARANTIE
                   </div>
 
@@ -4811,7 +4811,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                 </div>
                 <div className="modal-body p-4">
                   <p style={{ fontSize: '0.9rem', color: 'var(--text-sub)' }}>
-                    Ce QR code pointe directement vers l'URL HTTPS universelle scannable du membre (identique au QR code de la page Mon compte) :
+                    Ce QR code pointe directement vers l'URL HTTPS universelle scannable du membre (identique au QR code de la page mon compte) :
                   </p>
 
                   <div className="row g-3 mb-3">
@@ -4820,7 +4820,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                         <div><strong>URL encodée :</strong> <code className="text-emerald">{qrCodePayload.verifyUrl}</code></div>
                         <div><strong>Code CSU :</strong> <code>{qrCodePayload.cmuNumber}</code></div>
                         <div><strong>Bénéficiaire :</strong> {qrCodePayload.fullName}</div>
-                        <div><strong>Né(e) le / à :</strong> {qrCodePayload.birthDate}{qrCodePayload.birthPlace ? ` à ${qrCodePayload.birthPlace}` : ''}</div>
+                        <div><strong>Né(e) le / À :</strong> {qrCodePayload.birthDate}{qrCodePayload.birthPlace ? ` à ${qrCodePayload.birthPlace}` : ''}</div>
                         <div><strong>Union départementale :</strong> {qrCodePayload.unionDepartementale}</div>
                         <div><strong>Mutuelle origine :</strong> {qrCodePayload.mutuelleOrigine}</div>
                         <div><strong>Groupe sanguin :</strong> <span className="badge bg-danger">{qrCodePayload.bloodGroup}</span></div>
@@ -4839,7 +4839,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   </div>
 
                   <div className="mb-3">
-                    <label className="form-label fw-bold text-sub" style={{ fontSize: '0.8rem' }}>Payload JSON brut encodé sur la plateforme :</label>
+                    <label className="form-label fw-bold text-sub" style={{ fontSize: '0.8rem' }}>Payload json brut encodé sur la plateforme :</label>
                     <pre className="p-3 rounded-3 fw-mono" style={{ background: '#0f172a', color: '#10b981', fontSize: '0.78rem', maxHeight: '200px', overflowY: 'auto' }}>
                       {JSON.stringify(qrCodePayload, null, 2)}
                     </pre>

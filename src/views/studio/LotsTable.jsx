@@ -62,7 +62,7 @@ export default function LotsTable({ lotsData, lotsPage, lotsLoading, onPage, onP
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', fontSize: '0.8rem', color: '#475569' }}>
         <button type="button" disabled={!(lotsData.pagination?.hasPrev)} onClick={() => onPage(lotsPage - 1)}
           style={{ border: '1px solid #cbd5e1', borderRadius: '8px', padding: '0.3rem 0.8rem', background: '#fff' }}>
-          ◀ Précédent
+          ◀ précédent
         </button>
         <span>Page {lotsData.pagination?.page} / {lotsData.pagination?.totalPages}</span>
         <button type="button" disabled={!(lotsData.pagination?.hasNext)} onClick={() => onPage(lotsPage + 1)}

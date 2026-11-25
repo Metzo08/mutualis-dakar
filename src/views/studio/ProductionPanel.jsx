@@ -33,7 +33,7 @@ export default function ProductionPanel({ detail, onClose }) {
       ) : detail.error ? (
         <div style={{ fontSize: '0.82rem', color: '#991b1b', marginTop: '0.5rem' }}><ProIcon name="x-circle" color="#dc2626" /> {detail.error}</div>
       ) : (detail.events || []).length === 0 ? (
-        <div style={{ fontSize: '0.82rem', color: '#78350f', marginTop: '0.5rem' }}>Aucun événement — le lot n'a pas encore été remis.</div>
+        <div style={{ fontSize: '0.82rem', color: '#78350f', marginTop: '0.5rem' }}>Aucun événement — Le lot n'a pas encore été remis.</div>
       ) : (
         <>
           <div style={{ overflowX: 'auto', marginTop: '0.75rem' }}>

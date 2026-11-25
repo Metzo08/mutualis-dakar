@@ -1065,13 +1065,13 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
             }}>
               <div style={{ display: 'flex', gap: '2.5rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
                 <div>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'none', letterSpacing: '0.5px', display: 'block' }}>
                     {lang === 'fr' ? 'Distance' : 'Yaram bi'}
                   </span>
                   <div style={{ fontWeight: '800', fontSize: '1.3rem', color: 'var(--success)' }}>{routeInfo.distance}</div>
                 </div>
                 <div>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'none', letterSpacing: '0.5px', display: 'block' }}>
                     {lang === 'fr' ? 'Durée estimée' : 'Diir ak yëgël'}
                   </span>
                   <div style={{ fontWeight: '800', fontSize: '1.3rem', color: 'var(--success)' }}>{routeInfo.duration}</div>
@@ -1224,27 +1224,27 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>
               <div>
-                <strong style={{ fontSize: '0.85rem', color: 'var(--neutral-gray)', textTransform: 'uppercase', display: 'block' }}>{t.modalManager}</strong>
+                <strong style={{ fontSize: '0.85rem', color: 'var(--neutral-gray)', textTransform: 'none', display: 'block' }}>{t.modalManager}</strong>
                 <span style={{ fontWeight: '600', color: 'var(--neutral-dark)' }}>{selectedMutuelle.manager}</span>
               </div>
               
               <div>
-                <strong style={{ fontSize: '0.85rem', color: 'var(--neutral-gray)', textTransform: 'uppercase', display: 'block' }}>{t.modalContact}</strong>
+                <strong style={{ fontSize: '0.85rem', color: 'var(--neutral-gray)', textTransform: 'none', display: 'block' }}>{t.modalContact}</strong>
                 <span style={{ fontWeight: '600', color: 'var(--neutral-dark)' }}>{selectedMutuelle.phone}</span>
               </div>
 
               <div>
-                <strong style={{ fontSize: '0.85rem', color: 'var(--neutral-gray)', textTransform: 'uppercase', display: 'block' }}>{t.modalEmail}</strong>
+                <strong style={{ fontSize: '0.85rem', color: 'var(--neutral-gray)', textTransform: 'none', display: 'block' }}>{t.modalEmail}</strong>
                 <span style={{ fontWeight: '600', color: 'var(--neutral-dark)', fontFamily: 'monospace' }}>{selectedMutuelle.email}</span>
               </div>
 
               <div>
-                <strong style={{ fontSize: '0.85rem', color: 'var(--neutral-gray)', textTransform: 'uppercase', display: 'block' }}>{t.modalRates}</strong>
+                <strong style={{ fontSize: '0.85rem', color: 'var(--neutral-gray)', textTransform: 'none', display: 'block' }}>{t.modalRates}</strong>
                 <span style={{ fontWeight: '600', color: 'var(--secondary)' }}>{selectedMutuelle.rates}</span>
               </div>
 
               <div>
-                <strong style={{ fontSize: '0.85rem', color: 'var(--neutral-gray)', textTransform: 'uppercase', display: 'block' }}>{t.modalServices}</strong>
+                <strong style={{ fontSize: '0.85rem', color: 'var(--neutral-gray)', textTransform: 'none', display: 'block' }}>{t.modalServices}</strong>
                 <span style={{ fontSize: '0.9rem', color: 'var(--neutral-dark)' }}>{selectedMutuelle.services}</span>
               </div>
 
@@ -1252,7 +1252,7 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
                 <div className="info-box-landmark" style={{ padding: '0.85rem', display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginTop: '0.25rem', borderRadius: '10px' }}>
                   <span style={{ fontSize: '1.2rem' }}><ProIcon name="map-pin" /></span>
                   <div>
-                    <strong className="info-box-title" style={{ fontSize: '0.75rem', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px' }}>Point de repère</strong>
+                    <strong className="info-box-title" style={{ fontSize: '0.75rem', textTransform: 'none', display: 'block', letterSpacing: '0.5px' }}>Point de repère</strong>
                     <span className="info-box-text" style={{ fontSize: '0.85rem', fontWeight: '500' }}>{selectedMutuelle.landmark}</span>
                   </div>
                 </div>
@@ -1262,7 +1262,7 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
                 <div className="info-box-tips" style={{ padding: '0.85rem', display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginTop: '0.25rem', borderRadius: '10px' }}>
                   <span style={{ fontSize: '1.2rem' }}><ProIcon name="lightbulb" /></span>
                   <div>
-                    <strong className="info-box-title" style={{ fontSize: '0.75rem', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px' }}>Conseil aux assurés de la zone</strong>
+                    <strong className="info-box-title" style={{ fontSize: '0.75rem', textTransform: 'none', display: 'block', letterSpacing: '0.5px' }}>Conseil aux assurés de la zone</strong>
                     <span className="info-box-text" style={{ fontSize: '0.85rem', lineHeight: '1.4' }}>{selectedMutuelle.localInfo}</span>
                   </div>
                 </div>

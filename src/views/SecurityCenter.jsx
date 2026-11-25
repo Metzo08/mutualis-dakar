@@ -403,7 +403,7 @@ export default function SecurityCenter() { // props historiques conservées par 
                     <td>{p.statut}</td>
                     <td>{p.mfaDisponible ? '✅ canal e-mail configuré' : '❌ aucun canal'}</td>
                     <td>{p.derniereActivite ? formatDate(p.derniereActivite) : 'jamais'}</td>
-                    <td>{p.revueRecommandee ? <Chip style={SEVERITY.WARNING}>inactivité à revoir</Chip> : 'à jour'}</td>
+                    <td>{p.revueRecommandee ? <Chip style={SEVERITY.WARNING}>Inactivité à revoir</Chip> : 'à jour'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -455,7 +455,7 @@ export default function SecurityCenter() { // props historiques conservées par 
                 <div className="btn-group">
                   <button className="btn btn-sm btn-outline-secondary" disabled={!audit.pagination.hasPrev}
                     onClick={() => { const f = { ...auditFilters, page: auditFilters.page - 1 }; setAuditFilters(f); loadAudit(f); }}>
-                    ← Précédent
+                    ← précédent
                   </button>
                   <button className="btn btn-sm btn-outline-secondary" disabled={!audit.pagination.hasNext}
                     onClick={() => { const f = { ...auditFilters, page: auditFilters.page + 1 }; setAuditFilters(f); loadAudit(f); }}>

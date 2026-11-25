@@ -231,7 +231,7 @@ h1, h2, h3, h4, h5, h6 { line-height: 1.25; }
 .sidebar-logo-text span {
   font-size: 0.65rem;
   font-weight: 600;
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: 1px;
   color: var(--primary);
   margin-top: -2px;
@@ -1263,7 +1263,7 @@ small, .small {
 .table thead th, table thead th {
   font-size: 0.8rem !important;
   letter-spacing: 0.02em !important;
-  text-transform: uppercase;
+  text-transform: none;
 }
 
 /* 5. CHAMPS DE FORMULAIRES — confort de saisie uniforme */
@@ -1376,7 +1376,7 @@ div[class][style*="url"][style*="linear-gradient"] > *,
    définies dans les vues. */
 
 /* 14. CASSE UNIVERSELLE DES TEXTES — Règle : Première lettre en majuscule, reste en minuscule
-   Neutralise les text-transform: uppercase sur toute la plateforme (titres, boutons, badges, labels, formulaires) */
+   Neutralise les text-transform: none sur toute la plateforme (titres, boutons, badges, labels, formulaires) */
 h1, h2, h3, h4, h5, h6,
 .btn, button,
 .badge,
@@ -1393,7 +1393,7 @@ small[style*="uppercase"] {
 
 /* Exception : Seuls les identifiants techniques et sigles officiels conservent la casse majuscule (ex: CSU, IPP, DICOM, CNOM) */
 code, kbd, .font-monospace, .code-id, .cmu-number, .csu-code {
-  text-transform: uppercase !important;
+  text-transform: none !important;
 }
 
 /* ASSAINISSEMENT — suppression de l'override de `gap` sur les conteneurs
@@ -1811,7 +1811,7 @@ body.dark-theme .cni-physical-card-preview {
 
 .school-card-header { display: grid; grid-template-columns: 64px 1fr 64px; align-items: center; gap: 8px; min-height: 48px; }
 .school-card-brand { max-width: 58px; max-height: 44px; width: auto; height: auto; object-fit: contain; justify-self: center; }
-.school-card-government { display: flex; flex-direction: column; align-items: center; color: #065f46; font-size: .46rem; line-height: 1.05; text-align: center; text-transform: uppercase; min-width: 0; }
+.school-card-government { display: flex; flex-direction: column; align-items: center; color: #065f46; font-size: .46rem; line-height: 1.05; text-align: center; text-transform: none; min-width: 0; }
 .school-card-government strong, .school-card-government b { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .school-card-government b { color: #059669; font-size: .58rem; }
 .school-card-tricolor { height: 3px; margin: 3px 0 6px; border-radius: 99px; background: linear-gradient(90deg, #00853f 0%, #fdef42 50%, #e31b23 100%); }
@@ -2225,7 +2225,7 @@ form, .form-container, .card-form {
 .app-layout table thead th {
   font-size: 0.75rem !important;
   font-weight: 800 !important;
-  text-transform: uppercase !important;
+  text-transform: none !important;
   letter-spacing: 0.05em !important;
   color: var(--text-sub) !important;
   background: var(--bg-card-subtle) !important;

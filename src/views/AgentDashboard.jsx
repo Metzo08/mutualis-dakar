@@ -796,7 +796,7 @@ function SuperAdminDoctorManagement() {
             </div>
 
             <div className="mb-3.5">
-              <label className="form-label small fw-bold mb-2 d-block" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}>N° ordre des médecins (CNOM) *</label>
+              <label className="form-label small fw-bold mb-2 d-block" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}>N° ordre des médecins (cnom) *</label>
               <input type="text" className="form-control" style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.92rem', padding: '0.85rem 1.15rem' }} placeholder="ex: CNOM-SN-2026-8819" value={docCnom} onChange={(e) => setDocCnom(e.target.value)} required />
             </div>
 

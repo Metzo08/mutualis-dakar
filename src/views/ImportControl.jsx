@@ -297,7 +297,7 @@ export default function ImportControl() {
       <h1 className="h4 mb-1"><ProIcon name="download" /> Importation contrôlée des adhérents</h1>
       <p className="text-muted small mb-3">
         Aucun dossier n'entre dans le registre avant la prévisualisation et la validation explicite. Les photos sont
-        associées par le <strong>matricule</strong> présent dans le nom du fichier, jamais par le seul nom ou prénom.
+        associées par le <strong>Matricule</strong> présent dans le nom du fichier, jamais par le seul nom ou prénom.
       </p>
 
       {/* 1 — Préparation */}
@@ -380,7 +380,7 @@ export default function ImportControl() {
                 <ProIcon name="check-circle" color="#059669" /> Valider le lot
               </button>
               <button className="btn btn-sm btn-success" onClick={() => integrateBatch(b.id)} disabled={!!busy || !b.validatedAt}>
-                ⬆️ Intégrer les conformes
+                ⬆️ intégrer les conformes
               </button>
               <button className="btn btn-sm btn-outline-secondary" onClick={() => downloadReport(b.id, b.reference)} disabled={!!busy}>
                 <ProIcon name="bar-chart" /> Rapport Excel

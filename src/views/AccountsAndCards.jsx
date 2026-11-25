@@ -367,7 +367,7 @@ export default function AccountsAndCards() {
     <div className="container py-4">
       <h1 className="h4 mb-1"><ProIcon name="archive" /> Gestion des comptes et des cartes</h1>
       <p className="text-muted small mb-3">
-        Le <strong>dossier</strong>, le <strong>compte</strong>, la <strong>carte</strong> et les <strong>droits</strong> sont
+        Le <strong>Dossier</strong>, le <strong>Compte</strong>, la <strong>Carte</strong> et les <strong>Droits</strong> sont
         des objets distincts. Bloquer une carte n'affecte ni le dossier ni le compte de l'assuré. Toute opération sensible
         est vérifiée et journalisée, côté serveur.
       </p>
@@ -461,17 +461,17 @@ export default function AccountsAndCards() {
             </div>
             <div className="row g-3 mt-1">
               <div className="col-md-4">
-                <div className="fw-bold small text-uppercase text-muted mb-1">Identité</div>
+                <div className="fw-bold small text-muted mb-1">Identité</div>
                 <div className="small">{[id.lastName, id.firstName].filter(Boolean).join(' ') || '—'}</div>
                 <div className="small">Matricule : <strong>{id.cmuNumber}</strong></div>
-                <div className="small">Pièce : {id.ninMasked || 'non renseignée'} <span className="text-muted">(masquée)</span></div>
+                <div className="small">Pièce : {id.ninMasked || 'non renseignée'} <span className="text-muted">(Masquée)</span></div>
                 <div className="small">Téléphone : {id.phoneMasked || '—'}</div>
                 <div className="small">MSD : {id.msdCode || '—'}{id.mutuelleName ? ` · ${id.mutuelleName}` : ''}</div>
                 <div className="small">Département : {id.department || '—'}</div>
                 <div className="small">Dossier : {id.dossierStatus || '—'} · créé le {formatDate(id.createdAt)}</div>
               </div>
               <div className="col-md-4">
-                <div className="fw-bold small text-uppercase text-muted mb-1">Compte numérique</div>
+                <div className="fw-bold small text-muted mb-1">Compte numérique</div>
                 <div className="small">État : {compte.accountStatus}</div>
                 <div className="small">Accès : {compte.accessStatus}</div>
                 <div className="small">Créé le : {formatDate(compte.createdAt)}</div>
@@ -480,7 +480,7 @@ export default function AccountsAndCards() {
                 <div className="small">Sessions actives : {compte.activeSessions}</div>
               </div>
               <div className="col-md-4">
-                <div className="fw-bold small text-uppercase text-muted mb-1">Carte</div>
+                <div className="fw-bold small text-muted mb-1">Carte</div>
                 <div className="small">Statut serveur : <Badge status={cardStatus} style={CARD_STYLE} /></div>
                 <div className="small">Bloquée le : {formatDate(carte.blockedAt)}{carte.blockedReason ? ` (${carte.blockedReason})` : ''}</div>
                 <div className="small">Révoquée le : {formatDate(carte.revokedAt)}{carte.revokedReason ? ` (${carte.revokedReason})` : ''}</div>
@@ -641,7 +641,7 @@ export default function AccountsAndCards() {
             )}
             {oneTimeCode && (
               <div className="alert alert-warning small">
-                <div className="fw-bold"><ProIcon name="key" /> Code d'accès assuré généré — à communiquer à l'assuré</div>
+                <div className="fw-bold"><ProIcon name="key" /> Code d'accès assuré généré — À communiquer à l'assuré</div>
                 <div className="mt-2 d-flex align-items-center gap-2 flex-wrap">
                   <code style={{ fontSize: '1.2rem', fontWeight: 800, padding: '4px 10px', background: '#fff', borderRadius: '8px', border: '1px solid #f59e0b' }}>
                     {oneTimeCode.code}
@@ -833,7 +833,7 @@ export default function AccountsAndCards() {
           <div className="card mb-3">
             <h5 className="mb-2">6 · Créer une demande administrative</h5>
             <p className="small text-muted mb-2">
-              Pour les opérations critiques, enregistrez d'abord la demande : sa référence (REQ-…) sera exigée par l'action
+              Pour les opérations critiques, enregistrez d'abord la demande : sa référence (req-…) sera exigée par l'action
               correspondante et assure la double validation (identité vérifiée + agent habilité).
             </p>
             <form className="row g-2" onSubmit={createRequest}>

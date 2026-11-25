@@ -563,9 +563,9 @@
 .text-decoration-none { text-decoration: none; }
 .text-decoration-underline { text-decoration: underline; }
 .text-decoration-line-through { text-decoration: line-through; }
-.text-uppercase { text-transform: uppercase !important; letter-spacing: 0.03em; }
+.text-uppercase { text-transform: none !important; letter-spacing: 0.03em; }
 .text-lowercase { text-transform: lowercase !important; }
-.text-capitalize { text-transform: capitalize !important; }
+.text-capitalize { text-transform: none !important; }
 .fst-italic { font-style: italic; }
 .fst-normal { font-style: normal; }
 

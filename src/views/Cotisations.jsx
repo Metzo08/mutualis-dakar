@@ -259,13 +259,13 @@ export default function Cotisations({ lang, portalMode, citizenUser, agentUser }
                 <div>
                   {isAgent ? (
                     <>
-                      <strong style={{ color: 'var(--text-main)' }}>Registre Régional des Cotisations & Recouvrements :</strong>{' '}
+                      <strong style={{ color: 'var(--text-main)' }}>Registre régional des cotisations & recouvrements :</strong>{' '}
                       <span style={{ color: '#0ea5e9', fontWeight: '800' }}>82 972 500 FCFA perçus</span>{' '}
                       <span style={{ color: 'var(--text-sub)', fontSize: '0.78rem' }}>(14 280 quittances émises sur les 24 mutuelles de Dakar)</span>
                     </>
                   ) : (
                     <>
-                      <strong style={{ color: 'var(--text-main)' }}>Mes Cotisations & Quittances Annuelles :</strong>{' '}
+                      <strong style={{ color: 'var(--text-main)' }}>Mes cotisations & quittances annuelles :</strong>{' '}
                       <span style={{ color: '#059669', fontWeight: '800' }}>{totalCitizenPaid.toLocaleString('fr-FR')} FCFA réglés</span>{' '}
                       <span style={{ color: 'var(--text-sub)', fontSize: '0.78rem' }}>({citizenCotisations.length} quittance(s) officielle(s) pour votre foyer)</span>
                     </>
@@ -284,8 +284,8 @@ export default function Cotisations({ lang, portalMode, citizenUser, agentUser }
                   <table style={{ width: '100%', minWidth: '950px', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
                     <thead>
                       <tr style={{ background: 'var(--bg-secondary)', textAlign: 'left', color: 'var(--text-muted)' }}>
-                        <th style={{ padding: '0.75rem' }}>QUITTANCE N°</th>
-                        <th style={{ padding: '0.75rem' }}>ADHÉRENT</th>
+                        <th style={{ padding: '0.75rem' }}>Quittance n°</th>
+                        <th style={{ padding: '0.75rem' }}>Adhérent</th>
                         <th style={{ padding: '0.75rem' }}>{t.cmuNumber}</th>
                         <th style={{ padding: '0.75rem' }}>{t.phone}</th>
                         <th style={{ padding: '0.75rem' }}>{t.amount}</th>
@@ -326,7 +326,7 @@ export default function Cotisations({ lang, portalMode, citizenUser, agentUser }
                             <td style={{ padding: '0.75rem', fontFamily: 'monospace', fontSize: '0.8rem' }}>{c.cmu_number || '—'}</td>
                             <td style={{ padding: '0.75rem' }}><ProIcon name="phone" /> {c.phone}</td>
                             <td style={{ padding: '0.75rem', fontWeight: '800', color: 'var(--primary)' }}>{new Intl.NumberFormat('fr-FR').format(c.amount)} FCFA</td>
-                            <td style={{ padding: '0.75rem', textTransform: 'uppercase', fontSize: '0.78rem' }}>
+                            <td style={{ padding: '0.75rem', textTransform: 'none', fontSize: '0.78rem' }}>
                               <span className="badge badge-outline">{c.payment_method}</span>
                             </td>
                             <td style={{ padding: '0.75rem', fontSize: '0.75rem', color: 'var(--text-sub)' }}>

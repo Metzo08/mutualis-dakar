@@ -201,7 +201,7 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
           <div>
             <h3 style={{ fontSize: '1.15rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '0.25rem' }}>
-              <ProIcon name="shield-check" /> Sélection d'accès aux 13 profils (Identifiants dédiés) :
+              <ProIcon name="shield-check" /> Sélection d'accès aux 13 profils (identifiants dédiés) :
             </h3>
             <span style={{ fontSize: '0.82rem', color: 'var(--text-sub)' }}>
               Cliquez sur n'importe quel profil pour pré-remplir ses identifiants uniques e-mail & mot de passe
@@ -295,7 +295,7 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
           <form onSubmit={handleLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
             <div className="form-group" style={{ margin: 0 }}>
               <label className="form-label" style={{ fontWeight: '700', fontSize: '0.85rem' }}>
-                Adresse e-mail unique ou N° portable
+                Adresse e-mail unique ou n° portable
               </label>
               <input
                 type="text"
