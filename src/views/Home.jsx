@@ -87,7 +87,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
         text: 'Paiement de cotisation', 
         detail: 'Modou Diop, renouvellement 2026', 
         createdAt: baseTime - 12 * 60 * 1000, 
-        source: 'WAVE PAY' 
+        source: 'Wave pay' 
       },
       { 
         id: 3, 
@@ -95,7 +95,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
         text: 'Don en ligne enregistré', 
         detail: 'Donateur anonyme, 10 000 FCFA', 
         createdAt: baseTime - 32 * 60 * 1000, 
-        source: 'DON MUTUELLE' 
+        source: 'Don mutuelle' 
       }
     ];
   });
@@ -382,7 +382,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
       citizenCardTitle: 'Votre carte QR CMU',
       citizenWelcome: 'Espace assuré de',
       statusActiveMsg: 'Votre couverture CMU est active. Vous bénéficiez du tiers-payant jusqu\'à 80% dans les hôpitaux agréés.',
-      statusSuspendedMsg: 'Votre couverture est suspendue. Veuillez régulariser votre cotisation annuelle pour réactiver vos droits.',
+      statusSuspendedMsg: 'Votre couverture Est suspendue. Veuillez régulariser votre cotisation annuelle pour réactiver vos droits.',
       btnRenewCot: 'Renouveler ma cotisation (4 500 FCFA)',
       familyTitle: 'Membres de ma famille couverts',
       btnNewMember: 'Ajouter un ayant droit'
@@ -393,8 +393,8 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
       btnNew: 'Bokk bu bees',
       btnStats: 'Xool statistiques yi',
       stat1Title: 'Ñi bokk te fay',
-      heroBadge: 'Région bu Ndakaaru 🇸🇳',
-      heroTitle: 'Yombat wér-gi-yaram ci Ndakaaru',
+      heroBadge: 'Région bu ndakaaru 🇸🇳',
+      heroTitle: 'Yombat wér-gi-yaram ci ndakaaru',
       heroSubtitle: 'Bindu ci mutuelle, fayal sa cotisation ci Wave walla Orange Money, am sa carte numérique.',
       heroBtnAdhesion: 'Bindu léegi',
       heroBtnMap: 'Xool fajukaay yi',
@@ -411,7 +411,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
       btnLogin: 'Duggu ci sama compte',
       demoNote: 'Duggu ko ak : 771234567 walla 779876543 (PIN: 1234)',
       citizenCardTitle: 'Sa carte QR CSU',
-      statusActiveMsg: 'Sa wér-gi-yaram baax na. Mën nga fajjoo ba 80% ci fajukaay yi nu agréer.',
+      statusActiveMsg: 'Sa wér-gi-yaram baax na. Mën nga fajjoo Ba 80% ci fajukaay yi nu agréer.',
       statusSuspendedMsg: 'Sa wér-gi-yaram teye nanu ko. Fayal sa cotisation annuel ngir réactiver say droits.',
       btnRenewCot: 'Fayal sa cotisation (4 500 FCFA)',
       familyTitle: 'Sa njabot gu bokk',
@@ -538,7 +538,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
             birthDate: '1990-05-12',
             phone: '771234567',
             email: 'modou.diop@example.com',
-            address: 'Médina Rue 22, Dakar',
+            address: 'Médina rue 22, Dakar',
             mutuelleName: 'Mutuelle de la Médina',
             packageType: 'individuel',
             paymentMethod: 'wave',
@@ -554,7 +554,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
             birthDate: '1985-08-22',
             phone: '779876543',
             email: 'awa.ndiaye@example.com',
-            address: 'Pikine Ouest Tally Boubess, Dakar',
+            address: 'Pikine Ouest tally boubess, Dakar',
             mutuelleName: 'Mutuelle de Pikine Ouest',
             packageType: 'familial',
             paymentMethod: 'om',
@@ -1079,7 +1079,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
                     La couverture maladie universelle vous permet de bénéficier d'une prise en charge des frais de consultations, de médicaments et d'hospitalisations.
                   </p>
                   <p style={{ color: 'var(--text-sub)', lineHeight: '1.6' }}>
-                    Utilisez le **chatbot IA** en bas à droite pour poser vos questions en Français ou en **Wolof**. Notre assistant répond instantanément à toutes vos interrogations.
+                    Utilisez Le **chatbot IA** en bas à droite pour poser vos questions en Français ou en **Wolof**. Notre assistant répond instantanément à toutes vos interrogations.
                   </p>
                 </div>
                 
@@ -1137,12 +1137,12 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
                   <ProIcon name="handshake" /> {lang === 'fr' ? 'Solidarité active' : 'Dimbelé sa réew'}
                 </span>
                 <h3 style={{ fontSize: '1.6rem', fontWeight: '800', margin: '0 0 0.5rem 0', color: '#ffffff' }}>
-                  {lang === 'fr' ? 'Parrainage solidaire : Offrez la santé à ceux qui en ont besoin' : 'Dimbalé ak Parrainage : Fayal wér-gi-yaram gni ko yelloo'}
+                  {lang === 'fr' ? 'Parrainage solidaire : offrez la santé à ceux qui en ont besoin' : 'Dimbalé ak parrainage : fayal wér-gi-yaram gni ko yelloo'}
                 </h3>
                 <p style={{ color: '#f1f5f9', fontSize: '0.95rem', lineHeight: '1.6', maxWidth: '800px', margin: '0 0 1.5rem 0' }}>
                   {lang === 'fr' 
                     ? "En tant que bienfaiteur, vous pouvez financer la couverture maladie universelle (carte de membre + cotisation annuelle de 12 mois) pour des bénéficiaires vulnérables. Parrainez des élèves de Daara ou d'écoles élémentaires au tarif collectif de 1 000 FCFA/an, ou sélectionnez des ménages complets et des filleuls individuels."
-                    : "Fayal assurance wér-gi-yaram ay élève daara walla école (1 000 FCFA/at) walla ay njaboot yu néewal doole ci Dakar ngir ñu mënë fajjoo ci wér-gi-yaram gu woor."}
+                    : "Fayal assurance wér-gi-yaram ay élève Daara walla école (1 000 FCFA/at) walla ay njaboot yu néewal doole ci Dakar ngir ñu mënë fajjoo ci wér-gi-yaram gu woor."}
                 </p>
                 
                 <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', marginBottom: '2rem', fontSize: '0.9rem' }}>
@@ -1163,7 +1163,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <span style={{ fontSize: '1.5rem' }}><ProIcon name="graduation-cap" /></span>
                     <div>
-                      <strong style={{ display: 'block', color: '#a5f3fc' }}>{lang === 'fr' ? 'Écoles & daaras' : 'Daara & Écoles'}</strong>
+                      <strong style={{ display: 'block', color: '#a5f3fc' }}>{lang === 'fr' ? 'Écoles & daaras' : 'Daara & écoles'}</strong>
                       <span style={{ color: '#cbd5e1' }}>1 000 FCFA / Élève</span>
                     </div>
                   </div>

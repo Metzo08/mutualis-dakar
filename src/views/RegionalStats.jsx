@@ -130,7 +130,7 @@ export default function RegionalStats({ lang }) {
         if (!cancelled) setRealMembers(getStoredMembers());
       });
 
-    // Le store peut changer ensuite (import, suppression) : on se recharge.
+    // le store peut changer ensuite (import, suppression) : on se recharge.
     const load = () => {
       try {
         setRealMembers(getStoredMembers());
@@ -182,26 +182,26 @@ export default function RegionalStats({ lang }) {
     title: 'Statistiques inter-régions',
     subtitle: 'Tableau de bord dynamique et comparatif des indicateurs CSU du Sénégal',
     byRegion: 'Bénéficiaires par région / département',
-    claimsByRegion: 'Prises en charge & Remboursements',
+    claimsByRegion: 'Prises en charge & remboursements',
     penetration: 'Taux de pénétration par commune',
     cotisations: 'Répartition des cotisations par statut',
     topMutuelles: 'Top mutuelles par effectif',
-    totalBenef: 'Total Assurés',
-    activeBenef: 'Assurés Actifs & Couverts',
-    totalReimbursed: 'Total Remboursé (CSU)',
-    activeMutuelles: 'Mutuelles Déployées',
-    coverageScope: 'Périmètre Actif',
+    totalBenef: 'Total assurés',
+    activeBenef: 'Assurés actifs & couverts',
+    totalReimbursed: 'Total remboursé (CSU)',
+    activeMutuelles: 'Mutuelles déployées',
+    coverageScope: 'Périmètre actif',
     refresh: 'Actualiser',
     filterZone: 'Filtrer par zone géographique :',
     filterPeriod: 'Période d\'analyse :',
-    searchPlaceholder: '🔍 Rechercher une commune ou mutuelle...',
-    exportData: '📥 Exporter les données (CSV)',
-    allZones: '🌍 Toutes les régions (14)',
-    dakarZone: '📍 Dakar (5 Départements)',
-    centreOuestZone: '🌾 Thiès & Diourbel',
-    nordZone: '🌊 Zone Nord (Saint-Louis, Louga, Matam)',
-    centreZone: '☀️ Zone Centre (Kaolack, Fatick, Kaffrine)',
-    sudEstZone: '🌴 Zone Sud & Est (Ziguinchor, Kolda, Tamba...)'
+    searchPlaceholder: 'Rechercher une commune ou mutuelle...',
+    exportData: 'Exporter les données (CSV)',
+    allZones: 'Toutes les régions (14)',
+    dakarZone: 'Dakar (5 départements)',
+    centreOuestZone: 'Thiès & Diourbel',
+    nordZone: 'Zone Nord (Saint-Louis, Louga, Matam)',
+    centreZone: 'Zone centre (Kaolack, Fatick, Kaffrine)',
+    sudEstZone: 'Zone Sud & Est (Ziguinchor, Kolda, tamba...)'
   } : {
     title: 'Statistiques inter-région',
     subtitle: 'Saytu ak nattate mbirum CSU ci Sénégal gu lépp',
@@ -218,14 +218,14 @@ export default function RegionalStats({ lang }) {
     refresh: 'Tambali',
     filterZone: 'Tann zone bi :',
     filterPeriod: 'Jamono bi :',
-    searchPlaceholder: '🔍 Seet commune mbaa mutuelle...',
-    exportData: '📥 Yeb data yi (CSV)',
-    allZones: '🌍 Région yépp (14)',
-    dakarZone: '📍 Dakar (5 Départements)',
-    centreOuestZone: '🌾 Thiès & Diourbel',
-    nordZone: '🌊 Zone Nord',
-    centreZone: '☀️ Zone Centre',
-    sudEstZone: '🌴 Zone Sud & Est'
+    searchPlaceholder: 'Seet commune mbaa mutuelle...',
+    exportData: 'Yeb data yi (CSV)',
+    allZones: 'Région yépp (14)',
+    dakarZone: 'Dakar (5 départements)',
+    centreOuestZone: 'Thiès & Diourbel',
+    nordZone: 'Zone Nord',
+    centreZone: 'Zone centre',
+    sudEstZone: 'Zone Sud & Est'
   };
 
   const COLORS = ['#059669', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#6366f1', '#84cc16', '#f97316'];
@@ -313,7 +313,7 @@ export default function RegionalStats({ lang }) {
     //  total = 35 % des remboursements, 76 % payées / 17 % en attente.
     //  Aucun de ces chiffres ne correspondait à une ligne de la table
     //  « cotisations » : un graphique financier national entièrement
-    //  fabriqué. Le registre des bénéficiaires, lui, est réel — mais il
+    //  fabriqué. le registre des bénéficiaires, lui, est réel — mais il
     //  ne dit rien des règlements. On affiche donc un état vide explicite
     //  plutôt qu'un graphique qui « a l'air juste ».
     // ────────────────────────────────────────────────────────────────────
@@ -447,7 +447,7 @@ export default function RegionalStats({ lang }) {
                 { id: 'Q1_2026', label: 'T1 2026' },
                 { id: 'Q2_2026', label: 'T2 2026' },
                 { id: 'MONTH', label: 'Ce mois' },
-                { id: 'ALL', label: 'Cumul Global' }
+                { id: 'ALL', label: 'Cumul global' }
               ].map(p => (
                 <button
                   key={p.id}
@@ -790,8 +790,8 @@ export default function RegionalStats({ lang }) {
                   Aucune donnée de cotisation disponible
                 </div>
                 <div style={{ fontSize: '0.8rem', lineHeight: 1.55 }}>
-                  Cette répartition n'est pas affichée car aucun relevé de cotisations
-                  n'est connecté à cette vue. Les graphiques voisins (effectifs par
+                  Cette répartition n'Est pas affichée car aucun relevé de cotisations
+                  n'Est connecté à cette vue. Les graphiques voisins (effectifs par
                   région, par commune) restent, eux, calculés sur le registre réel
                   des assurés.
                 </div>

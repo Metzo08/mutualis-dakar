@@ -4,14 +4,14 @@ import DeleteModal from '../components/DeleteModal';
 import ProIcon from '../components/ProIcon';
 
 const PARTNERS = [
-  { name: 'UNAMUSC SÉNÉGAL', logo: '/logo_partner_unamusc.png', isImage: true },
-  { name: 'MINISTÈRE DE LA SANTÉ', logo: '/logo_partner_ministere_sante.png', isImage: true },
-  { name: 'MINISTÈRE DE LA FEMME', logo: '/logo_partner_ministere_femme.png', isImage: true },
-  { name: 'MEDICOS DEL MUNDO', logo: '/logo_partner_medicos.png', isImage: true },
+  { name: 'UNAMUSC Sénégal', logo: '/logo_partner_unamusc.png', isImage: true },
+  { name: 'Ministère de la santé', logo: '/logo_partner_ministere_sante.png', isImage: true },
+  { name: 'Ministère de la femme', logo: '/logo_partner_ministere_femme.png', isImage: true },
+  { name: 'Medicos del mundo', logo: '/logo_partner_medicos.png', isImage: true },
   { name: 'PATISEN', logo: '/logo_partner_patisen.png', isImage: true },
-  { name: 'WAVE SÉNÉGAL', logo: '/logo_wave.png', isImage: true },
-  { name: 'ORANGE MONEY', logo: '/logo_orange_money.png', isImage: true },
-  { name: 'COUVERTURE SANITAIRE SÉNÉGAL', logo: '/sencsu_logo.png', isImage: true }
+  { name: 'Wave Sénégal', logo: '/logo_wave.png', isImage: true },
+  { name: 'Orange Money', logo: '/logo_orange_money.png', isImage: true },
+  { name: 'Couverture sanitaire Sénégal', logo: '/sencsu_logo.png', isImage: true }
 ];
 
 export default function Partnership({ lang, portalMode, agentUser }) {
@@ -483,7 +483,7 @@ export default function Partnership({ lang, portalMode, agentUser }) {
                     <input 
                       type="text" 
                       className="form-control" 
-                      placeholder="Ex: Fondations, Hôpitaux, Entreprises"
+                      placeholder="Ex: fondations, hôpitaux, entreprises"
                       value={formData.companyName}
                       onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
                       required
@@ -510,7 +510,7 @@ export default function Partnership({ lang, portalMode, agentUser }) {
                     <input 
                       type="text" 
                       className="form-control" 
-                      placeholder="Prénom & Nom"
+                      placeholder="Prénom & nom"
                       value={formData.contactPerson}
                       onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
                       required

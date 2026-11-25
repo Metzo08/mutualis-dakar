@@ -41,7 +41,7 @@ export default function Notifications({ lang, portalMode, agentUser }) {
     prise_en_charge: 'Prise en charge',
     rappel: 'Rappel',
     noNotif: 'Aucune notification.',
-    sent2: '✅ Notification envoyée.'
+    sent2: 'Notification envoyée.'
   } : {
     title: 'Notifications SMS / WhatsApp',
     subtitle: 'Jokkoo ak assuré yi',
@@ -66,7 +66,7 @@ export default function Notifications({ lang, portalMode, agentUser }) {
     prise_en_charge: 'Prise en charge',
     rappel: 'Rappel',
     noNotif: 'Amul notification.',
-    sent2: '✅ Yónnee na.'
+    sent2: 'Yónnee na.'
   };
 
   const fetchNotifications = (p = 1) => {

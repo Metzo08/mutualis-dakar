@@ -52,7 +52,7 @@ export default function Complaints({ lang, portalMode, citizenUser, agentUser, p
     fr: {
       titleCitizen: 'Signaler une réclamation',
       subtitleCitizen: 'Un problème avec votre mutuelle ou un hôpital ? Déposez une réclamation en ligne. Nos agents régionaux prendront contact sous 48h.',
-      titlePartner: 'Messagerie & Réclamations Prestataire',
+      titlePartner: 'Messagerie & réclamations prestataire',
       subtitlePartner: 'Espace d\'échange privé et sécurisé avec les bénéficiaires et agents régionaux.',
       titleAgent: 'Suivi des réclamations usagers & prestataires',
       subtitleAgent: 'Consultez, analysez et résolvez les plaintes déposées par les assurés sociaux et les prestataires de Dakar.',
@@ -254,7 +254,7 @@ export default function Complaints({ lang, portalMode, citizenUser, agentUser, p
       }}>
         <div style={{ textAlign: 'left', position: 'relative', zIndex: 2 }}>
           <span className="badge" style={{ marginBottom: '0.75rem', backgroundColor: 'rgba(255, 255, 255, 0.22)', color: '#fff', border: '1px solid rgba(255, 255, 255, 0.3)', backdropFilter: 'blur(4px)', padding: '0.35rem 0.9rem', fontSize: '0.82rem', fontWeight: '700', borderRadius: '20px' }}>
-            {portalMode === 'agent' ? '💼 CMU AGENT QUEUE' : '📣 RÉCLAMATION CITOYENNE'}
+            {portalMode === 'agent' ? 'CMU agent queue' : 'Réclamation citoyenne'}
           </span>
           <h1 style={{ fontSize: '2.35rem', color: '#fff', marginBottom: '0.5rem', fontWeight: '800', textShadow: '0 3px 6px rgba(0,0,0,0.4)', letterSpacing: '-0.02em' }}>
             {portalMode === 'agent' ? t.titleAgent : t.titleCitizen}
@@ -361,7 +361,7 @@ export default function Complaints({ lang, portalMode, citizenUser, agentUser, p
                       <div className="d-flex justify-content-between align-items-start gap-2 mb-1">
                         <strong style={{ color: 'var(--text-main)', fontSize: '0.88rem' }}>{c.title}</strong>
                         <span className={`badge ${c.status === 'resolved' ? 'bg-success' : 'bg-warning text-dark'}`} style={{ fontSize: '0.72rem', borderRadius: '8px' }}>
-                          {c.status === 'resolved' ? '✅ Résolu' : '⏳ En cours'}
+                          {c.status === 'resolved' ? 'Résolu' : '⏳ En cours'}
                         </span>
                       </div>
                       <p className="small mb-1 text-muted" style={{ fontSize: '0.8rem', lineHeight: '1.4' }}>{c.description}</p>

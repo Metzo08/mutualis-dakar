@@ -13,7 +13,7 @@ export default function InfosCSU({ lang }) {
       cardPoliciesDesc: 'Dans le cadre de l\'ANACMU, l\'État du Sénégal finance la gratuité totale ou partielle de certains actes médicaux prioritaires.',
       timelineTitle: 'Historique et évolutions de la CSU',
       statsTitle: 'Indicateurs clés et objectifs nationaux (Dakar)',
-      policySesame: 'Plan Sésame (60 ans +)',
+      policySesame: 'Plan sésame (60 ans +)',
       policyCesarean: 'Césariennes gratuites',
       policyKids: 'Petite enfance (< 5 ans)',
       policyDialysis: 'Dialyse subventionnée',
@@ -26,11 +26,11 @@ export default function InfosCSU({ lang }) {
       title: 'Couverture maladie universelle bu Sénégal',
       subtitle: 'Xoolal saytu wér-gi-yaram bi, përogaraam gratuit yi ak dundal santé numérique ci Sénégal.',
       cardPoliciesTitle: '4 përogaraam de gratuité yi nekk',
-      cardPoliciesDesc: 'Ci bir ANACMU, État bu Sénégal dafa fay fajj yu gratuit ngir dimbalé askan wi.',
+      cardPoliciesDesc: 'Ci bir ANACMU, état bu Sénégal dafa fay fajj yu gratuit ngir dimbalé askan wi.',
       timelineTitle: 'Taariix ak évolutions bu CSU',
       statsTitle: 'Chiffres yi gënë rëy (Ndakaaru)',
-      policySesame: 'Plan Sésame (60 at +)',
-      policyCesarean: 'Césarienne Gratuit',
+      policySesame: 'Plan sésame (60 at +)',
+      policyCesarean: 'Césarienne gratuit',
       policyKids: 'Xale yu amul 5 at',
       policyDialysis: 'Dialyse gratuit',
       btnLearn: 'Xoolal details yi',
@@ -44,8 +44,8 @@ export default function InfosCSU({ lang }) {
 
   const defaultPolicies = [
     {
-      title_fr: 'Plan Sésame (60 ans +)',
-      title_wo: 'Plan Sésame (60 at +)',
+      title_fr: 'Plan sésame (60 ans +)',
+      title_wo: 'Plan sésame (60 at +)',
       icon: '👴',
       description_fr: 'Créé pour garantir la dignité de nos aînés. Il prend en charge à 100% les consultations, les soins hospitaliers d\'urgence et les médicaments essentiels prescrits dans les structures publiques.',
       description_wo: 'Ngir dimbalé ak deugeural sounou waajur yi. Day fay 100% consultation, urgent care ak garab ci hôpitaux publics yi.',
@@ -53,7 +53,7 @@ export default function InfosCSU({ lang }) {
     },
     {
       title_fr: 'Césariennes gratuites',
-      title_wo: 'Césarienne Gratuit',
+      title_wo: 'Césarienne gratuit',
       icon: <ProIcon name="heart-pulse" />,
       description_fr: 'Afin de réduire la mortalité maternelle, l\'accouchement par césarienne (simple ou d\'urgence) est entièrement gratuit dans tous les hôpitaux publics agréés.',
       description_wo: 'Ngir wanni réy xale ak yaay yi, accouchement césarienne dafa gratuit 100% ci hôpitaux publics yëpp.',
@@ -83,7 +83,7 @@ export default function InfosCSU({ lang }) {
       title_fr: 'Lancement de la CSU',
       title_wo: 'Lancement CSU',
       description_fr: 'Lancement officiel du programme national de Couverture Maladie Universelle au Sénégal par le chef de l\'État.',
-      description_wo: 'Ubbi përogaraam national Couverture Maladie Universelle ci Sénégal.'
+      description_wo: 'Ubbi përogaraam national couverture maladie universelle ci Sénégal.'
     },
     {
       year: '2015',

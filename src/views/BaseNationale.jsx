@@ -53,7 +53,7 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
       no: 'Non certifiée'
     },
     wo: {
-      title: 'Répertoire Mutuelle yi ci Sénégal',
+      title: 'Répertoire mutuelle yi ci Sénégal',
       subtitle: 'Xoolal répertoire bi tënk mutuelle wér-gi-yaram yi nekk ci réew mi.',
       searchPlaceholder: 'Seet ci tour bi, commune...',
       filterRegion: 'Tânn région',
@@ -90,40 +90,40 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
   const dataset = [
     {
       id: 1,
-      name: 'Union Nationale des Mutuelles de Santé Communautaires (UNAMUSC)',
+      name: 'Union nationale des mutuelles de santé communautaires (UNAMUSC)',
       region: 'Dakar',
       commune: 'Dakar Plateau',
       status: 'active',
       agreement: 'UN-NAT-001-2015',
-      manager: 'Président Demba Mame Ndiaye',
+      manager: 'Président demba mame Ndiaye',
       phone: '+221 33 823 45 67',
       email: 'contact@unamusc.sn',
-      rates: 'Faitière Nationale',
+      rates: 'Faitière nationale',
       services: 'Coordination nationale, représentation politique, réassurance',
       certified: true,
       lastUpdate: '20/06/2026',
       lat: 14.6685,
       lng: -17.4375,
-      landmark: 'Près du Ministère de la Santé, Immeuble administratif du Plateau, Dakar.',
+      landmark: 'Près du ministère de la santé, immeuble administratif du Plateau, Dakar.',
       localInfo: 'Organe faîtier national représentant l\'ensemble des mutuelles de santé communautaires du Sénégal.'
     },
     {
       id: 2,
-      name: 'Union Régionale des Mutuelles de Santé de Dakar (URMSCD)',
+      name: 'Union régionale des mutuelles de santé de Dakar (URMSCD)',
       region: 'Dakar',
-      commune: 'Mermoz-Sacré Coeur',
+      commune: 'Mermoz-Sacré coeur',
       status: 'active',
       agreement: 'UR-DK-001-2016',
-      manager: 'Mamadou Saliou Diallo',
+      manager: 'Mamadou saliou Diallo',
       phone: '+221 33 859 15 15',
       email: 'contact@urmscd.sn',
-      rates: 'Faitière Régionale',
+      rates: 'Faitière régionale',
       services: 'Administration régionale, coordination des départements, appui technique',
       certified: true,
       lastUpdate: '15/06/2026',
       lat: 14.7008,
       lng: -17.4651,
-      landmark: 'Cité Keur Gorgui, Immeuble Serigne Mérina SYLLA, Dakar.',
+      landmark: 'Cité Keur gorgui, immeuble Serigne mérina Sylla, Dakar.',
       localInfo: 'Union régionale qui coordonne les activités et la réassurance des mutuelles des 5 départements de Dakar.'
     },
     {
@@ -136,7 +136,7 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
       manager: 'Assane Diop',
       phone: '+221 33 821 10 10',
       email: 'ud.dakar@unamusc.sn',
-      rates: 'Cotisation Faitière',
+      rates: 'Cotisation faitière',
       services: 'Coordination départementale des mutuelles de Dakar, audit',
       certified: true,
       lastUpdate: '10/06/2026',
@@ -152,10 +152,10 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
       commune: 'Pikine Ouest',
       status: 'active',
       agreement: 'UD-DK-002-2018',
-      manager: 'Idrissa Wade',
+      manager: 'Idrissa wade',
       phone: '+221 33 851 44 22',
       email: 'ud.pikine@unamusc.sn',
-      rates: 'Cotisation Faitière',
+      rates: 'Cotisation faitière',
       services: 'Coordination départementale, formation des gérants locaux',
       certified: true,
       lastUpdate: '12/06/2026',
@@ -174,13 +174,13 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
       manager: 'Cheikh Sarr',
       phone: '+221 33 862 33 44',
       email: 'ud.guediawaye@unamusc.sn',
-      rates: 'Cotisation Faitière',
+      rates: 'Cotisation faitière',
       services: 'Coordination départementale des mutuelles de Guédiawaye, formation',
       certified: true,
       lastUpdate: '20/05/2026',
       lat: 14.7812,
       lng: -17.4124,
-      landmark: 'Quartier Golf Sud, à 300m du grand stade de Guédiawaye Amadou Barry.',
+      landmark: 'Quartier Golf Sud, à 300m du Grand stade de Guédiawaye amadou barry.',
       localInfo: 'Coordonne les actions des mutuelles de la zone de Guédiawaye and aide à la numérisation des cartes CMU.'
     },
     {
@@ -193,13 +193,13 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
       manager: 'Amadou Diop',
       phone: '+221 33 871 12 12',
       email: 'ud.rufisque@unamusc.sn',
-      rates: 'Cotisation Faitière',
+      rates: 'Cotisation faitière',
       services: 'Coordination départementale, gestion des subventions étatiques',
       certified: true,
       lastUpdate: '15/06/2026',
       lat: 14.7154,
       lng: -17.2721,
-      landmark: 'Rufisque Est, à côté de la gare TER, près de la préfecture de Rufisque.',
+      landmark: 'Rufisque Est, à côté de la gare ter, près de la préfecture de Rufisque.',
       localInfo: 'Structure faîtière regroupant toutes les mutuelles de santé communautaires du département de Rufisque.'
     },
     {
@@ -212,13 +212,13 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
       manager: 'Ousmane Ndiaye',
       phone: '+221 33 892 20 20',
       email: 'ud.keurmassar@unamusc.sn',
-      rates: 'Cotisation Faitière',
+      rates: 'Cotisation faitière',
       services: 'Coordination du réseau, développement communautaire',
       certified: true,
       lastUpdate: '08/06/2026',
       lat: 14.7891,
       lng: -17.3012,
-      landmark: 'Keur Massar Nord, quartier Cité Ouvrière, en face du poste de police.',
+      landmark: 'Keur Massar Nord, quartier cité ouvrière, en face du poste de police.',
       localInfo: 'Support technique and coordination pour les mutuelles du nouveau département de Keur Massar.'
     },
     {
@@ -231,7 +231,7 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
       manager: 'Ibrahima Fall',
       phone: '+221 33 951 00 11',
       email: 'ud.thies@unamusc.sn',
-      rates: 'Cotisation Faitière',
+      rates: 'Cotisation faitière',
       services: 'Coordination départementale, supervision des mutuelles locales',
       certified: true,
       lastUpdate: '05/01/2026',
@@ -250,32 +250,32 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
       manager: 'Saliou Diallo',
       phone: '+221 33 957 88 99',
       email: 'ud.mbour@unamusc.sn',
-      rates: 'Cotisation Faitière',
-      services: 'Coordination départementale de la Petite Côte',
+      rates: 'Cotisation faitière',
+      services: 'Coordination départementale de la petite côte',
       certified: true,
       lastUpdate: '14/02/2026',
       lat: 14.4162,
       lng: -16.9641,
-      landmark: 'Près de la préfecture de département de Mbour, non loin du rond-point du stade.',
-      localInfo: 'Coordination départementale pour la Petite Côte, gestion de la réassurance.'
+      landmark: 'Près de la préfecture de département de Mbour, non loin du rond-Point du stade.',
+      localInfo: 'Coordination départementale pour la petite côte, gestion de la réassurance.'
     },
     {
       id: 10,
       name: 'MSD mutuelle de santé départementale de Saint-Louis',
       region: 'Saint-Louis',
-      commune: 'Saint-Louis Sor',
+      commune: 'Saint-Louis sor',
       status: 'active',
       agreement: 'UD-SL-001-2017',
       manager: 'Abdoulaye Sow',
       phone: '+221 33 961 45 45',
       email: 'ud.saintlouis@unamusc.sn',
-      rates: 'Cotisation Faitière',
+      rates: 'Cotisation faitière',
       services: 'Coordination départementale, formation des agents CMU',
       certified: true,
       lastUpdate: '18/04/2026',
       lat: 16.0221,
       lng: -16.4885,
-      landmark: 'À Sor, près de la préfecture de Saint-Louis et du pont Faidherbe.',
+      landmark: 'À sor, près de la préfecture de Saint-Louis et du pont faidherbe.',
       localInfo: 'Coordonne le réseau des mutuelles de la région Nord, facilitant le tiers-payant hospitalier.'
     },
     {
@@ -285,17 +285,17 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
       commune: 'Ziguinchor',
       status: 'active',
       agreement: 'UD-ZG-001-2018',
-      manager: 'Lamine Sané',
+      manager: 'Lamine sané',
       phone: '+221 33 991 22 33',
       email: 'ud.ziguinchor@unamusc.sn',
-      rates: 'Cotisation Faitière',
+      rates: 'Cotisation faitière',
       services: 'Gestion des risques, appui technique, réassurance',
       certified: true,
       lastUpdate: '10/02/2026',
       lat: 12.5768,
       lng: -16.2731,
-      landmark: 'Ziguinchor, non loin de la préfecture, près du rond-point Aline Sitoé Diatta.',
-      localInfo: 'Appui à la structuration des mutuelles communautaires en zone rurale dans toute la Casamance.'
+      landmark: 'Ziguinchor, non loin de la préfecture, près du rond-Point aline sitoé diatta.',
+      localInfo: 'Appui à la structuration des mutuelles communautaires en zone rurale dans toute la casamance.'
     },
     {
       id: 12,
@@ -307,13 +307,13 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
       manager: 'Modou Gueye',
       phone: '+221 33 941 55 66',
       email: 'ud.kaolack@unamusc.sn',
-      rates: 'Cotisation Faitière',
+      rates: 'Cotisation faitière',
       services: 'Coordination du bassin arachidier, statistiques locales',
       certified: true,
       lastUpdate: '12/03/2026',
       lat: 14.1528,
       lng: -16.0755,
-      landmark: 'Kaolack Centre, près de la gouvernance et de la grande mosquée.',
+      landmark: 'Kaolack centre, près de la gouvernance et de la grande mosquée.',
       localInfo: 'Coordination des mutuelles de santé du département de Kaolack.'
     },
     {
@@ -326,14 +326,14 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
       manager: 'Mor Ndiaye',
       phone: '+221 33 967 44 55',
       email: 'ud.louga@unamusc.sn',
-      rates: 'Cotisation Faitière',
-      services: 'Coordination départementale du Ndiambour',
+      rates: 'Cotisation faitière',
+      services: 'Coordination départementale du ndiambour',
       certified: true,
       lastUpdate: '02/01/2026',
       lat: 15.6152,
       lng: -16.2238,
-      landmark: 'Louga Centre, derrière la préfecture départementale.',
-      localInfo: 'Coordination départementale et promotion de la Couverture Maladie Universelle dans les zones rurales de Louga.'
+      landmark: 'Louga centre, derrière la préfecture départementale.',
+      localInfo: 'Coordination départementale et promotion de la couverture maladie universelle dans les zones rurales de Louga.'
     },
     {
       id: 14,
@@ -342,16 +342,16 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
       commune: 'Diourbel',
       status: 'active',
       agreement: 'UD-DB-001-2019',
-      manager: 'Serigne Fallou Diop',
+      manager: 'Serigne fallou Diop',
       phone: '+221 33 971 77 88',
       email: 'ud.diourbel@unamusc.sn',
-      rates: 'Cotisation Faitière',
+      rates: 'Cotisation faitière',
       services: 'Coordination départementale, plaidoyer mutualiste',
       certified: true,
       lastUpdate: '24/05/2026',
       lat: 14.6558,
       lng: -16.2225,
-      landmark: 'Diourbel Centre, près de la Mairie de Diourbel.',
+      landmark: 'Diourbel centre, près de la mairie de Diourbel.',
       localInfo: 'Coordonne le réseau départemental des mutuelles de santé communautaires.'
     },
     {
@@ -370,7 +370,7 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
       lastUpdate: '18/05/2026',
       lat: 14.6851,
       lng: -17.4523,
-      landmark: "Située en face du dispensaire Blaise Diagne, Rue 22 angle Blaise Diagne.",
+      landmark: "Située en face du dispensaire blaise diagne, rue 22 angle blaise diagne.",
       localInfo: "La Médina propose des permanences d'accueil pour la CMU tous les matins de 8h à 12h."
     },
     {
@@ -380,7 +380,7 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
       commune: 'Pikine Ouest',
       status: 'active',
       agreement: 'DK-088-2023',
-      manager: 'Fatou Wade',
+      manager: 'Fatou wade',
       phone: '+221 77 622 33 44',
       email: 'pikineouest@senmutuelles.sn',
       rates: '4 500 FCFA / an (Individuel) | 1 000 FCFA carte + 3 500 FCFA/membre (Famille)',
@@ -394,12 +394,12 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
     },
     {
       id: 17,
-      name: 'Mutuelle de Mbour Escale',
+      name: 'Mutuelle de Mbour escale',
       region: 'Thiès',
       commune: 'Mbour',
       status: 'active',
       agreement: 'TH-023-2020',
-      manager: 'Ousmane Sene',
+      manager: 'Ousmane sene',
       phone: '+221 77 411 99 88',
       email: 'mbour.escale@unamusc.sn',
       rates: '4 500 FCFA / an',
@@ -413,7 +413,7 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
     },
     {
       id: 18,
-      name: 'Mutuelle de Kaolack Ndangane',
+      name: 'Mutuelle de Kaolack ndangane',
       region: 'Kaolack',
       commune: 'Kaolack',
       status: 'active',
@@ -427,14 +427,14 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
       lastUpdate: '12/03/2026',
       lat: 14.1512,
       lng: -16.0782,
-      landmark: "Quartier Ndangane, près du poste de santé local, en face du collège franco-arabe.",
+      landmark: "Quartier ndangane, près du poste de santé local, en face du collège franco-arabe.",
       localInfo: "Propose une prise en charge rapide au centre de santé et à l'hôpital régional de Kaolack."
     },
     {
       id: 19,
-      name: 'Mutuelle de Saint-Louis Sor',
+      name: 'Mutuelle de Saint-Louis sor',
       region: 'Saint-Louis',
-      commune: 'Saint-Louis Sor',
+      commune: 'Saint-Louis sor',
       status: 'active',
       agreement: 'SL-010-2019',
       manager: 'Cheikh Diallo',
@@ -446,17 +446,17 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
       lastUpdate: '20/05/2026',
       lat: 16.0245,
       lng: -16.4862,
-      landmark: "Quartier Sor, en face de la gare ferroviaire historique, à 100m du pont Faidherbe.",
+      landmark: "Quartier sor, en face de la gare ferroviaire historique, à 100m du pont faidherbe.",
       localInfo: "Conventionnée avec l'hôpital régional de Saint-Louis et les pharmacies partenaires de l'île de Saint-Louis."
     },
     {
       id: 20,
-      name: 'Mutuelle de Touba Mosquée',
+      name: 'Mutuelle de Touba mosquée',
       region: 'Diourbel',
       commune: 'Touba',
       status: 'active',
       agreement: 'DB-211-2024',
-      manager: 'Serigne Fallou Mbacké',
+      manager: 'Serigne fallou Mbacké',
       phone: '+221 77 400 55 66',
       email: 'toubamosquee@unamusc.sn',
       rates: '8 000 FCFA / an',
@@ -465,17 +465,17 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
       lastUpdate: '17/06/2026',
       lat: 14.8690,
       lng: -15.8752,
-      landmark: "À 200m du grand minaret de la Grande Mosquée de Touba, en face du marché central.",
+      landmark: "À 200m du Grand minaret de la grande mosquée de Touba, en face du marché central.",
       localInfo: "Facilite l'orientation médicale et la prise en charge à 85% dans les hôpitaux Matlaboul Fawzaini et dispensaires de Touba."
     },
     {
       id: 21,
-      name: 'Mutuelle de Ziguinchor Boudody',
+      name: 'Mutuelle de Ziguinchor boudody',
       region: 'Ziguinchor',
       commune: 'Ziguinchor',
       status: 'active',
       agreement: 'ZG-052-2022',
-      manager: 'Mariama Sané',
+      manager: 'Mariama sané',
       phone: '+221 77 567 89 01',
       email: 'boudody@unamusc.sn',
       rates: '6 000 FCFA / an',
@@ -484,17 +484,17 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
       lastUpdate: '14/02/2026',
       lat: 12.5710,
       lng: -16.2755,
-      landmark: "Quartier Boudody, juste derrière le quai de pêche de Ziguinchor.",
+      landmark: "Quartier boudody, juste derrière le quai de pêche de Ziguinchor.",
       localInfo: "Très active auprès des coopératives de transformation des produits de la mer. Propose des facilités d'adhésion."
     },
     {
       id: 22,
-      name: 'Mutuelle de Louga Centre',
+      name: 'Mutuelle de Louga centre',
       region: 'Louga',
       commune: 'Louga',
       status: 'en_sommeil',
       agreement: 'LG-015-2020',
-      manager: 'Babacar Cissé',
+      manager: 'Babacar cissé',
       phone: '+221 77 234 56 78',
       email: 'louga.c@unamusc.sn',
       rates: '4 500 FCFA / an',
@@ -504,7 +504,7 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
       lat: 15.6172,
       lng: -16.2255,
       landmark: "Centre-ville de Louga, derrière la préfecture de département.",
-      localInfo: "Cette mutuelle est actuellement en restructuration. Pour toute question urgente, veuillez vous rapprocher de la MSD mutuelle de santé départementale de Louga."
+      localInfo: "Cette mutuelle Est actuellement en restructuration. Pour toute question urgente, veuillez vous rapprocher de la MSD mutuelle de santé départementale de Louga."
     },
     {
       id: 23,
@@ -517,12 +517,12 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
       phone: '+221 77 987 65 43',
       email: 'golfsud@senmutuelles.sn',
       rates: '6 500 FCFA / an',
-      services: 'Consultations (80%), Maternité (90%)',
+      services: 'Consultations (80%), maternité (90%)',
       certified: true,
       lastUpdate: '11/06/2026',
       lat: 14.7832,
       lng: -17.4105,
-      landmark: "Golf Sud, en face de la mosquée de la Cité des Enseignants.",
+      landmark: "Golf Sud, en face de la mosquée de la cité des enseignants.",
       localInfo: "Prise en charge très avantageuse pour les consultations de maternité à la clinique locale conventionnée."
     }
   ];
@@ -780,7 +780,7 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
       });
 
       window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
+        attribution: '&Copy; openstreetmap contributors'
       }).addTo(mapRef.current);
 
       markersGroupRef.current = window.L.featureGroup().addTo(mapRef.current);
@@ -848,7 +848,7 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
           .bindPopup(`
             <div style="font-family: var(--font-body); padding: 10px; min-width: 220px; text-align: left; line-height: 1.4;">
               <div style="font-size: 0.65rem; color: #fff; background: ${markerColor}; display: inline-block; padding: 2px 6px; border-radius: 4px; margin-bottom: 5px; font-weight: bold;">
-                ${mutuelle.status === 'active' ? 'AGRÉÉE' : 'EN SOMMEIL'}
+                ${mutuelle.status === 'active' ? 'AGRÉÉE' : 'En sommeil'}
               </div>
               <h4 style="margin: 0 0 4px 0; color: #0f172a; font-size: 0.95rem; font-weight: 800;">${mutuelle.name}</h4>
               <p style="margin: 0 0 4px 0; font-size: 0.78rem; color: #475569;"><ProIcon name="map-pin" /> ${mutuelle.commune} (${mutuelle.region})</p>
@@ -1025,7 +1025,7 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
         <div className="card" style={{ marginBottom: '2rem', padding: '1rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
             <h3 style={{ color: 'var(--primary)', fontSize: '1.2rem', fontWeight: 'bold', margin: 0 }}>
-              {lang === 'fr' ? 'Cartographie des mutuelles' : 'Kàrtu Mutuelle yi'}
+              {lang === 'fr' ? 'Cartographie des mutuelles' : 'Kàrtu mutuelle yi'}
             </h3>
             <button 
               className="btn btn-outline btn-sm" 
@@ -1040,7 +1040,7 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
             id="annuaire-map" 
             className="annuaire-map-container"
             style={{ 
-              // Le conteneur ne doit JAMAIS valoir zero hauteur : Leaflet
+              // le conteneur ne doit JAMAIS valoir zero hauteur : Leaflet
               // mesure ses tuiles au montage, et sur un element masque
               // (`display: none`) il releve 0x0 — la carte restait grise
               // meme apres un `invalidateSize`. On le masque donc
@@ -1089,8 +1089,8 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
                     onClick={() => setShowInstructions(!showInstructions)}
                   >
                     {showInstructions
-                      ? (lang === 'fr' ? '🔼 Masquer l\'itinéraire détaillé' : '🔼 Nëbb yoon bi')
-                      : (lang === 'fr' ? '🔽 Afficher l\'itinéraire détaillé' : '🔽 Wone yoon bi')}
+                      ? (lang === 'fr' ? '🔼 Masquer l\'itinéraire détaillé' : 'Nëbb yoon bi')
+                      : (lang === 'fr' ? '🔽 Afficher l\'itinéraire détaillé' : 'Wone yoon bi')}
                   </button>
 
                   {showInstructions && (

@@ -23,7 +23,7 @@ export function getEmergencyIssuanceStatus() {
     return {
       isEmergency: true,
       period: 'weekend',
-      label: '🏥 Permanence Week-End (24h/24)',
+      label: 'Permanence week-end (24h/24)',
       badgeColor: '#7c3aed',
       badgeBg: 'rgba(124, 58, 237, 0.12)',
       deliveryText: 'Délivrée d\'urgence 24h/24 par la structure de santé • Prise en charge immédiate des soins • Régularisation administrative par l\'agent le lundi dès 08h00.',
@@ -33,7 +33,7 @@ export function getEmergencyIssuanceStatus() {
     return {
       isEmergency: true,
       period: 'night',
-      label: '🌙 Permanence de Garde (17h00 - 07h59)',
+      label: 'Permanence de garde (17h00 - 07h59)',
       badgeColor: '#d97706',
       badgeBg: 'rgba(217, 119, 6, 0.12)',
       deliveryText: 'Délivrée d\'urgence par la structure sanitaire conventionnée • Prise en charge immédiate • Régularisation administrative par l\'agent le prochain jour ouvrable dès 08h00.',
@@ -43,7 +43,7 @@ export function getEmergencyIssuanceStatus() {
     return {
       isEmergency: false,
       period: 'standard',
-      label: '☀️ Service Standard UNAMUSC (08h00 - 16h59)',
+      label: 'Service standard UNAMUSC (08h00 - 16h59)',
       badgeColor: '#059669',
       badgeBg: 'rgba(5, 150, 105, 0.12)',
       deliveryText: 'Instruction et homologation régulières en agence mutualiste.',
@@ -59,7 +59,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
   //  noms de personnes réelles, des codes de validation homologués
   //  (GAR-2026-FANN-88, GAR-2026-DANTEC-12…) et des mentions d'homologation
   //  UNAMUSC. Un hôpital recevait ces documents comme des prises en charge
-  //  réelles. Un engagement financier ne se simule pas. Le registre affiché
+  //  réelles. Un engagement financier ne se simule pas. le registre affiché
   //  ne contient donc que des garanties réellement enregistrées en base.
   // ────────────────────────────────────────────────────────────────────
 
@@ -122,9 +122,9 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
         id: 1,
         patientName: 'Amadou Sow',
         cmuNumber: 'CSU-DKR-2026-8812.2',
-        examName: 'Bilan sanguin complet & Sérologies',
-        examDetail: 'NFS, Glycémie, Bilan hépatique',
-        doctor: 'Dr. Cheikh Anta Diop (Abass Ndao)',
+        examName: 'Bilan sanguin complet & sérologies',
+        examDetail: 'Nfs, glycémie, bilan hépatique',
+        doctor: 'Dr. Cheikh anta Diop (Abass Ndao)',
         coverage: '80% UNAMUSC',
         status: 'prescrit',
         fileName: null,
@@ -134,9 +134,9 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
         id: 2,
         patientName: 'Fatou Diop',
         cmuNumber: 'CMU-DKR-2026-4401',
-        examName: 'Radiographie pulmonaire & Scanner DICOM',
+        examName: 'Radiographie pulmonaire & scanner dicom',
         examDetail: 'Imagerie thoracique de contrôle',
-        doctor: 'Dr. Ousmane Sow (Hôpital Fann)',
+        doctor: 'Dr. Ousmane Sow (hôpital Fann)',
         coverage: '100% Gratuité',
         status: 'prescrit',
         fileName: null,
@@ -278,7 +278,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
   const [activeTab, setActiveTab] = useState('list'); // 'list' | 'new'
   
   // 🎯 WIZARD MULTI-ÉTAPES pour création de Lettre de Garantie
-  // Le pas courant est réinitialisé au clic (L~1732) ; le libellé d'étape n'est
+  // le pas courant est réinitialisé au clic (L~1732) ; le libellé d'étape n'est
   // pas encore affiché, d'où l'absence de lecture de `wizardStep`.
   const [, setWizardStep] = useState(1); // 1: Patient Info | 2: Acte & Montant | 3: Révision
 
@@ -394,21 +394,21 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
     const cmuPart = Math.round(estAmt * (rate / 100));
     const patientPart = Math.max(0, estAmt - cmuPart);
     return [
-      `🇸🇳 *DEMANDE ${isOrder ? 'DE BON DE COMMANDE PHARMACIE (50%)' : 'DE LETTRE DE GARANTIE HOSPITALIÈRE (80%)'} — UNAMUSC*`,
+      `🇸🇳 *DEMANDE ${isOrder ? 'De bon de commande pharmacie (50%)' : 'De lettre de garantie hospitalière (80%)'} — UNAMUSC*`,
       `━━━━━━━━━━━━━━━━━━━━`,
-      `🔖 *Référence Demande :* #${refCode || (isOrder ? 'ORD-WA-2026' : 'GAR-WA-2026')}`,
+      `*Référence demande :* #${refCode || (isOrder ? 'ORD-WA-2026' : 'GAR-WA-2026')}`,
       `👤 *Assuré(e) :* ${applicantFirstName || activeFirstName} ${applicantLastName || activeLastName}`,
-      `🪪 *N° Carte CSU :* ${applicantCmu || activeCmuNumber}`,
-      `📱 *Téléphone Assuré :* ${whatsappPhoneInput || citizenUser?.phone || '+221 77 123 45 67'}`,
-      `🏥 *${isOrder ? 'Pharmacie / Officine' : 'Hôpital / Structure'} :* ${waReqStructure || (isOrder ? 'Pharmacie Partenaire Agréée CSU' : structureName)}`,
+      `*N° carte CSU :* ${applicantCmu || activeCmuNumber}`,
+      `*Téléphone assuré :* ${whatsappPhoneInput || citizenUser?.phone || '+221 77 123 45 67'}`,
+      `🏥 *${isOrder ? 'Pharmacie / Officine' : 'Hôpital / Structure'} :* ${waReqStructure || (isOrder ? 'Pharmacie partenaire agréée CSU' : structureName)}`,
       `🩺 *${isOrder ? 'Médicaments demandés' : 'Acte médical / Motif'} :* ${waReqAct || medicalAct || 'À préciser sur pièce jointe'}`,
       ``,
-      `💰 *Estimation Tiers-Payant :*`,
+      `*Estimation tiers-payant :*`,
       `• Montant estimé : ${estAmt.toLocaleString('fr-FR')} FCFA`,
-      `• Part Mutuelle (${rate}%) : ${cmuPart.toLocaleString('fr-FR')} FCFA`,
+      `• Part mutuelle (${rate}%) : ${cmuPart.toLocaleString('fr-FR')} FCFA`,
       `• Ticket modérateur (${100 - rate}%) : ${patientPart.toLocaleString('fr-FR')} FCFA`,
       ``,
-      `📎 *Pièce justificative :* Je joins ci-dessous la photo de mon ${isOrder ? 'ordonnance médicale' : 'devis hospitalier / bulletin d\'admission'} pour recevoir mon document validé sur WhatsApp.`
+      `*Pièce justificative :* je joins ci-dessous la photo de mon ${isOrder ? 'ordonnance médicale' : 'devis hospitalier / bulletin d\'admission'} pour recevoir mon document validé sur WhatsApp.`
     ].join('\n');
   };
 
@@ -416,7 +416,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
     if (e && e.preventDefault) e.preventDefault();
     const isOrder = waReqType === 'purchase_order';
     const actText = formatSentenceCase(waReqAct || medicalAct || (isOrder ? 'Ordonnance médicale WhatsApp' : 'Consultation / Hospitalisation')).trim();
-    const structText = (waReqStructure || structureName || (isOrder ? 'Pharmacie Partenaire Agréée CSU' : 'Hôpital Universitaire de Fann (Dakar)')).trim();
+    const structText = (waReqStructure || structureName || (isOrder ? 'Pharmacie partenaire agréée CSU' : 'Hôpital universitaire de Fann (Dakar)')).trim();
     const amtNum = Math.max(0, parseFloat(waReqAmount || estimatedAmount) || 0);
     const suffix = Math.floor(1000 + Math.random() * 9000);
     const refCode = isOrder ? `ORD-WA-2026-${suffix}` : `GAR-WA-2026-${suffix}`;
@@ -501,7 +501,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
     window.open(waUrl, '_blank', 'noopener,noreferrer');
 
     setWhatsappRequestModal(false);
-    setSuccessMsg(`💬 Demande WhatsApp #${refCode} enregistrée dans la plateforme et ouverte sur WhatsApp ! Joignez la photo de votre ${isOrder ? 'ordonnance' : 'devis hospitalier'} dans la discussion.`);
+    setSuccessMsg(`Demande WhatsApp #${refCode} enregistrée dans la plateforme et ouverte sur WhatsApp ! Joignez la photo de votre ${isOrder ? 'ordonnance' : 'devis hospitalier'} dans la discussion.`);
   };
 
   const formatGuaranteeLetterWhatsAppMsg = (letter) => {
@@ -513,13 +513,13 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
       const cmuAmt = Number(letter.cmu_covered || Math.round(totalAmt * 0.5));
       const patientAmt = Number(letter.patient_pay || Math.round(totalAmt * 0.5));
       return [
-        `🇸🇳 *UNAMUSC SÉNÉGAL — BON DE COMMANDE PHARMACIE (48H)*`,
+        `🇸🇳 *UNAMUSC Sénégal — Bon de commande pharmacie (48h)*`,
         `━━━━━━━━━━━━━━━━━━━━`,
-        `📄 *Code Bon :* #${code}`,
+        `*Code bon :* #${code}`,
         `👤 *Assuré(e) :* ${letter.first_name || activeFirstName} ${letter.last_name || activeLastName}`,
-        `🪪 *N° Carte CSU :* ${letter.cmu_number || activeCmuNumber}`,
-        `💰 *Total Ordonnance :* ${totalAmt.toLocaleString('fr-FR')} FCFA`,
-        `• *Prise en charge Mutuelle (50%) : ${cmuAmt.toLocaleString('fr-FR')} FCFA*`,
+        `*N° carte CSU :* ${letter.cmu_number || activeCmuNumber}`,
+        `*Total ordonnance :* ${totalAmt.toLocaleString('fr-FR')} FCFA`,
+        `• *Prise en charge mutuelle (50%) : ${cmuAmt.toLocaleString('fr-FR')} FCFA*`,
         `• *Reste à payer assuré (50%) : ${patientAmt.toLocaleString('fr-FR')} FCFA*`,
         `🔍 *Vérification :* ${window.location.origin}/#/verify/${code}`
       ].join('\n');
@@ -530,30 +530,30 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
     const coveredAmt = Number(letter.max_amount || Math.round((estAmt * pct) / 100));
     const patientRest = Math.max(0, estAmt - coveredAmt);
     const statusLabel = letter.status === 'approved'
-      ? '✅ HOMOLOGUÉE & VALIDÉE'
+      ? 'Homologuée & validée'
       : letter.status === 'emergency_issued'
       ? '🚨 DÉLIVRÉE D\'URGENCE (Soins immédiats 7j/7)'
       : letter.status === 'rejected'
-      ? '❌ REJETÉE'
-      : '⏳ EN INSTRUCTION AGENT';
+      ? 'Rejetée'
+      : '⏳ en instruction agent';
     const verifyUrl = `${window.location.origin}/#/verify/${code}`;
     return [
-      `🇸🇳 *UNAMUSC SÉNÉGAL — LETTRE DE GARANTIE HOSPITALIÈRE*`,
+      `🇸🇳 *UNAMUSC Sénégal — Lettre de garantie hospitalière*`,
       `━━━━━━━━━━━━━━━━━━━━`,
-      `📜 *Code Garantie :* #${code}`,
+      `*Code garantie :* #${code}`,
       `👤 *Assuré(e) :* ${letter.first_name || activeFirstName} ${letter.last_name || activeLastName}`,
-      `🪪 *N° Carte CSU :* ${letter.cmu_number || activeCmuNumber}`,
+      `*N° carte CSU :* ${letter.cmu_number || activeCmuNumber}`,
       `🏥 *Établissement :* ${letter.hospital_name || letter.structure_name || 'Hôpital Conventionné CSU'}`,
-      `🩺 *Acte médical :* ${letter.medical_act || 'Soins hospitaliers'}`,
+      `*Acte médical :* ${letter.medical_act || 'Soins hospitaliers'}`,
       `📌 *Statut :* ${statusLabel}`,
       ``,
-      `💰 *Décompte Tiers-Payant Hospitalier (${pct}%) :*`,
+      `*Décompte tiers-payant hospitalier (${pct}%) :*`,
       `• Devis soumis : ${estAmt.toLocaleString('fr-FR')} FCFA`,
       `• *Montant garanti par la mutuelle (${pct}%) : ${coveredAmt.toLocaleString('fr-FR')} FCFA*`,
       `• *Reste à charge assuré (${100 - pct}%) : ${patientRest.toLocaleString('fr-FR')} FCFA*`,
       ``,
-      `🔍 *Vérification hôpital :* ${verifyUrl}`,
-      `_Présentez ce message WhatsApp ou le certificat PDF avec votre carte CSU au bureau des entrées de l'hôpital._`
+      `*Vérification hôpital :* ${verifyUrl}`,
+      `_présentez ce message WhatsApp ou le certificat PDF avec votre carte CSU au bureau des entrées de l'hôpital._`
     ].join('\n');
   };
 
@@ -579,7 +579,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
             recipient: normalizedPhone,
             channel: 'whatsapp',
             type: 'prise_en_charge',
-            subject: `Lettre de Garantie #${code}`,
+            subject: `Lettre de garantie #${code}`,
             body: message
           })
         });
@@ -656,7 +656,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
         </head>
         <body>
           <div class="no-print">
-            <button onclick="window.print()" class="btn btn-success fw-bold px-4 py-2 me-2" style="background: #059669; border-color: #059669;"><ProIcon name="printer" /> Imprimer / Télécharger le PDF a4</button>
+            <button onclick="window.print()" class="btn btn-success fw-bold px-4 py-2 me-2" style="background: #059669; border-color: #059669;"><ProIcon name="printer" /> Imprimer / Télécharger Le PDF a4</button>
             <button onclick="window.close()" class="btn btn-secondary fw-bold px-3 py-2">Fermer la fenêtre</button>
           </div>
 
@@ -712,15 +712,15 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               <div class="col-6 border-top pt-3" style="border-color: #e2e8f0 !important;">
                 <span class="small fw-bold d-block mb-1 text-muted "><ProIcon name="wallet" /> Montant estimé & accord de prise en charge :</span>
                 <div class="small" style="color: #334155;">
-                  Devis Soumis : <strong>${Number(letter.estimated_amount).toLocaleString()} FCFA</strong><br />
+                  Devis soumis : <strong>${Number(letter.estimated_amount).toLocaleString()} FCFA</strong><br />
                   ${letter.is_sesame || letter.is_senior ? `
                     <span class="badge bg-warning text-dark fw-bold mb-1">🧓 bénéficiaire plan sesame (60 ans et +)</span><br />
                     Prise en charge UNAMUSC (80%) : <strong style="color: #047857;">${Number(letter.unamusc_amount || letter.estimated_amount * 0.8).toLocaleString()} FCFA</strong><br />
-                    Contrepartie Plan SESAME État (20%) : <strong style="color: #d97706;">${Number(letter.sesame_amount || letter.estimated_amount * 0.2).toLocaleString()} FCFA</strong><br />
+                    Contrepartie plan sesame état (20%) : <strong style="color: #d97706;">${Number(letter.sesame_amount || letter.estimated_amount * 0.2).toLocaleString()} FCFA</strong><br />
                     <span style="color: #059669; font-weight: bold; font-size: 1rem;">Reste à payer assuré senior : 0 FCFA (prise en charge 100%)</span>
                   ` : `
                     Prise en charge UNAMUSC (${letter.guaranteed_percentage || 80}%) : <strong style="color: #047857; font-size: 1.05rem;">${Number(guaranteeAmt).toLocaleString()} FCFA</strong><br />
-                    <span style="color: #b45309; font-weight: bold;">Reste à charge patient (Ticket Modérateur 20%) : ${Number(patientRest).toLocaleString()} FCFA</span>
+                    <span style="color: #b45309; font-weight: bold;">Reste à charge patient (ticket modérateur 20%) : ${Number(patientRest).toLocaleString()} FCFA</span>
                   `}
                 </div>
               </div>
@@ -735,7 +735,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 </p>
                 ${letter.is_emergency_issuance ? `
                   <div class="mt-2 text-primary fw-bold" style="font-size: 0.76rem;">
-                    <ProIcon name="siren" color="#dc2626" /> Délivrance d'Urgence Permanente : ${letter.emergency_period === 'weekend' ? 'Week-End (24h/24)' : 'Garde de Nuit (17h00 - 07h59)'} • Soins garantis 7j/7.
+                    <ProIcon name="siren" color="#dc2626" /> Délivrance d'urgence permanente : ${letter.emergency_period === 'weekend' ? 'Week-End (24h/24)' : 'Garde de nuit (17h00 - 07h59)'} • Soins garantis 7j/7.
                   </div>
                 ` : ''}
               </div>
@@ -773,30 +773,30 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
     return {
       docType: isSenior 
-        ? 'LETTRE DE GARANTIE HOSPITALIÈRE — CONVENTION PLAN SESAME (100%)' 
-        : 'LETTRE DE GARANTIE HOSPITALIÈRE HABILITÉE (80%)',
-      title: 'Attestation de Prise en Charge Hospitalière',
+        ? 'Lettre de garantie hospitalière — Convention plan sesame (100%)' 
+        : 'Lettre de garantie hospitalière habilitée (80%)',
+      title: 'Attestation de prise en charge hospitalière',
       referenceNo: letter.validation_code,
       beneficiaryName: `${letter.first_name} ${letter.last_name}`,
       cmuNumber: bInfo.beneficiaryCode,
       structureName: letter.hospital_name || 'Hôpital Universitaire de Fann (Dakar)',
       details: isSenior ? [
-        { label: 'N° CSU Bénéficiaire', value: `${bInfo.beneficiaryCode} (${bInfo.index === 1 ? 'Titulaire .1' : 'Ayant droit .' + bInfo.index})` },
-        { label: 'Régime Spécial', value: 'Plan SESAME (Personne âgée de 60 ans et plus)' },
-        { label: 'Acte Médical / Intervention', value: letter.medical_act },
-        { label: 'Établissement Récepteur', value: letter.hospital_name || 'Hôpital Universitaire de Fann' },
-        { label: 'Montant Devis Soumis', value: `${Number(letter.estimated_amount).toLocaleString()} FCFA` },
-        { label: 'Prise en Charge UNAMUSC (80%)', value: `${Number(letter.unamusc_amount || letter.estimated_amount * 0.8).toLocaleString()} FCFA` },
-        { label: 'Contrepartie Plan SESAME État (20%)', value: `${Number(letter.sesame_amount || letter.estimated_amount * 0.2).toLocaleString()} FCFA` },
-        { label: 'Reste à charge Patient Senior', value: '0 FCFA (Prise en charge intégrale à 100%)' }
+        { label: 'N° CSU bénéficiaire', value: `${bInfo.beneficiaryCode} (${bInfo.index === 1 ? 'Titulaire .1' : 'Ayant droit .' + bInfo.index})` },
+        { label: 'Régime spécial', value: 'Plan sesame (personne âgée de 60 ans et plus)' },
+        { label: 'Acte médical / Intervention', value: letter.medical_act },
+        { label: 'Établissement récepteur', value: letter.hospital_name || 'Hôpital Universitaire de Fann' },
+        { label: 'Montant devis soumis', value: `${Number(letter.estimated_amount).toLocaleString()} FCFA` },
+        { label: 'Prise en charge UNAMUSC (80%)', value: `${Number(letter.unamusc_amount || letter.estimated_amount * 0.8).toLocaleString()} FCFA` },
+        { label: 'Contrepartie plan sesame état (20%)', value: `${Number(letter.sesame_amount || letter.estimated_amount * 0.2).toLocaleString()} FCFA` },
+        { label: 'Reste à charge patient senior', value: '0 FCFA (Prise en charge intégrale à 100%)' }
       ] : [
-        { label: 'N° CSU Bénéficiaire', value: `${bInfo.beneficiaryCode} (${bInfo.index === 1 ? 'Titulaire .1' : 'Ayant droit .' + bInfo.index})` },
-        { label: 'Code Adhérent principal', value: bInfo.adherentCode },
-        { label: 'Acte Médical / Intervention', value: letter.medical_act },
-        { label: 'Établissement Récepteur', value: letter.hospital_name || 'Hôpital Universitaire de Fann' },
-        { label: 'Montant Devis Soumis', value: `${Number(letter.estimated_amount).toLocaleString()} FCFA` },
-        { label: 'Prise en Charge UNAMUSC (80%)', value: `${Number(guaranteeAmt).toLocaleString()} FCFA (${letter.guaranteed_percentage || 80}%)` },
-        { label: 'Ticket Modérateur Patient (20%)', value: `${Number(Math.max(0, letter.estimated_amount - guaranteeAmt)).toLocaleString()} FCFA` }
+        { label: 'N° CSU bénéficiaire', value: `${bInfo.beneficiaryCode} (${bInfo.index === 1 ? 'Titulaire .1' : 'Ayant droit .' + bInfo.index})` },
+        { label: 'Code adhérent Principal', value: bInfo.adherentCode },
+        { label: 'Acte médical / Intervention', value: letter.medical_act },
+        { label: 'Établissement récepteur', value: letter.hospital_name || 'Hôpital Universitaire de Fann' },
+        { label: 'Montant devis soumis', value: `${Number(letter.estimated_amount).toLocaleString()} FCFA` },
+        { label: 'Prise en charge UNAMUSC (80%)', value: `${Number(guaranteeAmt).toLocaleString()} FCFA (${letter.guaranteed_percentage || 80}%)` },
+        { label: 'Ticket modérateur patient (20%)', value: `${Number(Math.max(0, letter.estimated_amount - guaranteeAmt)).toLocaleString()} FCFA` }
       ],
       notes: letter.agent_note || 'L\'UNAMUSC s\'engage sous le Programme National de la Couverture Sanitaire du Sénégal à régler directement à l\'établissement hospitalier le montant garanti sous présentation de la facture conforme.'
     };
@@ -851,7 +851,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
           ...l,
           status: 'approved',
           regularized_at: new Date().toISOString(),
-          agent_note: `${l.agent_note || ''} [✅ Régularisé et homologué par l'agent mutualiste UNAMUSC le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}].`
+          agent_note: `${l.agent_note || ''} [Régularisé et homologué par l'agent mutualiste UNAMUSC Le ${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}].`
         };
       }
       return l;
@@ -861,7 +861,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
       localStorage.setItem('unamusc_guarantee_letters', JSON.stringify(updatedLetters));
     // eslint-disable-next-line no-unused-vars -- Persistance best-effort : un stockage indisponible ne doit pas perdre la régularisation.
     } catch (e) {}
-    alert(`✅ La prise en charge d'urgence #${letterItem.validation_code} pour ${letterItem.first_name} ${letterItem.last_name} a été régularisée et homologuée avec succès !`);
+    alert(`La prise en charge d'urgence #${letterItem.validation_code} pour ${letterItem.first_name} ${letterItem.last_name} a été régularisée et homologuée avec succès !`);
   };
 
   const handleSubmit = async (e) => {
@@ -913,8 +913,8 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
         agent_note: isSenior
           ? `🧓 Bénéficiaire Plan SESAME (60 ans et +). Prise en charge intégrale 100% sans reste à charge : UNAMUSC (${unamuscAmt.toLocaleString()} FCFA / 80%) + Contrepartie Plan SESAME État du Sénégal (${sesameAmt.toLocaleString()} FCFA / 20%).`
           : isEmerg
-          ? `🌙 Délivrée d'urgence par la structure sanitaire conventionnée en ${timeStatus.label}. Soins immédiats autorisés 7j/7. En attente de régularisation administrative par l'agent le ${timeStatus.regularizationDue}.`
-          : 'Demande soumise sous le Tiers-payant UNAMUSC (80% mutuelle, 20% ticket modérateur assuré).'
+          ? `Délivrée d'urgence par la structure sanitaire conventionnée en ${timeStatus.label}. Soins immédiats autorisés 7j/7. En attente de régularisation administrative par l'agent Le ${timeStatus.regularizationDue}.`
+          : 'Demande soumise sous le tiers-payant UNAMUSC (80% mutuelle, 20% ticket modérateur assuré).'
       };
 
       try {
@@ -938,7 +938,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
       try { localStorage.setItem('unamusc_guarantee_letters', JSON.stringify(updatedList)); } catch { /* ignore */ }
       setLastCreatedItem(newLetter);
       setSuccessMsg(lang === 'wo' 
-        ? 'Demande bi yónnee nañu ko ak jamm. Fajukaay bi mën na la fajj léegi.' 
+        ? 'Demande bi yónnee nañu ko ak Jamm. Fajukaay bi mën na la fajj léegi.' 
         : isEmerg 
         ? '🚨 Prise en charge d\'urgence délivrée avec succès ! Les soins sont immédiatement autorisés à l\'hôpital. L\'agent mutualiste régularisera le dossier.' 
         : 'Votre demande de lettre de garantie hospitalière a été soumise avec succès !');
@@ -969,8 +969,8 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
       setLastCreatedItem(newOrder);
 
       setSuccessMsg(prescriptionPhoto 
-        ? `Votre Bon de Commande Pharmacie (${newOrder.order_code}) et votre ordonnance ont été soumis. Le gérant UNAMUSC vérifiera l'ordonnance avant d'activer votre bon (Tiers-payant 50%). Vous serez notifié dès validation.`
-        : `Votre Bon de Commande Pharmacie (${newOrder.order_code}) a été généré (Prise en charge UNAMUSC 50%). Valable 48h dans toute pharmacie agréée UNAMUSC.`);
+        ? `Votre bon de commande pharmacie (${newOrder.order_code}) et votre ordonnance ont été soumis. le gérant UNAMUSC vérifiera l'ordonnance avant d'activer votre bon (tiers-payant 50%). Vous serez notifié dès validation.`
+        : `Votre bon de commande pharmacie (${newOrder.order_code}) a été généré (prise en charge UNAMUSC 50%). Valable 48h dans toute pharmacie agréée UNAMUSC.`);
     }
 
     setMedicalAct('');
@@ -1091,12 +1091,12 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
         const newExam = {
           id: Date.now(),
           title: uploadLabTargetOrder.examName,
-          exam_type: uploadLabTargetOrder.id === 2 ? 'Radiographie DICOM' : 'Bilan Biologique',
-          badge: uploadLabTargetOrder.id === 2 ? 'HD DICOM' : 'LABORATOIRE',
+          exam_type: uploadLabTargetOrder.id === 2 ? 'Radiographie dicom' : 'Bilan biologique',
+          badge: uploadLabTargetOrder.id === 2 ? 'Hd dicom' : 'LABORATOIRE',
           facility: partnerUser?.structureName || 'Laboratoire Pasteur Dakar',
           doctor: uploadLabTargetOrder.doctor,
           date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }),
-          conclusion: uploadLabNotes || (uploadLabTargetOrder.id === 2 ? 'Série DICOM transmise au DMP. Examen de contrôle pulmonaire satisfaisant.' : 'Bilan sanguin complet dans les normes. Glycémie à jeun : 0.94 g/L.'),
+          conclusion: uploadLabNotes || (uploadLabTargetOrder.id === 2 ? 'Série dicom transmise au dmp. Examen de contrôle pulmonaire satisfaisant.' : 'Bilan sanguin complet dans les normes. Glycémie à jeun : 0.94 g/L.'),
           cliches: uploadLabTargetOrder.id === 2 ? 5 : 1,
           preview: uploadLabTargetOrder.id === 2 ? '/csu_dicom_xray.png' : '/csu_digital_health_real.jpg'
         };
@@ -1106,7 +1106,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
       // eslint-disable-next-line no-unused-vars -- Persistance best-effort : un stockage indisponible ne doit pas perdre le compte-rendu déjà transmis.
       } catch (e) {}
 
-      alert(`✅ Fichier et compte-rendu certifiés transmis au Dossier Médical Partagé (DMP) pour ${uploadLabTargetOrder.patientName} (${uploadLabTargetOrder.cmuNumber}) !`);
+      alert(`Fichier et compte-rendu certifiés transmis au dossier médical partagé (dmp) pour ${uploadLabTargetOrder.patientName} (${uploadLabTargetOrder.cmuNumber}) !`);
       setUploadLabTargetOrder(null);
       setUploadLabFileName('');
       setUploadLabNotes('');
@@ -1139,7 +1139,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 Périmètre de votre profil laboratoire
               </h1>
               <p style={{ color: 'rgba(209, 250, 229, 0.95)', fontSize: '1rem', maxWidth: '650px', lineHeight: 1.6 }}>
-                Conformément aux directives du Ministère de la Santé, la gestion des lettres de garantie hospitalières est attribuée aux établissements récepteurs. Votre compte ({partnerUser?.structureName || 'Laboratoire / Établissement de santé conventionné'}) est dédié aux bilans biologiques, analyses sanguines et clichés radiologiques.
+                Conformément aux directives du ministère de la santé, la gestion des lettres de garantie hospitalières Est attribuée aux établissements récepteurs. Votre compte ({partnerUser?.structureName || 'Laboratoire / Établissement de santé conventionné'}) est dédié aux bilans biologiques, analyses sanguines et clichés radiologiques.
               </p>
 
               <div className="d-flex align-items-center flex-wrap mt-4" style={{ gap: '28px', rowGap: '16px' }}>
@@ -1184,7 +1184,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     cmuNumber: 'CSU-DKR-2026-8812.2',
                     examName: '',
                     examDetail: '',
-                    doctor: 'Dr. Cheikh Anta Diop (Abass Ndao)',
+                    doctor: 'Dr. Cheikh anta Diop (Abass Ndao)',
                     coverage: '80% UNAMUSC',
                     status: 'prescrit',
                     fileName: null,
@@ -1230,7 +1230,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     </td>
                     <td style={{ padding: '1rem' }}>
                       <div className="fw-bold text-primary d-block mb-1" style={{ fontSize: '0.95rem' }}>
-                        {order.examName || (order.id === 2 ? 'Radiographie pulmonaire & Scanner DICOM' : 'Bilan sanguin complet & sérologies')}
+                        {order.examName || (order.id === 2 ? 'Radiographie pulmonaire & scanner dicom' : 'Bilan sanguin complet & sérologies')}
                       </div>
                       <div className="text-muted small d-block" style={{ fontSize: '0.82rem', lineHeight: '1.35' }}>
                         {order.examDetail || (order.id === 2 ? 'Imagerie thoracique de contrôle' : 'NFS, glycémie, bilan hépatique')}
@@ -1256,7 +1256,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                             style={{ background: '#059669', border: 'none', borderRadius: '10px', fontSize: '0.84rem', boxShadow: '0 4px 12px rgba(5,150,105,0.25)' }}
                             onClick={() => setUploadLabTargetOrder(order)}
                           >
-                            {order.examName?.toLowerCase().includes('radio') || order.examName?.toLowerCase().includes('dicom') || order.id === 2 ? '🩻 Joindre DICOM' : '📤 Transmettre PDF'}
+                            {order.examName?.toLowerCase().includes('radio') || order.examName?.toLowerCase().includes('dicom') || order.id === 2 ? 'Joindre dicom' : 'Transmettre PDF'}
                           </button>
                         )}
 
@@ -1323,7 +1323,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   </div>
                   <div>
                     <h5 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>
-                      {uploadLabTargetOrder.id === 2 ? 'Transmettre le cliché DICOM' : 'Téléverser le bilan biologique PDF'}
+                      {uploadLabTargetOrder.id === 2 ? 'Transmettre le cliché dicom' : 'Téléverser le bilan biologique PDF'}
                     </h5>
                     <span className="badge bg-success-subtle text-success border border-success fw-bold" style={{ borderRadius: '6px', fontSize: '0.74rem' }}>
                       UNAMUSC • Tiers-payant {uploadLabTargetOrder.coverage}
@@ -1378,10 +1378,10 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                       {uploadLabTargetOrder.id === 2 ? <ProIcon name="scan" /> : <ProIcon name="file-text" />}
                     </div>
                     <strong className="d-block text-primary" style={{ fontSize: '0.94rem' }}>
-                      {uploadLabFileName ? `✓ Fichier sélectionné : ${uploadLabFileName}` : 'Cliquez ici pour choisir le document ou glissez-le'}
+                      {uploadLabFileName ? `Fichier sélectionné : ${uploadLabFileName}` : 'Cliquez ici pour choisir le document ou glissez-le'}
                     </strong>
                     <span className="text-muted d-block" style={{ fontSize: '0.8rem', lineHeight: '1.4' }}>
-                      {uploadLabTargetOrder.id === 2 ? 'Supports DICOM, PACS & Imagerie 3D' : 'Format PDF certifié avec signature du biologiste'}
+                      {uploadLabTargetOrder.id === 2 ? 'Supports dicom, pacs & imagerie 3D' : 'Format PDF certifié avec signature du biologiste'}
                     </span>
                   </label>
                 </div>
@@ -1396,7 +1396,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   className="form-control py-2.5 px-3" 
                   rows={3} 
                   style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '14px', fontSize: '0.88rem' }}
-                  placeholder={uploadLabTargetOrder.id === 2 ? "Ex: Radiographie pulmonaire de contrôle satisfaisante. Absence de foyer parenchymateux évolutif." : "Ex: NFS normale. Glycémie à jeun : 0.92 g/L. Bilan hépatique satisfaisant."}
+                  placeholder={uploadLabTargetOrder.id === 2 ? "Ex: radiographie pulmonaire de contrôle satisfaisante. Absence de foyer parenchymateux évolutif." : "Ex: nfs normale. Glycémie à jeun : 0.92 g/L. Bilan hépatique satisfaisant."}
                   value={uploadLabNotes}
                   onChange={(e) => setUploadLabNotes(e.target.value)}
                 />
@@ -1460,7 +1460,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                     value={editingLabOrder.patientName || ''}
                     onChange={(e) => setEditingLabOrder({ ...editingLabOrder, patientName: e.target.value })}
-                    placeholder="Ex: Amadou Sow"
+                    placeholder="Ex: amadou Sow"
                     required
                   />
                 </div>
@@ -1488,7 +1488,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                     value={editingLabOrder.examName || ''}
                     onChange={(e) => setEditingLabOrder({ ...editingLabOrder, examName: e.target.value })}
-                    placeholder="Ex: Bilan sanguin complet & Sérologies"
+                    placeholder="Ex: bilan sanguin complet & sérologies"
                     required
                   />
                 </div>
@@ -1501,7 +1501,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                     value={editingLabOrder.doctor || ''}
                     onChange={(e) => setEditingLabOrder({ ...editingLabOrder, doctor: e.target.value })}
-                    placeholder="Ex: Dr. Cheikh Anta Diop"
+                    placeholder="Ex: Dr. Cheikh anta Diop"
                     required
                   />
                 </div>
@@ -1515,7 +1515,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                   value={editingLabOrder.examDetail || ''}
                   onChange={(e) => setEditingLabOrder({ ...editingLabOrder, examDetail: e.target.value })}
-                  placeholder="Ex: NFS, Glycémie à jeun, Bilan hépatique complet"
+                  placeholder="Ex: nfs, glycémie à jeun, bilan hépatique complet"
                 />
               </div>
 
@@ -1594,7 +1594,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               <p className="mb-4" style={{ color: 'var(--text-sub, #94a3b8)', fontSize: '0.92rem', lineHeight: '1.55' }}>
                 Voulez-vous vraiment supprimer définitivement <strong style={{ color: '#ef4444' }}>{confirmDeleteObj.title}</strong> ?
                 <br />
-                <small className="text-muted d-block mt-1">Cette action est irréversible dans le système UNAMUSC.</small>
+                <small className="text-muted d-block mt-1">Cette action Est irréversible dans le système UNAMUSC.</small>
               </p>
 
               <div className="d-flex justify-content-center gap-3 pt-2">
@@ -1656,7 +1656,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 Lettres de garantie : non concerné
               </h1>
               <p style={{ color: 'rgba(209, 250, 229, 0.95)', fontSize: '1rem', maxWidth: '650px', lineHeight: 1.6 }}>
-                Les lettres de garantie sont réservées aux prises en charge hospitalières et interventions chirurgicales. Votre guichet officine est spécialement configuré pour la validation des bons de commande et la délivrance de médicaments.
+                Les lettres de garantie sont réservées aux prises en charge hospitalières et interventions chirurgicales. Votre guichet officine Est spécialement configuré pour la validation des bons de commande et la délivrance de médicaments.
               </p>
 
               <div className="d-flex align-items-center flex-wrap mt-4" style={{ gap: '28px', rowGap: '16px' }}>
@@ -1717,7 +1717,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               </div>
 
               <p style={{ color: 'var(--text-sub)', fontSize: '0.88rem', lineHeight: 1.65, marginBottom: '1.5rem' }}>
-                Conformément aux directives du ministère de la santé, la gestion des lettres de garantie est attribuée aux établissements hospitaliers récepteurs (hôpital aristide le Dantec, Fann, CHU abass ndao, etc.).
+                Conformément aux directives du ministère de la santé, la gestion des lettres de garantie Est attribuée aux établissements hospitaliers récepteurs (hôpital Aristide Le Dantec, Fann, CHU Abass Ndao, etc.).
               </p>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -1990,7 +1990,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 <ProIcon name="clipboard-list" />
               </div>
               <h1 className="fw-extrabold mb-0 text-white" style={{ fontSize: '2.2rem', letterSpacing: '-0.02em', textShadow: '0 3px 8px rgba(0,0,0,0.3)', lineHeight: '1.1' }}>
-                {lang === 'wo' ? 'Bataaxal u garansi & Bons' : 'Lettres de garantie & Bons de commande'}
+                {lang === 'wo' ? 'Bataaxal u garansi & bons' : 'Lettres de garantie & bons de commande'}
               </h1>
             </div>
 
@@ -2097,7 +2097,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
             className="btn fw-bold px-3.5 py-2 d-inline-flex align-items-center gap-2 text-white shadow-sm"
             style={{ borderRadius: '12px', background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', border: 'none' }}
           >
-            <ProIcon name="hospital" /> {lang === 'wo' ? 'Bataaxalu Garantie (Hôpital 80%)' : 'Lettres de Garantie (Hôpital 80% / SESAME 100%)'}
+            <ProIcon name="hospital" /> {lang === 'wo' ? 'Bataaxalu garantie (hôpital 80%)' : 'Lettres de garantie (hôpital 80% / Sesame 100%)'}
           </button>
           <button
             type="button"
@@ -2108,7 +2108,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               window.location.hash = '#/purchase-orders';
             }}
           >
-            💊 {lang === 'wo' ? 'Bonu Garab (Pharmacie 50%)' : 'Bons de Commande Médicaments (Pharmacie 50%)'}
+            💊 {lang === 'wo' ? 'Bonu garab (pharmacie 50%)' : 'Bons de commande médicaments (pharmacie 50%)'}
           </button>
         </div>
         <div className="d-flex align-items-center gap-2 flex-wrap">
@@ -2124,7 +2124,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               setWhatsappRequestModal(true);
             }}
           >
-            💬 {lang === 'wo' ? 'Laaj Bataaxal walla Bon ci WhatsApp' : 'Demander par WhatsApp'}
+            💬 {lang === 'wo' ? 'Laaj bataaxal walla bon ci WhatsApp' : 'Demander par WhatsApp'}
           </button>
           <button
             type="button"
@@ -2132,7 +2132,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
             style={{ borderRadius: '10px', background: 'rgba(37, 211, 102, 0.14)', color: '#25d366', border: '1.5px solid #25d366' }}
             onClick={() => openLetterWhatsAppModal(lastCreatedItem || visibleLetters[0] || letters[0])}
           >
-            <ProIcon name="smartphone" /> {lang === 'wo' ? 'Jot sa Bataaxal ci WhatsApp' : 'Recevoir ma Lettre sur WhatsApp'}
+            <ProIcon name="smartphone" /> {lang === 'wo' ? 'Jot sa bataaxal ci WhatsApp' : 'Recevoir ma lettre sur WhatsApp'}
           </button>
         </div>
       </div>
@@ -2147,7 +2147,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 {lang === 'wo' ? '1. Yónneel sa devis d\'hôpital' : '1. Demandez votre prise en charge'}
               </strong>
               <small style={{ color: 'var(--text-sub)', fontSize: '0.8rem', lineHeight: 1.45, display: 'block' }}>
-                {lang === 'wo' ? 'Tànnal fajukaay bi te duggalal devis bi (80% mutuelle, 100% Plan SESAME).' : 'Indiquez l\'hôpital conventionné et le montant du devis (ou délivrance d\'urgence 24h/24).'}
+                {lang === 'wo' ? 'Tànnal fajukaay bi te duggalal devis bi (80% mutuelle, 100% plan sesame).' : 'Indiquez l\'hôpital conventionné et le montant du devis (ou délivrance d\'urgence 24h/24).'}
               </small>
             </div>
           </div>
@@ -2160,7 +2160,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 {lang === 'wo' ? '2. Jot ko ci WhatsApp walla PDF' : '2. Recevez la Lettre sur WhatsApp'}
               </strong>
               <small style={{ color: 'var(--text-sub)', fontSize: '0.8rem', lineHeight: 1.45, display: 'block' }}>
-                {lang === 'wo' ? 'Bataaxal bi dafay ñëw ci sa WhatsApp ak code #GAR ak QR Code.' : 'Recevez votre Lettre homologuée avec code #GAR et lien de vérification directement sur WhatsApp.'}
+                {lang === 'wo' ? 'Bataaxal bi dafay ñëw ci sa WhatsApp ak code #gar ak QR code.' : 'Recevez votre lettre homologuée avec code #gar et lien de vérification directement sur WhatsApp.'}
               </small>
             </div>
           </div>
@@ -2173,7 +2173,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 {lang === 'wo' ? '3. Fayal 20% rekk (0 FCFA SESAME)' : '3. Admission immédiate à l\'hôpital'}
               </strong>
               <small style={{ color: 'var(--text-sub)', fontSize: '0.8rem', lineHeight: 1.45, display: 'block' }}>
-                {lang === 'wo' ? 'Wonal sa message WhatsApp : mutuelle bi dafay fay 80% (walla 100% ci Plan SESAME).' : 'Présentez votre message WhatsApp ou PDF à l\'hôpital : vous ne payez que 20% (0 FCFA en Plan SESAME).'}
+                {lang === 'wo' ? 'Wonal sa message WhatsApp : mutuelle bi dafay fay 80% (walla 100% ci plan sesame).' : 'Présentez votre message WhatsApp ou PDF à l\'hôpital : vous ne payez que 20% (0 FCFA en Plan SESAME).'}
               </small>
             </div>
           </div>
@@ -2529,8 +2529,8 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     {requestCategory === 'hospital' ? (
                       <>
                         <option value="Hôpital Universitaire de Fann (Dakar)">Hôpital universitaire de Fann (Dakar)</option>
-                        <option value="Hôpital Aristide Le Dantec">Hôpital aristide le Dantec</option>
-                        <option value="Hôpital Général Idrissa Pouye (Grand Yoff / Pikine)">Hôpital général idrissa pouye (grand Yoff / Pikine)</option>
+                        <option value="Hôpital Aristide Le Dantec">Hôpital Aristide Le Dantec</option>
+                        <option value="Hôpital Général Idrissa Pouye (Grand Yoff / Pikine)">Hôpital général Idrissa Pouye (Grand Yoff / Pikine)</option>
                         <option value="Centre Hospitalier Abass Ndao">Centre hospitalier abass ndao</option>
                         <option value="Hôpital d'Enfants Albert Royer">Hôpital d'enfants albert royer</option>
                         <option value="Hôpital Roi Baudouin de Guédiawaye">Hôpital roi baudouin de Guédiawaye</option>
@@ -2571,8 +2571,8 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   className="form-control input" 
                   rows="3" 
                   placeholder={requestCategory === 'hospital' 
-                    ? 'Ex: Intervention chirurgicale ORL, hospitalisation 5 jours en médecine interne...' 
-                    : 'Ex: Amoxicilline 500mg (2 boîtes), Paracétamol 1g (1 boîte), Spasfon...'}
+                    ? 'Ex: intervention chirurgicale orl, hospitalisation 5 jours en médecine interne...' 
+                    : 'Ex: amoxicilline 500mg (2 boîtes), paracétamol 1g (1 boîte), spasfon...'}
                   value={medicalAct}
                   onChange={(e) => setMedicalAct(formatSentenceCase(e.target.value))}
                   style={{ borderRadius: '10px' }}
@@ -2587,7 +2587,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     <span style={{ fontSize: '1.4rem' }}><ProIcon name="clipboard-list" /></span>
                     <div>
                       <strong className="d-block fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>Téléverser l'ordonnance médicale *</strong>
-                      <small className="text-muted">Prenez en photo l'ordonnance prescrite par votre médecin et téléversez-la. Le gérant UNAMUSC vérifiera l'ordonnance avant d'accorder le bon de commande.</small>
+                      <small className="text-muted">Prenez en photo l'ordonnance prescrite par votre médecin et téléversez-la. le gérant UNAMUSC vérifiera l'ordonnance avant d'accorder le bon de commande.</small>
                     </div>
                   </div>
 
@@ -2631,7 +2631,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
                   {!prescriptionPreview && (
                     <small className="d-block text-warning fw-semibold mt-2">
-                      <ProIcon name="alert-triangle" color="#d97706" /> Aucune ordonnance téléversée. Le bon ne sera accordé qu'après vérification par le gérant UNAMUSC.
+                      <ProIcon name="alert-triangle" color="#d97706" /> Aucune ordonnance téléversée. le bon ne sera accordé qu'après vérification par le gérant UNAMUSC.
                     </small>
                   )}
                 </div>
@@ -2740,9 +2740,9 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   {submitting 
                     ? 'Transmission...' 
                     : requestCategory === 'pharmacy' 
-                    ? '📷 Soumettre ordonnance : demander bon pharmacie' 
+                    ? 'Soumettre ordonnance : demander bon pharmacie' 
                     : emergencyTimeInfo.isEmergency
-                    ? `🚨 Émettre la Lettre d'Urgence (${emergencyTimeInfo.label})`
+                    ? `Émettre la lettre d'urgence (${emergencyTimeInfo.label})`
                     : '📤 Soumettre la demande à l\'UNAMUSC'}
                 </button>
               </div>
@@ -2767,7 +2767,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   Accès sécurisé : consultation des attestations UNAMUSC
                 </h3>
                 <p className="text-muted mb-0" style={{ fontSize: '0.95rem', lineHeight: '1.6' }}>
-                  Afin de préserver la confidentialité des données médicales des citoyens, la liste globale des garanties est réservée aux agents habilités. Saisissez votre n° de carte CSU ou votre code de garantie pour consulter votre dossier.
+                  Afin de préserver la confidentialité des données médicales des citoyens, la liste globale des garanties Est réservée aux agents habilités. Saisissez votre n° de carte CSU ou votre code de garantie pour consulter votre dossier.
                 </p>
               </div>
             </div>
@@ -2979,12 +2979,12 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
             <div className="grid grid-3" style={{ gap: '1.25rem' }}>
               {[
-                { name: 'Hôpital Universitaire de Fann', dept: 'Dakar Fann | Point E', badge: 'Centre Régional Habilité' },
+                { name: 'Hôpital universitaire de Fann', dept: 'Dakar Fann | Point e', badge: 'Centre régional habilité' },
                 { name: 'Hôpital Aristide Le Dantec', dept: 'Dakar Plateau', badge: 'Chirurgie | Oncologie' },
-                { name: 'Hôpital Général Idrissa Pouye', dept: 'Pikine | Guédiawaye', badge: 'Urgences 24h/7' },
-                { name: 'Centre Hospitalier Abass Ndao', dept: 'Médina | Fass', badge: 'Maternité | Diabétologie' },
+                { name: 'Hôpital général Idrissa Pouye', dept: 'Pikine | Guédiawaye', badge: 'Urgences 24h/7' },
+                { name: 'Centre hospitalier Abass Ndao', dept: 'Médina | Fass', badge: 'Maternité | Diabétologie' },
                 { name: 'Hôpital d\'Enfants Albert Royer', dept: 'Fann | Pédiatrie', badge: 'Pédiatrie 100% CMU' },
-                { name: 'Clinique Pasteur & Polycliniques', dept: 'Dakar Métropole', badge: 'Tiers-Payant Privé' }
+                { name: 'Clinique pasteur & polycliniques', dept: 'Dakar métropole', badge: 'Tiers-payant privé' }
               ].map((h, idx) => (
                 <div key={idx} className="p-3.5 rounded-4 border" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)', padding: '1.25rem 1.1rem' }}>
                   <span className="badge bg-success-subtle text-success border border-success mb-2" style={{ fontSize: '0.75rem', padding: '0.3rem 0.65rem', borderRadius: '8px' }}>{h.badge}</span>
@@ -3048,7 +3048,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                       last_name: '',
                       cmu_number: activeCmuNumber,
                       ipp_number: 'IPP-DANTEC-2026-8812',
-                      hospital_name: 'Hôpital Universitaire de Fann (Dakar)',
+                      hospital_name: 'Hôpital universitaire de Fann (Dakar)',
                       medical_act: '',
                       estimated_amount: 250000,
                       guaranteed_percentage: 80,
@@ -3075,7 +3075,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
             <div className="text-center py-5 text-muted">
               {isCitizen 
                 ? 'Aucune demande de garantie enregistrée pour votre compte assuré.' 
-                : 'Aucun dossier ne correspond à ce N° de Carte CSU.'}
+                : 'Aucun dossier ne correspond à ce n° de carte CSU.'}
             </div>
           ) : (
             <div className="table-responsive rounded-4 border" style={{ borderColor: 'rgba(255, 255, 255, 0.25)', boxShadow: '0 8px 30px rgba(0,0,0,0.25)' }}>
@@ -3241,7 +3241,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                                 onClick={() => openInstructionModal(item)}
                                 style={{ background: isSuperAdmin ? '#92400e' : '#059669', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.84rem' }}
                               >
-                                {isSuperAdmin ? <ProIcon name="crown" /> : <ProIcon name="shield-check" />} {item.status === 'approved' ? '📄 Certificat PDF' : '⚙️ Instruire'}
+                                {isSuperAdmin ? <ProIcon name="crown" /> : <ProIcon name="shield-check" />} {item.status === 'approved' ? 'Certificat PDF' : 'Instruire'}
                               </button>
                             ) : isDoctor || isMidwife ? (
                               <>
@@ -3649,7 +3649,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     style={{ 
                       background: '#ffffff', 
                       color: '#0f172a',
-                      fontFamily: 'Inter, Arial, sans-serif',
+                      fontFamily: 'Inter, arial, sans-serif',
                       border: '2px solid #047857'
                     }}
                   >
@@ -3702,7 +3702,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                         </span>
                         <h5 className="fw-bold mb-1" style={{ color: '#0f172a' }}>{selectedLetter.first_name} {selectedLetter.last_name}</h5>
                         <div className="small" style={{ color: '#334155' }}>
-                          N° Carte CSU : <strong style={{ color: '#0f172a' }}>{selectedLetter.cmu_number}</strong> | IPP : <strong style={{ color: '#0f172a' }}>{selectedLetter.ipp_number || 'IPP-FANN-2026-8812'}</strong>
+                          N° carte CSU : <strong style={{ color: '#0f172a' }}>{selectedLetter.cmu_number}</strong> | IPP : <strong style={{ color: '#0f172a' }}>{selectedLetter.ipp_number || 'IPP-FANN-2026-8812'}</strong>
                         </div>
                         <small className="text-success fw-bold d-block mt-1">
                           Organisme émetteur : tiers-payant UNAMUSC Sénégal
@@ -3738,7 +3738,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                             <>
                               <span className="badge bg-warning text-dark fw-bold mb-1">🧓 bénéficiaire plan sesame (60 ans et +)</span><br />
                               Prise en charge UNAMUSC (80%) : <strong style={{ color: '#047857' }}>{Number(selectedLetter.unamusc_amount || selectedLetter.estimated_amount * 0.8).toLocaleString()} FCFA</strong><br />
-                              Contrepartie Plan SESAME État (20%) : <strong style={{ color: '#d97706' }}>{Number(selectedLetter.sesame_amount || selectedLetter.estimated_amount * 0.2).toLocaleString()} FCFA</strong><br />
+                              Contrepartie plan sesame état (20%) : <strong style={{ color: '#d97706' }}>{Number(selectedLetter.sesame_amount || selectedLetter.estimated_amount * 0.2).toLocaleString()} FCFA</strong><br />
                               <span style={{ color: '#059669', fontWeight: 'bold' }}>Reste à charge patient senior : 0 FCFA (prise en charge 100%)</span>
                             </>
                           ) : (
@@ -3761,7 +3761,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                           </p>
                           {selectedLetter.is_emergency_issuance && (
                             <div className="mt-2 text-primary fw-bold" style={{ fontSize: '0.78rem' }}>
-                              <ProIcon name="siren" color="#dc2626" /> Délivrance d'Urgence Permanente : {selectedLetter.emergency_period === 'weekend' ? 'Permanence Week-End (24h/24)' : 'Permanence de Garde (17h00 - 07h59)'} • Soins garantis 7j/7.
+                              <ProIcon name="siren" color="#dc2626" /> Délivrance d'urgence permanente : {selectedLetter.emergency_period === 'weekend' ? 'Permanence week-end (24h/24)' : 'Permanence de garde (17h00 - 07h59)'} • Soins garantis 7j/7.
                             </div>
                           )}
                         </div>
@@ -3914,7 +3914,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                   value={editingLetterObj.first_name || ''}
                   onChange={(e) => setEditingLetterObj({ ...editingLetterObj, first_name: formatTitleCase(e.target.value) })}
-                  placeholder="Ex: Amadou"
+                  placeholder="Ex: amadou"
                   required
                 />
               </div>
@@ -3969,7 +3969,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                 value={editingLetterObj.hospital_name || ''}
                 onChange={(e) => setEditingLetterObj({ ...editingLetterObj, hospital_name: formatTitleCase(e.target.value) })}
-                placeholder="Ex: Hôpital Universitaire de Fann (Dakar)"
+                placeholder="Ex: hôpital universitaire de Fann (Dakar)"
                 required
               />
             </div>
@@ -4038,7 +4038,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                 value={editingLetterObj.agent_note || ''}
                 onChange={(e) => setEditingLetterObj({ ...editingLetterObj, agent_note: formatSentenceCase(e.target.value) })}
-                placeholder="Ex: Prise en charge 80% validée sous le système de Tiers-payant UNAMUSC Dakar."
+                placeholder="Ex: prise en charge 80% validée sous le système de tiers-payant UNAMUSC Dakar."
               />
             </div>
 
@@ -4076,7 +4076,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 <span style={{ fontSize: '1.35rem' }}><ProIcon name="smartphone" /></span>
                 <div>
                   <h5 className="fw-bold mb-0" style={{ fontSize: '1.05rem', color: '#ffffff' }}>
-                    {lang === 'wo' ? 'Jot Bataaxalu Garantie bi ci WhatsApp' : 'Recevoir / Envoyer la Lettre de Garantie par WhatsApp'}
+                    {lang === 'wo' ? 'Jot bataaxalu garantie bi ci WhatsApp' : 'Recevoir / Envoyer la lettre de garantie par WhatsApp'}
                   </h5>
                   <small style={{ opacity: 0.92, fontSize: '0.76rem' }}>
                     Code : #{whatsappLetterModal.validation_code || whatsappLetterModal.order_code || whatsappLetterModal.id} • Tiers-Payant UNAMUSC
@@ -4287,7 +4287,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     className="form-control"
                     value={waReqStructure}
                     onChange={(e) => setWaReqStructure(formatTitleCase(e.target.value))}
-                    placeholder={waReqType === 'purchase_order' ? 'Ex: Pharmacie Guigon Dakar' : 'Ex: Hôpital Principal de Dakar'}
+                    placeholder={waReqType === 'purchase_order' ? 'Ex: pharmacie guigon Dakar' : 'Ex: hôpital Principal de Dakar'}
                     required
                     style={{ borderRadius: '10px', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}
                   />
@@ -4319,7 +4319,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   className="form-control"
                   value={waReqAct}
                   onChange={(e) => setWaReqAct(formatSentenceCase(e.target.value))}
-                  placeholder={waReqType === 'purchase_order' ? 'Ex: Insuline Lantus, Metformine 850mg, Amoxicilline' : 'Ex: Chirurgie appendicite / Accouchement / Scanner'}
+                  placeholder={waReqType === 'purchase_order' ? 'Ex: insuline lantus, metformine 850mg, amoxicilline' : 'Ex: chirurgie appendicite / Accouchement / Scanner'}
                   required
                   style={{ borderRadius: '10px', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}
                 />
@@ -4468,7 +4468,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
             <p className="mb-4" style={{ color: 'var(--text-sub, #94a3b8)', fontSize: '0.92rem', lineHeight: '1.55' }}>
               Voulez-vous vraiment supprimer définitivement <strong style={{ color: '#ef4444' }}>{confirmDeleteObj.title}</strong> ?
               <br />
-              <small className="text-muted d-block mt-1">Cette action est irréversible dans le système UNAMUSC.</small>
+              <small className="text-muted d-block mt-1">Cette action Est irréversible dans le système UNAMUSC.</small>
             </p>
 
             <div className="d-flex justify-content-center gap-3 pt-2">

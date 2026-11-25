@@ -72,7 +72,7 @@ export default function Cotisations({ lang, portalMode, citizenUser, agentUser }
   //  montants et des périodes : dès que l'API des cotisations était
   //  injoignable, un agent lisait un registre financier plausible, et un
   //  citoyen pouvait voir « sa » cotisation calculée depuis une ligne
-  //  qu'il n'a jamais réglée — y compris sa date d'expiration. Le registre
+  //  qu'il n'a jamais réglée — y compris sa date d'expiration. le registre
   //  doit être vide tant que la base ne répond pas.
   // ────────────────────────────────────────────────────────────────────
 
@@ -178,7 +178,7 @@ export default function Cotisations({ lang, portalMode, citizenUser, agentUser }
             </span>
             <p style={{ fontSize: '0.82rem', color: 'var(--text-sub)', margin: 0, lineHeight: '1.4' }}>
               {lang === 'fr' 
-                ? `Il vous reste ${daysRemaining} jours de couverture active. Votre cotisation (N° CMU : ${activeCotisation.cmu_number}) expire le ${new Date(activeCotisation.period_end).toLocaleDateString('fr-FR')}.`
+                ? `Il vous reste ${daysRemaining} jours de couverture active. Votre cotisation (n° CMU : ${activeCotisation.cmu_number}) expire le ${new Date(activeCotisation.period_end).toLocaleDateString('fr-FR')}.`
                 : `Am nga ${daysRemaining} fan ci wér-gi-yaram bu baax. Sa mbind (N° CMU : ${activeCotisation.cmu_number}) day jeex le ${new Date(activeCotisation.period_end).toLocaleDateString('fr-FR')}.`}
             </p>
             {daysRemaining <= 60 && (

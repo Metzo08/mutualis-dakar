@@ -1,7 +1,7 @@
 /**
  * ExcelReports.jsx — Rapports Excel (Module 5 du cahier des charges)
  *
- * Le format XLSX est le format de référence des rapports opérationnels et
+ * le format XLSX est le format de référence des rapports opérationnels et
  * financiers : tout est généré CÔTÉ SERVEUR (calculs vérifiés, permissions
  * appliquées, export journalisé). Aucun fichier n'est servi depuis une URL
  * publique : chaque téléchargement repasse par l'authentification.
@@ -18,13 +18,13 @@ import { apiFetch } from '../utils/api';
 import ProIcon from '../components/ProIcon';
 
 const REPORT_TYPES = [
-  { value: 'beneficiaries', label: '📋 Bénéficiaires (champs principaux)' },
-  { value: 'cards', label: '🃏 Cartes (état courant)' },
-  { value: 'production', label: '🏭 Production (cartes délivrées)' },
-  { value: 'audit', label: '📜 Audit (journal récent)' },
-  { value: 'studio', label: '🪪 Studio Cartes (synthèse historique)' },
-  { value: 'lifecycle', label: '🔁 Cycle de vie des cartes' },
-  { value: 'security', label: '🛡️ Sécurité (événements)' },
+  { value: 'beneficiaries', label: 'Bénéficiaires (champs principaux)' },
+  { value: 'cards', label: '🃏 cartes (état courant)' },
+  { value: 'production', label: 'Production (cartes délivrées)' },
+  { value: 'audit', label: 'Audit (journal récent)' },
+  { value: 'studio', label: 'Studio cartes (synthèse historique)' },
+  { value: 'lifecycle', label: 'Cycle de vie des cartes' },
+  { value: 'security', label: 'Sécurité (événements)' },
 ];
 
 /** Déclenche le téléchargement d'un blob .xlsx. */
@@ -75,7 +75,7 @@ export default function ExcelReports() { // props historiques conservées par Ap
       }
       const blob = await res.blob();
       saveBlob(blob, fileName);
-      setStatus({ type: 'ok', text: `Fichier « ${fileName} » téléchargé. Ouvrez-le avec Excel ou LibreOffice.` });
+      setStatus({ type: 'ok', text: `Fichier « ${fileName} » téléchargé. Ouvrez-Le avec Excel ou libreoffice.` });
     } catch (err) {
       setStatus({ type: 'error', text: err.message || 'Génération impossible.' });
     } finally {
@@ -91,7 +91,7 @@ export default function ExcelReports() { // props historiques conservées par Ap
       <h1 className="h4 mb-1"><ProIcon name="bar-chart" /> Rapports Excel</h1>
       <p className="text-muted small mb-3">
         Tous les rapports sont générés côté serveur, filtrés selon votre périmètre MSD et journalisés.
-        Le format <strong>.XLSX</strong> est le format de référence ; les montants sont calculés et vérifiés par le serveur.
+        le format <strong>.XLSX</strong> est le format de référence ; les montants sont calculés et vérifiés par le serveur.
       </p>
 
       {status && (
@@ -109,7 +109,7 @@ export default function ExcelReports() { // props historiques conservées par Ap
             </select>
             <button className="btn btn-primary btn-sm" disabled={!!downloading}
               onClick={() => download('type', `/api/excel/report/${type}`, `senmutuelles-${type}-${stamp}.xlsx`)}>
-              {downloading === 'type' ? '⏳ Génération…' : '⬇️ Télécharger le .xlsx'}
+              {downloading === 'type' ? '⏳ génération…' : '⬇️ télécharger Le .XLSX'}
             </button>
           </div>
         </div>
@@ -127,7 +127,7 @@ export default function ExcelReports() { // props historiques conservées par Ap
               onChange={(e) => setMsdCode(e.target.value.toUpperCase())} />
             <button className="btn btn-outline-primary btn-sm" disabled={!!downloading}
               onClick={() => download('studio', `/api/excel/studio/${encodeURIComponent(scope)}`, `studio-cartes-${scope}-${stamp}.xlsx`)}>
-              {downloading === 'studio' ? '⏳ Génération…' : '⬇️ Rapport Studio Cartes'}
+              {downloading === 'studio' ? '⏳ génération…' : '⬇️ rapport studio cartes'}
             </button>
           </div>
         </div>
@@ -145,7 +145,7 @@ export default function ExcelReports() { // props historiques conservées par Ap
             <button className="btn btn-outline-primary btn-sm"
               disabled={!!downloading || !msdCode.trim()}
               onClick={() => download('msd', `/api/excel/msd/${encodeURIComponent(msdCode.trim())}`, `msd-${msdCode.trim()}-${stamp}.xlsx`)}>
-              {downloading === 'msd' ? '⏳ Génération…' : '⬇️ Rapport MSD'}
+              {downloading === 'msd' ? '⏳ génération…' : '⬇️ rapport MSD'}
             </button>
           </div>
         </div>
@@ -160,7 +160,7 @@ export default function ExcelReports() { // props historiques conservées par Ap
             </p>
             <button className="btn btn-outline-primary btn-sm" disabled={!!downloading}
               onClick={() => download('cards', '/api/excel/cards-report', `gestion-cartes-${stamp}.xlsx`)}>
-              {downloading === 'cards' ? '⏳ Génération…' : '⬇️ Rapport de gestion des cartes'}
+              {downloading === 'cards' ? '⏳ génération…' : '⬇️ rapport de gestion des cartes'}
             </button>
           </div>
         </div>
@@ -175,7 +175,7 @@ export default function ExcelReports() { // props historiques conservées par Ap
             </p>
             <button className="btn btn-outline-danger btn-sm" disabled={!!downloading}
               onClick={() => download('security', '/api/security/export', `securite-senmutuelles-${stamp}.xlsx`)}>
-              {downloading === 'security' ? '⏳ Génération…' : '⬇️ Rapport de sécurité'}
+              {downloading === 'security' ? '⏳ génération…' : '⬇️ rapport de sécurité'}
             </button>
           </div>
         </div>
@@ -202,7 +202,7 @@ export default function ExcelReports() { // props historiques conservées par Ap
                 const lot = imports.find((x) => String(x.id) === String(importId));
                 download('import', `/api/imports/${importId}/report`, `import-${lot ? lot.reference : importId}.xlsx`);
               }}>
-              {downloading === 'import' ? '⏳ Génération…' : '⬇️ Rapport d\'importation'}
+              {downloading === 'import' ? '⏳ génération…' : '⬇️ Rapport d\'importation'}
             </button>
           </div>
         </div>

@@ -24,7 +24,7 @@ export default function AgentDashboard({ lang, agentUser, setView }) {
 
   const t = lang === 'fr' ? {
     title: 'Tableau de bord CSU',
-    subtitle: 'Indicateurs opérationnels de la Couverture Santé Universelle — Dakar',
+    subtitle: 'Indicateurs opérationnels de la couverture santé universelle — Dakar',
     kpiBeneficiaries: 'Assurés totaux',
     kpiActive: 'Assurés actifs',
     kpiPending: 'Dossiers en attente',
@@ -50,7 +50,7 @@ export default function AgentDashboard({ lang, agentUser, setView }) {
     noData: 'Aucune donnée disponible.'
   } : {
     title: 'Tableau de bord CSU',
-    subtitle: 'Indicateurs yi ci Couverture Santé Universelle — Ndakaaru',
+    subtitle: 'Indicateurs yi ci couverture santé universelle — Ndakaaru',
     kpiBeneficiaries: 'Assuré yi ëpp',
     kpiActive: 'Assuré yi baax',
     kpiPending: 'Mbind yi nëbb',
@@ -199,7 +199,7 @@ export default function AgentDashboard({ lang, agentUser, setView }) {
     const campTitle = campObj ? campObj.title_fr : `Campagne #${activeCampaignId}`;
     setDeleteConfirmTarget({
       title: campTitle,
-      itemType: 'Campagne de Sensibilisation CSU',
+      itemType: 'Campagne de sensibilisation CSU',
       onConfirm: () => {
         setCampaignSuccess('');
         setCampaignError('');
@@ -285,7 +285,7 @@ export default function AgentDashboard({ lang, agentUser, setView }) {
           <h5 className="fw-extrabold mb-2" style={{ fontSize: '1.15rem' }}>Données indisponibles</h5>
           <p className="mb-3" style={{ color: 'var(--text-sub)', fontSize: '0.9rem' }}>
             Les statistiques de la plateforme n'ont pas pu être récupérées du serveur.
-            Aucun chiffre n'est affiché : les indicateurs doivent provenir de données réelles.
+            Aucun chiffre n'Est affiché : les indicateurs doivent provenir de données réelles.
           </p>
           <button type="button" className="btn btn-primary fw-extrabold px-4 py-2" onClick={fetchStats}>
             {t.refresh}
@@ -592,7 +592,7 @@ export default function AgentDashboard({ lang, agentUser, setView }) {
           </h3>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', marginBottom: '1.5rem' }}>
             {lang === 'fr' 
-              ? 'Configurez, modifiez ou supprimez les campagnes de don pour la solidarité régionale. Seul le Super Admin possède ces droits.'
+              ? 'Configurez, modifiez ou supprimez les campagnes de don pour la solidarité régionale. Seul le super admin possède ces droits.'
               : 'Defal yene parameters yi ngir dimbeli niou newal doole.'}
           </p>
 
@@ -697,7 +697,7 @@ function SuperAdminDoctorManagement() {
   //  AUCUN PRATICIEN DE DÉMONSTRATION dans l'habilitation CNOM.
   //  Les 3 profils par défaut (« Dr. Aminata Ndiaye, CNOM-SN-2026-8819 »)
   //  apparaissaient comme déjà accrédités, avec un numéro d'ordre au
-  //  Conseil national de l'ordre des médecins. Le panneau d'habilitation
+  //  Conseil national de l'ordre des médecins. le panneau d'habilitation
   //  doit donc démarrer VIDE : chaque médecin y entre par une décision
   //  explicite du Super Admin, jamais par un registre pré-rempli.
   // ────────────────────────────────────────────────────────────────────
@@ -781,7 +781,7 @@ function SuperAdminDoctorManagement() {
             
             <div className="mb-3.5">
               <label className="form-label small fw-bold mb-2 d-block" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}>Nom & prénom du médecin *</label>
-              <input type="text" className="form-control" style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.92rem', padding: '0.85rem 1.15rem' }} placeholder="ex: Dr. Mariama Diallo" value={docName} onChange={(e) => setDocName(e.target.value)} required />
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.92rem', padding: '0.85rem 1.15rem' }} placeholder="Ex: Dr. Mariama Diallo" value={docName} onChange={(e) => setDocName(e.target.value)} required />
             </div>
 
             <div className="mb-3.5">
@@ -796,8 +796,8 @@ function SuperAdminDoctorManagement() {
             </div>
 
             <div className="mb-3.5">
-              <label className="form-label small fw-bold mb-2 d-block" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}>N° ordre des médecins (cnom) *</label>
-              <input type="text" className="form-control" style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.92rem', padding: '0.85rem 1.15rem' }} placeholder="ex: CNOM-SN-2026-8819" value={docCnom} onChange={(e) => setDocCnom(e.target.value)} required />
+              <label className="form-label small fw-bold mb-2 d-block" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}>N° ordre des médecins (CNOM) *</label>
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.92rem', padding: '0.85rem 1.15rem' }} placeholder="Ex: CNOM-SN-2026-8819" value={docCnom} onChange={(e) => setDocCnom(e.target.value)} required />
             </div>
 
             <div className="mb-4">
@@ -834,7 +834,7 @@ function SuperAdminDoctorManagement() {
                     style={{ borderRadius: '12px', minHeight: '40px', padding: '0.55rem 1.15rem', fontSize: '0.85rem', whiteSpace: 'nowrap' }}
                     onClick={() => toggleDoctorStatus(d.id)}
                   >
-                    {d.active ? '🟢 Accrédité' : '🔴 Suspendu'}
+                    {d.active ? 'Accrédité' : 'Suspendu'}
                   </button>
                 </div>
               ))}

@@ -17,7 +17,7 @@ export default function Footer({ lang, setView }) {
       services: 'Services en ligne',
       contacts: 'Nos contacts',
       phone: 'Téléphone : +221 33 859 15 15',
-      address: 'Adresse : Cité Keur Gorgui, immeuble Serigne Mérina SYLLA, Dakar',
+      address: 'Adresse : cité Keur gorgui, immeuble Serigne mérina Sylla, Dakar',
       newsletter: 'Lettre d\'information',
       newsletterPlaceholder: 'Votre adresse email...',
       subscribe: 'S\'abonner',
@@ -26,8 +26,8 @@ export default function Footer({ lang, setView }) {
       legal: 'Mentions légales | CGU | confidentialité'
     },
     wo: {
-      desc: 'Mbootaay bu réew mi bu Mutuels yi ci Dakar. Liggéeyandoo ngir wér-gi-yaramu ñëpp ci gox bi.',
-      quickLinks: 'Liy Tënk',
+      desc: 'Mbootaay bu réew mi bu mutuels yi ci Dakar. Liggéeyandoo ngir wér-gi-yaramu ñëpp ci gox bi.',
+      quickLinks: 'Liy tënk',
       home: 'Kay',
       about: 'Mbootaay bi',
       depts: 'Diiwaan yi',
@@ -36,7 +36,7 @@ export default function Footer({ lang, setView }) {
       services: 'Cofel yi',
       contacts: 'Jokkoo',
       phone: 'Ordinatër : +221 33 859 15 15',
-      address: 'Kër gi : Cité Keur Gorgui, immeuble Serigne Mérina SYLLA, Ndakaaru',
+      address: 'Kër gi : cité Keur gorgui, immeuble Serigne mérina Sylla, ndakaaru',
       newsletter: 'Xibaar yi',
       newsletterPlaceholder: 'Sa email...',
       subscribe: 'Bokk',

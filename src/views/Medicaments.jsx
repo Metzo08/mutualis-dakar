@@ -43,7 +43,7 @@ export default function Medicaments({ lang }) {
       title: 'Dossier garab ak fajj',
       subtitle: 'Xoolal garab yi ak fajj yi CMU di fay ci Sénégal, taux de remboursement yi, ak calculateu reste à charge.',
       searchPlaceholder: 'Seet garab walla soin...',
-      filterType: 'Soin walla Garab',
+      filterType: 'Soin walla garab',
       filterCovered: 'Mën na fajjoo cmu',
       all: 'Lépp',
       medicament: 'Garab',
@@ -90,25 +90,25 @@ export default function Medicaments({ lang }) {
         setLoading(false);
         // Fallback local data if offline
         const localItems = [
-          { name: 'Paracétamol 500mg (Gélules / Comprimés)', type: 'medicament', covered: true, coverage_rate: 50, category: 'Antalgique / Antipyrétique', description: 'Médicament générique essentiel pris en charge à 50% sur Bon de Commande Pharmacie.' },
+          { name: 'Paracétamol 500mg (gélules / Comprimés)', type: 'medicament', covered: true, coverage_rate: 50, category: 'Antalgique / Antipyrétique', description: 'Médicament générique essentiel pris en charge à 50% sur bon de commande pharmacie.' },
           { name: 'Amoxicilline 500mg / 1g', type: 'medicament', covered: true, coverage_rate: 50, category: 'Antibiotique', description: 'Antibiotique à large spectre couvert à 50% en pharmacie conventionnée.' },
           { name: 'Ibuprofène 400mg', type: 'medicament', covered: true, coverage_rate: 50, category: 'Anti-inflammatoire', description: 'Anti-inflammatoire non stéroïdien pris en charge à 50% sur ordonnance.' },
-          { name: 'ACT (Artéméther + Luméfantrine)', type: 'medicament', covered: true, coverage_rate: 100, category: 'Antipaludéen', description: 'Traitement du paludisme simple couvert à 100% (Programme National PNLP).' },
-          { name: 'Insuline Humaine (Flacon / Cartouche)', type: 'medicament', covered: true, coverage_rate: 50, category: 'Diabète', description: 'Insuline pour le diabète de type 1 et 2, prise en charge à 50% en officine.' },
-          { name: 'Métformine 500mg / 850mg / 1000mg', type: 'medicament', covered: true, coverage_rate: 50, category: 'Diabète', description: 'Antidiabétique oral de première intention, couvert à 50% sur Bon de Commande.' },
+          { name: 'Act (artéméther + luméfantrine)', type: 'medicament', covered: true, coverage_rate: 100, category: 'Antipaludéen', description: 'Traitement du paludisme simple couvert à 100% (programme national pnlp).' },
+          { name: 'Insuline humaine (flacon / Cartouche)', type: 'medicament', covered: true, coverage_rate: 50, category: 'Diabète', description: 'Insuline pour le diabète de type 1 et 2, prise en charge à 50% en officine.' },
+          { name: 'Métformine 500mg / 850mg / 1000mg', type: 'medicament', covered: true, coverage_rate: 50, category: 'Diabète', description: 'Antidiabétique oral de première intention, couvert à 50% sur bon de commande.' },
           { name: 'Amlodipine 5mg / 10mg', type: 'medicament', covered: true, coverage_rate: 50, category: 'Cardiologie / HTA', description: 'Antihypertenseur de référence pris en charge à 50%.' },
           { name: 'Ciprofloxacine 500mg', type: 'medicament', covered: true, coverage_rate: 50, category: 'Antibiotique', description: 'Antibiotique fluoroquinolone couvert à 50% en pharmacie.' },
           { name: 'Oméprazole 20mg', type: 'medicament', covered: true, coverage_rate: 50, category: 'Gastro-entérologie', description: 'Inhibiteur de la pompe à protons pour ulcère/reflux, pris en charge à 50%.' },
-          { name: 'Fer + Acide Folique', type: 'medicament', covered: true, coverage_rate: 100, category: 'Maternité / Anémie', description: 'Supplémentation de grossesse prise en charge à 100% (Gratuité Maternité).' },
+          { name: 'Fer + acide folique', type: 'medicament', covered: true, coverage_rate: 100, category: 'Maternité / Anémie', description: 'Supplémentation de grossesse prise en charge à 100% (gratuité maternité).' },
           { name: 'Consultation médecine générale', type: 'soin', covered: true, coverage_rate: 80, category: 'Consultation', description: 'Consultation chez un médecin généraliste conventionné (80% pris en charge).' },
           { name: 'Consultation pédiatrique', type: 'soin', covered: true, coverage_rate: 80, category: 'Consultation', description: 'Prise en charge de l\'examen clinique pédiatrique à 80%.' },
-          { name: 'Hospitalisation & Chirurgie générale', type: 'soin', covered: true, coverage_rate: 80, category: 'Hospitalisation', description: 'Prise en charge à 80% par Lettre de Garantie UNAMUSC dans les hôpitaux publics.' },
-          { name: 'Accouchement Simple & Césarienne', type: 'soin', covered: true, coverage_rate: 100, category: 'Maternité', description: 'Gratuité totale à 100% dans le réseau hospitalier public.' },
-          { name: 'Radiographie & Scanner médical', type: 'soin', covered: true, coverage_rate: 80, category: 'Imagerie', description: 'Examens radiologiques couverts à 80% sur prescription médicale.' },
+          { name: 'Hospitalisation & chirurgie générale', type: 'soin', covered: true, coverage_rate: 80, category: 'Hospitalisation', description: 'Prise en charge à 80% par lettre de garantie UNAMUSC dans les hôpitaux publics.' },
+          { name: 'Accouchement simple & césarienne', type: 'soin', covered: true, coverage_rate: 100, category: 'Maternité', description: 'Gratuité totale à 100% dans le réseau hospitalier public.' },
+          { name: 'Radiographie & scanner médical', type: 'soin', covered: true, coverage_rate: 80, category: 'Imagerie', description: 'Examens radiologiques couverts à 80% sur prescription médicale.' },
           { name: 'Chimiothérapie complexe hors panier', type: 'soin', covered: false, coverage_rate: 0, category: 'Oncologie', description: 'Protocoles spécialisés non homologués dans le panier de base CMU.' },
           { name: 'Chirurgie esthétique de confort', type: 'soin', covered: false, coverage_rate: 0, category: 'Chirurgie', description: 'Actes esthétiques non reconstructeurs, non pris en charge.' },
           { name: 'Implants dentaires cosmétiques', type: 'soin', covered: false, coverage_rate: 0, category: 'Dentaire', description: 'Dentisterie cosmétique haut de gamme non couverte.' },
-          { name: 'Compléments alimentaires & Vitamines de confort', type: 'medicament', covered: false, coverage_rate: 0, category: 'Confort', description: 'Produits de parapharmacie sans ordonnance, non pris en charge.' }
+          { name: 'Compléments alimentaires & vitamines de confort', type: 'medicament', covered: false, coverage_rate: 0, category: 'Confort', description: 'Produits de parapharmacie sans ordonnance, non pris en charge.' }
         ];
         
         let filtered = localItems;
@@ -203,7 +203,7 @@ export default function Medicaments({ lang }) {
           </form>
 
           {/* ── Résultat du simulateur ──────────────────────────────────────────
-            Le reste à charge est le chiffre qui décide si l'assuré
+            le reste à charge est le chiffre qui décide si l'assuré
             peut encore payer : il occupe seul une ligne pleine, avec le
             montant le plus grand de la page. La part CMU reste
             secondaire. Auparavant les trois lignes se partageaient la
@@ -329,7 +329,7 @@ export default function Medicaments({ lang }) {
                       <td style={{ padding: '1rem 1.25rem', textAlign: 'left' }}>
                         <span style={{ fontSize: '0.8rem', color: 'var(--text-sub)', fontWeight: '500' }}>{item.category}</span>
                       </td>
-                      {/* Le taux est l'information que l'on vient chercher :
+                      {/* le taux est l'information que l'on vient chercher :
                           il porte donc la couleur, avec un gris lisible
                           pour le 0% plutot qu'un vide. */}
                       <td style={{ padding: '1rem 1.25rem', textAlign: 'left' }}>

@@ -168,19 +168,19 @@ export default function Beneficiaries({ lang, agentUser }) {
 
     generateOfficialPdf({
       filename: `recu_parrainage_${sponsor.cmuNumber || 'SN-DK-SPN-1001'}.pdf`,
-      docType: 'REÇU DE PARRAINAGE SOLIDAIRE CMU',
-      title: 'Reçu Officiel de Parrainage Solidaire UNAMUSC',
+      docType: 'Reçu de parrainage solidaire CMU',
+      title: 'Reçu officiel de parrainage solidaire UNAMUSC',
       referenceNo: `REC-SPN-${Date.now().toString().slice(-6)}`,
       beneficiaryName: `${sponsor.firstName} ${sponsor.lastName}`,
       cmuNumber: sponsor.cmuNumber || 'SN-DK-SPN-1001',
       structureName: sponsor.mutuelleName || 'Union Régionale des Mutuelles de Santé (Dakar)',
       details: [
         { label: 'Parrain / Sponsor', value: `${sponsor.firstName} ${sponsor.lastName}` },
-        { label: 'Téléphone Parrain', value: sponsor.phone },
-        { label: 'Type de parrainage', value: parrainageType === 'menages' ? 'Parrainage de Ménages' : parrainageType === 'eleves' ? 'Parrainage scolaire (Écoles/Daaras)' : 'Filleuls individuels' },
-        { label: 'Moyen de règlement', value: sponsor.paymentMethod === 'wave' ? 'Wave Pay' : 'Orange Money' },
+        { label: 'Téléphone parrain', value: sponsor.phone },
+        { label: 'Type de parrainage', value: parrainageType === 'menages' ? 'Parrainage de ménages' : parrainageType === 'eleves' ? 'Parrainage scolaire (Écoles/Daaras)' : 'Filleuls individuels' },
+        { label: 'Moyen de règlement', value: sponsor.paymentMethod === 'wave' ? 'Wave pay' : 'Orange Money' },
         { label: 'Montant total cotisé', value: `${String(calculateTotalCost()).replace(/\B(?=(\d{3})+(?!\d))/g, ' ')} FCFA` },
-        { label: 'Statut du paiement', value: 'Paiement validé (Tiers-Payant Actif)' }
+        { label: 'Statut du paiement', value: 'Paiement validé (tiers-payant actif)' }
       ],
       notes: 'Ce reçu officiel certifie le parrainage solidaire et garantit la prise en charge médicale des familles bénéficiaires auprès des mutuelles de santé du Sénégal.'
     });
@@ -222,7 +222,7 @@ export default function Beneficiaries({ lang, agentUser }) {
     },
     wo: {
       title: 'Saytu ñi bokk ci CMU',
-      subtitle: 'Seet, xool ak saytu mbindu njabot ak carte cmu yi nekk ci Ndakaaru.',
+      subtitle: 'Seet, xool ak saytu mbindu njabot ak carte CMU yi nekk ci ndakaaru.',
       searchPlaceholder: 'Seet ci tour, portable, carte...',
       filterMutuelle: 'Tânn mutuelle',
       allMutuelles: 'Mutuelle yëpp',
@@ -490,7 +490,7 @@ export default function Beneficiaries({ lang, agentUser }) {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <span className="badge" style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)', color: '#10b981', fontWeight: 'bold' }}>
-            ● Affichage : {filteredBeneficiaries.length} dossiers correspondants
+            ● affichage : {filteredBeneficiaries.length} dossiers correspondants
           </span>
           {(selectedStatus !== 'all' || searchQuery || selectedMutuelle !== 'all') && (
             <button
@@ -532,7 +532,7 @@ export default function Beneficiaries({ lang, agentUser }) {
             {(() => {
               const pageSize = 10;
 
-              // Le volume affiché est celui de la liste RÉELLEMENT chargée.
+              // le volume affiché est celui de la liste RÉELLEMENT chargée.
               // Aucune volumétrie inventée : un registre annonçant 18 450
               // assurés pour 41 fiches en base induit l'agent en erreur.
               const getTotalVolume = () => filteredBeneficiaries.length;
@@ -847,7 +847,7 @@ export default function Beneficiaries({ lang, agentUser }) {
 
                 <div>
                   <strong style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'none', display: 'block' }}>
-                    {selectedBeneficiary.isFamilyMember ? 'Âge & Relation' : t.modalBirthDate}
+                    {selectedBeneficiary.isFamilyMember ? 'Âge & relation' : t.modalBirthDate}
                   </strong>
                   <span style={{ fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: '600' }}>
                     {selectedBeneficiary.isFamilyMember ? `${selectedBeneficiary.age} ans (${selectedBeneficiary.relation})` : (selectedBeneficiary.birthDate || 'N/A')}
@@ -995,7 +995,7 @@ export default function Beneficiaries({ lang, agentUser }) {
                         <ProIcon name="user" /> {
                           beneficiaries.find(b => b.phone === selectedBeneficiary.sponsorPhone && b.packageType === 'parrainage') 
                             ? `${beneficiaries.find(b => b.phone === selectedBeneficiary.sponsorPhone && b.packageType === 'parrainage').firstName} ${beneficiaries.find(b => b.phone === selectedBeneficiary.sponsorPhone && b.packageType === 'parrainage').lastName} (${selectedBeneficiary.sponsorPhone})`
-                            : `Sponsor Tél: ${selectedBeneficiary.sponsorPhone}`
+                            : `Sponsor tél: ${selectedBeneficiary.sponsorPhone}`
                         }
                       </span>
                     </div>

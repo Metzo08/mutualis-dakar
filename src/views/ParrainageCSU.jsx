@@ -31,8 +31,8 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
     const sponsorCmu = sponsor?.cmuNumber || 'NON RENSEIGNÉ';
     generateOfficialPdf({
       filename: `recu_parrainage_${sponsor?.phone || 'parrain'}.pdf`,
-      docType: 'REÇU OFFICIEL DE PARRAINAGE SOLIDAIRE',
-      title: 'Reçu de Cotisation & Parrainage CSU',
+      docType: 'Reçu officiel de parrainage solidaire',
+      title: 'Reçu de cotisation & parrainage CSU',
       referenceNo: `REC-SPN-${Date.now().toString().slice(-6)}`,
       beneficiaryName: `${sponsor?.firstName || ''} ${sponsor?.lastName || ''}`.trim() || 'Parrain non renseigné',
       cmuNumber: sponsorCmu,
@@ -40,7 +40,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
       details: [
         { label: 'Sponsor / Parrain', value: `${sponsor?.firstName || ''} ${sponsor?.lastName || ''}`.trim() || 'Non renseigné' },
         { label: 'Téléphone', value: sponsor?.phone || 'Non renseigné' },
-        { label: 'Paiement', value: 'Wave Pay / Orange Money' },
+        { label: 'Paiement', value: 'Wave pay / Orange Money' },
         { label: 'Nombre de bénéficiaires', value: `${(filleuls || []).length} personnes parrainées` },
         { label: 'Statut', value: 'Cotisation validée 100% UNAMUSC' }
       ],
@@ -97,7 +97,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
   //  Pikine et Fann) étaient générées par Array.from() et servaient de
   //  repli : dès que l'API des filleuls échouait, l'agent voyait ces
   //  noms et pouvait éditer/imprimer un reçu de parrainage « officiel »
-  //  pour des personnes qui n'ont jamais existé. Le repli est supprimé :
+  //  pour des personnes qui n'ont jamais existé. le repli est supprimé :
   //  un registre injoignable s'affiche vide et le signale.
   // ────────────────────────────────────────────────────────────────────
 
@@ -154,7 +154,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
   const [paymentMethod, setPaymentMethod] = useState('wave');
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState('');
-  // eslint-disable-next-line no-unused-vars -- Indicateur de succès du paiement de parrainage. Le setter est appelé après chaque wave/OTP réussi mais aucun rendu ne lit le drapeau.
+  // eslint-disable-next-line no-unused-vars -- Indicateur de succès du paiement de parrainage. le setter est appelé après chaque wave/OTP réussi mais aucun rendu ne lit le drapeau.
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [generatedCmuNumber, setGeneratedCmuNumber] = useState('');
   const [qrCodeUrl, setQrCodeUrl] = useState('');
@@ -256,7 +256,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
         }
         for (let i = 0; i < sponsoredHouseholds.length; i++) {
           if (!sponsoredHouseholds[i].chefName || !sponsoredHouseholds[i].chefPhone) {
-            showError(lang === 'fr' ? `Veuillez renseigner le nom et le téléphone du Chef pour le Ménage #${i+1}.` : `Bindal tour ak portable Chef bi ci njaboot #${i+1}.`);
+            showError(lang === 'fr' ? `Veuillez renseigner le nom et le téléphone du chef pour le ménage #${i+1}.` : `Bindal tour ak portable chef bi ci njaboot #${i+1}.`);
             return;
           }
         }
@@ -293,7 +293,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
     e.preventDefault();
     const cleanOtp = String(otpCode || '').replace(/[\s\D]+/g, '');
     if (window.addLog) {
-      window.addLog('INFO', `Parrainage : Validation du paiement. OTP saisi = "${otpCode}", nettoyé = "${cleanOtp}"`);
+      window.addLog('INFO', `Parrainage : validation du paiement. OTP saisi = "${otpCode}", nettoyé = "${cleanOtp}"`);
     }
 
     if (cleanOtp === '7842') {
@@ -322,13 +322,13 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
             setPaymentSuccess(true);
             setRegStep(6);
             alert(lang === 'fr' 
-              ? "Mode hors-ligne : Votre demande de parrainage a été enregistrée localement et sera synchronisée dès le retour de la connexion."
+              ? "Mode hors-ligne : votre demande de parrainage a été enregistrée localement et sera synchronisée dès le retour de la connexion."
               : "Hors-ligne mode : Sa parrainage enregistrer na localement te mungi lay xaar connexion bi ñëwaat."
             );
           })
           .catch(err => {
             console.error('Offline queuing failed:', err);
-            if (window.addLog) window.addLog('ERROR', `Parrainage : Échec stockage local : ${err.message}`);
+            if (window.addLog) window.addLog('ERROR', `Parrainage : échec stockage local : ${err.message}`);
             setGeneratedCmuNumber('SN-DK-SPN-' + Math.floor(1000 + Math.random() * 9000));
             setPaymentSuccess(true);
             setRegStep(6);
@@ -361,7 +361,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
       });
     } else {
       if (window.addLog) window.addLog('WARN', `Parrainage : OTP invalide ou incorrect. Reçu: "${cleanOtp}"`);
-      showError(lang === 'fr' ? 'Code OTP incorrect. Veuillez réessayer (Indice : 7842)' : 'Code OTP bi baaxul (Indice: 7842)');
+      showError(lang === 'fr' ? 'Code OTP incorrect. Veuillez réessayer (indice : 7842)' : 'Code OTP bi baaxul (Indice: 7842)');
     }
   };
 
@@ -455,12 +455,12 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
     doc.setFont("helvetica", "bold");
     doc.text(`${selectedMutuelle}`, 65, y);
     
-    const typeLabel = parrainageType === 'menages' ? 'Parrainage de Ménages 👨‍👩‍👧‍👦' :
+    const typeLabel = parrainageType === 'menages' ? 'Parrainage de ménages ‍‍‍' :
                       parrainageType === 'eleves' ? 'Parrainage scolaire (Écoles/Daaras) 🎓' :
                       parrainageType === 'collectif' ? 'Packs collectifs solidaires 🎁' :
                       'Filleuls individuels 👤';
     doc.text(typeLabel, 65, y + 6);
-    doc.text(paymentMethod === 'wave' ? 'Wave Pay' : 'Orange Money', 65, y + 12);
+    doc.text(paymentMethod === 'wave' ? 'Wave pay' : 'Orange Money', 65, y + 12);
     doc.text("12 / 2027", 155, y);
     doc.setTextColor(5, 150, 105);
     doc.text("Paiement validé (Simulé)", 155, y + 6);
@@ -640,7 +640,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
             <input 
               type="text" 
               className="input" 
-              placeholder={lang === 'fr' ? "🔍 Rechercher un parrain par nom, prénom ou téléphone..." : "🔍 Wër sponsor ci tour, sant walla portable..."}
+              placeholder={lang === 'fr' ? "Rechercher un parrain par nom, prénom ou téléphone..." : "Wër sponsor ci tour, sant walla portable..."}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{ width: '100%', maxWidth: '500px' }}
@@ -759,7 +759,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
           const sPhone = selectedSponsor.phone || '77 111 22 33';
           const sEmail = selectedSponsor.email || `${sFirstName.toLowerCase().replace(/\s+/g, '')}@dakar.sn`;
           const sDept = selectedSponsor.department || selectedSponsor.region || 'Dakar';
-          const sAddress = selectedSponsor.address || `Avenue Cheikh Anta Diop, ${sDept}, Sénégal`;
+          const sAddress = selectedSponsor.address || `Avenue Cheikh anta Diop, ${sDept}, Sénégal`;
           const sMut = selectedSponsor.mutuelleName || selectedSponsor.mutuelle_name || `UDMS ${sDept}`;
           const sTotal = selectedSponsor.totalAmount ?? selectedSponsor.amount ?? (filleuls.length > 0 ? filleuls.length * 3500 + 1000 : 4500);
 
@@ -794,7 +794,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                       {sFullName}
                     </h2>
                     <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0.2rem 0 0 0' }}>
-                      {lang === 'fr' ? `Dossier Sponsoring : ${sCmu}` : `Dossier : ${sCmu}`}
+                      {lang === 'fr' ? `Dossier sponsoring : ${sCmu}` : `Dossier : ${sCmu}`}
                     </p>
                   </div>
                 </div>
@@ -802,18 +802,18 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                 {/* Sponsor Profile Fields */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.5rem', padding: '1rem', background: 'var(--bg-secondary)', borderRadius: '12px' }}>
                   <div>
-                    <small style={{ color: 'var(--text-muted)' }}>{lang === 'fr' ? 'Téléphone & Email' : 'Téléphone'}</small>
+                    <small style={{ color: 'var(--text-muted)' }}>{lang === 'fr' ? 'Téléphone & email' : 'Téléphone'}</small>
                     <div style={{ fontWeight: '600', fontSize: '0.85rem', color: 'var(--text-main)' }}>{sPhone}</div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{sEmail}</div>
                   </div>
                   <div>
-                    <small style={{ color: 'var(--text-muted)' }}>{lang === 'fr' ? 'Adresse & Ville' : 'Adresse'}</small>
+                    <small style={{ color: 'var(--text-muted)' }}>{lang === 'fr' ? 'Adresse & ville' : 'Adresse'}</small>
                     <div style={{ fontWeight: '600', fontSize: '0.85rem', color: 'var(--text-main)' }}>{sAddress}</div>
                   </div>
                   <div>
-                    <small style={{ color: 'var(--text-muted)' }}>{lang === 'fr' ? 'Mutuelle & Union (Département)' : 'Mutuelle'}</small>
+                    <small style={{ color: 'var(--text-muted)' }}>{lang === 'fr' ? 'Mutuelle & union (département)' : 'Mutuelle'}</small>
                     <div style={{ fontWeight: '700', fontSize: '0.85rem', color: 'var(--primary)' }}>{sMut}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Union Départementale : {sDept}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Union départementale : {sDept}</div>
                   </div>
                 </div>
 
@@ -874,7 +874,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                 {/* Bottom total amount and receipt download */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border-color)' }}>
                   <div>
-                    <small style={{ color: 'var(--text-muted)', display: 'block' }}>{lang === 'fr' ? 'MONTANT GLOBAL PARRAINÉ' : 'MONTANT'}</small>
+                    <small style={{ color: 'var(--text-muted)', display: 'block' }}>{lang === 'fr' ? 'Montant global parrainé' : 'MONTANT'}</small>
                     <span style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--primary)' }}>
                       {new Intl.NumberFormat('fr-FR').format(sTotal)} FCFA
                     </span>
@@ -884,7 +884,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                       className="btn btn-secondary" 
                       onClick={() => handleDownloadReceiptForSponsor(selectedSponsor)}
                     >
-                      <ProIcon name="file-text" /> {lang === 'fr' ? 'Télécharger Reçu PDF' : 'Télécharger Reçu'}
+                      <ProIcon name="file-text" /> {lang === 'fr' ? 'Télécharger reçu PDF' : 'Télécharger reçu'}
                     </button>
                     <button className="btn btn-outline" onClick={() => setSelectedSponsor(null)}>
                       {lang === 'fr' ? 'Fermer' : 'Fermer'}
@@ -907,10 +907,10 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
         <div className="hero-content">
           <span className="badge" style={{ padding: '0.4rem 0.9rem', backgroundColor: 'rgba(255, 255, 255, 0.22)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '700' }}><ProIcon name="handshake" /> CMU solidarité</span>
           <h1 style={{ fontSize: '2.35rem', fontWeight: '900', margin: '0.5rem 0', color: '#ffffff', letterSpacing: '-0.02em', textShadow: '0 3px 6px rgba(0,0,0,0.4)' }}>
-            {lang === 'fr' ? 'Parrainage solidaire' : 'Dimbalé ak Parrainage'}
+            {lang === 'fr' ? 'Parrainage solidaire' : 'Dimbalé ak parrainage'}
           </h1>
           <p style={{ maxWidth: '750px', fontSize: '1.05rem', color: 'rgba(255,255,255,0.85)', lineHeight: '1.6' }}>
-            {lang === 'fr' ? 'Offrez la couverture maladie universelle (carte + cotisation annuelle) à des élèves de Daaras, des ménages démunis ou des filleuls individuels.' : 'Fayal assurance wér-gi-yaram sa njaboot, ay élève daara walla ay filleul.'}
+            {lang === 'fr' ? 'Offrez la couverture maladie universelle (carte + cotisation annuelle) à des élèves de daaras, des ménages démunis ou des filleuls individuels.' : 'Fayal assurance wér-gi-yaram sa njaboot, ay élève daara walla ay filleul.'}
           </p>
         </div>
       </div>
@@ -1100,7 +1100,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                   <div style={{ fontSize: '2.5rem' }}><ProIcon name="graduation-cap" /></div>
                   <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem', fontWeight: '700' }}>{lang === 'fr' ? 'Élèves / daara' : 'Élèves / daara'}</h3>
                   <div style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--success)', margin: '0.5rem 0' }}>1 000 FCFA <span style={{ fontSize: '0.8rem', fontWeight: 'normal' }}>/ Élève</span></div>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Tarif groupe subventionné par l\'État pour les écoles élémentaires et Daaras.' : 'Fay subventionné par État bi ngir daara yi ak écoles yi.'}</p>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Tarif groupe subventionné par l\'État pour les écoles élémentaires et Daaras.' : 'Fay subventionné par état bi ngir Daara yi ak écoles yi.'}</p>
                 </div>
 
                 {/* Packs Collectifs Solidaires */}
@@ -1110,7 +1110,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                     setParrainageType('collectif');
                     // Prepopulate with a default pack of 10 solidary students
                     const mocks = Array.from({ length: 10 }, (_, i) => ({
-                      name: `Élève Collectif #${i + 1}`,
+                      name: `Élève collectif #${i + 1}`,
                       age: 10 + (i % 5),
                       relation: 'Classe/Pack'
                     }));
@@ -1148,7 +1148,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
               <p style={{ color: 'var(--text-sub)', marginBottom: '2rem' }}>{lang === 'fr' ? 'Les bénéficiaires parrainés seront rattachés à cette mutuelle communautaire locale.' : 'Fii lañuy rattaché ñi nga beug parrainer.'}</p>
               
               <div className="form-group" style={{ maxWidth: '500px', margin: '0 auto' }}>
-                <label className="form-label">{lang === 'fr' ? 'Mutuelles Disponibles à Dakar' : 'Mutuelle yi nekk'}</label>
+                <label className="form-label">{lang === 'fr' ? 'Mutuelles disponibles à Dakar' : 'Mutuelle yi nekk'}</label>
                 <select 
                   className="form-control"
                   value={selectedMutuelle}
@@ -1182,7 +1182,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                     className="form-control" 
                     value={schoolName}
                     onChange={(e) => setSchoolName(e.target.value)}
-                    placeholder="Ex: Daara Serigne Saliou Colobane, école élémentaire Grand-Dakar"
+                    placeholder="Ex: Daara Serigne saliou Colobane, école élémentaire Grand-Dakar"
                     required
                   />
                 </div>
@@ -1230,7 +1230,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                     className="form-control" 
                     value={formData.address}
                     onChange={(e) => setFormData({...formData, address: e.target.value})}
-                    placeholder="Ex: Fann Résidence, Dakar"
+                    placeholder="Ex: Fann résidence, Dakar"
                   />
                 </div>
               </div>
@@ -1285,7 +1285,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                           key={pack.count}
                           onClick={() => {
                             const mocks = Array.from({ length: pack.count }, (_, i) => ({
-                              name: `Élève Collectif #${i + 1}`,
+                              name: `Élève collectif #${i + 1}`,
                               age: 10 + (i % 5),
                               relation: 'Classe/Pack'
                             }));
@@ -1327,7 +1327,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                       className="btn btn-secondary btn-sm"
                       onClick={() => setSponsoredHouseholds([...sponsoredHouseholds, { id: Date.now() + Math.random(), chefName: '', chefPhone: '', members: [] }])}
                     >
-                      {lang === 'fr' ? '+ Ajouter un ménage' : '+ Dolli njaboot'}
+                      {lang === 'fr' ? '+ ajouter un ménage' : '+ dolli njaboot'}
                     </button>
                   </div>
 
@@ -1395,7 +1395,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                               id={`hh-${hhIdx}-name`}
                               className="form-control form-control-sm" 
                               style={{ flex: '2', minWidth: '150px' }} 
-                              placeholder={lang === 'fr' ? 'Prénom & Nom' : 'Tour ak Sant'} 
+                              placeholder={lang === 'fr' ? 'Prénom & nom' : 'Tour ak sant'} 
                             />
                             <select 
                               id={`hh-${hhIdx}-relation`}
@@ -1702,9 +1702,9 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                   {calculateTotalCost().toLocaleString('fr-FR')} FCFA
                 </div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>
-                  {parrainageType === 'menages' && `Détail : ${sponsoredHouseholds.length} ménage(s) [1 000 FCFA carte + 3 500 FCFA/pers. par ménage]`}
+                  {parrainageType === 'menages' && `Détail : ${sponsoredHouseholds.length} ménage(s) [1 000 FCFA carte + 3 500 FCFA/pers. Par ménage]`}
                   {parrainageType === 'eleves' && `Détail : ${familyMembers.length} élève(s) × 1 000 FCFA (tarif subventionné)`}
-                  {parrainageType === 'collectif' && `Détail : Pack collectif de ${familyMembers.length} élève(s) × 1 000 FCFA (tarif pack)`}
+                  {parrainageType === 'collectif' && `Détail : pack collectif de ${familyMembers.length} élève(s) × 1 000 FCFA (tarif pack)`}
                   {parrainageType === 'individuel' && `Détail : ${familyMembers.length} filleul(s) × 4 500 FCFA (1 000 carte + 3 500 cotisation)`}
                 </div>
               </div>
@@ -1778,7 +1778,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                   <div className="payment-screen-mock">
                     <div className="payment-screen-mock-pattern"></div>
                     <div className="payment-screen-header">
-                      {paymentMethod === 'wave' ? 'WAVE PAY' : 'ORANGE MONEY'}
+                      {paymentMethod === 'wave' ? 'Wave pay' : 'Orange Money'}
                     </div>
                     <div style={{ fontSize: '0.75rem', marginBottom: '1.5rem', color: '#94a3b8' }}>
                       Montant : {calculateTotalCost().toLocaleString('fr-FR')} FCFA
@@ -1795,7 +1795,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                   </div>
 
                   <div style={{ marginTop: '0.25rem', padding: '0.75rem', background: 'var(--card-bg-subtle, #f8fafc)', borderRadius: '12px', fontSize: '0.75rem', color: 'var(--text-sub)', border: '1px dashed var(--border-color)', width: '100%', maxWidth: '280px', textAlign: 'center' }}>
-                    <ProIcon name="lightbulb" /> {lang === 'fr' ? 'Indice démo : Saisissez le code OTP 7842' : 'Indice démo : Bindal code OTP 7842'}
+                    <ProIcon name="lightbulb" /> {lang === 'fr' ? 'Indice démo : saisissez le code OTP 7842' : 'Indice démo : bindal code OTP 7842'}
                   </div>
 
                   <div style={{ display: 'flex', gap: '1rem' }}>
@@ -1905,7 +1905,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                 >
                   {syncStatus === 'idle' && (lang === 'fr' ? 'Synchroniser cartes' : 'Sync cartes')}
                   {syncStatus === 'loading' && (lang === 'fr' ? 'Synchronisation...' : 'Sync...')}
-                  {syncStatus === 'success' && (lang === 'fr' ? '✓ Cartes synchronisées' : '✓ Sync !')}
+                  {syncStatus === 'success' && (lang === 'fr' ? 'Cartes synchronisées' : 'Sync !')}
                 </button>
                 <button className="btn btn-secondary" onClick={handleDownloadReceipt}>
                   {lang === 'fr' ? 'Télécharger le reçu (PDF)' : 'Yóbbu reçu bi'}

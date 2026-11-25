@@ -14,7 +14,7 @@
  *   POST  /api/cards/:cmu/block|unblock|revoke|replace — opérations de carte
  *   POST  /api/accounts/:cmu/reset-password — code à usage unique (15 min)
  *
- * Le serveur est l'autorité : le statut de la carte est vérifié en base à
+ * le serveur est l'autorité : le statut de la carte est vérifié en base à
  * chaque action, jamais dans l'interface. Aucun secret n'est affiché.
  * Aucune alerte ne supprime automatiquement un compte ou une carte.
  */
@@ -178,7 +178,7 @@ export default function SecurityCenter() { // props historiques conservées par 
   };
 
   const revokeSession = async (id) => {
-    if (!window.confirm('Révoquer cette session ? Le porteur devra se reconnecter. Action journalisée.')) return;
+    if (!window.confirm('Révoquer cette session ? le porteur devra se reconnecter. Action journalisée.')) return;
     setBusy(`session-${id}`);
     try {
       const res = await apiFetch(`/api/security/sessions/${id}`, { method: 'DELETE' });
@@ -241,7 +241,7 @@ export default function SecurityCenter() { // props historiques conservées par 
           </p>
         </div>
         <button className="btn btn-sm btn-outline-danger" onClick={exportSecurity} disabled={exporting}>
-          {exporting ? '⏳ Génération…' : '📊 Rapport Excel de sécurité'}
+          {exporting ? '⏳ génération…' : 'Rapport Excel de sécurité'}
         </button>
       </div>
 

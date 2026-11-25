@@ -23,7 +23,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
       statusActive: 'Couverture CSU active',
       statusInactive: 'Couverture CSU inactive',
       activeDesc: 'Vous bénéficiez du tiers-payant jusqu\'à 80% dans toutes les structures conventionnées.',
-      inactiveDesc: 'Votre couverture est suspendue. Veuillez régulariser votre cotisation de 4 500 FCFA.',
+      inactiveDesc: 'Votre couverture Est suspendue. Veuillez régulariser votre cotisation de 4 500 FCFA.',
       mutuelleNameLabel: 'Nom de la mutuelle',
       mutuelleRates: 'Tarif cotisation',
       mutuelleRatesVal: '4 500 FCFA / an',
@@ -90,7 +90,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
     // Catégorie 1: Citoyens & assurés
     { id: 'citizen_std', code: 'ACC-01', title: '1. Assuré individuel / famille', cat: 'Citoyens & assurés', icon: <ProIcon name="senegal-flag" />, color: '#059669', badge: 'Titulaire / ayant droit', desc: 'Accès au dossier médical, carte CSU numérique, renouvellement cotisations (Wave/OM) et historique des remboursements.' },
     { id: 'citizen_student', code: 'ACC-02', title: '2. Élève / étudiant (CSU jeunes)', cat: 'Citoyens & assurés', icon: <ProIcon name="graduation-cap" />, color: '#10b981', badge: 'Gratuité scolaire', desc: 'Prise en charge 100% des consultations en postes de santé et centres universitaires conventionnés.' },
-    { id: 'citizen_bsf', code: 'ACC-03', title: '3. Bénéficiaire BSF (filet social)', cat: 'Citoyens & assurés', icon: <ProIcon name="sparkles" color="#f59e0b" />, color: '#34d399', badge: 'Gratuité vulnérables', desc: 'Exonération intégrale des cotisations via la Bourse de Sécurité Familiale (BSF) du Gouvernement.' },
+    { id: 'citizen_bsf', code: 'ACC-03', title: '3. Bénéficiaire BSF (filet social)', cat: 'Citoyens & assurés', icon: <ProIcon name="sparkles" color="#f59e0b" />, color: '#34d399', badge: 'Gratuité vulnérables', desc: 'Exonération intégrale des cotisations via la bourse de sécurité familiale (BSF) du gouvernement.' },
 
     // Catégorie 2: Soignants & plateau médical
     { id: 'doc_physician', code: 'ACC-04', title: '4. Médecin / praticien traitant', cat: 'Plateau médical', icon: <ProIcon name="stethoscope" />, color: '#0284c7', badge: 'Ordre des médecins', desc: 'Prescription électronique d\'ordonnances, validation d\'actes de soins sous tiers-payant 80%, télé-expertise.' },
@@ -127,7 +127,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
         birthDate: '1990-05-12',
         phone: '771234567',
         email: 'modou.diop@example.com',
-        address: 'Médina Rue 22, Dakar',
+        address: 'Médina rue 22, Dakar',
         mutuelleName: 'Mutuelle de la Médina',
         packageType: 'individuel',
         paymentMethod: 'wave',
@@ -149,8 +149,8 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
         birthDate: '2002-11-18',
         phone: '774567890',
         email: 'ibrahima.sarr@ucad.edu.sn',
-        address: 'Campus Universitaire Fann, Dakar',
-        mutuelleName: 'Mutuelle Étudiante UCAD Dakar',
+        address: 'Campus universitaire Fann, Dakar',
+        mutuelleName: 'Mutuelle étudiante ucad Dakar',
         packageType: 'scolaire',
         paymentMethod: 'free',
         cmuNumber: 'SN-DK-UCAD-3012',
@@ -171,8 +171,8 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
         birthDate: '1982-03-25',
         phone: '778901234',
         email: 'fatou.diallo@bsf.sn',
-        address: 'Pikine Guinaw Rails, Dakar',
-        mutuelleName: 'Mutuelle Communale de Pikine',
+        address: 'Pikine guinaw rails, Dakar',
+        mutuelleName: 'Mutuelle communale de Pikine',
         packageType: 'gratuité',
         paymentMethod: 'gratuit_etat',
         cmuNumber: 'SN-DK-BSF-9901',
@@ -192,8 +192,8 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
       const mockDoc = {
         id: 10,
         username: 'docteur@csu.sn',
-        contactName: 'Dr. Cheikh Anta Diop',
-        structureName: 'Centre Hospitalier Abass Ndao',
+        contactName: 'Dr. Cheikh anta Diop',
+        structureName: 'Centre hospitalier Abass Ndao',
         structureType: 'hopital',
         structureId: 1,
         coverageRate: 80,
@@ -209,8 +209,8 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
       const mockNurse = {
         id: 11,
         username: 'infirmiere@csu.sn',
-        contactName: 'Aïssatou Sow (Sage-Femme)',
-        structureName: 'Poste de Santé de la Médina',
+        contactName: 'Aïssatou Sow (sage-femme)',
+        structureName: 'Poste de santé de la Médina',
         structureType: 'poste_sante',
         structureId: 2,
         coverageRate: 80,
@@ -226,8 +226,8 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
       const mockPharma = {
         id: 12,
         username: 'pharmacie@csu.sn',
-        contactName: 'Dr. Fatou Sow (Pharmacienne)',
-        structureName: 'Grande Pharmacie de la Médina',
+        contactName: 'Dr. Fatou Sow (pharmacienne)',
+        structureName: 'Grande pharmacie de la Médina',
         structureType: 'pharmacie',
         structureId: 3,
         coverageRate: 80,
@@ -243,8 +243,8 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
       const mockLab = {
         id: 13,
         username: 'laboratoire@csu.sn',
-        contactName: 'Dr. Ousmane Kane (Biologiste)',
-        structureName: 'Laboratoire de Biologie & Radiologie Pasteur',
+        contactName: 'Dr. Ousmane kane (biologiste)',
+        structureName: 'Laboratoire de biologie & radiologie pasteur',
         structureType: 'laboratoire',
         structureId: 4,
         coverageRate: 80,
@@ -260,7 +260,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
       const mockEps = {
         id: 14,
         username: 'hopital@csu.sn',
-        contactName: 'Direction de la Prise en Charge EPS',
+        contactName: 'Direction de la prise en charge EPS',
         structureName: 'Hôpital Principal de Dakar (EPS 3)',
         structureType: 'hopital_eps',
         structureId: 5,
@@ -293,7 +293,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
         username: 'agent@csu.sn',
         firstName: 'Mariama',
         lastName: 'Ba',
-        role: 'Superviseur Régional URMSCD'
+        role: 'Superviseur régional URMSCD'
       };
       if (setAgentUser) setAgentUser(mockSupervisor);
       if (setPortalMode) setPortalMode('agent');
@@ -307,7 +307,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
         username: 'superadmin@csu.sn',
         firstName: 'Dr. Mamadou',
         lastName: 'Ba',
-        role: 'Super Admin'
+        role: 'Super admin'
       };
       if (setAgentUser) setAgentUser(mockSuper);
       if (setPortalMode) setPortalMode('agent');
@@ -319,8 +319,8 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
       const mockCompany = {
         id: 20,
         username: 'entreprise@csu.sn',
-        contactName: 'Direction RH Patisen',
-        structureName: 'Groupe PATISEN SA',
+        contactName: 'Direction rh Patisen',
+        structureName: 'Groupe Patisen sa',
         structureType: 'entreprise',
         coverageRate: 80,
         role: 'entreprise'
@@ -335,8 +335,8 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
       const mockRse = {
         id: 21,
         username: 'parrain@csu.sn',
-        contactName: 'Fondation WAVE & Sonatel Mécénat',
-        structureName: 'Parrain Solidaire Régional',
+        contactName: 'Fondation Wave & sonatel mécénat',
+        structureName: 'Parrain solidaire régional',
         structureType: 'fondation_rse',
         coverageRate: 100,
         role: 'parrain_rse'
@@ -356,22 +356,22 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
   };
 
   // Super Admin Agent Creation State
-  const [newAgent, setNewAgent] = useState({ firstName: '', lastName: '', username: '', password: '', role: 'Admin Régional' });
+  const [newAgent, setNewAgent] = useState({ firstName: '', lastName: '', username: '', password: '', role: 'Admin régional' });
   const [agentList, setAgentList] = useState([]);
-  // eslint-disable-next-line no-unused-vars -- Spinner de création d'agent. Le setters est piloté par `handleCreateAgent` (POST /api/agents) : le rendu du panneau Super Admin reste à brancher.
+  // eslint-disable-next-line no-unused-vars -- Spinner de création d'agent. le setters est piloté par `handleCreateAgent` (POST /api/agents) : le rendu du panneau Super Admin reste à brancher.
   const [adminLoading, setAdminLoading] = useState(false);
   // eslint-disable-next-line no-unused-vars -- Message de retour de la création d'agent (succès/erreur). Setter piloté par `handleCreateAgent`, aucun rendu ne l'affiche encore.
   const [adminMsg, setAdminMsg] = useState('');
 
   // Messages State
-  // eslint-disable-next-line no-unused-vars -- File de messages de l'agent, alimentée par GET /api/messages/:username. Le setter est actif mais aucune liste n'est rendue.
+  // eslint-disable-next-line no-unused-vars -- File de messages de l'agent, alimentée par GET /api/messages/:username. le setter est actif mais aucune liste n'est rendue.
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState({ receiver: '', subject: '', body: '' });
   // eslint-disable-next-line no-unused-vars -- Spinner d'envoi de message, piloté par `handleSendMessage` (POST /api/messages) : le formulaire n'est pas encore rendu.
   const [msgLoading, setMsgLoading] = useState(false);
 
   // Loyalty State
-  // eslint-disable-next-line no-unused-vars -- Points de fidélité du citoyen, chargés par GET /api/loyalty/:id. Le setter est actif mais le bloc fidélité n'est pas rendu.
+  // eslint-disable-next-line no-unused-vars -- Points de fidélité du citoyen, chargés par GET /api/loyalty/:id. le setter est actif mais le bloc fidélité n'est pas rendu.
   const [loyaltyData, setLoyaltyData] = useState(null);
   // eslint-disable-next-line no-unused-vars -- Spinner de chargement des points de fidélité : mêmes setters que ci-dessus, aucun rendu ne l'affiche.
   const [loyaltyLoading, setLoyaltyLoading] = useState(false);
@@ -439,7 +439,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
       if (data.success) {
         setAdminMsg('Compte administrateur créé avec succès !');
         setAgentList([...agentList, data.agent]);
-        setNewAgent({ firstName: '', lastName: '', username: '', password: '', role: 'Admin Régional' });
+        setNewAgent({ firstName: '', lastName: '', username: '', password: '', role: 'Admin régional' });
       } else {
         setAdminMsg('Erreur lors de la création : ' + (data.error || 'Inconnue'));
       }

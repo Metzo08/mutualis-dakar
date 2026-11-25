@@ -465,7 +465,7 @@ export default function Payments({
   const handleDownloadReceipt = (payment) => {
     generateOfficialPdf({
       filename: `recu_cotisation_${payment.reference}.pdf`,
-      docType: 'QUITTANCE OFFICIELLE DE COTISATION CSU / UNAMUSC',
+      docType: 'Quittance officielle de cotisation CSU / UNAMUSC',
       title: 'Attestation de paiement & quittance de cotisation mutualiste',
       referenceNo: payment.reference,
       beneficiaryName: formatProperCase(`${activeMember.firstName} ${activeMember.lastName}`),
@@ -473,8 +473,8 @@ export default function Payments({
       structureName: payment.unionName || 'Mutuelle de santé départementale de Dakar',
       details: [
         { label: 'Objet du versement', value: payment.type },
-        { label: 'Montant total réglé', value: `${payment.amount.toLocaleString('fr-FR')} FCFA (Tiers-payant & prise en charge activés)` },
-        { label: 'Moyen de paiement', value: payment.provider === 'wave' ? 'Wave Mobile Money Sénégal' : 'Orange Money Sénégal' },
+        { label: 'Montant total réglé', value: `${payment.amount.toLocaleString('fr-FR')} FCFA (tiers-payant & prise en charge activés)` },
+        { label: 'Moyen de paiement', value: payment.provider === 'wave' ? 'Wave mobile Money Sénégal' : 'Orange Money Sénégal' },
         { label: 'Bénéficiaires couverts', value: payment.beneficiaries },
         { label: 'Date de validation', value: payment.date },
         { label: 'Statut de conformité', value: 'Validé & homologué par l\'URMSCD Dakar' }
@@ -573,7 +573,7 @@ export default function Payments({
                         !attachedMinorIds.has(String(m.cmuNumber || '').toUpperCase()))
                       .map((m) => {
                         const depCount = resolveMinorDependents(allMembers, m).length;
-                        const typeLabel = depCount === 0 ? 'Assuré Seul (0 ayant droit)' : `${depCount} enfant(s) mineur(s) à charge`;
+                        const typeLabel = depCount === 0 ? 'Assuré seul (0 ayant droit)' : `${depCount} enfant(s) mineur(s) à charge`;
                         return (
                           <option key={m.id} value={m.id}>
                             {formatProperCase(`${m.firstName} ${m.lastName}`)} ({m.cmuNumber}) — {typeLabel}
@@ -604,7 +604,7 @@ export default function Payments({
                   <ProIcon name="lock" /> Espace privé assuré • Données sécurisées
                 </span>
                 <span className="badge" style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', fontSize: '0.76rem', borderRadius: '8px', padding: '4px 8px', fontWeight: '700' }}>
-                  {(activeMember?.dependents || []).length === 0 ? '👤 Assuré Seul (0 ayant droit)' : `👨‍👩‍👧‍👦 Foyer (${1 + (activeMember?.dependents || []).length} pers.)`}
+                  {(activeMember?.dependents || []).length === 0 ? 'Assuré seul (0 ayant droit)' : `👨‍👩‍👧‍👦 Foyer (${1 + (activeMember?.dependents || []).length} pers.)`}
                 </span>
               </div>
 
@@ -1059,10 +1059,10 @@ export default function Payments({
               
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px', marginBottom: '2rem' }}>
                 {[
-                  { id: 'talibe_1', title: '🎒 1 Enfant talibé / daara', price: 3500, label: '3 500 FCFA', desc: '1 an de consultations, soins pédiatriques et pharmacie 100% gratuits', tag: 'Formule recommandée' },
-                  { id: 'famille_1', title: '👨‍👩‍👧 1 Famille vulnérable (3 pers.)', price: 10500, label: '10 500 FCFA', desc: 'Prise en charge intégrale mère et enfants pour toute l\'année 2026', tag: 'Impact familial direct' },
-                  { id: 'daara_10', title: '🕌 Daara complet (10 enfants)', price: 35000, label: '35 000 FCFA', desc: 'Couverture sanitaire pédiatrique complète pour tout un daara de Dakar', tag: 'Grand parrainage' },
-                  { id: 'custom', title: '💖 Don libre solidarité', price: 50000, label: 'Montant au choix', desc: 'Fonds d\'urgence hospitalière, dialyse & pharmacie UNAMUSC Dakar', tag: 'Montant libre' }
+                  { id: 'talibe_1', title: '1 enfant talibé / Daara', price: 3500, label: '3 500 FCFA', desc: '1 an de consultations, soins pédiatriques et pharmacie 100% gratuits', tag: 'Formule recommandée' },
+                  { id: 'famille_1', title: '‍‍1 famille vulnérable (3 pers.)', price: 10500, label: '10 500 FCFA', desc: 'Prise en charge intégrale mère et enfants pour toute l\'année 2026', tag: 'Impact familial direct' },
+                  { id: 'daara_10', title: 'Daara complet (10 enfants)', price: 35000, label: '35 000 FCFA', desc: 'Couverture sanitaire pédiatrique complète pour tout un Daara de Dakar', tag: 'Grand parrainage' },
+                  { id: 'custom', title: 'Don libre solidarité', price: 50000, label: 'Montant au choix', desc: 'Fonds d\'urgence hospitalière, dialyse & pharmacie UNAMUSC Dakar', tag: 'Montant libre' }
                 ].map((item) => {
                   const isSel = sponsoringPreset === item.id;
                   return (
@@ -1161,10 +1161,10 @@ export default function Payments({
                   onChange={(e) => setSponsoringCause(e.target.value)}
                   style={{ borderRadius: '14px', fontSize: '0.92rem', padding: '0.85rem 1.2rem' }}
                 >
-                  <option value="Daara Serigne Fallou Fann Hock (10 talibés pris en charge)">🕌 Daara serigne fallou Fann hock (10 talibés pris en charge)</option>
+                  <option value="Daara Serigne Fallou Fann Hock (10 talibés pris en charge)">🕌 Daara Serigne fallou Fann hock (10 talibés pris en charge)</option>
                   <option value="Orphelinat de la Médina (Enfants vulnérables)">Orphelinat de la Médina (enfants vulnérables)</option>
                   <option value="Centre pédiatrique & Foyer social de Pikine">Centre pédiatrique & foyer social de Pikine</option>
-                  <option value="Daara Thiaroye Gare & Yeumbeul Nord">🕌 Daara thiaroye gare & yeumbeul nord</option>
+                  <option value="Daara Thiaroye Gare & Yeumbeul Nord">🕌 Daara thiaroye gare & Yeumbeul Nord</option>
                   <option value="Fonds d'urgence hospitalière & dialyse UNAMUSC Dakar">Fonds d'urgence hospitalière & dialyse UNAMUSC Dakar</option>
                   <option value="Attribution prioritaire aux familles les plus démunies de Dakar">Attribution prioritaire aux familles les plus démunies de Dakar</option>
                 </select>

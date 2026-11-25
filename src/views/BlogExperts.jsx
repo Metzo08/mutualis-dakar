@@ -10,16 +10,16 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
   // Nom + rôle de l'auteur selon le profil connecté
   const authorName = (partnerUser?.name) || (agentUser ? `${agentUser.firstName} ${agentUser.lastName}` : '') || (
     portalMode === 'agent' ? 'Agent UDMS' :
-    (portalMode === 'doctor' || portalMode === 'partner') ? 'Dr. Cheikh Anta Diop' :
+    (portalMode === 'doctor' || portalMode === 'partner') ? 'Dr. Cheikh anta Diop' :
     portalMode === 'midwife' ? 'Dr. Fatou Diome' :
-    portalMode === 'superadmin' ? 'DSI UNAMUSC' : 'Professionnel de santé'
+    portalMode === 'superadmin' ? 'Dsi UNAMUSC' : 'Professionnel de santé'
   );
 
   const authorRole = (partnerUser?.role) || (agentUser?.role) || (
-    portalMode === 'agent' ? 'Agent Instructeur' :
-    (portalMode === 'doctor' || portalMode === 'partner') ? 'Médecin Prescripteur' :
+    portalMode === 'agent' ? 'Agent instructeur' :
+    (portalMode === 'doctor' || portalMode === 'partner') ? 'Médecin prescripteur' :
     portalMode === 'midwife' ? 'Sage-Femme d\'État' :
-    portalMode === 'superadmin' ? 'SuperAdmin' : 'Praticien Agréé'
+    portalMode === 'superadmin' ? 'SuperAdmin' : 'Praticien agréé'
   );
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [comments, setComments] = useState({});
@@ -65,25 +65,25 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
       commentLabelName: 'Votre prénom & nom',
       commentLabelText: 'Votre commentaire ou question',
       commentBtnSubmit: 'Publier le commentaire',
-      commentPlaceholderName: 'Ex: Fatima Sy',
+      commentPlaceholderName: 'Ex: fatima sy',
       commentPlaceholderText: 'Saisissez votre avis...',
       alertSuccess: 'Commentaire publié avec succès !',
       sidebarTitle: 'Conseils prévention flash',
-      backToList: '← Retour aux articles',
+      backToList: '← retour aux articles',
       noComments: 'Aucun commentaire pour le moment. Soyez le premier à réagir !'
     },
     wo: {
-      title: 'Blog ak Waxu Docteur yi',
-      subtitle: 'Xoolal digle yi doctors yi di def ci wér-gi-yaram, réformes cmu ci Sénégal ak conseils ngir dund bu baax.',
-      commentsTitle: 'Leral ak Waxtaan',
+      title: 'Blog ak waxu docteur yi',
+      subtitle: 'Xoolal digle yi doctors yi di def ci wér-gi-yaram, réformes CMU ci Sénégal ak conseils ngir dund bu baax.',
+      commentsTitle: 'Leral ak waxtaan',
       commentLabelName: 'Sa tour ak sant',
       commentLabelText: 'Sa avis walla question',
       commentBtnSubmit: 'Publier commentaire bi',
-      commentPlaceholderName: 'Ex: Fatima Sy',
+      commentPlaceholderName: 'Ex: fatima sy',
       commentPlaceholderText: 'Mbindal sa xalaat...',
       alertSuccess: 'Commentaire bi soti na !',
       sidebarTitle: 'Digle wér-gi-yaram flash',
-      backToList: '← Dellu ci articles yi',
+      backToList: '← dellu ci articles yi',
       noComments: 'Amul commentateur tey. Bindal sa xalaat !'
     }
   };
@@ -144,14 +144,14 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
     {
       id: 'demo_1',
       title: lang === 'fr' ? 'Le paludisme en saison des pluies : prévention et prise en charge' : 'Sibir palu ci nawet : ndimbël ak faj gi',
-      author: 'Dr. Cheikh Anta Diop',
+      author: 'Dr. Cheikh anta Diop',
       role: 'Médecin prescripteur',
       avatar: <ProIcon name="stethoscope" />,
       date: Date.now() - 86400000 * 2,
       readTime: lang === 'fr' ? '5 min de lecture' : 'Simili 5',
       preview: lang === 'fr' ? "La saison des pluies au Sénégal s'accompagne d'une recrudescence des cas de paludisme. Voici les gestes essentiels de prévention." : "Ci samt mbënaale, sibir palu dafay yokku. Lii mooy yi ñu def ngir dar ñu sibirwu.",
       content: lang === 'fr'
-        ? "Le paludisme reste une préoccupation majeure de santé publique au Sénégal, particulièrement pendant l'hivernage. La moustiquaire imprégnée d'insecticide à longue durée d'action (MILDA) est le moyen de prévention le plus efficace. En cas de fièvre, consultez immédiatement un centre de santé pour un test de diagnostic rapide (TDR). Le traitement gratuit est disponible dans tous les postes et cases de santé du pays grâce au programme CSU."
+        ? "Le paludisme reste une préoccupation majeure de santé publique au Sénégal, particulièrement pendant l'hivernage. La moustiquaire imprégnée d'insecticide à longue durée d'action (MILDA) est le moyen de prévention le plus efficace. En cas de fièvre, consultez immédiatement un centre de santé pour un test de diagnostic rapide (TDR). le traitement gratuit est disponible dans tous les postes et cases de santé du pays grâce au programme CSU."
         : "Sibir palu mooy benn jafe-jafe bu mag ci santewu Sénégal. Moustiquaire bu xeb bu gën a rëy mooy gën ci dar. Bu fekk nga tàng, demal légi légui ci benn kër sànkaar ngir def test TDR. Faj gi nutrients am na ci biir kër sànkaar yépp ngir programme CSU.",
       imageUrl: '/bg_health_palu.png',
       likes: 47,
@@ -183,7 +183,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
       readTime: lang === 'fr' ? '3 min de lecture' : 'Simili 3',
       preview: lang === 'fr' ? "Une alimentation équilibrée pendant la grossesse est essentielle pour la santé de la mère et le développement du bébé." : 'Lekk bu baax bu jikkar mooy gën ci santewu yaay ak liir bi.',
       content: lang === 'fr'
-        ? "Pendant la grossesse, les besoins nutritionnels augmentent significativement. Privilégiez les aliments riches en fer (lentilles, viande rouge maigre, épinards), en calcium (laitages, sardines) et en acide folique (légumes verts, agrumes). Évitez l'alcool, le tabac et limitez la caféine. Buvez au moins 2 litres d'eau par jour. Le fer en association avec la vitamine C améliore l'absorption et prévient l'anémie gravidique."
+        ? "Pendant la grossesse, les besoins nutritionnels augmentent significativement. Privilégiez les aliments riches en fer (lentilles, viande rouge maigre, épinards), en calcium (laitages, sardines) et en acide folique (légumes verts, agrumes). Évitez l'alcool, le tabac et limitez la caféine. Buvez au moins 2 litres d'eau par jour. le fer en association avec la vitamine C améliore l'absorption et prévient l'anémie gravidique."
         : "Ci jikkar, xéj ci iron (lentille, yapp wu xonq, épinard), calcium (lait, sardine) ak acide folique (ngóob yu weex, lime). Bul naan alcool, tabac, taxawal caféine. Naan na ndox yu bare. Iron ak vitamine C dimbëli nañu ngir bañ anémie.",
       imageUrl: '/csu_family_health.png',
       likes: 58,
@@ -197,7 +197,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
       avatar: <ProIcon name="shield-check" />,
       date: Date.now() - 86400000 * 10,
       readTime: lang === 'fr' ? '6 min de lecture' : 'Simili 6',
-      preview: lang === 'fr' ? "La couverture santé universelle garantit à chaque Sénégalais l'accès à des soins de qualité sans barrière financière." : 'Couverture santé universelle dimbëli na ñépp Sénégalais ngir am sànkaar bu baax te xaw.',
+      preview: lang === 'fr' ? "La couverture santé universelle garantit à chaque Sénégalais l'accès à des soins de qualité sans barrière financière." : 'Couverture santé universelle dimbëli na ñépp sénégalais ngir am sànkaar bu baax te xaw.',
       content: lang === 'fr'
         ? "La couverture santé universelle (CSU) est un engagement national pour garantir l'accès aux soins de santé pour tous les Sénégalais. En tant qu'assuré UNAMUSC, vous bénéficiez d'une prise en charge de 80% pour les actes médicaux, 100% pour la maternité et la pédiatrie, et d'un réseau de structures de santé partenaires. Votre cotisation annuelle de 4 500 FCFA couvre toute votre famille. Présentez votre carte QR CSU dans toute structure agréée pour bénéficier du tiers-payant."
         : "Couverture santé universelle (CSU) mooy benn program bu Sénégal def ngir ñépp am sànkaar. Ci UNAMUSC, am nga 80% ci faj yu médical, 100% ci maternité ak pédiatrie. Sa cotisation bu 4500 FCFA ngi wër sa waa kër gépp. Wër sa kart QR CSU ci benn kër sànkaar bu agréé ngir am tiers-payant.",
@@ -401,7 +401,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
   };
 
   // Start editing an existing article
-  // eslint-disable-next-line no-unused-vars -- Ouverture de l'éditeur en mode modification. Le flux PUT /api/blog/articles/:id est complet et `isEdit` est lu : seul le bouton « Modifier » manque.
+  // eslint-disable-next-line no-unused-vars -- Ouverture de l'éditeur en mode modification. le flux PUT /api/blog/articles/:id est complet et `isEdit` est lu : seul le bouton « Modifier » manque.
   const handleStartEdit = (article) => {
     setEditingArticle(article);
     setNewArticle({
@@ -635,7 +635,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingRight: '2rem' }}>
               <h3 style={{ margin: 0, fontSize: '1.35rem', fontWeight: '850', color: editingArticle ? '#f59e0b' : 'var(--primary)' }}>
                 {editingArticle 
-                  ? (lang === 'fr' ? `✏️ Modifier l'article d'expert : "${editingArticle.title.substring(0, 35)}..."` : '✏️ Soppi article expert')
+                  ? (lang === 'fr' ? `✏️ Modifier l'article d'expert : "${editingArticle.title.substring(0, 35)}..."` : 'Soppi article expert')
                   : (lang === 'fr' ? '✍️ Rédiger et publier un article d\'expert' : 'Bind sa article expert')}
               </h3>
             </div>
@@ -647,7 +647,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
                   <input 
                     type="text" 
                     className="form-control" 
-                    placeholder={lang === 'fr' ? 'Ex: Les avancées de la CMU scolaire à Dakar' : 'Ex: CMU ecole ci Dakar'}
+                    placeholder={lang === 'fr' ? 'Ex: les avancées de la CMU scolaire à Dakar' : 'Ex: CMU ecole ci Dakar'}
                     value={newArticle.title}
                     onChange={(e) => setNewArticle({ ...newArticle, title: e.target.value })}
                     required
@@ -686,7 +686,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
                   <input 
                     type="text" 
                     className="form-control" 
-                    placeholder="Ex: Directeur Médical, Chef de service"
+                    placeholder="Ex: directeur médical, chef de service"
                     value={newArticle.role}
                     onChange={(e) => setNewArticle({ ...newArticle, role: e.target.value })}
                   />
@@ -739,7 +739,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
                   )}
                 </div>
                 <span style={{ fontSize: '0.75rem', color: 'var(--text-sub)' }}>
-                  {lang === 'fr' ? 'Téléchargez une vraie photo depuis votre appareil (format JPEG/PNG, max 2 Mo).' : 'Duggalal photo bu réel ci sa appareil (max 2 Mo).'}
+                  {lang === 'fr' ? 'Téléchargez une vraie photo depuis votre appareil (format JPEG/PNG, max 2 mo).' : 'Duggalal photo bu réel ci sa appareil (max 2 Mo).'}
                 </span>
               </div>
 
@@ -765,7 +765,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
                   style={{ background: editingArticle ? '#f59e0b' : '#059669', border: 'none', borderRadius: '10px', padding: '0.6rem 1.4rem' }}
                 >
                   {editingArticle 
-                    ? (lang === 'fr' ? '💾 Enregistrer les modifications' : '💾 Aar soppi yi') 
+                    ? (lang === 'fr' ? 'Enregistrer les modifications' : 'Aar soppi yi') 
                     : (lang === 'fr' ? 'Publier sur la plateforme' : 'Publier sur la plateforme')}
                 </button>
                 <button 
@@ -1092,7 +1092,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
                   style={{ width: '100%' }}
                   onClick={handleOpenNewArticleModal}
                 >
-                  {lang === 'fr' ? '✍️ Rédiger un nouvel article' : '✍️ Bind article bu bees'}
+                  {lang === 'fr' ? 'Rédiger un nouvel article' : 'Bind article bu bees'}
                 </button>
               </div>
             )}

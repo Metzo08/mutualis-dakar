@@ -1,9 +1,9 @@
 // ─────────────────────────────────────────────
-// <SecurePhoto> — image de bénéficiaire, y compris protégée
+// <SecurePhoto> — Image de bénéficiaire, y compris protégée
 //
-// Une balise <img> ordinaire échoue sur les photos servies par une route
-// authentifiée : le navigateur n'attache jamais l'en-tête Authorization aux
-// sous-ressources. Ce composant télécharge l'image AVEC le jeton puis rend
+// une balise <img> Ordinaire échoue sur les photos servies par une route
+// authentifiée : le navigateur n'attache jamais l'en-tête authorization aux
+// sous-ressources. Ce composant télécharge l'image avec le jeton puis rend
 // une URL locale. Tant que ce composant n'était pas utilisé, chaque fiche
 // affichait une image cassée alors que la donnée existait.
 // ─────────────────────────────────────────────

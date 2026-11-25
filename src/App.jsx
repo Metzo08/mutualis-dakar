@@ -76,7 +76,7 @@ class ErrorBoundary extends Component {
   }
   render() {
     if (this.state.hasError) {
-      // Le message technique est DÉROULABLE : un utilisateur qui signale un
+      // le message technique est DÉROULABLE : un utilisateur qui signale un
       // bug peut copier le détail sans qu'il soit exposé à la première vue.
       // Avant, la stack s'affichait en gros sur tous les écrans, y compris
       // devant l'assuré — mauvais pour la confiance, inutile pour lui.
@@ -306,45 +306,45 @@ export default function App() {
       fr: {
         home: 'Accueil - SenMutuelles',
         login: 'Connexion - SenMutuelles',
-        beneficiaries: 'Bénéficiaires & Affiliations - SenMutuelles',
+        beneficiaries: 'Bénéficiaires & affiliations - SenMutuelles',
         services: 'Services en ligne - SenMutuelles',
         map: 'Cartographie sanitaire & structures de santé - SenMutuelles',
         directory: 'Annuaire des structures sanitaires - SenMutuelles',
-        depts: 'Unions & Mutuelles de Dakar - SenMutuelles',
-        programmes: 'Programmes & Offres - SenMutuelles',
+        depts: 'Unions & mutuelles de Dakar - SenMutuelles',
+        programmes: 'Programmes & offres - SenMutuelles',
         about: 'À propos - SenMutuelles',
         medicaments: 'Recherche de médicaments - SenMutuelles',
         galerie: 'Galerie média - SenMutuelles',
-        'infos-csu': 'Informations CSU & Couverture Maladie - SenMutuelles',
-        'blog-experts': 'Espace Blog & Experts - SenMutuelles',
+        'infos-csu': 'Informations CSU & couverture maladie - SenMutuelles',
+        'blog-experts': 'Espace blog & experts - SenMutuelles',
         'parrainage-solidaire': 'Parrainage en masse - SenMutuelles',
-        partnership: 'Espace Partenariat - SenMutuelles',
-        complaints: 'Réclamations & Plaintes - SenMutuelles',
+        partnership: 'Espace partenariat - SenMutuelles',
+        complaints: 'Réclamations & plaintes - SenMutuelles',
         profile: 'Profil utilisateur - SenMutuelles',
         verify: 'Vérification d\'affiliation - SenMutuelles',
-        dashboard: 'Tableau de bord Agent - SenMutuelles',
+        dashboard: 'Tableau de bord agent - SenMutuelles',
         claims: 'Gestion des sinistres - SenMutuelles',
-        notifications: 'Alertes & Notifications - SenMutuelles',
-        cotisations: 'Cotisations & Paiements - SenMutuelles',
-        partner: 'Portail Partenaire - SenMutuelles',
-        'regional-stats': 'Statistiques Régionales - SenMutuelles',
+        notifications: 'Alertes & notifications - SenMutuelles',
+        cotisations: 'Cotisations & paiements - SenMutuelles',
+        partner: 'Portail partenaire - SenMutuelles',
+        'regional-stats': 'Statistiques régionales - SenMutuelles',
         loyalty: 'Programme fidélité - SenMutuelles',
         payments: 'Paiements - SenMutuelles',
-        guarantees: 'Lettres de Garantie - SenMutuelles',
-        'purchase-orders': 'Bons de Commande Pharmacie - SenMutuelles',
-        telemedicine: 'Télémédecine & Téléconsultation - SenMutuelles',
-        'medical-profile': 'Dossier Médical & Antécédents - SenMutuelles',
-        maternity: 'Pôle Spécialités Médicales & Pathologies - SenMutuelles',
-        'institution-coud': 'Portail Institutionnel COUD UCAD - SenMutuelles'
+        guarantees: 'Lettres de garantie - SenMutuelles',
+        'purchase-orders': 'Bons de commande pharmacie - SenMutuelles',
+        telemedicine: 'Télémédecine & téléconsultation - SenMutuelles',
+        'medical-profile': 'Dossier médical & antécédents - SenMutuelles',
+        maternity: 'Pôle spécialités médicales & pathologies - SenMutuelles',
+        'institution-coud': 'Portail institutionnel coud ucad - SenMutuelles'
       },
       wo: {
         home: 'Kër - SenMutuelles',
         login: 'Duggal - SenMutuelles',
-        beneficiaries: 'Bénéficiaires & Affiliations - SenMutuelles',
+        beneficiaries: 'Bénéficiaires & affiliations - SenMutuelles',
         services: 'Services en ligne - SenMutuelles',
         map: 'Cartographie sanitaire - SenMutuelles',
         directory: 'Annuaire - SenMutuelles',
-        depts: 'Unions & Mutuelles - SenMutuelles',
+        depts: 'Unions & mutuelles - SenMutuelles',
         about: 'À propos - SenMutuelles',
         partnership: 'Partenariat - SenMutuelles'
       }
@@ -365,7 +365,7 @@ export default function App() {
   const notifUserKey = portalMode === 'agent'
     ? (agentUser ? `agent-${agentUser.id || agentUser.username}` : null)
     : (citizenUser ? `citizen-${citizenUser.id || citizenUser.cmuNumber}` : null);
-  // Le fil reçu est rattaché à l'utilisateur qui l'a demandé : un changement
+  // le fil reçu est rattaché à l'utilisateur qui l'a demandé : un changement
   // de compte n'affiche jamais les notifications du précédent.
   const [notifFeed, setNotifFeed] = useState({ key: null, items: [], fetchedAt: 0 });
   const notifications = notifUserKey && notifFeed.key === notifUserKey ? notifFeed.items : [];
@@ -725,7 +725,7 @@ export default function App() {
         case 'medicaments':
           return <Medicaments lang={lang} />;
         case 'audit-logs':
-          if (portalMode === 'agent' && agentUser && agentUser.role === 'Super Admin') {
+          if (portalmode === 'agent' && agentuser && agentUser.role === 'super admin') {
             return <AuditLogs lang={lang} />;
           } else {
             return (
@@ -781,7 +781,7 @@ export default function App() {
                 <div className="card shadow-lg border-0 p-5 mx-auto" style={{ maxWidth: '500px', borderRadius: '24px', background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
                   <div style={{ fontSize: '3rem', marginBottom: '1rem' }}><ProIcon name="shield-check" /></div>
                   <h4 className="fw-bold mb-2">Accès restreint : espace agent & administration</h4>
-                  <p className="small text-muted mb-4">Cette section est réservée aux agents mutualistes et administrateurs d'unions régionales (URMSCD).</p>
+                  <p className="small text-muted mb-4">Cette section Est réservée aux agents mutualistes et administrateurs d'unions régionales (URMSCD).</p>
                   <button
                     className="btn btn-primary fw-bold py-2 px-4 text-white"
                     style={{ borderRadius: '12px' }}
@@ -885,8 +885,8 @@ export default function App() {
               <div style={{ fontSize: '3rem', marginBottom: '1rem' }}><ProIcon name="ban" color="#dc2626" /></div>
               <h2 style={{ color: 'var(--danger)', fontWeight: '850' }}>Accès réservé au super admin</h2>
               <p style={{ color: 'var(--text-sub)', marginTop: '0.5rem' }}>
-                Le tableau de bord de gouvernance (comptes utilisateurs, statistiques financières, habilitations médicales)
-                n'est accessible qu'après authentification avec un compte super administrateur (anacsu / Ministère).
+                le tableau de bord de gouvernance (comptes utilisateurs, statistiques financières, habilitations médicales)
+                n'Est accessible qu'après authentification avec un compte super administrateur (anacsu / Ministère).
               </p>
               <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '1.5rem', flexWrap: 'wrap' }}>
                 <button
@@ -945,7 +945,7 @@ export default function App() {
               <div style={{ fontSize: '3rem', marginBottom: '1rem' }}><ProIcon name="shield-check" /></div>
               <h2 style={{ color: 'var(--danger)', fontWeight: '850' }}>Accès réservé à l'administration</h2>
               <p style={{ color: 'var(--text-sub)', marginTop: '0.5rem' }}>
-                Le centre de sécurité est accessible par les agents et administrateurs de l'union régionale (URMSCD).
+                le centre de sécurité Est accessible par les agents et administrateurs de l'union régionale (URMSCD).
                 Super admin : vous pouvez aussi utiliser la gouvernance super admin.
               </p>
               <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '1.5rem', flexWrap: 'wrap' }}>
@@ -1062,7 +1062,7 @@ export default function App() {
         case 'institution-coud':
           return <InstitutionPortal lang={lang} portalMode={portalMode} agentUser={agentUser} setView={setView} />;
         case 'card-studio':
-          if ((portalMode === 'agent' || portalMode === 'superadmin') && agentUser && agentUser.role === 'Super Admin') {
+          if ((portalmode === 'agent' || portalmode === 'superadmin') && agentuser && agentUser.role === 'super admin') {
             return <CardStudio lang={lang} />;
           } else {
             return (
@@ -1173,14 +1173,14 @@ export default function App() {
               {view === 'regional-stats' && (lang === 'fr' ? 'Statistiques inter-régions' : 'Stats région')}
               {view === 'loyalty' && (lang === 'fr' ? 'Programme fidélité' : 'Fidélité')}
               {view === 'payments' && (lang === 'fr' ? 'Paiement en ligne' : 'Fay')}
-              {view === 'superadmin-governance' && (lang === 'fr' ? 'Gouvernance & Supervision Super Admin' : 'Gouvernance Super Admin 👑')}
+              {view === 'superadmin-governance' && (lang === 'fr' ? 'Gouvernance & supervision super admin' : 'Gouvernance super admin')}
               {view === 'guarantees' && (lang === 'fr' ? 'Lettres de garantie & prises en charge (80%)' : 'Bataaxalu garantie')}
               {view === 'purchase-orders' && (lang === 'fr' ? 'Bons de commande pharmacie (50%)' : 'Bonu garab pharmacie')}
               {view === 'telemedicine' && (lang === 'fr' ? 'Télémédecine & consultations vidéo' : 'Téléconsultation')}
               {view === 'medical-profile' && (lang === 'fr' ? 'Dossier médical partagé (DMP)' : 'Dossier médical')}
               {view === 'maternity' && (lang === 'fr' ? 'Suivi maternité & CPN' : 'Maternité & CPN')}
               {view === 'rse' && (lang === 'fr' ? 'Partenariats RSE & mécénat' : 'RSE & mécénat')}
-              {view === 'institution-coud' && (lang === 'fr' ? 'Guichet institutionnel COUD / UCAD' : 'COUD / UCAD')}
+              {view === 'institution-coud' && (lang === 'fr' ? 'Guichet institutionnel coud / Ucad' : 'Coud / Ucad')}
               {view === 'card-studio' && (lang === 'fr' ? 'Studio d\'impression des cartes CSU' : 'Studio cartes CSU')}
               {view === 'security-center' && (lang === 'fr' ? 'Centre de sécurité & surveillance' : 'Centre de sécurité')}
               {view === 'excel-reports' && (lang === 'fr' ? 'Rapports & exports Excel' : 'Rapports Excel')}

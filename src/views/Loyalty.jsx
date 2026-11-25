@@ -68,7 +68,7 @@ export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
     level: 'Argent 🥈',
     nextBadge: {
       id: 4,
-      name: 'Champion Régional Or',
+      name: 'Champion régional or',
       icon: <ProIcon name="crown" />,
       description: 'Cumuler 1000 points de fidélité pour débloquer le niveau Or',
       threshold: 1000,
@@ -77,10 +77,10 @@ export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
     unlockedCount: 3,
     totalBadges: 4,
     badges: [
-      { id: 1, name: 'Assuré Fidèle 2026', icon: <ProIcon name="trophy" color="#eab308" />, unlocked: true, description: 'Cotisation 2026 intégralement à jour' },
-      { id: 2, name: 'Prévention Santé', icon: <ProIcon name="stethoscope" />, unlocked: true, description: 'Bilan de santé annuel effectué' },
-      { id: 3, name: 'Parrain Solidaire', icon: <ProIcon name="handshake" />, unlocked: true, description: '1 famille parrainée dans le département' },
-      { id: 4, name: 'Champion Régional Or', icon: <ProIcon name="crown" />, unlocked: false, description: 'Cumuler 1000 points de fidélité' }
+      { id: 1, name: 'Assuré fidèle 2026', icon: <ProIcon name="trophy" color="#eab308" />, unlocked: true, description: 'Cotisation 2026 intégralement à jour' },
+      { id: 2, name: 'Prévention santé', icon: <ProIcon name="stethoscope" />, unlocked: true, description: 'Bilan de santé annuel effectué' },
+      { id: 3, name: 'Parrain solidaire', icon: <ProIcon name="handshake" />, unlocked: true, description: '1 famille parrainée dans le département' },
+      { id: 4, name: 'Champion régional or', icon: <ProIcon name="crown" />, unlocked: false, description: 'Cumuler 1000 points de fidélité' }
     ],
     history: [
       { id: 1, reason: 'cotisation_a_temps', points: 150, created_at: '2026-01-04T10:15:00Z' },
@@ -156,7 +156,7 @@ export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
   const currentPoints = data.totalPoints ?? data.points ?? 450;
   const currentLevel = data.level || 'Argent 🥈';
   const nextBadgeObj = typeof data.nextBadge === 'object' && data.nextBadge !== null ? data.nextBadge : {
-    name: typeof data.nextBadge === 'string' ? data.nextBadge : 'Champion Régional Or',
+    name: typeof data.nextBadge === 'string' ? data.nextBadge : 'Champion régional or',
     icon: <ProIcon name="crown" />,
     description: 'Cumuler 1000 points de fidélité',
     threshold: 1000,

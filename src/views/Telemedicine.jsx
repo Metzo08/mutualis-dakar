@@ -74,7 +74,7 @@ export async function fetchPresence() {
  * Repli automatique : si le flux est indisponible (proxy qui ne gère pas
  * SSE, certificat, pare-feu), on repasse au balayage périodique et
  * l'interface continue de fonctionner, avec un délai de rafraîchissement
- * plus long. Le mode réellement utilisé est renvoyé à l'appelant pour
+ * plus long. le mode réellement utilisé est renvoyé à l'appelant pour
  * qu'il puisse l'afficher — on ne laisse pas croire à un temps réel si
  * ce n'est pas le cas.
  *
@@ -162,7 +162,7 @@ export function subscribePresence(onState, onModeChange) {
 
 /**
  * Enregistre un rendez-vous SANS paiement.
- * Le règlement se fait une seule fois, sur place, à la structure.
+ * le règlement se fait une seule fois, sur place, à la structure.
  */
 export async function bookAppointment({ beneficiaryId, structureId, doctorName, specialty, appointmentDate, notes }) {
   const res = await apiFetch('/api/appointments', {
@@ -281,7 +281,7 @@ export default function Telemedicine({
   // `practitionerPresence` contient ce que le SERVEUR a réellement observé.
   // C'est la seule source autorisée pour afficher « en ligne » à un assuré.
   const [practitionerPresence, setPractitionerPresence] = useState(null); // { practitioners, offlineAfterSeconds }
-  // Le premier retour (flux ou repli) est-il arrivé ? Tant que c'est faux,
+  // le premier retour (flux ou repli) est-il arrivé ? Tant que c'est faux,
   // l'interface ne doit afficher aucun statut : « en ligne » avant toute
   // vérification serait exactement le mensonge que ce dispositif
   // cherche à éviter.
@@ -299,7 +299,7 @@ export default function Telemedicine({
     ? {
         username: partnerUser?.username || partnerUser?.cname || agentUser?.username || null,
         name: partnerUser?.name || partnerUser?.structureName || agentUser?.fullName || agentUser?.name || null,
-        specialty: partnerUser?.specialty || (isMidwife ? 'Sage-femme' : 'Médecine Générale')
+        specialty: partnerUser?.specialty || (isMidwife ? 'Sage-femme' : 'Médecine générale')
       }
     : null;
 
@@ -324,7 +324,7 @@ export default function Telemedicine({
   // Lecture de la présence côté assuré (et côté agent).
   //
   // Flux temps réel avec repli automatique en balayage périodique : voir
-  // `subscribePresence`. Le mode réellement utilisé est mémorisé dans
+  // `subscribePresence`. le mode réellement utilisé est mémorisé dans
   // `presenceMode` et affiché à l'utilisateur — afficher « temps réel »
   // alors que le fonctionnement serait en réalité différé serait un
   // mensonge qui ferait croire à une disponibilité instantanée.
@@ -367,8 +367,8 @@ export default function Telemedicine({
       cmuNumber: 'CMU-DKR-2026-3302',
       doctor: 'Dr. Ousmane Sow',
       type: 'Télé-consultation HD',
-      examName: 'Bilan Lipidique & Glycémie à jeun',
-      ref: 'Prescription Télé-médecine #TM-8812',
+      examName: 'Bilan lipidique & glycémie à jeun',
+      ref: 'Prescription télé-médecine #tm-8812',
       status: 'pending',
       fileName: null
     }
@@ -401,32 +401,32 @@ export default function Telemedicine({
   const defaultStructuresList = [
     {
       id: 'struct-1',
-      name: 'CHU de Fann (Pneumologie & Neurosciences)',
-      department: 'Dakar Centre',
-      type: 'Hôpital Universitaire National',
+      name: 'CHU de Fann (pneumologie & neurosciences)',
+      department: 'Dakar centre',
+      type: 'Hôpital universitaire national',
       status: 'active',
       conventionDate: '12/01/2024',
       services: ['Téléconsultation d\'Urgence', 'Télé-expertise Pneumo & Neuro', 'Ordonnance Sécurisée'],
-      telemedDoctor: 'Dr. Babacar Diagne',
+      telemedDoctor: 'Dr. Babacar diagne',
       phone: '33 869 18 18',
       coverageRate: '80% Tiers-Payant'
     },
     {
       id: 'struct-2',
       name: 'Hôpital Aristide Le Dantec (Dakar)',
-      department: 'Dakar Centre',
-      type: 'Hôpital National de Référence',
+      department: 'Dakar centre',
+      type: 'Hôpital national de référence',
       status: 'active',
       conventionDate: '15/02/2024',
       services: ['Dermatologie', 'Médecine Interne', 'Télé-cardiologie'],
-      telemedDoctor: 'Dr. Aïssatou Kane',
+      telemedDoctor: 'Dr. aïssatou kane',
       phone: '33 889 38 00',
       coverageRate: '80% Tiers-Payant'
     },
     {
       id: 'struct-3',
       name: 'Hôpital Principal de Dakar',
-      department: 'Dakar Centre',
+      department: 'Dakar centre',
       type: 'Hôpital Militaire d\'Instruction',
       status: 'active',
       conventionDate: '10/03/2024',
@@ -437,45 +437,45 @@ export default function Telemedicine({
     },
     {
       id: 'struct-4',
-      name: 'Centre Hospitalier National de Pikine (CHNP)',
+      name: 'Centre hospitalier national de Pikine (chnp)',
       department: 'Pikine',
-      type: 'Centre Hospitalier National',
+      type: 'Centre hospitalier national',
       status: 'active',
       conventionDate: '05/01/2024',
       services: ['Cardiologie & Urgences', 'Téléconsultation Pédiatrique'],
-      telemedDoctor: 'Dr. Cheikh Tidiane Seck',
+      telemedDoctor: 'Dr. Cheikh tidiane Seck',
       phone: '33 834 00 12',
       coverageRate: '80% Tiers-Payant'
     },
     {
       id: 'struct-5',
-      name: 'Centre Hospitalier Spécialisé de Thiaroye',
+      name: 'Centre hospitalier spécialisé de thiaroye',
       department: 'Pikine',
-      type: 'Centre Hospitalier Régional',
+      type: 'Centre hospitalier régional',
       status: 'active',
       conventionDate: '20/04/2024',
       services: ['Santé Mentale & Psychiatrie', 'Suivi Psychologique Télémédecine'],
-      telemedDoctor: 'Dr. Khadija Camara',
+      telemedDoctor: 'Dr. Khadija camara',
       phone: '33 836 21 00',
       coverageRate: '80% Tiers-Payant'
     },
     {
       id: 'struct-6',
-      name: 'Hôpital National Dalal Jamm (Guédiawaye)',
+      name: 'Hôpital national Dalal Jamm (Guédiawaye)',
       department: 'Guédiawaye',
-      type: 'Hôpital National Moderne',
+      type: 'Hôpital national moderne',
       status: 'active',
       conventionDate: '18/02/2024',
       services: ['Télé-oncologie', 'Néphrologie', 'Téléconsultation Générale'],
-      telemedDoctor: 'Dr. Cheikh Tidiane Seck',
+      telemedDoctor: 'Dr. Cheikh tidiane Seck',
       phone: '33 879 20 00',
       coverageRate: '80% Tiers-Payant'
     },
     {
       id: 'struct-7',
-      name: 'Hôpital Youssou Mbargane Diop (Rufisque)',
+      name: 'Hôpital youssou mbargane Diop (Rufisque)',
       department: 'Rufisque',
-      type: 'Établissement Public de Santé',
+      type: 'Établissement public de santé',
       status: 'active',
       conventionDate: '14/03/2024',
       services: ['Maternité & Gynécologie', 'Pédiatrie', 'Téléconsultation'],
@@ -485,9 +485,9 @@ export default function Telemedicine({
     },
     {
       id: 'struct-8',
-      name: 'Centre de Santé de Keur Massar',
+      name: 'Centre de santé de Keur Massar',
       department: 'Keur Massar',
-      type: 'Centre de Santé de Référence',
+      type: 'Centre de santé de référence',
       status: 'active',
       conventionDate: '01/05/2024',
       services: ['Consultations Générales', 'Santé Familiale & Dépistage'],
@@ -642,7 +642,7 @@ export default function Telemedicine({
 
   // ── Deux parcours DISTINCTS, jamais mélangés ───────────────────────────────
   //
-  // 1. 'live'    : consultation en visioconférence IMMÉDIATE. Le ticket
+  // 1. 'live'    : consultation en visioconférence IMMÉDIATE. le ticket
   //                modérateur est réglé avant d'entrer en file — c'est ce que
   //                le dispositif CSU prévoit pour un acte dématérialisé.
   // 2. 'booking' : rendez-vous planifié à l'avance, SANS AUCUN paiement. Le
@@ -742,8 +742,8 @@ export default function Telemedicine({
       {
         sender: d ? d.name : 'Assistant UNAMUSC',
         text: d
-          ? `Bonjour ${activeFirstName}. Je suis le ${d.name} (${d.specialty}). Je consulte actuellement votre dossier médical UNAMUSC. Quel est le motif de votre consultation ?`
-          : `Bonjour ${activeFirstName}. Aucun médecin agréé n'est actuellement habilité sur la plateforme. Votre demande reste enregistrée et vous serez notifié dès qu'un praticien sera disponible.`,
+          ? `Bonjour ${activeFirstName}. Je suis le ${d.name} (${d.specialty}). Je consulte actuellement votre dossier médical UNAMUSC. Quel Est le motif de votre consultation ?`
+          : `Bonjour ${activeFirstName}. Aucun médecin agréé n'Est actuellement habilité sur la plateforme. Votre demande reste enregistrée et vous serez notifié dès qu'un praticien sera disponible.`,
         isUser: false
       }
     ];
@@ -768,7 +768,7 @@ export default function Telemedicine({
   const startVoiceInput = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      const spoken = prompt(`🎙️ Dites ou tapez votre message pour le ${activeDoctor.name} :`, inputMsg || "Bonjour Docteur, j'ai de la fièvre et des maux de tête.");
+      const spoken = prompt(`Dites ou tapez votre message pour Le ${activeDoctor.name} :`, inputMsg || "Bonjour Docteur, j'ai de la fièvre et des maux de tête.");
       if (spoken && spoken.trim()) {
         setInputMsg(spoken);
         handleSendMessage(null, spoken.trim());
@@ -971,7 +971,7 @@ export default function Telemedicine({
   // aucune réponse n'arrivait, et chaque écran restait sur son flux simulé
   // en affichant une téléconsultation qui n'avait jamais eu lieu.
   //
-  // Le canal de signalisation est désormais le serveur, relié à toutes les
+  // le canal de signalisation est désormais le serveur, relié à toutes les
   // instances par le bus PostgreSQL. Les deux postes s'entendent réellement,
   // même s'ils sont servis par deux instances différentes. La vidéo reste
   // pair-à-pair : le serveur ne voit ni les images ni le son.
@@ -1098,7 +1098,7 @@ export default function Telemedicine({
         try {
           if (data.type === 'hello') {
             if (!polite) {
-              // Le praticien initie dès qu'il aperçoit l'assuré.
+              // le praticien initie dès qu'il aperçoit l'assuré.
               makeOffer();
             } else if (Date.now() - lastEcho > 2000) {
               // L'assuré ré-annonce sa présence pour que le praticien
@@ -1149,7 +1149,7 @@ export default function Telemedicine({
             setPeerWaiting(true);
             if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
           } else if (data.type === 'peer-joined') {
-            // Un pair arrive. Le praticien lance l'offre ; l'assuré se
+            // Un pair arrive. le praticien lance l'offre ; l'assuré se
             // contente de se signaler, le rôle « polite » évite ainsi une
             // double négociation.
             sendSignal({ type: 'hello' });
@@ -1400,9 +1400,9 @@ export default function Telemedicine({
       speakAndToast({
         type: 'warning',
         icon: <ProIcon name="bell" />,
-        title: 'Alerte préalable salle d\'attente',
+        title: 'alerte préalable salle d\'attente',
         message: 'Vous êtes le prochain patient. Préparez votre casque, votre micro et votre caméra.',
-        speech: `Attention ${activeFirstName} ${activeLastName}. Vous êtes le prochain patient dans la salle d'attente virtuelle. Veuillez préparer votre casque, votre micro et votre caméra. Le médecin va vous recevoir dans un instant.`
+        speech: `attention ${activeFirstName} ${activeLastName}. Vous êtes le prochain patient dans la salle d'attente virtuelle. Veuillez préparer votre casque, votre micro et votre caméra. le médecin va vous recevoir dans un instant.`
       });
       lastQueueStatusRef.current = 'next';
     } else if (myQueueEntry.status === 'called' && lastQueueStatusRef.current !== 'called') {
@@ -1411,7 +1411,7 @@ export default function Telemedicine({
         icon: <ProIcon name="hospital" />,
         title: "C'est votre tour !",
         message: 'Le médecin vous appelle en visioconférence HD.',
-        speech: `${activeFirstName}, c'est votre tour. Le médecin est prêt à vous recevoir. La consultation de télémédecine commence maintenant. Bienvenue.`
+        speech: `${activeFirstName}, c'Est votre tour. le médecin Est prêt à vous recevoir. La consultation de télémédecine commence maintenant. Bienvenue.`
       });
       lastQueueStatusRef.current = 'called';
     }
@@ -1423,7 +1423,7 @@ export default function Telemedicine({
   // « FLUX HD 1080p DIRECT », horodatage REC) dessinait une
   // téléconsultation imaginaire quand la caméra réelle était refusée. Un
   // praticien voyait « REC 12:34:56 🟢 », « AUDIO CLINIQUE ACTIF » et une
-  // onde ECG qui battait — sur un écran sans flux. Le bloc est remplacé
+  // onde ECG qui battait — sur un écran sans flux. le bloc est remplacé
   // par un état honnête : pas de caméra → pas de vidéo, avec la cause et
   // le moyen de la corriger.
 
@@ -1448,7 +1448,7 @@ export default function Telemedicine({
     if (!consultReason.trim()) return;
 
     // Garde-fou : ce handler ne déclenche QUE le parcours payant immédiat.
-    // Le parcours « rendez-vous » passe par handleBookAppointment et n'aboutit
+    // le parcours « rendez-vous » passe par handleBookAppointment et n'aboutit
     // jamais ici. Sans cette séparation, un bug d'affichage ferait payer un
     // assuré qui avait choisi un rendez-vous gratuit.
     if (queueMode !== 'live') return;
@@ -1515,7 +1515,7 @@ export default function Telemedicine({
       speakAndToast({
         type: 'success',
         icon: <ProIcon name="check-circle" color="#059669" />,
-        title: 'Paiement confirmé !',
+        title: 'paiement confirmé !',
         message: `2 500 FCFA réglés via ${providerInfo.name}. Position n°${positionNum}.`,
         speech: `Paiement confirmé. Référence ${result.transactionRef}. Vous êtes en position numéro ${positionNum} dans la salle d'attente.`
       });
@@ -1539,7 +1539,7 @@ export default function Telemedicine({
 
   // ── Prise de rendez-vous — SANS PAIEMENT ────────────────────────────────────
   //
-  // Ce handler n'appelle JAMAIS `initiatePayment`. Le rendez-vous est
+  // Ce handler n'appelle JAMAIS `initiatePayment`. le rendez-vous est
   // enregistré tel quel et le backend répond explicitement que le règlement
   // se fait sur place.
   const handleBookAppointment = async (e) => {
@@ -1565,7 +1565,7 @@ export default function Telemedicine({
 
     setBookingSubmitting(true);
     try {
-      // Le créneau choisi est traduit en heure de rendez-vous : matin = 9h,
+      // le créneau choisi est traduit en heure de rendez-vous : matin = 9h,
       // après-midi = 14h. On ne propose pas de date « précise » que la
       // plateforme ne sait pas réellement respecter.
       const slotHour = bookingSlot === 'matin' ? 9 : 14;
@@ -1587,7 +1587,7 @@ export default function Telemedicine({
           type: 'success',
           icon: <ProIcon name="calendar" />,
           title: 'Rendez-vous enregistré',
-          message: 'Aucun paiement n\'a été débité. Le règlement se fera sur place.',
+          message: 'Aucun paiement n\'a été débité. le règlement se fera sur place.',
           speech: 'Votre rendez-vous est enregistré. Aucun paiement n\'a été effectué. Vous réglerez la consultation sur place, à la structure.'
         });
       } else {
@@ -1608,9 +1608,9 @@ export default function Telemedicine({
           speakAndToast({
             type: 'warning',
             icon: <ProIcon name="bell" />,
-            title: 'Alerte préalable',
+            title: 'alerte préalable',
             message: 'Vous êtes le prochain patient. Préparez votre micro et votre caméra.',
-            speech: `Attention ${activeFirstName}. Vous êtes le prochain patient. Veuillez préparer votre micro et votre caméra. Le médecin va vous recevoir dans un instant.`
+            speech: `attention ${activeFirstName}. Vous êtes le prochain patient. Veuillez préparer votre micro et votre caméra. le médecin va vous recevoir dans un instant.`
           });
           return { ...p, status: 'next' };
         }
@@ -1620,7 +1620,7 @@ export default function Telemedicine({
             icon: <ProIcon name="hospital" />,
             title: "C'est votre tour !",
             message: 'Le médecin est prêt à vous recevoir. La consultation commence maintenant.',
-            speech: `${activeFirstName}, c'est votre tour. Le médecin est prêt à vous recevoir. La consultation de télémédecine commence maintenant. Bienvenue.`
+            speech: `${activeFirstName}, c'Est votre tour. le médecin Est prêt à vous recevoir. La consultation de télémédecine commence maintenant. Bienvenue.`
           });
           return { ...p, status: 'called' };
         }
@@ -1650,7 +1650,7 @@ export default function Telemedicine({
     setActiveCallTab('chat');
     setPrescriptionDelivered(false);
     setCertificateDelivered(false);
-    const welcomeMsg = `Bonjour ${activeFirstName}. Je suis le ${chosenDoc.name} (${chosenDoc.specialty}). Je consulte actuellement votre dossier médical UNAMUSC (${activeCmuNumber}). Quel est le motif de votre consultation aujourd'hui ?`;
+    const welcomeMsg = `Bonjour ${activeFirstName}. Je suis le ${chosenDoc.name} (${chosenDoc.specialty}). Je consulte actuellement votre dossier médical UNAMUSC (${activeCmuNumber}). Quel Est le motif de votre consultation aujourd'hui ?`;
     setChatMessages([
       { sender: chosenDoc.name, text: welcomeMsg, isUser: false }
     ]);
@@ -1679,17 +1679,17 @@ export default function Telemedicine({
       let docReply = '';
       const lower = userText.toLowerCase();
       if (lower.includes('fièvre') || lower.includes('fievre') || lower.includes('chaud') || lower.includes('temperature') || lower.includes('température')) {
-        docReply = `Je prends note de votre état fébrile. Veuillez bien vous hydrater. Je vous prescris du Paracétamol 1g (1 comprimé toutes les 6h) et du repos. Vos constantes restent stables (SpO2: 99%, TA: 12/8).`;
+        docReply = `Je prends note de votre état fébrile. Veuillez bien vous hydrater. Je vous prescris du paracétamol 1g (1 comprimé toutes les 6h) et du repos. Vos constantes restent stables (spo2: 99%, ta: 12/8).`;
       } else if (lower.includes('toux') || lower.includes('gorge') || lower.includes('grippe') || lower.includes('rhume') || lower.includes('respirer')) {
-        docReply = `D'accord ${activeFirstName}, pour soulager la gorge et la toux, je vous prescris un sirop expectorant et des lavages de nez au sérum physiologique. Votre ordonnance 50% Tiers-Payant est prête.`;
+        docReply = `D'accord ${activeFirstName}, pour soulager la gorge et la toux, je vous prescris un sirop expectorant et des lavages de nez au sérum physiologique. Votre ordonnance 50% tiers-payant Est prête.`;
       } else if (lower.includes('tête') || lower.includes('tete') || lower.includes('migraine') || lower.includes('vertige') || lower.includes('céphalée')) {
-        docReply = `Vos céphalées peuvent être liées au surmenage ou à la fatigue oculaire. Votre tension artérielle est mesurée à 12/8 cmHg (parfaite). Je vous recommande du repos et un antalgique léger.`;
+        docReply = `Vos céphalées peuvent être liées au surmenage ou à la fatigue oculaire. Votre tension artérielle Est mesurée à 12/8 cmhg (parfaite). Je vous recommande du repos et un antalgique léger.`;
       } else if (lower.includes('ventre') || lower.includes('estomac') || lower.includes('diarrhée') || lower.includes('diarrhee') || lower.includes('vomis') || lower.includes('nausée')) {
         docReply = `Pour vos douleurs abdominales, évitez les repas épicés, buvez des bouillons légers et prenez l'antispasmodique que je viens de vous inscrire sur l'ordonnance électronique.`;
       } else if (lower.includes('ordonnance') || lower.includes('médicament') || lower.includes('medicament') || lower.includes('pharmacie') || lower.includes('bon')) {
-        docReply = `Votre ordonnance numérique avec prise en charge directe 50% UNAMUSC est générée ! Vous pouvez cliquer sur le bouton vert "Émettre Ordonnance & Bon 50%" ci-dessous pour l'imprimer ou la présenter en pharmacie.`;
+        docReply = `Votre ordonnance numérique avec prise en charge directe 50% UNAMUSC Est générée ! Vous pouvez cliquer sur le bouton vert "émettre ordonnance & bon 50%" ci-dessous pour l'imprimer ou la présenter en pharmacie.`;
       } else {
-        docReply = `Merci pour ces précisions, ${activeFirstName}. J'enregistre ces observations cliniques dans votre dossier médical. Tout est sous contrôle. Avez-vous d'autres questions ou besoins particuliers ?`;
+        docReply = `Merci pour ces précisions, ${activeFirstName}. J'enregistre ces observations cliniques dans votre dossier médical. Tout Est sous contrôle. Avez-vous d'autres questions ou besoins particuliers ?`;
       }
 
       setChatMessages(prev => [...prev, { sender: activeDoctor.name, text: docReply, isUser: false }]);
@@ -1702,20 +1702,20 @@ export default function Telemedicine({
     const orderCode = `ORD-TELEMED-2026-${Math.floor(1000 + Math.random() * 9000)}`;
     generateOfficialPdf({
       filename: `ordonnance_telemedecine_${activeFirstName}_${activeLastName}.pdf`,
-      docType: 'ORDONNANCE MÉDICALE DE TÉLÉMÉDECINE CERTIFIÉE (50% TIERS-PAYANT)',
-      title: 'Ordonnance Électronique & Bon Pharmacie 50%',
+      docType: 'Ordonnance médicale de télémédecine certifiée (50% tiers-payant)',
+      title: 'Ordonnance électronique & bon pharmacie 50%',
       referenceNo: orderCode,
       beneficiaryName: `${activeFirstName} ${activeLastName}`,
       cmuNumber: activeCmuNumber,
       structureName: activeDoctor.department || 'Pharmacies Agréées Tiers-Payant UNAMUSC Dakar',
       details: [
-        { label: 'Patient(e) Bénéficiaire', value: `${activeFirstName} ${activeLastName} (${activeCmuNumber})` },
-        { label: 'Médecin Prescripteur', value: `${activeDoctor.name} (${activeDoctor.specialty} — ${activeDoctor.cnom})` },
-        { label: 'Médicaments Prescrits', value: '1. Amoxicilline 500mg (2 boîtes) — 1 gélule 3x/jour pendant 7 jours\n2. Paracétamol 1g (1 boîte) — 1 comprimé en cas de fièvre/douleur\n3. Solution de réhydratation & Vitamine C 500mg' },
-        { label: 'Couverture Pharmacie UNAMUSC', value: '50% Prise en charge directe Tiers-Payant UNAMUSC Sénégal' },
-        { label: 'Date & Validité', value: `${new Date().toLocaleDateString('fr-FR')} (Valable 30 jours dans toutes les officines agréées)` }
+        { label: 'Patient(e) bénéficiaire', value: `${activeFirstName} ${activeLastName} (${activeCmuNumber})` },
+        { label: 'Médecin prescripteur', value: `${activeDoctor.name} (${activeDoctor.specialty} — ${activeDoctor.cnom})` },
+        { label: 'Médicaments prescrits', value: '1. Amoxicilline 500mg (2 boîtes) — 1 gélule 3x/jour pendant 7 jours\n2. Paracétamol 1g (1 boîte) — 1 comprimé en cas de fièvre/douleur\n3. Solution de réhydratation & Vitamine C 500mg' },
+        { label: 'Couverture pharmacie UNAMUSC', value: '50% Prise en charge directe Tiers-Payant UNAMUSC Sénégal' },
+        { label: 'Date & validité', value: `${new Date().toLocaleDateString('fr-FR')} (Valable 30 jours dans toutes les officines agréées)` }
       ],
-      notes: 'Cette ordonnance médicale électronique certifiée comporte le cachet numérique et le visa de conformité CNOM Sénégal.'
+      notes: 'Cette ordonnance médicale électronique certifiée comporte le cachet numérique et le visa de conformité cnom Sénégal.'
     });
 
     // ── INTERCONNEXION INTELLIGENTE : Synchronisation avec la page Bons de Commande (PurchaseOrders) ──
@@ -1730,7 +1730,7 @@ export default function Telemedicine({
         items_json: JSON.stringify([
           { name: 'Amoxicilline 500mg (2 boîtes)', qty: 2, price: 3500 },
           { name: 'Paracétamol 1000mg (1 boîte)', qty: 1, price: 1500 },
-          { name: 'Solution Réhydratation & Vit C', qty: 1, price: 1200 }
+          { name: 'Solution réhydratation & vit c', qty: 1, price: 1200 }
         ]),
         total_amount: 9700,
         cmu_covered: 4850,
@@ -1760,7 +1760,7 @@ export default function Telemedicine({
       type: 'success',
       icon: <ProIcon name="pill" />,
       title: 'Ordonnance officielle générée & synchronisée',
-      message: `L'ordonnance 50% de ${activeFirstName} ${activeLastName} a été téléchargée et ajoutée à vos Bons de Commande Pharmacie.`
+      message: `L'ordonnance 50% de ${activeFirstName} ${activeLastName} A été téléchargée et ajoutée à vos bons de commande pharmacie.`
     });
   };
 
@@ -1768,18 +1768,18 @@ export default function Telemedicine({
     const certCode = `CERT-TELEMED-2026-${Math.floor(1000 + Math.random() * 9000)}`;
     generateOfficialPdf({
       filename: `certificat_medical_${activeFirstName}_${activeLastName}.pdf`,
-      docType: 'CERTIFICAT MÉDICAL DE TÉLÉCONSULTATION CERTIFIÉE',
-      title: 'Certificat Médical & Aptitude CSU',
+      docType: 'Certificat médical de téléconsultation certifiée',
+      title: 'Certificat médical & aptitude CSU',
       referenceNo: certCode,
       beneficiaryName: `${activeFirstName} ${activeLastName}`,
       cmuNumber: activeCmuNumber,
       structureName: activeDoctor.department || 'Cabinet de Téléconsultation Agréé UNAMUSC',
       details: [
         { label: 'Patient(e)', value: `${activeFirstName} ${activeLastName} (${activeCmuNumber})` },
-        { label: 'Médecin Praticien', value: `${activeDoctor.name} (${activeDoctor.specialty} — ${activeDoctor.cnom})` },
-        { label: 'Date de la Consultation', value: `${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}` },
-        { label: 'Constatations Cliniques', value: 'Examen médical en visioconférence concluant. État général stable. Télémétrie physiologique dans les normes.' },
-        { label: 'Avis & Repos Médical', value: 'Repos médical prescrit de 48 heures (2 jours). Traitement ambulatoire adapté.' }
+        { label: 'Médecin praticien', value: `${activeDoctor.name} (${activeDoctor.specialty} — ${activeDoctor.cnom})` },
+        { label: 'Date de la consultation', value: `${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}` },
+        { label: 'Constatations cliniques', value: 'Examen médical en visioconférence concluant. État général stable. Télémétrie physiologique dans les normes.' },
+        { label: 'Avis & repos médical', value: 'Repos médical prescrit de 48 heures (2 jours). Traitement ambulatoire adapté.' }
       ],
       notes: 'Certificat médical délivré en conformité avec les règles déontologiques du Conseil National de l\'Ordre des Médecins (CNOM) du Sénégal.'
     });
@@ -1795,7 +1795,7 @@ export default function Telemedicine({
         cmu_number: activeCmuNumber,
         ipp_number: `IPP-TELEMED-${Math.floor(1000 + Math.random() * 9000)}`,
         hospital_name: activeDoctor.department || 'Centre National de Télémédecine UNAMUSC Dakar',
-        medical_act: `Téléconsultation Médicale Spécialisée (${activeDoctor.specialty})`,
+        medical_act: `Téléconsultation médicale spécialisée (${activeDoctor.specialty})`,
         estimated_amount: 12500,
         guaranteed_percentage: 80,
         unamusc_amount: 10000,
@@ -1817,7 +1817,7 @@ export default function Telemedicine({
       type: 'success',
       icon: <ProIcon name="file-text" />,
       title: 'Certificat médical délivré & synchronisé',
-      message: `Le certificat médical de ${activeFirstName} ${activeLastName} a été généré et la prise en charge a été enregistrée dans vos Lettres de Garantie.`
+      message: `Le certificat médical de ${activeFirstName} ${activeLastName} A été généré et la prise en charge a été enregistrée dans vos lettres de garantie.`
     });
   };
 
@@ -1834,12 +1834,12 @@ export default function Telemedicine({
       structureName: activeDoctor.department || 'Cabinet de Téléconsultation Agréé UNAMUSC',
       details: [
         { label: 'Patient(e)', value: `${activeFirstName} ${activeLastName} (${activeCmuNumber})` },
-        { label: 'Médecin Demandeur', value: `${activeDoctor.name} (${activeDoctor.specialty} — ${activeDoctor.cnom})` },
-        { label: 'Date de la Demande', value: `${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}` },
-        { label: 'Examens Biologiques', value: 'NFS, CRP, Glycémie à jeun, Urée/Créatinine, TSH' },
-        { label: 'Imagerie Médicale', value: 'Radiographie thoracique (face) + Échographie abdominale si besoin' },
-        { label: 'Contexte Clinique', value: `Téléconsultation du jour — motif : ${activePatient?.reason || 'Évaluation clinique'}` },
-        { label: 'Constantes à la Consultation', value: `FC ${telemetryVitals.bpm} bpm • TA ${telemetryVitals.bp} mmHg • SpO2 ${telemetryVitals.spo2}% • T ${telemetryVitals.temp}°C` },
+        { label: 'Médecin demandeur', value: `${activeDoctor.name} (${activeDoctor.specialty} — ${activeDoctor.cnom})` },
+        { label: 'Date de la demande', value: `${new Date().toLocaleDateString('fr-FR')} à ${new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}` },
+        { label: 'Examens biologiques', value: 'Nfs, crp, glycémie à jeun, Urée/Créatinine, tsh' },
+        { label: 'Imagerie médicale', value: 'Radiographie thoracique (face) + échographie abdominale si besoin' },
+        { label: 'Contexte clinique', value: `Téléconsultation du jour — motif : ${activePatient?.reason || 'Évaluation clinique'}` },
+        { label: 'Constantes à la consultation', value: `FC ${telemetryVitals.bpm} bpm • TA ${telemetryVitals.bp} mmHg • SpO2 ${telemetryVitals.spo2}% • T ${telemetryVitals.temp}°C` },
         { label: 'Prise en charge', value: 'Bons d\u2019examen UNAMUSC 80% (laboratoires et centres d\u2019imagerie agréés)' }
       ],
       notes: 'Demande d\u2019examens électronique signée numériquement dans le cadre de la téléconsultation UNAMUSC. Présenter ce document avec la carte Pass CSU dans les laboratoires agréés.'
@@ -1934,8 +1934,8 @@ export default function Telemedicine({
         const newExam = {
           id: Date.now(),
           title: uploadTeleTarget.examName,
-          exam_type: 'Bilan Biologique (Télémédecine)',
-          badge: 'TÉLÉMÉDECINE HD',
+          exam_type: 'Bilan biologique (télémédecine)',
+          badge: 'Télémédecine hd',
           facility: partnerUser?.structureName || 'Laboratoire Pasteur Dakar',
           doctor: uploadTeleTarget.doctor,
           date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }),
@@ -1948,7 +1948,7 @@ export default function Telemedicine({
         localStorage.setItem('cmu-medical-exams', JSON.stringify([newExam, ...existingExams]));
       } catch (err) {}
 
-      alert(`✅ Rapport de bilan télé-médical transmis avec succès au DMP pour ${uploadTeleTarget.patientName} (${uploadTeleTarget.cmuNumber}) !`);
+      alert(`Rapport de bilan télé-médical transmis avec succès au dmp pour ${uploadTeleTarget.patientName} (${uploadTeleTarget.cmuNumber}) !`);
       setUploadTeleTarget(null);
       setUploadTeleFileName('');
       setUploadTeleNotes('');
@@ -2027,7 +2027,7 @@ export default function Telemedicine({
                     doctor: 'Dr. Ousmane Sow',
                     type: 'Télé-consultation HD',
                     examName: '',
-                    ref: `Prescription Télé-médecine #TM-${Math.floor(1000 + Math.random() * 9000)}`,
+                    ref: `Prescription télé-médecine #tm-${Math.floor(1000 + Math.random() * 9000)}`,
                     status: 'pending',
                     fileName: null
                   });
@@ -2227,7 +2227,7 @@ export default function Telemedicine({
                       <ProIcon name="file-text" />
                     </div>
                     <strong className="d-block text-primary" style={{ fontSize: '0.94rem' }}>
-                      {uploadTeleFileName ? `✓ Fichier sélectionné : ${uploadTeleFileName}` : 'Cliquez ici pour choisir le document ou glissez-le'}
+                      {uploadTeleFileName ? `Fichier sélectionné : ${uploadTeleFileName}` : 'Cliquez ici pour choisir le document ou glissez-le'}
                     </strong>
                     <span className="text-muted d-block" style={{ fontSize: '0.8rem', lineHeight: '1.4' }}>
                       Format PDF certifié avec signature du biologiste ou médecin
@@ -2245,7 +2245,7 @@ export default function Telemedicine({
                   className="form-control py-2.5 px-3" 
                   rows={3} 
                   style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '14px', fontSize: '0.88rem' }}
-                  placeholder="Ex: Bilan lipidique satisfaisant. Cholestérol total : 1.85 g/L. Glycémie à jeun : 0.90 g/L."
+                  placeholder="Ex: bilan lipidique satisfaisant. Cholestérol total : 1.85 g/L. Glycémie à jeun : 0.90 g/L."
                   value={uploadTeleNotes}
                   onChange={(e) => setUploadTeleNotes(e.target.value)}
                 />
@@ -2336,7 +2336,7 @@ export default function Telemedicine({
                     style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                     value={editingTeleOrder.examName || ''}
                     onChange={(e) => setEditingTeleOrder({ ...editingTeleOrder, examName: e.target.value })}
-                    placeholder="Ex: Bilan Lipidique & Glycémie à jeun"
+                    placeholder="Ex: bilan lipidique & glycémie à jeun"
                     required
                   />
                 </div>
@@ -2363,7 +2363,7 @@ export default function Telemedicine({
                     style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                     value={editingTeleOrder.ref || ''}
                     onChange={(e) => setEditingTeleOrder({ ...editingTeleOrder, ref: e.target.value })}
-                    placeholder="Ex: Prescription Télé-médecine #TM-8812"
+                    placeholder="Ex: prescription télé-médecine #tm-8812"
                   />
                 </div>
 
@@ -2427,7 +2427,7 @@ export default function Telemedicine({
               <p className="mb-4" style={{ color: 'var(--text-sub, #94a3b8)', fontSize: '0.92rem', lineHeight: '1.55' }}>
                 Voulez-vous vraiment supprimer définitivement <strong style={{ color: '#ef4444' }}>{confirmDeleteObj.title}</strong> ?
                 <br />
-                <small className="text-muted d-block mt-1">Cette action est irréversible dans le système UNAMUSC.</small>
+                <small className="text-muted d-block mt-1">Cette action Est irréversible dans le système UNAMUSC.</small>
               </p>
 
               <div className="d-flex justify-content-center gap-3 pt-2">
@@ -2489,7 +2489,7 @@ export default function Telemedicine({
                 Télémédecine : non concerné
               </h1>
               <p style={{ color: 'rgba(209, 250, 229, 0.95)', fontSize: '1rem', maxWidth: '650px', lineHeight: 1.6 }}>
-                Les téléconsultations et le suivi vidéo sont exclusivement réservés aux praticiens prescripteurs. Votre compte est dédié à la réception et au traitement des ordonnances médicamenteuses.
+                Les téléconsultations et le suivi vidéo sont exclusivement réservés aux praticiens prescripteurs. Votre compte Est dédié à la réception et au traitement des ordonnances médicamenteuses.
               </p>
 
               <div className="d-flex align-items-center flex-wrap mt-4" style={{ gap: '28px', rowGap: '16px' }}>
@@ -2713,7 +2713,7 @@ export default function Telemedicine({
             </div>
 
             <p className="lead mb-4 mx-auto" style={{ maxWidth: '640px', fontSize: '1.05rem', lineHeight: '1.65' }}>
-              Votre cotisation annuelle n'est pas à jour. Tous vos droits et accès aux services de télémédecine sont suspendus.
+              Votre cotisation annuelle n'Est pas à jour. Tous vos droits et accès aux services de télémédecine sont suspendus.
               <br />
               <strong className="d-block mt-2 text-danger">Veuillez régulariser votre cotisation et celui des membres de votre famille pour un montant de 10 500 FCFA.</strong>
             </p>
@@ -2759,11 +2759,11 @@ export default function Telemedicine({
             </div>
             <div>
               <h5 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.05rem', lineHeight: '1.2' }}>
-                {activeRoleMode === 'doctor' ? 'Espace Praticien — Cabinet Digital & Téléconsultation' : 'Télémédecine UNAMUSC — Espace Assuré CSU'}
+                {activeRoleMode === 'doctor' ? 'Espace praticien — Cabinet digital & téléconsultation' : 'Télémédecine UNAMUSC — Espace assuré CSU'}
               </h5>
               <small style={{ color: 'var(--text-sub)', fontSize: '0.75rem' }}>
                 {activeRoleMode === 'doctor' 
-                  ? (partnerUser?.structureName ? `${partnerUser.structureName} • Ordre National des Médecins` : 'Praticien de Garde Agréé CNOM • Téléconsultations Réglementées')
+                  ? (partnerUser?.structureName ? `${partnerUser.structureName} • Ordre national des médecins` : 'Praticien de garde agréé cnom • Téléconsultations réglementées')
                   : `${activeFirstName} ${activeLastName} • N° CSU : ${activeCmuNumber}`}
               </small>
             </div>
@@ -3200,7 +3200,7 @@ export default function Telemedicine({
                                 icon: <ProIcon name="bell" />,
                                 title: 'Patient notifié',
                                 message: `${p.patient_name} a été prévenu(e) que la consultation va démarrer.`,
-                                speech: `${p.patient_name}, c'est bientôt votre tour. Veuillez allumer votre micro et caméra. Le médecin va vous recevoir.`
+                                speech: `${p.patient_name}, c'Est bientôt votre tour. Veuillez allumer votre micro et caméra. le médecin va vous recevoir.`
                               });
                             }}
                             title="Prévenir le patient que son tour arrive"
@@ -3382,7 +3382,7 @@ export default function Telemedicine({
                       <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> En salle d'attente virtuelle (règlement confirmé)
                     </span>
                     <h4 className="fw-extrabold mb-1 text-white">
-                      Vous êtes à la Position <span className="text-warning">n°{positionInQueue}</span> dans l'ordre de passage
+                      Vous êtes à la position <span className="text-warning">n°{positionInQueue}</span> dans l'ordre de passage
                     </h4>
                     <p className="mb-0 text-white-50 small">
                       Praticien assigné : <strong>{myItem.requested_doctor}</strong> | Motif : {myItem.reason}
@@ -3457,7 +3457,7 @@ export default function Telemedicine({
               <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div>
                   <span className="fw-extrabold px-3 py-1.5 mb-2 d-inline-block" style={{ background: 'rgba(16,185,129,0.25)', color: '#34d399', border: '1px solid #10b981', borderRadius: '20px', fontSize: '0.85rem' }}>
-                    <ProIcon name="bell" /> C'est votre tour ! Le médecin vous appelle
+                    <ProIcon name="bell" /> C'est votre tour ! le médecin vous appelle
                   </span>
                   <h4 className="fw-extrabold mb-1 text-white">
                     Le {myItem.requested_doctor} vous attend en Salle de Téléconsultation HD
@@ -3637,7 +3637,7 @@ export default function Telemedicine({
                               champ qui n'est renseigné nulle part : elle
                               affichait « ★ undefined » sur chaque carte, ou
                               pire, une note reconduite depuis un ancien
-                              localStorage. Le libellé « 4,9 / 124 avis »
+                              localStorage. le libellé « 4,9 / 124 avis »
                               n'a jamais reposé sur un avis réel. La note
                               d'un praticien n'apparaîtra que lorsqu'un
                               patient réellement consulté la dépose. */}
@@ -3778,11 +3778,11 @@ export default function Telemedicine({
                 <div className="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2 pb-2 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
                   <div>
                     <h5 className="fw-bold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>
-                      {isCitizen ? `📜 Mes Téléconsultations & Ordonnances Médicales (${activeFirstName} ${activeLastName})` : '📜 Historique Régional des Téléconsultations Certifiées UNAMUSC'}
+                      {isCitizen ? `Mes téléconsultations & ordonnances médicales (${activeFirstName} ${activeLastName})` : 'Historique régional des téléconsultations certifiées UNAMUSC'}
                     </h5>
                     <small style={{ color: 'var(--text-sub)', fontSize: '0.82rem' }}>
                       {isCitizen
-                        ? `Historique médical certifié par le Conseil National de l'Ordre des Médecins (CNOM) • ${activeHistoryList.length} consultation(s)`
+                        ? `Historique médical certifié par le conseil national de l'ordre des médecins (CNOM) • ${activeHistoryList.length} consultation(s)`
                         : `Registre national — ${totalVolume} téléconsultation(s) réellement enregistrée(s)`
                       }
                     </small>
@@ -3847,8 +3847,8 @@ export default function Telemedicine({
                                 speakAndToast({
                                   type: 'info',
                                   icon: <ProIcon name="file-spreadsheet" />,
-                                  title: 'Reçu & Ordonnance Téléconsultation',
-                                  message: `Consultation ${item.code} du patient ${item.patient} chargée avec succès.`
+                                  title: 'reçu & ordonnance téléconsultation',
+                                  message: `consultation ${item.code} du patient ${item.patient} chargée avec succès.`
                                 });
                               }}
                             >
@@ -3952,7 +3952,7 @@ export default function Telemedicine({
                   {agentUser?.full_name || agentUser?.name || agentUser?.email || 'Agent UD Départemental'}
                 </h4>
                 <small style={{ color: '#94a3b8', fontSize: '0.82rem' }}>
-                  Union Départementale : <strong style={{ color: '#c4b5fd' }}>{agentDept}</strong> • Supervision temps réel de la salle d'attente virtuelle
+                  Union départementale : <strong style={{ color: '#c4b5fd' }}>{agentDept}</strong> • Supervision temps réel de la salle d'attente virtuelle
                 </small>
               </div>
             </div>
@@ -4446,12 +4446,12 @@ export default function Telemedicine({
                       </button>
                     </div>
                     <h5 style={{ color: '#ffffff', fontWeight: '800', margin: '1rem 0 0', fontSize: '1.2rem' }}>
-                      {queueMode === 'booking' ? '📅 Prendre rendez-vous (gratuit)' : '🏥 Entrer en salle d’attente virtuelle'}
+                      {queueMode === 'booking' ? 'Prendre rendez-vous (gratuit)' : 'Entrer en salle d’attente virtuelle'}
                     </h5>
                     <p style={{ color: 'rgba(255,255,255,0.75)', margin: '0.3rem 0 0', fontSize: '0.85rem' }}>
                       {queueMode === 'booking'
-                        ? "Aucune somme n'est due pour prendre rendez-vous. Le règlement se fait une seule fois, sur place, à la structure."
-                        : "Consultation en visioconférence immédiate. Le ticket modérateur est réglé avant d'entrer en file."}
+                        ? "Aucune somme n'est due pour prendre rendez-vous. le règlement se fait une seule fois, sur place, à la structure."
+                        : "Consultation en visioconférence immédiate. le ticket modérateur est réglé avant d'entrer en file."}
                     </p>
                   </div>
                   <button type="button" onClick={resetPaymentModal} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', borderRadius: '10px', width: '32px', height: '32px', cursor: 'pointer', fontSize: '1.1rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
@@ -4495,14 +4495,14 @@ export default function Telemedicine({
                   <textarea
                     style={{ width: '100%', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.75rem 1rem', fontSize: '0.88rem', lineHeight: '1.5', resize: 'vertical', outline: 'none', boxSizing: 'border-box' }}
                     rows={3} value={consultReason} onChange={(e) => setConsultReason(e.target.value)}
-                    placeholder="Ex : Fièvre, toux sèche, maux de tête depuis 48h..." required
+                    placeholder="Ex : fièvre, toux sèche, maux de tête depuis 48h..." required
                   />
                 </div>
 
                 <div style={{ marginBottom: '1.5rem' }}>
                   <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', color: 'var(--text-sub)', marginBottom: '0.5rem' }}>Niveau d'urgence *</label>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                    {[{v:'routine',l:'🟢 Routine',s:'Consultation de routine'},{v:'medium',l:'🟡 Modéré',s:'Symptômes modérés'},{v:'high',l:'🟠 Élevé',s:'Douleurs / fièvre forte'},{v:'critical',l:'🔴 Urgence',s:'Priorité absolue'}].map(u => (
+                    {[{v:'routine',l:'Routine',s:'Consultation de routine'},{v:'medium',l:'Modéré',s:'Symptômes modérés'},{v:'high',l:'Élevé',s:'Douleurs / fièvre forte'},{v:'critical',l:'Urgence',s:'Priorité absolue'}].map(u => (
                       <button key={u.v} type="button" onClick={() => setUrgencyLevel(u.v)}
                         style={{ padding: '0.65rem 0.75rem', borderRadius: '10px', border: urgencyLevel === u.v ? '2px solid #10b981' : '1px solid var(--border-color)', background: urgencyLevel === u.v ? 'rgba(16,185,129,0.15)' : 'var(--bg-card-subtle)', color: urgencyLevel === u.v ? '#10b981' : 'var(--text-sub)', fontWeight: '700', fontSize: '0.78rem', cursor: 'pointer', textAlign: 'left' }}>
                         <div>{u.l}</div><div style={{ fontSize: '0.7rem', fontWeight: '400', opacity: 0.7 }}>{u.s}</div>
@@ -4520,7 +4520,7 @@ export default function Telemedicine({
                           Rendez-vous enregistré
                         </h5>
                         <p style={{ color: 'var(--text-sub)', fontSize: '0.85rem', lineHeight: '1.6', margin: '0 0 1rem' }}>
-                          Aucun paiement n'a été effectué. Le règlement de la consultation
+                          Aucun paiement n'a été effectué. le règlement de la consultation
                           se fera une seule fois, sur place, à la structure.
                         </p>
                         {bookingResult.appointment_date && (
@@ -4561,8 +4561,8 @@ export default function Telemedicine({
                           <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', color: 'var(--text-sub)', marginBottom: '0.5rem' }}>Créneau *</label>
                           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
                             {[
-                              { v: 'matin', l: '🌅 Matin', h: '9h00' },
-                              { v: 'apres-midi', l: '🌤️ Après-midi', h: '14h00' }
+                              { v: 'matin', l: 'Matin', h: '9h00' },
+                              { v: 'apres-midi', l: 'Après-midi', h: '14h00' }
                             ].map(slot => (
                               <button
                                 key={slot.v}
@@ -4815,7 +4815,7 @@ export default function Telemedicine({
                   REC <ProIcon name="status-red" color="#ef4444" fill="#ef4444" size={10} />
                 </span>
                 <span className="webrtc-hide-mobile" style={{ background: isDoctorSide ? 'rgba(2,132,199,0.15)' : 'rgba(16,185,129,0.12)', color: isDoctorSide ? '#38bdf8' : '#34d399', fontSize: '0.68rem', fontWeight: '800', padding: '3px 8px', borderRadius: '8px', border: `1px solid ${isDoctorSide ? 'rgba(56,189,248,0.4)' : 'rgba(16,185,129,0.4)'}` }}>
-                  {isDoctorSide ? '🩺 Praticien' : '👤 Assuré'}
+                  {isDoctorSide ? 'Praticien' : 'Assuré'}
                 </span>
                 <button
                   type="button"
@@ -4920,7 +4920,7 @@ export default function Telemedicine({
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: peerConnected ? '#10b981' : (isDoctorSide ? '#38bdf8' : '#10b981'), boxShadow: '0 0 10px currentColor', display: 'inline-block', animation: 'pulse 1.6s infinite' }} />
                     <span style={{ background: 'rgba(5, 46, 22, 0.85)', color: '#34d399', border: '1px solid #10b981', padding: '4px 10px', borderRadius: '8px', fontSize: '0.74rem', fontWeight: '800', backdropFilter: 'blur(6px)' }}>
-                      {isDoctorSide ? '👤 Patient en consultation' : `🩺 ${activeDoctor.name}`}
+                      {isDoctorSide ? 'Patient en consultation' : `🩺 ${activeDoctor.name}`}
                     </span>
                   </div>
                   {peerConnected ? (
@@ -5090,7 +5090,7 @@ export default function Telemedicine({
                     }}
                     onClick={() => setActiveCallTab('vitals')}
                   >
-                    {isDoctorSide ? '🩺 Dossier patient' : '🩺 Dossier CSU'}
+                    {isDoctorSide ? 'Dossier patient' : 'Dossier CSU'}
                   </button>
                   {!isDoctorSide && (
                     <button
@@ -5259,12 +5259,12 @@ export default function Telemedicine({
                           <div style={{ background: '#1e293b', padding: '0.65rem', borderRadius: '8px', border: '1px solid #334155' }}>
                             <strong style={{ color: '#34d399', fontSize: '0.78rem', display: 'block', marginBottom: '4px' }}><ProIcon name="shield-check" /> Droits &amp; niveau d'accès :</strong>
                             <span style={{ color: '#ffffff', fontSize: '0.78rem', lineHeight: 1.6, display: 'block' }}>
-                              <ProIcon name="check-circle" color="#059669" /> Dossier Médical Partagé (DMP) CSU<br />
+                              <ProIcon name="check-circle" color="#059669" /> Dossier médical partagé (dmp) CSU<br />
                               <ProIcon name="check-circle" color="#059669" /> Prescription &amp; ordonnance électronique 50%<br />
                               <ProIcon name="check-circle" color="#059669" /> Certificats médicaux &amp; demande d'examens<br />
                               <ProIcon name="check-circle" color="#059669" /> Télémétrie vitale &amp; imagerie dicom
                             </span>
-                            <small style={{ color: '#64748b', fontSize: '0.68rem' }}>Habilitation CNOM {activeDoctor.cnom} — accès chiffré E2EE</small>
+                            <small style={{ color: '#64748b', fontSize: '0.68rem' }}>Habilitation cnom {activeDoctor.cnom} — accès chiffré E2EE</small>
                           </div>
                         </div>
                       )}
@@ -5517,7 +5517,7 @@ export default function Telemedicine({
 
             <div className="my-3 px-3.5 py-2 rounded-3 border border-success text-center w-100" style={{ background: 'rgba(16, 185, 129, 0.12)', color: '#047857' }}>
               <span className="fw-bold d-block" style={{ fontSize: '0.88rem', letterSpacing: '0.3px', textTransform: 'none' }}>
-                N° CSU TITULAIRE : <span className="fw-mono fs-6 text-success ms-1">{activeCmuNumber.replace('CMU-', 'CSU-')}</span>
+                N° CSU titulaire : <span className="fw-mono fs-6 text-success ms-1">{activeCmuNumber.replace('CMU-', 'CSU-')}</span>
               </span>
             </div>
 
@@ -5684,7 +5684,7 @@ export default function Telemedicine({
                   type="text" 
                   className="form-control" 
                   style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} 
-                  placeholder="Ex: Dr. Mariama Bâ" 
+                  placeholder="Ex: Dr. Mariama bâ" 
                   value={newDocName} 
                   onChange={(e) => setNewDocName(e.target.value)} 
                   required 
@@ -5698,7 +5698,7 @@ export default function Telemedicine({
                     type="text" 
                     className="form-control" 
                     style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} 
-                    placeholder="Ex: Pédiatrie & Néonatologie" 
+                    placeholder="Ex: pédiatrie & néonatologie" 
                     value={newDocSpecialty} 
                     onChange={(e) => setNewDocSpecialty(e.target.value)} 
                     required 
@@ -5728,7 +5728,7 @@ export default function Telemedicine({
                     type="text" 
                     className="form-control fw-mono" 
                     style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} 
-                    placeholder="Ex: CNOM: 7812-SN" 
+                    placeholder="Ex: cnom: 7812-SN" 
                     value={newDocCnom} 
                     onChange={(e) => setNewDocCnom(e.target.value)} 
                     required 
@@ -5741,7 +5741,7 @@ export default function Telemedicine({
                     type="text" 
                     className="form-control" 
                     style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} 
-                    placeholder="Ex: Union Départementale Pikine" 
+                    placeholder="Ex: union départementale Pikine" 
                     value={newDocDept} 
                     onChange={(e) => setNewDocDept(e.target.value)} 
                     required 
@@ -5755,7 +5755,7 @@ export default function Telemedicine({
                   type="text" 
                   className="form-control" 
                   style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} 
-                  placeholder="Ex: FR, WO, PULAAR" 
+                  placeholder="Ex: FR, WO, Pulaar" 
                   value={newDocLangs} 
                   onChange={(e) => setNewDocLangs(e.target.value)} 
                   required 
@@ -5830,10 +5830,10 @@ export default function Telemedicine({
                 </div>
                 <div>
                   <h4 className="fw-extrabold mb-1 text-primary" style={{ fontSize: '1.35rem', letterSpacing: '-0.02em' }}>
-                    Annuaire Régional des {doctorsList.length} Spécialistes CNOM
+                    Annuaire régional des {doctorsList.length} Spécialistes CNOM
                   </h4>
                   <small style={{ color: 'var(--text-sub)', fontSize: '0.84rem' }}>
-                    Conseil National de l'Ordre des Médecins du Sénégal • Garde H24 Télémédecine <ProIcon name="senegal-flag" />
+                    Conseil national de l'ordre des médecins du Sénégal • Garde h24 télémédecine <ProIcon name="senegal-flag" />
                   </small>
                 </div>
               </div>
@@ -5977,14 +5977,14 @@ export default function Telemedicine({
                 <div>
                   <div className="d-flex align-items-center gap-2">
                     <h4 className="fw-extrabold mb-0" style={{ color: '#059669', fontSize: '1.30rem', letterSpacing: '-0.02em' }}>
-                      Répartition Régionale des {queue.filter(q => q.status === 'called' || q.status === 'done').length} téléconsultation(s) enregistrée(s)
+                      Répartition régionale des {queue.filter(q => q.status === 'called' || q.status === 'done').length} téléconsultation(s) enregistrée(s)
                     </h4>
                     <span className="badge bg-success-subtle text-success border border-success fw-bold px-2 py-0.5" style={{ fontSize: '0.70rem' }}>
                       En direct
                     </span>
                   </div>
                   <small style={{ color: 'var(--text-sub, #64748b)', fontSize: '0.82rem' }}>
-                    Réseau national certifié CNOM & Convention CSU UNAMUSC <ProIcon name="senegal-flag" />
+                    Réseau national certifié cnom & convention CSU UNAMUSC <ProIcon name="senegal-flag" />
                   </small>
                 </div>
               </div>
@@ -5992,23 +5992,23 @@ export default function Telemedicine({
             </div>
 
             <p style={{ color: 'var(--text-sub, #475569)', fontSize: '0.88rem', lineHeight: 1.6 }} className="mb-4">
-              Le service de télémédecine UNAMUSC assure une couverture médicale continue 24h/24 et 7j/7 pour l'ensemble des assurés sociaux des 14 régions du Sénégal, éliminant les déserts médicaux.
+              le service de télémédecine UNAMUSC assure une couverture médicale continue 24h/24 et 7j/7 pour l'ensemble des assurés sociaux des 14 régions du Sénégal, éliminant les déserts médicaux.
             </p>
 
             {/* Répartition régionale : AUCUNE DONNÉE SOUCHE.
                 Auparavant, 420 consultations étaient inventées puis
                 réparties en 50 / 20 / 13 / 10 / 7 % sur cinq zones — des
                 pourcentages posés à la main, sans aucun enregistrement de
-                téléconsultation. Le tableau ci-dessous ne montre donc que
+                téléconsultation. le tableau ci-dessous ne montre donc que
                 les zones couvertes, avec un effectif réellement compté. */}
             {(() => {
               const doneCount = queue.filter(q => q.status === 'called' || q.status === 'done').length;
               const regionalData = [
-                { region: 'Dakar Métropole (Plateau, Pikine, Guédiawaye, Rufisque, Keur Massar)', count: doneCount, color: '#10b981', hospitals: 'CHU Fann, Hôpital Principal, Dalal Jamm' },
-                { region: 'Région de Thiès & Mbour (Petite Côte & Plateau)', count: 0, color: '#3b82f6', hospitals: 'Hôpital Régional de Thiès, EPS Mbour' },
-                { region: 'Région de Saint-Louis & Vallée du Fleuve', count: 0, color: '#f59e0b', hospitals: 'CHR Saint-Louis, District Richard-Toll' },
-                { region: 'Kaolack, Fatick & Diourbel (Bassin Arachidier)', count: 0, color: '#a855f7', hospitals: 'CHR Kaolack, EPS Heinrich Lübke' },
-                { region: 'Ziguinchor, Kolda & Tambacounda (Casamance & Sénégal Oriental)', count: 0, color: '#ec4899', hospitals: 'CHR Ziguinchor, CHR Tambacounda' }
+                { region: 'Dakar métropole (Plateau, Pikine, Guédiawaye, Rufisque, Keur Massar)', count: doneCount, color: '#10b981', hospitals: 'CHU Fann, hôpital Principal, Dalal Jamm' },
+                { region: 'Région de Thiès & Mbour (petite côte & Plateau)', count: 0, color: '#3b82f6', hospitals: 'Hôpital régional de Thiès, EPS Mbour' },
+                { region: 'Région de Saint-Louis & vallée du fleuve', count: 0, color: '#f59e0b', hospitals: 'Chr Saint-Louis, district richard-toll' },
+                { region: 'Kaolack, Fatick & Diourbel (bassin arachidier)', count: 0, color: '#a855f7', hospitals: 'Chr Kaolack, EPS heinrich lübke' },
+                { region: 'Ziguinchor, Kolda & Tambacounda (casamance & Sénégal oriental)', count: 0, color: '#ec4899', hospitals: 'Chr Ziguinchor, chr Tambacounda' }
               ];
 
               return (
@@ -6136,7 +6136,7 @@ export default function Telemedicine({
                   Aucun avis publié
                 </strong>
                 <span className="d-block" style={{ color: 'var(--text-sub, #64748b)', fontSize: '0.82rem', lineHeight: 1.55 }}>
-                  Aucun retour d'expérience n'est enregistré pour l'instant. Les avis qui apparaîtront ici devront provenir de patients réellement consultés.
+                  Aucun retour d'expérience n'Est enregistré pour l'instant. Les avis qui apparaîtront ici devront provenir de patients réellement consultés.
                 </span>
               </div>
             </div>
@@ -6179,7 +6179,7 @@ export default function Telemedicine({
             </div>
 
             <p style={{ color: 'var(--text-sub, #475569)', fontSize: '0.88rem', lineHeight: 1.6 }} className="mb-3">
-              Grâce à la convention nationale UNAMUSC, l'Agence de la Couverture Santé Universelle prend en charge <strong>80% des honoraires de téléconsultation spécialisée</strong> (20% à la charge de l'assuré).
+              Grâce à la convention nationale UNAMUSC, l'agence de la couverture santé universelle prend en charge <strong>80% des honoraires de téléconsultation spécialisée</strong> (20% à la charge de l'assuré).
             </p>
 
             {/* Sélecteur de type d'acte dynamique */}

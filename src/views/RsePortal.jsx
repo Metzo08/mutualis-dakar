@@ -22,19 +22,19 @@ export default function RsePortal({ portalMode, agentUser }) {
   const initialAdvocacyCampaigns = [
     {
       id: 1,
-      title: "Enrôlement de 100 Ndongo Daaras à Mbao",
+      title: "Enrôlement de 100 ndongo daaras à mbao",
       targetDept: "Dakar",
-      initiator: "Imam Moussa Ndiaye (UNAMUSC Mbao)",
-      description: "Le Daara Sopé Nabil de Mbao compte plus de 100 jeunes talibés vivant dans des conditions précaires. Ce plaidoyer vise à leur offrir une couverture maladie complète de 12 mois.",
+      initiator: "Imam Moussa Ndiaye (UNAMUSC mbao)",
+      description: "Le Daara sopé nabil de mbao compte plus de 100 jeunes talibés vivant dans des conditions précaires. Ce plaidoyer vise à leur offrir une couverture maladie complète de 12 mois.",
       countNeeded: 100,
       annualCost: 450000,
       fulfilled: false
     },
     {
       id: 2,
-      title: "Couverture Mutuelle pour 150 élèves à Keur Massar",
+      title: "Couverture mutuelle pour 150 élèves à Keur Massar",
       targetDept: "Keur Massar",
-      initiator: "Fatou Kiné Sow (UNAMUSC Keur Massar)",
+      initiator: "Fatou kiné Sow (UNAMUSC Keur Massar)",
       description: "Soutien aux enfants de l'école primaire publique Keur Massar 2. Une couverture maladie leur permettra de suivre l'année scolaire sans interruption liée aux frais médicaux.",
       countNeeded: 150,
       annualCost: 675000,
@@ -42,7 +42,7 @@ export default function RsePortal({ portalMode, agentUser }) {
     },
     {
       id: 3,
-      title: "Parrainage Solidaire des Familles Vulnérables de Rufisque Est",
+      title: "Parrainage solidaire des familles vulnérables de Rufisque Est",
       targetDept: "Rufisque",
       initiator: "Ousmane Diop (MSD Rufisque)",
       description: "Plaidoyer pour l'enrôlement de 200 mères célibataires et leurs enfants dans la mutuelle de Rufisque Est.",
@@ -52,7 +52,7 @@ export default function RsePortal({ portalMode, agentUser }) {
     },
     {
       id: 4,
-      title: "Couverture Sanitaire pour les Jeunes Pêcheurs de Guet Ndar",
+      title: "Couverture sanitaire pour les jeunes pêcheurs de guet ndar",
       targetDept: "Saint-Louis",
       initiator: "Moustapha Fall (UNAMUSC Saint-Louis)",
       description: "Enrôlement de 120 jeunes apprentis pêcheurs n'ayant aucune couverture sociale contre les accidents professionnels.",
@@ -335,7 +335,7 @@ export default function RsePortal({ portalMode, agentUser }) {
                     <input 
                       className="input" 
                       required 
-                      placeholder="Ex: Sonatel, ICS, Orange..." 
+                      placeholder="Ex: sonatel, ics, Orange..." 
                       value={pledgeForm.companyName}
                       onChange={(e) => setPledgeForm({ ...pledgeForm, companyName: e.target.value })}
                     />
@@ -414,7 +414,7 @@ export default function RsePortal({ portalMode, agentUser }) {
                   <input 
                     className="input" 
                     required 
-                    placeholder="Ex: Sonatel, ICS, Orange..." 
+                    placeholder="Ex: sonatel, ics, Orange..." 
                     value={pledgeForm.companyName}
                     onChange={(e) => setPledgeForm({ ...pledgeForm, companyName: e.target.value })}
                     style={{ width: '100%' }}
@@ -535,7 +535,7 @@ export default function RsePortal({ portalMode, agentUser }) {
                   onClick={() => setShowCreateAdvocacy(!showCreateAdvocacy)}
                   style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', padding: '0.35rem 0.75rem', fontWeight: 'bold' }}
                 >
-                  {showCreateAdvocacy ? '✕ Fermer' : '➕ Créer un plaidoyer'}
+                  {showCreateAdvocacy ? 'Fermer' : 'Créer un plaidoyer'}
                 </button>
               )}
             </div>
@@ -551,7 +551,7 @@ export default function RsePortal({ portalMode, agentUser }) {
                     <input 
                       className="input" 
                       required 
-                      placeholder="Ex: Enrôlement de 100 Ndongo Daaras à Pikine" 
+                      placeholder="Ex: enrôlement de 100 ndongo daaras à Pikine" 
                       value={newAdvocacy.title}
                       onChange={(e) => setNewAdvocacy({ ...newAdvocacy, title: e.target.value })}
                       style={{ width: '100%' }}
@@ -562,7 +562,7 @@ export default function RsePortal({ portalMode, agentUser }) {
                     <input 
                       className="input" 
                       required 
-                      placeholder="Ex: Oustaz Alioune (Maitre Daara)" 
+                      placeholder="Ex: oustaz Alioune (maitre Daara)" 
                       value={newAdvocacy.initiator}
                       onChange={(e) => setNewAdvocacy({ ...newAdvocacy, initiator: e.target.value })}
                       style={{ width: '100%' }}
@@ -783,7 +783,7 @@ export default function RsePortal({ portalMode, agentUser }) {
                 <input 
                   className="input" 
                   required 
-                  placeholder="Ex: Sonatel..." 
+                  placeholder="Ex: sonatel..." 
                   value={pledgeForm.companyName}
                   onChange={(e) => setPledgeForm({ ...pledgeForm, companyName: e.target.value })}
                 />

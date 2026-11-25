@@ -59,7 +59,7 @@ export default function MaintenanceScreen({ message, onRetry }) {
             cursor: canRetry ? 'pointer' : 'not-allowed', transition: 'background 0.3s'
           }}
         >
-          {canRetry ? '🔄 Réessayer maintenant' : 'Réessayer dans quelques secondes…'}
+          {canRetry ? 'Réessayer maintenant' : 'Réessayer dans quelques secondes…'}
         </button>
       </div>
     </div>

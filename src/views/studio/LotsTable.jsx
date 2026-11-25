@@ -39,12 +39,12 @@ export default function LotsTable({ lotsData, lotsPage, lotsLoading, onPage, onP
                 <td style={{ padding: '0.5rem 0.7rem' }}>{l.adherents} <span style={{ color: '#64748b' }}>({l.conformes} conformes)</span></td>
                 <td style={{ padding: '0.5rem 0.7rem' }}>
                   <span style={l.etatValidation === 'VALIDE' ? okV : warnV}>
-                    {l.etatValidation === 'VALIDE' ? '✅ Valide' : `⚠️ ${l.aCorriger} à corriger`}
+                    {l.etatValidation === 'VALIDE' ? 'Valide' : `⚠️ ${l.aCorriger} à corriger`}
                   </span>
                 </td>
                 <td style={{ padding: '0.5rem 0.7rem' }}>
                   <span style={l.etatProduction === 'IMPRIME' ? okP : waitP}>
-                    {l.etatProduction === 'IMPRIME' ? '🖨️ Imprimé' : '⏳ En attente'}
+                    {l.etatProduction === 'IMPRIME' ? 'Imprimé' : '⏳ En attente'}
                   </span>
                 </td>
                 <td style={{ padding: '0.5rem 0.7rem', textAlign: 'right', fontWeight: 800 }}>{formatFcfa(l.revenuFcfa)}</td>

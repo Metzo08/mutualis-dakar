@@ -36,7 +36,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
   // ═══════════════════════════════════════════════════════
   // Registre des patients — données RÉELLES uniquement
   // ═══════════════════════════════════════════════════════
-  // Aucun patient n'est inventé. Le registre croise les bénéficiaires
+  // Aucun patient n'est inventé. le registre croise les bénéficiaires
   // réellement enregistrés (store local, synchronisé serveur) avec les
   // examens RÉELLEMENT saisis par les praticiens (localStorage).
   // Un patient sans examen n'apparaît pas : un dossier médical fictif
@@ -234,7 +234,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
     
     if (navigator.share) {
       navigator.share({
-        title: 'Dossier Médical UNAMUSC',
+        title: 'Dossier médical UNAMUSC',
         text: shareText,
         url: `https://senmutuelles.sn/dossier-partage/${activeCmuNumber}?otp=${otpData.code}`
       }).catch(() => {
@@ -292,9 +292,9 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
           id: 801,
           title: 'Radiographie osseuse d\'urgence (Fracture tibia / Os cassé)',
           exam_type: 'Radiographie',
-          badge: '🦴 ORTHOPÉDIE - OS CASSÉ',
+          badge: 'Orthopédie - os cassé',
           facility: 'Hôpital Abass Ndao (Dakar)',
-          doctor: 'Dr. Cheikh Anta Diop | Service Traumatologie',
+          doctor: 'Dr. Cheikh anta Diop | Service traumatologie',
           date: '04 Fév 2026',
           conclusion: 'Radiographie montrant une fracture nette du tiers inférieur du tibia droit. Immobilisation plâtrée réalisée avec succès. Contrôle clinique et radiologique prévu à J+21.',
           cliches: 4,
@@ -302,13 +302,13 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
         },
         {
           id: 802,
-          title: 'Bilan sanguin complet & Sérologies certifiées',
-          exam_type: 'Analyse Biologique',
-          badge: '🧪 BILAN SANGUIN COMPLET',
-          facility: 'Laboratoire Pasteur Dakar',
-          doctor: 'Dr. Cheikh Anta Diop | Biologiste',
+          title: 'Bilan sanguin complet & sérologies certifiées',
+          exam_type: 'Analyse biologique',
+          badge: 'Bilan sanguin complet',
+          facility: 'Laboratoire pasteur Dakar',
+          doctor: 'Dr. Cheikh anta Diop | Biologiste',
           date: '01 Fév 2026',
-          conclusion: 'Numération Formule Sanguine (NFS) normale. Glycémie à jeun : 0.92 g/L. Bilan hépatique et rénal satisfaisants. Sérologies virales négatives.',
+          conclusion: 'Numération formule sanguine (nfs) normale. Glycémie à jeun : 0.92 g/L. Bilan hépatique et rénal satisfaisants. Sérologies virales négatives.',
           cliches: 2,
           preview: '/dicom_blood_test.jpg'
         },
@@ -316,11 +316,11 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
           id: 803,
           title: 'Scanner IRM du rachis lombaire & bassin',
           exam_type: 'Scanner IRM',
-          badge: '🦴 SCANNER RACHIS HD',
+          badge: 'Scanner rachis hd',
           facility: 'Polyclinique de la Médina',
           doctor: 'Dr. Ibrahima Faye | Radiologue',
           date: '20 Janv 2026',
-          conclusion: 'Alignement vertébral conservé. Absence de hernie discale synchrone. Espace lombo-sacré L4-L5 sans conflit disco-radiculaire.',
+          conclusion: 'Alignement vertébral conservé. Absence de hernie discale synchrone. Espace lombo-Sacré l4-l5 sans conflit disco-radiculaire.',
           cliches: 4,
           preview: '/dicom_spine_xray.jpg'
         },
@@ -328,7 +328,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
           id: 804,
           title: 'Radiographie thoracique de contrôle pulmonaire',
           exam_type: 'Radiographie',
-          badge: '🫁 BILAN PULMONAIRE',
+          badge: 'Bilan pulmonaire',
           facility: 'Hôpital Principal de Dakar',
           doctor: 'Dr. Ousmane Sow | Pneumologue',
           date: '10 Janv 2026',
@@ -338,11 +338,11 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
         },
         {
           id: 805,
-          title: 'Échocardiographie Doppler pré-opératoire',
+          title: 'Échocardiographie doppler pré-opératoire',
           exam_type: 'Échographie',
-          badge: '❤️ CARDIOLOGIE',
-          facility: 'Hôpital Universitaire de Fann',
-          doctor: 'Dr. Cheikh Tidiane Seck | Cardiologue',
+          badge: 'Cardiologie',
+          facility: 'Hôpital universitaire de Fann',
+          doctor: 'Dr. Cheikh tidiane Seck | Cardiologue',
           date: '05 Janv 2026',
           conclusion: 'Cavités cardiaques non dilatées. Fraction d\'éjection (FE = 68%). Contractilité globale et segmentaire conservée.',
           cliches: 3,
@@ -351,12 +351,12 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
         {
           id: 806,
           title: 'Bilan lipidique & contrôle métabolique complet',
-          exam_type: 'Analyse Biologique',
-          badge: '🧪 LABORATOIRE PASTEUR',
-          facility: 'Laboratoire Pasteur Dakar',
-          doctor: 'Dr. Papa Mamadou Kane',
+          exam_type: 'Analyse biologique',
+          badge: 'Laboratoire pasteur',
+          facility: 'Laboratoire pasteur Dakar',
+          doctor: 'Dr. papa Mamadou kane',
           date: '28 Déc 2025',
-          conclusion: 'Cholestérol HDL : 0.52 g/L, LDL : 1.10 g/L. Glycémie : 0.89 g/L. Bilan lipidique et métabolique parfaitement équilibré.',
+          conclusion: 'Cholestérol hdl : 0.52 g/L, ldl : 1.10 g/L. Glycémie : 0.89 g/L. Bilan lipidique et métabolique parfaitement équilibré.',
           cliches: 2,
           preview: '/dicom_blood_test.jpg'
         }
@@ -368,23 +368,23 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
       return [
         {
           id: 901,
-          title: 'Bilan lipidique & Glycémie à jeun (Télémédecine)',
-          exam_type: 'Analyse Biologique',
-          badge: '🧪 TÉLÉMÉDECINE #TM-8812',
-          facility: 'Laboratoire Examen Plus Dakar',
-          doctor: 'Dr. Ousmane Sow | Prescripteur Télémédecine',
+          title: 'Bilan lipidique & glycémie à jeun (télémédecine)',
+          exam_type: 'Analyse biologique',
+          badge: 'Télémédecine #tm-8812',
+          facility: 'Laboratoire examen plus Dakar',
+          doctor: 'Dr. Ousmane Sow | Prescripteur télémédecine',
           date: '06 Fév 2026',
-          conclusion: 'Cholestérol total : 1.85 g/L (Val normal < 2.00 g/L). Glycémie : 0.88 g/L. Bilan lipidique satisfaisant sous traitement préventif.',
+          conclusion: 'Cholestérol total : 1.85 g/L (val normal < 2.00 g/L). Glycémie : 0.88 g/L. Bilan lipidique satisfaisant sous traitement préventif.',
           cliches: 2,
           preview: '/dicom_blood_test.jpg'
         },
         {
           id: 902,
-          title: 'Mammographie & Échographie mammaire DICOM',
+          title: 'Mammographie & échographie mammaire dicom',
           exam_type: 'Mammographie',
-          badge: '🩻 SÉNOLOGIE DICOM',
+          badge: 'Sénologie dicom',
           facility: 'Centre d\'Imagerie Médicale Dakar',
-          doctor: 'Dr. Aïssatou Kane | Radiologue',
+          doctor: 'Dr. aïssatou kane | Radiologue',
           date: '20 Déc 2025',
           conclusion: 'Examen sénologique bilatéral classé ACR-1. Densité mammaire normale sans opacité ni microcalcification suspecte.',
           cliches: 4,
@@ -394,7 +394,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
           id: 903,
           title: 'Échographie pelvienne & gynécologique HD',
           exam_type: 'Échographie',
-          badge: '🤰 GYNÉCOLOGIE DICOM',
+          badge: 'Gynécologie dicom',
           facility: 'Hôpital Aristide Le Dantec',
           doctor: 'Dr. Mariama Ba | Gynécologue',
           date: '15 Nov 2025',
@@ -406,9 +406,9 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
           id: 904,
           title: 'Radiographie pulmonaire de contrôle systématique',
           exam_type: 'Radiographie',
-          badge: '🫁 IMAGERIE PULMONAIRE',
+          badge: 'Imagerie pulmonaire',
           facility: 'Polyclinique de la Médina',
-          doctor: 'Dr. Saliou Wade | Pneumologue',
+          doctor: 'Dr. saliou wade | Pneumologue',
           date: '02 Oct 2025',
           conclusion: 'Cliché pulmonaire de face normal. Parenchyme pulmonaire bilatéralement clair sans syndome interstitiel.',
           cliches: 2,
@@ -416,13 +416,13 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
         },
         {
           id: 905,
-          title: 'Frottis cervico-vaginal & Bilan cytologique',
-          exam_type: 'Analyse Biologique',
-          badge: '🔬 CYTOLOGIE PRÉVENTIVE',
-          facility: 'Laboratoire Pasteur Dakar',
+          title: 'Frottis cervico-vaginal & bilan cytologique',
+          exam_type: 'Analyse biologique',
+          badge: 'Cytologie préventive',
+          facility: 'Laboratoire pasteur Dakar',
           doctor: 'Dr. Fatou Diop | Biologiste',
           date: '10 Août 2025',
-          conclusion: 'Absence de cellule atypique ou de lésion intra-épithéliale. Frottis normal classé sous schéma négatif (Bethesda).',
+          conclusion: 'Absence de cellule atypique ou de lésion intra-épithéliale. Frottis normal classé sous schéma négatif (bethesda).',
           cliches: 2,
           preview: '/dicom_blood_test.jpg'
         }
@@ -436,9 +436,9 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
           id: 601,
           title: 'Radiographie thoracique d\'incorporation UCAD',
           exam_type: 'Radiographie',
-          badge: '🫁 BILAN SANTÉ UCAD',
-          facility: 'Centre Médical Universitaire (Fann)',
-          doctor: 'Dr. Ousmane Sow | Pavillon Santé UCAD',
+          badge: 'Bilan santé ucad',
+          facility: 'Centre médical universitaire (Fann)',
+          doctor: 'Dr. Ousmane Sow | Pavillon santé ucad',
           date: '02 Fév 2026',
           conclusion: 'Cliché pulmonaire de face normal. Parenchyme clair sans foyer évolutif. Aptitude physique et sportive universitaire 100% validée.',
           cliches: 2,
@@ -448,9 +448,9 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
           id: 602,
           title: 'Échographie abdominale de contrôle sportif',
           exam_type: 'Échographie',
-          badge: '⚽ SPORTS MED',
-          facility: 'Hôpital Universitaire de Fann',
-          doctor: 'Dr. Cheikh Anta Diop',
+          badge: 'Sports med',
+          facility: 'Hôpital universitaire de Fann',
+          doctor: 'Dr. Cheikh anta Diop',
           date: '10 Janv 2026',
           conclusion: 'Organes abdominaux de morphologie et d\'écho-structure normales. Bilan fonctionnel satisfaisant.',
           cliches: 3,
@@ -458,9 +458,9 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
         },
         {
           id: 603,
-          title: 'Radiographie du genou droit & Cheville (Trauma du sport)',
+          title: 'Radiographie du genou droit & cheville (trauma du sport)',
           exam_type: 'Radiographie',
-          badge: '🦴 TRAUMATOLOGIE SPORT',
+          badge: 'Traumatologie sport',
           facility: 'Hôpital Principal de Dakar',
           doctor: 'Dr. Ibrahima Faye | Orthopédiste',
           date: '18 Déc 2025',
@@ -471,12 +471,12 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
         {
           id: 604,
           title: 'Bilan biologique d\'incorporation universitaire UCAD',
-          exam_type: 'Analyse Biologique',
-          badge: '🧪 BIOLOGIE ÉTUDIANTS',
-          facility: 'Centre Médical UCAD',
-          doctor: 'Dr. Cheikh Anta Diop | Biologiste',
+          exam_type: 'Analyse biologique',
+          badge: 'Biologie étudiants',
+          facility: 'Centre médical ucad',
+          doctor: 'Dr. Cheikh anta Diop | Biologiste',
           date: '05 Oct 2025',
-          conclusion: 'Bilan sanguin complet, sérologies HBsAg et profil immunitaire en parfaite conformité avec les exigences de la CSU UCAD.',
+          conclusion: 'Bilan sanguin complet, sérologies hbsag et profil immunitaire en parfaite conformité avec les exigences de la CSU ucad.',
           cliches: 2,
           preview: '/dicom_blood_test.jpg'
         }
@@ -488,9 +488,9 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
       return [
         {
           id: 701,
-          title: 'Radiographie pulmonaire & Scanner DICOM',
+          title: 'Radiographie pulmonaire & scanner dicom',
           exam_type: 'Radiographie',
-          badge: '🩻 IMAGERIE THORACIQUE HD',
+          badge: 'Imagerie thoracique hd',
           facility: 'Hôpital Fann (Dakar)',
           doctor: 'Dr. Ousmane Sow | Radiologue agréé',
           date: '05 Fév 2026',
@@ -502,9 +502,9 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
           id: 702,
           title: 'Échographie maternelle & pelvienne BSF (32 SA)',
           exam_type: 'Échographie',
-          badge: '🤰 GRATUITÉ 100% BSF',
+          badge: 'Gratuité 100% BSF',
           facility: 'Hôpital Aristide Le Dantec (Dakar)',
-          doctor: 'Dr. Mariama Ba | Service Maternité',
+          doctor: 'Dr. Mariama Ba | Service maternité',
           date: '14 Janv 2026',
           conclusion: 'Examen gynécologique et pelvien satisfaisant. Croissance fœtale harmonieuse au 50ème percentile. Prise en charge intégrale BSF.',
           cliches: 3,
@@ -513,10 +513,10 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
         {
           id: 703,
           title: 'Bilan prénatal biologique prématernité CPN 3',
-          exam_type: 'Analyse Biologique',
-          badge: '🧪 PRÉNATAL GRATUIT',
-          facility: 'Laboratoire Pasteur Dakar',
-          doctor: 'Dr. Fatou Bintou Ndiaye',
+          exam_type: 'Analyse biologique',
+          badge: 'Prénatal gratuit',
+          facility: 'Laboratoire pasteur Dakar',
+          doctor: 'Dr. Fatou bintou Ndiaye',
           date: '08 Janv 2026',
           conclusion: 'Taux d\'hémoglobine : 11.8 g/dL (Normal). Glycémie : 0.84 g/L. Test RAI négatif.',
           cliches: 2,
@@ -526,9 +526,9 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
           id: 704,
           title: 'Scanner lombaire de contrôle post-gravidique',
           exam_type: 'Scanner IRM',
-          badge: '🦴 IMAGERIE RACHIS',
+          badge: 'Imagerie rachis',
           facility: 'Polyclinique de la Médina',
-          doctor: 'Dr. Cheikh Anta Diop',
+          doctor: 'Dr. Cheikh anta Diop',
           date: '12 Nov 2025',
           conclusion: 'Structure osseuse et espaces intervertébraux normaux. Absence de hernie discale.',
           cliches: 3,
@@ -541,23 +541,23 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
     return [
       {
         id: 501,
-        title: 'Radiographie lombaire & Scanner IRM du rachis',
+        title: 'Radiographie lombaire & scanner IRM du rachis',
         exam_type: 'Scanner IRM',
-        badge: '🦴 RACHIS & LOMBAIRE',
+        badge: 'Rachis & lombaire',
         facility: 'Polyclinique de la Médina',
-        doctor: 'Dr. Cheikh Anta Diop | Abass Ndao',
+        doctor: 'Dr. Cheikh anta Diop | Abass Ndao',
         date: '12 Mars 2026',
-        conclusion: 'Discopathie lombo-sacrée L4-L5 modérée sans hernie discale exclue. Traitement antalgique adapté et kinésithérapie recommandée.',
+        conclusion: 'Discopathie lombo-sacrée l4-l5 modérée sans hernie discale exclue. Traitement antalgique adapté et kinésithérapie recommandée.',
         cliches: 4,
         preview: '/dicom_spine_xray.jpg'
       },
       {
         id: 502,
-        title: 'Échocardiographie Doppler de contrôle',
+        title: 'Échocardiographie doppler de contrôle',
         exam_type: 'Échographie',
-        badge: '❤️ CARDIOLOGIE',
-        facility: 'Centre Médical SOS Médina',
-        doctor: 'Dr. Sy | Cardiologue',
+        badge: 'Cardiologie',
+        facility: 'Centre médical sos Médina',
+        doctor: 'Dr. sy | Cardiologue',
         date: '15 Janv 2026',
         conclusion: 'Fonction ventriculaire gauche et droite conservées. Fraction d\'éjection (FE = 65%). Examen cardio-vasculaire rassurant.',
         cliches: 3,
@@ -567,8 +567,8 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
         id: 503,
         title: 'Radiographie thoracique de contrôle pulmonaire',
         exam_type: 'Radiographie',
-        badge: '🩻 IMAGERIE THORACIQUE HD',
-        facility: 'Hôpital Universitaire de Fann',
+        badge: 'Imagerie thoracique hd',
+        facility: 'Hôpital universitaire de Fann',
         doctor: 'Dr. Ousmane Sow | Radiologue',
         date: '10 Janv 2026',
         conclusion: 'Transparence pulmonaire normale. Silhouette cardiaque de taille et de configuration habituelles. Pas d\'anomalie pleuro-parenchymateuse.',
@@ -577,23 +577,23 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
       },
       {
         id: 504,
-        title: 'Bilan biologique complet & Glycémie à jeun',
-        exam_type: 'Analyse Biologique',
-        badge: '🧪 BILAN BIOLOGIQUE',
-        facility: 'Laboratoire Pasteur Dakar',
-        doctor: 'Dr. Cheikh Anta Diop | Biologiste',
+        title: 'Bilan biologique complet & glycémie à jeun',
+        exam_type: 'Analyse biologique',
+        badge: 'Bilan biologique',
+        facility: 'Laboratoire pasteur Dakar',
+        doctor: 'Dr. Cheikh anta Diop | Biologiste',
         date: '08 Janv 2026',
-        conclusion: 'NFS sans particularité. HbA1c : 5.8% (Diabète équilibré). Bilan rénal (Créatininémie : 9.2 mg/L) satisfaisant.',
+        conclusion: 'Nfs sans particularité. Hba1c : 5.8% (diabète équilibré). Bilan rénal (créatininémie : 9.2 mg/L) satisfaisant.',
         cliches: 2,
         preview: '/dicom_blood_test.jpg'
       },
       {
         id: 505,
-        title: 'Mammographie & Sénologie de dépistage',
+        title: 'Mammographie & sénologie de dépistage',
         exam_type: 'Mammographie',
-        badge: '🩻 SÉNOLOGIE DICOM',
+        badge: 'Sénologie dicom',
         facility: 'Centre d\'Imagerie Dakar',
-        doctor: 'Dr. Aïssatou Kane | Radiologue',
+        doctor: 'Dr. aïssatou kane | Radiologue',
         date: '18 Déc 2025',
         conclusion: 'Incidence crânio-caudale et oblique externe bilatérale. Parenchyme bilatéral symétrique classé ACR-1.',
         cliches: 4,
@@ -603,7 +603,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
         id: 506,
         title: 'Radiographie osseuse tibia & membre inférieur',
         exam_type: 'Radiographie',
-        badge: '🦴 TRAUMATOLOGIE HD',
+        badge: 'Traumatologie hd',
         facility: 'Hôpital Abass Ndao',
         doctor: 'Dr. Ibrahima Faye | Orthopédiste',
         date: '02 Déc 2025',
@@ -626,41 +626,41 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
     const name = (fName || '').toLowerCase();
     if (name.includes('amadou') || cmuNum === 'CSU-DKR-2026-8812.2') {
       return [
-        { id: 1, date: '04/02/2026', acte: 'Urgence Orthopédie & Radiographie Tibia', praticien: 'Dr. Cheikh Anta Diop (Abass Ndao)', conclusion: 'Pose de plâtre pour fracture tibia sans déplacement.' },
-        { id: 2, date: '01/02/2026', acte: 'Prise de Sang & Bilan Biologique Complet', praticien: 'Laboratoire Pasteur Dakar', conclusion: 'Examen hématologique et sérologique normal.' },
-        { id: 3, date: '18/01/2026', acte: 'Consultation Télé-médecine Cardiologie', praticien: 'Dr. Cheikh Tidiane Seck', conclusion: 'Bilan tensionnel satisfaisant (120/80 mmHg).' },
-        { id: 4, date: '05/01/2026', acte: 'Visite de Contrôle Médecine Générale', praticien: 'Dr. Ousmane Sow', conclusion: 'Aptitude physique générale confirmée.' }
+        { id: 1, date: '04/02/2026', acte: 'Urgence orthopédie & radiographie tibia', praticien: 'Dr. Cheikh anta Diop (Abass Ndao)', conclusion: 'Pose de plâtre pour fracture tibia sans déplacement.' },
+        { id: 2, date: '01/02/2026', acte: 'Prise de sang & bilan biologique complet', praticien: 'Laboratoire pasteur Dakar', conclusion: 'Examen hématologique et sérologique normal.' },
+        { id: 3, date: '18/01/2026', acte: 'Consultation télé-médecine cardiologie', praticien: 'Dr. Cheikh tidiane Seck', conclusion: 'Bilan tensionnel satisfaisant (120/80 mmHg).' },
+        { id: 4, date: '05/01/2026', acte: 'Visite de contrôle médecine générale', praticien: 'Dr. Ousmane Sow', conclusion: 'Aptitude physique générale confirmée.' }
       ];
     }
     if (name.includes('awa') || cmuNum === 'CMU-DKR-2026-3302') {
       return [
-        { id: 1, date: '06/02/2026', acte: 'Télé-consultation Bilan Lipidique #TM-8812', praticien: 'Dr. Ousmane Sow (Télémédecine)', conclusion: 'Bilan lipidique rassurant et conseils hygiéno-diététiques.' },
-        { id: 2, date: '20/12/2025', acte: 'Mammographie de Dépistage Systématique', praticien: 'Dr. Aïssatou Kane (Imagerie Dakar)', conclusion: 'Examen sénologique classé ACR-1.' },
-        { id: 3, date: '10/11/2025', acte: 'Consultation Gynécologie & Prévention', praticien: 'Dr. Mariama Ba (Le Dantec)', conclusion: 'Frottis cervico-vaginal normal.' },
-        { id: 4, date: '15/09/2025', acte: 'Examen de laboratoire (Bilan lipidique)', praticien: 'Laboratoire Examen Plus Dakar', conclusion: 'Cholestérol dans les limites de référence.' }
+        { id: 1, date: '06/02/2026', acte: 'Télé-consultation bilan lipidique #tm-8812', praticien: 'Dr. Ousmane Sow (télémédecine)', conclusion: 'Bilan lipidique rassurant et conseils hygiéno-diététiques.' },
+        { id: 2, date: '20/12/2025', acte: 'Mammographie de dépistage systématique', praticien: 'Dr. aïssatou kane (imagerie Dakar)', conclusion: 'Examen sénologique classé ACR-1.' },
+        { id: 3, date: '10/11/2025', acte: 'Consultation gynécologie & prévention', praticien: 'Dr. Mariama Ba (Le Dantec)', conclusion: 'Frottis cervico-vaginal normal.' },
+        { id: 4, date: '15/09/2025', acte: 'Examen de laboratoire (Bilan lipidique)', praticien: 'Laboratoire examen plus Dakar', conclusion: 'Cholestérol dans les limites de référence.' }
       ];
     }
     if (name.includes('ibrahima') || cmuNum === 'CSU-UCAD-2026-9012' || isStud) {
       return [
-        { id: 1, date: '02/02/2026', acte: 'Bilan de Santé Universitaire & Aptitude', praticien: 'Dr. Ousmane Sow (Pavillon Santé UCAD)', conclusion: 'Aptitude physique & sportive confirmée.' },
-        { id: 2, date: '10/01/2026', acte: 'Consultation Médecine du Sport UCAD', praticien: 'Dr. Cheikh Anta Diop', conclusion: 'Examen clinique sans anomalie.' },
-        { id: 3, date: '15/12/2025', acte: 'Contrôle Ophtalmologique Étudiant UCAD', praticien: 'Dr. Ndèye Khady Cissé', conclusion: 'Acuité visuelle 10/10 aux deux yeux.' },
-        { id: 4, date: '02/10/2025', acte: 'Vaccination Rappel Tétanos (PEV UCAD)', praticien: 'Service Médical UCAD', conclusion: 'Carnet de vaccination à jour.' }
+        { id: 1, date: '02/02/2026', acte: 'Bilan de santé universitaire & aptitude', praticien: 'Dr. Ousmane Sow (pavillon santé ucad)', conclusion: 'Aptitude physique & sportive confirmée.' },
+        { id: 2, date: '10/01/2026', acte: 'Consultation médecine du sport ucad', praticien: 'Dr. Cheikh anta Diop', conclusion: 'Examen clinique sans anomalie.' },
+        { id: 3, date: '15/12/2025', acte: 'Contrôle ophtalmologique étudiant ucad', praticien: 'Dr. ndèye khady cissé', conclusion: 'Acuité visuelle 10/10 aux deux yeux.' },
+        { id: 4, date: '02/10/2025', acte: 'Vaccination rappel tétanos (PEV ucad)', praticien: 'Service médical ucad', conclusion: 'Carnet de vaccination à jour.' }
       ];
     }
     if (name.includes('fatou') || cmuNum === 'CMU-DKR-2026-4401' || isBsfUser) {
       return [
-        { id: 1, date: '05/02/2026', acte: 'Radiographie Pulmonaire de Contrôle', praticien: 'Dr. Ousmane Sow (Hôpital Fann)', conclusion: 'Imagerie pulmonaire satisfaisante.' },
-        { id: 2, date: '14/04/2026', acte: 'Consultation Suivi Filet Social BSF', praticien: 'Dr. Mariama Ba (Le Dantec)', conclusion: 'Examen gynécologique et ordonnance gratuite émise.' },
-        { id: 3, date: '12/02/2026', acte: 'Consultation Pédiatrique (Nouveau-Né PEV)', praticien: 'Dr. Aminata Ndiaye (Albert Royer)', conclusion: 'Vaccins BCG + Pentavalent 1 administrés.' },
-        { id: 4, date: '08/01/2026', acte: 'Bilan Sanguin Prénatal CPN 3', praticien: 'Laboratoire Pasteur Dakar', conclusion: 'Taux d\'hémoglobine : 11.8 g/dL (Normal).' }
+        { id: 1, date: '05/02/2026', acte: 'Radiographie pulmonaire de contrôle', praticien: 'Dr. Ousmane Sow (hôpital Fann)', conclusion: 'Imagerie pulmonaire satisfaisante.' },
+        { id: 2, date: '14/04/2026', acte: 'Consultation suivi filet social BSF', praticien: 'Dr. Mariama Ba (Le Dantec)', conclusion: 'Examen gynécologique et ordonnance gratuite émise.' },
+        { id: 3, date: '12/02/2026', acte: 'Consultation pédiatrique (nouveau-né PEV)', praticien: 'Dr. Aminata Ndiaye (Albert Royer)', conclusion: 'Vaccins BCG + pentavalent 1 administrés.' },
+        { id: 4, date: '08/01/2026', acte: 'Bilan sanguin prénatal CPN 3', praticien: 'Laboratoire pasteur Dakar', conclusion: 'Taux d\'hémoglobine : 11.8 g/dL (Normal).' }
       ];
     }
     return [
-      { id: 1, date: '12/03/2026', acte: 'Consultation Spécialisée Rachis & Scanner', praticien: 'Dr. Cheikh Anta Diop (Polyclinique Médina)', conclusion: 'Traitement antalgique pour discopathie.' },
-      { id: 2, date: '15/01/2026', acte: 'Échocardiographie de Contrôle', praticien: 'Dr. Sy (Cardiologue SOS Médina)', conclusion: 'Fonction ventriculaire conservée.' },
-      { id: 3, date: '10/01/2026', acte: 'Consultation Diabétologie & HbA1c', praticien: 'Dr. Salimata Thiam', conclusion: 'Équilibre glycémique satisfaisant (HbA1c = 5.8%).' },
-      { id: 4, date: '02/12/2025', acte: 'Bilan lipidique & Créatininémie', praticien: 'Laboratoire Pasteur Dakar', conclusion: 'Fonction rénale et bilan lipidique normaux.' }
+      { id: 1, date: '12/03/2026', acte: 'Consultation spécialisée rachis & scanner', praticien: 'Dr. Cheikh anta Diop (polyclinique Médina)', conclusion: 'Traitement antalgique pour discopathie.' },
+      { id: 2, date: '15/01/2026', acte: 'Échocardiographie de contrôle', praticien: 'Dr. sy (cardiologue sos Médina)', conclusion: 'Fonction ventriculaire conservée.' },
+      { id: 3, date: '10/01/2026', acte: 'Consultation diabétologie & hba1c', praticien: 'Dr. salimata Thiam', conclusion: 'Équilibre glycémique satisfaisant (HbA1c = 5.8%).' },
+      { id: 4, date: '02/12/2025', acte: 'Bilan lipidique & créatininémie', praticien: 'Laboratoire pasteur Dakar', conclusion: 'Fonction rénale et bilan lipidique normaux.' }
     ];
   };
 
@@ -803,7 +803,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
     }
     if (name.includes('ibrahima') || cmuNum === 'CSU-UCAD-2026-9012' || isStud) {
       return [
-        { id: 1, examen: 'Bilan sanguin de santé UCAD', resultat: '14.8 g/dL', reference: '12.0 - 16.0 g/dL', statut: 'Normal (UCAD)' },
+        { id: 1, examen: 'Bilan sanguin de santé ucad', resultat: '14.8 g/dL', reference: '12.0 - 16.0 g/dL', statut: 'Normal (ucad)' },
         { id: 2, examen: 'Glycémie à jeun', resultat: '0.90 g/L', reference: '0.70 - 1.10 g/L', statut: 'Normal' }
       ];
     }
@@ -844,7 +844,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
       id: Date.now(),
       title: newExamTitle,
       exam_type: newExamType,
-      badge: (newExamType === 'Scanner' || newExamType === 'IRM' || newExamType === 'Radio') ? 'HD DICOM' : 'LABORATOIRE',
+      badge: (newExamType === 'Scanner' || newExamType === 'IRM' || newExamType === 'Radio') ? 'Hd dicom' : 'LABORATOIRE',
       facility: newExamFacility || partnerUser?.structureName || 'Laboratoire / Établissement de santé conventionné',
       doctor: newExamDoctor || 'Dr. Ousmane Kane (Biologiste)',
       date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }),
@@ -880,19 +880,19 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
   const handleDownloadFullBooklet = () => {
     generateOfficialPdf({
       filename: `dossier_medical_partage_${activeLastName.toLowerCase()}.pdf`,
-      docType: 'DOSSIER MÉDICAL PARTAGÉ CERTIFIÉ',
-      title: 'Carnet de Santé Numérique & Bilan Médical',
+      docType: 'Dossier médical partagé certifié',
+      title: 'Carnet de santé numérique & bilan médical',
       referenceNo: `DOSSIER-MED-${activeCmuNumber}`,
       beneficiaryName: `${activeFirstName} ${activeLastName}`,
       cmuNumber: activeCmuNumber,
-      structureName: 'Réseau Établissements Agréés Sénégal',
+      structureName: 'Réseau établissements agréés Sénégal',
       details: [
-        { label: 'Assurée Bénéficiaire', value: `${activeFirstName} ${activeLastName}` },
+        { label: 'Assurée bénéficiaire', value: `${activeFirstName} ${activeLastName}` },
         { label: 'Groupe sanguin', value: `${antecedents.bloodGroup} (Rhésus positif)` },
-        { label: 'Allergies & Alertes', value: antecedents.allergies },
-        { label: 'Affections Longue Durée (ALD)', value: antecedents.chronicConditions },
-        { label: 'Interventions Chirurgicales', value: antecedents.surgeries },
-        { label: 'Examens DICOM Enregistrés', value: `${exams.length} examens certifiés (Scanner thoracique, IRM Cérébrale, Échocardiographie)` }
+        { label: 'Allergies & alertes', value: antecedents.allergies },
+        { label: 'Affections longue durée (ald)', value: antecedents.chronicConditions },
+        { label: 'Interventions chirurgicales', value: antecedents.surgeries },
+        { label: 'Examens dicom enregistrés', value: `${exams.length} examens certifiés (scanner thoracique, IRM cérébrale, échocardiographie)` }
       ],
       notes: 'Ce dossier médical numérique est conforme aux normes d\'interopérabilité sanitaire du Sénégal (DHIS2 & CNOM).'
     });
@@ -902,20 +902,20 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
     generateOfficialPdf({
       filename: `examen_dicom_${ex.id}.pdf`,
       docType: 'COMPTE-RENDU D\'IMAGERIE RADIOLOGIQUE DICOM',
-      title: `Rapport Radiologique Certifié — ${ex.title}`,
+      title: `Rapport radiologique certifié — ${ex.title}`,
       referenceNo: `EXAM-DICOM-#${ex.id}`,
       beneficiaryName: `${activeFirstName} ${activeLastName}`,
       cmuNumber: activeCmuNumber,
       structureName: ex.facility,
       details: [
         { label: 'Intitulé de l\'Examen', value: ex.title },
-        { label: 'Établissement Emetteur', value: ex.facility },
-        { label: 'Praticien Radiologue', value: ex.doctor },
+        { label: 'Établissement emetteur', value: ex.facility },
+        { label: 'Praticien radiologue', value: ex.doctor },
         { label: 'Date de réalisation', value: ex.date },
         { label: 'Nombre de clichés HD', value: `${ex.cliches} clichés téléchargeables` },
-        { label: 'Conclusion Diagnostique', value: ex.conclusion }
+        { label: 'Conclusion diagnostique', value: ex.conclusion }
       ],
-      notes: 'Rapport validé électroniquement sous le standard DICOM 3.0 HD par le médecin radiologue agréé.'
+      notes: 'Rapport validé électroniquement sous le standard dicom 3.0 hd par le médecin radiologue agréé.'
     });
   };
 
@@ -1278,7 +1278,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                   <div>
                     <strong style={{ color: '#60a5fa', fontSize: '0.85rem', display: 'block', marginBottom: '4px' }}>Contenu médical protégé par le secret médical</strong>
                     <small style={{ color: 'var(--text-sub)', fontSize: '0.76rem', lineHeight: '1.55', display: 'block' }}>
-                      Le groupe sanguin, les allergies, les radiographies dicom et résultats de laboratoire sont protégés par le secret médical. Seuls les professionnels de santé habilités (médecins, sages-femmes) peuvent y accéder.
+                      le groupe sanguin, les allergies, les radiographies dicom et résultats de laboratoire sont protégés par le secret médical. Seuls les professionnels de santé habilités (médecins, sages-femmes) peuvent y accéder.
                     </small>
                   </div>
                 </div>
@@ -1453,7 +1453,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
             {/* `flexWrap: 'wrap'` + gap resserré : à ~1000px de viewport la
                 barre passait sous son conteneur et l'onglet « Spécialités &
                 pathologies suivies » tombait seul sur une 2e ligne, visuellement
-                détaché du groupe. Le gap horizontal passe de 1.5rem à 1.1rem
+                détaché du groupe. le gap horizontal passe de 1.5rem à 1.1rem
                 et le padding des onglets de 1.55rem à 1.15rem pour que les
                 4 onglets tiennent sur une ligne jusqu'à ~992px. */}
             <div className="d-flex align-items-center flex-wrap" style={{ gap: '0.5rem', rowGap: '0.5rem', background: 'var(--bg-card)', padding: '0.65rem 0.95rem', borderRadius: '20px', border: '1.5px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
@@ -1661,7 +1661,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
               <h1 className="fw-extrabold text-white mb-3" style={{ fontSize: '2.3rem', letterSpacing: '-0.015em' }}>Dossier médical & radiographies certifiées</h1>
               <p className="text-white mb-0" style={{ fontSize: '1.08rem', maxWidth: '780px', lineHeight: '1.75', opacity: 0.95 }}>
                 {isCitizen && 'Accédez en toute sécurité à vos antécédents, vos résultats de radiologie et téléchargez votre carnet de santé numérique certifié.'}
-                {(isDoctor || isMidwife) && `Mode ${isDoctor ? 'médecin prescripteur' : 'sage-femme'} : Vous pouvez consulter, annoter et enrichir le dossier de votre patient.`}
+                {(isDoctor || isMidwife) && `Mode ${isDoctor ? 'médecin prescripteur' : 'sage-femme'} : vous pouvez consulter, annoter et enrichir le dossier de votre patient.`}
                 {isLabUser && 'Mode Laboratoire & Biologie : Téléversement et certification des comptes-rendus d\'analyses (PDF) et clichés d\'imagerie (DICOM).'}
                 {isSuperAdmin && 'SuperAdmin : Accès total et contrôle complet du dossier médical partagé UNAMUSC.'}
               </p>
@@ -1787,7 +1787,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                         style={{ borderRadius: '14px', fontSize: '0.86rem' }}
                         onClick={() => setEditingAntecedents(!editingAntecedents)}
                       >
-                        {editingAntecedents ? '✕ Fermer' : '✏️ Éditer (Médecin)'}
+                        {editingAntecedents ? 'Fermer' : 'Éditer (médecin)'}
                       </button>
                     ) : (
                       <span style={{ color: 'var(--text-sub)', fontSize: '0.84rem', fontStyle: 'italic' }}>
@@ -1800,27 +1800,27 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                     <form onSubmit={handleSaveAntecedents} className="d-flex flex-column" style={{ gap: '1.5rem' }}>
                       <div>
                         <label className="small fw-bold d-block mb-2.5" style={{ color: 'var(--text-sub)', fontSize: '0.9rem' }}><ProIcon name="alert-triangle" color="#d97706" /> Allergies (médicaments, aliments, environnement) :</label>
-                        <textarea className="form-control" rows={2} style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.94rem', padding: '0.95rem 1.2rem' }} value={antecedents.allergies} onChange={(e) => setAntecedents({ ...antecedents, allergies: e.target.value })} placeholder="Ex: Pénicilline (sévère), Pollen, Arachide..." />
+                        <textarea className="form-control" rows={2} style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.94rem', padding: '0.95rem 1.2rem' }} value={antecedents.allergies} onChange={(e) => setAntecedents({ ...antecedents, allergies: e.target.value })} placeholder="Ex: pénicilline (sévère), pollen, arachide..." />
                       </div>
                       <div>
                         <label className="small fw-bold d-block mb-2.5" style={{ color: 'var(--text-sub)', fontSize: '0.9rem' }}><ProIcon name="hospital" /> Affections longue durée (ald) :</label>
-                        <textarea className="form-control" rows={2} style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.94rem', padding: '0.95rem 1.2rem' }} value={antecedents.chronicConditions} onChange={(e) => setAntecedents({ ...antecedents, chronicConditions: e.target.value })} placeholder="Ex: HTA, Diabète type 2, Drépanocytose..." />
+                        <textarea className="form-control" rows={2} style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.94rem', padding: '0.95rem 1.2rem' }} value={antecedents.chronicConditions} onChange={(e) => setAntecedents({ ...antecedents, chronicConditions: e.target.value })} placeholder="Ex: HTA, diabète type 2, drépanocytose..." />
                       </div>
                       <div>
                         <label className="small fw-bold d-block mb-2.5" style={{ color: 'var(--text-sub)', fontSize: '0.9rem' }}>🔧 interventions chirurgicales :</label>
-                        <textarea className="form-control" rows={2} style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.94rem', padding: '0.95rem 1.2rem' }} value={antecedents.surgeries || ''} onChange={(e) => setAntecedents({ ...antecedents, surgeries: e.target.value })} placeholder="Ex: Appendicectomie (2021), Césarienne (2018)..." />
+                        <textarea className="form-control" rows={2} style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.94rem', padding: '0.95rem 1.2rem' }} value={antecedents.surgeries || ''} onChange={(e) => setAntecedents({ ...antecedents, surgeries: e.target.value })} placeholder="Ex: appendicectomie (2021), césarienne (2018)..." />
                       </div>
                       <div>
                         <label className="small fw-bold d-block mb-2.5" style={{ color: 'var(--text-sub)', fontSize: '0.9rem' }}><ProIcon name="pill" /> Traitement en cours :</label>
-                        <textarea className="form-control" rows={2} style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.94rem', padding: '0.95rem 1.2rem' }} value={antecedents.currentTreatment || ''} onChange={(e) => setAntecedents({ ...antecedents, currentTreatment: e.target.value })} placeholder="Ex: Amlodipine 5mg (HTA), Metformine 500mg..." />
+                        <textarea className="form-control" rows={2} style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.94rem', padding: '0.95rem 1.2rem' }} value={antecedents.currentTreatment || ''} onChange={(e) => setAntecedents({ ...antecedents, currentTreatment: e.target.value })} placeholder="Ex: amlodipine 5mg (HTA), metformine 500mg..." />
                       </div>
                       <div>
                         <label className="small fw-bold d-block mb-2.5" style={{ color: 'var(--text-sub)', fontSize: '0.9rem' }}><ProIcon name="syringe" /> Vaccinations à jour :</label>
-                        <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.94rem', padding: '0.95rem 1.2rem' }} value={antecedents.vaccinations || ''} onChange={(e) => setAntecedents({ ...antecedents, vaccinations: e.target.value })} placeholder="Ex: VAT à jour, Grippe 2025, COVID-3 doses" />
+                        <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.94rem', padding: '0.95rem 1.2rem' }} value={antecedents.vaccinations || ''} onChange={(e) => setAntecedents({ ...antecedents, vaccinations: e.target.value })} placeholder="Ex: VAT à jour, grippe 2025, COVID-3 doses" />
                       </div>
                       <div>
                         <label className="small fw-bold d-block mb-2.5" style={{ color: 'var(--text-sub)', fontSize: '0.9rem' }}><ProIcon name="phone" /> Contact d'urgence :</label>
-                        <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.94rem', padding: '0.95rem 1.2rem' }} value={antecedents.emergencyContact || ''} onChange={(e) => setAntecedents({ ...antecedents, emergencyContact: e.target.value })} placeholder="Ex: Sokhna Diop (Épouse) : +221 77 987 65 43" />
+                        <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.94rem', padding: '0.95rem 1.2rem' }} value={antecedents.emergencyContact || ''} onChange={(e) => setAntecedents({ ...antecedents, emergencyContact: e.target.value })} placeholder="Ex: Sokhna Diop (épouse) : +221 77 987 65 43" />
                       </div>
                       <button type="submit" className="btn btn-emerald text-white fw-bold py-3.5 mt-2 hover-lift" style={{ background: '#10b981', border: 'none', borderRadius: '16px', fontSize: '0.96rem', boxShadow: '0 4px 16px rgba(16,185,129,0.35)' }}><ProIcon name="save" /> Sauvegarder et certifier</button>
                     </form>
@@ -2509,7 +2509,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                 </div>
                 <strong style={{ color: '#0ea5e9', fontSize: '1.05rem', display: 'block', marginBottom: '0.35rem' }}>Échographies obstétricales</strong>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', lineHeight: '1.55', marginBottom: '0.75rem' }}>
-                  Échographie t1 morphologique et t2 effectuées à l'hôpital abass ndao. Développement foetal harmonieux et biométrie conforme.
+                  Échographie t1 morphologique et t2 effectuées à l'hôpital Abass Ndao. Développement foetal harmonieux et biométrie conforme.
                 </p>
                 <small className="text-muted d-block" style={{ fontSize: '0.82rem' }}>Rapports et clichés consultables dans l'onglet radios.</small>
               </div>
@@ -2543,7 +2543,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
               </div>
               <div>
                 <h4 style={{ fontSize: '1.35rem', fontWeight: '850', color: 'var(--text-main)', margin: 0 }}>
-                  {isFemalePatient ? 'Pathologies & Spécialités Médicales' : 'Spécialités Médicales & Pathologies Suivies'}
+                  {isFemalePatient ? 'Pathologies & spécialités médicales' : 'Spécialités médicales & pathologies suivies'}
                 </h4>
                 <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', margin: '0.3rem 0 0 0' }}>
                   {activeFirstName} {activeLastName} ({activeCmuNumber})
@@ -2674,7 +2674,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
           <div style={{ maxWidth: '1100px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
             <div className="d-flex justify-content-between align-items-center mb-3">
-              <h5 className="fw-bold text-success mb-0"><ProIcon name="scan" /> Visionneuse DICOM 3.0 HD — {viewingExam.title}</h5>
+              <h5 className="fw-bold text-success mb-0"><ProIcon name="scan" /> Visionneuse dicom 3.0 hd — {viewingExam.title}</h5>
               <button type="button" className="btn-close" onClick={() => setViewingExam(null)}></button>
             </div>
 
@@ -2759,7 +2759,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
               
               <div className="d-flex align-items-center justify-content-center gap-2 flex-wrap mt-2">
                 <span className={`badge ${isOtpExpired ? 'bg-danger' : 'bg-success'} bg-opacity-20 ${isOtpExpired ? 'text-danger' : 'text-success'} fw-bold px-3 py-1.5 rounded-pill`} style={{ fontSize: '0.75rem' }}>
-                  {isOtpExpired ? '🔴 Code OTP expiré' : `⏳ Valable encore ${getRemainingTime()}`}
+                  {isOtpExpired ? 'Code OTP expiré' : `⏳ valable encore ${getRemainingTime()}`}
                 </span>
                 <span className="badge bg-secondary bg-opacity-20 text-white fw-bold px-3 py-1.5 rounded-pill" style={{ fontSize: '0.75rem' }}>
                   <ProIcon name="lock" /> Chiffrement de bout en bout dhis2 & UNAMUSC
@@ -2853,7 +2853,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
             
             <div className="mb-4">
               <label className="form-label small fw-bold d-block mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}>Titre de l'examen *</label>
-              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.92rem', padding: '0.85rem 1.15rem' }} value={newExamTitle} onChange={(e) => setNewExamTitle(e.target.value)} placeholder="Ex: Radiographie pulmonaire & Scanner DICOM" required />
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.92rem', padding: '0.85rem 1.15rem' }} value={newExamTitle} onChange={(e) => setNewExamTitle(e.target.value)} placeholder="Ex: radiographie pulmonaire & scanner dicom" required />
             </div>
 
             <div className="row g-3 mb-4">
@@ -2875,12 +2875,12 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
 
             <div className="mb-4">
               <label className="form-label small fw-bold d-block mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}>Établissement / Structure de santé *</label>
-              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.92rem', padding: '0.85rem 1.15rem' }} value={newExamFacility} onChange={(e) => setNewExamFacility(e.target.value)} placeholder="Ex: Polyclinique de la Médina" required />
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.92rem', padding: '0.85rem 1.15rem' }} value={newExamFacility} onChange={(e) => setNewExamFacility(e.target.value)} placeholder="Ex: polyclinique de la Médina" required />
             </div>
 
             <div className="mb-4">
               <label className="form-label small fw-bold d-block mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}>Médecin ou biologiste prescripteur</label>
-              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.92rem', padding: '0.85rem 1.15rem' }} value={newExamDoctor} onChange={(e) => setNewExamDoctor(e.target.value)} placeholder="Ex: Dr. Ousmane Sow (Hôpital Fann)" />
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.92rem', padding: '0.85rem 1.15rem' }} value={newExamDoctor} onChange={(e) => setNewExamDoctor(e.target.value)} placeholder="Ex: Dr. Ousmane Sow (hôpital Fann)" />
             </div>
 
             {/* File Selector Dropzone */}
@@ -2897,7 +2897,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                 <label htmlFor="add-exam-file-input" style={{ cursor: 'pointer', margin: 0, width: '100%' }}>
                   <div style={{ fontSize: '1.8rem', marginBottom: '0.35rem' }}><ProIcon name="scan" /></div>
                   <span className="fw-bold d-block text-primary" style={{ fontSize: '0.92rem' }}>
-                    {newExamFileName ? `✓ Fichier sélectionné : ${newExamFileName}` : 'Cliquez pour sélectionner le fichier DICOM / Image'}
+                    {newExamFileName ? `Fichier sélectionné : ${newExamFileName}` : 'Cliquez pour sélectionner le fichier dicom / Image'}
                   </span>
                   <small className="text-muted d-block mt-1" style={{ fontSize: '0.78rem' }}>Formats acceptés: .dcm, .zip, .PDF, PNG, JPG</small>
                 </label>
@@ -2912,7 +2912,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
 
             <div className="mb-4.5">
               <label className="form-label small fw-bold d-block mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}>Conclusions & compte-rendu diagnostique</label>
-              <textarea className="form-control" rows={3} style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.92rem', padding: '0.85rem 1.15rem' }} value={newExamConclusion} onChange={(e) => setNewExamConclusion(e.target.value)} placeholder="Ex: Imagerie thoracique de contrôle satisfaisante. Absence de foyer parenchymateux évolutif." />
+              <textarea className="form-control" rows={3} style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.92rem', padding: '0.85rem 1.15rem' }} value={newExamConclusion} onChange={(e) => setNewExamConclusion(e.target.value)} placeholder="Ex: imagerie thoracique de contrôle satisfaisante. Absence de foyer parenchymateux évolutif." />
             </div>
 
             <div className="d-flex justify-content-between align-items-center pt-4 border-top w-100" style={{ borderColor: 'var(--border-color)', gap: '1.25rem' }}>
@@ -2995,7 +2995,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                 />
                 <label htmlFor="edit-exam-file-input" style={{ cursor: 'pointer', margin: 0, width: '100%' }}>
                   <span className="fw-bold text-primary" style={{ fontSize: '0.9rem' }}>
-                    {editingExamTarget.fileName ? `✓ Nouveau fichier : ${editingExamTarget.fileName}` : 'Changer de fichier DICOM ou d\'image'}
+                    {editingExamTarget.fileName ? `Nouveau fichier : ${editingExamTarget.fileName}` : 'Changer de fichier DICOM ou d\'image'}
                   </span>
                 </label>
               </div>
@@ -3039,7 +3039,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
             
             <div className="mb-4">
               <label className="form-label small fw-bold d-block mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}>Acte / Consultation *</label>
-              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.92rem', padding: '0.85rem 1.15rem' }} value={newHistoryActe} onChange={(e) => setNewHistoryActe(e.target.value)} placeholder="Ex: Consultation généraliste" required />
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.92rem', padding: '0.85rem 1.15rem' }} value={newHistoryActe} onChange={(e) => setNewHistoryActe(e.target.value)} placeholder="Ex: consultation généraliste" required />
             </div>
 
             <div className="mb-4">
@@ -3049,7 +3049,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
 
             <div className="mb-4.5">
               <label className="form-label small fw-bold d-block mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}>Conclusion diagnostique</label>
-              <textarea className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.92rem', padding: '0.85rem 1.15rem' }} rows={3} value={newHistoryConclusion} onChange={(e) => setNewHistoryConclusion(e.target.value)} placeholder="Ex: Bilan normal. Ordonnance émise." />
+              <textarea className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.92rem', padding: '0.85rem 1.15rem' }} rows={3} value={newHistoryConclusion} onChange={(e) => setNewHistoryConclusion(e.target.value)} placeholder="Ex: bilan normal. Ordonnance émise." />
             </div>
 
             <div className="d-flex justify-content-between align-items-center pt-4 border-top w-100" style={{ borderColor: 'var(--border-color)', gap: '1.25rem' }}>
@@ -3087,7 +3087,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
             
             <div className="mb-4">
               <label className="form-label small fw-bold d-block mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}>Nom de l'examen *</label>
-              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.92rem', padding: '0.85rem 1.15rem' }} value={newLabExamen} onChange={(e) => setNewLabExamen(e.target.value)} placeholder="Ex: Créatinine, Cholestérol..." required />
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', fontSize: '0.92rem', padding: '0.85rem 1.15rem' }} value={newLabExamen} onChange={(e) => setNewLabExamen(e.target.value)} placeholder="Ex: créatinine, cholestérol..." required />
             </div>
 
             <div className="mb-4">
@@ -3225,7 +3225,7 @@ export default function MedicalProfile({ userRole = 'citizen', citizenUser = nul
                         setShowPatientDirectoryModal(false);
                       }}
                     >
-                      {pat.cmuNumber === selectedPatientCmu ? '✓ Dossier actuellement ouvert' : '👁 Ouvrir le dossier & examens DICOM'}
+                      {pat.cmuNumber === selectedPatientCmu ? 'Dossier actuellement ouvert' : 'Ouvrir le dossier & examens dicom'}
                     </button>
                   </div>
                 </div>

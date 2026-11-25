@@ -67,11 +67,11 @@ function MaintenancePanel() {
   return (
     <div className="card text-left" style={{ padding: '2rem', borderRadius: '16px', borderLeft: state.enabled ? '6px solid #ef4444' : '6px solid #10b981' }}>
       <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: state.enabled ? '#dc2626' : '#059669', marginBottom: '0.4rem' }}>
-        {state.enabled ? '🔴 Plateforme EN MAINTENANCE' : '🟢 Plateforme opérationnelle'}
+        {state.enabled ? 'Plateforme en maintenance' : 'Plateforme opérationnelle'}
       </h3>
       <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', marginBottom: '1.5rem', lineHeight: 1.6 }}>
-        Le mode maintenance ferme l'accès à tous les utilisateurs sauf vous. Les sondes de santé
-        restent actives (le répartiteur ne retire pas les instances) et le samu 1515 est affiché
+        le mode maintenance ferme l'accès à tous les utilisateurs sauf vous. Les sondes de santé
+        restent actives (Le répartiteur ne retire pas les instances) et le samu 1515 Est affiché
         aux visiteurs en cas d'urgence médicale.
       </p>
 
@@ -88,7 +88,7 @@ function MaintenancePanel() {
         <textarea
           value={draftMessage}
           onChange={(e) => setDraftMessage(e.target.value)}
-          placeholder="Ex : Mise à jour du registre en cours — retour du service vers 14 h 30."
+          placeholder="Ex : mise à jour du registre en cours — Retour du service vers 14 h 30."
           rows={2}
           maxLength={500}
           style={{
@@ -122,7 +122,7 @@ function MaintenancePanel() {
               padding: '0.65rem 1.4rem', fontWeight: '800', fontSize: '0.88rem', cursor: 'pointer'
             }}
           >
-            {busy ? 'Application…' : '🔴 Oui, fermer la plateforme'}
+            {busy ? 'Application…' : 'Oui, fermer la plateforme'}
           </button>
         </div>
       )}
@@ -143,7 +143,7 @@ function MaintenancePanel() {
           cursor: busy ? 'wait' : 'pointer', boxShadow: '0 4px 14px rgba(0,0,0,0.12)'
         }}
       >
-        {busy ? '…' : (state.enabled ? '🟢 Réactiver la plateforme' : (confirming ? 'Annuler' : '🛠️ Activer le mode maintenance'))}
+        {busy ? '…' : (state.enabled ? 'Réactiver la plateforme' : (confirming ? 'Annuler' : 'Activer le mode maintenance'))}
       </button>
 
       {confirming && (
@@ -250,7 +250,7 @@ export default function SuperAdminGovernance({ setView }) {
   };
 
   const loadData = () => {
-    // AUCUNE liste d'utilisateurs fictive n'est injectée. Le registre des
+    // AUCUNE liste d'utilisateurs fictive n'est injectée. le registre des
     // comptes n'affiche QUE les données réellement enregistrées (localStorage
     // alimenté par les créations réelles de comptes). Ces 8 profils
     // « Modou Diop / Ibrahima Sarr / Fatou Diallo… » étaient du.seed de
@@ -318,7 +318,7 @@ export default function SuperAdminGovernance({ setView }) {
         response = await apiFetch('/api/dashboard/demo-stats');
       }
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
       const data = await response.json();
       setDashboardStats(normalizeDashboardStats(data));
@@ -388,7 +388,7 @@ export default function SuperAdminGovernance({ setView }) {
     localStorage.setItem('cmu-superadmin-users', JSON.stringify(updatedUsers));
 
     setShowCreateModal(false);
-    triggerToast(`⚡ Compte créé et activé avec succès pour « ${newAccount.name} » (${createForm.udmsName}) ! Identifiants e-mail : ${createForm.email}`);
+    triggerToast(`Compte créé et activé avec succès pour « ${newAccount.name} » (${createForm.udmsName}) ! Identifiants e-mail : ${createForm.email}`);
     setCreateForm({ firstName: '', lastName: '', email: '', password: '', phone: '', roleCode: 'ACC-01', udmsName: 'UDMS Dakar Plateau', mutuelleName: 'Mutuelle de la Médina' });
   };
 
@@ -412,7 +412,7 @@ export default function SuperAdminGovernance({ setView }) {
       udmsName: req.udmsName,
       mutuelle: req.udmsName,
       cmuNumber: cmuNum,
-      status: 'Actif & Approuvé',
+      status: 'Actif & approuvé',
       createdAt: new Date().toISOString(),
       userObj: {
         id: Date.now(),
@@ -442,14 +442,14 @@ export default function SuperAdminGovernance({ setView }) {
     setUsersList(updatedUsers);
     localStorage.setItem('cmu-superadmin-users', JSON.stringify(updatedUsers));
 
-    triggerToast(` Accès accordé et compte activé pour « ${req.firstName} ${req.lastName} » ! N° Carte CSU généré : ${cmuNum}`);
+    triggerToast(` Accès accordé et compte activé pour « ${req.firstName} ${req.lastName} » ! N° carte CSU généré : ${cmuNum}`);
   };
 
   const handleRefuseAccountRequest = (reqId) => {
     const updatedReqs = pendingRequests.map(r => r.id === reqId ? { ...r, status: 'refused' } : r);
     setPendingRequests(updatedReqs);
     localStorage.setItem('cmu-pending-account-requests', JSON.stringify(updatedReqs));
-    triggerToast(`❌ Demande d'ouverture de compte #${reqId} refusée.`);
+    triggerToast(`Demande d'ouverture de compte #${reqId} refusée.`);
   };
 
   const handleApplyUserCorrection = (userId) => {
@@ -884,7 +884,7 @@ export default function SuperAdminGovernance({ setView }) {
             }}>
               <div className="card text-left" style={{ width: '450px', padding: '2rem', borderRadius: '16px', background: 'var(--bg-card)' }}>
                 <h4 style={{ margin: '0 0 1rem 0', color: 'var(--primary)' }}>
-                  <ProIcon name="edit" /> Application de Correctif : {selectedUserEdit.name}
+                  <ProIcon name="edit" /> Application de correctif : {selectedUserEdit.name}
                 </h4>
 
                 <div className="form-group">
@@ -975,7 +975,7 @@ export default function SuperAdminGovernance({ setView }) {
                       </td>
                       <td style={{ padding: '0.75rem' }}>
                         <span className={`badge ${req.status === 'approved' ? 'badge-success' : req.status === 'refused' ? 'badge-danger' : 'badge-warning'}`} style={{ fontSize: '0.75rem', fontWeight: 'bold' }}>
-                          {req.status === 'approved' ? ' Accordé & Actif' : req.status === 'refused' ? '❌ Refusé' : '⏳ En attente validation'}
+                          {req.status === 'approved' ? 'Accordé & actif' : req.status === 'refused' ? 'Refusé' : '⏳ En attente validation'}
                         </span>
                       </td>
                       <td style={{ padding: '0.75rem', textAlign: 'right' }}>
@@ -1073,17 +1073,17 @@ export default function SuperAdminGovernance({ setView }) {
 
           <div className="grid grid-4" style={{ gap: '1rem' }}>
             {[
-              { id: 'home', title: 'Tableau de Bord / Accueil', desc: 'Portail principal & KPIs' },
-              { id: 'beneficiaries', title: 'Base des Assurés', desc: 'Gestion des bénéficiaires' },
-              { id: 'partner', title: 'Portail Prestataire Privé', desc: 'Tiers-payant & prise en charge' },
-              { id: 'partnership', title: 'Espace Partenariat Public', desc: 'Formulaire de collaboration RSE' },
-              { id: 'complaints', title: 'Réclamations & Messagerie', desc: 'Flux de communication privés' },
-              { id: 'depts', title: 'Unions & Statistiques', desc: 'Données régionales Dakar' },
-              { id: 'medicaments', title: 'Médicaments Pris en Charge', desc: 'Annuaire pharmaceutique' },
+              { id: 'home', title: 'Tableau de bord / Accueil', desc: 'Portail principal & KPIs' },
+              { id: 'beneficiaries', title: 'Base des assurés', desc: 'Gestion des bénéficiaires' },
+              { id: 'partner', title: 'Portail prestataire privé', desc: 'Tiers-payant & prise en charge' },
+              { id: 'partnership', title: 'Espace partenariat public', desc: 'Formulaire de collaboration RSE' },
+              { id: 'complaints', title: 'Réclamations & messagerie', desc: 'Flux de communication privés' },
+              { id: 'depts', title: 'Unions & statistiques', desc: 'Données régionales Dakar' },
+              { id: 'medicaments', title: 'Médicaments pris en charge', desc: 'Annuaire pharmaceutique' },
               { id: 'audit-logs', title: 'Journal d\'Audit', desc: 'Registre de sécurité & traçabilité' },
-              { id: 'card-studio', title: '🪪 Studio Cartes CSU (PDF/NFC)', desc: 'Impression CNI Recto/Verso & puces' },
-              { id: 'map', title: 'Cartographie Sanitaire', desc: 'Carte des structures de soins' },
-              { id: 'directory', title: 'Annuaire des Mutuelles', desc: 'Base nationale des mutuelles' },
+              { id: 'card-studio', title: 'Studio cartes CSU (PDF/NFC)', desc: 'Impression CNI Recto/Verso & puces' },
+              { id: 'map', title: 'Cartographie sanitaire', desc: 'Carte des structures de soins' },
+              { id: 'directory', title: 'Annuaire des mutuelles', desc: 'Base nationale des mutuelles' },
               { id: 'blog-experts', title: 'Espace Blog & Paroles d\'Experts', desc: 'Articles & conseils santé' }
             ].map(p => (
               <div 
@@ -1152,7 +1152,7 @@ export default function SuperAdminGovernance({ setView }) {
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="ex: Mamadou"
+                    placeholder="Ex: Mamadou"
                     value={createForm.firstName}
                     onChange={(e) => setCreateForm({ ...createForm, firstName: e.target.value })}
                     required
@@ -1163,7 +1163,7 @@ export default function SuperAdminGovernance({ setView }) {
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="ex: Ndiaye"
+                    placeholder="Ex: Ndiaye"
                     value={createForm.lastName}
                     onChange={(e) => setCreateForm({ ...createForm, lastName: e.target.value })}
                     required
@@ -1188,7 +1188,7 @@ export default function SuperAdminGovernance({ setView }) {
                   <input
                     type="password"
                     className="form-control"
-                    placeholder="ex: Pass2026!"
+                    placeholder="Ex: pass2026!"
                     value={createForm.password}
                     onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
                     required
@@ -1227,7 +1227,7 @@ export default function SuperAdminGovernance({ setView }) {
                     onChange={(e) => setCreateForm({ ...createForm, udmsName: e.target.value })}
                   >
                     <option value="UDMS Dakar Plateau">UDMS Dakar Plateau</option>
-                    <option value="UDMS Pikine Ouest">UDMS Pikine ouest</option>
+                    <option value="UDMS Pikine Ouest">UDMS Pikine Ouest</option>
                     <option value="UDMS Guédiawaye">UDMS Guédiawaye</option>
                     <option value="UDMS Rufisque">UDMS Rufisque</option>
                     <option value="URMSCD Région de Dakar">URMSCD région de Dakar</option>

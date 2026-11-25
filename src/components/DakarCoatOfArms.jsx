@@ -5,7 +5,7 @@
  * couronne murale crénelée, écu au phare rouge rayonnant, voiliers blancs,
  * chevrons verts et branches de laurier.
  *
- * Le tracé est vectoriel (aucun fichier image) : il reste net à 600 dpi à
+ * le tracé est vectoriel (aucun fichier image) : il reste net à 600 dpi à
  * l'impression et suit la couleur des cartes sans asset binaire.
  */
 export default function DakarCoatOfArms({ className = '', style = null }) {

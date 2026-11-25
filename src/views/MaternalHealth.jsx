@@ -14,8 +14,8 @@ const getMedicalHeroStyle = (patient) => {
       bgImage: '/csu_digital_health_real.jpg',
       heroBg: 'linear-gradient(135deg, rgba(5, 150, 105, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%), url("/csu_digital_health_real.jpg") center/cover no-repeat',
       badgeColor: '#059669',
-      badgeText: '🇸🇳 Espace prise en charge 100% CSU',
-      imageTag: '🏥 Imagerie médicale - général',
+      badgeText: '🇸🇳 espace prise en charge 100% CSU',
+      imageTag: 'Imagerie médicale - général',
       icon: <ProIcon name="hospital" />
     };
   }
@@ -29,8 +29,8 @@ const getMedicalHeroStyle = (patient) => {
       bgImage: '/dicom_bone_fracture.jpg',
       heroBg: 'linear-gradient(135deg, rgba(180, 83, 9, 0.88) 0%, rgba(15, 23, 42, 0.92) 100%), url("/dicom_bone_fracture.jpg") center/cover no-repeat',
       badgeColor: '#d97706',
-      badgeText: '🇸🇳 Espace traumatologie & chirurgie orthopédique UNAMUSC',
-      imageTag: '🦴 Visual — cliché de radiographie osseuse',
+      badgeText: '🇸🇳 espace traumatologie & chirurgie orthopédique UNAMUSC',
+      imageTag: 'Visual — Cliché de radiographie osseuse',
       icon: <ProIcon name="bandage" />
     };
   }
@@ -41,8 +41,8 @@ const getMedicalHeroStyle = (patient) => {
       bgImage: '/dicom_chest_xray.jpg',
       heroBg: 'linear-gradient(135deg, rgba(14, 116, 144, 0.88) 0%, rgba(15, 23, 42, 0.92) 100%), url("/dicom_chest_xray.jpg") center/cover no-repeat',
       badgeColor: '#0891b2',
-      badgeText: '🇸🇳 Espace pneumologie & affections respiratoires ALD',
-      imageTag: '🫁 Visual — cliché de radiographie thoracique',
+      badgeText: '🇸🇳 espace pneumologie & affections respiratoires ald',
+      imageTag: 'Visual — Cliché de radiographie thoracique',
       icon: <ProIcon name="activity" />
     };
   }
@@ -53,7 +53,7 @@ const getMedicalHeroStyle = (patient) => {
       bgImage: '/bg_health_heart.png',
       heroBg: 'linear-gradient(135deg, rgba(220, 38, 38, 0.88) 0%, rgba(15, 23, 42, 0.92) 100%), url("/bg_health_heart.png") center/cover no-repeat',
       badgeColor: '#dc2626',
-      badgeText: '🇸🇳 Espace cardiologie & hypertension artérielle (ALD 100%)',
+      badgeText: '🇸🇳 espace cardiologie & hypertension artérielle (ald 100%)',
       imageTag: '🫀 Visual — schéma de l\'appareil cardiovasculaire',
       icon: <ProIcon name="heart-pulse" color="#dc2626" />
     };
@@ -65,11 +65,11 @@ const getMedicalHeroStyle = (patient) => {
       bgImage: '/dicom_blood_test.jpg',
       heroBg: 'linear-gradient(135deg, rgba(185, 28, 28, 0.88) 0%, rgba(15, 23, 42, 0.92) 100%), url("/dicom_blood_test.jpg") center/cover no-repeat',
       badgeColor: '#dc2626',
-      badgeText: '🇸🇳 Espace prise en charge 100% CSU — Affection de longue durée (ALD)',
+      badgeText: '🇸🇳 espace prise en charge 100% CSU — Affection de longue durée (ald)',
       // `imageTag` étiquette une IMAGE DE DÉCO (fichier statique). Il ne doit pas
       // laisser croire qu'un compte-rendu existe : on le formule comme le
       // contenu du visuel, pas comme un résultat biologique de l'assuré.
-      imageTag: '🩸 Visual — tube de prélèvement de sang',
+      imageTag: 'Visual — Tube de prélèvement de sang',
       icon: <ProIcon name="droplet" color="#dc2626" />
     };
   }
@@ -80,8 +80,8 @@ const getMedicalHeroStyle = (patient) => {
       bgImage: '/csu_kids_real.png',
       heroBg: 'linear-gradient(135deg, rgba(29, 78, 216, 0.88) 0%, rgba(16, 185, 129, 0.25) 100%), url("/csu_kids_real.png") center/cover no-repeat',
       badgeColor: '#2563eb',
-      badgeText: '🇸🇳 Espace pédiatrique & programme élargi de vaccination (PEV)',
-      imageTag: '👶 Carnet de santé pédiatrique & vaccins 0-5 ans',
+      badgeText: '🇸🇳 espace pédiatrique & programme élargi de vaccination (PEV)',
+      imageTag: 'Carnet de santé pédiatrique & vaccins 0-5 ans',
       icon: <ProIcon name="baby" />
     };
   }
@@ -91,8 +91,8 @@ const getMedicalHeroStyle = (patient) => {
     bgImage: '/maternal_nutrition_food.jpg',
     heroBg: 'linear-gradient(135deg, rgba(5, 150, 105, 0.85) 0%, rgba(15, 23, 42, 0.9) 100%), url("/maternal_nutrition_food.jpg") center/cover no-repeat',
     badgeColor: '#059669',
-    badgeText: '🇸🇳 Espace premium santé maternelle UNAMUSC',
-    imageTag: '🤰 Suivi prénatal CPN & échographie obstétrique',
+    badgeText: '🇸🇳 espace premium santé maternelle UNAMUSC',
+    imageTag: 'Suivi prénatal CPN & échographie obstétrique',
     icon: <ProIcon name="heart-pulse" />
   };
 };
@@ -135,7 +135,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
       birthDate: '',
       motherPhone: '',
       motherName: '',
-      reminderChannel: 'SMS & WhatsApp 💬',
+      reminderChannel: 'SMS & WhatsApp',
       autoReminders: false,
       lastReminderSent: ''
     };
@@ -275,7 +275,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
   // diabétique ✅ Pas de lésion » ou « ECG & fonction rénale ✅ Effectué » sont
   // des résultats cliniques : les afficher pour un assuré qui n'a jamais eu
   // l'examen taughtait un faux bilan de santé (et il pourrait le transmettre
-  // à un médecin). Le bloc reste accessible et vide ; seul le soignant saisit.
+  // à un médecin). le bloc reste accessible et vide ; seul le soignant saisit.
   const [aldSurveillanceItems, setAldSurveillanceItems] = useState(() => {
     const saved = localStorage.getItem('maternity_ald_surveillance');
     if (saved) {
@@ -323,7 +323,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
   // AUCUN acte par défaut. « Pansements stériles J+3 à J+14 ✅ Fait », « Ablation
   // des fils ✅ Ablation faite » ou « Rééducation Session 3/10 » décrivent des
   // soins qui n'ont jamais eu lieu pour l'assuré affiché : un faux compte-rendu
-  // opératoire. Le protocole se saisit, il ne se pré-remplit pas.
+  // opératoire. le protocole se saisit, il ne se pré-remplit pas.
   const [postOpProtocolItems, setPostOpProtocolItems] = useState(() => {
     const saved = localStorage.getItem('maternity_postop_protocol');
     if (saved) {
@@ -562,10 +562,10 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
         { label: 'Accouchée (Mère)', value: `${babyProfile.motherName} (${babyProfile.motherPhone})` },
         { label: 'Nouveau-né (Bébé)', value: `${babyProfile.name} (Sexe masculin)` },
         { label: 'Date & Heure d\'Accouchement', value: '14/05/2026 à 04:15 AM' },
-        { label: 'Type d\'Accouchement', value: 'Accouchement Eutocique Simple (Voie basse)' },
-        { label: 'Poids & Taille à la naissance', value: '3.400 kg • 50 cm' },
+        { label: 'Type d\'Accouchement', value: 'Accouchement eutocique simple (voie basse)' },
+        { label: 'Poids & taille à la naissance', value: '3.400 kg • 50 cm' },
         { label: 'Prise en charge UNAMUSC', value: '100% Gratuit (Accouchement + Soins néonataux)' },
-        { label: 'Déclaration État Civil Mairie', value: 'CERTIFIÉ CONFORME POUR ACTE DE NAISSANCE' }
+        { label: 'Déclaration état civil mairie', value: 'Certifié conforme pour acte de naissance' }
       ],
       notes: 'Certificat officiel délivré conformément au programme national de gratuité des soins de santé maternelle et néonatale (UNAMUSC). Dispense de toute avance de frais.'
     });
@@ -590,7 +590,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
   const [reminderToast, setReminderToast] = useState(null);
 
   // Moteur de synthèse vocale Web Speech & Web Audio chime
-  // eslint-disable-next-line no-unused-vars -- Lecture vocale + bip d'alerte. Le sélecteur de langue (`audioLang`) est affiché mais aucun bouton ne déclenche encore cette lecture.
+  // eslint-disable-next-line no-unused-vars -- Lecture vocale + bip d'alerte. le sélecteur de langue (`audioLang`) est affiché mais aucun bouton ne déclenche encore cette lecture.
   const playSpeechAudio = (textToSpeak) => {
     try {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -608,7 +608,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
         osc.start();
         osc.stop(ctx.currentTime + 0.35);
       }
-    // eslint-disable-next-line no-unused-vars -- Le moteur Web Audio est optionnel : son absence ne doit pas interrompre la lecture vocale.
+    // eslint-disable-next-line no-unused-vars -- le moteur Web Audio est optionnel : son absence ne doit pas interrompre la lecture vocale.
     } catch (e) {}
 
     // Voix naturelle via backend TTS (ElevenLabs/Open-Source) avec repli speechSynthesis
@@ -626,7 +626,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
       let msg = '';
 
       if (type === 'sms' || type === 'whatsapp') {
-        msg = `📲 Notification SMS & WhatsApp délivrée à ${babyProfile.motherName} (${babyProfile.motherPhone}) : "Bonjour ${babyProfile.motherName}, rappel UNAMUSC : la prestation ${targetPrestation} pour votre bébé ${babyProfile.name} est programmée. Prise en charge 100% gratuite."`;
+        msg = `📲 Notification SMS & WhatsApp délivrée à ${babyProfile.motherName} (${babyProfile.motherPhone}) : "Bonjour ${babyProfile.motherName}, rappel UNAMUSC : la prestation ${targetprestation} pour votre bébé ${babyProfile.name} Est programmée. Prise en charge 100% gratuite."`;
         playHybridVoiceReminder({
           lang: langChoice,
           motherName: babyProfile.motherName,
@@ -634,7 +634,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
           customMessage: `Notification envoyée avec succès à ${babyProfile.motherName}`
         });
       } else {
-        msg = `🔊 Relance vocale hybride (${langChoice.toUpperCase()}) en cours de lecture pour ${babyProfile.motherPhone}...`;
+        msg = `Relance vocale hybride (${langChoice.toUpperCase()}) en cours de lecture pour ${babyProfile.motherPhone}...`;
         playHybridVoiceReminder({
           lang: langChoice,
           motherName: babyProfile.motherName,
@@ -657,24 +657,24 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
       vaccines: 'BCG + VPO 0 + VHB 0',
       subtext: 'Dose initiale de maternité',
       diseases: 'Tuberculose, polio, hépatite B',
-      structure: 'Centre Gaspard Camara',
+      structure: 'Centre gaspard camara',
       status: 'Administré (100% CSU)',
       completed: true
     },
     {
       id: 2,
       ageLabel: '6 Semaines (1 mois & demi)',
-      vaccines: 'Penta 1 + VPO 1 + Rota 1 + Pneumo 1',
+      vaccines: 'Penta 1 + vpo 1 + rota 1 + pneumo 1',
       subtext: '4 vaccins combinés',
       diseases: 'Diphtérie, tétanos, coqueluche, méningite',
-      structure: 'Dispensaire Point E',
+      structure: 'Dispensaire Point e',
       status: 'Administré (100% CSU)',
       completed: true
     },
     {
       id: 3,
       ageLabel: '10 Semaines (2 mois & demi)',
-      vaccines: 'Penta 2 + VPO 2 + Rota 2 + Pneumo 2',
+      vaccines: 'Penta 2 + vpo 2 + rota 2 + pneumo 2',
       subtext: 'Rappel de 2ème dose',
       diseases: 'Rappel des immunisations premières',
       structure: 'Centre de santé Pikine',
@@ -684,7 +684,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
     {
       id: 4,
       ageLabel: '14 Semaines (3 mois & demi)',
-      vaccines: 'Penta 3 + VPO 3 + VPI 1 + Pneumo 3',
+      vaccines: 'Penta 3 + vpo 3 + vpi 1 + pneumo 3',
       subtext: '3ème dose & injectables',
       diseases: 'Immunisation complète 1er âge',
       structure: 'CHU de Fann (Dakar)',
@@ -694,10 +694,10 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
     {
       id: 5,
       ageLabel: '9 Mois (Échéance finale 1er an)',
-      vaccines: 'RR 1 + VAA + Vitamine A',
+      vaccines: 'Rr 1 + vaa + vitamine a',
       subtext: 'Rougeole, rubéole & fièvre jaune',
       diseases: 'Fièvre jaune, rougeole & carences',
-      structure: 'Centre Gaspard Camara',
+      structure: 'Centre gaspard camara',
       status: 'Programmé (Février 2027)',
       completed: false
     }
@@ -765,7 +765,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
   const [showAddAdviceModal, setShowAddAdviceModal] = useState(false);
   const [newAdviceForm, setNewAdviceForm] = useState({
     icon: <ProIcon name="lightbulb" />,
-    badge: 'Santé & Nutrition',
+    badge: 'Santé & nutrition',
     title: '',
     subtitle: '',
     author: 'Sage-femme Fatou Diome',
@@ -778,12 +778,12 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
     {
       id: 'nutrition_t2',
       icon: '🥗',
-      badge: 'Nutrition Maternelle',
+      badge: 'Nutrition maternelle',
       title: 'Les aliments clés du 2ème trimestre',
       subtitle: 'Recommandations nutritionnelles pour maman & bébé',
       image: '/maternal_nutrition_food.jpg',
       readTime: '3 min de lecture',
-      author: 'Dr. Mariama Ba (Gynécologue)',
+      author: 'Dr. Mariama Ba (gynécologue)',
       content: [
         'Privilégiez les aliments riches en fer bio-disponible : viande rouge maigre, lentilles, épinards locaux et poisson frais.',
         'Renforcez votre apport en calcium et vitamine D : laitages fermentés (thiakry sans sucre excessif), petit lait et sardines.',
@@ -795,7 +795,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
     {
       id: 'allaitement_exclusif',
       icon: '🍼',
-      badge: 'Santé Nourrisson',
+      badge: 'Santé nourrisson',
       title: 'Allaitement maternel exclusif 0-6 mois',
       subtitle: 'Techniques de mise au sein et alimentation équilibrée de la mère',
       image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=800',
@@ -867,7 +867,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
   //  Kiné Diop » et « Dr. Mariama Ba ». Ces examens de suivi n'ont jamais
   //  eu lieu. Un dossier de suivi généré depuis un prénom générique était lu
   //  comme un suivi réel, et les CPN « à venir » produisaient des rappels
-  //  pour des dates arbitraires. Le calendrier de CPN se saisit ; il ne se
+  //  pour des dates arbitraires. le calendrier de CPN se saisit ; il ne se
   //  pré-remplit pas.
   // ────────────────────────────────────────────────────────────────────
   const [cpnVisits, setCpnVisits] = useState([]);
@@ -996,11 +996,11 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
       readTime: '3 min de lecture',
       author: newAdviceForm.author || 'Sage-femme de garde UNAMUSC',
       content: newAdviceForm.content.split('\n').filter(line => line.trim() !== ''),
-      tips: newAdviceForm.tips ? `💡 ${newAdviceForm.tips}` : '💡 Suivez les recommandations médicales de votre centre de santé de référence.'
+      tips: newAdviceForm.tips ? `💡 ${newAdviceForm.tips}` : 'Suivez les recommandations médicales de votre centre de santé de référence.'
     };
     setAdviceArticles([newArticle, ...adviceArticles]);
     setShowAddAdviceModal(false);
-    setNewAdviceForm({ icon: <ProIcon name="lightbulb" />, badge: 'Santé & Nutrition', title: '', subtitle: '', author: 'Sage-femme Fatou Diome', content: '', tips: '' });
+    setNewAdviceForm({ icon: <ProIcon name="lightbulb" />, badge: 'Santé & nutrition', title: '', subtitle: '', author: 'Sage-femme Fatou Diome', content: '', tips: '' });
     alert("✅ La nouvelle fiche conseil a bien été ajoutée au carnet de maternité !");
   };
 
@@ -1030,7 +1030,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
   const handleDeleteCpn = (cpn) => {
     setDeleteConfirmTarget({
       title: cpn.title || 'Consultation CPN',
-      itemType: 'Consultation CPN Maternité',
+      itemType: 'Consultation CPN maternité',
       onConfirm: () => setCpnVisits(cpnVisits.filter(c => c.id !== cpn.id))
     });
   };
@@ -1052,7 +1052,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
     const newV = { id: Date.now(), ...newVaccineForm };
     setVaccinations([...vaccinations, newV]);
     setShowAddVaccineModal(false);
-    setNewVaccineForm({ ageLabel: '', vaccines: '', subtext: '', diseases: '', structure: 'Centre Hospitalier Abass Ndao', status: 'Administré (100% CSU)', completed: true });
+    setNewVaccineForm({ ageLabel: '', vaccines: '', subtext: '', diseases: '', structure: 'Centre hospitalier Abass Ndao', status: 'Administré (100% CSU)', completed: true });
   };
 
   // eslint-disable-next-line no-unused-vars -- Ouverture de la modale d'édition d'une dose vaccinale. La modale ET `handleSaveEditVaccine` sont rendues plus bas : seul le bouton « Modifier » manque.
@@ -1072,7 +1072,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
   const handleDeleteVaccine = (v) => {
     setDeleteConfirmTarget({
       title: v.vaccines,
-      itemType: 'Dose Vaccinale PEV',
+      itemType: 'Dose vaccinale PEV',
       onConfirm: () => setVaccinations(vaccinations.filter(x => x.id !== v.id))
     });
   };
@@ -1097,7 +1097,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
   const handleDeleteAdvice = (art) => {
     setDeleteConfirmTarget({
       title: art.title,
-      itemType: 'Fiche Conseil Médicale',
+      itemType: 'Fiche conseil médicale',
       onConfirm: () => setAdviceArticles(adviceArticles.filter(a => a.id !== art.id))
     });
   };
@@ -1148,18 +1148,18 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
     const cmuRef = activeCmuNumber.replace(/[^A-Za-z0-9]+/g, '-');
     generateOfficialPdf({
       filename: `carnet_sante_maternelle_${cmuRef}.pdf`,
-      docType: 'CARNET DE SANTÉ MATERNELLE ET PÉDIATRIQUE',
-      title: 'Carnet Maternité & Suivi Enfant 100% Gratuit',
+      docType: 'Carnet de santé maternelle et pédiatrique',
+      title: 'Carnet maternité & suivi enfant 100% gratuit',
       referenceNo: `CARNET-MAT-${cmuRef}`,
       beneficiaryName: activeFullName,
       cmuNumber: activeCmuNumber,
-      structureName: 'Hôpital Universitaire de Fann (Dakar)',
+      structureName: 'Hôpital universitaire de Fann (Dakar)',
       details: [
         { label: 'Assurée', value: activeFullName },
-        { label: 'Enfant rattaché', value: 'Moussa Ndiaye (Né le 14/05/2026)' },
-        { label: 'Statut Consultations CPN', value: '75% complété (CPN 1 et CPN 2 validées)' },
-        { label: 'Vaccinations PEV Enfant', value: 'BCG, VPO 0, VHB 0 et Penta 1 administrés' },
-        { label: 'Garantie Accouchement', value: 'Prise en charge intégrale à 100% par UNAMUSC' }
+        { label: 'Enfant rattaché', value: 'Moussa Ndiaye (né Le 14/05/2026)' },
+        { label: 'Statut consultations CPN', value: '75% complété (CPN 1 et CPN 2 validées)' },
+        { label: 'Vaccinations PEV enfant', value: 'BCG, vpo 0, vhb 0 et penta 1 administrés' },
+        { label: 'Garantie accouchement', value: 'Prise en charge intégrale à 100% par UNAMUSC' }
       ],
       notes: 'Ce carnet numérique officiel garantit l\'accès gratuit aux soins de maternité et au programme élargi de vaccination (PEV) dans tous les établissements agréés du Sénégal.'
     });
@@ -1168,17 +1168,17 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
   const handleDownloadGuarantee = () => {
     generateOfficialPdf({
       filename: 'lettre_garantie_accouchement_100_unamusc.pdf',
-      docType: 'LETTRE DE GARANTIE HOSPITALIÈRE INTEGRALE',
-      title: 'Prise en Charge Accouchement 100% UNAMUSC',
+      docType: 'Lettre de garantie hospitalière integrale',
+      title: 'Prise en charge accouchement 100% UNAMUSC',
       referenceNo: 'GAR-MAT-2026-9910',
       beneficiaryName: activeFullName,
       cmuNumber: activeCmuNumber,
-      structureName: 'Centre Hospitalier Universitaire de Fann (Dakar)',
+      structureName: 'Centre hospitalier universitaire de Fann (Dakar)',
       details: [
         { label: 'Bénéficiaire', value: `${activeFullName} (${activeCmuNumber})` },
-        { label: 'Établissement Récepteur', value: 'CHU de Fann (Dakar)' },
-        { label: 'Taux de Couverture UNAMUSC', value: '100% Prise en Charge Totale' },
-        { label: 'Actes Couverts', value: 'Accouchement simple, Césarienne d\'urgence & Soins néonataux' },
+        { label: 'Établissement récepteur', value: 'CHU de Fann (Dakar)' },
+        { label: 'Taux de couverture UNAMUSC', value: '100% Prise en Charge Totale' },
+        { label: 'Actes couverts', value: 'Accouchement simple, Césarienne d\'urgence & Soins néonataux' },
         { label: 'Montant à payer par l\'assuré', value: '0 FCFA (Tiers-Payant Intégral)' }
       ],
       notes: 'La présente lettre de garantie dispense l\'assurée de toute avance de frais d\'hospitalisation ou de bloc opératoire.'
@@ -1234,7 +1234,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
   // ═══════════════════════════════════════════════════════
   // Registre de maternité — grossesses RÉELLEMENT suivies
   // ═══════════════════════════════════════════════════════
-  // Aucune grossesse n'est inventée. Le registre ne contient que les
+  // Aucune grossesse n'est inventée. le registre ne contient que les
   // suivis prénatals réellement créés par une sage-femme ou un médecin
   // (persistés dans le poste). Un registre vide est un registre honnête :
   // afficher des grossesses, termes et dates d'accouchement fictifs pour
@@ -1290,7 +1290,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
     lastConsultation: '—'
   } : (maternalRegistry.find(m => m.id === selectedMotherId)
     // Aucun registre réel pour cette patiente : on ne fabrique NI patiente NI
-    // grossesse. Le dossier reste vide — afficher « 32 SA / CPN 3 » ou
+    // grossesse. le dossier reste vide — afficher « 32 SA / CPN 3 » ou
     // « Dr. Ousmane Sow » pour une patiente réelle serait un faux dossier.
     || {
       name: activeFullName || 'Patiente non enregistrée',
@@ -1411,9 +1411,9 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
 
         const newExam = {
           id: Date.now(),
-          title: `Bilan Biologique Prénatal (${uploadCpnTarget.period})`,
-          exam_type: 'Sérologies & Bilan Sanguin Maternité',
-          badge: 'GRATUITÉ MATERNITÉ 100%',
+          title: `Bilan biologique prénatal (${uploadCpnTarget.period})`,
+          exam_type: 'Sérologies & bilan sanguin maternité',
+          badge: 'Gratuité maternité 100%',
           facility: partnerUser?.structureName || 'Laboratoire Pasteur Dakar',
           doctor: uploadCpnTarget.midwife,
           date: new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }),
@@ -1427,7 +1427,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
       // eslint-disable-next-line no-unused-vars -- Persistance best-effort : un stockage indisponible ne doit pas perdre le compte-rendu déjà transmis.
       } catch (err) {}
 
-      alert(`✅ Bilan prénatal certifié transmis avec succès au dossier maternité (${uploadCpnTarget.period}) !`);
+      alert(`Bilan prénatal certifié transmis avec succès au dossier maternité (${uploadCpnTarget.period}) !`);
       setUploadCpnTarget(null);
       setUploadCpnFileName('');
       setUploadCpnNotes('');
@@ -1746,7 +1746,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                     style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                     value={editingCpnOrder.periodDetail || ''}
                     onChange={(e) => setEditingCpnOrder({ ...editingCpnOrder, periodDetail: e.target.value })}
-                    placeholder="Ex: Datation & Sérologies"
+                    placeholder="Ex: datation & sérologies"
                   />
                 </div>
               </div>
@@ -1759,7 +1759,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                   value={editingCpnOrder.exams || ''}
                   onChange={(e) => setEditingCpnOrder({ ...editingCpnOrder, exams: e.target.value })}
-                  placeholder="Ex: Groupe sanguin, Rhésus, BW, Toxoplasmose, Rubéole"
+                  placeholder="Ex: groupe sanguin, rhésus, bw, toxoplasmose, rubéole"
                   required
                 />
               </div>
@@ -1772,7 +1772,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                   value={editingCpnOrder.examDetail || ''}
                   onChange={(e) => setEditingCpnOrder({ ...editingCpnOrder, examDetail: e.target.value })}
-                  placeholder="Ex: NFS complet + Glycémie à jeun"
+                  placeholder="Ex: nfs complet + glycémie à jeun"
                 />
               </div>
 
@@ -1785,7 +1785,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                     style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                     value={editingCpnOrder.midwife || ''}
                     onChange={(e) => setEditingCpnOrder({ ...editingCpnOrder, midwife: e.target.value })}
-                    placeholder="Ex: Sage-femme Mme Fatou Diop"
+                    placeholder="Ex: sage-femme Mme Fatou Diop"
                   />
                 </div>
 
@@ -1847,7 +1847,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
               <p className="mb-4" style={{ color: 'var(--text-sub, #94a3b8)', fontSize: '0.92rem', lineHeight: '1.55' }}>
                 Voulez-vous vraiment supprimer définitivement <strong style={{ color: '#ef4444' }}>{confirmDeleteObj.title}</strong> ?
                 <br />
-                <small className="text-muted d-block mt-1">Cette action est irréversible dans le système UNAMUSC.</small>
+                <small className="text-muted d-block mt-1">Cette action Est irréversible dans le système UNAMUSC.</small>
               </p>
 
               <div className="d-flex justify-content-center gap-3 pt-2">
@@ -1909,7 +1909,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                 Carnet de maternité : non concerné
               </h1>
               <p style={{ color: 'rgba(209, 250, 229, 0.95)', fontSize: '1rem', maxWidth: '650px', lineHeight: 1.6 }}>
-                Le suivi des consultations prénatales et néonatales est géré par les sage-femmes et gynécologues. Votre espace officine traite les bons de commande de produits et vitamines de maternité.
+                le suivi des consultations prénatales et néonatales Est géré par les sage-femmes et gynécologues. Votre espace officine traite les bons de commande de produits et vitamines de maternité.
               </p>
               <div className="d-flex align-items-center flex-wrap mt-4" style={{ gap: '28px', rowGap: '16px' }}>
                 <button className="btn fw-bold px-4 py-2.5 text-white" style={{ background: '#047857', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '14px', fontSize: '0.9rem', boxShadow: '0 6px 18px rgba(0,0,0,0.2)', marginRight: '16px', marginBottom: '8px' }} onClick={() => (window.location.hash = '#/purchase-orders')}>
@@ -2123,7 +2123,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
             <span style={{ fontSize: '2.2rem' }}><ProIcon name="shield-check" /></span>
             <div>
               <strong className="d-block" style={{ fontSize: '1.1rem' }}>Mode agent administratif — Statistiques maternité UNAMUSC</strong>
-              <small style={{ opacity: 0.8 }}>Vue agrégée : suivi épidémiologique et statistiques. Le détail clinique reste réservé aux professionnel(le)s de santé.</small>
+              <small style={{ opacity: 0.8 }}>Vue agrégée : suivi épidémiologique et statistiques. le détail clinique reste réservé aux professionnel(le)s de santé.</small>
             </div>
           </div>
 
@@ -2175,7 +2175,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
             <h3 className="fw-bold mb-2 text-danger" style={{ fontSize: '1.4rem' }}><ProIcon name="alert-triangle" color="#d97706" /> Accès aux soins de maternité refusé — Couverture CSU suspendue</h3>
             
             <div className="mb-3">
-              {/* Le n° de carte était écrit en dur (« CSU-DKR-2026-8812 »)
+              {/* le n° de carte était écrit en dur (« CSU-DKR-2026-8812 »)
                   dans un écran de REFUS DE SOINS : il s'affichait quel que soit
                   l'assuré connecté. Deux conséquences graves : l'écran disait à
                   un utilisateur que SA couverture était suspendue alors qu'il
@@ -2190,7 +2190,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
             </div>
 
             <p className="lead mb-4 mx-auto" style={{ maxWidth: '640px', fontSize: '1.05rem', lineHeight: '1.65' }}>
-              Votre cotisation annuelle n'est pas à jour. Le calendrier CPN, la délivrance de lettres de garantie d'accouchement et le suivi vaccinal sont suspendus.
+              Votre cotisation annuelle n'est pas à jour. le calendrier CPN, la délivrance de lettres de garantie d'accouchement et le suivi vaccinal sont suspendus.
               <br />
               <strong className="d-block mt-2 text-danger">Veuillez régulariser votre cotisation et celui des membres de votre famille pour un montant de 10 500 FCFA.</strong>
             </p>
@@ -2255,7 +2255,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                       ? 'Carnet pédiatrique CSU'
                       : 'Suivi prénatal CSU'
                   }`
-                : `🏥 ${partnerUser?.structureName || partnerUser?.name || 'Hôpital Principal de Dakar'} • Registre Maternité (${maternalRegistry.length} mères suivies)`}
+                : `🏥 ${partnerUser?.structureName || partnerUser?.name || 'Hôpital Principal de Dakar'} • Registre maternité (${maternalRegistry.length} mères suivies)`}
             </span>
           </div>
 
@@ -2333,7 +2333,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                         phone: '',
                         cmuNumber: `CMU-DKR-2026-${Math.floor(1000 + Math.random() * 9000)}`,
                         category: 'maternity',
-                        pathology: '🤰 Suivi Grossesse',
+                        pathology: 'Suivi grossesse',
                         edd: '',
                         doctorRef: 'Dr. Ousmane Sow'
                       });
@@ -2513,7 +2513,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                                     dmpSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
                                   }}
                                 >
-                                  {isSelected ? '✓ Dossier ouvert' : '👁️ Consulter DMP'}
+                                  {isSelected ? 'Dossier ouvert' : 'Consulter dmp'}
                                 </button>
 
                                 {/* Bouton MODIFIER */}
@@ -2624,22 +2624,22 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                     const cat = activeMother.category || 'maternity';
                     if (cat === 'chronic') {
                       return isSuperAdmin 
-                        ? 'Accès total ALD : Validation des ordonnances renouvelables, bilans biologiques et gestion intégrale du DMP ALD.'
+                        ? 'Accès total ald : validation des ordonnances renouvelables, bilans biologiques et gestion intégrale du dmp ald.'
                         : isMidwife
-                        ? 'Édition soignant / IDE : Consignation des constantes vitales, suivis de tension/glycémie et visites ALD.'
-                        : 'Édition complète Médecin : Vous pouvez ajouter les consultations ALD, valider les traitements renouvelables et contrôler le bilan glycémique/HTA.';
+                        ? 'Édition soignant / Ide : consignation des constantes vitales, suivis de tension/glycémie et visites ald.'
+                        : 'Édition complète médecin : vous pouvez ajouter les consultations ald, valider les traitements renouvelables et contrôler le bilan glycémique/HTA.';
                     } else if (cat === 'surgery') {
                       return isSuperAdmin
                         ? 'Accès total Chirurgie : Gestion du suivi post-opératoire, de l\'imagerie DICOM et de la traumatologie.'
                         : isMidwife
-                        ? 'Édition soignant / IDE : Consignation des soins de pansements et suivi des séances de rééducation.'
-                        : 'Édition complète Médecin : Vous pouvez consigner les comptes-rendus opératoires, prescrire la kinésithérapie et joindre les radios DICOM.';
+                        ? 'Édition soignant / Ide : consignation des soins de pansements et suivi des séances de rééducation.'
+                        : 'Édition complète médecin : vous pouvez consigner les comptes-rendus opératoires, prescrire la kinésithérapie et joindre les radios dicom.';
                     } else {
                       return isSuperAdmin
-                        ? 'Accès total Maternité : Validations prénatales (CPN), délivrance des certificats et suivi pédiatrique.'
+                        ? 'Accès total maternité : validations prénatales (CPN), délivrance des certificats et suivi pédiatrique.'
                         : isMidwife
-                        ? 'Édition complète Sage-Femme : Vous pouvez remplir les consultations prénatales (CPN 1-4+), ajouter des conseils et valider le carnet.'
-                        : 'Édition complète Médecin : Vous pouvez remplir les consultations prénatales, ajouter des fiches conseils et modifier le carnet.';
+                        ? 'Édition complète sage-femme : vous pouvez remplir les consultations prénatales (CPN 1-4+), ajouter des conseils et valider le carnet.'
+                        : 'Édition complète médecin : vous pouvez remplir les consultations prénatales, ajouter des fiches conseils et modifier le carnet.';
                     }
                   })()}
                 </span>
@@ -2756,7 +2756,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
             ? `Carnet de santé pédiatrique & PEV — ${activeMother.name}`
             : `Carnet de santé maternelle & suivi de l'enfant`;
 
-          // Le sous-titre interpolait `activeMother.pathology`, dont la valeur
+          // le sous-titre interpolait `activeMother.pathology`, dont la valeur
           // « Aucun suivi enregistré » produisait la phrase absurde et
           // trompeuse « Suivi thérapeutique & biologique pour Aucun suivi
           // enregistré ». On n'annonce un suivi que s'il existe réellement.
@@ -2765,16 +2765,16 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
             activeMother.pathology !== '—' &&
             activeMother.pathology !== 'Aucun suivi enregistré'
           );
-          const identityTail = `Patient (${activeMother.gender === 'M' ? 'Homme' : 'Femme'}, ${activeMother.age} ans) • N° Carte CSU : ${activeMother.cmuNumber || 'non renseigné'}.`;
+          const identityTail = `Patient (${activeMother.gender === 'M' ? 'Homme' : 'Femme'}, ${activeMother.age} ans) • N° carte CSU : ${activeMother.cmuNumber || 'non renseigné'}.`;
 
           const heroSubtitle = cat === 'chronic'
             ? (hasPathology
               ? `Suivi thérapeutique & biologique pour ${activeMother.pathology}. ${identityTail}`
-              : `Aucune affection de longue durée n'est enregistrée à ce jour pour votre dossier. Les consultations et bilans apparaîtront ici dès qu'un professionnel les consignera. ${identityTail}`)
+              : `Aucune affection de longue durée n'Est enregistrée à ce jour pour votre dossier. Les consultations et bilans apparaîtront ici dès qu'un professionnel les consignera. ${identityTail}`)
             : cat === 'surgery'
             ? (hasPathology
               ? `Suivi post-opératoire, rééducation & radiographies pour ${activeMother.pathology}. ${identityTail}`
-              : `Aucune intervention n'est enregistrée à ce jour pour votre dossier. Le suivi post-opératoire et les radiographies apparaîtront ici dès leur consignation. ${identityTail}`)
+              : `Aucune intervention n'est enregistrée à ce jour pour votre dossier. le suivi post-opératoire et les radiographies apparaîtront ici dès leur consignation. ${identityTail}`)
             : cat === 'pediatric'
             ? `Suivi de croissance OMS & calendrier vaccinal 0-5 ans pour ${activeMother.name} (${activeMother.age} ans). Prise en charge 100% CSU.`
             : `Accédez en toute sécurité au suivi prénatal et au calendrier vaccinal PEV de votre enfant. Bénéficiez des garanties de prise en charge 100% CSU.`;
@@ -2804,7 +2804,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                       style={{ background: '#dc2626', color: '#ffffff', border: '1.5px solid rgba(255,255,255,0.4)', borderRadius: '16px', padding: '1rem 1.75rem', fontWeight: '800', fontSize: '0.94rem', boxShadow: '0 8px 24px rgba(220, 38, 38, 0.45)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.6rem' }} 
                       onClick={() => setShowDangerSOSModal(true)}
                     >
-                      {cat === 'chronic' ? '🚨 Protocole urgence ALD (SAMU 1515)' : cat === 'surgery' ? '🚨 Alerte complication / urgence (SAMU 1515)' : cat === 'pediatric' ? '🚨 SOS urgence pédiatrique (SAMU 1515)' : '🚨 Signes de danger & urgence maternité (SAMU 1515)'}
+                      {cat === 'chronic' ? 'Protocole urgence ald (samu 1515)' : cat === 'surgery' ? 'Alerte complication / Urgence (samu 1515)' : cat === 'pediatric' ? 'Sos urgence pédiatrique (samu 1515)' : 'Signes de danger & urgence maternité (samu 1515)'}
                     </button>
 
                     <button 
@@ -2813,7 +2813,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                       style={{ background: '#059669', color: '#ffffff', border: '1.5px solid rgba(255,255,255,0.4)', borderRadius: '16px', padding: '1rem 1.75rem', fontWeight: '800', fontSize: '0.94rem', boxShadow: '0 8px 24px rgba(5, 150, 105, 0.45)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.6rem' }} 
                       onClick={handleGenerateDeliveryCertificate}
                     >
-                      {cat === 'chronic' ? '📜 Attestation ALD prise en charge 100% PDF' : cat === 'surgery' ? '📜 Compte-rendu opératoire PDF' : cat === 'pediatric' ? '📜 Attestation de vaccination PEV PDF' : '📜 Certificat d\'accouchement PDF (100% UNAMUSC)'}
+                      {cat === 'chronic' ? 'Attestation ald prise en charge 100% PDF' : cat === 'surgery' ? 'Compte-rendu opératoire PDF' : cat === 'pediatric' ? 'Attestation de vaccination PEV PDF' : '📜 Certificat d\'accouchement PDF (100% UNAMUSC)'}
                     </button>
                     
                     <button 
@@ -2959,7 +2959,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                           <span style={{ background: totalCount === 0 ? 'rgba(148,163,184,0.15)' : percentage === 100 ? 'rgba(16, 185, 129, 0.2)' : 'rgba(59, 130, 246, 0.2)', color: totalCount === 0 ? '#94a3b8' : percentage === 100 ? '#10b981' : '#3b82f6', border: `1px solid ${totalCount === 0 ? '#94a3b8' : percentage === 100 ? '#10b981' : '#3b82f6'}`, borderRadius: '20px', padding: '0.35rem 0.85rem', fontSize: '0.78rem', fontWeight: '700' }}>
                             {totalCount === 0
                               ? 'Aucun suivi saisi'
-                              : percentage === 100 ? '✔ Toutes effectuées' : `⌛ En cours (${completedCount}/${totalCount})`}
+                              : percentage === 100 ? 'Toutes effectuées' : `⌛ En cours (${completedCount}/${totalCount})`}
                           </span>
                         </div>
 
@@ -3013,7 +3013,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                             Aucune consultation enregistrée
                           </h6>
                           <p className="mb-0" style={{ fontSize: '0.82rem', color: 'var(--text-sub)', lineHeight: 1.55, maxWidth: '520px', margin: '0 auto' }}>
-                            Votre carnet ne contient aucune consultation pour le moment. Les entrées apparaîtront ici uniquement lorsqu'un médecin ou une sage-femme les consignera — Aucune donnée n'est générée automatiquement.
+                            Votre carnet ne contient aucune consultation pour le moment. Les entrées apparaîtront ici uniquement lorsqu'un médecin ou une sage-femme les consignera — Aucune donnée n'Est générée automatiquement.
                           </p>
                         </div>
                       );
@@ -3211,7 +3211,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                             className="hover-lift"
                             style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', color: '#fff', border: '1px solid rgba(255,255,255,0.35)', borderRadius: '12px', fontSize: '0.78rem', padding: '0.45rem 0.85rem', fontWeight: 800, cursor: 'pointer', transition: 'all 0.2s ease' }}
                             onClick={() => {
-                              setEditingAldItem({ title: '', status: '✅ Normal', date: new Date().toLocaleDateString('fr-FR') });
+                              setEditingAldItem({ title: '', status: 'Normal', date: new Date().toLocaleDateString('fr-FR') });
                               setShowAldModal(true);
                             }}
                           >
@@ -3371,7 +3371,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                        était délivré et renouvelé chaque mois, alors que
                        rien dans le dossier ne l'atteste. Un assuré pouvait
                        se présenter chez un pharmacien en réclamant un
-                       matériel sur la seule foi de cet écran. Le droit réel
+                       matériel sur la seule foi de cet écran. le droit réel
                        se vérifie auprès de la mutuelle, pas ici. */}
                     </div>
                   </div>
@@ -3392,7 +3392,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                           className="btn btn-sm btn-outline-primary fw-bold hover-lift"
                           style={{ borderRadius: '8px', fontSize: '0.74rem', padding: '0.25rem 0.6rem' }}
                           onClick={() => {
-                            setEditingPostOpItem({ title: '', status: '✅ Fait', date: new Date().toLocaleDateString('fr-FR') });
+                            setEditingPostOpItem({ title: '', status: 'Fait', date: new Date().toLocaleDateString('fr-FR') });
                             setShowPostOpModal(true);
                           }}
                         >
@@ -3418,7 +3418,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                         </span>
                       </div>
                       <small className="d-block text-muted" style={{ fontSize: '0.72rem', lineHeight: '1.35' }}>
-                        Ce dossier ne contient aucune ordonnance d'anticoagulant. Le statut « prescrit / Non prescrit » ne sera affiché qu'après saisie d'une ordonnance par un médecin — Il n'est jamais déduit d'autres soins.
+                        Ce dossier ne contient aucune ordonnance d'anticoagulant. le statut « prescrit / Non prescrit » ne sera affiché qu'après saisie d'une ordonnance par un médecin — Il n'Est jamais déduit d'autres soins.
                       </small>
                     </div>
 
@@ -3443,7 +3443,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                               lineHeight: 1.55
                             }}
                           >
-                            Aucun protocole post-opératoire n'est enregistré. Les consignes de soins ne s'afficheront ici qu'une fois réellement prescrites par le chirurgien.
+                            Aucun protocole post-opératoire n'Est enregistré. Les consignes de soins ne s'afficheront ici qu'une fois réellement prescrites par le chirurgien.
                           </p>
                         )}
                         {postOpProtocolItems.map(item => (
@@ -3593,14 +3593,14 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                 }}>
                   <div className="d-flex justify-content-between align-items-center mb-3">
                     <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.1rem' }}>
-                      {activeMother.category === 'chronic' ? 'Vos garanties ALD 100% CSU' : activeMother.category === 'surgery' ? 'Vos garanties Chirurgie 100% CSU' : 'Vos avantages CSU'}
+                      {activeMother.category === 'chronic' ? 'Vos garanties ALD 100% CSU' : activeMother.category === 'surgery' ? 'Vos garanties chirurgie 100% CSU' : 'Vos avantages CSU'}
                     </h6>
                     <span style={{ fontSize: '1.5rem' }}><ProIcon name="senegal-flag" /></span>
                   </div>
 
                   <p className="small mb-3" style={{ opacity: 0.95, lineHeight: '1.5' }}>
                     {activeMother.category === 'chronic' 
-                      ? 'Dans le cadre du programme UNAMUSC, la prise en charge de votre affection de longue durée est exonérée à 100%.'
+                      ? 'Dans le cadre du programme UNAMUSC, la prise en charge de votre affection de longue durée Est exonérée à 100%.'
                       : activeMother.category === 'surgery'
                       ? 'Prise en charge intégrale UNAMUSC pour votre intervention orthopédique et vos soins de rééducation.'
                       : 'Dans le cadre du programme UNAMUSC, vos frais de maternité sont couverts à 100%.'}
@@ -3621,7 +3621,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                     <div className="d-flex align-items-start gap-2">
                       <span><ProIcon name="info" color="#0284c7" /></span>
                       <span>
-                        Le niveau de prise en charge applicable à votre dossier
+                        le niveau de prise en charge applicable à votre dossier
                         n'est pas renseigné ici. Il dépend de votre commune,
                         de votre mutuelle et de l'acte concerné : demandez
                         votre taux exact à votre mutuelle avant tout acte.
@@ -3692,7 +3692,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                     style={{ background: 'var(--bg-card-subtle)', color: '#10b981', border: '1px solid #10b981', borderRadius: '10px', padding: '0.45rem 0.85rem', fontWeight: '700', fontSize: '0.78rem', cursor: 'pointer' }}
                     onClick={() => setShowAskMidwifeModal(true)}
                   >
-                    {activeMother.category === 'chronic' ? '💬 Contacter le médecin' : activeMother.category === 'surgery' ? '🚨 Signaler une douleur' : 'Poser une question'}
+                    {activeMother.category === 'chronic' ? 'Contacter le médecin' : activeMother.category === 'surgery' ? 'Signaler une douleur' : 'Poser une question'}
                   </button>
                 </div>
 
@@ -3755,7 +3755,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
                     <div>
                       <h5 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}><ProIcon name="pill" /> Ordonnance thérapeutique & traitement ald permanent</h5>
-                      <small className="text-muted" style={{ fontSize: '0.82rem' }}>Délivrance gratuite en pharmacie agréée UNAMUSC sur présentation de la carte CSU N° {activeMother.cmuNumber}</small>
+                      <small className="text-muted" style={{ fontSize: '0.82rem' }}>Délivrance gratuite en pharmacie agréée UNAMUSC sur présentation de la carte CSU n° {activeMother.cmuNumber}</small>
                     </div>
                     <div className="d-flex gap-2">
                       {canEditMaternity && (
@@ -3764,7 +3764,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                           className="btn btn-sm btn-outline-danger fw-bold hover-lift"
                           style={{ borderRadius: '10px', padding: '0.45rem 0.9rem' }}
                           onClick={() => {
-                            setEditingPrescription({ name: '', form: '', specialty: '🩸 Diabétologie', dosage: '', coverage: '✅ 100% CSU Gratuit' });
+                            setEditingPrescription({ name: '', form: '', specialty: 'Diabétologie', dosage: '', coverage: '100% CSU gratuit' });
                             setShowPrescriptionModal(true);
                           }}
                         >
@@ -3837,7 +3837,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                  « Lovenox 0,4 ml / Paracétamol codeiné » avec posologies. Elles
                  s'affichaient pour tout assuré de la catégorie chirurgie, quel
                  que soit son dossier réel — un compte-rendu d'imagerie et une
-                 ordonnance (notamment une opioïde) inventés. Le bloc est
+                 ordonnance (notamment une opioïde) inventés. le bloc est
                  remplacé par un état vide honnête : la partie gauche « Galerie
                  d'imagerie » reste en place mais ne prétend plus qu'un examen
                  existe. */
@@ -3863,7 +3863,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                       Aucun examen d'imagerie enregistré
                     </h6>
                     <p className="mb-0" style={{ fontSize: '0.82rem', color: 'var(--text-sub)', lineHeight: 1.55, maxWidth: '560px', margin: '0 auto' }}>
-                      Aucune radiographie ni aucun scanner n'est rattaché à ce dossier. Les clichés réellement réalisés par votre équipe soignante apparaîtront ici.
+                      Aucune radiographie ni aucun scanner n'Est rattaché à ce dossier. Les clichés réellement réalisés par votre équipe soignante apparaîtront ici.
                     </p>
                   </div>
                 </div>
@@ -4224,7 +4224,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                             <td><span style={{ color: 'var(--text-main)', fontSize: '0.82rem' }}><ProIcon name="hospital" /> {vac.structure}</span></td>
                             <td>
                               <span className={`badge ${vac.completed ? 'bg-success text-white' : 'bg-warning-subtle text-warning border border-warning'}`} style={{ borderRadius: '8px', padding: '0.35rem 0.7rem', fontSize: '0.76rem' }}>
-                                {vac.completed ? '✅ Administré (100% CSU)' : `🗓️ ${vac.status}`}
+                                {vac.completed ? 'Administré (100% CSU)' : `🗓️ ${vac.status}`}
                               </span>
                             </td>
                             <td>
@@ -4335,15 +4335,15 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   onClick={() => {
                     generateOfficialPdf({
                       filename: `fiche_conseil_${selectedAdviceArticle.id}.pdf`,
-                      docType: 'FICHE CONSEIL MÉDICALE OFFICIELLE',
+                      docType: 'Fiche conseil médicale officielle',
                       title: selectedAdviceArticle.title,
                       referenceNo: `CONSEIL-${Date.now().toString().slice(-6)}`,
                       beneficiaryName: citizenUser ? `${citizenUser.firstName || citizenUser.first_name || ''} ${citizenUser.lastName || citizenUser.last_name || ''}`.trim() || 'Awa Ndiaye' : 'Awa Ndiaye',
                       cmuNumber: 'SN-DK-MED-8472',
                       structureName: 'Conseil National de l\'Ordre des Sages-Femmes (UNAMUSC)',
                       details: [
-                        { label: 'Catégorie & Thème', value: selectedAdviceArticle.badge },
-                        { label: 'Rédacteur Médical', value: selectedAdviceArticle.author },
+                        { label: 'Catégorie & thème', value: selectedAdviceArticle.badge },
+                        { label: 'Rédacteur médical', value: selectedAdviceArticle.author },
                         { label: 'Temps de lecture', value: selectedAdviceArticle.readTime },
                         ...selectedAdviceArticle.content.map((point, index) => ({
                           label: `Recommandation N°${index + 1}`,
@@ -4351,7 +4351,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                         })),
                         { label: 'Conseil / Astuce de l\'Expert', value: selectedAdviceArticle.tips }
                       ],
-                      notes: 'Cette fiche conseil médicale officielle est délivrée dans le cadre du Programme National Santé Maternelle & Infantile UNAMUSC Sénégal (100% CSU).'
+                      notes: 'Cette fiche conseil médicale officielle Est délivrée dans le cadre du programme national santé maternelle & infantile UNAMUSC Sénégal (100% CSU).'
                     });
                   }}
                 >
@@ -4384,7 +4384,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
               </div>
               <div className="col-8">
                 <label className="form-label fw-bold small">Catégorie / Badge *</label>
-                <input type="text" className="form-control" value={newAdviceForm.badge} onChange={(e) => setNewAdviceForm({...newAdviceForm, badge: e.target.value})} placeholder="Ex: Nutrition Maternelle" required />
+                <input type="text" className="form-control" value={newAdviceForm.badge} onChange={(e) => setNewAdviceForm({...newAdviceForm, badge: e.target.value})} placeholder="Ex: nutrition maternelle" required />
               </div>
             </div>
 
@@ -4395,7 +4395,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
 
             <div className="mb-3">
               <label className="form-label fw-bold small">Sous-titre / Résumé</label>
-              <input type="text" className="form-control" value={newAdviceForm.subtitle} onChange={(e) => setNewAdviceForm({...newAdviceForm, subtitle: e.target.value})} placeholder="Ex: Guide pratique pour la maman au 3ème trimestre" />
+              <input type="text" className="form-control" value={newAdviceForm.subtitle} onChange={(e) => setNewAdviceForm({...newAdviceForm, subtitle: e.target.value})} placeholder="Ex: guide pratique pour la maman au 3ème trimestre" />
             </div>
 
             <div className="mb-3">
@@ -4716,7 +4716,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                 onClick={() => {
                   generateOfficialPdf({
                     filename: 'charte_droits_maternite_csu.pdf',
-                    docType: 'CHARTE NATIONALE DE PRISE EN CHARGE MATERNITÉ 100% CSU',
+                    docType: 'Charte nationale de prise en charge maternité 100% CSU',
                     title: 'Droits & garanties de prise en charge maternité UNAMUSC',
                     referenceNo: 'CHARTE-MAT-2026-100',
                     beneficiaryName: citizenUser ? `${citizenUser.firstName || citizenUser.first_name || ''} ${citizenUser.lastName || citizenUser.last_name || ''}`.trim() || 'Awa Ndiaye' : 'Awa Ndiaye',
@@ -4756,7 +4756,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
             </div>
             <div className="mb-2">
               <label className="form-label small fw-bold">Observations cliniques</label>
-              <textarea className="form-control" rows={3} style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={newCpnForm.desc} onChange={(e) => setNewCpnForm({ ...newCpnForm, desc: e.target.value })} placeholder="Ex: Hauteur utérine, BCF, VAT, TPI-SP..." />
+              <textarea className="form-control" rows={3} style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={newCpnForm.desc} onChange={(e) => setNewCpnForm({ ...newCpnForm, desc: e.target.value })} placeholder="Ex: hauteur utérine, bcf, VAT, TPI-SP..." />
             </div>
             <div className="row g-2 mb-2">
               <div className="col-6">
@@ -4791,7 +4791,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
               </div>
               <div className="col-6">
                 <label className="form-label small fw-bold">Statut</label>
-                <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={newCpnForm.status} onChange={(e) => setNewCpnForm({ ...newCpnForm, status: e.target.value })} placeholder="Ex: CPN 3 - À VENIR" />
+                <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '10px' }} value={newCpnForm.status} onChange={(e) => setNewCpnForm({ ...newCpnForm, status: e.target.value })} placeholder="Ex: CPN 3 - à venir" />
               </div>
             </div>
             <div className="mb-3">
@@ -4976,7 +4976,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
             <div className="row g-3 mb-3">
               <div className="col-md-6">
                 <label className="form-label small fw-bold">Échéance vaccinale / Âge (calculé) *</label>
-                <input type="text" className="form-control fw-semibold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newVaccineForm.ageLabel} onChange={e => setNewVaccineForm({ ...newVaccineForm, ageLabel: e.target.value })} required placeholder="ex: 10 Semaines (2 mois & demi)" />
+                <input type="text" className="form-control fw-semibold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newVaccineForm.ageLabel} onChange={e => setNewVaccineForm({ ...newVaccineForm, ageLabel: e.target.value })} required placeholder="Ex: 10 semaines (2 mois & demi)" />
               </div>
 
               <div className="col-md-6">
@@ -4991,22 +4991,22 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
 
             <div className="mb-3">
               <label className="form-label small fw-bold">Vaccins administrés *</label>
-              <input type="text" className="form-control fw-bold text-success" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newVaccineForm.vaccines} onChange={e => setNewVaccineForm({ ...newVaccineForm, vaccines: e.target.value })} required placeholder="ex: Penta 2 + VPO 2 + Rota 2 + Pneumo 2" />
+              <input type="text" className="form-control fw-bold text-success" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newVaccineForm.vaccines} onChange={e => setNewVaccineForm({ ...newVaccineForm, vaccines: e.target.value })} required placeholder="Ex: penta 2 + vpo 2 + rota 2 + pneumo 2" />
             </div>
 
             <div className="mb-3">
               <label className="form-label small fw-bold">Sous-titre / Type de dose (ex: rappel de 2ème dose)</label>
-              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newVaccineForm.subtext || ''} onChange={e => setNewVaccineForm({ ...newVaccineForm, subtext: e.target.value })} placeholder="ex: Rappel de 2ème dose / 4 vaccins combinés" />
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newVaccineForm.subtext || ''} onChange={e => setNewVaccineForm({ ...newVaccineForm, subtext: e.target.value })} placeholder="Ex: rappel de 2ème dose / 4 vaccins combinés" />
             </div>
 
             <div className="mb-3">
               <label className="form-label small fw-bold">Maladies protégées</label>
-              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newVaccineForm.diseases || ''} onChange={e => setNewVaccineForm({ ...newVaccineForm, diseases: e.target.value })} placeholder="ex: Diphtérie, tétanos, coqueluche, méningite..." />
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newVaccineForm.diseases || ''} onChange={e => setNewVaccineForm({ ...newVaccineForm, diseases: e.target.value })} placeholder="Ex: diphtérie, tétanos, coqueluche, méningite..." />
             </div>
 
             <div className="mb-4">
               <label className="form-label small fw-bold">Structure de santé agréée *</label>
-              <input type="text" className="form-control fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newVaccineForm.structure} onChange={e => setNewVaccineForm({ ...newVaccineForm, structure: e.target.value })} required placeholder="ex: Centre Hospitalier Abass Ndao" />
+              <input type="text" className="form-control fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newVaccineForm.structure} onChange={e => setNewVaccineForm({ ...newVaccineForm, structure: e.target.value })} required placeholder="Ex: centre hospitalier Abass Ndao" />
             </div>
 
             <div className="d-flex justify-content-end gap-2.5 pt-2 border-top" style={{ borderColor: 'var(--border-color)' }}>
@@ -5106,12 +5106,12 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
 
             <div className="mb-3">
               <label className="form-label small fw-bold">Sous-titre / Type de dose (ex: rappel de 2ème dose)</label>
-              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={editVaccineForm.subtext || ''} onChange={e => setEditVaccineForm({ ...editVaccineForm, subtext: e.target.value })} placeholder="ex: Rappel de 2ème dose" />
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={editVaccineForm.subtext || ''} onChange={e => setEditVaccineForm({ ...editVaccineForm, subtext: e.target.value })} placeholder="Ex: rappel de 2ème dose" />
             </div>
 
             <div className="mb-3">
               <label className="form-label small fw-bold">Maladies protégées</label>
-              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={editVaccineForm.diseases || ''} onChange={e => setEditVaccineForm({ ...editVaccineForm, diseases: e.target.value })} placeholder="ex: Diphtérie, tétanos, coqueluche..." />
+              <input type="text" className="form-control" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={editVaccineForm.diseases || ''} onChange={e => setEditVaccineForm({ ...editVaccineForm, diseases: e.target.value })} placeholder="Ex: diphtérie, tétanos, coqueluche..." />
             </div>
 
             <div className="mb-4">
@@ -5262,7 +5262,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                       }} 
                     />
                     <span className={dose.given ? 'text-success fw-bold' : 'text-warning fw-bold'}>
-                      {dose.given ? '✅ Administré' : '⏳ Non administré'}
+                      {dose.given ? 'Administré' : '⏳ non administré'}
                     </span>
                   </label>
                 </div>
@@ -5310,7 +5310,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
             <div className="row g-3 mb-3">
               <div className="col-md-6">
                 <label className="form-label small fw-bold">Échéance mensuelle *</label>
-                <input type="text" className="form-control fw-semibold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newGrowthForm.month} onChange={e => setNewGrowthForm({ ...newGrowthForm, month: e.target.value })} required placeholder="ex: 3ème Mois (M3)" />
+                <input type="text" className="form-control fw-semibold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newGrowthForm.month} onChange={e => setNewGrowthForm({ ...newGrowthForm, month: e.target.value })} required placeholder="Ex: 3ème mois (m3)" />
               </div>
 
               <div className="col-md-6">
@@ -5547,7 +5547,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                   value={editingMother.pathology || ''}
                   onChange={(e) => setEditingMother({ ...editingMother, pathology: e.target.value })}
-                  placeholder="Ex: Diabète Type 2 & HTA Sévère"
+                  placeholder="Ex: diabète type 2 & HTA sévère"
                 />
               </div>
             </div>
@@ -5561,7 +5561,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                   value={editingMother.edd || ''}
                   onChange={(e) => setEditingMother({ ...editingMother, edd: e.target.value })}
-                  placeholder="Ex: 15/10/2026 ou Suivi mensuel"
+                  placeholder="Ex: 15/10/2026 ou suivi mensuel"
                 />
               </div>
 
@@ -5573,7 +5573,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                   value={editingMother.doctorRef || ''}
                   onChange={(e) => setEditingMother({ ...editingMother, doctorRef: e.target.value })}
-                  placeholder="Ex: Dr. Ousmane Sow (Cardiologie)"
+                  placeholder="Ex: Dr. Ousmane Sow (cardiologie)"
                 />
               </div>
             </div>
@@ -5659,7 +5659,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
       {showPostOpModal && editingPostOpItem && createPortal(
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
           <div style={{ maxWidth: '500px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '1.75rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)' }}>
-            <h5 className="fw-extrabold mb-3 text-primary"><ProIcon name="bandage" /> {editingPostOpItem.id ? "Modifier un soin Post-Op" : "Ajouter un élément de suivi Post-Op"}</h5>
+            <h5 className="fw-extrabold mb-3 text-primary"><ProIcon name="bandage" /> {editingPostOpItem.id ? "Modifier un soin post-op" : "Ajouter un élément de suivi post-op"}</h5>
             <form onSubmit={handleSavePostOpItem} className="d-flex flex-column gap-3">
               <div>
                 <label className="form-label small fw-bold mb-1">Intitulé du soin / Intervention *</label>
@@ -5669,7 +5669,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                   value={editingPostOpItem.title || ''}
                   onChange={(e) => setEditingPostOpItem({ ...editingPostOpItem, title: e.target.value })}
-                  placeholder="Ex: 🩹 Pansements stériles J+3 à J+14"
+                  placeholder="Ex: pansements stériles J+3 à J+14"
                   required
                 />
               </div>
@@ -5722,7 +5722,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                   value={editingPrescription.name || ''}
                   onChange={(e) => setEditingPrescription({ ...editingPrescription, name: e.target.value })}
-                  placeholder="Ex: Metformine 1000 mg"
+                  placeholder="Ex: metformine 1000 mg"
                   required
                 />
               </div>
@@ -5734,7 +5734,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                   value={editingPrescription.form || ''}
                   onChange={(e) => setEditingPrescription({ ...editingPrescription, form: e.target.value })}
-                  placeholder="Ex: Comprimés sécables"
+                  placeholder="Ex: comprimés sécables"
                 />
               </div>
               <div>
@@ -5797,7 +5797,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                   value={editingAldVital.type || ''}
                   onChange={(e) => setEditingAldVital({ ...editingAldVital, type: e.target.value })}
-                  placeholder="Ex: Glycémie à jeun, Tension Artérielle"
+                  placeholder="Ex: glycémie à jeun, tension artérielle"
                   required
                 />
               </div>
@@ -5821,7 +5821,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                   value={editingAldVital.target || ''}
                   onChange={(e) => setEditingAldVital({ ...editingAldVital, target: e.target.value })}
-                  placeholder="Ex: Objectif < 1.26 g/L"
+                  placeholder="Ex: objectif < 1.26 g/L"
                 />
               </div>
               <div>
@@ -5872,7 +5872,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
             <p className="mb-4" style={{ color: 'var(--text-sub, #94a3b8)', fontSize: '0.92rem', lineHeight: '1.55' }}>
               Voulez-vous vraiment supprimer définitivement <strong style={{ color: '#ef4444' }}>{confirmDeleteObj.title}</strong> ?
               <br />
-              <small className="text-muted d-block mt-1">Cette action est irréversible dans le système UNAMUSC.</small>
+              <small className="text-muted d-block mt-1">Cette action Est irréversible dans le système UNAMUSC.</small>
             </p>
 
             <div className="d-flex justify-content-center gap-3 pt-2">

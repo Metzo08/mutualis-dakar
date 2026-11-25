@@ -2,7 +2,7 @@
  * ImportControl.jsx — Importation contrôlée des adhérents et des photos (Module 2)
  *
  * Aucune donnée n'est écrite dans le registre opérationnel avant la
- * prévisualisation ET la validation explicite. Le parcours imposé est :
+ * prévisualisation ET la validation explicite. le parcours imposé est :
  *   1. Lot + fichier Excel + photos          (POST /api/imports puis /rows)
  *   2. Contrôles automatiques                (POST /api/imports/:id/controls)
  *   3. Prévisualisation et corrections       (GET/PATCH /api/imports/:id)
@@ -134,7 +134,7 @@ export default function ImportControl() {
     } catch {
       setRowsToSend([]);
       setRowCount(0);
-      setMessage({ type: 'error', text: 'Fichier illisible. Utilisez un classeur .xlsx non protégé.' });
+      setMessage({ type: 'error', text: 'Fichier illisible. Utilisez un classeur .XLSX non protégé.' });
     }
   };
 
@@ -297,7 +297,7 @@ export default function ImportControl() {
       <h1 className="h4 mb-1"><ProIcon name="download" /> Importation contrôlée des adhérents</h1>
       <p className="text-muted small mb-3">
         Aucun dossier n'entre dans le registre avant la prévisualisation et la validation explicite. Les photos sont
-        associées par le <strong>Matricule</strong> présent dans le nom du fichier, jamais par le seul nom ou prénom.
+        associées par Le <strong>Matricule</strong> présent dans le nom du fichier, jamais par le seul nom ou prénom.
       </p>
 
       {/* 1 — Préparation */}
@@ -318,7 +318,7 @@ export default function ImportControl() {
           </div>
           <div className="col-md-2 d-flex align-items-end">
             <button className="btn btn-primary btn-sm w-100" onClick={startImport} disabled={!!busy || rowCount === 0}>
-              {busy === 'create' ? '⏳ Traitement…' : `Contrôler ${rowCount || ''}`}
+              {busy === 'create' ? '⏳ traitement…' : `Contrôler ${rowCount || ''}`}
             </button>
           </div>
         </div>

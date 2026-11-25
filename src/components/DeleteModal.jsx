@@ -99,7 +99,7 @@ export default function DeleteModal({
           textAlign: 'left'
         }}>
           <small style={{ color: '#ef4444', fontWeight: '700', textTransform: 'none', fontSize: '0.72rem', display: 'block', marginBottom: '0.3rem', letterSpacing: '0.05em' }}>
-            ÉLÉMENT À SUPPRIMER ({itemType.toUpperCase()}) :
+            Élément à supprimer ({itemType.toUpperCase()}) :
           </small>
           <strong style={{ color: '#f8fafc', fontSize: '0.98rem', display: 'block', lineHeight: '1.4' }}>
             {title}

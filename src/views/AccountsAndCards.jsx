@@ -99,7 +99,7 @@ function ActionForm({ title, description, reasons, confirmLabel, danger, onSubmi
       <div className="d-flex flex-wrap gap-2 pt-1">
         <button className="btn btn-sm px-3 py-2" disabled={busy || !reason}
           style={{ background: danger ? '#dc2626' : '#2563eb', color: '#fff', fontWeight: 700, borderRadius: '10px' }}>
-          {busy ? '⏳ Traitement…' : confirmLabel}
+          {busy ? '⏳ traitement…' : confirmLabel}
         </button>
       </div>
     </form>
@@ -291,7 +291,7 @@ export default function AccountsAndCards() {
 
   /** Exécute une opération serveur puis recharge la fiche et les demandes. */
   const perform = async (label, url, method, body) => {
-    if (!window.confirm(`${label}\n\nCette opération est journalisée. Confirmer ?`)) return;
+    if (!window.confirm(`${label}\n\nCette opération Est journalisée. Confirmer ?`)) return;
     setBusy(true);
     setActionMsg(null);
     setOneTimeCode(null);
@@ -402,7 +402,7 @@ export default function AccountsAndCards() {
           </div>
           <div className="col-md-5">
             <button className="btn btn-primary btn-sm w-100" disabled={searchLoading}>
-              {searchLoading ? '⏳ Recherche…' : '🔍 Rechercher (critères combinables)'}
+              {searchLoading ? '⏳ recherche…' : 'Rechercher (critères combinables)'}
             </button>
           </div>
         </form>
@@ -519,7 +519,7 @@ export default function AccountsAndCards() {
                   style={{ borderRadius: '10px' }}
                   onClick={() => setShowAccessCode((v) => !v)}
                 >
-                  {showAccessCode ? '🙈 Masquer' : '👁️ Afficher'}
+                  {showAccessCode ? 'Masquer' : 'Afficher'}
                 </button>
                 <button
                   type="button"
@@ -592,8 +592,8 @@ export default function AccountsAndCards() {
           <div className="card mb-3">
             <h5 className="mb-2">3 · Vérification de l'identité (préalable obligatoire)</h5>
             <p className="small text-muted mb-2">
-              Le nom et le numéro de pièce saisis par l'assuré ne suffisent pas : l'agent habilité atteste avoir contrôlé
-              la pièce physique. Le serveur confronte la déclaration au dossier et journalise le résultat.
+              le nom et le numéro de pièce saisis par l'assuré ne suffisent pas : l'agent habilité atteste avoir contrôlé
+              la pièce physique. le serveur confronte la déclaration au dossier et journalise le résultat.
             </p>
             <form className="row g-2" onSubmit={runVerify}>
               <div className="col-md-3">
@@ -619,7 +619,7 @@ export default function AccountsAndCards() {
               </div>
               <div className="col-12">
                 <button className="btn btn-sm btn-outline-primary" disabled={verifBusy}>
-                  {verifBusy ? '⏳ Vérification…' : '✅ Vérifier l\'identité'}
+                  {verifBusy ? '⏳ vérification…' : '✅ Vérifier l\'identité'}
                 </button>
               </div>
             </form>
@@ -671,7 +671,7 @@ export default function AccountsAndCards() {
             {cardStatus === 'active' && (
               <ActionForm
                 title="🛑 Bloquer la carte"
-                description="Refusée à la prochaine vérification serveur. Le dossier et le compte restent intacts. Une copie imprimée hors ligne ne peut pas être invalidée à distance."
+                description="Refusée à la prochaine vérification serveur. le dossier et le compte restent intacts. Une copie imprimée hors ligne ne peut pas être invalidée à distance."
                 reasons={BLOCK_REASONS}
                 confirmLabel="Bloquer la carte"
                 danger
@@ -727,12 +727,12 @@ export default function AccountsAndCards() {
                     );
                   }}
                 >
-                  <input className="form-control form-control-sm mb-2" placeholder="Matricule de la NOUVELLE carte"
+                  <input className="form-control form-control-sm mb-2" placeholder="Matricule de la nouvelle carte"
                     value={newCard} onChange={(e) => setNewCard(e.target.value.toUpperCase())} />
                 </ActionForm>
                 <ActionForm
                   title="🗑️ Détruire la carte (administrateur)"
-                  description="Destruction logique : la carte sort du service définitivement. Le dossier et le compte de l'assuré sont CONSERVÉS."
+                  description="Destruction logique : la carte sort du service définitivement. le dossier et le compte de l'assuré sont CONSERVÉS."
                   reasons={DESTROY_REASONS}
                   confirmLabel="Détruire la carte"
                   danger
@@ -763,7 +763,7 @@ export default function AccountsAndCards() {
             <div className="border rounded p-2" style={{ background: 'var(--bg-subtle, #f8fafc)' }}>
               <div className="fw-bold small mb-1"><ProIcon name="edit" /> Modifier les informations administratives</div>
               <div className="small text-muted mb-2">
-                Téléphone, adresse et motif obligatoire. Le nom, la pièce et la MSD ne sont modifiables que par un administrateur.
+                Téléphone, adresse et motif obligatoire. le nom, la pièce et la MSD ne sont modifiables que par un administrateur.
               </div>
               <div className="row g-2">
                 <div className="col-md-3">

@@ -102,7 +102,7 @@ export default function CmuCard({ citizen }) {
           }}
           onClick={() => setFlipped(!flipped)}
         >
-          <ProIcon name="refresh" /> {flipped ? 'Voir la face Recto' : 'Voir la face Verso (QR Code)'}
+          <ProIcon name="refresh" /> {flipped ? 'Voir la face recto' : 'Voir la face verso (QR code)'}
         </button>
 
         <button
@@ -181,7 +181,7 @@ export default function CmuCard({ citizen }) {
               padding: '0.35rem 0.85rem', borderRadius: '16px', fontSize: '0.76rem', fontWeight: '800',
               whiteSpace: 'nowrap', boxShadow: '0 2px 8px rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.2)'
             }}>
-              {isActive ? '● ACTIF' : '🔴 SUSPENDU'}
+              {isActive ? '● actif' : 'Suspendu'}
             </span>
           </div>
 

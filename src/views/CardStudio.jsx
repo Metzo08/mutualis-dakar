@@ -76,7 +76,7 @@ const SenegalFlagSvg = ({ style }) => (
  * Style du FILIGRANE (logo du parrain / partenaire), partagé par TOUTES les
  * familles de cartes — classique, CMU-Élèves et CMU-Daara.
  *
- * Le logo n'est plus un petit picto figé dans un coin : il est piloté par
+ * le logo n'est plus un petit picto figé dans un coin : il est piloté par
  * les réglages « Personnalisation complète de la carte »
  * (Position / Opacité / Taille du filigrane), qui n'existaient jusqu'ici
  * que pour les cartes scolaires. La carte classique les ignorait et
@@ -171,7 +171,7 @@ function SchoolCardFront({ cardData, currentUnion, getMsdLogo, customLogo = null
       <div className="school-card-details">
         <div><span style={labelStyle}>Prénom(s)</span><strong style={valueStyle}>{cardData.firstName}</strong></div>
         <div><span style={labelStyle}>Nom</span><strong style={valueStyle}>{cardData.lastName}</strong></div>
-        <div className="school-card-wide"><span style={labelStyle}>🎂 Né(e) le & lieu • Sexe</span><strong style={valueStyle}>{cardData.birthDate} à {cardData.birthPlace} • {cardData.gender === 'F' ? 'Féminin' : 'Masculin'}</strong></div>
+        <div className="school-card-wide"><span style={labelStyle}>🎂 Né(e) Le & lieu • Sexe</span><strong style={valueStyle}>{cardData.birthDate} à {cardData.birthPlace} • {cardData.gender === 'F' ? 'Féminin' : 'Masculin'}</strong></div>
         <div className="school-card-wide"><span style={labelStyle}>{program.idLabel}</span><strong style={valueStyle}>{idValue}</strong></div>
         <div className="school-card-wide"><span style={labelStyle}>{program.schoolWord}</span><strong style={valueStyle}>{cardData.academicData.schoolName || cardData.mutuelleOrigine}</strong></div>
         {/* IA / IEF : uniquement pour les élèves de l'école publique.
@@ -190,7 +190,7 @@ function SchoolCardFront({ cardData, currentUnion, getMsdLogo, customLogo = null
         {cardData.photoUrl ? <SecurePhoto photoUrl={cardData.photoUrl} serverId={cardData.serverId || cardData.cmuNumber} alt={cardData.fullName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span>Photo<br />À importer</span>}
       </div>
     </div>
-    <div className="school-card-footer"><span>{program.frontFooter}</span><span>DÉLIVRÉE PAR LA MSD DE {currentUnion.region.toUpperCase()}</span></div>
+    <div className="school-card-footer"><span>{program.frontFooter}</span><span>Délivrée par la MSD de {currentUnion.region.toUpperCase()}</span></div>
   </>;
 }
 
@@ -523,7 +523,7 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
         text: `🔢 Lot ${lot.code} attribué · ${recoded} carte(s) recodée(s) au format REGION-MSD-ANNEE-SEQUENCE sur ${list.length} dossier(s).${persisted ? ' Provenance enregistrée en base.' : ' Base indisponible : provenance conservée sur ce poste uniquement.'}`
       });
     } catch (e) {
-      setBulkNotice({ type: 'error', text: `❌ Recodage impossible : ${e.message}` });
+      setBulkNotice({ type: 'error', text: `Recodage impossible : ${e.message}` });
     } finally {
       setDeleteBusy(false);
     }
@@ -604,10 +604,10 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
       const people = list.reduce((n, m) => n + 1 + (m.dependents || []).length, 0);
       setBulkNotice({
         type: 'success',
-        text: `🧹 ${list.length} dossier(s) / ${people} carte(s) purgé(s) à l'ancien format.${serverDone ? ` ${serverDone} retiré(s) de la base.` : ''} Réimportez le fichier Excel et le dossier de photos : toutes les cartes repartiront au format officiel REGION-MSD-ANNEE-SEQUENCE.`
+        text: `🧹 ${list.length} dossier(s) / ${people} carte(s) purgé(s) à l'ancien format.${serverDone ? ` ${serverDone} retiré(s) de la base.` : ''} réimportez le fichier Excel et le dossier de photos : toutes les cartes repartiront au format officiel region-MSD-annee-sequence.`
       });
     } catch (e) {
-      setBulkNotice({ type: 'error', text: `❌ Purge impossible : ${e.message}` });
+      setBulkNotice({ type: 'error', text: `Purge impossible : ${e.message}` });
     } finally {
       setDeleteBusy(false);
       setDeleteTargets([]);
@@ -641,7 +641,7 @@ export default function CardStudio({ lang = 'fr', setView = null }) {
 const [printLotConfirmed, setPrintLotConfirmed] = useState(false);
 
   // ── FILTRAGE PAR LOT DE CAMPAGNE ───────────────────────────────────────
-  // Chaque import ouvre un lot (LOT-2026-001, LOT-2026-002…). Le filtre
+  // Chaque import ouvre un lot (LOT-2026-001, LOT-2026-002…). le filtre
   // permet de retrouver d'un coup d'œil les cartes d'une même campagne
   // d'enrôlement, et de n'agir que sur elle.
   const [lotFilter, setLotFilter] = useState('ALL');
@@ -776,7 +776,7 @@ const [printLotConfirmed, setPrintLotConfirmed] = useState(false);
       const res = await apiFetch(`/api/campaign-lots/${encodeURIComponent(code)}/print`, { method: 'POST' });
       if (!res || !res.ok) {
         const err = res ? await res.json().catch(() => ({})) : {};
-        setBulkNotice({ type: 'error', text: `❌ Remise non enregistrée : ${err.error || (res ? `statut ${res.status}` : 'backend injoignable')}.` });
+        setBulkNotice({ type: 'error', text: `Remise non enregistrée : ${err.error || (res ? `statut ${res.status}` : 'backend injoignable')}.` });
         return;
       }
       const data = await res.json().catch(() => ({}));
@@ -789,10 +789,10 @@ const [printLotConfirmed, setPrintLotConfirmed] = useState(false);
       }));
       setBulkNotice({
         type: 'success',
-        text: `✅ Lot ${lotLabel(code)} marqué REMIS à la MSD ${s.msd || 'DKR'} — ${s.conformes || 0} carte(s) conforme(s), gain constaté : ${gain.toLocaleString('fr-FR')} FCFA. Exportez le bordereau comptable pour la trésorerie.`
+        text: `✅ Lot ${lotLabel(code)} marqué remis à la MSD ${s.msd || 'DKR'} — ${s.conformes || 0} carte(s) conforme(s), gain constaté : ${gain.toLocaleString('fr-FR')} FCFA. Exportez le bordereau comptable pour la trésorerie.`
       });
     } catch (e) {
-      setBulkNotice({ type: 'error', text: `❌ Remise impossible : ${e.message}` });
+      setBulkNotice({ type: 'error', text: `Remise impossible : ${e.message}` });
     } finally {
       setRemiseBusy(false);
       setRemiseTarget(null);
@@ -831,7 +831,7 @@ const [printLotConfirmed, setPrintLotConfirmed] = useState(false);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    setBulkNotice({ type: 'success', text: '✅ Bordereau comptable téléchargé — une ligne par lot de collecte (MSD, dates, cartes, gain).' });
+    setBulkNotice({ type: 'success', text: 'Bordereau comptable téléchargé — Une ligne par lot de collecte (MSD, dates, cartes, gain).' });
   };
 
   /** Nom lisible d'un lot : provenance en tete, code en secours. */
@@ -880,7 +880,7 @@ const [printLotConfirmed, setPrintLotConfirmed] = useState(false);
   /**
    * Applique un logo à TOUTES les fiches du lot affiché, en un clic.
    *
-   * Le logo du parrain existe déjà par le circuit « parrain → logo » : il faut
+   * le logo du parrain existe déjà par le circuit « parrain → logo » : il faut
    * attribuer le parrain carte par carte. Pour une campagne entière — le cas
    * de la MSD de Grand Yoff, dont les cartes ne sont pas encore imprimées —
    * on veut appliquer le logo au LOT entier sans 141 manipulations.
@@ -891,11 +891,11 @@ const [printLotConfirmed, setPrintLotConfirmed] = useState(false);
     try {
             const { dataUrl, width, height, format } = await readLogoFileOptimized(file);
       if (!dataUrl) {
-        setSponsorNotice({ type: 'error', text: '❌ Image illisible ou format non supporté.' });
+        setSponsorNotice({ type: 'error', text: 'Image illisible ou format non supporté.' });
         return;
       }
 
-      // Le logo est identique pour tout le lot : on ne le stocke QU'UNE fois,
+      // le logo est identique pour tout le lot : on ne le stocke QU'UNE fois,
       // sous la clé du lot. L'écrire sur les 211 cartes consommerait plus de
       // 6 Mo en base64 et ferait échouer l'enregistrement (quota localStorage).
       const scope = lotFilter === 'ALL' ? 'tout le registre' : `le lot ${lotFilter}`;
@@ -918,17 +918,17 @@ const [printLotConfirmed, setPrintLotConfirmed] = useState(false);
         }
       }
 
-      // Le registre NE doit PAS porter le logo : la carte affichée le lit via
+      // le registre NE doit PAS porter le logo : la carte affichée le lit via
       // getCardLogo(cmuNumber) / getLotLogo(lot). Écrire le base64 dans les
       // 141 fiches ferait exploser le quota localStorage sans aucun effet.
       const touches = memberOptions.reduce((n, m) => n + 1 + (m.dependents || []).length, 0);
       setLotLogoRevision((r) => r + 1);
       setSponsorNotice({
         type: 'success',
-        text: `🏷️ Logo appliqué à ${scope} : ${touches} carte(s) (${memberOptions.length} dossier(s)).${width ? ` ${width}×${height} px ${format}.` : ''} Le filigrane apparaît sur les cartes — réglez sa position et sa taille dans « 🎨 Personnalisation complète de la carte ».`
+        text: `Logo appliqué à ${scope} : ${touches} carte(s) (${memberOptions.length} dossier(s)).${width ? ` ${width}×${height} px ${format}.` : ''} le filigrane apparaît sur les cartes — Réglez sa position et sa taille dans « personnalisation complète de la carte ».`
       });
     } catch (e) {
-      setSponsorNotice({ type: 'error', text: `❌ Logo non appliqué : ${e.message}` });
+      setSponsorNotice({ type: 'error', text: `Logo non appliqué : ${e.message}` });
     } finally {
       setSponsorLogoBusy(false);
       if (sponsorLogoInputRef.current) sponsorLogoInputRef.current.value = '';
@@ -952,7 +952,7 @@ const [printLotConfirmed, setPrintLotConfirmed] = useState(false);
       });
       codes.forEach((c) => setCardLogo(c, ''));
       setLotLogoRevision((r) => r + 1);
-      setSponsorNotice({ type: 'success', text: `🗑️ Logo retiré de ${codes.size} carte(s) du registre.` });
+      setSponsorNotice({ type: 'success', text: `Logo retiré de ${codes.size} carte(s) du registre.` });
       return;
     }
 
@@ -961,7 +961,7 @@ const [printLotConfirmed, setPrintLotConfirmed] = useState(false);
     const touches = memberOptions.reduce((n, m) => n + 1 + (m.dependents || []).length, 0);
     setSponsorNotice({
       type: 'success',
-      text: `🗑️ Logo retiré du lot ${lotFilter} : ${touches} carte(s) retrouve(nt) leur apparence d'origine. Les fiches, photos et matricules sont intacts.`
+      text: `Logo retiré du lot ${lotFilter} : ${touches} carte(s) retrouve(nt) leur apparence d'origine. Les fiches, photos et matricules sont intacts.`
     });
   };
 
@@ -1007,7 +1007,7 @@ const [printLotConfirmed, setPrintLotConfirmed] = useState(false);
       const remaining = getStoredMembers().filter((m) => !ids.has(m.id));
       const saved = saveStoredMembers(remaining);
       if (!saved.ok) {
-        setBulkNotice({ type: 'error', text: `❌ ${saved.error} Le lot n'a pas été vidé.` });
+        setBulkNotice({ type: 'error', text: `❌ ${saved.error} le lot n'a pas été vidé.` });
         return;
       }
       setMembers(remaining);
@@ -1017,10 +1017,10 @@ const [printLotConfirmed, setPrintLotConfirmed] = useState(false);
       const people = list.reduce((n, m) => n + 1 + (m.dependents || []).length, 0);
       setBulkNotice({
         type: 'success',
-        text: `🧹 Lot ${lotFilter === 'ALL' ? '(tous)' : lotFilter} vidé : ${list.length} dossier(s) / ${people} carte(s) supprimés.${serverDone ? ` ${serverDone} retiré(s) de la base.` : ''} Vous pouvez maintenant réimporter le fichier : les matricules officiels seront appliqués.`
+        text: `🧹 Lot ${lotFilter === 'ALL' ? '(tous)' : lotFilter} vidé : ${list.length} dossier(s) / ${people} carte(s) supprimés.${serverDone ? ` ${serverDone} retiré(s) de la base.` : ''} vous pouvez maintenant réimporter le fichier : les matricules officiels seront appliqués.`
       });
     } catch (e) {
-      setBulkNotice({ type: 'error', text: `❌ Purge impossible : ${e.message}` });
+      setBulkNotice({ type: 'error', text: `Purge impossible : ${e.message}` });
     } finally {
       setDeleteBusy(false);
     }
@@ -1112,7 +1112,7 @@ const [printLotConfirmed, setPrintLotConfirmed] = useState(false);
 
   // Synchronisation avec la base de données (source de vérité)
   //
-  // Le localStorage n'est qu'un cache : le vider fait perdre les fiches
+  // le localStorage n'est qu'un cache : le vider fait perdre les fiches
   // importées. Au démarrage du Studio, on relit donc PostgreSQL et on
   // fusionne : les fiches serveur S'AJOUTENT au registre local, elle ne le
   // remplacent jamais (une édition faite au studio, avec photo personnalisée,
@@ -1151,7 +1151,7 @@ const [printLotConfirmed, setPrintLotConfirmed] = useState(false);
           if (migrated > 0) {
             setBulkNotice({
               type: 'success',
-              text: `🔢 ${migrated} carte(s) ASS LONASE recodée(s) au format officiel REGION-MSD-ANNEE-SEQUENCE.`
+              text: `🔢 ${migrated} carte(s) ass LONASE recodée(s) au format officiel region-MSD-annee-sequence.`
             });
           }
           return;
@@ -1321,7 +1321,7 @@ const [printLotConfirmed, setPrintLotConfirmed] = useState(false);
         const effective = (list && list.length > 0) ? list : [{
           id: null,
           firstName: 'Mairie',
-          lastName: 'de Dakar',
+          lastName: 'De Dakar',
           name: 'Mairie de Dakar (logo officiel)',
           phone: 'MAIRIE_DAKAR',
           cmuNumber: '',
@@ -1361,7 +1361,7 @@ const [printLotConfirmed, setPrintLotConfirmed] = useState(false);
           setBulkNotice({
             type: 'warning',
             text: sessionExpiree
-              ? '🔒 Session expirée : reconnectez-vous pour recharger vos dossiers. Le backend fonctionne normalement, vos fiches sont intactes.'
+              ? 'Session expirée : reconnectez-vous pour recharger vos dossiers. le backend fonctionne normalement, vos fiches sont intactes.'
               : '⚠️ Backend injoignable : redémarrez-le (npm start dans backend/), puis rechargez la page. Aucune fiche n\'a été perdue.'
           });
         }
@@ -1425,7 +1425,7 @@ const [printLotConfirmed, setPrintLotConfirmed] = useState(false);
   // Numéro CSU de la carte affichée (titulaire ou ayant droit majeur sélectionné)
   //
   // ⚠️ Un ayant droit IMPORTÉ porte son PROPRE matricule, déjà complet
-  // (« DKR-DKR-2026-2151.3 »). Le recomposer à partir du code du parent
+  // (« DKR-DKR-2026-2151.3 »). le recomposer à partir du code du parent
   // (« …-2151.1 ») + un suffixe produisait un double point :
   // « DKR-DKR-2026-2151.1.3 ». On n'utilise donc le calcul historique que
   // pour les fiches sans matricule propre (jeu de données d'origine).
@@ -1511,7 +1511,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
   useEffect(() => {
     setCardLogoState(getCardLogo(cardCmuNumber));
   }, [cardCmuNumber]);
-  // Le logo du LOT précède le logo de carte : un logo de campagne prime sur un
+  // le logo du LOT précède le logo de carte : un logo de campagne prime sur un
   // réglage ponctuel, puis on retombe sur le logo du parrain / de la carte.
   // Relu via lotLogoRevision : appliquer un logo sur un lot doit rafraîchir
   // la carte affichée sans changer de dossier.
@@ -1697,7 +1697,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
     // Générer l'image du QR Code avec NOIR PUR (#000000) et contraste ISO maximal.
     // Correction d'erreur « M » et non « H » : le niveau H ajoute ~30 % de
     // redondance, donc beaucoup plus de modules, donc des pixels plus fins —
-    // illisibles sur les téléphones d'entrée de gamme. Le niveau M reste
+    // illisibles sur les téléphones d'entrée de gamme. le niveau M reste
     // très robuste (≈7 % de redondance) tout en scannant nettement mieux.
     QRCode.toDataURL(verifyUrl, {
       margin: 3,
@@ -1781,7 +1781,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
       });
       if (!res || !res.ok) {
         const err = res ? await res.json().catch(() => ({})) : {};
-        setBulkNotice({ type: 'error', text: `❌ Photo non enregistrée en base : ${err.error || (res ? `statut ${res.status}` : 'backend injoignable')}.` });
+        setBulkNotice({ type: 'error', text: `Photo non enregistrée en base : ${err.error || (res ? `statut ${res.status}` : 'backend injoignable')}.` });
         return;
       }
       // L'URL servie remplace la data-URL locale : la carte lira la photo
@@ -1789,7 +1789,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
       handleEditChange('photoUrl', `/api/beneficiaries/${srvId}/photo`);
       setBulkNotice({ type: 'success', text: '✅ Photo enregistrée en base — elle survivra à l\'actualisation.' });
     } catch (e) {
-      setBulkNotice({ type: 'error', text: `❌ Photo non enregistrée : ${e.message}` });
+      setBulkNotice({ type: 'error', text: `Photo non enregistrée : ${e.message}` });
     }
   };
 
@@ -1808,7 +1808,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
   const handleBulkImport = async (excelFile) => {
     if (!excelFile) return;
     setBulkImporting(true);
-    setBulkNotice({ type: 'info', text: '⏳ Lecture du fichier Excel et appariement des photos…' });
+    setBulkNotice({ type: 'info', text: '⏳ lecture du fichier Excel et appariement des photos…' });
     try {
       // Pipeline UNIQUE (src/utils/bulkImport.js) : lecture du classeur,
       // appariement des photos (colonne PHOTO, nom, prénom, téléphone, code),
@@ -1910,7 +1910,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
         const aPousser = [...fresh, ...updates];
 
         // ⚠️ Les lots sont constitués AU POIDS RÉEL, plus seulement par nombre
-        // de dossiers. Le backend limite le corps JSON à 1 Mo
+        // de dossiers. le backend limite le corps JSON à 1 Mo
         // (express.json, backend/server.js) : un lot de 40 dossiers portant
         // des photos en base64 —ayants droit compris, désormais— peut le
         // dépasser et se faire refuser EN BLOC (413), ce qui perdrait les
@@ -1984,7 +1984,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   // ⚠️ NE PLUS ÉCRASER LA PHOTO DE L'AYANT DROIT.
                   //
                   // Après runExcelImport, `photoUrl` d'un ayant droit EST une
-                  // data-URL compressée (fileToCompressedDataUrl). Le test
+                  // data-URL compressée (fileToCompressedDataUrl). le test
                   // « startsWith('data:') ? null : … » la renvoyait donc TOUJOURS
                   // à null : la photo de tout ayant droit était détruite avant
                   // d'atteindre le backend. Sur les 135 correspondances du
@@ -2002,7 +2002,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
           if (!res || !res.ok) {
             failed++;
             const status = res ? res.status : 0;
-            // Le corps du refus porte souvent la cause exacte (403 « hors
+            // le corps du refus porte souvent la cause exacte (403 « hors
             // périmètre MSD », « agent non rattaché »…) : le montrer plutôt
             // que de laisser l'agent deviner entre session et accès.
             let detail = '';
@@ -2028,7 +2028,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
           updated += Number(data.updated) || 0;
           // ⚠️ Les lignes REFUSÉES et IGNORÉES doivent être montrées.
           //
-          // Le backend cloisonne désormais l'import par MSD : une fiche dont le
+          // le backend cloisonne désormais l'import par MSD : une fiche dont le
           // code est émis par une autre MSD est refusée, pas enregistrée. Sans
           // ce compteur, l'agent verrait « 0 créé, 0 mis à jour » etcroirait à
           // un échec réseau — alors que la sécurité a fait son travail. Il ne
@@ -2043,7 +2043,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
         // Lignes écartées par le serveur, avec leur cause : un agent doit
         // pouvoir distinguer « rien n'a été écrit » d'« on a refusé d'écrire ».
         const refusedInfo = refused > 0
-          ? ` 🔒 ${refused} ligne(s) REFUSÉE(S) : leur code bénéficiaire est émis par une autre MSD que la vôtre. Aucun doublon n'a été créé — filtre de cloisonnement.`
+          ? ` 🔒 ${refused} ligne(s) REFUSÉE(S) : leur code bénéficiaire Est émis par une autre MSD que la vôtre. Aucun doublon n'a été créé — Filtre de cloisonnement.`
           : '';
         const skippedInfo = skipped > 0
           ? ` ${skipped} ligne(s) ignorée(s) (matricule absent du classeur).`
@@ -2083,7 +2083,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
       const mergedInfo = merged > 0
         ? ` 🔗 ${merged} ligne(s) en doublon fusionnée(s) — la fiche conservée est celle citée ci-dessous, avec son code d'origine : ${dupGroups.map(describeFusion).join(' · ')}.`
         : '';
-      // Le codage appliqué est rappelé explicitement : c'est l'information qui
+      // le codage appliqué est rappelé explicitement : c'est l'information qui
       // manque quand une carte ne porte pas le code attendu. La règle est
       // unique (code du fichier), il n'y a plus de branche à deux issues.
       const strategyInfo = ' 📄 Codage : code du FICHIER conservé tel quel.';
@@ -2110,7 +2110,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
       // restait rassurant et que toutes les cartes affichaient
       // « PHOTO EN ATTENTE ».
       const photoWarning = matchedPhotos === 0
-        ? `⚠️ AUCUNE PHOTO IMPORTÉE : le dossier de photos n'a pas été sélectionné avant ce fichier, ou aucun nom ne correspond. Reprenez l'import en cliquant d'abord sur « 🗂️ 1️⃣ Dossier de photos… ». `
+        ? `Aucune photo importée : le dossier de photos n'a pas été sélectionné avant ce fichier, ou aucun nom ne correspond. Reprenez l'import en cliquant d'abord sur « 1️⃣ dossier de photos… ». `
         : '';
 
       // ── Compte-rendu des PHOTOS ───────────────────────────────────────────
@@ -2148,7 +2148,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
       // Une fiche sans photo est un travail à faire, pas un échec : on le signale
       // sans le dramatiser, et on rappelle la cause la plus fréquente.
       const noPhotoHint = withoutPhoto > 0
-        ? ` Les ${withoutPhoto} fiche(s) sans photo se repèrent à l'aplat « PHOTO EN ATTENTE » ; leur fichier image porte le plus souvent un nom qui ne correspond pas (vérifiez les accents et le préfixe « 1.0 »).`
+        ? ` Les ${withoutPhoto} fiche(s) sans photo se repèrent à l'aplat « photo en attente » ; leur fichier image porte le plus souvent un nom qui ne correspond pas (vérifiez les accents et le préfixe « 1.0 »).`
         : '';
 
       setBulkNotice({
@@ -2158,7 +2158,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
       if (fresh.length > 0) setSelectedMemberId(fresh[0].id);
     } catch (err) {
       console.error('[BulkImport] Erreur :', err);
-      setBulkNotice({ type: 'error', text: `❌ Import impossible : ${err.message}` });
+      setBulkNotice({ type: 'error', text: `Import impossible : ${err.message}` });
     } finally {
       setBulkImporting(false);
       pendingPhotosRef.current = null;
@@ -2172,7 +2172,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
     const files = e.target.files;
     if (files && files.length > 0) {
       pendingPhotosRef.current = files;
-      setBulkNotice({ type: 'info', text: `📁 ${files.length} fichiers de photos chargés — sélectionnez maintenant le fichier Excel à importer.` });
+      setBulkNotice({ type: 'info', text: `📁 ${files.length} fichiers de photos chargés — Sélectionnez maintenant le fichier Excel à importer.` });
       if (excelInputRef.current) excelInputRef.current.click();
     }
   };
@@ -2201,7 +2201,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
   const handleSponsorLogoFile = async (file) => {
     setSponsorLogoBusy(true);
     try {
-      // Le logo est RÉDUIT et COMPRESSÉ avant stockage : un fichier de
+      // le logo est RÉDUIT et COMPRESSÉ avant stockage : un fichier de
       // plusieurs mégaoctets est accepté, il ne reste que quelques dizaines
       // de kilo-octets en base (localStorage comme backend).
       const optimized = await readLogoFileOptimized(file);
@@ -2214,7 +2214,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
       if (currentSponsorPhone) {
         const result = await saveSponsorLogo(currentSponsorPhone, dataUrl);
         setSponsors(prev => prev.map(s => (s.phone === currentSponsorPhone ? { ...s, sponsorLogo: result.sponsorLogo } : s)));
-        // Le logo d'un parrain doit apparaître sur TOUTES les cartes qu'il
+        // le logo d'un parrain doit apparaître sur TOUTES les cartes qu'il
         // parraine : on le réplique ici, sans ouvrir chaque carte une à une.
         const logo = result.sponsorLogo || dataUrl;
         const spread = applySponsorLogoToAllCards(currentSponsorPhone, logo);
@@ -2223,7 +2223,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
           type: result.warning ? 'warning' : 'success',
           text: result.warning
             ? `${result.warning} Logo compressé${saved} et appliqué à cette carte.`
-            : `✅ Logo enregistré${saved}${dims} et appliqué automatiquement à ses ${spread} carte(s), sans sélection individuelle.`
+            : `Logo enregistré${saved}${dims} et appliqué automatiquement à ses ${spread} carte(s), sans sélection individuelle.`
         });
       } else {
         setCardLogo(cardCmuNumber, dataUrl);
@@ -2260,7 +2260,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
 
   const handleAddMinorChild = () => {
     const newChild = {
-      name: 'Nouvel Enfant',
+      name: 'Nouvel enfant',
       birthDate: '01/01/2020',
       birthPlace: editForm.birthPlace || 'Dakar',
       gender: 'M',
@@ -2462,11 +2462,11 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
   const handleExportLotZip = async () => {
     const cibles = selectableMembers.filter((m) => lotFilter === 'ALL' || (m.lotCode || 'HORS-LOT') === lotFilter);
     if (cibles.length === 0) {
-      setBulkNotice({ type: 'warning', text: '⚠️ Aucune carte imprimable dans ce lot.' });
+      setBulkNotice({ type: 'warning', text: 'Aucune carte imprimable dans ce lot.' });
       return;
     }
     setIsGeneratingPdf(true);
-    setBulkNotice({ type: 'info', text: `📦 Génération du ZIP : 0/${cibles.length} carte(s)…` });
+    setBulkNotice({ type: 'info', text: `Génération du zip : 0/${cibles.length} carte(s)…` });
 
     try {
       const JSZip = (await import('jszip')).default;
@@ -2482,7 +2482,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
       let ok = 0;
       for (let i = 0; i < cibles.length; i++) {
         const m = cibles[i];
-        setBulkNotice({ type: 'info', text: `📦 Génération du ZIP : ${i + 1}/${cibles.length} carte(s)…` });
+        setBulkNotice({ type: 'info', text: `Génération du zip : ${i + 1}/${cibles.length} carte(s)…` });
 
         // Sélectionner la fiche pour que rectoRef/versoRef se rendent
         // (le rendu HTML des cartes suit currentMember). On laisse le
@@ -2528,11 +2528,11 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
       }
 
       if (ok === 0) {
-        setBulkNotice({ type: 'error', text: '❌ Aucune carte capturée — vérifiez que les aperçus recto/verso sont chargés.' });
+        setBulkNotice({ type: 'error', text: 'Aucune carte capturée — Vérifiez que les aperçus recto/verso sont chargés.' });
         return;
       }
 
-      setBulkNotice({ type: 'info', text: '📦 Compression du ZIP…' });
+      setBulkNotice({ type: 'info', text: 'Compression du zip…' });
       const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
@@ -2542,7 +2542,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
 
       setBulkNotice({
         type: 'success',
-        text: `✅ Export terminé : ${ok} dossier(s) assuré(s) (recto + verso 600 DPI) dans « ${root}.zip ».`
+        text: `Export terminé : ${ok} dossier(s) assuré(s) (recto + verso 600 DPI) dans « ${root}.zip ».`
       });
     } catch (err) {
       console.error('Export ZIP :', err);
@@ -2676,7 +2676,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
               <span><ProIcon name="download" /></span> 0. Import en masse — création de cartes à partir d'un fichier Excel
             </h5>
             <p className="text-sub small mb-0" style={{ fontSize: '0.88rem' }}>
-              Chargez le fichier MSD Dakar (ex : <strong>MSD de grand Yoff.xlsx</strong>) puis le dossier de photos.
+              Chargez le fichier MSD Dakar (ex : <strong>MSD de Grand Yoff.xlsx</strong>) puis le dossier de photos.
               Les photos sont appariées automatiquement par <strong>Nom, code du fichier ou téléphone</strong>.
               Les colonnes <strong>Numero_adherent</strong> et <strong>CODE_BENEFICIAIRE</strong> ne sont pas reprises comme matricule :
               chaque assuré reçoit un <strong>Code unique généré par le système</strong> (aucun doublon possible).
@@ -2706,7 +2706,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                 if (importCodeStrategy === 'FILE' && !printLotConfirmed) {
                   setBulkNotice({
                     type: 'error',
-                    text: '⛔ Import bloqué : cochez la confirmation ci-dessus pour attester que les cartes de ce lot sont DÉJÀ imprimées et que leurs codes doivent être conservés tels quels.'
+                    text: 'Import bloqué : cochez la confirmation ci-dessus pour attester que les cartes de ce lot sont déjà imprimées et que leurs codes doivent être conservés tels quels.'
                   });
                   if (excelInputRef.current) excelInputRef.current.value = '';
                   return;
@@ -2763,7 +2763,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   // apiFetch gère l'URL de base de l'API ET le jeton (cmu-token),
                   // y compris le rechargement automatique du jeton expiré.
                   setGabaritLoading(true);
-                  setBulkNotice({ type: 'info', text: `⏳ Génération du gabarit d'adhésion pour ${gabaritMsd}…` });
+                  setBulkNotice({ type: 'info', text: `⏳ génération du gabarit d'adhésion pour ${gabaritMsd}…` });
                   try {
                     const res = await apiFetch(`/api/msds/${encodeURIComponent(gabaritMsd)}/gabarit-adhesion`, {
                       method: 'POST',
@@ -2775,7 +2775,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                       const raison = res.status === 404
                         ? 'route absente du serveur en cours — redémarrez le backend pour charger la nouvelle route'
                         : res.status === 403
-                          ? 'génération réservée au Super Admin — reconnectez-vous avec le compte Super Admin'
+                          ? 'Génération réservée au super admin — Reconnectez-vous avec le compte super admin'
                           : (err.error || 'Gabarit indisponible');
                       setBulkNotice({ type: 'error', text: `❌ ${raison} (statut ${res.status}).` });
                       return;
@@ -2791,7 +2791,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                     URL.revokeObjectURL(url);
                     setBulkNotice({ type: 'success', text: `✅ Gabarit d'adhésion ${gabaritMsd} téléchargé : remettez-le à la MSD. Elle remplit les lignes (CODE_BENEFICIAIRE laissé vide → codes générés automatiquement), supprime les lignes d'exemple, puis réimporte le fichier ici.` });
                   } catch (e) {
-                    setBulkNotice({ type: 'error', text: `❌ Téléchargement impossible : ${e.message}` });
+                    setBulkNotice({ type: 'error', text: `Téléchargement impossible : ${e.message}` });
                   } finally {
                     setGabaritLoading(false);
                   }
@@ -2855,13 +2855,13 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   {importCodeStrategy === 'SYSTEM' ? (
                     <>
                       Format officiel : <code>REGION-MSD-ANNÉE-SEQ</code> (ex. <code>DKR-DKR-2026-2356.1</code>).
-                      Le système part du dernier code réel en base et incrémente.
+                      le système part du dernier code réel en base et incrémente.
                       <br />
                       <strong>Les codes du fichier Excel sont ignorés</strong> — c’est la règle.
                     </>
                   ) : (
                     <>
-                      Le code de la colonne <code>CODE_BENEFICIAIRE</code> est repris tel quel,
+                      le code de la colonne <code>CODE_BENEFICIAIRE</code> est repris tel quel,
                       suffixe compris (ex. <code>DKR_260001.0</code>) : c’est celui imprimé
                       sur la carte de l’assuré.
                     </>
@@ -2886,7 +2886,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   style={{ marginTop: '3px' }}
                 />
                 <span style={{ fontSize: '0.78rem', color: '#b45309', fontWeight: '700', lineHeight: 1.45 }}>
-                  Je confirme que les cartes de ce lot sont DÉJÀ IMPRIMÉES et que
+                  Je confirme que les cartes de ce lot sont déjà imprimées et que
                   leurs codes doivent être conservés à l’identique.
                   <span className="d-block text-muted" style={{ fontWeight: '600' }}>
                     Cette confirmation est obligatoire : l’import est refusé sans elle.
@@ -2941,8 +2941,8 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
         )}
 
         <small className="text-muted d-block mt-2" style={{ fontSize: '0.76rem' }}>
-          <ProIcon name="save" /> Zéro perte : les bénéficiaires importés sont enregistrés dans le store du studio ET poussés vers le backend.
-          Si PostgreSQL est indisponible, le serveur les conserve dans son fichier secours
+          <ProIcon name="save" /> Zéro perte : les bénéficiaires importés sont enregistrés dans le store du studio et poussés vers le backend.
+          Si postgresql Est indisponible, le serveur les conserve dans son fichier secours
           (<code>backend/data/store.json</code>) et les rejoue automatiquement à la reconnexion de la base.
         </small>
       </div>
@@ -2974,7 +2974,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                         text: `🧹 ${removed} doublon(s) supprimé(s) — les fiches ont été fusionnées, aucune donnée perdue.`
                       });
                     } else {
-                      setBulkNotice({ type: 'info', text: '✅ Aucun doublon détecté dans le studio.' });
+                      setBulkNotice({ type: 'info', text: 'Aucun doublon détecté dans le studio.' });
                     }
                   }}
                 >
@@ -3207,7 +3207,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                                     onClick={() => setLotFilter(l.code)}
                                     title={`Afficher uniquement les cartes de ${lotLabel(l.code)}`}
                                   >
-                                    {actif ? '✓ Affiché' : 'Voir'}
+                                    {actif ? 'Affiché' : 'Voir'}
                                   </button>
                                 </td>
                               </tr>
@@ -3218,8 +3218,8 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                     </table>
                   </div>
                   <small className="d-block mt-1" style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                    « Conformes » = carte avec photo, nom, prénom et date de naissance complets : seule une carte conforme doit partir à l'impression.
-                    Gain = 350 FCFA par carte conforme remise à la MSD (marquée « Remise » au moment de l'impression du lot).
+                    « conformes » = carte avec photo, nom, prénom et date de naissance complets : seule une carte conforme doit partir à l'impression.
+                    Gain = 350 FCFA par carte conforme remise à la MSD (marquée « remise » au moment de l'impression du lot).
                     {' '}« impr. » = cartes imprimables (enfants mineurs rattachés exclus).
                   </small>
 
@@ -3232,7 +3232,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                     return (
                       <div className="mt-2 p-3" style={{ background: 'rgba(180,83,9,0.08)', border: '1.5px solid #f59e0b', borderRadius: '14px' }}>
                         <div style={{ fontSize: '0.88rem', fontWeight: 800, color: '#b45309' }}>
-                          💸 Confirmer la remise du lot {lotLabel(remiseTarget.code)} à la MSD {s.msd || 'DKR'} ?
+                          💸 confirmer la remise du lot {lotLabel(remiseTarget.code)} à la MSD {s.msd || 'DKR'} ?
                         </div>
                         <div style={{ fontSize: '0.78rem', color: 'var(--text-sub)', marginTop: '4px', lineHeight: 1.45 }}>
                           {conformes} carte(s) conforme(s) seront déclarées remises — gain constaté : <strong>{gain.toLocaleString('fr-FR')} FCFA</strong>.
@@ -3246,7 +3246,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                             disabled={remiseBusy}
                             onClick={() => handleMarquerRemise(remiseTarget.code)}
                           >
-                            {remiseBusy ? <><span className="spinner-border spinner-border-sm" role="status"></span> Enregistrement…</> : '✅ Confirmer la remise'}
+                            {remiseBusy ? <><span className="spinner-border spinner-border-sm" role="status"></span> Enregistrement…</> : 'Confirmer la remise'}
                           </button>
                           <button
                             type="button"
@@ -3373,7 +3373,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                 style={{ borderRadius: '12px', fontSize: '0.82rem', background: showMultiDelete ? '#7f1d1d' : '#b91c1c', color: '#fff', border: '1.5px solid #ef4444' }}
                 onClick={() => setShowMultiDelete(v => !v)}
               >
-                {showMultiDelete ? '✖️ Fermer la sélection multiple' : '🗑️ Supprimer plusieurs fiches'}
+                {showMultiDelete ? 'Fermer la sélection multiple' : 'Supprimer plusieurs fiches'}
               </button>
 
               {showMultiDelete && (
@@ -3527,7 +3527,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
               {qrTargetMode === 'WIFI_IP' && (
                 <div className="mt-3.5 pt-1">
                   <label className="form-label text-sub fw-bold mb-2.5 d-block" style={{ fontSize: '0.82rem' }}>
-                    📶 Adresse IP Wi-Fi locale de votre PC ({customWifiIp || 'non détectée'}) :
+                    📶 adresse ip wi-fi locale de votre pc ({customWifiIp || 'non détectée'}) :
                   </label>
                   <div className="d-flex gap-2.5 mb-2 flex-wrap">
                     <input
@@ -3765,7 +3765,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                 <input
                   type="text"
                   className="form-control fw-bold"
-                  placeholder="ex: Dakar Plateau"
+                  placeholder="Ex: Dakar Plateau"
                   value={editForm.birthPlace || ''}
                   onChange={(e) => handleEditChange('birthPlace', e.target.value)}
                 />
@@ -3853,7 +3853,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
       <div className="card p-4 p-md-5 rounded-4 mb-5 shadow-sm" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '28px' }}>
         <div className="mb-4">
           <h5 className="fw-extrabold mb-1 text-emerald d-flex align-items-center gap-2.5" style={{ fontSize: '1.3rem' }}><span><ProIcon name="id-card" /></span> Type et données de la carte</h5>
-          <p className="text-sub small mb-0">Choisissez le gabarit à générer. Les données annuelles sont sauvegardées pour cette carte et encodées dans le QR code.</p>
+          <p className="text-sub small mb-0">Choisissez le gabarit à générer. Les données annuelles sont sauvegardées pour cette carte et encodées dans Le QR code.</p>
         </div>
         <div className="d-flex flex-wrap gap-3 mb-4">
           {Object.entries(CARD_PROGRAMS).map(([key, program]) => <button key={key} type="button" className="btn fw-extrabold px-4 py-3" onClick={() => updateCardProgram(key)} style={{ borderRadius: '14px', background: cardProgram === key ? program.accent : 'var(--bg-card-subtle)', color: cardProgram === key ? '#fff' : 'var(--text-main)', border: `2px solid ${cardProgram === key ? program.accent : 'var(--border-color)'}` }}>{key === 'CLASSIC' ? '🩺' : key === 'CMU_ELEVES' ? <ProIcon name="graduation-cap" /> : <ProIcon name="book-open" />} {program.label}</button>)}
@@ -3897,7 +3897,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
               color: sponsorsSource === 'server' ? '#047857' : '#b45309'
             }}
           >
-            {sponsorsSource === 'server' ? '☁️ Synchronisé serveur' : sponsorsSource === 'local' || sponsorsSource === 'local-official' ? '💾 Mode hors-ligne (cache local)' : '⚠️ Aucun parrain trouvé'}
+            {sponsorsSource === 'server' ? 'Synchronisé serveur' : sponsorsSource === 'local' || sponsorsSource === 'local-official' ? 'Mode hors-ligne (cache local)' : 'Aucun parrain trouvé'}
           </span>
         </div>
 
@@ -3931,7 +3931,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
               ))}
             </select>
             <small className="text-muted d-block mt-2" style={{ fontSize: '0.76rem' }}>
-              Le parrain sélectionné est mémorisé pour cette carte précise et réappliqué automatiquement à la prochaine ouverture du studio.
+              le parrain sélectionné est mémorisé pour cette carte précise et réappliqué automatiquement à la prochaine ouverture du studio.
             </small>
           </div>
 
@@ -3966,7 +3966,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   disabled={sponsorLogoBusy}
                   onClick={() => { if (sponsorLogoInputRef.current) sponsorLogoInputRef.current.click(); }}
                 >
-                  {sponsorLogoBusy ? '⏳ Traitement…' : (currentSponsorPhone ? '⬆️ Logo du parrain' : '⬆️ Logo de cette carte')}
+                  {sponsorLogoBusy ? '⏳ traitement…' : (currentSponsorPhone ? '⬆️ logo du parrain' : '⬆️ logo de cette carte')}
                 </button>
                 <button
                   type="button"
@@ -3984,14 +3984,14 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
             </div>
             <small className="text-muted d-block mt-2" style={{ fontSize: '0.76rem' }}>
               {currentSponsorPhone
-                ? `✅ Le logo s'applique automatiquement à ses ${sponsoredCardCount} carte(s) : plus besoin de les ouvrir une par une.`
+                ? `Le logo s'applique automatiquement à ses ${sponsoredCardCount} carte(s) : plus besoin de les ouvrir une par une.`
                 : 'Sélectionnez un parrain ci-dessus pour que son logo se réplique automatiquement sur toutes ses cartes.'}
             </small>
             <small className="text-muted d-block mt-1" style={{ fontSize: '0.76rem' }}>
-              <ProIcon name="save" /> Toute taille de fichier est acceptée : le logo est automatiquement réduit à {LOGO_MAX_DIMENSION} px et compressé avant enregistrement, afin de ne pas alourdir la base. Le message de confirmation indique le poids final.
+              <ProIcon name="save" /> Toute taille de fichier est acceptée : le logo est automatiquement réduit à {LOGO_MAX_DIMENSION} px et compressé avant enregistrement, afin de ne pas alourdir la base. le message de confirmation indique le poids final.
             </small>
             <small className="text-muted d-block mt-1" style={{ fontSize: '0.76rem' }}>
-              Le logo est enregistré dans la base (colonne <code>beneficiaries.sponsor_logo</code>) et mis en cache localement : il reste disponible même sans connexion.
+              le logo est enregistré dans la base (colonne <code>beneficiaries.sponsor_logo</code>) et mis en cache localement : il reste disponible même sans connexion.
             </small>
           </div>
         </div>
@@ -4110,13 +4110,13 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                       className="form-control fw-extrabold" 
                       value={child.name || ''}
                       onChange={(e) => handleUpdateChildField(cIdx, 'name', e.target.value)}
-                      placeholder="ex: Aïssatou Ndione"
+                      placeholder="Ex: aïssatou ndione"
                     />
                   </div>
 
                   {/* Date de naissance */}
                   <div className="studio-form-group">
-                    <label>Né(e) le (JJ/MM/AAAA) :</label>
+                    <label>Né(e) Le (JJ/MM/AAAA) :</label>
                     <input 
                       type="text" 
                       className="form-control fw-bold" 
@@ -4193,7 +4193,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                       className="form-control fw-bold" 
                       value={child.allergies || 'Aucune connue'}
                       onChange={(e) => handleUpdateChildField(cIdx, 'allergies', e.target.value)}
-                      placeholder="ex: Intolérance AINS..."
+                      placeholder="Ex: intolérance ains..."
                     />
                   </div>
 
@@ -4257,7 +4257,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
           </div>
         ) : (
           <div className="p-4 p-md-5 rounded-4 border text-muted text-center" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)', fontSize: '0.9rem', borderRadius: '20px' }}>
-            <ProIcon name="info" color="#0284c7" /> Aucun enfant mineur rattaché à cet adhérent principal. Cliquez sur <strong>"<ProIcon name="plus" /> Ajouter un enfant mineur"</strong> ci-dessus pour rattacher un enfant.
+            <ProIcon name="info" color="#0284c7" /> Aucun enfant mineur rattaché à cet adhérent Principal. Cliquez sur <strong>"<ProIcon name="plus" /> Ajouter un enfant mineur"</strong> ci-dessus pour rattacher un enfant.
           </div>
         )}
       </div>
@@ -4367,7 +4367,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
               {/* FILIGRANE — logo du parrain / partenaire, posé en fond et
                   piloté par « Personnalisation complète de la carte ». C'est
                   ce calque qui remplace l'ancien picto de 20 px affiché en
-                  bas de la colonne de gauche. Le contenu passe au-dessus
+                  bas de la colonne de gauche. le contenu passe au-dessus
                   (zIndex 1) : le filigrane ne peut donc pas masquer ni la
                   photo ni les données de l'assuré. */}
               {classicWatermarkStyle && (
@@ -4386,11 +4386,11 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
               {cardProgram !== 'CLASSIC' ? (
                 <SchoolCardFront cardData={cardData} currentUnion={currentUnion} getMsdLogo={getMsdLogo} customLogo={currentSponsorLogo || cardLogo} />
               ) : (
-                // Le contenu doit se superposer au filigrane (zIndex 0). Le
-                // conteneur garde EXACTEMENT la hauteur de la zone imprimable :
-                // le pied de carte est en position absolue, il doit donc
+                // le contenu doit se superposer au filigrane (zindex 0). Le
+                // conteneur garde exactement la hauteur de la zone imprimable :
+                // le pied de carte Est en position absolue, il doit donc
                 // continuer de s'ancrer au bas de la carte, pas au bas du
-                // contenu (qui est plus court).
+                // contenu (qui Est plus court).
                 <div style={{ position: 'relative', zIndex: 1, height: '100%' }}>
               {/* En-tête Officiel Recto : Logo MSD ÉMETTRICE (GAUCHE, dynamique) | Drapeau + République du Sénégal + Union (CENTRE) | Logo SEN-CSU (DROITE) */}
               <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: '4px', minHeight: '38px' }}>
@@ -4551,7 +4551,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   UNAMUSC senegal - carte nationale D’ASSURANCE santé
                 </div>
                 <div style={{ fontSize: '0.48rem', color: '#64748b', fontWeight: '700', whiteSpace: 'nowrap', flexShrink: 0 }}>
-                  {`DÉLIVRÉE PAR LE MSD DE ${currentUnion.region.toUpperCase()}`}
+                  {`Délivrée par Le MSD de ${currentUnion.region.toUpperCase()}`}
                 </div>
               </div>
                 </div>

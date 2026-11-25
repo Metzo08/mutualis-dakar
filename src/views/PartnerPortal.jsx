@@ -61,10 +61,10 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
   const defaultUdmsPrestataires = [
     {
       id: 100,
-      name: 'Centre Hospitalier Abass Ndao',
+      name: 'Centre hospitalier Abass Ndao',
       role: 'Hôpital / Structure sanitaire agréée',
       udms: 'UDMS Dakar',
-      structureName: 'Centre Hospitalier Abass Ndao',
+      structureName: 'Centre hospitalier Abass Ndao',
       commune: 'Dakar - Gueule Tapée / Fass',
       agreement: 'AGR-2026-DKR-101',
       rate: 80,
@@ -74,10 +74,10 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
     },
     {
       id: 101,
-      name: 'Dr. Cheikh Anta Diop',
+      name: 'Dr. Cheikh anta Diop',
       role: 'Médecin prescripteur (Abass Ndao)',
       udms: 'UDMS Dakar',
-      structureName: 'Centre Hospitalier Abass Ndao',
+      structureName: 'Centre hospitalier Abass Ndao',
       commune: 'Dakar - Gueule Tapée / Fass',
       agreement: 'AGR-2026-DKR-101-M1',
       rate: 80,
@@ -87,10 +87,10 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
     },
     {
       id: 105,
-      name: 'Mme Fatou Kiné Diop',
+      name: 'Mme Fatou kiné Diop',
       role: 'Sage-femme d\'État (Abass Ndao Maternité)',
       udms: 'UDMS Dakar',
-      structureName: 'Centre Hospitalier Abass Ndao',
+      structureName: 'Centre hospitalier Abass Ndao',
       commune: 'Dakar - Gueule Tapée / Fass',
       agreement: 'AGR-2026-DKR-101-SF1',
       rate: 100,
@@ -100,10 +100,10 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
     },
     {
       id: 106,
-      name: 'Laboratoire Pasteur Dakar',
+      name: 'Laboratoire pasteur Dakar',
       role: 'Laboratoire d\'analyses & imagerie',
       udms: 'UDMS Dakar',
-      structureName: 'Laboratoire Pasteur Dakar',
+      structureName: 'Laboratoire pasteur Dakar',
       commune: 'Dakar Plateau / Mermoz',
       agreement: 'AGR-2026-DKR-606',
       rate: 80,
@@ -113,10 +113,10 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
     },
     {
       id: 107,
-      name: 'Dr. Ousmane Diagne',
+      name: 'Dr. Ousmane diagne',
       role: 'Biologiste / Responsable imagerie',
       udms: 'UDMS Dakar',
-      structureName: 'Laboratoire Pasteur Dakar',
+      structureName: 'Laboratoire pasteur Dakar',
       commune: 'Dakar Plateau / Mermoz',
       agreement: 'AGR-2026-DKR-606-B1',
       rate: 80,
@@ -126,10 +126,10 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
     },
     {
       id: 102,
-      name: 'Pharmacie Centrale de la Médina',
+      name: 'Pharmacie centrale de la Médina',
       role: 'Pharmacie d\'officine (Bons 48h)',
       udms: 'UDMS Dakar',
-      structureName: 'Pharmacie Centrale de la Médina',
+      structureName: 'Pharmacie centrale de la Médina',
       commune: 'Médina',
       agreement: 'AGR-2026-DKR-404',
       rate: 80,
@@ -139,11 +139,11 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
     },
     {
       id: 112,
-      name: 'Pharmacie Agréée Ndiaye Tiers-payant',
+      name: 'Pharmacie agréée Ndiaye tiers-payant',
       role: 'Pharmacie d\'officine (Bons 48h)',
       udms: 'UDMS Dakar',
-      structureName: 'Pharmacie Agréée Ndiaye',
-      commune: 'Dakar Fann / Point E',
+      structureName: 'Pharmacie agréée Ndiaye',
+      commune: 'Dakar Fann / Point e',
       agreement: 'AGR-2026-DKR-505',
       rate: 80,
       phone: '+221 33 825 88 99',
@@ -152,11 +152,11 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
     },
     {
       id: 108,
-      name: 'Centre Hospitalier Universitaire de Fann',
+      name: 'Centre hospitalier universitaire de Fann',
       role: 'Hôpital spécialisé / CHU agréé',
       udms: 'UDMS Dakar',
       structureName: 'CHU de Fann',
-      commune: 'Fann / Point E',
+      commune: 'Fann / Point e',
       agreement: 'AGR-2026-DKR-202',
       rate: 80,
       phone: '+221 33 869 18 18',
@@ -165,10 +165,10 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
     },
     {
       id: 104,
-      name: 'Dr. Aïssatou Sow',
-      role: 'Médecin / Télémédecine WebRTC',
+      name: 'Dr. aïssatou Sow',
+      role: 'Médecin / Télémédecine webrtc',
       udms: 'UDMS Pikine',
-      structureName: 'Centre de Santé Pikine Nord',
+      structureName: 'Centre de santé Pikine Nord',
       commune: 'Pikine Nord',
       agreement: 'AGR-2026-PKN-088',
       rate: 80,
@@ -178,11 +178,11 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
     },
     {
       id: 109,
-      name: 'Hôpital de Pikine (Gounass)',
+      name: 'Hôpital de Pikine (gounass)',
       role: 'Hôpital départemental agréé',
       udms: 'UDMS Pikine',
       structureName: 'Hôpital de Pikine',
-      commune: 'Pikine Gounass',
+      commune: 'Pikine gounass',
       agreement: 'AGR-2026-PKN-101',
       rate: 80,
       phone: '+221 33 834 50 50',
@@ -191,10 +191,10 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
     },
     {
       id: 110,
-      name: 'Pharmacie Rufisque Gare',
+      name: 'Pharmacie Rufisque gare',
       role: 'Pharmacie d\'officine (Bons 48h)',
       udms: 'UDMS Rufisque',
-      structureName: 'Pharmacie Rufisque Gare',
+      structureName: 'Pharmacie Rufisque gare',
       commune: 'Rufisque Est',
       agreement: 'AGR-2026-RUF-303',
       rate: 80,
@@ -204,10 +204,10 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
     },
     {
       id: 111,
-      name: 'Centre de Santé Keur Massar',
+      name: 'Centre de santé Keur Massar',
       role: 'Centre de santé agréé',
       udms: 'UDMS Keur Massar',
-      structureName: 'Centre de Santé Keur Massar',
+      structureName: 'Centre de santé Keur Massar',
       commune: 'Keur Massar Nord',
       agreement: 'AGR-2026-KMS-007',
       rate: 80,
@@ -240,7 +240,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
   // Nouveau prestataire par l'UDMS
   const [newPrestataire, setNewPrestataire] = useState({
     name: '',
-    role: 'Médecin Généraliste / Spécialiste',
+    role: 'Médecin généraliste / Spécialiste',
     udms: 'UDMS Dakar',
     commune: 'Dakar Plateau',
     agreement: '',
@@ -280,7 +280,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
     setUdmsToast(`Prestataire "${created.name}" (${created.role}) créé et agréé avec succès pour l'${created.udms} !`);
     setNewPrestataire({
       name: '',
-      role: 'Médecin Généraliste / Spécialiste',
+      role: 'Médecin généraliste / Spécialiste',
       udms: selectedUdms,
       commune: 'Dakar Plateau',
       agreement: '',
@@ -371,10 +371,10 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
     verifyBtn: 'Vérifier',
     valid: 'Couverture active — Tiers-payant autorisé (80%)',
     invalid: 'Couverture inactive — Tiers-payant non autorisé',
-    tpTitle: 'Déclarer un acte Tiers-payant',
-    tpScanPlaceholder: 'Entrez le N° Carte CSU ou Scannez le QR Code...',
+    tpTitle: 'Déclarer un acte tiers-payant',
+    tpScanPlaceholder: 'Entrez le n° carte CSU ou scannez Le QR code...',
     tpActPlaceholder: 'Code ou libellé de l\'acte (ex: Consultation, Bilan sanguin, Chirurgie)...',
-    tpSubmit: 'Valider la prise en charge Tiers-payant',
+    tpSubmit: 'Valider la prise en charge tiers-payant',
     consultation: 'Consultation',
     pharmacie: 'Pharmacie',
     hospitalisation: 'Hospitalisation',
@@ -410,15 +410,15 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
     setLoginError('');
     setTimeout(() => {
       setLoginLoading(false);
-      // Le prestataire est un PRESTATAIRE (pas un agent) — son espace lui est propre.
+      // le prestataire est un PRESTATAIRE (pas un agent) — son espace lui est propre.
       const user = {
         username: loginForm.username || 'partenaire@unamusc.sn',
-        structureName: 'Centre de Santé Conventionné UNAMUSC',
+        structureName: 'Centre de santé conventionné UNAMUSC',
         contactName: loginForm.username || 'Praticien agréé',
         coverageRate: 80,
         isPartner: true,      // prestataire de soins
         role: 'Prestataire de santé',
-        grantedBy: 'SuperAdmin DSI UNAMUSC'
+        grantedBy: 'Superadmin dsi UNAMUSC'
       };
       setPartner(user);
       localStorage.setItem('cmu-partner-user', JSON.stringify(user));
@@ -443,8 +443,8 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
         valid: true,
         firstName: 'Amadou',
         lastName: 'Sow',
-        mutuelleName: 'Mutuelle de Santé de Dakar-Plateau',
-        packageType: 'Formule Familiale Intégrale UNAMUSC',
+        mutuelleName: 'Mutuelle de santé de Dakar-Plateau',
+        packageType: 'Formule familiale intégrale UNAMUSC',
         cotisationEnd: '2026-12-31'
       });
     }, 400);
@@ -516,7 +516,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                   </h2>
                   
                   <p className="text-muted mb-4" style={{ lineHeight: '1.7', fontSize: '1.02rem', opacity: 0.9 }}>
-                    Cet espace est réservé aux hôpitaux publics, cliniques privées, officines de pharmacie, centres d'imagerie et praticiens médicaux agréés par l'union nationale des mutuelles de santé communautaires (UNAMUSC).
+                    Cet espace Est réservé aux hôpitaux publics, cliniques privées, officines de pharmacie, centres d'imagerie et praticiens médicaux agréés par l'union nationale des mutuelles de santé communautaires (UNAMUSC).
                   </p>
 
                   <div className="d-flex flex-column gap-3.5 mb-4">
@@ -625,7 +625,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
 
                 <div className="mt-4 pt-4 border-top text-center" style={{ borderColor: 'var(--border-color)' }}>
                   <small style={{ color: 'var(--text-sub)', fontSize: '0.82rem' }}>
-                    Besoin d'un agrément UDMS ? Contactez l'Union Nationale au <strong className="text-success">+221 77 602 67 83</strong>.
+                    Besoin d'un agrément UDMS ? Contactez l'union nationale au <strong className="text-success">+221 77 602 67 83</strong>.
                   </small>
                 </div>
               </div>
@@ -675,7 +675,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
               <span className="badge bg-success text-white p-2 fw-bold" style={{ borderRadius: '10px', fontSize: '0.85rem' }}><ProIcon name="zap" /> Connecté</span>
               <div>
                 <strong className="d-block" style={{ color: 'var(--text-main)', fontSize: '1rem', fontWeight: '800' }}>
-                  {partner?.structureName || partner?.name || (agentUser ? `${agentUser.firstName} ${agentUser.lastName}` : 'Centre Hospitalier Abass Ndao')}
+                  {partner?.structureName || partner?.name || (agentUser ? `${agentUser.firstName} ${agentUser.lastName}` : 'Centre hospitalier Abass Ndao')}
                 </strong>
                 <small className="text-muted" style={{ fontSize: '0.8rem', display: 'block', marginTop: '0.15rem' }}>
                   Identifiant : {partner?.username || agentUser?.email || 'hp@cmu.sn'}
@@ -770,7 +770,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                         <input 
                           type="text" 
                           className="form-control input fw-bold"
-                          placeholder="Ex: Dr. Mamadou Ndiaye, Pharmacie Centrale..." 
+                          placeholder="Ex: Dr. Mamadou Ndiaye, pharmacie centrale..." 
                           value={newPrestataire.name}
                           onChange={(e) => setNewPrestataire({ ...newPrestataire, name: e.target.value })}
                           style={{ borderRadius: '10px' }}

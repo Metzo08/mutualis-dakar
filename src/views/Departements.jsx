@@ -50,7 +50,7 @@ const generateMockMutuelle = (communeName, regionName) => {
     lastUpdate: '28/06/2026',
     lat,
     lng,
-    landmark: `Près de la Mairie de la commune de ${communeName}.`,
+    landmark: `Près de la mairie de la commune de ${communeName}.`,
     localInfo: `Cette mutuelle assure la couverture maladie universelle pour les résidents de la commune de ${communeName}. Elle facilite l'accès aux soins de santé de base.`
   };
 };
@@ -62,7 +62,7 @@ const generateMockUnion = (deptName, regionName) => {
   }
   const id = Math.abs(hash);
   const managers = ['Assane Diop', 'Cheikh Sarr', 'Idrissa Wade', 'Amadou Diop', 'Ousmane Ndiaye', 'Ibrahima Fall', 'Saliou Diallo', 'Lamine Sané'];
-  const manager = deptName.toLowerCase() === 'dakar' ? 'Moustapha Mbengue' : managers[id % managers.length];
+  const manager = deptName.toLowerCase() === 'dakar' ? 'Moustapha mbengue' : managers[id % managers.length];
   const phone = `+221 33 8${(id % 900) + 100} ${(id % 90) + 10} ${(id % 90) + 10}`;
   const email = `ud.${deptName.toLowerCase().replace(/[^a-z0-9]/g, '')}@unamusc.sn`;
   const agreement = `UD-${regionName.substring(0, 2).toUpperCase()}-${(id % 900) + 100}-${(id % 90) + 10}`;
@@ -130,7 +130,7 @@ const staticData = {
     5: [
       { id: 501, name: 'Kaolack' },
       { id: 502, name: 'Guinguinéo' },
-      { id: 503, name: 'Nioro du Rip' }
+      { id: 503, name: 'Nioro du rip' }
     ],
     6: [
       { id: 601, name: 'Kédougou' },
@@ -139,7 +139,7 @@ const staticData = {
     ],
     7: [
       { id: 701, name: 'Kolda' },
-      { id: 702, name: 'Médina Yoro Koula' },
+      { id: 702, name: 'Médina yoro koula' },
       { id: 703, name: 'Vélingara' }
     ],
     8: [
@@ -150,7 +150,7 @@ const staticData = {
     9: [
       { id: 901, name: 'Matam' },
       { id: 902, name: 'Kanel' },
-      { id: 903, name: 'Ranérou Ferlo' }
+      { id: 903, name: 'Ranérou ferlo' }
     ],
     10: [
       { id: 1001, name: 'Saint-Louis' },
@@ -182,22 +182,22 @@ const staticData = {
   communes: {
     // Dakar
     101: [{ id: 10101, name: 'Dakar Plateau' }, { id: 10102, name: 'Médina' }, { id: 10103, name: 'Fann-Point E-Amitié' }, { id: 10104, name: 'Ouakam' }, { id: 10105, name: 'Ngor' }, { id: 10106, name: 'Yoff' }, { id: 10107, name: 'Grand Yoff' }, { id: 10108, name: 'Parcelles Assainies' }],
-    102: [{ id: 10201, name: 'Wakhinane Nimzatt' }, { id: 10202, name: 'Ndiarème Limamoulaye' }, { id: 10203, name: 'Médina Gounass' }, { id: 10204, name: 'Golf Sud' }],
+    102: [{ id: 10201, name: 'Wakhinane nimzatt' }, { id: 10202, name: 'Ndiarème limamoulaye' }, { id: 10203, name: 'Médina gounass' }, { id: 10204, name: 'Golf Sud' }],
     103: [{ id: 10301, name: 'Pikine Ouest' }, { id: 10302, name: 'Pikine Est' }, { id: 10303, name: 'Pikine Nord' }, { id: 10304, name: 'Mbao' }, { id: 10305, name: 'Yeumbeul Nord' }, { id: 10306, name: 'Yeumbeul Sud' }],
     104: [{ id: 10401, name: 'Rufisque Est' }, { id: 10402, name: 'Rufisque Ouest' }, { id: 10403, name: 'Rufisque Nord' }, { id: 10404, name: 'Bargny' }, { id: 10405, name: 'Sébikotane' }],
     105: [{ id: 10501, name: 'Keur Massar Nord' }, { id: 10502, name: 'Keur Massar Sud' }, { id: 10503, name: 'Malika' }, { id: 10504, name: 'Jaxaay-Parcelles' }],
     // Diourbel
-    201: [{ id: 20101, name: 'Diourbel Commune' }, { id: 20102, name: 'Ndindy' }, { id: 20103, name: 'Ndoulo' }],
-    202: [{ id: 20201, name: 'Bambey Commune' }, { id: 20202, name: 'Baba Garage' }, { id: 20203, name: 'Lambaye' }],
-    203: [{ id: 20301, name: 'Touba Mosquée' }, { id: 20302, name: 'Mbacké Commune' }, { id: 20303, name: 'Taïf' }],
+    201: [{ id: 20101, name: 'Diourbel commune' }, { id: 20102, name: 'Ndindy' }, { id: 20103, name: 'Ndoulo' }],
+    202: [{ id: 20201, name: 'Bambey commune' }, { id: 20202, name: 'Baba garage' }, { id: 20203, name: 'Lambaye' }],
+    203: [{ id: 20301, name: 'Touba mosquée' }, { id: 20302, name: 'Mbacké commune' }, { id: 20303, name: 'Taïf' }],
     // Fatick
-    301: [{ id: 30101, name: 'Fatick Commune' }, { id: 30102, name: 'Fimela' }, { id: 30103, name: 'Niakhar' }],
-    302: [{ id: 30201, name: 'Foundiougne Commune' }, { id: 30202, name: 'Sokone' }, { id: 30203, name: 'Passy' }],
-    303: [{ id: 30301, name: 'Gossas Commune' }, { id: 30302, name: 'Colobane' }, { id: 30303, name: 'Mbar' }],
+    301: [{ id: 30101, name: 'Fatick commune' }, { id: 30102, name: 'Fimela' }, { id: 30103, name: 'Niakhar' }],
+    302: [{ id: 30201, name: 'Foundiougne commune' }, { id: 30202, name: 'Sokone' }, { id: 30203, name: 'Passy' }],
+    303: [{ id: 30301, name: 'Gossas commune' }, { id: 30302, name: 'Colobane' }, { id: 30303, name: 'Mbar' }],
     // Thiès
     1301: [{ id: 130101, name: 'Thiès Est' }, { id: 130102, name: 'Thiès Ouest' }, { id: 130103, name: 'Thiès Nord' }, { id: 130104, name: 'Khombole' }, { id: 130105, name: 'Pout' }],
-    1302: [{ id: 130201, name: 'Mbour Commune' }, { id: 130202, name: 'Saly Portudal' }, { id: 130203, name: 'Nianing' }, { id: 130204, name: 'Joal-Fadiouth' }, { id: 130205, name: 'Sandiara' }],
-    1303: [{ id: 130301, name: 'Tivaouane Commune' }, { id: 130302, name: 'Meckhe' }, { id: 130303, name: 'Pir Goureye' }, { id: 130304, name: 'Taïba Ndiaye' }]
+    1302: [{ id: 130201, name: 'Mbour commune' }, { id: 130202, name: 'Saly portudal' }, { id: 130203, name: 'Nianing' }, { id: 130204, name: 'Joal-Fadiouth' }, { id: 130205, name: 'Sandiara' }],
+    1303: [{ id: 130301, name: 'Tivaouane commune' }, { id: 130302, name: 'Meckhe' }, { id: 130303, name: 'Pir goureye' }, { id: 130304, name: 'Taïba Ndiaye' }]
   }
 };
 
@@ -227,7 +227,7 @@ export default function Departements({ lang, setView }) {
       modalContact: 'Contact téléphone',
       modalEmail: 'Email',
       modalRates: 'Tarif / Cotisation',
-      modalServices: 'Structures & Services conventionnés',
+      modalServices: 'Structures & services conventionnés',
       modalCertified: 'Agréée par l\'état',
       modalLastUpdate: 'Dernière mise à jour',
       yes: 'Oui',
@@ -413,7 +413,7 @@ export default function Departements({ lang, setView }) {
       mutuelles: 5 + (seed % 15),
       beneficiaries: (10000 + (seed * 5000)).toLocaleString('fr-FR'),
       structures: 10 + (seed % 20),
-      president: regionName === 'dakar' ? 'Moustapha Mbengue' : (seed === 2 ? 'Aminata Ndiaye' : 'Ousmane Sall'),
+      president: regionName === 'dakar' ? 'Moustapha mbengue' : (seed === 2 ? 'Aminata Ndiaye' : 'Ousmane sall'),
       initiative: lang === 'fr' 
         ? 'Campagne de sensibilisation itinérante dans les marchés locaux et inscriptions massives.' 
         : 'Liggéey ngir jox xibaar ci marse yi ak dugal nit ñi ci mutuelle bi.'
@@ -540,7 +540,7 @@ export default function Departements({ lang, setView }) {
                                 <ProIcon name="shield-check" /> {activeDeptUnion.name}
                               </h3>
                             </div>
-                            <span className="badge badge-success" style={{ fontSize: '0.8rem' }}>Union Agréée <ProIcon name="check-circle" color="#059669" /></span>
+                            <span className="badge badge-success" style={{ fontSize: '0.8rem' }}>Union agréée <ProIcon name="check-circle" color="#059669" /></span>
                           </div>
                           
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', fontSize: '0.9rem', marginTop: '0.25rem' }}>

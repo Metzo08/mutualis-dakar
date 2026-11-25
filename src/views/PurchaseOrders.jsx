@@ -8,10 +8,10 @@ import ProIcon from '../components/ProIcon';
 export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, partnerUser = null, setView = null }) {
   const defaultOrders = [
     { id: 101, first_name: 'Amadou', last_name: 'Sow', cmu_number: 'CSU-DKR-2026-8812.2', items_json: JSON.stringify([{ name: 'Amoxicilline 500mg (Gélules)', qty: 2, price: 3500 }, { name: 'Paracétamol 1000mg', qty: 1, price: 1500 }]), total_amount: 8500, cmu_covered: 4250, patient_pay: 4250, status: 'active', created_at: new Date().toISOString(), expires_at: new Date(Date.now() + 48 * 3600 * 1000).toISOString(), order_code: 'ORD-2026-PHARM-881' },
-    { id: 102, first_name: 'Fatou', last_name: 'Diop', cmu_number: 'CMU-DKR-2026-4401', items_json: JSON.stringify([{ name: 'Sirop Toux Enfant', qty: 1, price: 2800 }, { name: 'Sérum Physiologique (Boîte)', qty: 2, price: 1200 }]), total_amount: 5200, cmu_covered: 2600, patient_pay: 2600, status: 'used', created_at: new Date(Date.now() - 36 * 3600 * 1000).toISOString(), expires_at: new Date(Date.now() + 12 * 3600 * 1000).toISOString(), order_code: 'ORD-2026-PHARM-440' },
+    { id: 102, first_name: 'Fatou', last_name: 'Diop', cmu_number: 'CMU-DKR-2026-4401', items_json: JSON.stringify([{ name: 'Sirop toux enfant', qty: 1, price: 2800 }, { name: 'Sérum physiologique (boîte)', qty: 2, price: 1200 }]), total_amount: 5200, cmu_covered: 2600, patient_pay: 2600, status: 'used', created_at: new Date(Date.now() - 36 * 3600 * 1000).toISOString(), expires_at: new Date(Date.now() + 12 * 3600 * 1000).toISOString(), order_code: 'ORD-2026-PHARM-440' },
     { id: 103, first_name: 'Modou', last_name: 'Diop', cmu_number: 'SN-DK-MED-1001.1', items_json: JSON.stringify([{ name: 'Metformine 850mg (Diabète)', qty: 3, price: 4200 }, { name: 'Amlodipine 10mg (HTA)', qty: 2, price: 3800 }]), total_amount: 20200, cmu_covered: 10100, patient_pay: 10100, status: 'used', created_at: new Date(Date.now() - 48 * 3600 * 1000).toISOString(), expires_at: new Date().toISOString(), order_code: 'ORD-2026-PHARM-101' },
-    { id: 104, first_name: 'Awa', last_name: 'Ndiaye', cmu_number: 'SN-DK-PIK-9001', items_json: JSON.stringify([{ name: 'Fer + Acide Folique Maternité', qty: 2, price: 2500 }, { name: 'Calcium + Vitamine D3', qty: 1, price: 3100 }]), total_amount: 8100, cmu_covered: 4050, patient_pay: 4050, status: 'used', created_at: new Date(Date.now() - 72 * 3600 * 1000).toISOString(), expires_at: new Date(Date.now() - 24 * 3600 * 1000).toISOString(), order_code: 'ORD-2026-PHARM-900' },
-    { id: 105, first_name: 'Moustapha', last_name: 'Ndiaye', cmu_number: 'SN-DK-PIK-9021', items_json: JSON.stringify([{ name: 'Ibuprofène 400mg', qty: 2, price: 2100 }, { name: 'Bande Velpeau 10cm', qty: 3, price: 1500 }]), total_amount: 8700, cmu_covered: 4350, patient_pay: 4350, status: 'active', created_at: new Date().toISOString(), expires_at: new Date(Date.now() + 48 * 3600 * 1000).toISOString(), order_code: 'ORD-2026-PHARM-902' }
+    { id: 104, first_name: 'Awa', last_name: 'Ndiaye', cmu_number: 'SN-DK-PIK-9001', items_json: JSON.stringify([{ name: 'Fer + acide folique maternité', qty: 2, price: 2500 }, { name: 'Calcium + vitamine d3', qty: 1, price: 3100 }]), total_amount: 8100, cmu_covered: 4050, patient_pay: 4050, status: 'used', created_at: new Date(Date.now() - 72 * 3600 * 1000).toISOString(), expires_at: new Date(Date.now() - 24 * 3600 * 1000).toISOString(), order_code: 'ORD-2026-PHARM-900' },
+    { id: 105, first_name: 'Moustapha', last_name: 'Ndiaye', cmu_number: 'SN-DK-PIK-9021', items_json: JSON.stringify([{ name: 'Ibuprofène 400mg', qty: 2, price: 2100 }, { name: 'Bande velpeau 10cm', qty: 3, price: 1500 }]), total_amount: 8700, cmu_covered: 4350, patient_pay: 4350, status: 'active', created_at: new Date().toISOString(), expires_at: new Date(Date.now() + 48 * 3600 * 1000).toISOString(), order_code: 'ORD-2026-PHARM-902' }
   ];
 
   const [orderPage, setOrderPage] = useState(1);
@@ -130,21 +130,21 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
     const cmuPart = Math.round(estAmt * 0.5);
     const patientPart = Math.max(0, estAmt - cmuPart);
     return [
-      `🇸🇳 *DEMANDE DE BON DE COMMANDE PHARMACIE (50%) — UNAMUSC*`,
+      `🇸🇳 *demande de bon de commande pharmacie (50%) — UNAMUSC*`,
       `━━━━━━━━━━━━━━━━━━━━`,
-      `🔖 *Référence Demande :* #${refCode || 'ORD-WA-2026'}`,
+      `*Référence demande :* #${refCode || 'ORD-WA-2026'}`,
       `👤 *Assuré(e) :* ${activeFirstName} ${activeLastName}`,
-      `🪪 *N° Carte CSU :* ${activeCmuNumber}`,
-      `📱 *Téléphone Assuré :* ${whatsappPhoneInput || citizenUser?.phone || '+221 77 123 45 67'}`,
-      `🏪 *Pharmacie souhaitée :* ${waReqPharmacy || 'Pharmacie Partenaire Agréée CSU'}`,
-      `💊 *Médicaments prescrits :* ${waReqMeds || 'Selon photo ordonnance jointe'}`,
+      `*N° carte CSU :* ${activeCmuNumber}`,
+      `*Téléphone assuré :* ${whatsappPhoneInput || citizenUser?.phone || '+221 77 123 45 67'}`,
+      `*Pharmacie souhaitée :* ${waReqPharmacy || 'Pharmacie Partenaire Agréée CSU'}`,
+      `*Médicaments prescrits :* ${waReqMeds || 'Selon photo ordonnance jointe'}`,
       ``,
-      `💰 *Estimation Tiers-Payant Officine (50%) :*`,
+      `*Estimation tiers-payant officine (50%) :*`,
       `• Total estimé : ${estAmt.toLocaleString('fr-FR')} FCFA`,
-      `• Part Mutuelle (50%) : ${cmuPart.toLocaleString('fr-FR')} FCFA`,
+      `• Part mutuelle (50%) : ${cmuPart.toLocaleString('fr-FR')} FCFA`,
       `• Reste à charge assuré (50%) : ${patientPart.toLocaleString('fr-FR')} FCFA`,
       ``,
-      `📎 *Pièce justificative :* Je joins ci-dessous la photo de mon ordonnance médicale pour recevoir mon Bon de Commande validé sur WhatsApp.`
+      `*Pièce justificative :* je joins ci-dessous la photo de mon ordonnance médicale pour recevoir mon bon de commande validé sur WhatsApp.`
     ].join('\n');
   };
 
@@ -209,7 +209,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
     window.open(waUrl, '_blank', 'noopener,noreferrer');
 
     setWhatsappRequestModal(false);
-    setRedeemSuccess(`💬 Demande WhatsApp #${refCode} enregistrée et ouverte sur WhatsApp ! Joignez la photo de votre ordonnance dans la discussion.`);
+    setRedeemSuccess(`Demande WhatsApp #${refCode} enregistrée et ouverte sur WhatsApp ! Joignez la photo de votre ordonnance dans la discussion.`);
   };
 
   const formatPurchaseOrderWhatsAppMsg = (ord) => {
@@ -229,23 +229,23 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
       : '• Médicaments selon ordonnance médicale';
     const verifyUrl = `${window.location.origin}/#/verify/${code}`;
     return [
-      `🇸🇳 *UNAMUSC SÉNÉGAL — BON DE COMMANDE PHARMACIE (48H)*`,
+      `🇸🇳 *UNAMUSC Sénégal — Bon de commande pharmacie (48h)*`,
       `━━━━━━━━━━━━━━━━━━━━`,
-      `📄 *Code Bon :* #${code}`,
+      `*Code bon :* #${code}`,
       `👤 *Assuré(e) :* ${ord.first_name || activeFirstName} ${ord.last_name || activeLastName}`,
-      `🪪 *N° Carte CSU :* ${ord.cmu_number || activeCmuNumber}`,
-      `📌 *Statut :* ${ord.status === 'active' ? '✅ ACTIF (Valable 48h en pharmacie agréée)' : ord.status === 'used' ? '🔒 DÉLIVRÉ EN PHARMACIE' : '⏳ EN ATTENTE DE VALIDATION'}`,
+      `*N° carte CSU :* ${ord.cmu_number || activeCmuNumber}`,
+      `📌 *Statut :* ${ord.status === 'active' ? 'Actif (valable 48h en pharmacie agréée)' : ord.status === 'used' ? 'Délivré en pharmacie' : '⏳ en attente de validation'}`,
       ``,
-      `💊 *Médicaments prescrits :*`,
+      `*Médicaments prescrits :*`,
       medsText,
       ``,
-      `💰 *Décompte Tiers-Payant Officine (50%) :*`,
-      `• Total Ordonnance : ${totalAmt.toLocaleString('fr-FR')} FCFA`,
-      `• *Prise en charge Mutuelle (50%) : ${cmuAmt.toLocaleString('fr-FR')} FCFA*`,
+      `*Décompte tiers-payant officine (50%) :*`,
+      `• Total ordonnance : ${totalAmt.toLocaleString('fr-FR')} FCFA`,
+      `• *Prise en charge mutuelle (50%) : ${cmuAmt.toLocaleString('fr-FR')} FCFA*`,
       `• *Reste à payer par l'assuré (50%) : ${patientAmt.toLocaleString('fr-FR')} FCFA*`,
       ``,
-      `🔍 *Vérification pharmacie :* ${verifyUrl}`,
-      `_Présentez ce message WhatsApp ou le QR Code avec votre carte CSU en pharmacie partenaire._`
+      `*Vérification pharmacie :* ${verifyUrl}`,
+      `_présentez ce message WhatsApp ou Le QR code avec votre carte CSU en pharmacie partenaire._`
     ].join('\n');
   };
 
@@ -270,7 +270,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
             recipient: normalizedPhone,
             channel: 'whatsapp',
             type: 'prise_en_charge',
-            subject: `Bon de Commande Pharmacie #${targetOrder.order_code || targetOrder.id}`,
+            subject: `Bon de commande pharmacie #${targetOrder.order_code || targetOrder.id}`,
             body: message
           })
         });
@@ -280,7 +280,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
     }
     const waUrl = `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(message)}`;
     window.open(waUrl, '_blank', 'noopener,noreferrer');
-    setRedeemSuccess(`📲 Bon de commande #${targetOrder.order_code || targetOrder.id} prêt sur WhatsApp pour le +${normalizedPhone} !`);
+    setRedeemSuccess(`Bon de commande #${targetOrder.order_code || targetOrder.id} prêt sur WhatsApp pour Le +${normalizedPhone} !`);
     setWhatsappOrderModal(null);
   };
 
@@ -328,7 +328,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
     }
     setValidatingOrder(null);
     setAgentRejectNote('');
-    setAgentValidationMsg(`❌ Le bon de commande a été rejeté avec le motif : "${rejectReason.trim()}".`);
+    setAgentValidationMsg(`Le bon de commande a été rejeté avec le motif : "${rejectReason.trim()}".`);
   };
 
   const handlePrescriptionFileUpload = (e) => {
@@ -461,7 +461,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               <div class="col-6">
                 <span class="small fw-bold d-block text-muted"><ProIcon name="user" /> Bénéficiaire assuré :</span>
                 <h5 class="fw-bold mb-0" style="color: #0f172a;">${voucher.first_name} ${voucher.last_name}</h5>
-                <small class="text-muted">N° Carte CSU : <strong>${voucher.cmu_number}</strong></small>
+                <small class="text-muted">N° carte CSU : <strong>${voucher.cmu_number}</strong></small>
               </div>
               <div class="col-6 text-end">
                 <span class="small fw-bold d-block text-muted"><ProIcon name="calendar" /> Date d'émission & validité :</span>
@@ -516,7 +516,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               <div class="col-8">
                 <strong class="small d-block text-success mb-1 fw-bold">Certification officine & tiers-payant :</strong>
                 <p class="small text-muted mb-0" style="line-height: 1.5;">
-                  Ce bon certifié permet la délivrance immédiate des médicaments prescrits dans toute pharmacie agréée UNAMUSC. Le montant pris en charge (50%) est réglé directement par l'UNAMUSC au pharmacien sous présentation du bon signé.
+                  Ce bon certifié permet la délivrance immédiate des médicaments prescrits dans toute pharmacie agréée UNAMUSC. le montant pris en charge (50%) Est réglé directement par l'UNAMUSC au pharmacien sous présentation du bon signé.
                 </p>
               </div>
               <div class="col-4 text-center">
@@ -682,7 +682,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
     localStorage.setItem('cmu_purchase_orders', JSON.stringify(updated));
 
     setLastCreatedOrder(newOrder);
-    setRedeemSuccess(`🎉 Bon de commande ${newOrder.order_code} émis avec succès sous Tiers-Payant UNAMUSC (Valable 48h) !`);
+    setRedeemSuccess(`Bon de commande ${newOrder.order_code} émis avec succès sous tiers-payant UNAMUSC (valable 48h) !`);
     setItems([]);
     setCreating(false);
 
@@ -800,12 +800,12 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
             <ProIcon name="senegal-flag" /> UNAMUSC Sénégal — Bons de commande médicaments (prise en charge 50%)
           </span>
           <h1 className="fw-bold mb-2 text-white text-center" style={{ fontSize: '2rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
-            {lang === 'wo' ? '💊 Bonu Garab Pharmacie Tiers-Payant' : '💊 Bons de Commande de Médicaments'}
+            {lang === 'wo' ? 'Bonu garab pharmacie tiers-payant' : 'Bons de commande de médicaments'}
           </h1>
           <p className="mb-3 text-white-50 text-center mx-auto" style={{ fontSize: '0.98rem', lineHeight: '1.6', textShadow: '0 1px 2px rgba(0,0,0,0.2)', maxWidth: '750px' }}>
             {lang === 'wo' 
-              ? 'Genereel sa bon bu garab ngir jénd garab ci pharmacie ak Tiers-Payant UNAMUSC (50% prise en charge).' 
-              : 'Générez et présentez vos bons de commande de médicaments délivrés directement en pharmacie agréée sous le Tiers-Payant UNAMUSC (50% mutuelle, 50% ticket modérateur).'}
+              ? 'Genereel sa bon bu garab ngir jénd garab ci pharmacie ak tiers-payant UNAMUSC (50% prise en charge).' 
+              : 'Générez et présentez vos bons de commande de médicaments délivrés directement en pharmacie agréée sous le tiers-payant UNAMUSC (50% mutuelle, 50% ticket modérateur).'}
           </p>
         </div>
       </section>
@@ -822,14 +822,14 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               window.location.hash = '#/guarantees';
             }}
           >
-            🏥 {lang === 'wo' ? 'Bataaxalu Garantie (Hôpital 80%)' : 'Lettres de Garantie (Hôpital 80% / SESAME 100%)'}
+            🏥 {lang === 'wo' ? 'Bataaxalu garantie (hôpital 80%)' : 'Lettres de garantie (hôpital 80% / Sesame 100%)'}
           </button>
           <button
             type="button"
             className="btn fw-bold px-3.5 py-2 d-inline-flex align-items-center gap-2 text-white shadow-sm"
             style={{ borderRadius: '12px', background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', border: 'none' }}
           >
-            <ProIcon name="pill" /> {lang === 'wo' ? 'Bonu Garab (Pharmacie 50%)' : 'Bons de Commande Médicaments (Pharmacie 50%)'}
+            <ProIcon name="pill" /> {lang === 'wo' ? 'Bonu garab (pharmacie 50%)' : 'Bons de commande médicaments (pharmacie 50%)'}
           </button>
         </div>
         <div className="d-flex align-items-center gap-2 flex-wrap">
@@ -845,7 +845,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               setWhatsappRequestModal(true);
             }}
           >
-            💬 {lang === 'wo' ? 'Laaj Bon ci WhatsApp' : 'Demander un Bon par WhatsApp'}
+            💬 {lang === 'wo' ? 'Laaj bon ci WhatsApp' : 'Demander un bon par WhatsApp'}
           </button>
           <button
             type="button"
@@ -853,7 +853,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
             style={{ borderRadius: '10px', background: 'rgba(37, 211, 102, 0.14)', color: '#25d366', border: '1.5px solid #25d366' }}
             onClick={() => openOrderWhatsAppModal(lastCreatedOrder || visibleOrders[0] || orders[0])}
           >
-            <ProIcon name="smartphone" /> {lang === 'wo' ? 'Jot sa Bon ci WhatsApp' : 'Recevoir mon Bon sur WhatsApp'}
+            <ProIcon name="smartphone" /> {lang === 'wo' ? 'Jot sa bon ci WhatsApp' : 'Recevoir mon bon sur WhatsApp'}
           </button>
         </div>
       </div>
@@ -881,7 +881,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                 {lang === 'wo' ? '2. Jot ko ci WhatsApp walla PDF' : '2. Recevez le Bon sur WhatsApp'}
               </strong>
               <small style={{ color: 'var(--text-sub)', fontSize: '0.8rem', lineHeight: 1.45, display: 'block' }}>
-                {lang === 'wo' ? 'Bon bi dafay am code #ORD ak QR Code, baax 48h ci pharmacie yépp.' : 'Recevez instantanément votre Bon certifié (valable 48h) sur votre WhatsApp ou en PDF.'}
+                {lang === 'wo' ? 'Bon bi dafay am code #ord ak QR code, baax 48h ci pharmacie yépp.' : 'Recevez instantanément votre bon certifié (valable 48h) sur votre WhatsApp ou en PDF.'}
               </small>
             </div>
           </div>
@@ -1124,7 +1124,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               <input 
                 type="text" 
                 className="form-control input"
-                placeholder="ex: Amoxicilline 500mg, Paracétamol..."
+                placeholder="Ex: amoxicilline 500mg, paracétamol..."
                 value={medicineName}
                 onChange={(e) => setMedicineName(formatSentenceCase(e.target.value))}
                 style={{ borderRadius: '10px', height: '48px' }}
@@ -1210,7 +1210,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
             <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 pt-2">
               <span className="small text-muted">Valide pendant 48 heures dans toutes les pharmacies agréées du Sénégal.</span>
               <button className="btn btn-success px-4 py-2.5 fw-bold text-white shadow-sm" onClick={handleCreateOrder} disabled={creating} style={{ borderRadius: '12px', background: '#059669', borderColor: '#059669' }}>
-                {creating ? 'Émission...' : '✅ Émettre le bon pharmacie 48h certifié'}
+                {creating ? 'Émission...' : 'Émettre le bon pharmacie 48h certifié'}
               </button>
             </div>
           </div>
@@ -1223,7 +1223,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
           <div className="fs-1 mb-2"><ProIcon name="lock" /></div>
           <h4 className="fw-bold text-white">Accès sécurisé aux bons de commande pharmacie</h4>
           <p className="mx-auto" style={{ maxWidth: '650px', lineHeight: '1.6', color: 'rgba(255,255,255,0.9)' }}>
-            Par mesure de protection des données de santé, la consultation des bons de commande est strictement réservée aux assurés identifiés ou aux pharmaciens agréés UNAMUSC.
+            Par mesure de protection des données de santé, la consultation des bons de commande Est strictement réservée aux assurés identifiés ou aux pharmaciens agréés UNAMUSC.
           </p>
 
           <div className="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-2">
@@ -1299,7 +1299,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               <p className="mt-2" style={{ fontSize: '0.9rem' }}>
                 {isCitizen 
                   ? 'Aucun bon de commande disponible pour votre compte assuré.' 
-                  : 'Aucun bon de commande ne correspond à ce N° de Carte CSU.'}
+                  : 'Aucun bon de commande ne correspond à ce n° de carte CSU.'}
               </p>
             </div>
           ) : (
@@ -1630,7 +1630,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               <textarea
                 className="form-control input"
                 rows={3}
-                placeholder="Ex : Ordonnance illisible, médicament non couvert, prescription manquante..."
+                placeholder="Ex : ordonnance illisible, médicament non couvert, prescription manquante..."
                 value={agentRejectNote}
                 onChange={(e) => setAgentRejectNote(e.target.value)}
                 style={{ borderRadius: '12px' }}
@@ -1871,7 +1871,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                   style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                   value={editingOrderObj.first_name || ''}
                   onChange={(e) => setEditingOrderObj({ ...editingOrderObj, first_name: formatTitleCase(e.target.value) })}
-                  placeholder="Ex: Amadou"
+                  placeholder="Ex: amadou"
                   required
                 />
               </div>
@@ -1957,7 +1957,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                 style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px' }}
                 value={editingOrderObj.agentNote || ''}
                 onChange={(e) => setEditingOrderObj({ ...editingOrderObj, agentNote: formatSentenceCase(e.target.value) })}
-                placeholder="Ex: Ordonnance vérifiée et prise en charge accordée à 80%."
+                placeholder="Ex: ordonnance vérifiée et prise en charge accordée à 80%."
               />
             </div>
 
@@ -1996,10 +1996,10 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                 <span style={{ fontSize: '1.35rem' }}><ProIcon name="smartphone" /></span>
                 <div>
                   <h5 className="fw-bold mb-0" style={{ fontSize: '1.05rem', color: '#ffffff' }}>
-                    {lang === 'wo' ? 'Jot Bonu Garab bi ci WhatsApp' : 'Recevoir / Envoyer le Bon de Commande par WhatsApp'}
+                    {lang === 'wo' ? 'Jot bonu garab bi ci WhatsApp' : 'Recevoir / Envoyer le bon de commande par WhatsApp'}
                   </h5>
                   <small style={{ opacity: 0.92, fontSize: '0.76rem' }}>
-                    Code Bon : #{whatsappOrderModal.order_code || `ORD-${whatsappOrderModal.id}`} • Tiers-Payant 50%
+                    Code bon : #{whatsappOrderModal.order_code || `ORD-${whatsappOrderModal.id}`} • Tiers-Payant 50%
                   </small>
                 </div>
               </div>
@@ -2020,7 +2020,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                   style={{ borderRadius: '12px', fontSize: '1.05rem', border: '1.5px solid #25d366', background: 'var(--bg-card-subtle)', color: 'var(--text-main)' }}
                 />
                 <small className="text-muted d-block mt-1" style={{ fontSize: '0.76rem' }}>
-                  Le bon officiel complet (code, médicaments, part mutuelle 50%, reste à payer et lien de vérification) sera envoyé sur ce numéro.
+                  le bon officiel complet (code, médicaments, part mutuelle 50%, reste à payer et lien de vérification) sera envoyé sur ce numéro.
                 </small>
               </div>
 
@@ -2162,7 +2162,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                     className="form-control"
                     value={waReqPharmacy}
                     onChange={(e) => setWaReqPharmacy(formatTitleCase(e.target.value))}
-                    placeholder="Ex: Pharmacie Guigon Dakar"
+                    placeholder="Ex: pharmacie guigon Dakar"
                     required
                     style={{ borderRadius: '10px', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}
                   />
@@ -2194,7 +2194,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                   className="form-control"
                   value={waReqMeds}
                   onChange={(e) => setWaReqMeds(formatSentenceCase(e.target.value))}
-                  placeholder="Ex: Insuline Lantus, Metformine 850mg, Paracétamol 1g"
+                  placeholder="Ex: insuline lantus, metformine 850mg, paracétamol 1g"
                   required
                   style={{ borderRadius: '10px', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}
                 />
@@ -2342,7 +2342,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
             <p className="mb-4" style={{ color: 'var(--text-sub, #94a3b8)', fontSize: '0.92rem', lineHeight: '1.55' }}>
               Voulez-vous vraiment supprimer définitivement <strong style={{ color: '#ef4444' }}>{confirmDeleteObj.title}</strong> ?
               <br />
-              <small className="text-muted d-block mt-1">Cette action est irréversible dans le système UNAMUSC.</small>
+              <small className="text-muted d-block mt-1">Cette action Est irréversible dans le système UNAMUSC.</small>
             </p>
 
             <div className="d-flex justify-content-center gap-3 pt-2">

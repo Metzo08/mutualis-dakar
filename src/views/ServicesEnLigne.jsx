@@ -52,7 +52,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
   const [paymentMethod, setPaymentMethod] = useState('wave');
   const [otpSent, setOtpSent] = useState(false);
   const [otpCode, setOtpCode] = useState('');
-  // eslint-disable-next-line no-unused-vars -- Indicateur de succès de paiement d'adhésion. Le setter est appelé à plusieurs endroits mais aucun rendu ne lit encore le drapeau.
+  // eslint-disable-next-line no-unused-vars -- Indicateur de succès de paiement d'adhésion. le setter est appelé à plusieurs endroits mais aucun rendu ne lit encore le drapeau.
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [gdprConsent, setGdprConsent] = useState(false);
   // eslint-disable-next-line no-unused-vars -- État `sponsorPhone` de l'adhésion. Remplacé dans le payload par `formData.phone` (ligne ~423) ; le setter n'est jamais appelé.
@@ -64,7 +64,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
   // Renewal States
   const [renewPhone, setRenewPhone] = useState('');
   const [renewPassword, setRenewPassword] = useState('');
-  // eslint-disable-next-line no-unused-vars -- Drapeau « renouvellement déjà journalisé » du parcours de renouvellement. Le setter est appelé, aucun rendu ne lit le drapeau.
+  // eslint-disable-next-line no-unused-vars -- Drapeau « renouvellement déjà journalisé » du parcours de renouvellement. le setter est appelé, aucun rendu ne lit le drapeau.
   const [renewLogged, setRenewLogged] = useState(false);
   const [renewStep, setRenewStep] = useState(1); // 1: login, 2: dues info, 3: pay, 4: done
   const [renewOtpSent, setRenewOtpSent] = useState(false);
@@ -78,7 +78,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
   const [donateStep, setDonateStep] = useState(1); // 1: config, 2: choose method & phone, 3: OTP verify
   const [donatePaymentMethod, setDonatePaymentMethod] = useState('wave');
   const [donatePhone, setDonatePhone] = useState('');
-  // eslint-disable-next-line no-unused-vars -- Drapeau « OTP de don envoyé ». Le setter est appelé, aucun rendu ne lit le drapeau.
+  // eslint-disable-next-line no-unused-vars -- Drapeau « OTP de don envoyé ». le setter est appelé, aucun rendu ne lit le drapeau.
   const [donateOtpSent, setDonateOtpSent] = useState(false);
   const [donateOtpCode, setDonateOtpCode] = useState('');
 
@@ -247,7 +247,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
       step1Title: 'Tann sa formule',
       step1Desc: 'Tannal package bi la gënë arr.',
       step2Title: 'Tann sa mutuelle',
-      step2Desc: 'Tannal mutuelle bi nekk sa gox walla sa commune ci Ndakaaru.',
+      step2Desc: 'Tannal mutuelle bi nekk sa gox walla sa commune ci ndakaaru.',
       step3Title: 'Mbindu tour ak sant',
       step3Desc: 'Bindal sa tour, sa sant ak sa portable.',
       step4Title: 'Sa njabot (famille)',
@@ -259,7 +259,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
       step7Title: 'Fayu sécurisé',
       step7Desc: 'Fayal sa cotisation ci Orange Money walla Wave.',
       step8Title: 'Bokk nga ci mutuelle bi !',
-      step8Desc: 'Liguéy bi soti na ! Yore nga sa carte QR Santé tey.',
+      step8Desc: 'Liguéy bi soti na ! Yore nga sa carte QR santé tey.',
       packageIndiv: 'Individuel',
       packageIndivPrice: '4 500 FCFA / at',
       packageFam: 'Familial (sa njabot)',
@@ -325,9 +325,9 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
       details: [
         { label: 'Adhérent', value: `${formData.firstName || activeFirstName} ${formData.lastName || activeLastName}` },
         { label: 'Téléphone', value: formData.phone || '+221 77 000 00 00' },
-        { label: 'N° Adhérent / CMU', value: generatedCmuNumber || activeCmuNumber || 'CSU-DKR-2026-8812' },
-        { label: 'Statut Adhésion', value: 'Active (À jour de cotisation)' },
-        { label: 'Formule choisie', value: selectedPackage === 'individuel' ? 'Individuelle' : selectedPackage === 'familial' ? 'Familiale' : 'CSU Établissement' },
+        { label: 'N° adhérent / CMU', value: generatedCmuNumber || activeCmuNumber || 'CSU-DKR-2026-8812' },
+        { label: 'Statut adhésion', value: 'Active (À jour de cotisation)' },
+        { label: 'Formule choisie', value: selectedPackage === 'individuel' ? 'Individuelle' : selectedPackage === 'familial' ? 'Familiale' : 'CSU établissement' },
         { label: 'Tiers-Payant', value: 'Ouvert dans tous les hôpitaux et pharmacies agréés' }
       ],
       notes: 'Ce reçu officiel atteste de l\'ouverture des droits à la couverture maladie universelle et sert de justificatif auprès des prestataires de santé.'
@@ -335,7 +335,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
   };
 
   // Helper: Next Step for Registration
-  // eslint-disable-next-line no-unused-vars -- Nombre d'étapes du parcours d'adhésion (constante métier). Le parcours se termine en `setRegStep(8)` : la borne est documentée ici mais aucun rendu ne s'en sert.
+  // eslint-disable-next-line no-unused-vars -- Nombre d'étapes du parcours d'adhésion (constante métier). le parcours se termine en `setRegStep(8)` : la borne est documentée ici mais aucun rendu ne s'en sert.
   const newStepCount = 7;
   const nextStep = () => {
     if (regStep === 1 && !selectedPackage) {
@@ -352,7 +352,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
         return;
       }
       if (!formData.firstName || !formData.lastName || !formData.phone) {
-        showError(lang === 'fr' ? 'Veuillez remplir les champs obligatoires (Prénom, Nom, Téléphone).' : 'Bindal sa tour, sa sant ak sa portable.');
+        showError(lang === 'fr' ? 'Veuillez remplir les champs obligatoires (prénom, nom, téléphone).' : 'Bindal sa tour, sa sant ak sa portable.');
         return;
       }
     }
@@ -365,7 +365,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
           }
           for (let i = 0; i < sponsoredHouseholds.length; i++) {
             if (!sponsoredHouseholds[i].chefName || !sponsoredHouseholds[i].chefPhone) {
-              showError(lang === 'fr' ? `Veuillez renseigner le nom et le téléphone du Chef pour le Ménage #${i+1}.` : `Bindal tour ak portable Chef bi ci njaboot #${i+1}.`);
+              showError(lang === 'fr' ? `Veuillez renseigner le nom et le téléphone du chef pour le ménage #${i+1}.` : `Bindal tour ak portable chef bi ci njaboot #${i+1}.`);
               return;
             }
           }
@@ -415,7 +415,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
     e.preventDefault();
     const cleanOtp = String(otpCode || '').replace(/[\s\D]+/g, '');
     if (window.addLog) {
-      window.addLog('INFO', `Adhésion : Validation du paiement. OTP saisi = "${otpCode}", nettoyé = "${cleanOtp}"`);
+      window.addLog('INFO', `Adhésion : validation du paiement. OTP saisi = "${otpCode}", nettoyé = "${cleanOtp}"`);
     }
 
     if (cleanOtp === '7842') {
@@ -430,7 +430,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
         phone: formData.phone || '77 000 00 00',
         address: formData.address || 'Dakar',
         mutuelleOrigine: selectedMutuelle || 'Mutuelle de Santé Départementale de Dakar',
-        package: selectedPackage === 'csu_eleves' ? 'Gratuité Élèves 100%' : 'UNAMUSC 80%',
+        package: selectedPackage === 'csu_eleves' ? 'Gratuité élèves 100%' : 'UNAMUSC 80%',
         lotCode: 'ADH-EN-LIGNE',
         photoUrl: formData.photoDataUrl || photoPreview || '',
         dependents: (familyMembers || []).map(f => ({
@@ -470,13 +470,13 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
             setPaymentSuccess(true);
             setRegStep(8);
             alert(lang === 'fr' 
-              ? "Mode hors-ligne : Votre adhésion a été enregistrée localement et sera synchronisée dès le retour de la connexion."
+              ? "Mode hors-ligne : votre adhésion a été enregistrée localement et sera synchronisée dès le retour de la connexion."
               : "Hors-ligne mode : Sa adhésion enregistrer na localement te mungi lay xaar connexion bi ñëwaat."
             );
           })
           .catch(err => {
             console.error('Offline queuing failed:', err);
-            if (window.addLog) window.addLog('ERROR', `Adhésion : Échec stockage local : ${err.message}`);
+            if (window.addLog) window.addLog('ERROR', `Adhésion : échec stockage local : ${err.message}`);
             // PAS de faux matricule « MD-OFFLINE-DK » : carte en attente,
             // code officiel attribué au rejeu serveur.
             setGeneratedCmuNumber('');
@@ -565,7 +565,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
       });
     } else {
       if (window.addLog) window.addLog('WARN', `Adhésion : OTP invalide ou incorrect. Reçu: "${cleanOtp}"`);
-      showError(lang === 'fr' ? 'Code OTP incorrect. Veuillez réessayer (Indice : 7842)' : 'Code OTP bi baaxul. Repantal (Indice: 7842)');
+      showError(lang === 'fr' ? 'Code OTP incorrect. Veuillez réessayer (indice : 7842)' : 'Code OTP bi baaxul. Repantal (indice: 7842)');
     }
   };
 
@@ -582,7 +582,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
     e.preventDefault();
     const cleanOtp = String(renewOtpCode || '').replace(/[\s\D]+/g, '');
     if (window.addLog) {
-      window.addLog('INFO', `Renouvellement : Validation du paiement. OTP saisi = "${renewOtpCode}", nettoyé = "${cleanOtp}"`);
+      window.addLog('INFO', `Renouvellement : validation du paiement. OTP saisi = "${renewOtpCode}", nettoyé = "${cleanOtp}"`);
     }
 
     if (cleanOtp === '7842') {
@@ -592,7 +592,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
       setRenewOtpCode('');
     } else {
       if (window.addLog) window.addLog('WARN', `Renouvellement : OTP incorrect. Reçu: "${cleanOtp}"`);
-      showError(lang === 'fr' ? 'Code OTP incorrect. Veuillez réessayer (Indice : 7842)' : 'Code OTP bi baaxul. Repantal (Indice: 7842)');
+      showError(lang === 'fr' ? 'Code OTP incorrect. Veuillez réessayer (indice : 7842)' : 'Code OTP bi baaxul. Repantal (indice: 7842)');
     }
   };
 
@@ -613,7 +613,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
           .then(() => {
             setRenewedBeneficiary({
               firstName: 'Assuré',
-              lastName: 'Hors Ligne',
+              lastName: 'Hors ligne',
               mutuelleName: 'Mutuelle de Rufisque Est',
               cmuNumber: 'MD-OFFLINE-DK',
               status: 'active'
@@ -621,7 +621,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
             setRenewLogged(true);
             setRenewStep(2);
             alert(lang === 'fr' 
-              ? "Mode hors-ligne : Votre renouvellement a été enregistré localement et sera synchronisé dès le retour de la connexion."
+              ? "Mode hors-ligne : votre renouvellement a été enregistré localement et sera synchronisé dès le retour de la connexion."
               : "Hors-ligne mode : Sa renouvellement enregistrer na localement te mungi lay xaar connexion bi ñëwaat."
             );
           });
@@ -685,7 +685,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
     e.preventDefault();
     const cleanOtp = String(donateOtpCode || '').replace(/[\s\D]+/g, '');
     if (window.addLog) {
-      window.addLog('INFO', `Don : Validation du paiement. OTP saisi = "${donateOtpCode}", nettoyé = "${cleanOtp}"`);
+      window.addLog('INFO', `Don : validation du paiement. OTP saisi = "${donateOtpCode}", nettoyé = "${cleanOtp}"`);
     }
 
     if (cleanOtp === '7842') {
@@ -701,7 +701,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
               [donateTarget]: prev[donateTarget] + parseInt(donateAmount)
             }));
             alert(lang === 'fr' 
-              ? "Mode hors-ligne : Votre don a été enregistré localement et sera synchronisé dès le retour de la connexion."
+              ? "Mode hors-ligne : votre don a été enregistré localement et sera synchronisé dès le retour de la connexion."
               : "Hors-ligne mode : Sa don enregistrer na localement."
             );
           });
@@ -734,7 +734,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
       });
     } else {
       if (window.addLog) window.addLog('WARN', `Don : OTP incorrect. Reçu: "${cleanOtp}"`);
-      showError(lang === 'fr' ? 'Code OTP incorrect. Veuillez réessayer (Indice : 7842)' : 'Code OTP bi baaxul. Repantal (Indice: 7842)');
+      showError(lang === 'fr' ? 'Code OTP incorrect. Veuillez réessayer (indice : 7842)' : 'Code OTP bi baaxul. Repantal (indice: 7842)');
     }
   };
 
@@ -888,7 +888,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                       <div style={{ fontSize: '2rem' }}><ProIcon name="graduation-cap" /></div>
                       <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem' }}>{lang === 'fr' ? 'CSU élèves ou Daara' : 'CSU élèves ak Daara'}</h3>
                       <div className="stat-number" style={{ fontSize: '1.5rem', margin: '0.5rem 0', color: 'var(--info)' }}>1 000 FCFA / Élève</div>
-                      <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Tarif collectif scolaire subventionné par l\'État pour les écoles et Daaras.' : 'Fay subventionné par État bi ngir daara yi ak écoles yi.'}</p>
+                      <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Tarif collectif scolaire subventionné par l\'État pour les écoles et Daaras.' : 'Fay subventionné par état bi ngir Daara yi ak écoles yi.'}</p>
                     </div>
 
                     {/* Adhésion Groupe / Masse */}
@@ -966,7 +966,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                             onChange={() => { setParrainageType('individuel'); setSchoolName(''); }} 
                           />
                           <div>
-                            <strong>{lang === 'fr' ? "Filleuls Individuels" : "Filleuls Individuels"}</strong>
+                            <strong>{lang === 'fr' ? "Filleuls individuels" : "Filleuls individuels"}</strong>
                             <div style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? "Parrainer des filleuls au tarif standard de 4 500 FCFA/an par personne." : "4 500 FCFA par filleul."}</div>
                           </div>
                         </label>
@@ -1004,7 +1004,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                     <div className="form-group" style={{ marginBottom: '1.5rem' }}>
                       <label className="form-label" style={{ fontWeight: 'bold' }}>
                         {selectedPackage === 'adhesion_masse' 
-                          ? (lang === 'fr' ? "Nom de l'Organisation / Association / Entreprise" : "Tourou Mboloo / Association bi")
+                          ? (lang === 'fr' ? "Nom de l'Organisation / Association / Entreprise" : "Tourou mboloo / Association bi")
                           : (lang === 'fr' ? "Nom de l'établissement (École ou Daara)" : "Tourou daara bi walla ecole bi")}
                       </label>
                       <input 
@@ -1012,7 +1012,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                         className="form-control" 
                         value={schoolName}
                         onChange={(e) => setSchoolName(e.target.value)}
-                        placeholder={selectedPackage === 'adhesion_masse' ? "Ex: Association des tailleurs de Dakar, GIE Gorgui" : "Ex: École élémentaire Grand-Dakar, Daara Serigne Saliou"}
+                        placeholder={selectedPackage === 'adhesion_masse' ? "Ex: association des tailleurs de Dakar, GIE gorgui" : "Ex: école élémentaire Grand-Dakar, Daara Serigne saliou"}
                         required
                       />
                     </div>
@@ -1096,7 +1096,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                 <div className="fade-in-up">
                   <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>
                     {selectedPackage === 'parrainage' ? (
-                      parrainageType === 'menages' ? (lang === 'fr' ? 'Composition des Ménages parrainés' : 'Njaboot yi parrainer') :
+                      parrainageType === 'menages' ? (lang === 'fr' ? 'Composition des ménages parrainés' : 'Njaboot yi parrainer') :
                       parrainageType === 'eleves' ? (lang === 'fr' ? 'Élèves parrainés dans l\'école' : 'Mbindu élèves/talibé') :
                       (lang === 'fr' ? 'Filleuls individuels parrainés' : 'Njabaat gnu parrainer')
                     ) :
@@ -1122,7 +1122,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                           className="btn btn-secondary btn-sm" 
                           onClick={() => setSponsoredHouseholds([...sponsoredHouseholds, { id: Date.now() + Math.random(), chefName: '', chefPhone: '', members: [] }])}
                         >
-                          {lang === 'fr' ? '+ Ajouter un ménage' : '+ Dolli njaboot'}
+                          {lang === 'fr' ? '+ ajouter un ménage' : '+ dolli njaboot'}
                         </button>
                       </div>
 
@@ -1516,7 +1516,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                            parrainageType === 'eleves' ? 'Parrainage d\'élèves / Daara 🤝' :
                            'Parrainage individuel 🤝'
                          ) : 
-                          selectedPackage === 'csu_eleves' ? 'CSU Élèves 🎓' : selectedPackage === 'adhesion_masse' ? 'Adhésion groupe / masse 📊' : 'CSU Daaras 🎓'}
+                          selectedPackage === 'csu_eleves' ? 'CSU élèves' : selectedPackage === 'adhesion_masse' ? 'Adhésion groupe / masse 📊' : 'CSU daaras'}
                       </div>
                     </div>
                     {schoolName && (selectedPackage === 'csu_eleves' || selectedPackage === 'csu_daara' || selectedPackage === 'adhesion_masse' || (selectedPackage === 'parrainage' && parrainageType === 'eleves')) && (
@@ -1595,7 +1595,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                         {selectedPackage === 'familial' && `Détail : 1 000 FCFA carte + ${familyMembers.length + 1} personnes × 3 500 FCFA cotisation`}
                         {selectedPackage === 'parrainage' && (
                           parrainageType === 'menages'
-                            ? `Détail : ${sponsoredHouseholds.length} ménage(s) [1 000 FCFA carte + 3 500 FCFA/pers. par ménage]`
+                            ? `Détail : ${sponsoredHouseholds.length} ménage(s) [1 000 FCFA carte + 3 500 FCFA/pers. Par ménage]`
                             : parrainageType === 'eleves'
                               ? `Détail : ${familyMembers.length} élève(s) × 1 000 FCFA (tarif subventionné)`
                               : `Détail : ${familyMembers.length} filleul(s) × 4 500 FCFA (1 000 carte + 3 500 cotisation)`
@@ -1677,7 +1677,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                       <div className="payment-screen-mock">
                         <div className="payment-screen-mock-pattern"></div>
                         <div className="payment-screen-header">
-                          {paymentMethod === 'wave' ? 'WAVE PAY' : 'ORANGE MONEY'}
+                          {paymentMethod === 'wave' ? 'Wave pay' : 'Orange Money'}
                         </div>
                         <div style={{ fontSize: '0.75rem', marginBottom: '1.5rem', color: '#94a3b8' }}>
                           Montant : {calculateTotalCost().toLocaleString('fr-FR')} FCFA
@@ -1706,7 +1706,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                         textAlign: 'center',
                         boxShadow: 'var(--shadow-sm)'
                       }}>
-                        <ProIcon name="lightbulb" /> {lang === 'fr' ? 'Indice démo : Saisissez le code OTP 7842' : 'Indice démo : Bindal code OTP 7842'}
+                        <ProIcon name="lightbulb" /> {lang === 'fr' ? 'Indice démo : saisissez le code OTP 7842' : 'Indice démo : bindal code OTP 7842'}
                       </div>
                       
                       <div style={{ display: 'flex', gap: '1rem' }}>
@@ -1816,7 +1816,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                     >
                       {syncStatus === 'idle' && (lang === 'fr' ? 'Synchroniser carte' : 'Sync carte')}
                       {syncStatus === 'loading' && (lang === 'fr' ? 'Synchronisation...' : 'Sync bu bari...')}
-                      {syncStatus === 'success' && (lang === 'fr' ? '✓ Synchronisée !' : '✓ Sync !')}
+                      {syncStatus === 'success' && (lang === 'fr' ? 'Synchronisée !' : 'Sync !')}
                     </button>
                     <button className="btn btn-secondary" onClick={handleDownloadReceipt}>
                       {t.downloadReceipt}
@@ -1859,7 +1859,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                     required 
                   />
                   <small className="text-muted d-block mt-1" style={{ fontSize: '0.78rem' }}>
-                    <ProIcon name="lightbulb" /> Indice : Vos 4 derniers chiffres de code adhérent CSU servent de mot de passe (ex: <strong>8812</strong>).
+                    <ProIcon name="lightbulb" /> Indice : vos 4 derniers chiffres de code adhérent CSU servent de mot de passe (ex: <strong>8812</strong>).
                   </small>
                 </div>
                 <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1.5rem' }}>{t.renewLoginBtn}</button>
@@ -1925,7 +1925,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                     {/* Simulated phone mockup */}
                     <div className="payment-screen-mock">
                       <div className="payment-screen-header">
-                        {paymentMethod === 'wave' ? 'WAVE PAY' : 'ORANGE MONEY'}
+                        {paymentMethod === 'wave' ? 'Wave pay' : 'Orange Money'}
                       </div>
                       <div style={{ fontSize: '0.75rem', marginBottom: '1.5rem', color: '#94a3b8' }}>
                         Montant : 4 500 FCFA
@@ -1955,7 +1955,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                       textAlign: 'center',
                       boxShadow: 'var(--shadow-sm)'
                     }}>
-                      <ProIcon name="lightbulb" /> {lang === 'fr' ? 'Indice démo : Saisissez le code OTP 7842' : 'Indice démo : Bindal code OTP 7842'}
+                      <ProIcon name="lightbulb" /> {lang === 'fr' ? 'Indice démo : saisissez le code OTP 7842' : 'Indice démo : bindal code OTP 7842'}
                     </div>
                     
                     <div style={{ display: 'flex', gap: '1rem' }}>
@@ -2031,7 +2031,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                         onChange={(e) => setDonateTarget(e.target.value)}
                       >
                         <option value="general">{lang === 'fr' ? 'Fonds commun de solidarité régional' : 'Fonds commun régional'}</option>
-                        <option value="rufisque">{lang === 'fr' ? 'Campagne Maternité de Rufisque' : 'Maternité Rufisque'}</option>
+                        <option value="rufisque">{lang === 'fr' ? 'Campagne maternité de Rufisque' : 'Maternité Rufisque'}</option>
                         <option value="keurmassar">{lang === 'fr' ? 'Soutien aux étudiants de Keur Massar' : 'Ndaw Keur Massar'}</option>
                       </select>
                     </div>
@@ -2042,7 +2042,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                         <span>
                           {{
                             general: lang === 'fr' ? 'Fonds commun de solidarité régional' : 'Fonds commun régional',
-                            rufisque: lang === 'fr' ? 'Campagne Maternité de Rufisque' : 'Maternité Rufisque',
+                            rufisque: lang === 'fr' ? 'Campagne maternité de Rufisque' : 'Maternité Rufisque',
                             keurmassar: lang === 'fr' ? 'Soutien aux étudiants de Keur Massar' : 'Ndaw Keur Massar'
                           }[donateTarget]}
                         </span>
@@ -2128,7 +2128,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                     <div className="payment-screen-mock">
                       <div className="payment-screen-mock-pattern"></div>
                       <div className="payment-screen-header">
-                        {donatePaymentMethod === 'wave' ? 'WAVE PAY' : 'ORANGE MONEY'}
+                        {donatePaymentMethod === 'wave' ? 'Wave pay' : 'Orange Money'}
                       </div>
                       <div style={{ fontSize: '0.75rem', marginBottom: '1.5rem', color: '#94a3b8' }}>
                         Donation : {parseInt(donateAmount).toLocaleString('fr-FR')} FCFA
@@ -2158,7 +2158,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                       textAlign: 'center',
                       boxShadow: 'var(--shadow-sm)'
                     }}>
-                      <ProIcon name="lightbulb" /> {lang === 'fr' ? 'Indice démo : Saisissez le code OTP 7842' : 'Indice démo : Bindal code OTP 7842'}
+                      <ProIcon name="lightbulb" /> {lang === 'fr' ? 'Indice démo : saisissez le code OTP 7842' : 'Indice démo : bindal code OTP 7842'}
                     </div>
                     
                     <div style={{ display: 'flex', gap: '1rem' }}>

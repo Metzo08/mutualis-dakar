@@ -6,7 +6,7 @@ import ProIcon from './ProIcon';
 export default function MobileTabBar({ view, setView, lang = 'fr', setChatOpen = null }) {
   const tabs = [
     { id: 'home', icon: <ProIcon name="home" />, labelFr: 'Accueil', labelWo: 'Kër' },
-    { id: 'verify', icon: <ProIcon name="credit-card" />, labelFr: 'Ma Carte', labelWo: 'Samay Karte' },
+    { id: 'verify', icon: <ProIcon name="credit-card" />, labelFr: 'Ma carte', labelWo: 'Samay karte' },
     { id: 'payments', icon: <ProIcon name="smartphone" />, labelFr: 'Paiement', labelWo: 'Fay' },
     { id: 'chatbot', icon: <ProIcon name="message-square" />, labelFr: 'Aide Zahara', labelWo: 'Dimbali' }
   ];

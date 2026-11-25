@@ -49,11 +49,11 @@ export default function InstitutionPortal({ portalMode = 'citizen', agentUser = 
           <div className="p-5 rounded-4 text-center text-white" style={{ background: 'linear-gradient(135deg, #312e81 0%, #4338ca 100%)', borderRadius: '24px', boxShadow: 'var(--shadow-lg)' }}>
             <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}><ProIcon name="lock" /></div>
             <span className="badge mb-3 d-inline-block" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.82rem', fontWeight: 'bold' }}>
-              {portalMode === 'agent' ? 'Agent UDMS' : 'Espace Réservé'}
+              {portalMode === 'agent' ? 'Agent UDMS' : 'Espace réservé'}
             </span>
             <h2 className="fw-bold mb-3" style={{ color: '#fff', fontSize: '1.8rem' }}>Espace prestataire & coud — Accès restreint</h2>
             <p className="mb-4" style={{ color: '#c7d2fe', lineHeight: '1.6', maxWidth: '500px', margin: '0 auto 1.5rem' }}>
-              Cet espace de gouvernance institutionnelle (agrément des prestataires, importation en masse COUD, gestion des conventions) est réservé exclusivement au <strong>Superadmin dsi UNAMUSC</strong>. Les agents UDMS gèrent leur union mais n'agrèent pas les prestataires au niveau national.
+              Cet espace de gouvernance institutionnelle (agrément des prestataires, importation en masse coud, gestion des conventions) Est réservé exclusivement au <strong>Superadmin dsi UNAMUSC</strong>. Les agents UDMS gèrent leur union mais n'agrèent pas les prestataires au niveau national.
             </p>
             <button className="btn btn-light fw-bold px-4 py-3" style={{ borderRadius: '12px', color: '#312e81' }} onClick={() => { if (setView) setView('home'); else window.location.hash = '#/home'; }}>
               ← retour à l'accueil

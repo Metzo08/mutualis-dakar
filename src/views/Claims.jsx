@@ -39,7 +39,7 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
   //  Kane, Ibrahima Sarr…) avec des remboursements de 144 000 FCFA
   //  « approuvés ». Un agent instruisait donc des dossiers financiers
   //  qui n'existaient pas, et un assuré n'y trouvait pas sa demande.
-  //  Le registre est vide tant que l'API ne le renseigne pas.
+  //  le registre est vide tant que l'API ne le renseigne pas.
   // ────────────────────────────────────────────────────────────────────
   const [claims, setClaims] = useState([]);
   
@@ -51,7 +51,7 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
     beneficiaryName: citizenUser ? `${citizenUser.firstName} ${citizenUser.lastName}` : 'Awa Ndiaye',
     phone: citizenUser?.phone || '+221 77 602 67 83',
     cmuNumber: citizenUser?.cmuNumber || 'CMU-DKR-2026-8812',
-    structureName: 'Hôpital Universitaire de Fann (Dakar)',
+    structureName: 'Hôpital universitaire de Fann (Dakar)',
     amount: '45000',
     treatmentDate: new Date().toISOString().slice(0, 10),
     careDescription: ''
@@ -85,7 +85,7 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
 
       setClaims([newClaim, ...claims]);
       setSubmitLoading(false);
-      setSubmitMsg(`✅ Demande #${newClaim.id} soumise avec succès au Tiers-Payant UNAMUSC (${rate}% couvert).`);
+      setSubmitMsg(`✅ Demande #${newClaim.id} soumise avec succès au tiers-payant UNAMUSC (${rate}% couvert).`);
     }, 400);
   };
 
@@ -98,8 +98,8 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
     const isHosp = claim.care_type === 'hospitalisation';
     generateOfficialPdf({
       filename: `prise_en_charge_${claim.id}.pdf`,
-      docType: isHosp ? 'LETTRE DE GARANTIE HOSPITALIÈRE (80%)' : 'BON DE COMMANDE PHARMACIE (50%)',
-      title: isHosp ? 'Lettre de garantie hospitalière Tiers-Payant' : 'Bon de commande pharmacie UNAMUSC',
+      docType: isHosp ? 'Lettre de garantie hospitalière (80%)' : 'Bon de commande pharmacie (50%)',
+      title: isHosp ? 'Lettre de garantie hospitalière tiers-payant' : 'Bon de commande pharmacie UNAMUSC',
       referenceNo: claim.id,
       beneficiaryName: claim.beneficiary_name,
       cmuNumber: 'CMU-DKR-2026-8812',
@@ -282,7 +282,7 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
                     }}
                     onClick={() => {
                       setCareTypeTab('hospitalisation');
-                      setForm({ ...form, structureName: 'Hôpital Universitaire de Fann (Dakar)', amount: '45000' });
+                      setForm({ ...form, structureName: 'Hôpital universitaire de Fann (Dakar)', amount: '45000' });
                     }}
                   >
                     <ProIcon name="hospital" /> Hôpital (80%)
@@ -303,7 +303,7 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
                     }}
                     onClick={() => {
                       setCareTypeTab('pharmacie');
-                      setForm({ ...form, structureName: 'Pharmacie Cheikh Anta Diop', amount: '12500' });
+                      setForm({ ...form, structureName: 'Pharmacie Cheikh anta Diop', amount: '12500' });
                     }}
                   >
                     <ProIcon name="pill" /> Pharmacie (50%)
@@ -345,7 +345,7 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
                         onChange={(e) => setForm({ ...form, structureName: e.target.value })}
                       >
                         <option value="Hôpital Universitaire de Fann (Dakar)">Hôpital universitaire de Fann (Dakar)</option>
-                        <option value="Hôpital Aristide Le Dantec">Hôpital aristide le Dantec</option>
+                        <option value="Hôpital Aristide Le Dantec">Hôpital Aristide Le Dantec</option>
                         <option value="Hôpital Général Idrissa Pouye (Pikine)">Hôpital général idrissa pouye (Pikine)</option>
                         <option value="Centre Hospitalier Abass Ndao">Centre hospitalier abass ndao</option>
                         <option value="Hôpital d'Enfants Albert Royer">Hôpital d'enfants albert royer</option>
@@ -564,7 +564,7 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
                           Bon de pharmacie (50%)
                         </strong>
                         <p className="small mb-0" style={{ color: 'var(--text-sub)', fontSize: '0.8rem', lineHeight: '1.5' }}>
-                          Le bon de pharmacie est valable <strong>48h</strong> après validation pour un remboursement direct de 50%.
+                          le bon de pharmacie est valable <strong>48h</strong> après validation pour un remboursement direct de 50%.
                         </p>
                       </div>
                     </div>
@@ -633,8 +633,8 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
             </div>
             <span className="badge px-3 py-2" style={{ backgroundColor: 'rgba(59, 130, 246, 0.12)', color: '#3b82f6', fontWeight: '800', borderRadius: '10px', fontSize: '0.8rem' }}>
               {isAgent 
-                ? '📊 Registre régional : 3 421 demandes (2 180 approuvées, 890 en cours, 351 rejetées)'
-                : `📋 Mes demandes de prise en charge : ${filteredClaims.length} dossier(s) (${filteredClaims.filter(c => c.status === 'approved').length} approuvé(s))`
+                ? 'Registre régional : 3 421 demandes (2 180 approuvées, 890 en cours, 351 rejetées)'
+                : `Mes demandes de prise en charge : ${filteredClaims.length} dossier(s) (${filteredClaims.filter(c => c.status === 'approved').length} approuvé(s))`
               }
             </span>
           </div>
@@ -717,7 +717,7 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
                           whiteSpace: 'nowrap',
                           display: 'inline-block'
                         }}>
-                          {c.status === 'approved' ? '✅ Validé' : c.status === 'rejected' ? '❌ Refusé' : '⏳ En attente'}
+                          {c.status === 'approved' ? 'Validé' : c.status === 'rejected' ? 'Refusé' : '⏳ En attente'}
                         </span>
                       </td>
                       <td className="text-end" style={{ whiteSpace: 'nowrap', minWidth: '220px' }}>

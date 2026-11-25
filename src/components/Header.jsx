@@ -317,7 +317,7 @@ export default function Header({
           onClick={() => navigateTo('maternity')}
         >
           <span className="nav-icon"><ProIcon name="stethoscope" /></span>
-          {lang === 'fr' ? 'Spécialités & Pathologies' : 'Fajj ak wérug yaram'}
+          {lang === 'fr' ? 'Spécialités & pathologies' : 'Fajj ak wérug yaram'}
         </button>
 
         {/* Parrainage solidaire (Public Dedicated Page) */}
@@ -490,7 +490,7 @@ export default function Header({
               onClick={() => setView('card-studio')}
             >
               <span className="nav-icon"><ProIcon name="id-card" /></span>
-              {lang === 'fr' ? 'Studio Cartes' : 'Kartu CSU'}
+              {lang === 'fr' ? 'Studio cartes' : 'Kartu CSU'}
             </button>
           </>
         )}
@@ -628,7 +628,7 @@ export default function Header({
             style={{ borderLeft: '3px solid #818cf8' }}
           >
             <span className="nav-icon"><ProIcon name="crown" /></span>
-            {lang === 'fr' ? 'Gouvernance Super Admin' : 'Njiit bu rëy Super Admin'}
+            {lang === 'fr' ? 'Gouvernance super admin' : 'Njiit bu rëy super admin'}
           </button>
         )}
       </nav>

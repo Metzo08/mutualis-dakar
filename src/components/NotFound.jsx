@@ -42,7 +42,7 @@ export default function NotFound({ requestedView, setView }) {
           L'adresse <code style={{ background: 'var(--bg-card-subtle)', padding: '0.15rem 0.5rem', borderRadius: '6px', fontSize: '0.85rem' }}>
             #/{requestedView || ''}
           </code> ne correspond à aucune section de SenMutuelles.
-          Le lien est peut-être expiré, ou l'URL a été mal recopiée.
+          le lien est peut-être expiré, ou l'URL a été mal recopiée.
         </p>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '2rem' }}>
           Si vous pensiez être sur la bonne page, signalez-le à votre agent mutualiste.

@@ -8,18 +8,18 @@ const mariamaAvatar = '/mariama_avatar.png';
 
 // Base de données de vérification instantanée des médicaments et actes CMU/UNAMUSC
 const COVERAGE_DATABASE = [
-  { name: 'Paracétamol', dci: 'Paracétamol 500mg / 1g', covered: true, rate: 50, category: 'Antalgique / Fièvre', desc: 'Pris en charge à 50% sur Bon de Commande Pharmacie (UNAMUSC 50% / Assuré 50%).' },
-  { name: 'Amoxicilline', dci: 'Amoxicilline 500mg / 1g (Gélules & Sirop)', covered: true, rate: 50, category: 'Antibiotique', desc: 'Antibiotique essentiel couvert à 50% en officine agréée sur ordonnance (50% restant assuré).' },
-  { name: 'Ibuprofène', dci: 'Ibuprofène 200mg / 400mg', covered: true, rate: 50, category: 'Anti-inflammatoire', desc: 'Pris en charge à 50% sur Bon de Commande en pharmacie conventionnée (50% assuré).' },
-  { name: 'Insuline', dci: 'Insuline Humaine Rapide / NPH', covered: true, rate: 50, category: 'Diabète', desc: 'Traitement du diabète pris en charge à 50% par l\'UNAMUSC (50% assuré).' },
-  { name: 'Metformine', dci: 'Metformine 500mg / 850mg / 1000mg', covered: true, rate: 50, category: 'Diabète', desc: 'Antidiabétique oral de première intention, couvert à 50% sur Bon de Commande Pharmacie.' },
+  { name: 'Paracétamol', dci: 'Paracétamol 500mg / 1g', covered: true, rate: 50, category: 'Antalgique / Fièvre', desc: 'Pris en charge à 50% sur bon de commande pharmacie (UNAMUSC 50% / Assuré 50%).' },
+  { name: 'Amoxicilline', dci: 'Amoxicilline 500mg / 1g (gélules & sirop)', covered: true, rate: 50, category: 'Antibiotique', desc: 'Antibiotique essentiel couvert à 50% en officine agréée sur ordonnance (50% restant assuré).' },
+  { name: 'Ibuprofène', dci: 'Ibuprofène 200mg / 400mg', covered: true, rate: 50, category: 'Anti-inflammatoire', desc: 'Pris en charge à 50% sur bon de commande en pharmacie conventionnée (50% assuré).' },
+  { name: 'Insuline', dci: 'Insuline humaine rapide / Nph', covered: true, rate: 50, category: 'Diabète', desc: 'Traitement du diabète pris en charge à 50% par l\'UNAMUSC (50% assuré).' },
+  { name: 'Metformine', dci: 'Metformine 500mg / 850mg / 1000mg', covered: true, rate: 50, category: 'Diabète', desc: 'Antidiabétique oral de première intention, couvert à 50% sur bon de commande pharmacie.' },
   { name: 'Amlodipine', dci: 'Amlodipine 5mg / 10mg', covered: true, rate: 50, category: 'Cardiologie / HTA', desc: 'Antihypertenseur de référence couvert à 50% en pharmacie.' },
-  { name: 'Ciprofloxacine', dci: 'Ciprofloxacine 500mg', covered: true, rate: 50, category: 'Antibiotique', desc: 'Fluoroquinolone antibiotique couverte à 50% sur Bon de Commande.' },
+  { name: 'Ciprofloxacine', dci: 'Ciprofloxacine 500mg', covered: true, rate: 50, category: 'Antibiotique', desc: 'Fluoroquinolone antibiotique couverte à 50% sur bon de commande.' },
   { name: 'Oméprazole', dci: 'Oméprazole 20mg (Gélules)', covered: true, rate: 50, category: 'Gastro-entérologie', desc: 'Traitement anti-ulcéreux et reflux gastrique, pris en charge à 50%.' },
   { name: 'Azithromycine', dci: 'Azithromycine 250mg / 500mg', covered: true, rate: 50, category: 'Antibiotique', desc: 'Macrolide antibiotique pris en charge à 50% sur ordonnance.' },
-  { name: 'ACT Paludisme', dci: 'Artéméther + Luméfantrine (ACT)', covered: true, rate: 100, category: 'Antipaludéen', desc: 'Traitement du paludisme simple pris en charge à 100% (Gratuité PNLP).' },
-  { name: 'Fer + Acide Folique', dci: 'Sulfate ferreux + Acide folique', covered: true, rate: 100, category: 'Maternité / Grossesse', desc: 'Supplémentation de grossesse prise en charge à 100% (Gratuité Maternité).' },
-  { name: 'Sérum Physiologique', dci: 'Chlorure de sodium 0.9%', covered: true, rate: 50, category: 'Soins / Pédiatrie', desc: 'Couvert à 50% en pharmacie (ou 100% pour les nourrissons de moins de 5 ans).' },
+  { name: 'Act paludisme', dci: 'Artéméther + luméfantrine (act)', covered: true, rate: 100, category: 'Antipaludéen', desc: 'Traitement du paludisme simple pris en charge à 100% (gratuité pnlp).' },
+  { name: 'Fer + acide folique', dci: 'Sulfate ferreux + acide folique', covered: true, rate: 100, category: 'Maternité / Grossesse', desc: 'Supplémentation de grossesse prise en charge à 100% (gratuité maternité).' },
+  { name: 'Sérum physiologique', dci: 'Chlorure de sodium 0.9%', covered: true, rate: 50, category: 'Soins / Pédiatrie', desc: 'Couvert à 50% en pharmacie (ou 100% pour les nourrissons de moins de 5 ans).' },
   { name: 'Compléments alimentaires', dci: 'Vitamines de confort / Fortifiants sans ordonnance', covered: false, rate: 0, category: 'Confort / Parapharmacie', desc: 'Non pris en charge par le panier officiel des soins CSU (100% à la charge du patient).' },
   { name: 'Chirurgie esthétique', dci: 'Actes esthétiques de confort non reconstructeurs', covered: false, rate: 0, category: 'Chirurgie de confort', desc: 'Non pris en charge par les garanties mutualistes UNAMUSC.' },
   { name: 'Implants dentaires de luxe', dci: 'Prothèses dentaires cosmétiques haut de gamme', covered: false, rate: 0, category: 'Dentaire cosmétique', desc: 'Non pris en charge (seuls les soins dentaires de base sont couverts).' }
@@ -27,14 +27,14 @@ const COVERAGE_DATABASE = [
 
 // Structures sanitaires clés de Dakar
 const SANITARY_STRUCTURES = [
-  { id: 1, name: 'Hôpital Principal de Dakar', type: 'hospital', typeLabel: 'Hôpital Militaire & Public', rate: '80% Lettre de Garantie', commune: 'Dakar Plateau', address: 'Avenue Nelson Mandela', phone: '+221 33 839 50 50', hours: '24h/24' },
-  { id: 2, name: 'CHU de Fann (Dakar)', type: 'hospital', typeLabel: 'Centre Hospitalier Universitaire', rate: '80% Lettre de Garantie', commune: 'Fann-Point E', address: 'Avenue Cheikh Anta Diop', phone: '+221 33 869 18 18', hours: '24h/24' },
-  { id: 3, name: 'Hôpital Aristide Le Dantec', type: 'hospital', typeLabel: 'Centre Hospitalier Universitaire', rate: '80% Lettre de Garantie', commune: 'Dakar Plateau', address: 'Avenue Pasteur', phone: '+221 33 889 38 00', hours: '24h/24' },
-  { id: 4, name: 'CHU Abass Ndao', type: 'hospital', typeLabel: 'Centre Hospitalier Universitaire', rate: '80% Lettre de Garantie', commune: 'Gueule Tapée', address: 'Avenue Cheikh Anta Diop', phone: '+221 33 849 78 00', hours: '24h/24' },
-  { id: 5, name: 'Hôpital Dalal Jamm', type: 'hospital', typeLabel: 'Hôpital National', rate: '80% Lettre de Garantie', commune: 'Guédiawaye', address: 'Voie de contournement', phone: '+221 33 879 40 40', hours: '24h/24' },
-  { id: 6, name: 'Pharmacie du Plateau', type: 'pharmacy', typeLabel: 'Pharmacie Agréée UNAMUSC', rate: '50% Bon de Commande', commune: 'Dakar Plateau', address: 'Avenue Albert Sarraut', phone: '+221 33 823 23 23', hours: '24h/24' },
-  { id: 7, name: 'Pharmacie Guigon', type: 'pharmacy', typeLabel: 'Pharmacie Agréée UNAMUSC', rate: '50% Bon de Commande', commune: 'Dakar Plateau', address: '1 Avenue Georges Pompidou', phone: '+221 33 823 03 33', hours: '24h/24' },
-  { id: 8, name: 'MSD Dakar Plateau', type: 'msd', typeLabel: 'Bureau Départemental MSD', rate: 'Coordination & Adhésion', commune: 'Dakar Plateau', address: 'Immeuble Municipal, Dakar', phone: '+221 33 821 10 10', hours: '8h-16h' }
+  { id: 1, name: 'Hôpital Principal de Dakar', type: 'hospital', typeLabel: 'Hôpital militaire & public', rate: '80% Lettre de Garantie', commune: 'Dakar Plateau', address: 'Avenue nelson mandela', phone: '+221 33 839 50 50', hours: '24h/24' },
+  { id: 2, name: 'CHU de Fann (Dakar)', type: 'hospital', typeLabel: 'Centre hospitalier universitaire', rate: '80% Lettre de Garantie', commune: 'Fann-Point E', address: 'Avenue Cheikh anta Diop', phone: '+221 33 869 18 18', hours: '24h/24' },
+  { id: 3, name: 'Hôpital Aristide Le Dantec', type: 'hospital', typeLabel: 'Centre hospitalier universitaire', rate: '80% Lettre de Garantie', commune: 'Dakar Plateau', address: 'Avenue pasteur', phone: '+221 33 889 38 00', hours: '24h/24' },
+  { id: 4, name: 'CHU Abass Ndao', type: 'hospital', typeLabel: 'Centre hospitalier universitaire', rate: '80% Lettre de Garantie', commune: 'Gueule Tapée', address: 'Avenue Cheikh anta Diop', phone: '+221 33 849 78 00', hours: '24h/24' },
+  { id: 5, name: 'Hôpital Dalal Jamm', type: 'hospital', typeLabel: 'Hôpital national', rate: '80% Lettre de Garantie', commune: 'Guédiawaye', address: 'Voie de contournement', phone: '+221 33 879 40 40', hours: '24h/24' },
+  { id: 6, name: 'Pharmacie du Plateau', type: 'pharmacy', typeLabel: 'Pharmacie agréée UNAMUSC', rate: '50% Bon de Commande', commune: 'Dakar Plateau', address: 'Avenue Albert sarraut', phone: '+221 33 823 23 23', hours: '24h/24' },
+  { id: 7, name: 'Pharmacie guigon', type: 'pharmacy', typeLabel: 'Pharmacie agréée UNAMUSC', rate: '50% Bon de Commande', commune: 'Dakar Plateau', address: '1 Avenue Georges Pompidou', phone: '+221 33 823 03 33', hours: '24h/24' },
+  { id: 8, name: 'MSD Dakar Plateau', type: 'msd', typeLabel: 'Bureau départemental MSD', rate: 'Coordination & adhésion', commune: 'Dakar Plateau', address: 'Immeuble municipal, Dakar', phone: '+221 33 821 10 10', hours: '8h-16h' }
 ];
 
 export default function ChatbotWidget({ lang, setView }) {
@@ -85,29 +85,29 @@ export default function ChatbotWidget({ lang, setView }) {
       voiceButton: 'Parler · Wax',
       voiceListening: "Arrêter l'écoute",
       textButton: 'Écrire · Bind',
-      backToVoice: 'Nuage Vocal / Orb',
-      placeholder: 'Wolof, Français, English...',
+      backToVoice: 'Nuage vocal / Orb',
+      placeholder: 'Wolof, Français, english...',
       send: 'Envoyer',
       listeningState: 'Zahara vous écoute (WO / FR / EN)...',
       speakingState: 'Zahara vous répond...',
       thinkingState: 'Réflexion en cours...',
-      idleState: 'Parlez ou écrivez (Wolof, Français, English)',
-      welcomeMsg: 'Na nga def ! Bonjour ! Je suis Zahara (Auto : Wolof, Français, English). Waxal walla bindal ci làkk bi la neex !'
+      idleState: 'Parlez ou écrivez (Wolof, Français, english)',
+      welcomeMsg: 'Na nga def ! Bonjour ! Je suis Zahara (auto : Wolof, Français, english). Waxal walla bindal ci làkk bi la neex !'
     },
     en: {
       botName: 'Zahara',
-      roleBadge: 'CSU Health Advisor (Senegal)',
+      roleBadge: 'CSU health advisor (senegal)',
       voiceButton: 'Speak out loud',
       voiceListening: 'Stop listening',
       textButton: 'Write a message',
-      backToVoice: 'Voice Orb',
+      backToVoice: 'Voice orb',
       placeholder: 'Ask your question here...',
       send: 'Send',
       listeningState: 'Zahara is listening...',
       speakingState: 'Zahara is speaking...',
       thinkingState: 'Thinking...',
       idleState: 'Speak out loud or type your question',
-      welcomeMsg: 'Hello! I am Zahara, your SenMutuelles assistant. How can I help you with your health coverage today?'
+      welcomeMsg: 'Hello! I am Zahara, your SenMutuelles assistant. How can i help you with your health coverage today?'
     },
     wo: {
       botName: 'Zahara',
@@ -115,22 +115,22 @@ export default function ChatbotWidget({ lang, setView }) {
       voiceButton: 'Waxal ci kaw',
       voiceListening: 'Arrêter / Dajjeel',
       textButton: 'Bindal / Clavier',
-      backToVoice: 'Nuage Vocal / Orb',
+      backToVoice: 'Nuage vocal / Orb',
       placeholder: 'Bindal sa laaj fi...',
       send: 'Yónnee',
       listeningState: 'Zahara màngi lay déglu...',
       speakingState: 'Zahara màngi lay tontu...',
       thinkingState: 'Màngi xalaat...',
       idleState: 'Waxal ci sa bopp walla nga bind',
-      welcomeMsg: 'Na nga def ! Man la Zahara, sa Agent Personnel bu SenMutuelles. Naka la la mënee dimbali tey ci sa wér-gi-yaram ?'
+      welcomeMsg: 'Na nga def ! Man la Zahara, sa agent personnel bu SenMutuelles. Naka la la mënee dimbali tey ci sa wér-gi-yaram ?'
     },
     fr: {
       botName: 'Zahara',
-      roleBadge: 'Conseillère Santé CSU (Sénégal)',
+      roleBadge: 'Conseillère santé CSU (Sénégal)',
       voiceButton: 'Parler à haute voix',
       voiceListening: 'Arrêter l\'écoute',
       textButton: 'Écrire un message',
-      backToVoice: 'Nuage Vocal / Orb',
+      backToVoice: 'Nuage vocal / Orb',
       placeholder: 'Posez votre question ici...',
       send: 'Envoyer',
       listeningState: 'Zahara vous écoute...',
@@ -768,7 +768,7 @@ export default function ChatbotWidget({ lang, setView }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
               <div style={{ background: 'rgba(255, 255, 255, 0.08)', borderRadius: '20px', padding: '2px', display: 'flex', gap: '1px' }}>
                 {[
-                  { id: 'auto', label: '✨ Auto' },
+                  { id: 'auto', label: 'Auto' },
                   { id: 'wo', label: 'WO' },
                   { id: 'fr', label: 'FR' },
                   { id: 'en', label: 'EN' }

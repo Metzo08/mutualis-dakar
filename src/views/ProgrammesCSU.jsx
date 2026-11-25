@@ -43,10 +43,10 @@ export default function ProgrammesCSU({ lang, setViewTab }) {
           desc: 'La Couverture Sanitaire Universelle garantit la gratuité totale de la dialyse pour tous les insuffisants rénaux dans les structures de santé publiques. Ce programme soulage considérablement les familles d\'un lourd fardeau financier.'
         },
         {
-          title: 'Plan Sésame (plus de 60 ans)',
+          title: 'Plan sésame (plus de 60 ans)',
           icon: '👴🏾',
           img: '/csu_sesame_real.png',
-          desc: 'Le Plan Sésame offre une prise en charge gratuite des soins de santé pour toutes les personnes âgées de 60 ans et plus dans les structures sanitaires publiques du Sénégal.'
+          desc: 'Le plan sésame offre une prise en charge gratuite des soins de santé pour toutes les personnes âgées de 60 ans et plus dans les structures sanitaires publiques du Sénégal.'
         },
         {
           title: 'Gratuité enfants 0-5 ans & césarienne',
@@ -58,7 +58,7 @@ export default function ProgrammesCSU({ lang, setViewTab }) {
           title: 'CSU élèves & daaras',
           icon: <ProIcon name="book-open" />,
           img: '/csu_students_real.png',
-          desc: 'Assurance maladie dédiée aux élèves et aux talibés. Pour seulement 1 000 FCFA par an, le ticket modérateur est entièrement couvert pour les consultations et soins en milieu scolaire.'
+          desc: 'Assurance maladie dédiée aux élèves et aux talibés. Pour seulement 1 000 FCFA par an, le ticket modérateur Est entièrement couvert pour les consultations et soins en milieu scolaire.'
         },
         {
           title: 'Bourses de sécurité familiale & CEC',
@@ -89,43 +89,43 @@ export default function ProgrammesCSU({ lang, setViewTab }) {
         { icon: '🌿', title: 'Yoon wu leer', desc: 'Mbindu gu gaaw te yomb ci sa gox.' },
         { icon: <ProIcon name="shield-check" />, title: 'Aar ñi gën a ñàkk', desc: 'Faju bu mat sëkk ngir xale yi amul 5 at ak ñi gën a waayadi.' }
       ],
-      gratuiteTitle: 'Përogaraam Faju yu Amul Fay',
+      gratuiteTitle: 'Përogaraam faju yu amul fay',
       gratuitePrograms: [
         {
           title: 'Dialyse bu amul fay',
           icon: <ProIcon name="droplet" color="#dc2626" />,
           img: '/csu_dialysis_real.png',
-          desc: 'Couverture Sanitaire Universelle dafay fajj ñiy def dialyse ci hôpital lëétat yi te duñu fay dara. Lii dafay wàññi bu baax coonoy njaboot yi.'
+          desc: 'Couverture sanitaire universelle dafay fajj ñiy def dialyse ci hôpital lëétat yi te duñu fay dara. Lii dafay wàññi bu baax coonoy njaboot yi.'
         },
         {
-          title: 'Plan Sésame (Ñi am 60 at ak lu tegu)',
+          title: 'Plan sésame (ñi am 60 at ak lu tegu)',
           icon: '👴🏾',
           img: '/csu_sesame_real.png',
-          desc: 'Plan Sésame dafay may mag ñi am 60 at jëm kaw ñu faju ci yoon te duñu fay ci kër-doctoor yi lëétat.'
+          desc: 'Plan sésame dafay may mag ñi am 60 at jëm kaw ñu faju ci yoon te duñu fay ci kër-doctoor yi lëétat.'
         },
         {
-          title: 'Xale yi 0-5 at & Césarienne',
+          title: 'Xale yi 0-5 at & césarienne',
           icon: '👶🏾',
           img: '/csu_kids_real.png',
           desc: 'Xale yi amagul 5 at duñu fay dara ci faju. Jigéen ñiy am doom ci césarienne tamit seen faju lëétat mokoy jël.'
         },
         {
-          title: 'CSU Ndongo Daara ak Élèves',
+          title: 'CSU ndongo Daara ak élèves',
           icon: <ProIcon name="book-open" />,
           img: '/csu_students_real.png',
-          desc: 'Mutuelle ngir ndongo ekool yi ak daara yi. 1 000 FCFA kese nga fay ci at mi, ñu fajj la sa yaram tawfeex.'
+          desc: 'Mutuelle ngir ndongo ekool yi ak Daara yi. 1 000 FCFA kese nga fay ci at mi, ñu fajj la sa yaram tawfeex.'
         },
         {
-          title: 'Bourses de Sécurité Familiale & CEC',
+          title: 'Bourses de sécurité familiale & cec',
           icon: <ProIcon name="credit-card" />,
           img: '/csu_bsf_real.png',
-          desc: 'Faju 100% ci mutuelle yi ngir ñiy jël BSF ak ñi am yàq-yàq ci yaram te yore Carte Égalité des Chances (CEC).'
+          desc: 'Faju 100% ci mutuelle yi ngir ñiy jël BSF ak ñi am yàq-yàq ci yaram te yore carte égalité des chances (cec).'
         }
       ],
       howTitle: 'Naka lañuy mbindu ?',
       howSteps: [
         { title: '1. Seet mutuelle', desc: 'Demal ci mutuelle de santé bi nekk ci sa gox (commune walla département) bi bokk ci UNAMUSC.' },
-        { title: '2. Joxe sa kayit', desc: 'Indil sa Kàrtu-Bàkkan (CNI) walla extrait de naissance ngir xale yi.' },
+        { title: '2. Joxe sa kayit', desc: 'Indil sa kàrtu-bàkkan (CNI) walla extrait de naissance ngir xale yi.' },
         { title: '3. Fay sa abonnement', desc: 'Fayal li ñu la laaj ci at mi (4 500 FCFA ngir nit ki ci at mi: 1 000 FCFA ngir carte bi ak 3 500 FCFA ngir cotisation bi).' },
         { title: '4. Xaar yàgg-yàgg bi', desc: 'Ding xaar tuuti (1 ba 3 weer) bala ngay mën a faju bu mat sëkk.' },
         { title: '5. Faju ci nu yomb', desc: 'Woneel sa kàrt walla portal citoyen bi sa yoonu kër-doctoor ngir ñu waññil la sa faju.' }

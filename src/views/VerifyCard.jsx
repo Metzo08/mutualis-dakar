@@ -40,7 +40,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
   // CMU-Daara). Elles ne sont PLUS imprimées sur le recto : l'agent les
   // lit ici, après scan. Absentes sur les cartes classiques.
   const [scannedAcademic, setScannedAcademic] = useState(null);
-  // Le code scanné est un ancien code, corrigé depuis : on prévient l'agent
+  // le code scanné est un ancien code, corrigé depuis : on prévient l'agent
   // que la carte physique porte une référence antérieure.
   const [aliasNotice, setAliasNotice] = useState(null); // { from, to }
   const [showAdModal, setShowAdModal] = useState(false);
@@ -58,7 +58,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
   const [guaranteeAct, setGuaranteeAct] = useState('Hospitalisation & Soins Spécialisés');
   const [guaranteeAmount, setGuaranteeAmount] = useState('250000');
   const [guaranteeRate, setGuaranteeRate] = useState('80%');
-  // eslint-disable-next-line no-unused-vars -- Mention libre de la lettre de garantie. Le formulaire de garantie (modale `guarantee`) ne propose pas encore ce champ : conservé, à arbitrer.
+  // eslint-disable-next-line no-unused-vars -- Mention libre de la lettre de garantie. le formulaire de garantie (modale `guarantee`) ne propose pas encore ce champ : conservé, à arbitrer.
   const [guaranteeNotes, setGuaranteeNotes] = useState('Prise en charge validée sous convention Tiers-Payant UNAMUSC.');
 
   const [medPharmacy, setMedPharmacy] = useState('Pharmacie de la Médina');
@@ -88,7 +88,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
   const [examCenter, setExamCenter] = useState('Centre d\'Imagerie de Fann');
   const [examNotes, setExamNotes] = useState('Examen sans anomalie majeure détectée. Cliché archivé.');
 
-  // Valeurs d'antécédents lues par `handleUpdateAntecedents` (ligne ~710) et affichées sur la carte. Le formulaire de saisie correspondant n'est pas rendu : setters conservés, à arbitrer.
+  // Valeurs d'antécédents lues par `handleUpdateAntecedents` (ligne ~710) et affichées sur la carte. le formulaire de saisie correspondant n'est pas rendu : setters conservés, à arbitrer.
   // eslint-disable-next-line no-unused-vars -- Setters non appelés (pas de champ de saisie d'antécédents dans le rendu actuel) ; la valeur est lue plus bas.
   const [bloodGroup, setBloodGroup] = useState('');
   // eslint-disable-next-line no-unused-vars -- Idem `setBloodGroup` : la valeur `allergies` est lue par `handleUpdateAntecedents`.
@@ -678,8 +678,8 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             const cov = Number(foundLetter.max_amount || Math.round((est * pct) / 100));
             const rest = Math.max(0, est - cov);
             docMatch = {
-              title: 'Attestation Officielle de Prise en Charge Hospitalière',
-              docType: `Lettre de Garantie UNAMUSC (${pct}%)`,
+              title: 'Attestation officielle de prise en charge hospitalière',
+              docType: `Lettre de garantie UNAMUSC (${pct}%)`,
               referenceNo: foundLetter.validation_code,
               beneficiaryName: `${foundLetter.first_name || ''} ${foundLetter.last_name || ''}`.trim() || 'Assuré CSU',
               cmuNumber: foundLetter.cmu_number || 'CSU-DKR-2026',
@@ -688,14 +688,14 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
               estimatedAmount: `${est.toLocaleString('fr-FR')} FCFA`,
               guaranteedAmount: `${cov.toLocaleString('fr-FR')} FCFA (${pct}%)`,
               patientRest: `${rest.toLocaleString('fr-FR')} FCFA (${100 - pct}%)`,
-              status: foundLetter.status === 'approved' ? 'VALIDE — HOMOLOGUÉE UNAMUSC' : foundLetter.status === 'emergency_issued' ? 'VALIDE — DÉLIVRANCE D\'URGENCE 7J/7' : 'EN INSTRUCTION AGENT',
+              status: foundLetter.status === 'approved' ? 'Valide — Homologuée UNAMUSC' : foundLetter.status === 'emergency_issued' ? 'VALIDE — DÉLIVRANCE D\'URGENCE 7J/7' : 'En instruction agent',
               cryptoHash: `SHA256-UNAMUSC-${foundLetter.validation_code}`,
               notes: foundLetter.agent_note || 'Titre de prise en charge vérifié et certifié par le système Tiers-Payant UNAMUSC.',
               details: [
-                { label: 'Établissement Récepteur', value: foundLetter.hospital_name || 'Hôpital Conventionné CSU' },
-                { label: 'Acte Médical', value: foundLetter.medical_act || 'Soins hospitaliers' },
-                { label: 'Montant Garanti', value: `${cov.toLocaleString('fr-FR')} FCFA (${pct}%)` },
-                { label: 'Ticket Modérateur Patient', value: `${rest.toLocaleString('fr-FR')} FCFA` }
+                { label: 'Établissement récepteur', value: foundLetter.hospital_name || 'Hôpital Conventionné CSU' },
+                { label: 'Acte médical', value: foundLetter.medical_act || 'Soins hospitaliers' },
+                { label: 'Montant garanti', value: `${cov.toLocaleString('fr-FR')} FCFA (${pct}%)` },
+                { label: 'Ticket modérateur patient', value: `${rest.toLocaleString('fr-FR')} FCFA` }
               ]
             };
           }
@@ -707,24 +707,24 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
               const cov = Number(foundOrder.cmu_covered || Math.round(total * 0.5));
               const rest = Number(foundOrder.patient_pay || Math.round(total * 0.5));
               docMatch = {
-                title: 'Bon de Commande de Médicaments Certifié (48h)',
-                docType: 'Bon Pharmacie Tiers-Payant UNAMUSC (50%)',
+                title: 'Bon de commande de médicaments certifié (48h)',
+                docType: 'Bon pharmacie tiers-payant UNAMUSC (50%)',
                 referenceNo: foundOrder.order_code || `ORD-${foundOrder.id}`,
                 beneficiaryName: `${foundOrder.first_name || ''} ${foundOrder.last_name || ''}`.trim() || 'Assuré CSU',
                 cmuNumber: foundOrder.cmu_number || 'CSU-DKR-2026',
-                hospitalName: 'Pharmacie Partenaire Agréée UNAMUSC',
+                hospitalName: 'Pharmacie partenaire agréée UNAMUSC',
                 medicalAct: 'Ordonnance médicale prescrite (Médicaments essentiels)',
                 estimatedAmount: `${total.toLocaleString('fr-FR')} FCFA`,
                 guaranteedAmount: `${cov.toLocaleString('fr-FR')} FCFA (50%)`,
                 patientRest: `${rest.toLocaleString('fr-FR')} FCFA (50%)`,
-                status: foundOrder.status === 'active' ? 'ACTIF — VALABLE 48H EN PHARMACIE' : foundOrder.status === 'used' ? 'DÉJÀ DÉLIVRÉ EN PHARMACIE' : 'EN ATTENTE DE VALIDATION',
+                status: foundOrder.status === 'active' ? 'Actif — Valable 48h en pharmacie' : foundOrder.status === 'used' ? 'Déjà délivré en pharmacie' : 'En attente de validation',
                 cryptoHash: `SHA256-PHARM-${foundOrder.order_code || foundOrder.id}`,
                 notes: 'Ce bon certifié permet la délivrance des médicaments prescrits avec prise en charge directe de 50% en officine agréée.',
                 details: [
-                  { label: 'Réseau Officine', value: 'Pharmacie Partenaire Agréée UNAMUSC' },
-                  { label: 'Montant Total Ordonnance', value: `${total.toLocaleString('fr-FR')} FCFA` },
-                  { label: 'Part Mutuelle UNAMUSC (50%)', value: `${cov.toLocaleString('fr-FR')} FCFA` },
-                  { label: 'Part Patient (50%)', value: `${rest.toLocaleString('fr-FR')} FCFA` }
+                  { label: 'Réseau officine', value: 'Pharmacie partenaire agréée UNAMUSC' },
+                  { label: 'Montant total ordonnance', value: `${total.toLocaleString('fr-FR')} FCFA` },
+                  { label: 'Part mutuelle UNAMUSC (50%)', value: `${cov.toLocaleString('fr-FR')} FCFA` },
+                  { label: 'Part patient (50%)', value: `${rest.toLocaleString('fr-FR')} FCFA` }
                 ]
               };
             }
@@ -739,8 +739,8 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                 const cov = Number(apiDoc.coveredAmount || 0);
                 const rest = Number(apiDoc.patientShare || 0);
                 docMatch = {
-                  title: apiDoc.type === 'purchase_order' ? 'Bon de Commande de Médicaments Certifié (48h)' : 'Attestation Officielle de Prise en Charge Hospitalière',
-                  docType: apiDoc.type === 'purchase_order' ? 'Bon Pharmacie Tiers-Payant UNAMUSC (50%)' : `Lettre de Garantie UNAMUSC (${pct}%)`,
+                  title: apiDoc.type === 'purchase_order' ? 'Bon de commande de médicaments certifié (48h)' : 'Attestation officielle de prise en charge hospitalière',
+                  docType: apiDoc.type === 'purchase_order' ? 'Bon pharmacie tiers-payant UNAMUSC (50%)' : `Lettre de garantie UNAMUSC (${pct}%)`,
                   referenceNo: apiDoc.code,
                   beneficiaryName: apiDoc.beneficiaryName || 'Assuré CSU',
                   cmuNumber: apiDoc.cmuNumber || 'CSU-DKR-2026',
@@ -749,12 +749,12 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                   estimatedAmount: `${est.toLocaleString('fr-FR')} FCFA`,
                   guaranteedAmount: `${cov.toLocaleString('fr-FR')} FCFA (${pct}%)`,
                   patientRest: `${rest.toLocaleString('fr-FR')} FCFA (${100 - pct}%)`,
-                  status: apiDoc.valid ? 'VALIDE — HOMOLOGUÉ UNAMUSC' : `STATUT : ${String(apiDoc.status || '').toUpperCase()}`,
+                  status: apiDoc.valid ? 'Valide — Homologué UNAMUSC' : `STATUT : ${String(apiDoc.status || '').toUpperCase()}`,
                   cryptoHash: `SHA256-UNAMUSC-${apiDoc.code}`,
                   notes: 'Document vérifié auprès du registre central UNAMUSC Sénégal.',
                   details: [
                     { label: 'Établissement', value: apiDoc.structureName || 'Structure agréée CSU' },
-                    { label: 'Montant Garanti', value: `${cov.toLocaleString('fr-FR')} FCFA (${pct}%)` },
+                    { label: 'Montant garanti', value: `${cov.toLocaleString('fr-FR')} FCFA (${pct}%)` },
                     { label: 'Reste à charge assuré', value: `${rest.toLocaleString('fr-FR')} FCFA` }
                   ]
                 };
@@ -787,7 +787,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             lastName: parsed.patient ? parsed.patient.split(' ').slice(1).join(' ') : 'Diallo',
             phone: '+221 77 555 44 33',
             mutuelleName: 'UDMS Dakar — UNAMUSC',
-            packageType: 'Tiers-payant & télémédecine WebRTC (100%)',
+            packageType: 'Tiers-payant & télémédecine webrtc (100%)',
             cmuNumber: parsed.cmu || 'SN-DK-BSF-9901',
             ippNumber: parsed.ipp || 'IPP-DANTEC-2026-9901',
             photoUrl: '/csu_bsf_real.png',
@@ -856,13 +856,13 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
         observationDaysRemaining: obsRem,
         valid: finalValid,
         audioReminder: {
-          subtitle: `Assuré : ${cleanFirst} ${cleanLast} • Statut CSU : ${finalValid ? 'Actif' : (isObservation && !isGlobalSuspended ? `Période d'observation (${obsRem} j restants)` : 'Suspendu')}`,
+          subtitle: `Assuré : ${cleanFirst} ${cleanLast} • Statut CSU : ${finalvalid ? 'Actif' : (isobservation && !isglobalsuspended ? `Période d'observation (${obsRem} j restants)` : 'Suspendu')}`,
           transcript: finalValid
-            ? `"Nanga def ${cleanFirst} ${cleanLast}! Votre carte CSU est active. Prise en charge Tiers-Payant 80% autorisée auprès de toutes les structures conventionnées."`
+            ? `"Nanga def ${cleanFirst} ${cleanLast}! Votre carte CSU Est active. Prise en charge tiers-payant 80% autorisée auprès de toutes les structures conventionnées."`
             : (isObservation && !isGlobalSuspended)
               ? `"Nanga def ${cleanFirst} ${cleanLast}! Votre adhésion est bien enregistrée. Vous êtes en période d'observation de 30 jours à compter de votre premier jour de cotisation (${obsRem} jour(s) restant(s))."`
-              : `"Nanga def ${cleanFirst} ${cleanLast}. Votre couverture CSU est actuellement suspendue. Veuillez régulariser votre cotisation pour réactiver vos droits."`,
-          due: 'Contrôle Annuel • UDMS Dakar'
+              : `"Nanga def ${cleanFirst} ${cleanLast}. Votre couverture CSU Est actuellement suspendue. Veuillez régulariser votre cotisation pour réactiver vos droits."`,
+          due: 'Contrôle annuel • UDMS Dakar'
         }
       });
       setLoading(false);
@@ -957,7 +957,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
     localStorage.setItem('telemed_urgency', telemedUrgency || 'Urgence Standard');
     localStorage.setItem('telemed_doctor', telemedDoctor || 'Dr. Ousmane Sow');
     
-    setActionSuccess(`Visio-consultation WebRTC 24/7 initialisée pour ${patientName} (${targetCode}). Redirection vers la salle médicale...`);
+    setActionSuccess(`Visio-consultation webrtc 24/7 initialisée pour ${patientName} (${targetCode}). Redirection vers la salle médicale...`);
     setActiveModal(null);
     
     if (setView) {
@@ -971,7 +971,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
     e.preventDefault();
     const patientName = selectedTargetBeneficiary ? selectedTargetBeneficiary.name : `${result?.firstName} ${result?.lastName}`;
     const targetCode = selectedTargetBeneficiary ? selectedTargetBeneficiary.cmuCode : result?.cmuNumber;
-    setActionSuccess(`Examen d'imagerie "${examTitle}" (${examType}) lié au Dossier Médical Partagé de ${patientName} (${targetCode}) chez ${examCenter}.`);
+    setActionSuccess(`Examen d'imagerie "${examTitle}" (${examType}) lié au dossier médical partagé de ${patientName} (${targetCode}) chez ${examCenter}.`);
     setActiveModal(null);
   };
 
@@ -1000,7 +1000,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
       allergies,
       chronicConditions: chronicCond
     });
-    setActionSuccess(`Antécédents médicaux mis à jour : Groupe sanguin ${bloodGroup}, Allergies: ${allergies}.`);
+    setActionSuccess(`Antécédents médicaux mis à jour : groupe sanguin ${bloodGroup}, Allergies: ${allergies}.`);
     setActiveModal(null);
   };
 
@@ -1008,16 +1008,16 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
     if (!result) return;
     generateOfficialPdf({
       filename: `certificat_csu_${result.cmuNumber}.pdf`,
-      docType: 'CERTIFICAT OFFICIEL DE DROITS & DE TIERS-PAYANT CSU',
+      docType: 'Certificat officiel de droits & de TIERS-PAYANT CSU',
       title: 'Attestation d\'ouverture de droits & de couverture médicale',
       referenceNo: `VERIF-${Date.now().toString().slice(-6)}`,
       beneficiaryName: `${result.firstName} ${result.lastName}`,
       cmuNumber: result.cmuNumber,
       structureName: result.mutuelleName,
       details: [
-        { label: 'Statut de couverture', value: result.valid ? 'ACTIF & VALIDE (Tiers-payant 80-100%)' : 'INACTIF' },
+        { label: 'Statut de couverture', value: result.valid ? 'Actif & valide (tiers-payant 80-100%)' : 'INACTIF' },
         { label: 'Formule souscrite', value: result.packageType },
-        { label: 'Identifiant Patient (IPP)', value: result.ippNumber },
+        { label: 'Identifiant patient (IPP)', value: result.ippNumber },
         { label: 'Téléphone assuré', value: result.phone },
         { label: 'Groupe sanguin & allergies', value: `${result.bloodGroup && result.bloodGroup !== 'Non renseigné' ? result.bloodGroup : 'Non renseigné'} (Allergies: ${result.allergies || 'Aucune'})` },
         { label: 'Ayants droit rattachés', value: result.familyMembers && result.familyMembers.length > 0 ? result.familyMembers.map(f => `${f.name} (${f.relation})`).join(', ') : 'Aucun' }
@@ -1245,7 +1245,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
           <input
             type="text"
             className="form-control input fw-bold px-4"
-            placeholder="Entrez ou scannez un Code bénéficiaire (ex: DKR_260001.0)"
+            placeholder="Entrez ou scannez un code bénéficiaire (ex: DKR_260001.0)"
             value={cmuNumber}
             onChange={(e) => setCmuNumber(e.target.value)}
             style={{ flex: 1, minHeight: '56px', borderRadius: '18px', fontSize: '1rem', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)' }}
@@ -1340,7 +1340,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                   <h6 className="fw-extrabold mb-1" style={{ fontSize: '1.05rem', color: '#34d399' }}>Numérisation rapide par photo</h6>
                   <p className="small mb-0" style={{ fontSize: '0.84rem', color: '#cbd5e1' }}>
                     {cameraError === 'PHOTO_NO_QR'
-                      ? 'Aucun QR Code détecté. Prenez la photo bien de face et nette.'
+                      ? 'Aucun QR code détecté. Prenez la photo bien de face et nette.'
                       : 'Appuyez sur le bouton vert ci-dessous pour ouvrir l\'appareil photo de votre téléphone.'}
                   </p>
                 </div>
@@ -1599,7 +1599,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                 <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Document officiel certifié et infalsifiable
               </span>
               <span className="small text-white-50 fw-mono">
-                EMPREINTE : {docResult.cryptoHash}
+                Empreinte : {docResult.cryptoHash}
               </span>
             </div>
             <h3 className="fw-bold mb-1 text-white" style={{ fontSize: '1.35rem' }}>
@@ -1696,11 +1696,11 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                     cmuNumber: docResult.cmuNumber,
                     structureName: docResult.hospitalName,
                     details: [
-                      { label: 'N° CSU Carte', value: docResult.cmuNumber },
-                      { label: 'Acte Médical', value: docResult.medicalAct },
+                      { label: 'N° CSU carte', value: docResult.cmuNumber },
+                      { label: 'Acte médical', value: docResult.medicalAct },
                       { label: 'Prise en charge UNAMUSC', value: docResult.guaranteedAmount },
-                      { label: 'Ticket Modérateur Patient', value: docResult.patientRest },
-                      { label: 'Statut du Document', value: 'Certifié conforme et authentique' }
+                      { label: 'Ticket modérateur patient', value: docResult.patientRest },
+                      { label: 'Statut du document', value: 'Certifié conforme et authentique' }
                     ],
                     notes: docResult.notes
                   });
@@ -2004,7 +2004,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             <div className="p-4 p-md-5 text-center my-4 rounded-4" style={{ background: 'var(--bg-card)', border: '2px solid #059669', borderRadius: '24px', boxShadow: '0 10px 30px rgba(5, 150, 105, 0.12)' }}>
               <div className="d-flex align-items-center justify-content-center gap-2 mb-3">
                 <span className="badge bg-success text-white px-3.5 py-1.5 fw-bold" style={{ fontSize: '0.82rem', borderRadius: '12px' }}>
-                  <ProIcon name="lock" /> QR Code Dynamique • <ProIcon name="clock" /> {qrSecondsLeft}s
+                  <ProIcon name="lock" /> QR code dynamique • <ProIcon name="clock" /> {qrSecondsLeft}s
                 </span>
               </div>
 
@@ -2050,7 +2050,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
               </div>
 
               <span className="badge px-4 py-2.5 fw-bold border mt-2" style={{ borderRadius: '14px', fontSize: '0.84rem', background: 'rgba(5, 150, 105, 0.15)', color: '#10b981', borderColor: 'rgba(5, 150, 105, 0.35)', whiteSpace: 'normal', lineHeight: '1.5', display: 'inline-block' }}>
-                <ProIcon name="smartphone" /> QR code CSU Certifié • Toucher pour agrandir <ProIcon name="scan" />
+                <ProIcon name="smartphone" /> QR code CSU certifié • Toucher pour agrandir <ProIcon name="scan" />
               </span>
             </div>
 
@@ -2058,7 +2058,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             <div className="p-4 rounded-4 position-relative mt-4" style={{ background: 'var(--bg-card-subtle)', borderRadius: '20px', border: '1px solid var(--border-color)', zIndex: 2 }}>
               <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
                 <small className="fw-bold text-muted" style={{ fontSize: '0.82rem', letterSpacing: '0.05em' }}>
-                  UNAMUSC SENEGAL - CARTE NATIONALE D’ASSURANCE SANTÉ <ProIcon name="senegal-flag" />
+                  UNAMUSC senegal - carte nationale D’ASSURANCE santé <ProIcon name="senegal-flag" />
                 </small>
                 <span className="badge px-3.5 py-2 fw-bold border" style={{ borderRadius: '12px', fontSize: '0.82rem', background: 'var(--bg-card)', color: 'var(--text-main)', borderColor: 'var(--border-color)' }}>
                   Droits actifs 2026 <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} />
@@ -2271,8 +2271,8 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                     { id: 'directory', icon: <ProIcon name="folder" />, label: 'Annuaire mutuelles', sub: 'Unions & contacts', color: '#4f46e5' },
                     { id: 'parrainage-solidaire', icon: <ProIcon name="handshake" />, label: 'Parrainage', sub: 'Solidarité & dons', color: '#0891b2' },
                     { id: 'complaints', icon: <ProIcon name="message-square" />, label: 'Réclamations', sub: 'Assistance & suivi', color: '#b45309' },
-                    { id: 'profile', icon: <ProIcon name="user" />, label: 'Mon Profil', sub: 'Infos & compte assuré', color: '#0f766e' },
-                    { id: 'home', icon: <ProIcon name="home" />, label: 'Portail Accueil', sub: 'Vue générale CSU', color: '#334155' }
+                    { id: 'profile', icon: <ProIcon name="user" />, label: 'Mon profil', sub: 'Infos & compte assuré', color: '#0f766e' },
+                    { id: 'home', icon: <ProIcon name="home" />, label: 'Portail accueil', sub: 'Vue générale CSU', color: '#334155' }
                   ].map((item) => (
                     <button
                       key={item.id}
@@ -2325,7 +2325,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                     age: child.age || calculatedAge,
                     birthDate: child.birthDate,
                     photoUrl: child.photoUrl || '/csu_profile_hero_real.png',
-                    vaccines: child.vaccines || (calculatedAge <= 5 ? 'PEV 0-5 ans (BCG, Polio, Pentavalent, Rougeole)' : isFemale && calculatedAge >= 9 && calculatedAge <= 14 ? 'Vaccin anti-VPH (Col de l\'utérus) 100% Gratuit' : 'PEV à jour'),
+                    vaccines: child.vaccines || (calculatedAge <= 5 ? 'PEV 0-5 ans (BCG, polio, pentavalent, rougeole)' : isFemale && calculatedAge >= 9 && calculatedAge <= 14 ? 'Vaccin anti-VPH (Col de l\'utérus) 100% Gratuit' : 'PEV à jour'),
                     antecedents: child.antecedents || 'Suivi pédiatrique normal'
                   };
                 });
@@ -2344,11 +2344,11 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                 if (childrenUnder5.length > 0 && girlsAged9to14.length > 0) {
                   audioTextWolofFr = `Nanga def ${result.firstName}! Rappel UNAMUSC : Suivi pédiatrique et vaccins PEV 0 à 5 ans pour ${childrenUnder5.map(c => c.name).join(', ')} ET vaccin anti-VPH col de l'utérus pour votre fille ${girlsAged9to14.map(g => g.name).join(', ')} (${girlsAged9to14[0].age} ans) programmés. Prise en charge 100% gratuite.`;
                 } else if (childrenUnder5.length > 0) {
-                  audioTextWolofFr = `Nanga def ${result.firstName}! Rappel UNAMUSC : Consultation de suivi pédiatrique et vaccins PEV (0 à 5 ans) programmés pour ${childrenUnder5.map(c => c.name).join(', ')}. Prise en charge 100% gratuite.`;
+                  audioTextWolofFr = `Nanga def ${result.firstName}! Rappel UNAMUSC : consultation de suivi pédiatrique et vaccins PEV (0 à 5 ans) programmés pour ${childrenUnder5.map(c => c.name).join(', ')}. Prise en charge 100% gratuite.`;
                 } else if (girlsAged9to14.length > 0) {
                   audioTextWolofFr = `Nanga def ${result.firstName}! Rappel UNAMUSC Santé Fille : La vaccination anti-VPH préventive contre le cancer du col de l'utérus pour votre fille ${girlsAged9to14.map(g => g.name).join(', ')} (${girlsAged9to14[0].age} ans) est programmée. Prise en charge 100% gratuite.`;
                 } else {
-                  audioTextWolofFr = `Nanga def ${result.firstName}! Rappel UNAMUSC : Le suivi pédiatrique et les rappels vaccinaux pour les enfants de votre famille sont programmés. Prise en charge 100% gratuite.`;
+                  audioTextWolofFr = `Nanga def ${result.firstName}! Rappel UNAMUSC : le suivi pédiatrique et les rappels vaccinaux pour les enfants de votre famille sont programmés. Prise en charge 100% gratuite.`;
                 }
 
                 return (
@@ -2589,7 +2589,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                                 {/* BADGES BIEN ESPACÉS */}
                                 <div className="d-flex align-items-center justify-content-between pt-3.5 border-top flex-wrap gap-3" style={{ borderColor: 'var(--border-color)' }}>
                                   <span className="badge fw-bold px-3.5 py-2" style={{ background: child.hasOfficialPhoto ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)', color: child.hasOfficialPhoto ? '#10b981' : '#fbbf24', fontSize: '0.84rem', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
-                                    {child.hasOfficialPhoto ? '🟢 Photo certifiée MSD Dakar' : '🟡 Photo certifiée en attente'}
+                                    {child.hasOfficialPhoto ? 'Photo certifiée MSD Dakar' : 'Photo certifiée en attente'}
                                   </span>
                                   <span className="badge bg-success text-white fw-bold px-3.5 py-2" style={{ borderRadius: '12px', fontSize: '0.84rem' }}>
                                     Gratuité pédiatrique 100%
@@ -2991,7 +2991,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                                 .replace(/Adhérent Principal/gi, 'adhérent principal')
                                 .replace(/Individuelle Majeur/gi, 'individuelle majeur')
                                 .replace(/— Tiers-payant 80% UNAMUSC/gi, '— Couverture Tiers-payant 80% UNAMUSC')
-                            : 'Formule adhérent principal — Couverture Tiers-payant 80% UNAMUSC'}
+                            : 'Formule adhérent Principal — Couverture tiers-payant 80% UNAMUSC'}
                         </h6>
                         <div className="d-flex flex-column gap-2 pt-2">
                           <div className="p-3 rounded-3" style={{ background: 'rgba(2, 132, 199, 0.08)', color: 'var(--text-main)', fontSize: '0.88rem', fontWeight: '600', borderRadius: '14px' }}>
@@ -3152,7 +3152,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
 
             <div className="d-flex justify-content-center mb-2">
               <span className="badge bg-success text-white px-2.5 py-1 fw-bold" style={{ fontSize: '0.74rem', borderRadius: '8px' }}>
-                <ProIcon name="lock" /> Sceau Rotatif Dynamique • <ProIcon name="clock" /> {qrSecondsLeft}s
+                <ProIcon name="lock" /> Sceau rotatif dynamique • <ProIcon name="clock" /> {qrSecondsLeft}s
               </span>
             </div>
 
@@ -3233,7 +3233,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
               <label className="form-label small fw-bold mb-1.5">Établissement récepteur conventionné UNAMUSC *</label>
               <select className="form-select input fw-bold" value={guaranteeHospital} onChange={(e) => setGuaranteeHospital(e.target.value)} style={{ borderRadius: '14px', minHeight: '48px' }}>
                 <option value="Hôpital Universitaire de Fann (Dakar)">Hôpital universitaire de Fann (Dakar)</option>
-                <option value="Hôpital Aristide Le Dantec">Hôpital aristide le Dantec (Dakar)</option>
+                <option value="Hôpital Aristide Le Dantec">Hôpital Aristide Le Dantec (Dakar)</option>
                 <option value="Hôpital Général Idrissa Pouye (Pikine)">Hôpital général idrissa pouye (Pikine)</option>
                 <option value="Centre Hospitalier Abass Ndao">Centre hospitalier abass ndao</option>
                 <option value="Hôpital d'Enfants Albert Royer">Hôpital d'enfants albert royer (pédiatrie)</option>
@@ -3262,7 +3262,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
 
             <div className="mb-3.5">
               <label className="form-label small fw-bold mb-1.5">Acte médical ou traitement prescrit *</label>
-              <input type="text" className="form-control input" value={guaranteeAct} onChange={(e) => setGuaranteeAct(e.target.value)} placeholder="ex: Chirurgie abdominale & séjour hospitalier 5 jours" required style={{ borderRadius: '14px', minHeight: '48px' }} />
+              <input type="text" className="form-control input" value={guaranteeAct} onChange={(e) => setGuaranteeAct(e.target.value)} placeholder="Ex: chirurgie abdominale & séjour hospitalier 5 jours" required style={{ borderRadius: '14px', minHeight: '48px' }} />
             </div>
 
             <div className="mb-4">
@@ -3378,7 +3378,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                   className="form-control input" 
                   value={medDoctor} 
                   onChange={(e) => setMedDoctor(e.target.value)} 
-                  placeholder="ex: Dr. Ousmane Sow (CHU Fann)" 
+                  placeholder="Ex: Dr. Ousmane Sow (CHU Fann)" 
                   required 
                   style={{ borderRadius: '14px', minHeight: '48px' }} 
                 />
@@ -3388,7 +3388,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             <div className="row g-3 mb-3.5">
               <div className="col-12 col-md-8">
                 <label className="form-label small fw-bold mb-1.5">Nom du médicament / Dsi *</label>
-                <input type="text" className="form-control input" value={medName} onChange={(e) => setMedName(e.target.value)} placeholder="ex: Amoxicilline 500mg" required style={{ borderRadius: '14px', minHeight: '48px' }} />
+                <input type="text" className="form-control input" value={medName} onChange={(e) => setMedName(e.target.value)} placeholder="Ex: amoxicilline 500mg" required style={{ borderRadius: '14px', minHeight: '48px' }} />
               </div>
               <div className="col-12 col-md-4">
                 <label className="form-label small fw-bold mb-1.5">Forme *</label>
@@ -3443,23 +3443,23 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
 
             <div className="p-3 rounded-4 mb-4" style={{ background: 'rgba(30, 64, 175, 0.1)', border: '1px solid rgba(59, 130, 246, 0.3)' }}>
               <span className="small text-muted d-block" style={{ fontSize: '0.86rem' }}>
-                Dossier & Visio pour : <strong>{selectedTargetBeneficiary ? selectedTargetBeneficiary.name : `${result?.firstName} ${result?.lastName}`}</strong> ({selectedTargetBeneficiary ? selectedTargetBeneficiary.cmuCode : result?.cmuNumber})
+                Dossier & visio pour : <strong>{selectedTargetBeneficiary ? selectedTargetBeneficiary.name : `${result?.firstName} ${result?.lastName}`}</strong> ({selectedTargetBeneficiary ? selectedTargetBeneficiary.cmuCode : result?.cmuNumber})
               </span>
             </div>
 
             <div className="mb-3.5">
               <label className="form-label small fw-bold mb-1.5">Médecin téléconsultant certifié UNAMUSC *</label>
               <select className="form-select input fw-bold" value={telemedDoctor} onChange={(e) => setTelemedDoctor(e.target.value)} style={{ borderRadius: '14px', minHeight: '48px' }}>
-                <option value="Dr. Ousmane Sow (Médecin Généraliste UNAMUSC)">Dr. ousmane sow — Médecin généraliste (en ligne )</option>
-                <option value="Dr. Mariama Ba (Pédiatre CHU Fann)">Dr. mariama ba — Pédiatre & néonatalogie (en ligne )</option>
-                <option value="Dr. Aminata Diop (Gynécologue-Obstétricienne)">Dr. aminata diop — Gynécologie & maternité (en ligne )</option>
-                <option value="Dr. Fatou Diome (Sage-femme DKR)">Dr. fatou diome — Sage-femme d'état (en ligne )</option>
+                <option value="Dr. Ousmane Sow (Médecin Généraliste UNAMUSC)">Dr. Ousmane Sow — Médecin généraliste (en ligne )</option>
+                <option value="Dr. Mariama Ba (Pédiatre CHU Fann)">Dr. Mariama Ba — Pédiatre & néonatalogie (en ligne )</option>
+                <option value="Dr. Aminata Diop (Gynécologue-Obstétricienne)">Dr. Aminata Diop — Gynécologie & maternité (en ligne )</option>
+                <option value="Dr. Fatou Diome (Sage-femme DKR)">Dr. Fatou Diome — Sage-femme d'état (en ligne )</option>
               </select>
             </div>
 
             <div className="mb-3.5">
               <label className="form-label small fw-bold mb-1.5">Motif principal de la consultation *</label>
-              <input type="text" className="form-control input" value={telemedReason} onChange={(e) => setTelemedReason(e.target.value)} placeholder="ex: Suivi médical, ordonnance, consultation de contrôle" required style={{ borderRadius: '14px', minHeight: '48px' }} />
+              <input type="text" className="form-control input" value={telemedReason} onChange={(e) => setTelemedReason(e.target.value)} placeholder="Ex: suivi médical, ordonnance, consultation de contrôle" required style={{ borderRadius: '14px', minHeight: '48px' }} />
             </div>
 
             <div className="row g-3 mb-4">
@@ -3522,7 +3522,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
               <select className="form-select input fw-bold" value={examCenter} onChange={(e) => setExamCenter(e.target.value)} style={{ borderRadius: '14px', minHeight: '48px' }}>
                 <option value="Centre d'Imagerie de Fann">Centre d'imagerie de Fann (Dakar)</option>
                 <option value="Laboratoire BioMed Dakar">Laboratoire biomed Dakar</option>
-                <option value="Centre de Radiologie Le Dantec">Centre de radiologie le Dantec</option>
+                <option value="Centre de Radiologie Le Dantec">Centre de radiologie Le Dantec</option>
                 <option value="Labo d'Analyses Médina">Labo d'analyses Médina</option>
               </select>
             </div>
@@ -3530,7 +3530,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             <div className="row g-3 mb-3.5">
               <div className="col-12 col-md-8">
                 <label className="form-label small fw-bold mb-1.5">Titre de l'examen *</label>
-                <input type="text" className="form-control input" value={examTitle} onChange={(e) => setExamTitle(e.target.value)} placeholder="ex: Scanner Thoracique HD" required style={{ borderRadius: '14px', minHeight: '48px' }} />
+                <input type="text" className="form-control input" value={examTitle} onChange={(e) => setExamTitle(e.target.value)} placeholder="Ex: scanner thoracique hd" required style={{ borderRadius: '14px', minHeight: '48px' }} />
               </div>
               <div className="col-12 col-md-4">
                 <label className="form-label small fw-bold mb-1.5">Type *</label>
@@ -3589,7 +3589,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
 
             <div className="mb-3.5">
               <label className="form-label small fw-bold mb-1.5">Médecin spécialiste ou structure *</label>
-              <input type="text" className="form-control input" value={specialtyDoctor} onChange={(e) => setSpecialtyDoctor(e.target.value)} placeholder="ex: Dr. Mariama Ba (Pédiatre CHU Fann)" required style={{ borderRadius: '14px', minHeight: '48px' }} />
+              <input type="text" className="form-control input" value={specialtyDoctor} onChange={(e) => setSpecialtyDoctor(e.target.value)} placeholder="Ex: Dr. Mariama Ba (pédiatre CHU Fann)" required style={{ borderRadius: '14px', minHeight: '48px' }} />
             </div>
 
             <div className="mb-4">
@@ -3625,7 +3625,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
 
             <div className="mb-3.5">
               <label className="form-label small fw-bold mb-1.5">Nom de la pathologie ou protocole ald *</label>
-              <input type="text" className="form-control input fw-bold" value={pathologyName} onChange={(e) => setPathologyName(e.target.value)} placeholder="ex: Hypertension artérielle (HTA), Diabète Type 2" required style={{ borderRadius: '14px', minHeight: '48px' }} />
+              <input type="text" className="form-control input fw-bold" value={pathologyName} onChange={(e) => setPathologyName(e.target.value)} placeholder="Ex: hypertension artérielle (HTA), diabète type 2" required style={{ borderRadius: '14px', minHeight: '48px' }} />
             </div>
 
             <div className="mb-3.5">
@@ -3639,7 +3639,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
 
             <div className="mb-4">
               <label className="form-label small fw-bold mb-1.5">Statut clinique actuel & observations *</label>
-              <input type="text" className="form-control input" value={pathologyStatus} onChange={(e) => setPathologyStatus(e.target.value)} placeholder="ex: Patient stabilisé sous traitement" required style={{ borderRadius: '14px', minHeight: '48px' }} />
+              <input type="text" className="form-control input" value={pathologyStatus} onChange={(e) => setPathologyStatus(e.target.value)} placeholder="Ex: patient stabilisé sous traitement" required style={{ borderRadius: '14px', minHeight: '48px' }} />
             </div>
 
             <div className="d-flex justify-content-end gap-3 mt-4 pt-2 border-top" style={{ borderColor: 'var(--border-color)' }}>
