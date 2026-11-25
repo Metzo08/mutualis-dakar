@@ -1762,9 +1762,11 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             style={{
               background: 'var(--bg-card)',
               boxShadow: 'var(--shadow-lg)',
-              border: (result.valid && result.status !== 'suspended' && result.status !== 'suspendu') 
-                ? '2.5px solid #059669' 
-                : '2.5px solid #ef4444',
+              border: result.status === 'observation'
+                ? '2.5px solid #d97706'
+                : (result.valid && result.status !== 'suspended' && result.status !== 'suspendu')
+                  ? '2.5px solid #059669'
+                  : '2.5px solid #ef4444',
               borderRadius: '28px',
               color: 'var(--text-main)',
               cursor: 'pointer'
@@ -2064,47 +2066,96 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             </div>
           </div>
 
-          {/* SI LA CARTE EST SUSPENDUE : AFFICHER UNIQUEMENT LE MESSAGE D'ALERTE DE RÉGULARISATION (10 500 FCFA) */}
-          {(!result.valid || result.status === 'suspended' || result.status === 'suspendu') ? (
-            <div className="card shadow-sm border-0 p-4 p-md-5 mb-5 text-center" style={{ borderRadius: '26px', background: 'var(--bg-card)', color: 'var(--text-main)', border: '2px solid #ef4444' }}>
-              <div className="d-inline-flex align-items-center justify-content-center p-4 rounded-circle mb-4 mx-auto" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', width: '80px', height: '80px' }}>
-                <span style={{ fontSize: '2.6rem' }}>⚠️</span>
-              </div>
-              
-              <h3 className="fw-bold mb-3 text-danger" style={{ fontSize: '1.55rem' }}>⚠️ Couverture CSU inactive</h3>
-              
-              <div className="mb-4">
-                <code className="px-3.5 py-2 bg-dark text-warning border border-warning rounded-3 fw-bold d-inline-block" style={{ fontSize: '1.1rem', color: '#f59e0b' }}>
-                  {getAdherentCode(result.cmuNumber)}
-                </code>
-              </div>
+          {/* ENCART PÉRIODE D'OBSERVATION (30 JOURS) — COTISATION DÉJÀ RÉGLÉE, DROITS EN ACTIVATION */}
+          {result.status === 'observation' && (() => {
+            const totalDays = result.observationDaysTotal || 30;
+            const elapsedDays = Math.min(totalDays, (result.observationDaysElapsed || 0) + 1);
+            const remainingDays = Number.isFinite(Number(result.observationDaysRemaining)) ? Number(result.observationDaysRemaining) : Math.max(0, totalDays - elapsedDays);
+            const pct = Math.min(100, Math.max(4, Math.round((elapsedDays / totalDays) * 100)));
+            const activeDateLabel = result.observationEndDate
+              ? new Date(result.observationEndDate).toLocaleDateString('fr-FR')
+              : null;
+            return (
+              <div className="card shadow-sm border-0 p-4 p-md-5 mb-4 text-center" style={{ borderRadius: '26px', background: 'var(--bg-card)', color: 'var(--text-main)', border: '2px solid #d97706' }}>
+                <div className="d-inline-flex align-items-center justify-content-center p-3 rounded-circle mb-3 mx-auto" style={{ background: 'rgba(245, 158, 11, 0.16)', color: '#d97706', width: '72px', height: '72px' }}>
+                  <span style={{ fontSize: '2.2rem' }}>⏳</span>
+                </div>
 
-              <p className="lead mb-4 mx-auto" style={{ maxWidth: '680px', fontSize: '1.12rem', lineHeight: '1.7', color: 'var(--text-sub)' }}>
-                Votre couverture est suspendue. Veuillez régulariser votre cotisation et celui des membres de votre famille pour un montant de <strong>10 500 FCFA</strong>.
-              </p>
+                <h3 className="fw-bold mb-2" style={{ fontSize: '1.35rem', color: '#b45309' }}>
+                  Période d&apos;observation en cours ({totalDays} jours)
+                </h3>
 
-              <div className="d-flex justify-content-center gap-3 mt-3">
-                <button 
-                  type="button" 
-                  className="btn btn-emerald btn-lg px-4 py-3 fw-bold d-inline-flex align-items-center gap-3 shadow"
-                  style={{ background: '#10b981', borderColor: '#10b981', color: '#ffffff', borderRadius: '18px', fontSize: '1.08rem', cursor: 'pointer', boxShadow: '0 6px 20px rgba(16, 185, 129, 0.35)' }}
-                  onClick={() => {
-                    localStorage.setItem('cmu-pending-renewal', JSON.stringify({
-                      cmuNumber: getAdherentCode(result.cmuNumber),
-                      amount: 10500,
-                      familyCount: 3,
-                      firstName: result.firstName,
-                      lastName: result.lastName
-                    }));
-                    if (setView) setView('payments');
-                    else window.location.hash = '#payments';
-                  }}
-                >
-                  💳 Renouveler ma cotisation
-                </button>
+                <div className="mb-3">
+                  <code className="px-3 py-1.5 rounded-3 fw-bold d-inline-block" style={{ fontSize: '1rem', background: '#0f172a', color: '#fbbf24', border: '1px solid #d97706' }}>
+                    {getAdherentCode(result.cmuNumber)}
+                  </code>
+                </div>
+
+                <div className="mx-auto mb-3" style={{ maxWidth: '420px', width: '100%' }}>
+                  <div className="d-flex justify-content-between small fw-bold mb-1" style={{ color: '#92400e' }}>
+                    <span>Jour {elapsedDays} / {totalDays}</span>
+                    <span>{remainingDays} jour{remainingDays > 1 ? 's' : ''} restant{remainingDays > 1 ? 's' : ''}</span>
+                  </div>
+                  <div style={{ height: '10px', borderRadius: '999px', background: 'rgba(217, 119, 6, 0.18)', overflow: 'hidden' }}>
+                    <div style={{ width: `${pct}%`, height: '100%', borderRadius: '999px', background: 'linear-gradient(90deg, #f59e0b 0%, #d97706 100%)', transition: 'width 0.4s ease' }} />
+                  </div>
+                </div>
+
+                <p className="mb-0 mx-auto" style={{ maxWidth: '620px', fontSize: '0.96rem', lineHeight: 1.65, color: 'var(--text-sub)' }}>
+                  Votre cotisation a bien été enregistrée. <strong>Aucun paiement supplémentaire n&apos;est requis.</strong> Conformément au règlement des mutuelles de santé (UNAMUSC), votre prise en charge Tiers-Payant 80% sera pleinement active{activeDateLabel ? <> dès le <strong>{activeDateLabel}</strong></> : <> à l&apos;issue des {totalDays} jours d&apos;observation</>}.
+                </p>
               </div>
-            </div>
-          ) : !isMobileSpaceUnlocked ? (
+            );
+          })()}
+
+          {/* SI LA CARTE EST RÉELLEMENT SUSPENDUE (HORS PÉRIODE D'OBSERVATION) : MESSAGE DE RÉGULARISATION DYNAMIQUE */}
+          {((!result.valid && result.status !== 'observation') || result.status === 'suspended' || result.status === 'suspendu') ? (() => {
+            const depsCount = Array.isArray(result.dependents) ? result.dependents.length : (Array.isArray(result.familyMembers) ? result.familyMembers.length : 0);
+            const totalPersons = 1 + depsCount;
+            const renewalAmount = totalPersons * 3500;
+            return (
+              <div className="card shadow-sm border-0 p-4 p-md-5 mb-5 text-center" style={{ borderRadius: '26px', background: 'var(--bg-card)', color: 'var(--text-main)', border: '2px solid #ef4444' }}>
+                <div className="d-inline-flex align-items-center justify-content-center p-4 rounded-circle mb-4 mx-auto" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', width: '80px', height: '80px' }}>
+                  <span style={{ fontSize: '2.6rem' }}>⚠️</span>
+                </div>
+                
+                <h3 className="fw-bold mb-3 text-danger" style={{ fontSize: '1.55rem' }}>⚠️ Couverture CSU inactive</h3>
+                
+                <div className="mb-4">
+                  <code className="px-3.5 py-2 bg-dark text-warning border border-warning rounded-3 fw-bold d-inline-block" style={{ fontSize: '1.1rem', color: '#f59e0b' }}>
+                    {getAdherentCode(result.cmuNumber)}
+                  </code>
+                </div>
+
+                <p className="lead mb-4 mx-auto" style={{ maxWidth: '680px', fontSize: '1.08rem', lineHeight: '1.7', color: 'var(--text-sub)' }}>
+                  {depsCount > 0
+                    ? <>Votre couverture est suspendue. Veuillez régulariser votre cotisation et celle de vos <strong>{depsCount}</strong> ayant{depsCount > 1 ? 's' : ''} droit ({totalPersons} personnes) pour un montant de <strong>{renewalAmount.toLocaleString('fr-FR')} FCFA</strong>.</>
+                    : <>Votre couverture est suspendue. Veuillez régulariser votre cotisation annuelle pour un montant de <strong>{renewalAmount.toLocaleString('fr-FR')} FCFA</strong>.</>}
+                </p>
+
+                <div className="d-flex justify-content-center gap-3 mt-3">
+                  <button 
+                    type="button" 
+                    className="btn btn-emerald btn-lg px-4 py-3 fw-bold d-inline-flex align-items-center gap-3 shadow"
+                    style={{ background: '#10b981', borderColor: '#10b981', color: '#ffffff', borderRadius: '18px', fontSize: '1.08rem', cursor: 'pointer', boxShadow: '0 6px 20px rgba(16, 185, 129, 0.35)' }}
+                    onClick={() => {
+                      localStorage.setItem('cmu-pending-renewal', JSON.stringify({
+                        cmuNumber: getAdherentCode(result.cmuNumber),
+                        amount: renewalAmount,
+                        familyCount: totalPersons,
+                        firstName: result.firstName,
+                        lastName: result.lastName
+                      }));
+                      if (setView) setView('payments');
+                      else window.location.hash = '#payments';
+                    }}
+                  >
+                    💳 Renouveler ma cotisation
+                  </button>
+                </div>
+              </div>
+            );
+          })() : !isMobileSpaceUnlocked ? (
             <div className="card shadow-sm border-0 p-4 p-md-5 mb-5 text-center" style={{ borderRadius: '24px', background: 'var(--bg-card)', border: '2px solid #059669', maxWidth: '540px', margin: '0 auto 2.5rem auto' }}>
               <div className="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle" style={{ width: '64px', height: '64px', background: 'rgba(5, 150, 105, 0.14)', fontSize: '1.9rem' }}>
                 🔐
