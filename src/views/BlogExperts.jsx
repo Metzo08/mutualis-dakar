@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import ProIcon from '../components/ProIcon';
 
 export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }) {
   // Modifiable par tout professionnel de santé (doctor, partner, midwife, agent, superadmin, pharmacist) ou utilisateur connecté
@@ -40,7 +41,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
     title: '',
     author: '',
     role: '',
-    avatar: '🩺',
+    avatar: <ProIcon name="stethoscope" />,
     readTime: '5 min',
     content: ''
   });
@@ -145,7 +146,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
       title: lang === 'fr' ? 'Le paludisme en saison des pluies : prévention et prise en charge' : 'Sibir palu ci nawet : ndimbël ak faj gi',
       author: 'Dr. Cheikh Anta Diop',
       role: 'Médecin prescripteur',
-      avatar: '🩺',
+      avatar: <ProIcon name="stethoscope" />,
       date: Date.now() - 86400000 * 2,
       readTime: lang === 'fr' ? '5 min de lecture' : 'Simili 5',
       preview: lang === 'fr' ? "La saison des pluies au Sénégal s'accompagne d'une recrudescence des cas de paludisme. Voici les gestes essentiels de prévention." : "Ci samt mbënaale, sibir palu dafay yokku. Lii mooy yi ñu def ngir dar ñu sibirwu.",
@@ -161,7 +162,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
       title: lang === 'fr' ? "Plan sésame : la gratuité des soins pour les personnes âgées" : 'Plan sésame : faj bu baax ñi gën a màgg',
       author: 'Dr. Fatou Diop',
       role: 'Médecin généraliste',
-      avatar: '👩‍⚕️',
+      avatar: <ProIcon name="stethoscope" />,
       date: Date.now() - 86400000 * 5,
       readTime: lang === 'fr' ? '4 min de lecture' : 'Simili 4',
       preview: lang === 'fr' ? "Grâce au plan sésame, les personnes âgées de 60 ans et plus bénéficient d'une gratuité totale des soins de santé essentiels." : 'Ci plan sésame, ñi ëpp 60 at la am nañu faj bu baax bu feeñ.',
@@ -177,7 +178,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
       title: lang === 'fr' ? 'Nutrition de la femme enceinte : les aliments clés' : 'Lekk bu jikkar: ngir yu am solo',
       author: 'Sage-femme Fatou Diome',
       role: 'Sage-femme',
-      avatar: '🤱',
+      avatar: <ProIcon name="baby" />,
       date: Date.now() - 86400000 * 7,
       readTime: lang === 'fr' ? '3 min de lecture' : 'Simili 3',
       preview: lang === 'fr' ? "Une alimentation équilibrée pendant la grossesse est essentielle pour la santé de la mère et le développement du bébé." : 'Lekk bu baax bu jikkar mooy gën ci santewu yaay ak liir bi.',
@@ -193,7 +194,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
       title: lang === 'fr' ? "Couverture santé universelle : vos droits en tant qu'assuré" : 'Couverture santé universelle : sañ-sañu yu gën a wër ci programme bi',
       author: 'Dr. Mamadou Ba',
       role: 'SuperAdmin',
-      avatar: '🛡️',
+      avatar: <ProIcon name="shield-check" />,
       date: Date.now() - 86400000 * 10,
       readTime: lang === 'fr' ? '6 min de lecture' : 'Simili 6',
       preview: lang === 'fr' ? "La couverture santé universelle garantit à chaque Sénégalais l'accès à des soins de qualité sans barrière financière." : 'Couverture santé universelle dimbëli na ñépp Sénégalais ngir am sànkaar bu baax te xaw.',
@@ -389,7 +390,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
       title: '',
       author: authorName || '',
       role: authorRole || '',
-      avatar: '🩺',
+      avatar: <ProIcon name="stethoscope" />,
       readTime: '5 min',
       content: ''
     });
@@ -482,7 +483,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
           title: '',
           author: canPublishArticle ? authorName : '',
           role: canPublishArticle ? authorRole : '',
-          avatar: '🩺',
+          avatar: <ProIcon name="stethoscope" />,
           readTime: '5 min',
           content: ''
         });
@@ -553,7 +554,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
               style={{ background: '#059669', color: '#ffffff', border: '2px solid #ffffff', borderRadius: '14px', padding: '0.7rem 1.6rem', fontWeight: '800', fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
               onClick={handleOpenNewArticleModal}
             >
-              ✍️ Rédiger un article d'expert
+              <ProIcon name="pen-tool" /> Rédiger un article d'expert
             </button>
           )}
         </div>
@@ -628,7 +629,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
               }}
               title="Fermer la rédaction"
             >
-              ✖
+              <ProIcon name="x" />
             </button>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', paddingRight: '2rem' }}>
@@ -697,19 +698,19 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
                     value={newArticle.avatar}
                     onChange={(e) => setNewArticle({ ...newArticle, avatar: e.target.value })}
                   >
-                    <option value="🩺">🩺 Stéthoscope</option>
-                    <option value="👩‍⚕️">👩‍⚕️ Médecin (F)</option>
-                    <option value="👨‍⚕️">👨‍⚕️ Médecin (H)</option>
-                    <option value="📝">📝 Note / Crayon</option>
-                    <option value="🏥">🏥 Hôpital</option>
-                    <option value="❤️">❤️ Cœur</option>
+                    <option value="🩺">Stéthoscope</option>
+                    <option value="👩‍⚕️">Médecin (F)</option>
+                    <option value="👨‍⚕️">Médecin (H)</option>
+                    <option value="📝">Note / Crayon</option>
+                    <option value="🏥">Hôpital</option>
+                    <option value="❤️">Cœur</option>
                   </select>
                 </div>
               </div>
 
               <div className="form-group" style={{ marginTop: '1rem' }}>
                 <label className="form-label" style={{ fontWeight: 'bold' }}>
-                  📷 {lang === 'fr' ? 'Photo d\'illustration (Image de couverture)' : 'Photo d\'illustration (Image de couverture)'}
+                  <ProIcon name="camera" /> {lang === 'fr' ? 'Photo d\'illustration (Image de couverture)' : 'Photo d\'illustration (Image de couverture)'}
                 </label>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                   <input 
@@ -732,7 +733,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
                         style={{ position: 'absolute', top: '-5px', right: '-5px', backgroundColor: 'var(--danger)', color: '#fff', borderRadius: '50%', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', border: 'none', cursor: 'pointer' }}
                         onClick={() => setNewArticleImage(null)}
                       >
-                        ✕
+                        <ProIcon name="x" />
                       </button>
                     </div>
                   )}
@@ -872,12 +873,12 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
                     </button>
                     
                     <span style={{ fontSize: '0.88rem', color: 'var(--text-sub)', fontWeight: '500' }}>
-                      💬 {comments[selectedArticle.id]?.length || 0} {lang === 'fr' ? 'commentaire(s)' : 'waxtaan'}
+                      <ProIcon name="message-square" /> {comments[selectedArticle.id]?.length || 0} {lang === 'fr' ? 'commentaire(s)' : 'waxtaan'}
                     </span>
                   </div>
 
                   <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                    ⏱️ {selectedArticle.readTime}
+                    <ProIcon name="clock" /> {selectedArticle.readTime}
                   </span>
                 </div>
               </article>
@@ -885,7 +886,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
               {/* Comments Section */}
               <div className="card text-left" style={{ padding: '2rem', background: 'var(--bg-card)', border: '1px solid var(--border-color)', marginTop: '2rem', borderRadius: '16px' }}>
                 <h3 style={{ fontSize: '1.3rem', fontWeight: '800', color: 'var(--primary)', marginBottom: '1.5rem' }}>
-                  💬 {t.commentsTitle} ({comments[selectedArticle.id]?.length || 0})
+                  <ProIcon name="message-square" /> {t.commentsTitle} ({comments[selectedArticle.id]?.length || 0})
                 </h3>
 
                 {/* Comments List */}
@@ -902,7 +903,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
                         }}
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '0.35rem' }}>
-                          <span style={{ color: 'var(--primary)' }}>👤 {comment.author}</span>
+                          <span style={{ color: 'var(--primary)' }}><ProIcon name="user" /> {comment.author}</span>
                           <span style={{ color: 'var(--text-muted)' }}>{comment.date}</span>
                         </div>
                         <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', margin: 0, lineHeight: '1.4' }}>
@@ -953,7 +954,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div className="card text-left" style={{ padding: '1.5rem', background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
                 <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--secondary)', marginBottom: '1rem' }}>
-                  📢 {t.sidebarTitle}
+                  <ProIcon name="megaphone" /> {t.sidebarTitle}
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   {flashTips.map((tip, idx) => (
@@ -999,8 +1000,8 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
                       <span>{article.author} — {getRelativeTime(article)}</span>
                       <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-                        <span>⏱️ {article.readTime}</span>
-                        <span>💬 {article.comment_count || 0}</span>
+                        <span><ProIcon name="clock" /> {article.readTime}</span>
+                        <span><ProIcon name="message-square" /> {article.comment_count || 0}</span>
                         <button 
                           onClick={(e) => handleLike(article.id, e)}
                           style={{
@@ -1063,7 +1064,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
             {/* Health Tips */}
             <div className="card text-left" style={{ padding: '1.5rem', background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
               <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--secondary)', marginBottom: '1rem' }}>
-                📢 {t.sidebarTitle}
+                <ProIcon name="megaphone" /> {t.sidebarTitle}
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {flashTips.map((tip, idx) => (
@@ -1079,7 +1080,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
             {canPublishArticle && (
               <div className="card text-left" style={{ padding: '1.5rem', background: 'var(--bg-card-subtle)', border: '1px dashed var(--border-color)', borderRadius: '16px' }}>
                 <span style={{ fontWeight: 'bold', color: 'var(--text-main)', fontSize: '0.85rem', display: 'block', marginBottom: '0.5rem' }}>
-                  ✍️ {lang === 'fr' ? 'Rédiger un article expert' : 'Bind sa article'}
+                  <ProIcon name="pen-tool" /> {lang === 'fr' ? 'Rédiger un article expert' : 'Bind sa article'}
                 </span>
                 <p style={{ fontSize: '0.75rem', color: 'var(--text-sub)', lineHeight: '1.4', marginBottom: '1rem' }}>
                   {lang === 'fr'
@@ -1119,7 +1120,7 @@ export default function BlogExperts({ lang, portalMode, agentUser, partnerUser }
           gap: '0.5rem',
           animation: 'fadeInUp 0.3s ease-out'
         }}>
-          <span>✅</span>
+          <span><ProIcon name="check-circle" color="#059669" /></span>
           <span>{toastMessage}</span>
         </div>
       )}

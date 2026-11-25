@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { isWolofText, cleanTextForTTS, decodeWolofSpeechInput, looksLikeMisheardWolof } from '../utils/phonetics';
 import { speakCleanText, stopAllVoicePlayback, primeAudioPlayback } from '../services/voiceAudioService';
 import VoiceCloudOrb from './VoiceCloudOrb';
+import ProIcon from './ProIcon';
 
 const mariamaAvatar = '/mariama_avatar.png';
 
@@ -708,7 +709,7 @@ export default function ChatbotWidget({ lang, setView }) {
         }}
       >
         {isOpen ? (
-          <span style={{ fontSize: '1.4rem', color: '#ffffff', fontWeight: 'bold' }}>✕</span>
+          <span style={{ fontSize: '1.4rem', color: '#ffffff', fontWeight: 'bold' }}><ProIcon name="x" /></span>
         ) : (
           <img src={mariamaAvatar} alt="Zahara" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
         )}
@@ -810,7 +811,7 @@ export default function ChatbotWidget({ lang, setView }) {
                   fontSize: '0.8rem'
                 }}
               >
-                ✕
+                <ProIcon name="x" />
               </button>
             </div>
           </div>
@@ -905,12 +906,12 @@ export default function ChatbotWidget({ lang, setView }) {
               >
                 {lastUserSpeech && (
                   <div style={{ marginBottom: '0.4rem', color: '#94a3b8', fontSize: '0.76rem' }}>
-                    <strong>👤 Vous :</strong> « {lastUserSpeech} »
+                    <strong><ProIcon name="user" /> Vous :</strong> « {lastUserSpeech} »
                   </div>
                 )}
                 {lastBotReply ? (
                   <div>
-                    <strong style={{ color: '#34d399' }}>🟢 Zahara :</strong> {lastBotReply}
+                    <strong style={{ color: '#34d399' }}><ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Zahara :</strong> {lastBotReply}
                   </div>
                 ) : (
                   <span style={{ color: '#64748b', fontStyle: 'italic' }}>
@@ -929,7 +930,7 @@ export default function ChatbotWidget({ lang, setView }) {
                   <div key={idx} style={{ alignSelf: m.sender === 'user' ? 'flex-end' : 'flex-start', maxWidth: '88%' }}>
                     {m.sender === 'bot' && (
                       <div style={{ fontSize: '0.72rem', color: '#34d399', fontWeight: 'bold', marginBottom: '2px' }}>
-                        Zahara 🇸🇳
+                        Zahara <ProIcon name="senegal-flag" />
                       </div>
                     )}
                     <div 
@@ -949,7 +950,7 @@ export default function ChatbotWidget({ lang, setView }) {
                 ))}
                 {isTyping && (
                   <div style={{ alignSelf: 'flex-start', color: '#94a3b8', fontSize: '0.75rem', fontStyle: 'italic' }}>
-                    ⚡ {t.thinkingState}
+                    <ProIcon name="zap" /> {t.thinkingState}
                   </div>
                 )}
                 <div ref={chatEndRef} />
@@ -990,7 +991,7 @@ export default function ChatbotWidget({ lang, setView }) {
                     cursor: 'pointer'
                   }}
                 >
-                  ➔
+                  <ProIcon name="arrow-right" />
                 </button>
               </form>
             </div>

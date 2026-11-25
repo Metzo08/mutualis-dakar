@@ -7,6 +7,7 @@
 // ─────────────────────────────────────────────
 
 import { useEffect, useState } from 'react';
+import ProIcon from './ProIcon';
 
 export default function MaintenanceScreen({ message, onRetry }) {
   const [canRetry, setCanRetry] = useState(false);
@@ -32,7 +33,7 @@ export default function MaintenanceScreen({ message, onRetry }) {
           width: '88px', height: '88px', borderRadius: '50%', margin: '0 auto 1.25rem',
           background: 'rgba(5, 150, 105, 0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: '2.6rem'
-        }}>🛠️</div>
+        }}><ProIcon name="wrench" /></div>
         <h1 style={{ fontSize: '1.6rem', fontWeight: '800', color: '#065f46', marginBottom: '0.6rem' }}>
           Maintenance en cours
         </h1>

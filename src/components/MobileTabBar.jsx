@@ -1,13 +1,14 @@
+import ProIcon from './ProIcon';
 /**
  * MobileTabBar Component — Bottom Tab Bar for Mobile Navigation
  * Conforme au Cahier des Charges Section 3 : Ergonomie Mobile
  */
 export default function MobileTabBar({ view, setView, lang = 'fr', setChatOpen = null }) {
   const tabs = [
-    { id: 'home', icon: '🏠', labelFr: 'Accueil', labelWo: 'Kër' },
-    { id: 'verify', icon: '💳', labelFr: 'Ma Carte', labelWo: 'Samay Karte' },
-    { id: 'payments', icon: '📲', labelFr: 'Paiement', labelWo: 'Fay' },
-    { id: 'chatbot', icon: '💬', labelFr: 'Aide Zahara', labelWo: 'Dimbali' }
+    { id: 'home', icon: <ProIcon name="home" />, labelFr: 'Accueil', labelWo: 'Kër' },
+    { id: 'verify', icon: <ProIcon name="credit-card" />, labelFr: 'Ma Carte', labelWo: 'Samay Karte' },
+    { id: 'payments', icon: <ProIcon name="smartphone" />, labelFr: 'Paiement', labelWo: 'Fay' },
+    { id: 'chatbot', icon: <ProIcon name="message-square" />, labelFr: 'Aide Zahara', labelWo: 'Dimbali' }
   ];
 
   return (

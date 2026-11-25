@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import CmuCard from '../components/CmuCard';
+import ProIcon from '../components/ProIcon';
 
 export default function Profile({ lang, portalMode, citizenUser, agentUser, partnerUser, setView, setPortalMode, setCitizenUser, setAgentUser, setPartnerUser }) {
   const dict = {
@@ -87,27 +88,27 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
   // Liste exhaustive des 13 niveaux d'accès de la plateforme CSU Sénégal
   const accessLevelsList = [
     // Catégorie 1: Citoyens & assurés
-    { id: 'citizen_std', code: 'ACC-01', title: '1. Assuré individuel / famille', cat: 'Citoyens & assurés', icon: '🇸🇳', color: '#059669', badge: 'Titulaire / ayant droit', desc: 'Accès au dossier médical, carte CSU numérique, renouvellement cotisations (Wave/OM) et historique des remboursements.' },
-    { id: 'citizen_student', code: 'ACC-02', title: '2. Élève / étudiant (CSU jeunes)', cat: 'Citoyens & assurés', icon: '🎓', color: '#10b981', badge: 'Gratuité scolaire', desc: 'Prise en charge 100% des consultations en postes de santé et centres universitaires conventionnés.' },
-    { id: 'citizen_bsf', code: 'ACC-03', title: '3. Bénéficiaire BSF (filet social)', cat: 'Citoyens & assurés', icon: '🌟', color: '#34d399', badge: 'Gratuité vulnérables', desc: 'Exonération intégrale des cotisations via la Bourse de Sécurité Familiale (BSF) du Gouvernement.' },
+    { id: 'citizen_std', code: 'ACC-01', title: '1. Assuré individuel / famille', cat: 'Citoyens & assurés', icon: <ProIcon name="senegal-flag" />, color: '#059669', badge: 'Titulaire / ayant droit', desc: 'Accès au dossier médical, carte CSU numérique, renouvellement cotisations (Wave/OM) et historique des remboursements.' },
+    { id: 'citizen_student', code: 'ACC-02', title: '2. Élève / étudiant (CSU jeunes)', cat: 'Citoyens & assurés', icon: <ProIcon name="graduation-cap" />, color: '#10b981', badge: 'Gratuité scolaire', desc: 'Prise en charge 100% des consultations en postes de santé et centres universitaires conventionnés.' },
+    { id: 'citizen_bsf', code: 'ACC-03', title: '3. Bénéficiaire BSF (filet social)', cat: 'Citoyens & assurés', icon: <ProIcon name="sparkles" color="#f59e0b" />, color: '#34d399', badge: 'Gratuité vulnérables', desc: 'Exonération intégrale des cotisations via la Bourse de Sécurité Familiale (BSF) du Gouvernement.' },
 
     // Catégorie 2: Soignants & plateau médical
-    { id: 'doc_physician', code: 'ACC-04', title: '4. Médecin / praticien traitant', cat: 'Plateau médical', icon: '🩺', color: '#0284c7', badge: 'Ordre des médecins', desc: 'Prescription électronique d\'ordonnances, validation d\'actes de soins sous tiers-payant 80%, télé-expertise.' },
-    { id: 'doc_nurse', code: 'ACC-05', title: '5. Infirmier / sage-femme', cat: 'Plateau médical', icon: '👩‍⚕️', color: '#38bdf8', badge: 'Poste & centre de santé', desc: 'Saisie rapide des bons de prise en charge, carnet de santé maternité et consultations de soins primaires.' },
-    { id: 'doc_pharma', code: 'ACC-06', title: '6. Pharmacien d\'officine agréée', cat: 'Plateau médical', icon: '💊', color: '#7c3aed', badge: 'Officine conventionnée', desc: 'Vérification instantanée carte CSU, délivrance des médicaments du panier CSU et télé-transmission factures.' },
-    { id: 'doc_lab', code: 'ACC-07', title: '7. Biologie & radiologie (laboratoire)', cat: 'Plateau médical', icon: '🔬', color: '#a855f7', badge: 'Examens complémentaires', desc: 'Transmission sécurisée des bilans d\'analyses, télé-imagerie médicale sous convention tiers-payant.' },
-    { id: 'doc_eps', code: 'ACC-08', title: '8. Direction EPS & gestion hôpital', cat: 'Plateau médical', icon: '🏥', color: '#6366f1', badge: 'Gestion hôpital', desc: 'Télé-déclaration des factures de soins hospitaliers, suivi de convention et émission des lettres de garantie.' },
+    { id: 'doc_physician', code: 'ACC-04', title: '4. Médecin / praticien traitant', cat: 'Plateau médical', icon: <ProIcon name="stethoscope" />, color: '#0284c7', badge: 'Ordre des médecins', desc: 'Prescription électronique d\'ordonnances, validation d\'actes de soins sous tiers-payant 80%, télé-expertise.' },
+    { id: 'doc_nurse', code: 'ACC-05', title: '5. Infirmier / sage-femme', cat: 'Plateau médical', icon: <ProIcon name="stethoscope" />, color: '#38bdf8', badge: 'Poste & centre de santé', desc: 'Saisie rapide des bons de prise en charge, carnet de santé maternité et consultations de soins primaires.' },
+    { id: 'doc_pharma', code: 'ACC-06', title: '6. Pharmacien d\'officine agréée', cat: 'Plateau médical', icon: <ProIcon name="pill" />, color: '#7c3aed', badge: 'Officine conventionnée', desc: 'Vérification instantanée carte CSU, délivrance des médicaments du panier CSU et télé-transmission factures.' },
+    { id: 'doc_lab', code: 'ACC-07', title: '7. Biologie & radiologie (laboratoire)', cat: 'Plateau médical', icon: <ProIcon name="microscope" />, color: '#a855f7', badge: 'Examens complémentaires', desc: 'Transmission sécurisée des bilans d\'analyses, télé-imagerie médicale sous convention tiers-payant.' },
+    { id: 'doc_eps', code: 'ACC-08', title: '8. Direction EPS & gestion hôpital', cat: 'Plateau médical', icon: <ProIcon name="hospital" />, color: '#6366f1', badge: 'Gestion hôpital', desc: 'Télé-déclaration des factures de soins hospitaliers, suivi de convention et émission des lettres de garantie.' },
 
     // Catégorie 3: Mutuelles communautaires & agents
-    { id: 'agent_field', code: 'ACC-09', title: '9. Agent mutuelle UDMS (terrain)', cat: 'Mutuelles communautaires', icon: '💼', color: '#d97706', badge: 'Enrôleur communal', desc: 'Enrôlement terrain des familles, encaissement physique des cotisations, impression/activation cartes CSU.' },
-    { id: 'agent_supervisor', code: 'ACC-10', title: '10. Superviseur régional URMSCD', cat: 'Mutuelles communautaires', icon: '📊', color: '#f59e0b', badge: 'Audit & contrôle', desc: 'Contrôle financier et administratif des mutuelles de la région de Dakar, audit des factures litigieuses.' },
+    { id: 'agent_field', code: 'ACC-09', title: '9. Agent mutuelle UDMS (terrain)', cat: 'Mutuelles communautaires', icon: <ProIcon name="briefcase" />, color: '#d97706', badge: 'Enrôleur communal', desc: 'Enrôlement terrain des familles, encaissement physique des cotisations, impression/activation cartes CSU.' },
+    { id: 'agent_supervisor', code: 'ACC-10', title: '10. Superviseur régional URMSCD', cat: 'Mutuelles communautaires', icon: <ProIcon name="bar-chart" />, color: '#f59e0b', badge: 'Audit & contrôle', desc: 'Contrôle financier et administratif des mutuelles de la région de Dakar, audit des factures litigieuses.' },
 
     // Catégorie 4: Gouvernance & tutelle
-    { id: 'admin_national', code: 'ACC-11', title: '11. Super admin ANACSU & ministère', cat: 'Gouvernance nationale', icon: '👑', color: '#dc2626', badge: 'Tutelle nationale', desc: 'Pilotage stratégique national, révision des paniers de soins, régulation tarifaire et gouvernance globale.' },
+    { id: 'admin_national', code: 'ACC-11', title: '11. Super admin ANACSU & ministère', cat: 'Gouvernance nationale', icon: <ProIcon name="crown" />, color: '#dc2626', badge: 'Tutelle nationale', desc: 'Pilotage stratégique national, révision des paniers de soins, régulation tarifaire et gouvernance globale.' },
 
     // Catégorie 5: Entreprises & mécènes
-    { id: 'partner_company', code: 'ACC-12', title: '12. Entreprise / employeur privé', cat: 'Entreprises & mécènes', icon: '🏢', color: '#0891b2', badge: 'Souscription groupe', desc: 'Gestion de la couverture maladie collective des employés et versement des cotisations patronales groupe.' },
-    { id: 'partner_rse', code: 'ACC-13', title: '13. Parrain solidaire & mécène RSE', cat: 'Entreprises & mécènes', icon: '🤝', color: '#06b6d4', badge: 'Parrainage solidaire', desc: 'Financement direct des adhésions pour les familles vulnérables de Dakar et suivi d\'impact social.' }
+    { id: 'partner_company', code: 'ACC-12', title: '12. Entreprise / employeur privé', cat: 'Entreprises & mécènes', icon: <ProIcon name="building2" />, color: '#0891b2', badge: 'Souscription groupe', desc: 'Gestion de la couverture maladie collective des employés et versement des cotisations patronales groupe.' },
+    { id: 'partner_rse', code: 'ACC-13', title: '13. Parrain solidaire & mécène RSE', cat: 'Entreprises & mécènes', icon: <ProIcon name="handshake" />, color: '#06b6d4', badge: 'Parrainage solidaire', desc: 'Financement direct des adhésions pour les familles vulnérables de Dakar et suivi d\'impact social.' }
   ];
 
   const [toastMsg, setToastMsg] = useState('');
@@ -538,7 +539,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
       }}>
         <div style={{ textAlign: 'left', position: 'relative', zIndex: 2 }}>
           <span className="badge badge-info" style={{ marginBottom: '0.75rem', background: 'rgba(255, 255, 255, 0.25)', color: '#fff', border: 'none' }}>
-            👤 CSU DAKAR ACCOUNT & ACCESS GOVERNANCE
+            <ProIcon name="user" /> CSU DAKAR ACCOUNT & ACCESS GOVERNANCE
           </span>
           <h1 style={{ fontSize: '1.9rem', color: '#fff', marginBottom: '0.5rem', fontWeight: '800', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
             {user ? (portalMode === 'citizen' ? t.titleCitizen : portalMode === 'partner' ? 'Mon profil prestataire CSU' : t.titleAgent) : 'Mon Compte & Niveaux d\'Accès CSU'}
@@ -558,7 +559,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
           <div style={{ maxWidth: '900px', margin: '0 auto 2.5rem auto' }}>
             <div className="grid grid-2" style={{ gap: '1.5rem', alignItems: 'start' }}>
               <div className="card text-left" style={{ padding: '1.5rem' }}>
-                <h3 style={{ fontSize: '1.1rem', color: 'var(--primary)', marginBottom: '1rem' }}>🏥 Informations de la structure</h3>
+                <h3 style={{ fontSize: '1.1rem', color: 'var(--primary)', marginBottom: '1rem' }}><ProIcon name="hospital" /> Informations de la structure</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', fontSize: '0.9rem' }}>
                   <div>
                     <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Nom du responsable</div>
@@ -582,7 +583,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
               </div>
 
               <div className="card text-left" style={{ padding: '1.5rem' }}>
-                <h3 style={{ fontSize: '1.1rem', color: 'var(--primary)', marginBottom: '1rem' }}>💳 Habilitations & Tiers-Payant CSU</h3>
+                <h3 style={{ fontSize: '1.1rem', color: 'var(--primary)', marginBottom: '1rem' }}><ProIcon name="credit-card" /> Habilitations & Tiers-Payant CSU</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', fontSize: '0.9rem' }}>
                   <div>
                     <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Taux de prise en charge</div>
@@ -593,11 +594,11 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
                   </div>
                   <div>
                     <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Statut conventionnement</div>
-                    <span className="badge badge-success" style={{ fontSize: '0.8rem' }}>✓ Homologué ANACSU & URMSCD</span>
+                    <span className="badge badge-success" style={{ fontSize: '0.8rem' }}><ProIcon name="check" color="#059669" /> Homologué ANACSU & URMSCD</span>
                   </div>
                   <div>
                     <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase', marginBottom: '0.2rem' }}>Accès Tiers-Payant</div>
-                    <div style={{ fontWeight: '600', color: 'var(--success)' }}>✅ Tiers-payant actif pour assurés CSU</div>
+                    <div style={{ fontWeight: '600', color: 'var(--success)' }}><ProIcon name="check-circle" color="#059669" /> Tiers-payant actif pour assurés CSU</div>
                   </div>
                 </div>
               </div>
@@ -610,7 +611,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
             {portalMode === 'citizen' && citizenUser && (
               <div className="card shadow-sm mb-4 text-center" style={{ padding: '2.2rem 2rem', gridColumn: 'span 3', borderRadius: '26px', background: 'var(--bg-card)', border: '1.5px solid var(--border-color)' }}>
                 <h3 style={{ fontSize: '1.25rem', fontWeight: '850', marginBottom: '0.4rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.6rem', color: 'var(--text-main)' }}>
-                  💳 Ma carte CSU numérique sécurisée
+                  <ProIcon name="credit-card" /> Ma carte CSU numérique sécurisée
                 </h3>
                 <p style={{ fontSize: '0.86rem', color: 'var(--text-sub)', maxWidth: '640px', margin: '0 auto 1.5rem auto' }}>
                   {lang === 'fr'
@@ -647,7 +648,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
                   <label 
                     title="Modifier la photo"
                     style={{ position: 'absolute', bottom: '0', right: '0', background: '#fff', border: '1px solid var(--border-color)', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: 'var(--shadow-sm)', fontSize: '1rem' }}>
-                    📷
+                    <ProIcon name="camera" />
                     <input type="file" style={{ display: 'none' }} accept="image/*" onChange={handlePhotoUpload} />
                   </label>
                 </div>
@@ -709,13 +710,13 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
                     </p>
                     {user.status !== 'active' && (
                       <button className="btn btn-secondary btn-sm" onClick={() => setView('services')}>
-                        💳 {t.btnRenew}
+                        <ProIcon name="credit-card" /> {t.btnRenew}
                       </button>
                     )}
                   </div>
 
                   <div className="card text-left" style={{ padding: '1.5rem' }}>
-                    <h3 style={{ fontSize: '1.1rem', color: 'var(--primary)', marginBottom: '1rem' }}>🏥 {t.cardMutuelle}</h3>
+                    <h3 style={{ fontSize: '1.1rem', color: 'var(--primary)', marginBottom: '1rem' }}><ProIcon name="hospital" /> {t.cardMutuelle}</h3>
                     <div className="grid grid-2" style={{ gap: '1rem', fontSize: '0.9rem' }}>
                       <div>
                         <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>{t.mutuelleNameLabel}</div>
@@ -738,7 +739,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
                 </>
               ) : (
                 <div className="card text-left" style={{ padding: '1.5rem' }}>
-                  <h3 style={{ fontSize: '1.1rem', color: 'var(--primary)', marginBottom: '1rem' }}>💼 Renseignements professionnels CSU</h3>
+                  <h3 style={{ fontSize: '1.1rem', color: 'var(--primary)', marginBottom: '1rem' }}><ProIcon name="briefcase" /> Renseignements professionnels CSU</h3>
                   <div className="grid grid-2" style={{ gap: '1rem', fontSize: '0.9rem' }}>
                     <div>
                       <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>{t.agentRole}</div>
@@ -754,7 +755,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
                     </div>
                     <div>
                       <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem', textTransform: 'uppercase' }}>Habilitation CSU</div>
-                      <div style={{ fontWeight: '600', color: 'var(--success)' }}>✓ Valide</div>
+                      <div style={{ fontWeight: '600', color: 'var(--success)' }}><ProIcon name="check" color="#059669" /> Valide</div>
                     </div>
                   </div>
                 </div>
@@ -771,7 +772,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
         <div style={{ marginBottom: '1.75rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
-              <span className="badge badge-info" style={{ marginBottom: '0.5rem' }}>🌐 ARCHITECTURE SÉCURISÉE CSU SÉNÉGAL</span>
+              <span className="badge badge-info" style={{ marginBottom: '0.5rem' }}><ProIcon name="globe" /> ARCHITECTURE SÉCURISÉE CSU SÉNÉGAL</span>
               <h2 style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--text-main)' }}>
                 Niveaux d'accès & points de connexion CSU (13 profils rôles)
               </h2>
@@ -832,7 +833,7 @@ export default function Profile({ lang, portalMode, citizenUser, agentUser, part
                   onClick={() => switchAccessPersona(lvl.id)}
                   style={{ fontSize: '0.72rem', borderColor: lvl.color, color: lvl.color }}
                 >
-                  ⚡ Tester ce profil
+                  <ProIcon name="zap" /> Tester ce profil
                 </button>
               </div>
             </div>

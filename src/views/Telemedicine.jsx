@@ -5,6 +5,7 @@ import { initiatePayment, getProviderInfo, validatePhoneForProvider } from '../s
 import { speakCleanText } from '../services/voiceAudioService';
 import { apiFetch } from '../utils/api';
 import { openSignaling } from '../services/signalingService';
+import ProIcon from '../components/ProIcon';
 
 // Design Premium Haut de Gamme — Télémédecine Visioconférence Bidirectionnelle & Vu-mètre Micro Réel
 
@@ -888,7 +889,7 @@ export default function Telemedicine({
 
   const CAMERA_HELP = {
     denied: {
-      icon: '🚫',
+      icon: <ProIcon name="ban" color="#dc2626" />,
       title: 'Caméra bloquée par le navigateur',
       lines: [
         "1. Cliquez sur l'icône 🔒 ou 🎥 à gauche de l'adresse du site.",
@@ -897,22 +898,22 @@ export default function Telemedicine({
       ]
     },
     notfound: {
-      icon: '📷',
+      icon: <ProIcon name="camera" />,
       title: 'Aucune caméra détectée',
       lines: ["Branchez ou activez votre webcam, puis cliquez sur « Réessayer l'accès caméra »."]
     },
     busy: {
-      icon: '⚙️',
+      icon: <ProIcon name="settings" />,
       title: 'Caméra occupée par une autre application',
       lines: ['Fermez Zoom, Teams ou toute application utilisant la caméra, puis réessayez.']
     },
     insecure: {
-      icon: '🔐',
+      icon: <ProIcon name="lock" />,
       title: 'Connexion non sécurisée (HTTP)',
       lines: ["L'accès caméra exige HTTPS. Ouvrez l'application via http://localhost:5173 ou une adresse https://."]
     },
     error: {
-      icon: '⚠️',
+      icon: <ProIcon name="alert-triangle" color="#d97706" />,
       title: 'Accès matériel impossible',
       lines: ['Réessayez ci-dessous, ou poursuivez la consultation en mode interactif HD.']
     }
@@ -1398,7 +1399,7 @@ export default function Telemedicine({
     if (myQueueEntry.status === 'next' && lastQueueStatusRef.current !== 'next') {
       speakAndToast({
         type: 'warning',
-        icon: '🔔',
+        icon: <ProIcon name="bell" />,
         title: 'Alerte préalable salle d\'attente',
         message: 'Vous êtes le prochain patient. Préparez votre casque, votre micro et votre caméra.',
         speech: `Attention ${activeFirstName} ${activeLastName}. Vous êtes le prochain patient dans la salle d'attente virtuelle. Veuillez préparer votre casque, votre micro et votre caméra. Le médecin va vous recevoir dans un instant.`
@@ -1407,7 +1408,7 @@ export default function Telemedicine({
     } else if (myQueueEntry.status === 'called' && lastQueueStatusRef.current !== 'called') {
       speakAndToast({
         type: 'success',
-        icon: '🏥',
+        icon: <ProIcon name="hospital" />,
         title: "C'est votre tour !",
         message: 'Le médecin vous appelle en visioconférence HD.',
         speech: `${activeFirstName}, c'est votre tour. Le médecin est prêt à vous recevoir. La consultation de télémédecine commence maintenant. Bienvenue.`
@@ -1469,7 +1470,7 @@ export default function Telemedicine({
       setPayStep('form');
       speakAndToast({
         type: 'error',
-        icon: '⚠️',
+        icon: <ProIcon name="alert-triangle" color="#d97706" />,
         title: 'Aucun médecin disponible',
         message: 'Aucun praticien UNAMUSC n\'est actuellement habilité : impossible d\'ouvrir une salle d\'attente. Aucun paiement ne vous sera demandé.',
         speech: 'Aucun médecin agréé n\'est actuellement disponible. Votre demande reste enregistrée sans frais.'
@@ -1513,7 +1514,7 @@ export default function Telemedicine({
       // Toast vocal de confirmation
       speakAndToast({
         type: 'success',
-        icon: '✅',
+        icon: <ProIcon name="check-circle" color="#059669" />,
         title: 'Paiement confirmé !',
         message: `2 500 FCFA réglés via ${providerInfo.name}. Position n°${positionNum}.`,
         speech: `Paiement confirmé. Référence ${result.transactionRef}. Vous êtes en position numéro ${positionNum} dans la salle d'attente.`
@@ -1584,7 +1585,7 @@ export default function Telemedicine({
         setBookingResult(result.data);
         speakAndToast({
           type: 'success',
-          icon: '📅',
+          icon: <ProIcon name="calendar" />,
           title: 'Rendez-vous enregistré',
           message: 'Aucun paiement n\'a été débité. Le règlement se fera sur place.',
           speech: 'Votre rendez-vous est enregistré. Aucun paiement n\'a été effectué. Vous réglerez la consultation sur place, à la structure.'
@@ -1606,7 +1607,7 @@ export default function Telemedicine({
         if (p.status === 'waiting') {
           speakAndToast({
             type: 'warning',
-            icon: '🔔',
+            icon: <ProIcon name="bell" />,
             title: 'Alerte préalable',
             message: 'Vous êtes le prochain patient. Préparez votre micro et votre caméra.',
             speech: `Attention ${activeFirstName}. Vous êtes le prochain patient. Veuillez préparer votre micro et votre caméra. Le médecin va vous recevoir dans un instant.`
@@ -1616,7 +1617,7 @@ export default function Telemedicine({
         if (p.status === 'next') {
           speakAndToast({
             type: 'success',
-            icon: '🏥',
+            icon: <ProIcon name="hospital" />,
             title: "C'est votre tour !",
             message: 'Le médecin est prêt à vous recevoir. La consultation commence maintenant.',
             speech: `${activeFirstName}, c'est votre tour. Le médecin est prêt à vous recevoir. La consultation de télémédecine commence maintenant. Bienvenue.`
@@ -1636,7 +1637,7 @@ export default function Telemedicine({
     if (!chosenDoc) {
       speakAndToast({
         type: 'error',
-        icon: '⚠️',
+        icon: <ProIcon name="alert-triangle" color="#d97706" />,
         title: 'Aucun médecin disponible',
         message: 'Aucun praticien n\'est actuellement habilité. Votre demande reste en attente d\'accréditation.',
         speech: 'Aucun médecin agréé n\'est actuellement disponible sur la plateforme.'
@@ -1757,7 +1758,7 @@ export default function Telemedicine({
 
     speakAndToast({
       type: 'success',
-      icon: '💊',
+      icon: <ProIcon name="pill" />,
       title: 'Ordonnance officielle générée & synchronisée',
       message: `L'ordonnance 50% de ${activeFirstName} ${activeLastName} a été téléchargée et ajoutée à vos Bons de Commande Pharmacie.`
     });
@@ -1814,7 +1815,7 @@ export default function Telemedicine({
 
     speakAndToast({
       type: 'success',
-      icon: '📄',
+      icon: <ProIcon name="file-text" />,
       title: 'Certificat médical délivré & synchronisé',
       message: `Le certificat médical de ${activeFirstName} ${activeLastName} a été généré et la prise en charge a été enregistrée dans vos Lettres de Garantie.`
     });
@@ -1846,7 +1847,7 @@ export default function Telemedicine({
 
     speakAndToast({
       type: 'success',
-      icon: '🧪',
+      icon: <ProIcon name="flask" />,
       title: 'Demande d\u2019examens générée',
       message: `La demande d\u2019examens de ${activeFirstName} ${activeLastName} a été téléchargée (réf. ${labCode}).`
     });
@@ -1972,7 +1973,7 @@ export default function Telemedicine({
               <div className="d-flex align-items-center gap-2 mb-3">
                 <span style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(10px)', color: '#ffffff', padding: '6px 16px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34d399', display: 'inline-block' }} />
-                  🧪 Structure de santé & laboratoire conventionné UNAMUSC 🇸🇳
+                  <ProIcon name="flask" /> Structure de santé & laboratoire conventionné UNAMUSC <ProIcon name="senegal-flag" />
                 </span>
               </div>
 
@@ -1985,10 +1986,10 @@ export default function Telemedicine({
 
               <div className="d-flex align-items-center flex-wrap mt-4" style={{ gap: '28px', rowGap: '16px' }}>
                 <button className="btn fw-bold px-4 py-2.5 text-white" style={{ background: '#047857', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '14px', fontSize: '0.9rem', boxShadow: '0 6px 18px rgba(0,0,0,0.2)', marginRight: '16px', marginBottom: '8px' }} onClick={() => (window.location.hash = '#/medical-profile')}>
-                  🩻 Transmettre des résultats (DMP)
+                  <ProIcon name="scan" /> Transmettre des résultats (DMP)
                 </button>
                 <button className="btn fw-bold px-4 py-2.5 text-white" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '14px', fontSize: '0.9rem', marginLeft: '4px', marginBottom: '8px' }} onClick={() => (window.location.hash = '#/verify')}>
-                  🔍 Vérifier la carte CSU d'un assuré
+                  <ProIcon name="search" /> Vérifier la carte CSU d'un assuré
                 </button>
               </div>
             </div>
@@ -2006,7 +2007,7 @@ export default function Telemedicine({
           <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
             <div>
               <h4 className="fw-extrabold mb-1 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)', fontSize: '1.25rem' }}>
-                <span>📥</span> Prescriptions télé-médicales d'analyses & imagerie en attente
+                <span><ProIcon name="download" /></span> Prescriptions télé-médicales d'analyses & imagerie en attente
               </h4>
               <p className="text-muted small mb-0" style={{ fontSize: '0.88rem' }}>
                 Demandes d'analyses émanant des téléconsultations en direct. Téléversez les rapports PDF certifiés pour libérer la prise en charge Tiers-Payant.
@@ -2032,11 +2033,11 @@ export default function Telemedicine({
                   });
                 }}
               >
-                <span>➕ Prescrire un nouvel examen (Télémédecine)</span>
+                <span><ProIcon name="plus" /> Prescrire un nouvel examen (Télémédecine)</span>
               </button>
 
               <span className="badge bg-warning-subtle text-warning border border-warning px-3 py-2 fw-bold" style={{ borderRadius: '12px', fontSize: '0.82rem' }}>
-                ⏳ Flux Visioconférence Direct
+                <ProIcon name="hourglass" /> Flux Visioconférence Direct
               </span>
             </div>
           </div>
@@ -2058,7 +2059,7 @@ export default function Telemedicine({
                     <td style={{ padding: '1rem' }}>
                       <div className="d-flex align-items-center gap-2.5">
                         <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1.05rem' }}>
-                          👤
+                          <ProIcon name="user" />
                         </div>
                         <div>
                           <strong className="d-block" style={{ fontSize: '0.98rem', color: 'var(--text-main)' }}>{tOrd.patientName}</strong>
@@ -2069,9 +2070,9 @@ export default function Telemedicine({
                       </div>
                     </td>
                     <td style={{ padding: '1rem' }}>
-                      <span className="fw-bold d-block" style={{ fontSize: '0.92rem' }}>👨‍⚕️ {tOrd.doctor}</span>
+                      <span className="fw-bold d-block" style={{ fontSize: '0.92rem' }}><ProIcon name="stethoscope" /> {tOrd.doctor}</span>
                       <span className="badge bg-info-subtle text-info border border-info fw-bold mt-0.5" style={{ fontSize: '0.74rem', padding: '2px 8px', borderRadius: '6px' }}>
-                        🎥 {tOrd.type}
+                        <ProIcon name="video" /> {tOrd.type}
                       </span>
                     </td>
                     <td style={{ padding: '1rem' }}>
@@ -2085,11 +2086,11 @@ export default function Telemedicine({
                     <td style={{ padding: '1rem' }}>
                       {tOrd.status === 'transmis' ? (
                         <span className="badge bg-success text-white px-3 py-1.5 fw-bold" style={{ borderRadius: '10px', fontSize: '0.8rem' }}>
-                          ✅ Transmis & validé
+                          <ProIcon name="check-circle" color="#059669" /> Transmis & validé
                         </span>
                       ) : (
                         <span className="badge bg-warning text-dark px-3 py-1.5 fw-bold" style={{ borderRadius: '10px', fontSize: '0.8rem' }}>
-                          📥 En attente de prélèvement
+                          <ProIcon name="download" /> En attente de prélèvement
                         </span>
                       )}
                     </td>
@@ -2097,7 +2098,7 @@ export default function Telemedicine({
                       <div className="d-flex align-items-center justify-content-end gap-2.5 flex-nowrap">
                         {tOrd.status === 'transmis' ? (
                           <button className="btn btn-sm btn-outline-success fw-bold px-3 py-2" style={{ borderRadius: '10px', fontSize: '0.82rem' }} onClick={() => (window.location.hash = '#/medical-profile')}>
-                            👁 Voir au DMP
+                            <ProIcon name="eye" /> Voir au DMP
                           </button>
                         ) : (
                           <button 
@@ -2105,7 +2106,7 @@ export default function Telemedicine({
                             style={{ background: '#059669', border: 'none', borderRadius: '12px', fontSize: '0.88rem', boxShadow: '0 4px 14px rgba(5,150,105,0.3)' }} 
                             onClick={() => setUploadTeleTarget(tOrd)}
                           >
-                            📤 Transmettre le bilan PDF (DMP)
+                            <ProIcon name="upload" /> Transmettre le bilan PDF (DMP)
                           </button>
                         )}
 
@@ -2127,7 +2128,7 @@ export default function Telemedicine({
                             setIsNewTeleOrder(false);
                           }}
                         >
-                          ✏️ Modifier
+                          <ProIcon name="edit" /> Modifier
                         </button>
 
                         {/* Bouton SUPPRIMER */}
@@ -2145,7 +2146,7 @@ export default function Telemedicine({
                           title="Supprimer la prescription télé-médicale"
                           onClick={() => handleDeleteTeleOrder(tOrd)}
                         >
-                          🗑️ Supprimer
+                          <ProIcon name="trash" /> Supprimer
                         </button>
                       </div>
                     </td>
@@ -2168,7 +2169,7 @@ export default function Telemedicine({
               <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
                 <div className="d-flex align-items-center gap-3">
                   <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 'bold', boxShadow: '0 6px 16px rgba(16, 185, 129, 0.3)' }}>
-                    🧪
+                    <ProIcon name="flask" />
                   </div>
                   <div>
                     <h5 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>
@@ -2186,18 +2187,18 @@ export default function Telemedicine({
               <div className="p-3.5 rounded-4 mb-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
                 <div className="d-flex justify-content-between align-items-center mb-2.5">
                   <div className="d-flex align-items-center gap-2">
-                    <span style={{ fontSize: '1.1rem' }}>👤</span>
+                    <span style={{ fontSize: '1.1rem' }}><ProIcon name="user" /></span>
                     <strong style={{ fontSize: '1.05rem', color: 'var(--text-main)' }}>{uploadTeleTarget.patientName}</strong>
                   </div>
                   <code className="bg-success text-white px-2.5 py-1 rounded-3 fw-bold small">{uploadTeleTarget.cmuNumber}</code>
                 </div>
                 <div className="d-flex flex-column gap-2 mt-2 pt-2.5 border-top" style={{ borderColor: 'var(--border-color)', fontSize: '0.88rem' }}>
                   <div>
-                    <span className="text-muted fw-semibold">📋 Examen prescrit : </span>
+                    <span className="text-muted fw-semibold"><ProIcon name="clipboard-list" /> Examen prescrit : </span>
                     <strong className="text-primary">{uploadTeleTarget.examName}</strong>
                   </div>
                   <div>
-                    <span className="text-muted fw-semibold">👨‍⚕️ Médecin téléconsultant : </span>
+                    <span className="text-muted fw-semibold"><ProIcon name="stethoscope" /> Médecin téléconsultant : </span>
                     <strong style={{ color: 'var(--text-main)' }}>{uploadTeleTarget.doctor}</strong>
                   </div>
                 </div>
@@ -2206,7 +2207,7 @@ export default function Telemedicine({
               {/* File Input Dropzone */}
               <div className="mb-4">
                 <label className="form-label small fw-bold mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}>
-                  📁 Fichier d'analyse certifié (Format PDF) *
+                  <ProIcon name="folder" /> Fichier d'analyse certifié (Format PDF) *
                 </label>
 
                 <div style={{ border: '2px dashed #10b981', borderRadius: '18px', padding: '1.75rem 1.25rem', textAlign: 'center', background: 'rgba(16, 185, 129, 0.04)', transition: 'all 0.2s ease' }}>
@@ -2223,7 +2224,7 @@ export default function Telemedicine({
                   />
                   <label htmlFor="tele-file-upload-input" style={{ cursor: 'pointer', margin: 0, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
                     <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
-                      📄
+                      <ProIcon name="file-text" />
                     </div>
                     <strong className="d-block text-primary" style={{ fontSize: '0.94rem' }}>
                       {uploadTeleFileName ? `✓ Fichier sélectionné : ${uploadTeleFileName}` : 'Cliquez ici pour choisir le document ou glissez-le'}
@@ -2238,7 +2239,7 @@ export default function Telemedicine({
               {/* Biologist / Doctor Conclusions */}
               <div className="mb-4">
                 <label className="form-label small fw-bold mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}>
-                  📝 Note & conclusions du biologiste / médecin ({partnerUser?.structureName || 'Laboratoire / Établissement agréé'})
+                  <ProIcon name="edit" /> Note & conclusions du biologiste / médecin ({partnerUser?.structureName || 'Laboratoire / Établissement agréé'})
                 </label>
                 <textarea 
                   className="form-control py-2.5 px-3" 
@@ -2265,7 +2266,7 @@ export default function Telemedicine({
                   className="btn px-4.5 py-2.5 fw-bold text-white" 
                   style={{ background: '#059669', border: 'none', borderRadius: '12px', fontSize: '0.9rem', boxShadow: '0 4px 14px rgba(5,150,105,0.3)' }}
                 >
-                  ✅ Publier directement au dossier médical (DMP)
+                  <ProIcon name="check-circle" color="#059669" /> Publier directement au dossier médical (DMP)
                 </button>
               </div>
             </form>
@@ -2284,7 +2285,7 @@ export default function Telemedicine({
               <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
                 <div className="d-flex align-items-center gap-3">
                   <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 'bold' }}>
-                    📱
+                    <ProIcon name="smartphone" />
                   </div>
                   <div>
                     <h5 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>
@@ -2374,8 +2375,8 @@ export default function Telemedicine({
                     value={editingTeleOrder.status || 'pending'}
                     onChange={(e) => setEditingTeleOrder({ ...editingTeleOrder, status: e.target.value })}
                   >
-                    <option value="pending">📥 En attente de prélèvement</option>
-                    <option value="transmis">✅ Transmis & validé</option>
+                    <option value="pending">En attente de prélèvement</option>
+                    <option value="transmis">Transmis & validé</option>
                   </select>
                 </div>
               </div>
@@ -2394,7 +2395,7 @@ export default function Telemedicine({
                   className="btn px-4.5 py-2.5 fw-bold text-white" 
                   style={{ background: '#059669', border: 'none', borderRadius: '12px', fontSize: '0.9rem', boxShadow: '0 4px 14px rgba(5,150,105,0.3)' }}
                 >
-                  💾 Enregistrer la prescription
+                  <ProIcon name="save" /> Enregistrer la prescription
                 </button>
               </div>
 
@@ -2416,7 +2417,7 @@ export default function Telemedicine({
               <div 
                 style={{ width: '72px', height: '72px', borderRadius: '24px', background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.35) 100%)', border: '2px solid #ef4444', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.2rem', margin: '0 auto 1.25rem auto', boxShadow: '0 10px 25px rgba(239, 68, 68, 0.3)' }}
               >
-                🗑️
+                <ProIcon name="trash" />
               </div>
 
               <h4 className="fw-extrabold mb-2" style={{ color: 'var(--text-main)', fontSize: '1.25rem' }}>
@@ -2448,7 +2449,7 @@ export default function Telemedicine({
                     setConfirmDeleteObj(null);
                   }}
                 >
-                  🗑️ Supprimer définitivement
+                  <ProIcon name="trash" /> Supprimer définitivement
                 </button>
               </div>
             </div>
@@ -2480,7 +2481,7 @@ export default function Telemedicine({
               <div className="d-flex align-items-center gap-2 mb-3">
                 <span style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(10px)', color: '#ffffff', padding: '6px 16px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34d399', display: 'inline-block' }} />
-                  Pharmacien agréé UNAMUSC 🇸🇳
+                  Pharmacien agréé UNAMUSC <ProIcon name="senegal-flag" />
                 </span>
               </div>
 
@@ -2493,10 +2494,10 @@ export default function Telemedicine({
 
               <div className="d-flex align-items-center flex-wrap mt-4" style={{ gap: '28px', rowGap: '16px' }}>
                 <button className="btn fw-bold px-4 py-2.5 text-white" style={{ background: '#047857', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '14px', fontSize: '0.9rem', boxShadow: '0 6px 18px rgba(0,0,0,0.2)', marginRight: '16px', marginBottom: '8px' }} onClick={() => (window.location.hash = '#/purchase-orders')}>
-                  💊 Accéder au guichet des bons de commande
+                  <ProIcon name="pill" /> Accéder au guichet des bons de commande
                 </button>
                 <button className="btn fw-bold px-4 py-2.5 text-white" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '14px', fontSize: '0.9rem', marginLeft: '4px', marginBottom: '8px' }} onClick={() => (window.location.hash = '#/verify')}>
-                  🔍 Vérifier la carte CSU d'un assuré
+                  <ProIcon name="search" /> Vérifier la carte CSU d'un assuré
                 </button>
               </div>
             </div>
@@ -2535,7 +2536,7 @@ export default function Telemedicine({
                   fontSize: '1.5rem',
                   boxShadow: '0 8px 20px rgba(16, 185, 129, 0.2)'
                 }}>
-                  💻
+                  <ProIcon name="laptop" />
                 </div>
                 <div>
                   <h5 className="fw-bold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.1rem', letterSpacing: '-0.01em', textTransform: 'none' }}>
@@ -2555,21 +2556,21 @@ export default function Telemedicine({
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div className="p-3.5 rounded-3 d-flex align-items-center justify-content-between" style={{ background: 'var(--bg-card-subtle)', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
                   <div className="d-flex align-items-center gap-2.5">
-                    <span style={{ fontSize: '1.1rem' }}>💊</span>
+                    <span style={{ fontSize: '1.1rem' }}><ProIcon name="pill" /></span>
                     <span style={{ color: 'var(--text-main)', fontSize: '0.88rem', fontWeight: 600 }}>Traitement des ordonnances électroniques</span>
                   </div>
                   <span className="badge bg-success-subtle text-success border border-success px-3 py-1.5 fw-bold" style={{ borderRadius: '10px', fontSize: '0.78rem' }}>
-                    🟢 Disponible (100%)
+                    <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Disponible (100%)
                   </span>
                 </div>
 
                 <div className="p-3.5 rounded-3 d-flex align-items-center justify-content-between" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
                   <div className="d-flex align-items-center gap-2.5">
-                    <span style={{ fontSize: '1.1rem' }}>📹</span>
+                    <span style={{ fontSize: '1.1rem' }}><ProIcon name="video" /></span>
                     <span style={{ color: 'var(--text-main)', fontSize: '0.88rem', fontWeight: 600 }}>Session vidéo médecin-patient</span>
                   </div>
                   <span className="badge bg-secondary-subtle text-secondary border border-secondary px-3 py-1.5 fw-bold" style={{ borderRadius: '10px', fontSize: '0.78rem' }}>
-                    🔴 Non concerné
+                    <ProIcon name="status-red" color="#ef4444" fill="#ef4444" size={10} /> Non concerné
                   </span>
                 </div>
               </div>
@@ -2592,10 +2593,10 @@ export default function Telemedicine({
                 >
                   <div className="d-flex align-items-start justify-content-between mb-3">
                     <div style={{ width: '50px', height: '50px', borderRadius: '16px', background: 'linear-gradient(135deg, #059669, #10b981)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', boxShadow: '0 6px 18px rgba(5,150,105,0.4)' }}>
-                      💊
+                      <ProIcon name="pill" />
                     </div>
                     <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', fontSize: '0.74rem', fontWeight: 700, padding: '5px 12px', borderRadius: '10px', border: '1px solid rgba(16, 185, 129, 0.35)' }}>
-                      Guichet principal ➔
+                      Guichet principal <ProIcon name="arrow-right" />
                     </span>
                   </div>
                   <strong className="d-block mb-1" style={{ color: 'var(--text-main)', fontSize: '1.05rem', letterSpacing: '-0.01em', textTransform: 'none' }}>
@@ -2619,10 +2620,10 @@ export default function Telemedicine({
                 >
                   <div className="d-flex align-items-start justify-content-between mb-3">
                     <div style={{ width: '50px', height: '50px', borderRadius: '16px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', border: '1.5px solid rgba(16, 185, 129, 0.35)' }}>
-                      🔍
+                      <ProIcon name="search" />
                     </div>
                     <span className="text-muted" style={{ fontSize: '0.74rem', fontWeight: 600 }}>
-                      Contrôle CSU ➔
+                      Contrôle CSU <ProIcon name="arrow-right" />
                     </span>
                   </div>
                   <strong className="d-block mb-1" style={{ color: 'var(--text-main)', fontSize: '1.05rem', letterSpacing: '-0.01em', textTransform: 'none' }}>
@@ -2646,10 +2647,10 @@ export default function Telemedicine({
                 >
                   <div className="d-flex align-items-start justify-content-between mb-3">
                     <div style={{ width: '50px', height: '50px', borderRadius: '16px', background: 'rgba(2, 132, 199, 0.15)', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', border: '1.5px solid rgba(2, 132, 199, 0.35)' }}>
-                      🏥
+                      <ProIcon name="hospital" />
                     </div>
                     <span className="text-muted" style={{ fontSize: '0.74rem', fontWeight: 600 }}>
-                      Réseau officines ➔
+                      Réseau officines <ProIcon name="arrow-right" />
                     </span>
                   </div>
                   <strong className="d-block mb-1" style={{ color: 'var(--text-main)', fontSize: '1.05rem', letterSpacing: '-0.01em', textTransform: 'none' }}>
@@ -2673,10 +2674,10 @@ export default function Telemedicine({
                 >
                   <div className="d-flex align-items-start justify-content-between mb-3">
                     <div style={{ width: '50px', height: '50px', borderRadius: '16px', background: 'rgba(217, 119, 6, 0.15)', color: '#d97706', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', border: '1.5px solid rgba(217, 119, 6, 0.35)' }}>
-                      📊
+                      <ProIcon name="bar-chart" />
                     </div>
                     <span className="text-muted" style={{ fontSize: '0.74rem', fontWeight: 600 }}>
-                      Facturation UNAMUSC ➔
+                      Facturation UNAMUSC <ProIcon name="arrow-right" />
                     </span>
                   </div>
                   <strong className="d-block mb-1" style={{ color: 'var(--text-main)', fontSize: '1.05rem', letterSpacing: '-0.01em', textTransform: 'none' }}>
@@ -2700,10 +2701,10 @@ export default function Telemedicine({
         <div style={{ maxWidth: '850px', margin: '0 auto' }}>
           <div className="card shadow-lg border-0 p-4 p-md-5 text-center my-4" style={{ borderRadius: '24px', background: 'var(--bg-card)', color: 'var(--text-main)', border: '2px solid #ef4444' }}>
             <div className="d-inline-flex align-items-center justify-content-center p-3 rounded-circle mb-3 mx-auto" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', width: '70px', height: '70px' }}>
-              <span style={{ fontSize: '2.2rem' }}>⚠️</span>
+              <span style={{ fontSize: '2.2rem' }}><ProIcon name="alert-triangle" color="#d97706" /></span>
             </div>
             
-            <h3 className="fw-bold mb-2 text-danger" style={{ fontSize: '1.4rem' }}>⚠️ Accès aux soins refusé — Couverture CSU suspendue</h3>
+            <h3 className="fw-bold mb-2 text-danger" style={{ fontSize: '1.4rem' }}><ProIcon name="alert-triangle" color="#d97706" /> Accès aux soins refusé — Couverture CSU suspendue</h3>
             
             <div className="mb-3">
               <code className="px-3 py-1.5 bg-dark text-warning border border-warning rounded-3 fw-bold d-inline-block" style={{ fontSize: '1.05rem', color: '#f59e0b' }}>
@@ -2734,7 +2735,7 @@ export default function Telemedicine({
                   window.location.hash = '#payments';
                 }}
               >
-                💳 Renouveler ma cotisation (10 500 FCFA)
+                <ProIcon name="credit-card" /> Renouveler ma cotisation (10 500 FCFA)
               </button>
             </div>
           </div>
@@ -2754,7 +2755,7 @@ export default function Telemedicine({
       
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
             <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: activeRoleMode === 'doctor' ? 'linear-gradient(135deg, #059669, #10b981)' : 'linear-gradient(135deg, #0284c7, #38bdf8)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.25rem', color: '#ffffff', boxShadow: activeRoleMode === 'doctor' ? '0 4px 12px rgba(16,185,129,0.35)' : '0 4px 12px rgba(2,132,199,0.35)' }}>
-              {activeRoleMode === 'doctor' ? '👨‍⚕️' : '🩺'}
+              {activeRoleMode === 'doctor' ? <ProIcon name="stethoscope" /> : <ProIcon name="stethoscope" />}
             </div>
             <div>
               <h5 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.05rem', lineHeight: '1.2' }}>
@@ -2788,7 +2789,7 @@ export default function Telemedicine({
                 }}
                 onClick={() => setAdminRoleMode('doctor')}
               >
-                <span>👨‍⚕️</span> Vue Praticien (SuperAdmin)
+                <span><ProIcon name="stethoscope" /></span> Vue Praticien (SuperAdmin)
               </button>
               <button
                 type="button"
@@ -2807,7 +2808,7 @@ export default function Telemedicine({
                 }}
                 onClick={() => setAdminRoleMode('citizen')}
               >
-                <span>👤</span> Vue Assuré (SuperAdmin)
+                <span><ProIcon name="user" /></span> Vue Assuré (SuperAdmin)
               </button>
               <button
                 type="button"
@@ -2826,7 +2827,7 @@ export default function Telemedicine({
                 }}
                 onClick={() => setAdminRoleMode('agent')}
               >
-                <span>🛡️</span> Vue Agent (SuperAdmin)
+                <span><ProIcon name="shield-check" /></span> Vue Agent (SuperAdmin)
               </button>
             </div>
           ) : (
@@ -2835,14 +2836,14 @@ export default function Telemedicine({
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', background: 'rgba(5, 150, 105, 0.15)', border: '1px solid #10b981', padding: '0.5rem 1.1rem', borderRadius: '14px' }}>
                   <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: '#34d399', boxShadow: '0 0 10px #34d399', display: 'inline-block' }} />
                   <span style={{ color: '#34d399', fontWeight: '800', fontSize: '0.85rem' }}>
-                    👨‍⚕️ Praticien de Garde Agréé
+                    <ProIcon name="stethoscope" /> Praticien de Garde Agréé
                   </span>
                 </div>
               ) : (
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', background: 'rgba(2, 132, 199, 0.15)', border: '1px solid #0284c7', padding: '0.5rem 1.1rem', borderRadius: '14px' }}>
                   <span style={{ width: '9px', height: '9px', borderRadius: '50%', background: '#38bdf8', boxShadow: '0 0 10px #38bdf8', display: 'inline-block' }} />
                   <span style={{ color: '#38bdf8', fontWeight: '800', fontSize: '0.85rem' }}>
-                    👤 Espace Assuré CSU (Tiers-Payant 80%)
+                    <ProIcon name="user" /> Espace Assuré CSU (Tiers-Payant 80%)
                   </span>
                 </div>
               )}
@@ -2890,7 +2891,7 @@ export default function Telemedicine({
               <div>
                 <div className="d-flex align-items-center gap-2 mb-1 flex-wrap">
                   <span className="badge" style={{ background: '#10b981', color: '#ffffff', padding: '0.35rem 0.75rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '800' }}>
-                    🟢 PRATICIEN AGRÉÉ EN LIGNE
+                    <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> PRATICIEN AGRÉÉ EN LIGNE
                   </span>
                   <span className="badge" style={{ background: 'rgba(255,255,255,0.15)', color: '#f8fafc', padding: '0.35rem 0.75rem', borderRadius: '12px', fontSize: '0.75rem', border: '1px solid rgba(255,255,255,0.2)' }}>
                     {doctorsList.find(d => d.id === selectedDoctorId)?.cnom || 'Non renseigné'}
@@ -2957,7 +2958,7 @@ export default function Telemedicine({
                   }}
                   onClick={() => setPractitionerAvailability('available')}
                 >
-                  🟢 Disponible
+                  <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Disponible
                 </button>
                 <button
                   type="button"
@@ -2974,7 +2975,7 @@ export default function Telemedicine({
                   }}
                   onClick={() => setPractitionerAvailability('in_call')}
                 >
-                  🟡 En appel
+                  <ProIcon name="status-amber" color="#f59e0b" fill="#f59e0b" size={10} /> En appel
                 </button>
                 <button
                   type="button"
@@ -2991,7 +2992,7 @@ export default function Telemedicine({
                   }}
                   onClick={() => setPractitionerAvailability('away')}
                 >
-                  🔴 Pause
+                  <ProIcon name="status-red" color="#ef4444" fill="#ef4444" size={10} /> Pause
                 </button>
               </div>
             </div>
@@ -3005,7 +3006,7 @@ export default function Telemedicine({
             <div style={{ background: '#0b1120', border: '1.5px solid #10b981', borderRadius: '18px', padding: '1.25rem', color: '#ffffff', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}>
               <div className="d-flex justify-content-between align-items-center mb-1">
                 <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: '700' }}>Patients en attente</span>
-                <span style={{ fontSize: '1.3rem' }}>👥</span>
+                <span style={{ fontSize: '1.3rem' }}><ProIcon name="users" /></span>
               </div>
               <h3 className="fw-extrabold mb-0" style={{ color: '#34d399', fontSize: '1.8rem' }}>{queue.length}</h3>
               <small style={{ color: '#94a3b8', fontSize: '0.75rem' }}>Prêts pour téléconsultation</small>
@@ -3016,7 +3017,7 @@ export default function Telemedicine({
             <div style={{ background: '#0b1120', border: '1.5px solid #1e293b', borderRadius: '18px', padding: '1.25rem', color: '#ffffff', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}>
               <div className="d-flex justify-content-between align-items-center mb-1">
                 <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: '700' }}>Temps moyen</span>
-                <span style={{ fontSize: '1.3rem' }}>⏱️</span>
+                <span style={{ fontSize: '1.3rem' }}><ProIcon name="clock" /></span>
               </div>
               <h3 className="fw-extrabold mb-0" style={{ color: '#38bdf8', fontSize: '1.8rem' }}>~4 min</h3>
               <small style={{ color: '#94a3b8', fontSize: '0.75rem' }}>Par consultation HD</small>
@@ -3027,7 +3028,7 @@ export default function Telemedicine({
             <div style={{ background: '#0b1120', border: '1.5px solid #1e293b', borderRadius: '18px', padding: '1.25rem', color: '#ffffff', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}>
               <div className="d-flex justify-content-between align-items-center mb-1">
                 <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: '700' }}>Actes Réalisés</span>
-                <span style={{ fontSize: '1.3rem' }}>✅</span>
+                <span style={{ fontSize: '1.3rem' }}><ProIcon name="check-circle" color="#059669" /></span>
               </div>
               <h3 className="fw-extrabold mb-0" style={{ color: '#a78bfa', fontSize: '1.8rem' }}>8</h3>
               <small style={{ color: '#94a3b8', fontSize: '0.75rem' }}>Téléconsultations du jour</small>
@@ -3038,7 +3039,7 @@ export default function Telemedicine({
             <div style={{ background: '#0b1120', border: '1.5px solid #1e293b', borderRadius: '18px', padding: '1.25rem', color: '#ffffff', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}>
               <div className="d-flex justify-content-between align-items-center mb-1">
                 <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: '700' }}>Honoraires Tiers-Payant</span>
-                <span style={{ fontSize: '1.3rem' }}>💰</span>
+                <span style={{ fontSize: '1.3rem' }}><ProIcon name="wallet" /></span>
               </div>
               <h3 className="fw-extrabold mb-0" style={{ color: '#fde047', fontSize: '1.6rem' }}>85 000 F</h3>
               <small style={{ color: '#94a3b8', fontSize: '0.75rem' }}>Garantie 100% UNAMUSC</small>
@@ -3052,7 +3053,7 @@ export default function Telemedicine({
           <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
             <div>
               <h5 className="fw-extrabold mb-1 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)', fontSize: '1.2rem' }}>
-                <span>🏥</span> Salle d'Attente Virtuelle — Patients en Attente ({queue.length})
+                <span><ProIcon name="hospital" /></span> Salle d'Attente Virtuelle — Patients en Attente ({queue.length})
               </h5>
               <p className="mb-0 text-muted small">
                 Cliquez sur <strong>« Recevoir &amp; Appeler »</strong> pour démarrer la visioconférence HD avec l'assuré et ouvrir son dossier clinique.
@@ -3077,13 +3078,13 @@ export default function Telemedicine({
                   setQueue([samplePatient, ...queue]);
                   speakAndToast({
                     type: 'info',
-                    icon: '🔔',
+                    icon: <ProIcon name="bell" />,
                     title: 'Nouveau patient en salle d\'attente',
                     message: 'Mamadou Diop vient d\'entrer en salle d\'attente pour une téléconsultation.'
                   });
                 }}
               >
-                ➕ Simuler Arrivée d'un Assuré
+                <ProIcon name="plus" /> Simuler Arrivée d'un Assuré
               </button>
             </div>
           </div>
@@ -3137,7 +3138,7 @@ export default function Telemedicine({
                           {p.patient_name}
                         </div>
                         <div style={{ color: '#10b981', fontSize: '0.75rem', fontWeight: '700' }}>
-                          ✔ Couverture CSU 80% Validée
+                          <ProIcon name="check" color="#059669" /> Couverture CSU 80% Validée
                         </div>
                       </td>
 
@@ -3149,29 +3150,29 @@ export default function Telemedicine({
 
                       <td style={{ padding: '1rem 0.85rem', maxWidth: '240px' }}>
                         <div style={{ background: '#0b1120', color: '#f8fafc', padding: '0.45rem 0.85rem', borderRadius: '10px', border: '1px solid #1e293b', fontSize: '0.82rem', lineHeight: '1.4' }}>
-                          🩺 {p.reason}
+                          <ProIcon name="stethoscope" /> {p.reason}
                         </div>
                       </td>
 
                       <td style={{ padding: '1rem 0.85rem' }}>
                         <span className="fw-semibold" style={{ color: 'var(--text-sub)', fontSize: '0.85rem' }}>
-                          🕒 {p.joined_at}
+                          <ProIcon name="clock" /> {p.joined_at}
                         </span>
                       </td>
 
                       <td style={{ padding: '1rem 0.85rem' }}>
                         <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '0.35rem 0.75rem', borderRadius: '12px', fontSize: '0.78rem', fontWeight: '700', display: 'inline-block' }}>
-                          ✅ Réglé (2 500 F)
+                          <ProIcon name="check-circle" color="#059669" /> Réglé (2 500 F)
                         </span>
                       </td>
 
                       <td style={{ padding: '1rem 0.85rem' }}>
                         {p.status === 'called' ? (
-                          <span className="badge bg-success text-white px-3 py-1.5" style={{ borderRadius: '12px', fontSize: '0.78rem' }}>🟢 En appel</span>
+                          <span className="badge bg-success text-white px-3 py-1.5" style={{ borderRadius: '12px', fontSize: '0.78rem' }}><ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> En appel</span>
                         ) : p.status === 'next' ? (
-                          <span className="badge bg-warning text-dark px-3 py-1.5" style={{ borderRadius: '12px', fontSize: '0.78rem' }}>🔔 Notifié</span>
+                          <span className="badge bg-warning text-dark px-3 py-1.5" style={{ borderRadius: '12px', fontSize: '0.78rem' }}><ProIcon name="bell" /> Notifié</span>
                         ) : (
-                          <span className="badge bg-secondary text-white px-3 py-1.5" style={{ borderRadius: '12px', fontSize: '0.78rem' }}>⏳ En attente</span>
+                          <span className="badge bg-secondary text-white px-3 py-1.5" style={{ borderRadius: '12px', fontSize: '0.78rem' }}><ProIcon name="hourglass" /> En attente</span>
                         )}
                       </td>
 
@@ -3185,7 +3186,7 @@ export default function Telemedicine({
                             onClick={() => setSelectedPatientForRecord(p)}
                             title="Consulter le dossier médical CSU"
                           >
-                            📋 Dossier
+                            <ProIcon name="clipboard-list" /> Dossier
                           </button>
 
                           {/* Bouton Notifier */}
@@ -3196,7 +3197,7 @@ export default function Telemedicine({
                               setQueue(queue.map(item => item.id === p.id ? { ...item, status: 'next' } : item));
                               speakAndToast({
                                 type: 'warning',
-                                icon: '🔔',
+                                icon: <ProIcon name="bell" />,
                                 title: 'Patient notifié',
                                 message: `${p.patient_name} a été prévenu(e) que la consultation va démarrer.`,
                                 speech: `${p.patient_name}, c'est bientôt votre tour. Veuillez allumer votre micro et caméra. Le médecin va vous recevoir.`
@@ -3204,7 +3205,7 @@ export default function Telemedicine({
                             }}
                             title="Prévenir le patient que son tour arrive"
                           >
-                            🔔 Prévenir
+                            <ProIcon name="bell" /> Prévenir
                           </button>
                           
                           {/* Bouton Recevoir en consultation HD */}
@@ -3218,7 +3219,7 @@ export default function Telemedicine({
                             }}
                             title="Démarrer la consultation vidéo HD avec le patient"
                           >
-                            🎥 Recevoir &amp; Appeler
+                            <ProIcon name="video" /> Recevoir &amp; Appeler
                           </button>
                         </div>
                       </td>
@@ -3236,7 +3237,7 @@ export default function Telemedicine({
           <div className="col-md-6">
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '20px', padding: '1.5rem', height: '100%' }}>
               <h6 className="fw-bold mb-2 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-                <span>💊</span> Générateur d'Ordonnance Médicale Numérique (50% Tiers-Payant)
+                <span><ProIcon name="pill" /></span> Générateur d'Ordonnance Médicale Numérique (50% Tiers-Payant)
               </h6>
               <p className="small mb-3" style={{ color: 'var(--text-sub)' }}>
                 Émettez une ordonnance sécurisée avec votre cachet électronique et N° CNOM. L'assuré la recevra instantanément avec QR code agréé.
@@ -3246,7 +3247,7 @@ export default function Telemedicine({
                 style={{ background: '#059669', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.65rem 1.25rem', fontWeight: '800', fontSize: '0.85rem', cursor: 'pointer' }}
                 onClick={handleDownloadPrescription}
               >
-                📄 Télécharger Modèle d'Ordonnance Signée (PDF)
+                <ProIcon name="file-text" /> Télécharger Modèle d'Ordonnance Signée (PDF)
               </button>
             </div>
           </div>
@@ -3254,7 +3255,7 @@ export default function Telemedicine({
           <div className="col-md-6">
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '20px', padding: '1.5rem', height: '100%' }}>
               <h6 className="fw-bold mb-2 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-                <span>📄</span> Certificat Médical &amp; Arrêt de Travail
+                <span><ProIcon name="file-text" /></span> Certificat Médical &amp; Arrêt de Travail
               </h6>
               <p className="small mb-3" style={{ color: 'var(--text-sub)' }}>
                 Délivrez des attestations de repos ou certificats de constatation clinique officiels conformes au barème national.
@@ -3264,7 +3265,7 @@ export default function Telemedicine({
                 style={{ background: '#0284c7', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.65rem 1.25rem', fontWeight: '800', fontSize: '0.85rem', cursor: 'pointer' }}
                 onClick={handleDownloadCertificate}
               >
-                📥 Émettre Certificat Médical Officiel (PDF)
+                <ProIcon name="download" /> Émettre Certificat Médical Officiel (PDF)
               </button>
             </div>
           </div>
@@ -3292,12 +3293,12 @@ export default function Telemedicine({
           <div className="d-flex justify-content-between align-items-center flex-wrap" style={{ gap: '1.5rem', rowGap: '1.25rem' }}>
             <div className="d-flex align-items-center" style={{ gap: '1.25rem' }}>
               <div style={{ width: '60px', height: '60px', borderRadius: '18px', background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.75rem', color: '#ffffff', boxShadow: '0 6px 16px rgba(2, 132, 199, 0.35)', flexShrink: 0 }}>
-                👤
+                <ProIcon name="user" />
               </div>
               <div>
                 <div className="d-flex align-items-center gap-2 mb-1.5 flex-wrap">
                   <span className="badge bg-success text-white px-3 py-1" style={{ borderRadius: '20px', fontSize: '0.75rem', fontWeight: '800', letterSpacing: '0.03em' }}>
-                    ✔ ASSURÉ CSU CONNECTÉ
+                    <ProIcon name="check" color="#059669" /> ASSURÉ CSU CONNECTÉ
                   </span>
                   <code style={{ background: '#0b1120', color: '#38bdf8', padding: '0.25rem 0.65rem', borderRadius: '8px', fontSize: '0.8rem', border: '1px solid rgba(56, 189, 248, 0.3)' }}>
                     {activeCmuNumber}
@@ -3333,7 +3334,7 @@ export default function Telemedicine({
                 }}
                 onClick={() => setActiveModal('join_queue')}
               >
-                <span style={{ fontSize: '1.1rem' }}>⚡</span> Entrer en salle d'attente (2 500 FCFA)
+                <span style={{ fontSize: '1.1rem' }}><ProIcon name="zap" /></span> Entrer en salle d'attente (2 500 FCFA)
               </button>
               <button
                 type="button"
@@ -3355,7 +3356,7 @@ export default function Telemedicine({
                 }}
                 onClick={() => setActiveModal('qr')}
               >
-                <span style={{ fontSize: '1.1rem' }}>📲</span> Mon Pass CSU
+                <span style={{ fontSize: '1.1rem' }}><ProIcon name="smartphone" /></span> Mon Pass CSU
               </button>
             </div>
           </div>
@@ -3378,7 +3379,7 @@ export default function Telemedicine({
                 <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
                   <div>
                     <span className="badge bg-success text-white fw-bold px-3 py-1.5 mb-2 d-inline-block" style={{ borderRadius: '20px', fontSize: '0.8rem' }}>
-                      🟢 EN SALLE D'ATTENTE VIRTUELLE (RÈGLEMENT CONFIRMÉ)
+                      <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> EN SALLE D'ATTENTE VIRTUELLE (RÈGLEMENT CONFIRMÉ)
                     </span>
                     <h4 className="fw-extrabold mb-1 text-white">
                       Vous êtes à la Position <span className="text-warning">n°{positionInQueue}</span> dans l'ordre de passage
@@ -3404,7 +3405,7 @@ export default function Telemedicine({
                       style={{ borderRadius: '12px', fontSize: '0.88rem', cursor: 'not-allowed' }}
                       disabled
                     >
-                      ⏳ En attente de votre tour (Position n°{positionInQueue})
+                      <ProIcon name="hourglass" /> En attente de votre tour (Position n°{positionInQueue})
                     </button>
                     <button
                       type="button"
@@ -3426,10 +3427,10 @@ export default function Telemedicine({
                 <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
                   <div>
                     <span className="fw-extrabold px-3 py-1.5 mb-2 d-inline-block" style={{ background: 'rgba(245,158,11,0.2)', color: '#fbbf24', border: '1px solid #f59e0b', borderRadius: '20px', fontSize: '0.82rem' }}>
-                      🔔 ALERTE : VOUS ÊTES LE PROCHAIN PATIENT !
+                      <ProIcon name="bell" /> ALERTE : VOUS ÊTES LE PROCHAIN PATIENT !
                     </span>
                     <h4 className="fw-extrabold mb-1 text-white">
-                      Préparez votre micro et votre caméra 📹
+                      Préparez votre micro et votre caméra <ProIcon name="video" />
                     </h4>
                     <p className="mb-0 text-white-50 small">
                       Le <strong>{myItem.requested_doctor}</strong> termine sa consultation précédente et va vous recevoir d'un instant à l'autre.
@@ -3442,7 +3443,7 @@ export default function Telemedicine({
                       style={{ background: '#f59e0b', color: '#000000', border: 'none', borderRadius: '12px', padding: '0.75rem 1.4rem', fontWeight: '900', fontSize: '0.88rem', cursor: 'pointer', boxShadow: '0 4px 15px rgba(245,158,11,0.4)' }}
                       onClick={() => handleAdvanceMyQueue(myItem.id)}
                     >
-                      📞 Simuler l'Appel du Médecin
+                      <ProIcon name="phone" /> Simuler l'Appel du Médecin
                     </button>
                   </div>
                 </div>
@@ -3456,7 +3457,7 @@ export default function Telemedicine({
               <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div>
                   <span className="fw-extrabold px-3 py-1.5 mb-2 d-inline-block" style={{ background: 'rgba(16,185,129,0.25)', color: '#34d399', border: '1px solid #10b981', borderRadius: '20px', fontSize: '0.85rem' }}>
-                    🔔 C'EST VOTRE TOUR ! LE MÉDECIN VOUS APPELLE
+                    <ProIcon name="bell" /> C'EST VOTRE TOUR ! LE MÉDECIN VOUS APPELLE
                   </span>
                   <h4 className="fw-extrabold mb-1 text-white">
                     Le {myItem.requested_doctor} vous attend en Salle de Téléconsultation HD
@@ -3484,7 +3485,7 @@ export default function Telemedicine({
                   }}
                   onClick={() => handleStartCall(doctorsList.find(d => d.name === myItem.requested_doctor) || doctorsList[0])}
                 >
-                  <span>📞</span> Rejoindre la Consultation Vidéo HD ›
+                  <span><ProIcon name="phone" /></span> Rejoindre la Consultation Vidéo HD ›
                 </button>
               </div>
             </div>
@@ -3496,7 +3497,7 @@ export default function Telemedicine({
           <div className="row align-items-center g-4">
             <div className="col-xxl-8 col-12">
               <span style={{ background: 'rgba(255, 255, 255, 0.25)', color: '#ffffff', padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '700', display: 'inline-block', marginBottom: '0.85rem', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.4)' }}>
-                🇸🇳 SALLE D'ATTENTE VIRTUELLE UNAMUSC
+                <ProIcon name="senegal-flag" /> SALLE D'ATTENTE VIRTUELLE UNAMUSC
               </span>
               <h1 className="fw-extrabold text-white mb-2" style={{ fontSize: '2.3rem', letterSpacing: '-0.02em', textShadow: '0 3px 8px rgba(0,0,0,0.4)' }}>
                 Consultez un médecin en moins de 10 min
@@ -3510,7 +3511,7 @@ export default function Telemedicine({
                 style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '14px', padding: '0.85rem 1.85rem', fontWeight: '800', fontSize: '0.98rem', boxShadow: '0 4px 20px rgba(16,185,129,0.45)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.6rem' }}
                 onClick={() => setActiveModal('join_queue')}
               >
-                ⚡ Entrer en salle d'attente (2 500 FCFA)
+                <ProIcon name="zap" /> Entrer en salle d'attente (2 500 FCFA)
               </button>
             </div>
 
@@ -3564,7 +3565,7 @@ export default function Telemedicine({
                   ))}
                 </div>
                 <small className="text-white-50 d-block mt-2" style={{ fontSize: '0.8rem' }}>
-                  Temps d'attente moyen : <strong className="text-warning">⚡ 4 min</strong>
+                  Temps d'attente moyen : <strong className="text-warning"><ProIcon name="zap" /> 4 min</strong>
                 </small>
               </div>
             </div>
@@ -3576,7 +3577,7 @@ export default function Telemedicine({
           <div className="col-xxl-8 col-12">
             <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
               <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>
-                👨‍⚕️ Choisissez votre Praticien Agréé
+                <ProIcon name="stethoscope" /> Choisissez votre Praticien Agréé
               </h5>
               
               {/* Filtres & Recherche */}
@@ -3655,7 +3656,7 @@ export default function Telemedicine({
                         </span>
                         {doc.langs.map((l, idx) => (
                           <span key={idx} style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', padding: '0.2rem 0.5rem', borderRadius: '6px', fontSize: '0.72rem', fontWeight: '600' }}>
-                            🌐 {l}
+                            <ProIcon name="globe" /> {l}
                           </span>
                         ))}
                       </div>
@@ -3669,7 +3670,7 @@ export default function Telemedicine({
                         setActiveModal('join_queue');
                       }}
                     >
-                      🏥 Entrer en salle d'attente (2 500 FCFA) ›
+                      <ProIcon name="hospital" /> Entrer en salle d'attente (2 500 FCFA) ›
                     </button>
                   </div>
                 </div>
@@ -3688,7 +3689,7 @@ export default function Telemedicine({
               {/* Ordonnances */}
               <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
                 <div className="d-flex align-items-center gap-2 mb-2 text-success">
-                  <span style={{ fontSize: '1.3rem' }}>💊</span>
+                  <span style={{ fontSize: '1.3rem' }}><ProIcon name="pill" /></span>
                   <h6 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>Mes Ordonnances Digitales</h6>
                 </div>
                 <p className="small mb-3" style={{ color: 'var(--text-sub)' }}>
@@ -3711,13 +3712,13 @@ export default function Telemedicine({
                     if (onNavigate) onNavigate('carnet-sante');
                   }}
                 >
-                  📂 VOIR MON CARNET DE SANTÉ
+                  <ProIcon name="folder-open" /> VOIR MON CARNET DE SANTÉ
                 </button>
               </div>
 
               {/* Card QR Code CSU */}
               <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-                <h6 className="fw-bold mb-2" style={{ color: 'var(--text-main)' }}>📲 Présentation QR code CSU</h6>
+                <h6 className="fw-bold mb-2" style={{ color: 'var(--text-main)' }}><ProIcon name="smartphone" /> Présentation QR code CSU</h6>
                 <p className="small mb-3" style={{ color: 'var(--text-sub)' }}>Présentez votre pass sanitaire numérique au médecin lors de l'appel.</p>
                 
                 <button 
@@ -3787,7 +3788,7 @@ export default function Telemedicine({
                     </small>
                   </div>
                   <span className="badge bg-success-subtle text-success border border-success px-3 py-1.5 fw-bold" style={{ borderRadius: '10px', fontSize: '0.8rem' }}>
-                    🟢 Synchro Temps Réel
+                    <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Synchro Temps Réel
                   </span>
                 </div>
 
@@ -3828,12 +3829,12 @@ export default function Telemedicine({
                           </td>
                           <td style={{ padding: '0.85rem', whiteSpace: 'nowrap' }}>
                             <small style={{ color: 'var(--text-sub)', fontWeight: '600', fontSize: '0.8rem' }}>
-                              🕒 {item.date}
+                              <ProIcon name="clock" /> {item.date}
                             </small>
                           </td>
                           <td style={{ padding: '0.85rem' }}>
                             <span className="badge bg-success-subtle text-success border border-success px-2.5 py-1" style={{ borderRadius: '8px', fontSize: '0.75rem', fontWeight: '700' }}>
-                              ✅ {item.status}
+                              <ProIcon name="check-circle" color="#059669" /> {item.status}
                             </span>
                           </td>
                           <td className="text-end" style={{ padding: '0.85rem' }}>
@@ -3845,13 +3846,13 @@ export default function Telemedicine({
                                 setActiveModal('prescription');
                                 speakAndToast({
                                   type: 'info',
-                                  icon: '📑',
+                                  icon: <ProIcon name="file-spreadsheet" />,
                                   title: 'Reçu & Ordonnance Téléconsultation',
                                   message: `Consultation ${item.code} du patient ${item.patient} chargée avec succès.`
                                 });
                               }}
                             >
-                              📥 Reçu PDF
+                              <ProIcon name="download" /> Reçu PDF
                             </button>
                           </td>
                         </tr>
@@ -3934,16 +3935,16 @@ export default function Telemedicine({
           <div className="d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div className="d-flex align-items-center gap-3">
               <div style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'linear-gradient(135deg, #7c3aed, #a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem', color: '#ffffff' }}>
-                🛡️
+                <ProIcon name="shield-check" />
               </div>
               <div>
                 <div className="d-flex align-items-center gap-2 mb-1 flex-wrap">
                   <span className="badge" style={{ background: '#7c3aed', color: '#ffffff', padding: '0.35rem 0.75rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '800' }}>
-                    🟢 AGENT UD CONNECTÉ
+                    <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> AGENT UD CONNECTÉ
                   </span>
                   {isSuperAdmin && (
                     <span className="badge" style={{ background: 'rgba(255,255,255,0.15)', color: '#f8fafc', padding: '0.35rem 0.75rem', borderRadius: '12px', fontSize: '0.75rem', border: '1px solid rgba(255,255,255,0.2)' }}>
-                      👁️ Vue Super Admin
+                      <ProIcon name="eye" /> Vue Super Admin
                     </span>
                   )}
                 </div>
@@ -3957,10 +3958,10 @@ export default function Telemedicine({
             </div>
             <div className="d-flex gap-2 flex-wrap">
               <span style={{ background: 'rgba(124,58,237,0.25)', color: '#e9d5ff', border: '1px solid rgba(124,58,237,0.5)', borderRadius: '12px', padding: '0.5rem 0.9rem', fontWeight: '800', fontSize: '0.8rem' }}>
-                ⏳ {queue.filter(p => !p.status || p.status === 'waiting').length} en attente
+                <ProIcon name="hourglass" /> {queue.filter(p => !p.status || p.status === 'waiting').length} en attente
               </span>
               <span style={{ background: 'rgba(16,185,129,0.2)', color: '#6ee7b7', border: '1px solid rgba(16,185,129,0.4)', borderRadius: '12px', padding: '0.5rem 0.9rem', fontWeight: '800', fontSize: '0.8rem' }}>
-                🎥 {queue.filter(p => p.status === 'called').length} en consultation
+                <ProIcon name="video" /> {queue.filter(p => p.status === 'called').length} en consultation
               </span>
             </div>
           </div>
@@ -3974,11 +3975,11 @@ export default function Telemedicine({
           const doneCount = queue.filter(p => p.status === 'done').length;
           const revenue = queue.filter(p => p.payment_status === 'paid').length * 2500;
           const stats = [
-            { icon: '⏳', label: 'En attente', value: waitingCount, color: '#38bdf8', bg: 'rgba(56,189,248,0.12)', border: 'rgba(56,189,248,0.35)' },
-            { icon: '🔔', label: 'Patients notifiés', value: nextCount, color: '#f59e0b', bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.35)' },
-            { icon: '🎥', label: 'En téléconsultation', value: calledCount, color: '#10b981', bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.35)' },
-            { icon: '💰', label: 'Encaissements du jour', value: `${revenue.toLocaleString('fr-FR')} F`, color: '#a855f7', bg: 'rgba(168,85,247,0.12)', border: 'rgba(168,85,247,0.35)' },
-            { icon: '✅', label: 'Consultations terminées', value: doneCount, color: '#64748b', bg: 'rgba(100,116,139,0.12)', border: 'rgba(100,116,139,0.35)' }
+            { icon: <ProIcon name="hourglass" />, label: 'En attente', value: waitingCount, color: '#38bdf8', bg: 'rgba(56,189,248,0.12)', border: 'rgba(56,189,248,0.35)' },
+            { icon: <ProIcon name="bell" />, label: 'Patients notifiés', value: nextCount, color: '#f59e0b', bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.35)' },
+            { icon: <ProIcon name="video" />, label: 'En téléconsultation', value: calledCount, color: '#10b981', bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.35)' },
+            { icon: <ProIcon name="wallet" />, label: 'Encaissements du jour', value: `${revenue.toLocaleString('fr-FR')} F`, color: '#a855f7', bg: 'rgba(168,85,247,0.12)', border: 'rgba(168,85,247,0.35)' },
+            { icon: <ProIcon name="check-circle" color="#059669" />, label: 'Consultations terminées', value: doneCount, color: '#64748b', bg: 'rgba(100,116,139,0.12)', border: 'rgba(100,116,139,0.35)' }
           ];
           return (
             <div className="row g-3 mb-4">
@@ -4001,16 +4002,16 @@ export default function Telemedicine({
         <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
           <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
             <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.05rem' }}>
-              📋 File d'attente virtuelle — Pilotage Agent UD
+              <ProIcon name="clipboard-list" /> File d'attente virtuelle — Pilotage Agent UD
             </h5>
             <span className="badge" style={{ background: 'rgba(124,58,237,0.15)', color: '#a855f7', border: '1px solid rgba(124,58,237,0.35)', padding: '0.4rem 0.8rem', borderRadius: '10px', fontSize: '0.75rem', fontWeight: '800' }}>
-              🔄 Temps réel • {queue.length} patient(s) inscrit(s)
+              <ProIcon name="refresh" /> Temps réel • {queue.length} patient(s) inscrit(s)
             </span>
           </div>
 
           {queue.length === 0 ? (
             <div className="text-center py-5">
-              <span style={{ fontSize: '2.6rem', opacity: 0.6 }}>🗂️</span>
+              <span style={{ fontSize: '2.6rem', opacity: 0.6 }}><ProIcon name="archive" /></span>
               <p className="fw-bold mb-1 mt-2" style={{ color: 'var(--text-main)' }}>Aucun patient en salle d'attente</p>
               <small style={{ color: 'var(--text-sub)' }}>Les nouvelles admissions apparaîtront ici automatiquement après paiement du ticket (2 500 FCFA).</small>
             </div>
@@ -4033,8 +4034,8 @@ export default function Telemedicine({
                   {queue.map(p => (
                     <tr key={p.id} style={{ borderTop: '1px solid var(--border-color)' }}>
                       <td style={{ padding: '0.85rem' }}>
-                        <div className="fw-semibold" style={{ color: 'var(--text-main)', fontSize: '0.88rem' }}>👤 {p.patient_name}</div>
-                        <small style={{ color: 'var(--text-sub)', fontSize: '0.74rem' }}>🕒 {p.joined_at}</small>
+                        <div className="fw-semibold" style={{ color: 'var(--text-main)', fontSize: '0.88rem' }}><ProIcon name="user" /> {p.patient_name}</div>
+                        <small style={{ color: 'var(--text-sub)', fontSize: '0.74rem' }}><ProIcon name="clock" /> {p.joined_at}</small>
                       </td>
                       <td style={{ padding: '0.85rem' }}>
                         <code style={{ background: 'var(--bg-card-subtle, #0b1120)', color: '#38bdf8', padding: '0.2rem 0.5rem', borderRadius: '6px', fontSize: '0.76rem' }}>{p.cmu_number}</code>
@@ -4044,11 +4045,11 @@ export default function Telemedicine({
                       </td>
                       <td style={{ padding: '0.85rem' }}>
                         {p.urgency === 'critical' ? (
-                          <span className="badge" style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.4)', padding: '0.35rem 0.7rem', borderRadius: '10px', fontSize: '0.74rem', fontWeight: '800' }}>🔴 URGENCE</span>
+                          <span className="badge" style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.4)', padding: '0.35rem 0.7rem', borderRadius: '10px', fontSize: '0.74rem', fontWeight: '800' }}><ProIcon name="status-red" color="#ef4444" fill="#ef4444" size={10} /> URGENCE</span>
                         ) : p.urgency === 'urgent' ? (
-                          <span className="badge" style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.4)', padding: '0.35rem 0.7rem', borderRadius: '10px', fontSize: '0.74rem', fontWeight: '800' }}>🟠 Prioritaire</span>
+                          <span className="badge" style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.4)', padding: '0.35rem 0.7rem', borderRadius: '10px', fontSize: '0.74rem', fontWeight: '800' }}><ProIcon name="status-amber" color="#f97316" fill="#f97316" size={10} /> Prioritaire</span>
                         ) : (
-                          <span className="badge" style={{ background: 'rgba(100,116,139,0.15)', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.35)', padding: '0.35rem 0.7rem', borderRadius: '10px', fontSize: '0.74rem', fontWeight: '800' }}>🟢 Routine</span>
+                          <span className="badge" style={{ background: 'rgba(100,116,139,0.15)', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.35)', padding: '0.35rem 0.7rem', borderRadius: '10px', fontSize: '0.74rem', fontWeight: '800' }}><ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Routine</span>
                         )}
                       </td>
                       <td style={{ padding: '0.85rem' }}>
@@ -4056,20 +4057,20 @@ export default function Telemedicine({
                       </td>
                       <td style={{ padding: '0.85rem' }}>
                         {p.payment_status === 'paid' ? (
-                          <span style={{ background: 'rgba(16,185,129,0.15)', color: '#10b981', border: '1px solid rgba(16,185,129,0.3)', padding: '0.3rem 0.65rem', borderRadius: '10px', fontSize: '0.74rem', fontWeight: '700', display: 'inline-block' }}>✅ Réglé</span>
+                          <span style={{ background: 'rgba(16,185,129,0.15)', color: '#10b981', border: '1px solid rgba(16,185,129,0.3)', padding: '0.3rem 0.65rem', borderRadius: '10px', fontSize: '0.74rem', fontWeight: '700', display: 'inline-block' }}><ProIcon name="check-circle" color="#059669" /> Réglé</span>
                         ) : (
-                          <span style={{ background: 'rgba(239,68,68,0.12)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)', padding: '0.3rem 0.65rem', borderRadius: '10px', fontSize: '0.74rem', fontWeight: '700', display: 'inline-block' }}>⏳ Impayé</span>
+                          <span style={{ background: 'rgba(239,68,68,0.12)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.3)', padding: '0.3rem 0.65rem', borderRadius: '10px', fontSize: '0.74rem', fontWeight: '700', display: 'inline-block' }}><ProIcon name="hourglass" /> Impayé</span>
                         )}
                       </td>
                       <td style={{ padding: '0.85rem' }}>
                         {p.status === 'called' ? (
-                          <span className="badge bg-success text-white px-2.5 py-1" style={{ borderRadius: '10px', fontSize: '0.74rem' }}>🟢 En appel</span>
+                          <span className="badge bg-success text-white px-2.5 py-1" style={{ borderRadius: '10px', fontSize: '0.74rem' }}><ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> En appel</span>
                         ) : p.status === 'next' ? (
-                          <span className="badge bg-warning text-dark px-2.5 py-1" style={{ borderRadius: '10px', fontSize: '0.74rem' }}>🔔 Notifié</span>
+                          <span className="badge bg-warning text-dark px-2.5 py-1" style={{ borderRadius: '10px', fontSize: '0.74rem' }}><ProIcon name="bell" /> Notifié</span>
                         ) : p.status === 'done' ? (
-                          <span className="badge" style={{ background: 'rgba(100,116,139,0.2)', color: '#e2e8f0', padding: '0.35rem 0.7rem', borderRadius: '10px', fontSize: '0.74rem' }}>✅ Terminée</span>
+                          <span className="badge" style={{ background: 'rgba(100,116,139,0.2)', color: '#e2e8f0', padding: '0.35rem 0.7rem', borderRadius: '10px', fontSize: '0.74rem' }}><ProIcon name="check-circle" color="#059669" /> Terminée</span>
                         ) : (
-                          <span className="badge bg-secondary text-white px-2.5 py-1" style={{ borderRadius: '10px', fontSize: '0.74rem' }}>⏳ En attente</span>
+                          <span className="badge bg-secondary text-white px-2.5 py-1" style={{ borderRadius: '10px', fontSize: '0.74rem' }}><ProIcon name="hourglass" /> En attente</span>
                         )}
                       </td>
                       <td className="text-end" style={{ padding: '0.85rem', whiteSpace: 'nowrap' }}>
@@ -4085,14 +4086,14 @@ export default function Telemedicine({
                                   setQueue(prev => prev.map(item => item.id === p.id ? { ...item, status: 'next' } : item));
                                   speakAndToast({
                                     type: 'warning',
-                                    icon: '🔔',
+                                    icon: <ProIcon name="bell" />,
                                     title: 'Patient notifié',
                                     message: `${p.patient_name} a été prévenu(e) que son tour approche.`
                                   });
                                 }}
                                 title="Prévenir le patient que son tour arrive"
                               >
-                                🔔 Prévenir
+                                <ProIcon name="bell" /> Prévenir
                               </button>
                             )}
                             {p.status === 'next' && (
@@ -4103,14 +4104,14 @@ export default function Telemedicine({
                                   setQueue(prev => prev.map(item => item.id === p.id ? { ...item, status: 'called' } : item));
                                   speakAndToast({
                                     type: 'success',
-                                    icon: '🎥',
+                                    icon: <ProIcon name="video" />,
                                     title: 'Patient appelé en visio',
                                     message: `${p.patient_name} (${p.cmu_number}) basculé en téléconsultation avec ${p.requested_doctor || 'le praticien de garde'}.`
                                   });
                                 }}
                                 title="Confirmer l'appel en téléconsultation"
                               >
-                                🎥 Appeler
+                                <ProIcon name="video" /> Appeler
                               </button>
                             )}
                             <button
@@ -4120,14 +4121,14 @@ export default function Telemedicine({
                                 setQueue(prev => prev.map(item => item.id === p.id ? { ...item, status: 'done' } : item));
                                 speakAndToast({
                                   type: 'info',
-                                  icon: '✅',
+                                  icon: <ProIcon name="check-circle" color="#059669" />,
                                   title: 'Consultation clôturée',
                                   message: `Dossier de ${p.patient_name} marqué comme terminé. Compte-rendu synchronisé.`
                                 });
                               }}
                               title="Marquer la consultation comme terminée"
                             >
-                              ✅ Terminer
+                              <ProIcon name="check-circle" color="#059669" /> Terminer
                             </button>
                           </div>
                         )}
@@ -4164,10 +4165,10 @@ export default function Telemedicine({
           >
             <div className="d-flex align-items-center justify-content-between mb-3">
               <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'linear-gradient(135deg, #059669, #10b981)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', boxShadow: '0 6px 16px rgba(16,185,129,0.30)' }}>
-                💻
+                <ProIcon name="laptop" />
               </div>
               <span style={{ background: 'rgba(16, 185, 129, 0.12)', color: '#059669', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '10px', fontSize: '0.72rem', fontWeight: '800', padding: '4px 10px' }}>
-                🟢 LIVE
+                <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> LIVE
               </span>
             </div>
             <div>
@@ -4182,7 +4183,7 @@ export default function Telemedicine({
               </div>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '0.30rem 0.65rem', borderRadius: '8px', fontSize: '0.74rem', color: '#065f46', fontWeight: '600' }}>
                 <span>Depuis la mise en service</span>
-                <span>🔍</span>
+                <span><ProIcon name="search" /></span>
               </div>
             </div>
           </div>
@@ -4205,10 +4206,10 @@ export default function Telemedicine({
           >
             <div className="d-flex align-items-center justify-content-between mb-3">
               <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'linear-gradient(135deg, #2563eb, #3b82f6)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', boxShadow: '0 6px 16px rgba(59,130,246,0.30)' }}>
-                👨‍⚕️
+                <ProIcon name="stethoscope" />
               </div>
               <span style={{ background: 'rgba(59, 130, 246, 0.12)', color: '#2563eb', border: '1px solid rgba(59, 130, 246, 0.3)', borderRadius: '10px', fontSize: '0.72rem', fontWeight: '800', padding: '4px 10px' }}>
-                🇸🇳 CNOM Agréés
+                <ProIcon name="senegal-flag" /> CNOM Agréés
               </span>
             </div>
             <div>
@@ -4220,7 +4221,7 @@ export default function Telemedicine({
               </div>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.2)', padding: '0.30rem 0.65rem', borderRadius: '8px', fontSize: '0.74rem', color: '#1e40af', fontWeight: '600' }}>
                 <span>8 Spécialités médicales</span>
-                <span>🔍</span>
+                <span><ProIcon name="search" /></span>
               </div>
             </div>
           </div>
@@ -4243,7 +4244,7 @@ export default function Telemedicine({
           >
             <div className="d-flex align-items-center justify-content-between mb-3">
               <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'linear-gradient(135deg, #d97706, #f59e0b)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', boxShadow: '0 6px 16px rgba(245,158,11,0.30)' }}>
-                ⭐
+                <ProIcon name="star" color="#f59e0b" />
               </div>
               <span style={{ background: 'rgba(245, 158, 11, 0.12)', color: '#d97706', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '10px', fontSize: '0.72rem', fontWeight: '800', padding: '4px 10px' }}>
                 En attente d'avis
@@ -4261,7 +4262,7 @@ export default function Telemedicine({
               </div>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.2)', padding: '0.30rem 0.65rem', borderRadius: '8px', fontSize: '0.74rem', color: '#92400e', fontWeight: '600' }}>
                 <span>Aucun avis enregistré</span>
-                <span>🔍</span>
+                <span><ProIcon name="search" /></span>
               </div>
             </div>
           </div>
@@ -4284,10 +4285,10 @@ export default function Telemedicine({
           >
             <div className="d-flex align-items-center justify-content-between mb-3">
               <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'linear-gradient(135deg, #7e22ce, #a855f7)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', boxShadow: '0 6px 16px rgba(168,85,247,0.30)' }}>
-                💳
+                <ProIcon name="credit-card" />
               </div>
               <span style={{ background: 'rgba(168, 85, 247, 0.12)', color: '#7e22ce', border: '1px solid rgba(168, 85, 247, 0.3)', borderRadius: '10px', fontSize: '0.72rem', fontWeight: '800', padding: '4px 10px' }}>
-                🛡️ UNAMUSC 80%
+                <ProIcon name="shield-check" /> UNAMUSC 80%
               </span>
             </div>
             <div>
@@ -4299,7 +4300,7 @@ export default function Telemedicine({
               </div>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem', background: 'rgba(168, 85, 247, 0.08)', border: '1px solid rgba(168, 85, 247, 0.2)', padding: '0.30rem 0.65rem', borderRadius: '8px', fontSize: '0.74rem', color: '#6b21a8', fontWeight: '600' }}>
                 <span>Part UNAMUSC : 10 000 FCFA</span>
-                <span>🔍</span>
+                <span><ProIcon name="search" /></span>
               </div>
             </div>
           </div>
@@ -4329,7 +4330,7 @@ export default function Telemedicine({
                 <span style={{ fontSize: '0.82rem', color: 'var(--text-sub)' }}>Montant</span>
                 <span style={{ fontWeight: '800', color: 'var(--text-main)' }}>2 500 FCFA</span>
               </div>
-              <p style={{ marginTop: '1rem', fontSize: '0.72rem', color: 'var(--text-sub)', opacity: 0.6 }}>🔒 Transaction sécurisée • Conforme BCEAO</p>
+              <p style={{ marginTop: '1rem', fontSize: '0.72rem', color: 'var(--text-sub)', opacity: 0.6 }}><ProIcon name="lock" /> Transaction sécurisée • Conforme BCEAO</p>
             </div>
           )}
 
@@ -4338,7 +4339,7 @@ export default function Telemedicine({
             <div style={{ maxWidth: '480px', width: '100%', background: 'var(--bg-card)', borderRadius: '28px', border: '1px solid rgba(16,185,129,0.4)', boxShadow: '0 30px 80px rgba(16,185,129,0.2)', margin: 'auto', overflow: 'hidden' }}>
               {/* En-tête succès */}
               <div style={{ background: 'linear-gradient(135deg, #064e3b 0%, #065f46 100%)', padding: '2rem', textAlign: 'center' }}>
-                <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(16,185,129,0.3)', border: '2px solid #10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', fontSize: '2rem' }}>✅</div>
+                <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(16,185,129,0.3)', border: '2px solid #10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', fontSize: '2rem' }}><ProIcon name="check-circle" color="#059669" /></div>
                 <h4 style={{ color: '#ffffff', fontWeight: '800', margin: '0 0 0.25rem' }}>Paiement Confirmé !</h4>
                 <p style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.85rem', margin: 0 }}>Vous êtes en salle d'attente virtuelle</p>
               </div>
@@ -4372,7 +4373,7 @@ export default function Telemedicine({
                   onClick={resetPaymentModal}
                   style={{ width: '100%', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.85rem', fontWeight: '800', fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 6px 20px rgba(16,185,129,0.35)' }}
                 >
-                  ✅ Fermer et rejoindre la salle d'attente
+                  <ProIcon name="check-circle" color="#059669" /> Fermer et rejoindre la salle d'attente
                 </button>
                 <p style={{ textAlign: 'center', fontSize: '0.7rem', color: 'var(--text-sub)', marginTop: '0.75rem', opacity: 0.6 }}>Conservez la référence {txnResult.transactionRef} comme preuve de paiement</p>
               </div>
@@ -4382,7 +4383,7 @@ export default function Telemedicine({
           {/* ════════ ÉTAPE : ERREUR ════════ */}
           {payStep === 'error' && txnResult && (
             <div style={{ maxWidth: '420px', width: '100%', background: 'var(--bg-card)', borderRadius: '28px', border: '1px solid rgba(239,68,68,0.4)', boxShadow: '0 30px 80px rgba(239,68,68,0.15)', margin: 'auto', padding: '2.5rem 2rem', textAlign: 'center' }}>
-              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(239,68,68,0.15)', border: '2px solid #ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', fontSize: '2rem' }}>❌</div>
+              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(239,68,68,0.15)', border: '2px solid #ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.25rem', fontSize: '2rem' }}><ProIcon name="x-circle" color="#dc2626" /></div>
               <h5 style={{ color: 'var(--text-main)', fontWeight: '800', marginBottom: '0.5rem' }}>Paiement échoué</h5>
               <p style={{ color: 'var(--text-sub)', fontSize: '0.88rem', lineHeight: '1.6', marginBottom: '1.5rem' }}>{txnResult.message}</p>
               <div style={{ background: 'var(--bg-card-subtle)', borderRadius: '12px', padding: '0.85rem 1rem', border: '1px solid var(--border-color)', marginBottom: '1.5rem', textAlign: 'left' }}>
@@ -4400,7 +4401,7 @@ export default function Telemedicine({
                 >Annuler</button>
                 <button onClick={() => setPayStep('form')}
                   style={{ flex: 2, background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.75rem', fontWeight: '700', fontSize: '0.88rem', cursor: 'pointer', boxShadow: '0 4px 15px rgba(16,185,129,0.35)' }}
-                >🔄 Réessayer</button>
+                ><ProIcon name="refresh" /> Réessayer</button>
               </div>
             </div>
           )}
@@ -4427,7 +4428,7 @@ export default function Telemedicine({
                           color: '#ffffff'
                         }}
                       >
-                        <div style={{ fontSize: '0.85rem', fontWeight: '800' }}>📅 Rendez-vous</div>
+                        <div style={{ fontSize: '0.85rem', fontWeight: '800' }}><ProIcon name="calendar" /> Rendez-vous</div>
                         <div style={{ fontSize: '0.7rem', opacity: 0.9 }}>Gratuit · réglé sur place</div>
                       </button>
                       <button
@@ -4440,7 +4441,7 @@ export default function Telemedicine({
                           color: '#ffffff'
                         }}
                       >
-                        <div style={{ fontSize: '0.85rem', fontWeight: '800' }}>⚡ Consultation</div>
+                        <div style={{ fontSize: '0.85rem', fontWeight: '800' }}><ProIcon name="zap" /> Consultation</div>
                         <div style={{ fontSize: '0.7rem', opacity: 0.9 }}>Immédiate · ticket modérateur</div>
                       </button>
                     </div>
@@ -4514,7 +4515,7 @@ export default function Telemedicine({
                   <div>
                     {bookingResult ? (
                       <div style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '1.5rem', textAlign: 'center' }}>
-                        <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📅</div>
+                        <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}><ProIcon name="calendar" /></div>
                         <h5 style={{ color: 'var(--text-main)', fontWeight: '800', margin: '0 0 0.5rem', fontSize: '1.05rem' }}>
                           Rendez-vous enregistré
                         </h5>
@@ -4610,7 +4611,7 @@ export default function Telemedicine({
                         )}
 
                         <div style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.75rem 0.9rem', marginBottom: '1.25rem', fontSize: '0.78rem', color: 'var(--text-sub)', lineHeight: '1.6' }}>
-                          💡 Cette réservation est <strong>gratuite</strong>. Aucun ticket
+                          <ProIcon name="lightbulb" /> Cette réservation est <strong>gratuite</strong>. Aucun ticket
                           modérateur n'est prélevé ici : vous réglerez la consultation
                           une seule fois, sur place, à la structure de santé.
                         </div>
@@ -4654,7 +4655,7 @@ export default function Telemedicine({
                         <img src="/logo_orange_money.png" alt="Orange Money" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                       </div>
                       <span style={{ fontSize: '0.72rem', fontWeight: '700', color: paymentProvider === 'orange' ? '#ff7900' : 'var(--text-sub)', textAlign: 'center' }}>Orange Money</span>
-                      {paymentProvider === 'orange' && <span style={{ fontSize: '0.62rem', color: '#ff7900', fontWeight: '800' }}>✓ Sélectionné</span>}
+                      {paymentProvider === 'orange' && <span style={{ fontSize: '0.62rem', color: '#ff7900', fontWeight: '800' }}><ProIcon name="check" color="#059669" /> Sélectionné</span>}
                     </button>
 
                     <button type="button" onClick={() => { setPaymentProvider('wave'); setPhoneError(''); }}
@@ -4663,7 +4664,7 @@ export default function Telemedicine({
                         <img src="/logo_wave.png" alt="Wave" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       </div>
                       <span style={{ fontSize: '0.72rem', fontWeight: '700', color: paymentProvider === 'wave' ? '#1dc4ff' : 'var(--text-sub)', textAlign: 'center' }}>Wave</span>
-                      {paymentProvider === 'wave' && <span style={{ fontSize: '0.62rem', color: '#1dc4ff', fontWeight: '800' }}>✓ Sélectionné</span>}
+                      {paymentProvider === 'wave' && <span style={{ fontSize: '0.62rem', color: '#1dc4ff', fontWeight: '800' }}><ProIcon name="check" color="#059669" /> Sélectionné</span>}
                     </button>
 
                     <button type="button" onClick={() => { setPaymentProvider('free'); setPhoneError(''); }}
@@ -4672,20 +4673,20 @@ export default function Telemedicine({
                         <img src="/logo_free_money.svg" alt="Free Money" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                       </div>
                       <span style={{ fontSize: '0.72rem', fontWeight: '700', color: paymentProvider === 'free' ? '#e11d48' : 'var(--text-sub)', textAlign: 'center' }}>Free Money</span>
-                      {paymentProvider === 'free' && <span style={{ fontSize: '0.62rem', color: '#e11d48', fontWeight: '800' }}>✓ Sélectionné</span>}
+                      {paymentProvider === 'free' && <span style={{ fontSize: '0.62rem', color: '#e11d48', fontWeight: '800' }}><ProIcon name="check" color="#059669" /> Sélectionné</span>}
                     </button>
                   </div>
 
                   <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: '700', color: 'var(--text-sub)', marginBottom: '0.5rem' }}>N° de téléphone mobile money *</label>
                   <div style={{ position: 'relative' }}>
-                    <span style={{ position: 'absolute', left: '0.9rem', top: '50%', transform: 'translateY(-50%)', fontSize: '1.1rem' }}>📱</span>
+                    <span style={{ position: 'absolute', left: '0.9rem', top: '50%', transform: 'translateY(-50%)', fontSize: '1.1rem' }}><ProIcon name="smartphone" /></span>
                     <input type="tel"
                       style={{ width: '100%', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: phoneError ? '1px solid #ef4444' : '1px solid var(--border-color)', borderRadius: '12px', padding: '0.75rem 1rem 0.75rem 2.5rem', fontSize: '0.95rem', fontWeight: '700', outline: 'none', letterSpacing: '0.05em', boxSizing: 'border-box' }}
                       value={phoneNum} onChange={(e) => { setPhoneNum(e.target.value); setPhoneError(''); }}
                       placeholder="Ex : 77 602 67 83" required
                     />
                   </div>
-                  {phoneError && <p style={{ color: '#ef4444', fontSize: '0.78rem', marginTop: '0.4rem', fontWeight: '600' }}>⚠️ {phoneError}</p>}
+                  {phoneError && <p style={{ color: '#ef4444', fontSize: '0.78rem', marginTop: '0.4rem', fontWeight: '600' }}><ProIcon name="alert-triangle" color="#d97706" /> {phoneError}</p>}
 
                   <div style={{ marginTop: '1rem', background: paymentProvider === 'orange' ? 'rgba(255,121,0,0.08)' : paymentProvider === 'wave' ? 'rgba(29,196,255,0.08)' : 'rgba(225,29,72,0.08)', border: `1px solid ${paymentProvider === 'orange' ? 'rgba(255,121,0,0.3)' : paymentProvider === 'wave' ? 'rgba(29,196,255,0.3)' : 'rgba(225,29,72,0.3)'}`, borderRadius: '12px', padding: '0.85rem 1rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -4698,7 +4699,7 @@ export default function Telemedicine({
                     </div>
                     <div style={{ borderTop: '1px dashed var(--border-color)', marginTop: '0.5rem', paddingTop: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
                       <span style={{ fontSize: '0.8rem', color: 'var(--text-sub)', fontWeight: '600' }}>Via {getProviderInfo(paymentProvider).name} → {phoneNum || '---'}</span>
-                      <span style={{ fontSize: '0.72rem', color: '#10b981', fontWeight: '700' }}>🔒 Sécurisé</span>
+                      <span style={{ fontSize: '0.72rem', color: '#10b981', fontWeight: '700' }}><ProIcon name="lock" /> Sécurisé</span>
                     </div>
                   </div>
                 </div>
@@ -4709,10 +4710,10 @@ export default function Telemedicine({
                     onClick={resetPaymentModal}>Annuler</button>
                   <button type="submit"
                     style={{ flex: 2, background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.85rem 1rem', fontWeight: '800', fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 6px 20px rgba(16,185,129,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-                    💳 Payer 2 500 FCFA &amp; entrer en salle d'attente
+                    <ProIcon name="credit-card" /> Payer 2 500 FCFA &amp; entrer en salle d'attente
                   </button>
                 </div>
-                <p style={{ textAlign: 'center', fontSize: '0.72rem', color: 'var(--text-sub)', marginTop: '0.85rem', opacity: 0.7 }}>🔒 Paiement sécurisé • Aucun partage de vos données bancaires • Conforme BCEAO</p>
+                <p style={{ textAlign: 'center', fontSize: '0.72rem', color: 'var(--text-sub)', marginTop: '0.85rem', opacity: 0.7 }}><ProIcon name="lock" /> Paiement sécurisé • Aucun partage de vos données bancaires • Conforme BCEAO</p>
               </form>
               )}
               </div>
@@ -4808,10 +4809,10 @@ export default function Telemedicine({
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', flexWrap: 'nowrap' }}>
                 <span style={{ background: '#1e293b', color: '#34d399', fontSize: '0.70rem', fontWeight: '800', padding: '3px 8px', borderRadius: '8px', border: '1px solid #334155', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  ⏱️ {formatDuration(consultationSeconds)}
+                  <ProIcon name="clock" /> {formatDuration(consultationSeconds)}
                 </span>
                 <span className="webrtc-hide-mobile" style={{ background: '#1e293b', color: '#94a3b8', fontSize: '0.68rem', fontWeight: '700', padding: '3px 8px', borderRadius: '8px', border: '1px solid #334155' }}>
-                  REC 🔴
+                  REC <ProIcon name="status-red" color="#ef4444" fill="#ef4444" size={10} />
                 </span>
                 <span className="webrtc-hide-mobile" style={{ background: isDoctorSide ? 'rgba(2,132,199,0.15)' : 'rgba(16,185,129,0.12)', color: isDoctorSide ? '#38bdf8' : '#34d399', fontSize: '0.68rem', fontWeight: '800', padding: '3px 8px', borderRadius: '8px', border: `1px solid ${isDoctorSide ? 'rgba(56,189,248,0.4)' : 'rgba(16,185,129,0.4)'}` }}>
                   {isDoctorSide ? '🩺 Praticien' : '👤 Assuré'}
@@ -4836,7 +4837,7 @@ export default function Telemedicine({
                     setActiveModal(null);
                   }}
                 >
-                  ✕ Quitter
+                  <ProIcon name="x" /> Quitter
                 </button>
               </div>
             </header>
@@ -4894,7 +4895,7 @@ export default function Telemedicine({
                     </div>
 
                     <div style={{ maxWidth: '410px' }}>
-                      <span style={{ fontSize: '2.3rem', display: 'block', marginBottom: '6px' }}>🎥</span>
+                      <span style={{ fontSize: '2.3rem', display: 'block', marginBottom: '6px' }}><ProIcon name="video" /></span>
                       <strong style={{ display: 'block', color: '#f8fafc', fontSize: '0.98rem' }}>
                         Démarrer la consultation vidéo
                       </strong>
@@ -4908,7 +4909,7 @@ export default function Telemedicine({
                         onClick={() => startCamera(true)} 
                         style={{ marginTop: '14px', background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.65rem 1.4rem', fontSize: '0.88rem', fontWeight: '800', cursor: 'pointer', boxShadow: '0 4px 15px rgba(16,185,129,0.45)' }}
                       >
-                        📷 Allumer la caméra & micro
+                        <ProIcon name="camera" /> Allumer la caméra & micro
                       </button>
                     </div>
                   </div>
@@ -4924,20 +4925,20 @@ export default function Telemedicine({
                   </div>
                   {peerConnected ? (
                     <span style={{ background: 'rgba(5, 46, 22, 0.9)', color: '#34d399', border: '1px solid #10b981', padding: '4px 10px', borderRadius: '8px', fontSize: '0.72rem', fontWeight: '800', backdropFilter: 'blur(6px)' }}>
-                      🔗 Liaison vidéo P2P bidirectionnelle établie
+                      <ProIcon name="link" /> Liaison vidéo P2P bidirectionnelle établie
                     </span>
                   ) : isSearchingPeer ? (
                     <span style={{ background: 'rgba(120, 53, 15, 0.9)', color: '#fbbf24', border: '1px solid #f59e0b', padding: '4px 10px', borderRadius: '8px', fontSize: '0.72rem', fontWeight: '800', backdropFilter: 'blur(6px)' }}>
-                      📡 Recherche de l'autre espace…
+                      <ProIcon name="radio" /> Recherche de l'autre espace…
                     </span>
                   ) : (
                     <span style={{ background: 'rgba(15, 23, 42, 0.85)', color: '#94a3b8', border: '1px solid #334155', padding: '4px 10px', borderRadius: '8px', fontSize: '0.7rem', fontWeight: '600', backdropFilter: 'blur(6px)' }}>
-                      🔒 Flux médical chiffré E2EE
+                      <ProIcon name="lock" /> Flux médical chiffré E2EE
                     </span>
                   )}
                   {!isDoctorSide && isDoctorSpeaking && (
                     <span style={{ background: '#f59e0b', color: '#000000', padding: '4px 10px', borderRadius: '8px', fontSize: '0.72rem', fontWeight: '900', display: 'flex', alignItems: 'center', gap: '4px', animation: 'pulse 1s infinite' }}>
-                      🎙️ Le Dr. vous parle...
+                      <ProIcon name="mic" /> Le Dr. vous parle...
                     </span>
                   )}
                 </div>
@@ -5003,7 +5004,7 @@ export default function Telemedicine({
                   {/* État Caméra Coupée */}
                   {isCamOff && (
                     <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#020617', zIndex: 5 }}>
-                      <span style={{ fontSize: '2rem', opacity: 0.6 }}>🚫</span>
+                      <span style={{ fontSize: '2rem', opacity: 0.6 }}><ProIcon name="ban" color="#dc2626" /></span>
                       <small style={{ color: '#ef4444', fontWeight: '800', fontSize: '0.78rem', marginTop: '4px' }}>Caméra désactivée</small>
                     </div>
                   )}
@@ -5015,7 +5016,7 @@ export default function Telemedicine({
                       onClick={toggleCamera}
                       style={{ position: 'absolute', bottom: '12px', left: '50%', transform: 'translateX(-50%)', background: '#059669', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.4rem 0.8rem', fontSize: '0.75rem', fontWeight: '800', cursor: 'pointer', zIndex: 6 }}
                     >
-                      📹 Réactiver la caméra
+                      <ProIcon name="video" /> Réactiver la caméra
                     </button>
                   )}
 
@@ -5036,20 +5037,20 @@ export default function Telemedicine({
                   <div style={{ position: 'relative', zIndex: 10, background: 'rgba(2, 6, 23, 0.92)', backdropFilter: 'blur(10px)', padding: '8px 14px', display: 'flex', justifyContent: 'space-around', alignItems: 'center', borderTop: '1px solid rgba(56,189,248,0.35)', flexWrap: 'wrap', gap: '0.35rem' }}>
                     {telemetryVitals.bpm == null && telemetryVitals.bp == null && telemetryVitals.spo2 == null && telemetryVitals.temp == null ? (
                       <span style={{ fontSize: '0.74rem', color: '#94a3b8', fontWeight: '700' }}>
-                        📉 Aucune constante transmise — les valeurs n'apparaissent ici que si un dispositif de mesure les envoie
+                        <ProIcon name="trending-up" /> Aucune constante transmise — les valeurs n'apparaissent ici que si un dispositif de mesure les envoie
                       </span>
                     ) : (
                       <>
-                        {telemetryVitals.bpm != null && <div style={{ fontSize: '0.76rem', color: '#10b981', fontWeight: '800' }}>💚 {telemetryVitals.bpm} BPM</div>}
-                        {telemetryVitals.bp != null && <div style={{ fontSize: '0.76rem', color: '#38bdf8', fontWeight: '800' }}>🩸 TA: {telemetryVitals.bp}</div>}
-                        {telemetryVitals.spo2 != null && <div style={{ fontSize: '0.76rem', color: '#a7f3d0', fontWeight: '800' }}>🫁 SpO2: {telemetryVitals.spo2}%</div>}
-                        {telemetryVitals.temp != null && <div style={{ fontSize: '0.76rem', color: '#fde047', fontWeight: '800' }}>🌡️ {telemetryVitals.temp}°C</div>}
+                        {telemetryVitals.bpm != null && <div style={{ fontSize: '0.76rem', color: '#10b981', fontWeight: '800' }}><ProIcon name="heart" color="#059669" /> {telemetryVitals.bpm} BPM</div>}
+                        {telemetryVitals.bp != null && <div style={{ fontSize: '0.76rem', color: '#38bdf8', fontWeight: '800' }}><ProIcon name="droplet" color="#dc2626" /> TA: {telemetryVitals.bp}</div>}
+                        {telemetryVitals.spo2 != null && <div style={{ fontSize: '0.76rem', color: '#a7f3d0', fontWeight: '800' }}><ProIcon name="activity" /> SpO2: {telemetryVitals.spo2}%</div>}
+                        {telemetryVitals.temp != null && <div style={{ fontSize: '0.76rem', color: '#fde047', fontWeight: '800' }}><ProIcon name="thermometer" /> {telemetryVitals.temp}°C</div>}
                       </>
                     )}
                   </div>
                 ) : (
                   <div style={{ position: 'relative', zIndex: 10, background: 'rgba(2, 6, 23, 0.88)', backdropFilter: 'blur(10px)', padding: '7px 14px', display: 'flex', justifyContent: 'center', alignItems: 'center', borderTop: '1px solid rgba(16,185,129,0.35)' }}>
-                    <span style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: '700' }}>🔒 Télémétrie médicale synchronisée en direct • Transmission chiffrée E2EE</span>
+                    <span style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: '700' }}><ProIcon name="lock" /> Télémétrie médicale synchronisée en direct • Transmission chiffrée E2EE</span>
                   </div>
                 )}
               </section>
@@ -5077,7 +5078,7 @@ export default function Telemedicine({
                     }}
                     onClick={() => setActiveCallTab('chat')}
                   >
-                    💬 Dialogue
+                    <ProIcon name="message-square" /> Dialogue
                   </button>
                   <button
                     type="button"
@@ -5102,7 +5103,7 @@ export default function Telemedicine({
                       }}
                       onClick={() => setActiveCallTab('rx')}
                     >
-                      💊 Ordonnance 50%
+                      <ProIcon name="pill" /> Ordonnance 50%
                     </button>
                   )}
                 </div>
@@ -5147,10 +5148,10 @@ export default function Telemedicine({
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.55rem', flexWrap: 'wrap' }}>
                           <span style={{ fontSize: '0.72rem', color: '#94a3b8', fontWeight: '700' }}>Symptômes :</span>
                           {[
-                            { icon: '🌡️', text: "J'ai une forte fièvre et des frissons depuis hier." },
+                            { icon: <ProIcon name="thermometer" />, text: "J'ai une forte fièvre et des frissons depuis hier." },
                             { icon: '😷', text: "J'ai une toux sèche avec des douleurs à la gorge." },
                             { icon: '🤕', text: "J'ai des maux de tête intenses et de la fatigue." },
-                            { icon: '💊', text: 'Je souhaite renouveler mon ordonnance médicale habituelle.' }
+                            { icon: <ProIcon name="pill" />, text: 'Je souhaite renouveler mon ordonnance médicale habituelle.' }
                           ].map((symptom, idx) => (
                             <button
                               key={idx}
@@ -5189,7 +5190,7 @@ export default function Telemedicine({
                           type="submit"
                           style={{ background: '#059669', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.55rem 1.2rem', fontWeight: '800', fontSize: '0.82rem', cursor: 'pointer', flexShrink: 0 }}
                         >
-                          Envoyer ✉️
+                          Envoyer <ProIcon name="mail" />
                         </button>
                       </form>
                     </div>
@@ -5229,16 +5230,16 @@ export default function Telemedicine({
                       {isDoctorSide && (
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.65rem', marginTop: '0.65rem' }}>
                           <div style={{ background: '#1e293b', padding: '0.65rem', borderRadius: '8px', border: '1px solid #334155' }}>
-                            <strong style={{ color: '#a855f7', fontSize: '0.78rem', display: 'block', marginBottom: '4px' }}>📡 Constantes télémétriques en direct :</strong>
+                            <strong style={{ color: '#a855f7', fontSize: '0.78rem', display: 'block', marginBottom: '4px' }}><ProIcon name="radio" /> Constantes télémétriques en direct :</strong>
                             <span style={{ color: '#ffffff', fontSize: '0.8rem', fontWeight: '700', lineHeight: 1.6, display: 'block' }}>
-                              💚 FC {telemetryVitals.bpm} bpm<br />
-                              🩸 TA {telemetryVitals.bp} mmHg<br />
-                              🫁 SpO2 {telemetryVitals.spo2}% &nbsp;•&nbsp; 🌡️ {telemetryVitals.temp}°C
+                              <ProIcon name="heart" color="#059669" /> FC {telemetryVitals.bpm} bpm<br />
+                              <ProIcon name="droplet" color="#dc2626" /> TA {telemetryVitals.bp} mmHg<br />
+                              <ProIcon name="activity" /> SpO2 {telemetryVitals.spo2}% &nbsp;•&nbsp; 🌡️ {telemetryVitals.temp}°C
                             </span>
                             <small style={{ color: '#64748b', fontSize: '0.68rem' }}>Synchronisées automatiquement dans le DMP CSU</small>
                           </div>
                           <div style={{ background: '#1e293b', padding: '0.65rem', borderRadius: '8px', border: '1px solid #334155' }}>
-                            <strong style={{ color: '#38bdf8', fontSize: '0.78rem', display: 'block', marginBottom: '4px' }}>💊 Traitements en cours :</strong>
+                            <strong style={{ color: '#38bdf8', fontSize: '0.78rem', display: 'block', marginBottom: '4px' }}><ProIcon name="pill" /> Traitements en cours :</strong>
                             {(() => {
                               try {
                                 const raw = localStorage.getItem('cmu_purchase_orders');
@@ -5256,12 +5257,12 @@ export default function Telemedicine({
                             <small style={{ color: '#64748b', fontSize: '0.68rem', display: 'block', marginTop: '3px' }}>Source : bons de commande pharmacie CSU</small>
                           </div>
                           <div style={{ background: '#1e293b', padding: '0.65rem', borderRadius: '8px', border: '1px solid #334155' }}>
-                            <strong style={{ color: '#34d399', fontSize: '0.78rem', display: 'block', marginBottom: '4px' }}>🛡️ Droits &amp; niveau d'accès :</strong>
+                            <strong style={{ color: '#34d399', fontSize: '0.78rem', display: 'block', marginBottom: '4px' }}><ProIcon name="shield-check" /> Droits &amp; niveau d'accès :</strong>
                             <span style={{ color: '#ffffff', fontSize: '0.78rem', lineHeight: 1.6, display: 'block' }}>
-                              ✅ Dossier Médical Partagé (DMP) CSU<br />
-                              ✅ Prescription &amp; ordonnance électronique 50%<br />
-                              ✅ Certificats médicaux &amp; demande d'examens<br />
-                              ✅ Télémétrie vitale &amp; imagerie DICOM
+                              <ProIcon name="check-circle" color="#059669" /> Dossier Médical Partagé (DMP) CSU<br />
+                              <ProIcon name="check-circle" color="#059669" /> Prescription &amp; ordonnance électronique 50%<br />
+                              <ProIcon name="check-circle" color="#059669" /> Certificats médicaux &amp; demande d'examens<br />
+                              <ProIcon name="check-circle" color="#059669" /> Télémétrie vitale &amp; imagerie DICOM
                             </span>
                             <small style={{ color: '#64748b', fontSize: '0.68rem' }}>Habilitation CNOM {activeDoctor.cnom} — accès chiffré E2EE</small>
                           </div>
@@ -5278,7 +5279,7 @@ export default function Telemedicine({
                               setView('guarantees');
                             }}
                           >
-                            📄 Consulter mes lettres de garantie ›
+                            <ProIcon name="file-text" /> Consulter mes lettres de garantie ›
                           </button>
                         </div>
                       )}
@@ -5300,7 +5301,7 @@ export default function Telemedicine({
                           style={{ background: '#059669', color: '#ffffff', border: 'none', borderRadius: '8px', padding: '0.5rem 0.85rem', fontWeight: '800', fontSize: '0.8rem', cursor: 'pointer' }}
                           onClick={handleDownloadPrescription}
                         >
-                          📥 Télécharger le reçu PDF
+                          <ProIcon name="download" /> Télécharger le reçu PDF
                         </button>
                         {setView && (
                           <button
@@ -5311,7 +5312,7 @@ export default function Telemedicine({
                               setView('purchase-orders');
                             }}
                           >
-                            💊 Ouvrir dans mes bons de commande ›
+                            <ProIcon name="pill" /> Ouvrir dans mes bons de commande ›
                           </button>
                         )}
                       </div>
@@ -5374,7 +5375,7 @@ export default function Telemedicine({
                   flexShrink: 0
                 }}
               >
-                {isCamOff ? '🚫' : '📹'}
+                {isCamOff ? <ProIcon name="ban" color="#dc2626" /> : <ProIcon name="video" />}
               </button>
 {/* Voix du praticien — côté ASSURÉ uniquement */}
               {!isDoctorSide && (
@@ -5424,7 +5425,7 @@ export default function Telemedicine({
                       flexShrink: 0
                     }}
                   >
-                    💊
+                    <ProIcon name="pill" />
                   </button>
 
                   <button
@@ -5444,7 +5445,7 @@ export default function Telemedicine({
                       flexShrink: 0
                     }}
                   >
-                    📄
+                    <ProIcon name="file-text" />
                   </button>
 
                   <button
@@ -5461,7 +5462,7 @@ export default function Telemedicine({
                       flexShrink: 0
                     }}
                   >
-                    🧪
+                    <ProIcon name="flask" />
                   </button>
                 </>
               )}
@@ -5503,7 +5504,7 @@ export default function Telemedicine({
           <div style={{ maxWidth: '440px', width: '92%', maxHeight: '88vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '1.75rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
             <div className="d-flex justify-content-between align-items-center w-100 mb-3 border-bottom pb-2" style={{ borderColor: 'var(--border-color)' }}>
               <h5 className="fw-bold text-success mb-0 d-flex align-items-center gap-2" style={{ textTransform: 'none' }}>
-                <span>📲</span> QR code CSU assuré
+                <span><ProIcon name="smartphone" /></span> QR code CSU assuré
               </h5>
               <button type="button" className="btn-close" onClick={() => setActiveModal(null)}></button>
             </div>
@@ -5538,14 +5539,14 @@ export default function Telemedicine({
               <div className="d-flex justify-content-between align-items-start" style={{ position: 'relative', zIndex: 1 }}>
                 <div>
                   <div className="d-flex align-items-center gap-2 mb-1">
-                    <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>💊</div>
+                    <div style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}><ProIcon name="pill" /></div>
                     <div>
                       <h5 className="fw-bold mb-0" style={{ color: '#ffffff', fontSize: '1.1rem', textTransform: 'none', letterSpacing: '-0.01em' }}>Ordonnance médicale certifiée</h5>
-                      <small style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.72rem', fontWeight: 600 }}>UNAMUSC — République du Sénégal 🇸🇳</small>
+                      <small style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.72rem', fontWeight: 600 }}>UNAMUSC — République du Sénégal <ProIcon name="senegal-flag" /></small>
                     </div>
                   </div>
                 </div>
-                <button type="button" onClick={() => setActiveModal(null)} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '10px', width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff', fontSize: '1.1rem', backdropFilter: 'blur(10px)', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.25)'} onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}>✕</button>
+                <button type="button" onClick={() => setActiveModal(null)} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '10px', width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff', fontSize: '1.1rem', backdropFilter: 'blur(10px)', transition: 'background 0.2s' }} onMouseOver={e => e.currentTarget.style.background = 'rgba(255,255,255,0.25)'} onMouseOut={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}><ProIcon name="x" /></button>
               </div>
               {/* Status badge */}
               <div style={{ marginTop: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(10px)', borderRadius: '20px', padding: '5px 14px', position: 'relative', zIndex: 1 }}>
@@ -5559,7 +5560,7 @@ export default function Telemedicine({
 
               {/* Doctor Section */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '1.25rem', padding: '1rem 1.15rem', borderRadius: '14px', background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
-                <div style={{ width: '46px', height: '46px', borderRadius: '50%', background: 'linear-gradient(135deg, #059669, #10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '1.2rem', color: '#fff', fontWeight: 700, boxShadow: '0 4px 12px rgba(16,185,129,0.25)' }}>🩺</div>
+                <div style={{ width: '46px', height: '46px', borderRadius: '50%', background: 'linear-gradient(135deg, #059669, #10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '1.2rem', color: '#fff', fontWeight: 700, boxShadow: '0 4px 12px rgba(16,185,129,0.25)' }}><ProIcon name="stethoscope" /></div>
                 <div style={{ flex: 1 }}>
                   <strong style={{ color: 'var(--text-main)', fontSize: '0.95rem', display: 'block', lineHeight: '1.3' }}>Dr. Ousmane Sow</strong>
                   <small style={{ color: 'var(--text-sub)', fontSize: '0.76rem' }}>Médecin généraliste</small>
@@ -5573,7 +5574,7 @@ export default function Telemedicine({
               {/* Patient Section */}
               <div style={{ marginBottom: '1.25rem', padding: '1rem 1.15rem', borderRadius: '14px', border: '1px dashed rgba(16,185,129,0.35)', background: 'linear-gradient(135deg, rgba(16,185,129,0.04), rgba(5,150,105,0.02))' }}>
                 <div className="d-flex align-items-center gap-2 mb-2">
-                  <span style={{ fontSize: '0.85rem' }}>👤</span>
+                  <span style={{ fontSize: '0.85rem' }}><ProIcon name="user" /></span>
                   <small style={{ color: 'var(--text-sub)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Patient(e) bénéficiaire</small>
                 </div>
                 <div className="d-flex justify-content-between align-items-end">
@@ -5590,7 +5591,7 @@ export default function Telemedicine({
               {/* Medications Section */}
               <div style={{ marginBottom: '1.25rem' }}>
                 <div className="d-flex align-items-center gap-2 mb-3">
-                  <span style={{ fontSize: '0.85rem' }}>💊</span>
+                  <span style={{ fontSize: '0.85rem' }}><ProIcon name="pill" /></span>
                   <small style={{ color: 'var(--text-sub)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Médicaments prescrits & posologie</small>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -5604,7 +5605,7 @@ export default function Telemedicine({
                           <span style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981', fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', border: '1px solid rgba(16,185,129,0.2)' }}>2 boîtes</span>
                         </div>
                         <div className="d-flex align-items-center gap-1">
-                          <span style={{ color: 'var(--text-sub)', fontSize: '0.72rem' }}>⏱</span>
+                          <span style={{ color: 'var(--text-sub)', fontSize: '0.72rem' }}><ProIcon name="clock" /></span>
                           <small style={{ color: 'var(--text-sub)', fontSize: '0.76rem' }}>1 gélule × 3 fois/jour — pendant 7 jours</small>
                         </div>
                       </div>
@@ -5620,7 +5621,7 @@ export default function Telemedicine({
                           <span style={{ background: 'rgba(16,185,129,0.1)', color: '#10b981', fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', border: '1px solid rgba(16,185,129,0.2)' }}>1 boîte</span>
                         </div>
                         <div className="d-flex align-items-center gap-1">
-                          <span style={{ color: 'var(--text-sub)', fontSize: '0.72rem' }}>⏱</span>
+                          <span style={{ color: 'var(--text-sub)', fontSize: '0.72rem' }}><ProIcon name="clock" /></span>
                           <small style={{ color: 'var(--text-sub)', fontSize: '0.76rem' }}>1 comprimé en cas de fièvre (max 3/jour)</small>
                         </div>
                       </div>
@@ -5637,14 +5638,14 @@ export default function Telemedicine({
                   </div>
                   <div style={{ flex: 1 }}>
                     <div className="d-flex align-items-center gap-2 mb-1">
-                      <span style={{ fontSize: '0.85rem' }}>📱</span>
+                      <span style={{ fontSize: '0.85rem' }}><ProIcon name="smartphone" /></span>
 <strong style={{ color: '#10b981', fontSize: '0.82rem' }}>QR Code tiers-payant pharmacie (50%)</strong>
                     </div>
                     <small style={{ color: 'var(--text-sub)', fontSize: '0.74rem', lineHeight: '1.5', display: 'block' }}>
                       Présentez ce QR code dans n'importe quelle pharmacie partenaire agréée du Sénégal pour bénéficier de la prise en charge 50% UNAMUSC.
                     </small>
                     <div style={{ marginTop: '6px', display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(16,185,129,0.08)', padding: '3px 8px', borderRadius: '6px' }}>
-                      <span style={{ fontSize: '0.65rem' }}>✅</span>
+                      <span style={{ fontSize: '0.65rem' }}><ProIcon name="check-circle" color="#059669" /></span>
                       <small style={{ color: '#10b981', fontSize: '0.66rem', fontWeight: 700 }}>Ordonnance vérifiée & authentifiée</small>
                     </div>
                   </div>
@@ -5653,7 +5654,7 @@ export default function Telemedicine({
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '0.5rem' }}>
                 <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 1.4rem', fontWeight: 700, cursor: 'pointer', textTransform: 'none', fontSize: '0.85rem', transition: 'all 0.2s' }} onClick={() => setActiveModal(null)} onMouseOver={e => { e.currentTarget.style.borderColor = '#10b981'; e.currentTarget.style.color = '#10b981'; }} onMouseOut={e => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.color = 'var(--text-sub)'; }}>Fermer</button>
-                <button type="button" style={{ background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.65rem 1.6rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 16px rgba(16,185,129,0.35)', textTransform: 'none', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.2s, transform 0.15s' }} onClick={handleDownloadPrescription} onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(16,185,129,0.45)'; }} onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(16,185,129,0.35)'; }}>📥 Télécharger l'ordonnance PDF officielle</button>
+                <button type="button" style={{ background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', color: '#ffffff', border: 'none', borderRadius: '12px', padding: '0.65rem 1.6rem', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 16px rgba(16,185,129,0.35)', textTransform: 'none', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '8px', transition: 'all 0.2s, transform 0.15s' }} onClick={handleDownloadPrescription} onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(16,185,129,0.45)'; }} onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(16,185,129,0.35)'; }}><ProIcon name="download" /> Télécharger l'ordonnance PDF officielle</button>
               </div>
             </div>
           </div>
@@ -5667,7 +5668,7 @@ export default function Telemedicine({
           <div style={{ maxWidth: '580px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
             <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2" style={{ borderColor: 'var(--border-color)' }}>
               <h5 className="fw-bold text-success mb-0 d-flex align-items-center gap-2">
-                <span>👨‍⚕️</span> Enregistrement d'un Médecin de Garde
+                <span><ProIcon name="stethoscope" /></span> Enregistrement d'un Médecin de Garde
               </h5>
               <button type="button" className="btn-close" onClick={() => setActiveModal(null)}></button>
             </div>
@@ -5764,7 +5765,7 @@ export default function Telemedicine({
               <div className="d-flex justify-content-end gap-2 mt-4">
                 <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.65rem 1.25rem' }} onClick={() => setActiveModal(null)}>Annuler</button>
                 <button type="submit" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.65rem 1.5rem', fontWeight: '800' }}>
-                  💾 Enregistrer le Médecin dans le Réseau
+                  <ProIcon name="save" /> Enregistrer le Médecin dans le Réseau
                 </button>
               </div>
             </form>
@@ -5825,14 +5826,14 @@ export default function Telemedicine({
             <div className="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
               <div className="d-flex align-items-center gap-3">
                 <div style={{ width: '52px', height: '52px', borderRadius: '16px', background: 'linear-gradient(135deg, #2563eb, #3b82f6)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', boxShadow: '0 6px 20px rgba(59,130,246,0.4)' }}>
-                  👨‍⚕️
+                  <ProIcon name="stethoscope" />
                 </div>
                 <div>
                   <h4 className="fw-extrabold mb-1 text-primary" style={{ fontSize: '1.35rem', letterSpacing: '-0.02em' }}>
                     Annuaire Régional des {doctorsList.length} Spécialistes CNOM
                   </h4>
                   <small style={{ color: 'var(--text-sub)', fontSize: '0.84rem' }}>
-                    Conseil National de l'Ordre des Médecins du Sénégal • Garde H24 Télémédecine 🇸🇳
+                    Conseil National de l'Ordre des Médecins du Sénégal • Garde H24 Télémédecine <ProIcon name="senegal-flag" />
                   </small>
                 </div>
               </div>
@@ -5944,7 +5945,7 @@ export default function Telemedicine({
                   {notifToast.message}
                 </div>
                 <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)', marginTop: '0.4rem' }}>
-                  🔊 Message vocal diffusé • Cliquez pour fermer
+                  <ProIcon name="volume" /> Message vocal diffusé • Cliquez pour fermer
                 </div>
               </div>
               {/* Bouton fermer */}
@@ -5955,7 +5956,7 @@ export default function Telemedicine({
                   borderRadius: '8px', width: '28px', height: '28px', cursor: 'pointer',
                   fontSize: '1rem', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}
-              >✕</button>
+              ><ProIcon name="x" /></button>
             </div>
           </div>
         </div>,
@@ -5971,7 +5972,7 @@ export default function Telemedicine({
             <div className="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom" style={{ borderColor: 'var(--border-color, #e2e8f0)' }}>
               <div className="d-flex align-items-center gap-3">
                 <div style={{ width: '52px', height: '52px', borderRadius: '16px', background: 'linear-gradient(135deg, #059669, #10b981)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', boxShadow: '0 6px 20px rgba(16,185,129,0.4)', flexShrink: 0 }}>
-                  💻
+                  <ProIcon name="laptop" />
                 </div>
                 <div>
                   <div className="d-flex align-items-center gap-2">
@@ -5983,7 +5984,7 @@ export default function Telemedicine({
                     </span>
                   </div>
                   <small style={{ color: 'var(--text-sub, #64748b)', fontSize: '0.82rem' }}>
-                    Réseau national certifié CNOM & Convention CSU UNAMUSC 🇸🇳
+                    Réseau national certifié CNOM & Convention CSU UNAMUSC <ProIcon name="senegal-flag" />
                   </small>
                 </div>
               </div>
@@ -6024,9 +6025,9 @@ export default function Telemedicine({
                     >
                       <div className="d-flex justify-content-between align-items-start mb-2 flex-wrap gap-2">
                         <div>
-                          <strong style={{ color: 'var(--text-main, #0f172a)', fontSize: '0.88rem' }}>📍 {item.region}</strong>
+                          <strong style={{ color: 'var(--text-main, #0f172a)', fontSize: '0.88rem' }}><ProIcon name="map-pin" /> {item.region}</strong>
                           <div className="text-muted small mt-0.5" style={{ fontSize: '0.72rem' }}>
-                            🏥 Pôles d'appui : {item.hospitals}
+                            <ProIcon name="hospital" /> Pôles d'appui : {item.hospitals}
                           </div>
                         </div>
                         <div className="d-flex align-items-center gap-2">
@@ -6053,7 +6054,7 @@ export default function Telemedicine({
             {/* Performance & Box info */}
             <div className="p-3.5 rounded-4 mb-4 border" style={{ background: 'rgba(16, 185, 129, 0.06)', borderColor: 'rgba(16, 185, 129, 0.3)' }}>
               <div className="d-flex align-items-center gap-2 text-success fw-extrabold mb-1" style={{ fontSize: '0.90rem' }}>
-                <span>⚡</span> Performance & Temps d'attente moyen :
+                <span><ProIcon name="zap" /></span> Performance & Temps d'attente moyen :
               </div>
               <p className="mb-0" style={{ fontSize: '0.84rem', color: 'var(--text-sub, #475569)', lineHeight: 1.55 }}>
                 Prise en charge moyenne en salle d'attente virtuelle : <strong>2 minutes 45 secondes</strong>. Transmission automatique de l'ordonnance sécurisée à la pharmacie partenaire la plus proche.
@@ -6083,7 +6084,7 @@ export default function Telemedicine({
             <div className="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom" style={{ borderColor: 'var(--border-color, #e2e8f0)' }}>
               <div className="d-flex align-items-center gap-3">
                 <div style={{ width: '52px', height: '52px', borderRadius: '16px', background: 'linear-gradient(135deg, #d97706, #f59e0b)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', boxShadow: '0 6px 20px rgba(245,158,11,0.4)', flexShrink: 0 }}>
-                  ⭐
+                  <ProIcon name="star" color="#f59e0b" />
                 </div>
                 <div>
                   <h4 className="fw-extrabold mb-0" style={{ color: '#d97706', fontSize: '1.30rem', letterSpacing: '-0.02em' }}>
@@ -6130,7 +6131,7 @@ export default function Telemedicine({
                   borderRadius: '16px'
                 }}
               >
-                <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>💬</div>
+                <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}><ProIcon name="message-square" /></div>
                 <strong className="d-block mb-1" style={{ fontSize: '0.92rem' }}>
                   Aucun avis publié
                 </strong>
@@ -6163,14 +6164,14 @@ export default function Telemedicine({
             <div className="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom" style={{ borderColor: 'var(--border-color, #e2e8f0)' }}>
               <div className="d-flex align-items-center gap-3">
                 <div style={{ width: '52px', height: '52px', borderRadius: '16px', background: 'linear-gradient(135deg, #7e22ce, #a855f7)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', boxShadow: '0 6px 20px rgba(168,85,247,0.4)', flexShrink: 0 }}>
-                  💳
+                  <ProIcon name="credit-card" />
                 </div>
                 <div>
                   <h4 className="fw-extrabold mb-0" style={{ color: '#7e22ce', fontSize: '1.30rem', letterSpacing: '-0.02em' }}>
                     Décomposition du Tiers-Payant UNAMUSC (80%)
                   </h4>
                   <small style={{ color: 'var(--text-sub, #64748b)', fontSize: '0.82rem' }}>
-                    Convention tarifaire de santé publique au Sénégal 🇸🇳
+                    Convention tarifaire de santé publique au Sénégal <ProIcon name="senegal-flag" />
                   </small>
                 </div>
               </div>
@@ -6193,7 +6194,7 @@ export default function Telemedicine({
                   style={{ borderRadius: '10px', fontSize: '0.78rem' }}
                   onClick={() => setSelectedTarifType('generaliste')}
                 >
-                  🩺 Généraliste (7 500 F)
+                  <ProIcon name="stethoscope" /> Généraliste (7 500 F)
                 </button>
                 <button 
                   type="button" 
@@ -6201,7 +6202,7 @@ export default function Telemedicine({
                   style={{ borderRadius: '10px', fontSize: '0.78rem' }}
                   onClick={() => setSelectedTarifType('specialiste')}
                 >
-                  👨‍⚕️ Spécialiste CNOM (12 500 F)
+                  <ProIcon name="stethoscope" /> Spécialiste CNOM (12 500 F)
                 </button>
                 <button 
                   type="button" 
@@ -6209,7 +6210,7 @@ export default function Telemedicine({
                   style={{ borderRadius: '10px', fontSize: '0.78rem' }}
                   onClick={() => setSelectedTarifType('expertise')}
                 >
-                  🔬 Télé-expertise (20 000 F)
+                  <ProIcon name="microscope" /> Télé-expertise (20 000 F)
                 </button>
                 <button 
                   type="button" 
@@ -6217,7 +6218,7 @@ export default function Telemedicine({
                   style={{ borderRadius: '10px', fontSize: '0.78rem' }}
                   onClick={() => setSelectedTarifType('maternite')}
                 >
-                  🤰 Maternité (100% Gratuit)
+                  <ProIcon name="heart-pulse" /> Maternité (100% Gratuit)
                 </button>
               </div>
             </div>
@@ -6263,7 +6264,7 @@ export default function Telemedicine({
                       </tr>
                       <tr>
                         <td style={{ padding: '0.85rem 1.25rem', color: '#059669', fontSize: '0.90rem', fontWeight: '750' }}>
-                          🛡️ Prise en charge officielle UNAMUSC ({rate}%) :
+                          <ProIcon name="shield-check" /> Prise en charge officielle UNAMUSC ({rate}%) :
                         </td>
                         <td style={{ padding: '0.85rem 1.25rem', color: '#059669', textAlign: 'right', fontWeight: '900', fontSize: '1.15rem' }}>
                           - {unamuscShare.toLocaleString('fr-FR')} FCFA
@@ -6271,7 +6272,7 @@ export default function Telemedicine({
                       </tr>
                       <tr style={{ borderTop: '2px solid var(--border-color, #e2e8f0)', background: 'rgba(168, 85, 247, 0.12)' }}>
                         <td style={{ padding: '1.1rem 1.25rem', color: '#6b21a8', fontSize: '0.95rem', fontWeight: '900' }}>
-                          💳 Reste à charge patient (Ticket modérateur {100 - rate}%) :
+                          <ProIcon name="credit-card" /> Reste à charge patient (Ticket modérateur {100 - rate}%) :
                         </td>
                         <td style={{ padding: '1.1rem 1.25rem', color: '#6b21a8', textAlign: 'right', fontWeight: '900', fontSize: '1.40rem' }}>
                           {patientShare === 0 ? '0 FCFA (Gratuit)' : `${patientShare.toLocaleString('fr-FR')} FCFA`}
@@ -6284,11 +6285,11 @@ export default function Telemedicine({
             })()}
 
             <div className="p-3.5 rounded-4 mb-4" style={{ background: 'var(--bg-card-subtle, #f8fafc)', border: '1px solid var(--border-color, #e2e8f0)' }}>
-              <strong className="d-block mb-2" style={{ color: 'var(--text-main, #0f172a)', fontSize: '0.84rem' }}>📱 Modes de règlement instantanés (Tiers-Payant sans avance de frais) :</strong>
+              <strong className="d-block mb-2" style={{ color: 'var(--text-main, #0f172a)', fontSize: '0.84rem' }}><ProIcon name="smartphone" /> Modes de règlement instantanés (Tiers-Payant sans avance de frais) :</strong>
               <div className="d-flex gap-2 flex-wrap">
                 <span className="badge bg-primary px-3 py-1.5 fw-bold" style={{ borderRadius: '8px', fontSize: '0.78rem' }}>🌊 Wave Mobile Money (0% Frais)</span>
                 <span className="badge bg-warning text-dark px-3 py-1.5 fw-bold" style={{ borderRadius: '8px', fontSize: '0.78rem' }}>🍊 Orange Money Sénégal</span>
-                <span className="badge bg-danger px-3 py-1.5 fw-bold" style={{ borderRadius: '8px', fontSize: '0.78rem' }}>🔴 Free Money Sénégal</span>
+                <span className="badge bg-danger px-3 py-1.5 fw-bold" style={{ borderRadius: '8px', fontSize: '0.78rem' }}><ProIcon name="status-red" color="#ef4444" fill="#ef4444" size={10} /> Free Money Sénégal</span>
               </div>
             </div>
 

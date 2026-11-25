@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ProIcon from '../components/ProIcon';
 
 // Centre de notifications SMS/WhatsApp.
 // - Agent : voit l'historique + peut envoyer manuellement
@@ -133,7 +134,7 @@ export default function Notifications({ lang, portalMode, agentUser }) {
         textAlign: 'center'
       }}>
         <div className="container" style={{ position: 'relative', zIndex: 2 }}>
-          <h1 style={{ color: '#fff', fontSize: '2.35rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 3px 6px rgba(0,0,0,0.4)', letterSpacing: '-0.02em' }}>🔔 {t.title}</h1>
+          <h1 style={{ color: '#fff', fontSize: '2.35rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 3px 6px rgba(0,0,0,0.4)', letterSpacing: '-0.02em' }}><ProIcon name="bell" /> {t.title}</h1>
           <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '1.05rem', fontWeight: '500', maxWidth: '750px', margin: '0 auto', textShadow: '0 1px 3px rgba(0,0,0,0.3)', lineHeight: '1.6' }}>{t.subtitle}</p>
         </div>
       </section>
@@ -142,7 +143,7 @@ export default function Notifications({ lang, portalMode, agentUser }) {
         {isAgent && (
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1.5rem' }}>
             <button className="btn btn-primary btn-sm" onClick={() => setShowForm(!showForm)}>
-              ➕ {t.newNotif}
+              <ProIcon name="plus" /> {t.newNotif}
             </button>
           </div>
         )}

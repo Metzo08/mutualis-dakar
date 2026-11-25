@@ -1,3 +1,4 @@
+import ProIcon from '../../components/ProIcon';
 /**
  * LotsTable.jsx — Tableau paginé des adhésions de masse (§1.2 — Étape 2).
  * Props : lotsData, lotsPage, lotsLoading, onPage, onProduction.
@@ -50,7 +51,7 @@ export default function LotsTable({ lotsData, lotsPage, lotsLoading, onPage, onP
                 <td style={{ padding: '0.5rem 0.7rem', textAlign: 'right' }}>
                   <button type="button" onClick={() => onProduction(l.reference)}
                     style={{ background: 'transparent', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '0.25rem 0.6rem', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', color: '#0f172a' }}>
-                    📜 Production
+                    <ProIcon name="scroll-text" /> Production
                   </button>
                 </td>
               </tr>
@@ -66,7 +67,7 @@ export default function LotsTable({ lotsData, lotsPage, lotsLoading, onPage, onP
         <span>Page {lotsData.pagination?.page} / {lotsData.pagination?.totalPages}</span>
         <button type="button" disabled={!(lotsData.pagination?.hasNext)} onClick={() => onPage(lotsPage + 1)}
           style={{ border: '1px solid #cbd5e1', borderRadius: '8px', padding: '0.3rem 0.8rem', background: '#fff' }}>
-          Suivant ▶
+          Suivant <ProIcon name="play" />
         </button>
       </div>
     </>

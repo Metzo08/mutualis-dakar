@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import ProIcon from '../components/ProIcon';
 
 export default function Cartographie({ lang }) {
   const [filter, setFilter] = useState(null);
@@ -187,19 +188,19 @@ export default function Cartographie({ lang }) {
   };
 
   const medicalSpecialties = [
-    { key: 'cardiologie', label: 'Cardiologie', icon: '🫀' },
+    { key: 'cardiologie', label: 'Cardiologie', icon: <ProIcon name="heart-pulse" color="#dc2626" /> },
     { key: 'urologie', label: 'Urologie', icon: '💧' },
     { key: 'dermatologie', label: 'Dermatologie', icon: '🧼' },
-    { key: 'pediatrie', label: 'Pédiatrie', icon: '👶' },
-    { key: 'maternite', label: 'Gynécologie & Maternité', icon: '🤰' },
-    { key: 'ophtalmologie', label: 'Ophtalmologie', icon: '👁️' },
+    { key: 'pediatrie', label: 'Pédiatrie', icon: <ProIcon name="baby" /> },
+    { key: 'maternite', label: 'Gynécologie & Maternité', icon: <ProIcon name="heart-pulse" /> },
+    { key: 'ophtalmologie', label: 'Ophtalmologie', icon: <ProIcon name="eye" /> },
     { key: 'dentaire', label: 'Dentaire', icon: '🦷' },
-    { key: 'neurologie', label: 'Neurologie', icon: '🧠' },
+    { key: 'neurologie', label: 'Neurologie', icon: <ProIcon name="brain" /> },
     { key: 'oncologie', label: 'Oncologie', icon: '🎗️' },
     { key: 'chirurgie', label: 'Chirurgie', icon: '🔪' },
-    { key: 'biologie', label: 'Biologie (Labo)', icon: '🔬' },
-    { key: 'radiologie', label: 'Radiologie', icon: '🩻' },
-    { key: 'generale', label: 'Médecine Générale', icon: '🩺' }
+    { key: 'biologie', label: 'Biologie (Labo)', icon: <ProIcon name="microscope" /> },
+    { key: 'radiologie', label: 'Radiologie', icon: <ProIcon name="scan" /> },
+    { key: 'generale', label: 'Médecine Générale', icon: <ProIcon name="stethoscope" /> }
   ];
 
   const matchesSpecialty = (loc, specKey) => {
@@ -417,7 +418,7 @@ export default function Cartographie({ lang }) {
           box-shadow: 0 3px 10px rgba(5,150,105,0.5);
           border: 2px solid white;
           font-size: 14px;
-        "><span style="transform:rotate(45deg)">💊</span></div>`;
+        "><span style="transform:rotate(45deg)"><ProIcon name="pill" /></span></div>`;
         iconSize = [32, 32];
         iconAnchor = [16, 32];
         popupAnchor = [0, -35];
@@ -458,17 +459,17 @@ export default function Cartographie({ lang }) {
       if (loc.type === 'pharmacy') {
         return `
           <div style="min-width:240px; font-family:'Outfit',sans-serif; color:#0f172a; padding:4px;">
-            <div style="font-weight:800; font-size:1rem; color:#059669; margin-bottom:6px;">💊 ${loc.name}</div>
+            <div style="font-weight:800; font-size:1rem; color:#059669; margin-bottom:6px;"><ProIcon name="pill" /> ${loc.name}</div>
             <div style="font-size:0.8rem; background:#f0fdf4; border-radius:6px; padding:6px 8px; margin-bottom:8px; color:#065f46;">
-              ✓ Pharmacies Agréées CMU
+              <ProIcon name="check" color="#059669" /> Pharmacies Agréées CMU
             </div>
             <table style="font-size:0.78rem; width:100%; border-collapse:collapse;">
-              ${loc.titulaire ? `<tr><td style="color:#64748b; padding:2px 4px 2px 0; white-space:nowrap;">👤</td><td style="color:#0f172a; padding:2px 0;">${loc.titulaire}</td></tr>` : ''}
-              <tr><td style="color:#64748b; padding:2px 4px 2px 0;">📍</td><td style="color:#0f172a; padding:2px 0;">${loc.desc || '—'}</td></tr>
+              ${loc.titulaire ? `<tr><td style="color:#64748b; padding:2px 4px 2px 0; white-space:nowrap;"><ProIcon name="user" /></td><td style="color:#0f172a; padding:2px 0;">${loc.titulaire}</td></tr>` : ''}
+              <tr><td style="color:#64748b; padding:2px 4px 2px 0;"><ProIcon name="map-pin" /></td><td style="color:#0f172a; padding:2px 0;">${loc.desc || '—'}</td></tr>
               <tr><td style="color:#64748b; padding:2px 4px 2px 0;">🏘️</td><td style="color:#0f172a; padding:2px 0;">${loc.commune || '—'}</td></tr>
-              ${loc.region ? `<tr><td style="color:#64748b; padding:2px 4px 2px 0;">🗺️</td><td style="color:#0f172a; padding:2px 0;">${loc.region}</td></tr>` : ''}
+              ${loc.region ? `<tr><td style="color:#64748b; padding:2px 4px 2px 0;"><ProIcon name="map" /></td><td style="color:#0f172a; padding:2px 0;">${loc.region}</td></tr>` : ''}
               <tr><td style="color:#64748b; padding:2px 4px 2px 0;">🕐</td><td style="color:#0f172a; padding:2px 0;">${loc.hours || '8h – 22h (selon officine)'}</td></tr>
-              <tr><td style="color:#64748b; padding:2px 4px 2px 0;">💳</td><td style="color:#059669; padding:2px 0; font-weight:600;">${loc.coverage || '50% génériques CMU'}</td></tr>
+              <tr><td style="color:#64748b; padding:2px 4px 2px 0;"><ProIcon name="credit-card" /></td><td style="color:#059669; padding:2px 0; font-weight:600;">${loc.coverage || '50% génériques CMU'}</td></tr>
             </table>
           </div>
         `;
@@ -481,19 +482,19 @@ export default function Cartographie({ lang }) {
               </span>
               ${loc.coverage && loc.coverage !== 'N/A' ? `
                 <span style="background-color: rgba(16, 185, 129, 0.12); color: var(--success); padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 700;">
-                  ✓ CMU
+                  <ProIcon name="check" color="#059669" /> CMU
                 </span>
               ` : ''}
             </div>
             <h4 style="margin: 0 0 4px 0; color: #0f172a; font-size: 0.95rem; font-weight: 800; line-height: 1.2;">${loc.name}</h4>
-            <p style="font-size: 0.75rem; color: #475569; margin: 0 0 4px 0;">📍 ${loc.commune || 'Dakar'} - ${loc.desc}</p>
+            <p style="font-size: 0.75rem; color: #475569; margin: 0 0 4px 0;"><ProIcon name="map-pin" /> ${loc.commune || 'Dakar'} - ${loc.desc}</p>
             ${loc.landmark ? `
               <div style="background: rgba(245, 158, 11, 0.08); border-left: 2.5px solid #f59e0b; padding: 4px 8px; border-radius: 4px; margin: 6px 0; font-size: 0.72rem; color: #b45309;">
-                📍 <strong>Repère :</strong> ${loc.landmark}
+                <ProIcon name="map-pin" /> <strong>Repère :</strong> ${loc.landmark}
               </div>
             ` : ''}
             <p style="font-size: 0.72rem; color: #475569; margin: 0 0 4px 0;">🕐 ${loc.hours || '8h-18h'}</p>
-            <p style="font-size: 0.75rem; font-weight: bold; margin: 0; color: var(--primary);">📞 ${loc.phone}</p>
+            <p style="font-size: 0.75rem; font-weight: bold; margin: 0; color: var(--primary);"><ProIcon name="phone" /> ${loc.phone}</p>
           </div>
         `;
       }
@@ -808,7 +809,7 @@ export default function Cartographie({ lang }) {
               animationDelay: `-${Math.random() * 8}s`,
               filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))'
             }}>
-              {i % 3 === 0 ? '💊' : i % 3 === 1 ? '➕' : '🏥'}
+              {i % 3 === 0 ? '💊' : i % 3 === 1 ? <ProIcon name="plus" /> : <ProIcon name="hospital" />}
             </span>
           ))}
           <style>
@@ -869,7 +870,7 @@ export default function Cartographie({ lang }) {
                       setActiveSpecialty(null);
                     }}
                   >
-                    📂 Catégories
+                    <ProIcon name="folder-open" /> Catégories
                   </button>
                   <button 
                     style={{
@@ -889,7 +890,7 @@ export default function Cartographie({ lang }) {
                       setFilter('all');
                     }}
                   >
-                    🩺 Spécialités
+                    <ProIcon name="stethoscope" /> Spécialités
                   </button>
                 </div>
 
@@ -983,12 +984,12 @@ export default function Cartographie({ lang }) {
                     <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-sub)', fontSize: '0.9rem', lineHeight: '1.4' }}>
                       {activeTab === 'specialty' && !activeSpecialty ? (
                         <>
-                          <span style={{ fontSize: '2rem', display: 'block', marginBottom: '0.5rem' }}>🩺</span>
+                          <span style={{ fontSize: '2rem', display: 'block', marginBottom: '0.5rem' }}><ProIcon name="stethoscope" /></span>
                           Veuillez choisir une spécialité médicale ci-dessus pour localiser les structures correspondantes.
                         </>
                       ) : activeTab === 'category' && !filter ? (
                         <>
-                          <span style={{ fontSize: '2rem', display: 'block', marginBottom: '0.5rem' }}>📂</span>
+                          <span style={{ fontSize: '2rem', display: 'block', marginBottom: '0.5rem' }}><ProIcon name="folder-open" /></span>
                           Veuillez choisir une catégorie ci-dessus pour localiser les structures correspondantes.
                         </>
                       ) : (
@@ -1074,7 +1075,7 @@ export default function Cartographie({ lang }) {
                           </div>
                           
                           <div style={{ fontSize: '0.75rem', color: 'var(--text-sub)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                            <span>📍</span>
+                            <span><ProIcon name="map-pin" /></span>
                             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '280px' }}>
                               {loc.commune || 'Dakar'} - {loc.desc}
                             </span>
@@ -1104,7 +1105,7 @@ export default function Cartographie({ lang }) {
                                 handleItemSelect(loc);
                               }}
                             >
-                              👁️ Carte
+                              <ProIcon name="eye" /> Carte
                             </button>
                             <button 
                               className="btn btn-outline btn-xs" 
@@ -1188,7 +1189,7 @@ export default function Cartographie({ lang }) {
                         setActiveSpecialty(null);
                       }}
                     >
-                      📂 Catégories
+                      <ProIcon name="folder-open" /> Catégories
                     </button>
                     <button 
                       style={{
@@ -1207,7 +1208,7 @@ export default function Cartographie({ lang }) {
                         setFilter('all');
                       }}
                     >
-                      🩺 Spécialités
+                      <ProIcon name="stethoscope" /> Spécialités
                     </button>
                   </div>
 
@@ -1303,7 +1304,7 @@ export default function Cartographie({ lang }) {
                               }}
                             >
                               <div style={{ fontWeight: '800', fontSize: '0.78rem', color: 'var(--text-main)' }}>{loc.name}</div>
-                              <div style={{ fontSize: '0.68rem', color: 'var(--text-sub)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>📍 {loc.commune || 'Dakar'} - {loc.desc}</div>
+                              <div style={{ fontSize: '0.68rem', color: 'var(--text-sub)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}><ProIcon name="map-pin" /> {loc.commune || 'Dakar'} - {loc.desc}</div>
                             </div>
                           );
                         })
@@ -1348,7 +1349,7 @@ export default function Cartographie({ lang }) {
                             display: 'inline-block',
                             marginBottom: '0.5rem'
                           }}>
-                            📍 {selectedItem.commune}
+                            <ProIcon name="map-pin" /> {selectedItem.commune}
                           </span>
                         )}
                         <h3 style={{ color: 'var(--neutral-dark)', fontSize: '1.45rem', fontWeight: '800', margin: '0.25rem 0 0.5rem 0' }}>{selectedItem.name}</h3>
@@ -1364,7 +1365,7 @@ export default function Cartographie({ lang }) {
                           className="btn btn-outline btn-sm"
                           style={{ textDecoration: 'none' }}
                         >
-                          🧭 Google Maps
+                          <ProIcon name="navigation" /> Google Maps
                         </a>
                         {selectedItem.phone && (
                           <a
@@ -1372,7 +1373,7 @@ export default function Cartographie({ lang }) {
                             className="btn btn-outline btn-sm"
                             style={{ textDecoration: 'none' }}
                           >
-                            📞 Appeler
+                            <ProIcon name="phone" /> Appeler
                           </a>
                         )}
                       </div>
@@ -1384,17 +1385,17 @@ export default function Cartographie({ lang }) {
                     
                     <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', margin: '0.75rem 0', fontSize: '0.9rem' }}>
                       <p style={{ margin: 0 }}>
-                        ⏰ <strong>Horaires:</strong> {selectedItem.hours || '8h-18h'}
+                        <ProIcon name="clock" /> <strong>Horaires:</strong> {selectedItem.hours || '8h-18h'}
                       </p>
                       <p style={{ margin: 0 }}>
-                        📞 <strong>Téléphone:</strong> {selectedItem.phone}
+                        <ProIcon name="phone" /> <strong>Téléphone:</strong> {selectedItem.phone}
                       </p>
                     </div>
 
                     {/* Landmark / Point de repère */}
                     {selectedItem.landmark && (
                       <div className="info-box-landmark" style={{ marginTop: '1rem', padding: '1rem', borderRadius: '12px', display: 'flex', alignItems: 'flex-start', gap: '0.75rem', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
-                        <span style={{ fontSize: '1.5rem', marginTop: '-2px' }}>📍</span>
+                        <span style={{ fontSize: '1.5rem', marginTop: '-2px' }}><ProIcon name="map-pin" /></span>
                         <div>
                           <strong className="info-box-title" style={{ fontSize: '0.8rem', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px', marginBottom: '0.25rem' }}>Point de repère pour s'orienter</strong>
                           <span className="info-box-text" style={{ fontSize: '0.9rem', fontWeight: '500' }}>{selectedItem.landmark}</span>
@@ -1405,7 +1406,7 @@ export default function Cartographie({ lang }) {
                     {/* Citizen Tips / Conseils utiles */}
                     {selectedItem.localInfo && (
                       <div className="info-box-tips" style={{ marginTop: '1rem', padding: '1rem', borderRadius: '12px', display: 'flex', alignItems: 'flex-start', gap: '0.75rem', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
-                        <span style={{ fontSize: '1.5rem', marginTop: '-2px' }}>💡</span>
+                        <span style={{ fontSize: '1.5rem', marginTop: '-2px' }}><ProIcon name="lightbulb" /></span>
                         <div>
                           <strong className="info-box-title" style={{ fontSize: '0.8rem', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px', marginBottom: '0.25rem' }}>Conseils utiles aux Sénégalais</strong>
                           <span className="info-box-text" style={{ fontSize: '0.9rem', lineHeight: '1.45', display: 'block' }}>{selectedItem.localInfo}</span>
@@ -1416,7 +1417,7 @@ export default function Cartographie({ lang }) {
                     {/* Coverage info */}
                     {selectedItem.coverage && selectedItem.coverage !== 'N/A' && (
                       <div className="info-box-coverage" style={{ margin: '1rem 0', padding: '0.75rem 1rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <span style={{ fontSize: '1.1rem' }}>🛡️</span>
+                        <span style={{ fontSize: '1.1rem' }}><ProIcon name="shield-check" /></span>
                         <span style={{ fontSize: '0.9rem', fontWeight: '600' }} className="info-box-text">
                           Prise en charge : <span style={{ fontWeight: '700' }} className="info-box-value">{selectedItem.coverage}</span>
                         </span>

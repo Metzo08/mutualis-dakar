@@ -1,4 +1,5 @@
 import { cacheSet } from '../utils/offline';
+import ProIcon from './ProIcon';
 
 export default function Header({ 
   lang, 
@@ -132,7 +133,7 @@ export default function Header({
       return {
         name: partnerUser.contactName || partnerUser.structureName || 'Partenaire',
         role: partnerUser.structureName || 'Structure de soins',
-        avatar: '🏥'
+        avatar: <ProIcon name="hospital" />
       };
     }
     if (portalMode === 'citizen') {
@@ -140,13 +141,13 @@ export default function Header({
         return {
           name: `${citizenUser.firstName} ${citizenUser.lastName}`,
           role: t.profileCitizenRole,
-          avatar: '👤'
+          avatar: <ProIcon name="user" />
         };
       } else {
         return {
           name: t.profileGuest,
           role: t.profileGuestRole,
-          avatar: '🔑'
+          avatar: <ProIcon name="key" />
         };
       }
     } else {
@@ -154,13 +155,13 @@ export default function Header({
         return {
           name: `${agentUser.firstName} ${agentUser.lastName}`,
           role: agentUser.role || t.profileRole,
-          avatar: '💼'
+          avatar: <ProIcon name="briefcase" />
         };
       } else {
         return {
           name: 'Agent de santé',
           role: 'Non connecté',
-          avatar: '🔒'
+          avatar: <ProIcon name="lock" />
         };
       }
     }
@@ -262,7 +263,7 @@ export default function Header({
           className={`nav-item ${currentView === 'home' ? 'active' : ''}`}
           onClick={() => navigateTo('home')}
         >
-          <span className="nav-icon">📊</span>
+          <span className="nav-icon"><ProIcon name="bar-chart" /></span>
           {portalMode === 'citizen' ? t.homeCitizen : t.home}
         </button>
 
@@ -271,7 +272,7 @@ export default function Header({
           className={`nav-item ${currentView === 'programmes' ? 'active' : ''}`}
           onClick={() => navigateTo('programmes')}
         >
-          <span className="nav-icon">🛡️</span>
+          <span className="nav-icon"><ProIcon name="shield-check" /></span>
           {t.programmes}
         </button>
 
@@ -280,7 +281,7 @@ export default function Header({
           className={`nav-item ${currentView === 'guarantees' || currentView === 'purchase-orders' ? 'active' : ''}`}
           onClick={() => navigateTo('guarantees')}
         >
-          <span className="nav-icon">📜</span>
+          <span className="nav-icon"><ProIcon name="scroll-text" /></span>
           {lang === 'fr' ? 'Lettres de garantie (Hôpital 80%)' : 'Bataaxalu garansi (Hôpital)'}
         </button>
 
@@ -288,7 +289,7 @@ export default function Header({
           className={`nav-item ${currentView === 'purchase-orders' ? 'active' : ''}`}
           onClick={() => navigateTo('purchase-orders')}
         >
-          <span className="nav-icon">💊</span>
+          <span className="nav-icon"><ProIcon name="pill" /></span>
           {lang === 'fr' ? 'Bons de commande (Pharmacie 50%)' : 'Bonu garab (Pharmacie)'}
         </button>
 
@@ -297,7 +298,7 @@ export default function Header({
           className={`nav-item ${currentView === 'telemedicine' ? 'active' : ''}`}
           onClick={() => navigateTo('telemedicine')}
         >
-          <span className="nav-icon">🎥</span>
+          <span className="nav-icon"><ProIcon name="video" /></span>
           {lang === 'fr' ? 'Télémédecine' : 'Téléconsultation'}
         </button>
 
@@ -306,7 +307,7 @@ export default function Header({
           className={`nav-item ${currentView === 'medical-profile' ? 'active' : ''}`}
           onClick={() => navigateTo('medical-profile')}
         >
-          <span className="nav-icon">🩺</span>
+          <span className="nav-icon"><ProIcon name="stethoscope" /></span>
           {lang === 'fr' ? 'Dossier & radios' : 'Tére fajj'}
         </button>
 
@@ -315,7 +316,7 @@ export default function Header({
           className={`nav-item ${currentView === 'maternity' ? 'active' : ''}`}
           onClick={() => navigateTo('maternity')}
         >
-          <span className="nav-icon">🩺</span>
+          <span className="nav-icon"><ProIcon name="stethoscope" /></span>
           {lang === 'fr' ? 'Spécialités & Pathologies' : 'Fajj ak wérug yaram'}
         </button>
 
@@ -324,7 +325,7 @@ export default function Header({
           className={`nav-item ${currentView === 'parrainage-solidaire' ? 'active' : ''}`}
           onClick={() => navigateTo('parrainage-solidaire')}
         >
-          <span className="nav-icon">🤝</span>
+          <span className="nav-icon"><ProIcon name="handshake" /></span>
           {lang === 'fr' ? 'Parrainage solidaire' : 'Dimbalé (parrainage)'}
         </button>
 
@@ -333,7 +334,7 @@ export default function Header({
           className={`nav-item ${currentView === 'galerie' ? 'active' : ''}`}
           onClick={() => navigateTo('galerie')}
         >
-          <span className="nav-icon">🖼️</span>
+          <span className="nav-icon"><ProIcon name="image" /></span>
           {lang === 'fr' ? 'Galerie CSU' : 'Natalu CSU'}
         </button>
 
@@ -342,7 +343,7 @@ export default function Header({
           className={`nav-item ${currentView === 'infos-csu' ? 'active' : ''}`}
           onClick={() => navigateTo('infos-csu')}
         >
-          <span className="nav-icon">ℹ️</span>
+          <span className="nav-icon"><ProIcon name="info" color="#0284c7" /></span>
           {lang === 'fr' ? 'Infos Sénégal' : 'Xibaari Sénégal'}
         </button>
 
@@ -351,7 +352,7 @@ export default function Header({
           className={`nav-item ${currentView === 'blog-experts' ? 'active' : ''}`}
           onClick={() => navigateTo('blog-experts')}
         >
-          <span className="nav-icon">✍️</span>
+          <span className="nav-icon"><ProIcon name="pen-tool" /></span>
           {lang === 'fr' ? 'Espace blog & paroles d\'experts' : 'Waxu docteur'}
         </button>
 
@@ -360,7 +361,7 @@ export default function Header({
           className={`nav-item ${currentView === 'partnership' ? 'active' : ''}`}
           onClick={() => navigateTo('partnership')}
         >
-          <span className="nav-icon">🤝</span>
+          <span className="nav-icon"><ProIcon name="handshake" /></span>
           {lang === 'fr' ? 'Espace partenariat' : 'Pekou partenariat'}
         </button>
 
@@ -369,7 +370,7 @@ export default function Header({
           className={`nav-item ${currentView === 'rse' ? 'active' : ''}`}
           onClick={() => navigateTo('rse')}
         >
-          <span className="nav-icon">🏢</span>
+          <span className="nav-icon"><ProIcon name="building2" /></span>
           {lang === 'fr' ? 'Espace RSE' : 'Espace RSE'}
         </button>
 
@@ -384,7 +385,7 @@ export default function Header({
             }
           }}
         >
-          <span className="nav-icon">👤</span>
+          <span className="nav-icon"><ProIcon name="user" /></span>
           {citizenUser || agentUser 
             ? (portalMode === 'citizen' ? t.profileNavCitizen : t.profileNavAgent) 
             : (lang === 'fr' ? 'Mon compte' : 'Sama compte')}
@@ -396,7 +397,7 @@ export default function Header({
             className={`nav-item ${currentView === 'beneficiaries' ? 'active' : ''}`}
             onClick={() => navigateTo('beneficiaries')}
           >
-            <span className="nav-icon">👥</span>
+            <span className="nav-icon"><ProIcon name="users" /></span>
             {t.beneficiaries}
           </button>
         )}
@@ -406,7 +407,7 @@ export default function Header({
           className={`nav-item ${currentView === 'services' && servicesTab !== 'donate' ? 'active' : ''}`}
           onClick={() => navigateTo('services', 'register')}
         >
-          <span className="nav-icon">💳</span>
+          <span className="nav-icon"><ProIcon name="credit-card" /></span>
           {portalMode === 'citizen' ? t.servicesCitizen : t.services}
         </button>
 
@@ -415,7 +416,7 @@ export default function Header({
           className={`nav-item ${currentView === 'services' && servicesTab === 'donate' ? 'active' : ''}`}
           onClick={() => navigateTo('services', 'donate')}
         >
-          <span className="nav-icon">❤️</span>
+          <span className="nav-icon"><ProIcon name="heart" color="#dc2626" /></span>
           {t.donateMenu}
         </button>
 
@@ -424,7 +425,7 @@ export default function Header({
           className={`nav-item ${currentView === 'medicaments' ? 'active' : ''}`}
           onClick={() => navigateTo('medicaments')}
         >
-          <span className="nav-icon">💊</span>
+          <span className="nav-icon"><ProIcon name="pill" /></span>
           {t.medicaments}
         </button>
 
@@ -444,7 +445,7 @@ export default function Header({
           className={`nav-item ${currentView === 'map' ? 'active' : ''}`}
           onClick={() => navigateTo('map')}
         >
-          <span className="nav-icon">🏥</span>
+          <span className="nav-icon"><ProIcon name="hospital" /></span>
           {t.map}
         </button>
 
@@ -453,7 +454,7 @@ export default function Header({
           className={`nav-item ${currentView === 'directory' ? 'active' : ''}`}
           onClick={() => navigateTo('directory')}
         >
-          <span className="nav-icon">📁</span>
+          <span className="nav-icon"><ProIcon name="folder" /></span>
           {t.directory}
         </button>
 
@@ -463,7 +464,7 @@ export default function Header({
             className={`nav-item ${currentView === 'depts' ? 'active' : ''}`}
             onClick={() => navigateTo('depts')}
           >
-            <span className="nav-icon">📍</span>
+            <span className="nav-icon"><ProIcon name="map-pin" /></span>
             {t.depts}
           </button>
         )}
@@ -480,7 +481,7 @@ export default function Header({
               className={`nav-item ${currentView === 'audit-logs' ? 'active' : ''}`}
               onClick={() => setView('audit-logs')}
             >
-              <span className="nav-icon">🔒</span>
+              <span className="nav-icon"><ProIcon name="lock" /></span>
               {t.auditLogs}
             </button>
 
@@ -488,7 +489,7 @@ export default function Header({
               className={`nav-item ${currentView === 'card-studio' ? 'active' : ''}`}
               onClick={() => setView('card-studio')}
             >
-              <span className="nav-icon">🪪</span>
+              <span className="nav-icon"><ProIcon name="id-card" /></span>
               {lang === 'fr' ? 'Studio Cartes' : 'Kartu CSU'}
             </button>
           </>
@@ -500,7 +501,7 @@ export default function Header({
             className={`nav-item ${currentView === 'dashboard' ? 'active' : ''}`}
             onClick={() => setView('dashboard')}
           >
-            <span className="nav-icon">📊</span>
+            <span className="nav-icon"><ProIcon name="bar-chart" /></span>
             {t.dashboard}
           </button>
         )}
@@ -511,7 +512,7 @@ export default function Header({
             className={`nav-item ${currentView === 'accounts-cards' ? 'active' : ''}`}
             onClick={() => navigateTo('accounts-cards')}
           >
-            <span className="nav-icon">🔑</span>
+            <span className="nav-icon"><ProIcon name="key" /></span>
             {lang === 'fr' ? "Comptes, cartes & codes d'accès" : 'Kompte ak koodu assuré'}
           </button>
         )}
@@ -523,21 +524,21 @@ export default function Header({
               className={`nav-item ${currentView === 'import-control' ? 'active' : ''}`}
               onClick={() => setView('import-control')}
             >
-              <span className="nav-icon">📥</span>
+              <span className="nav-icon"><ProIcon name="download" /></span>
               {lang === 'fr' ? 'Importation contrôlée' : 'Yóbbu kontrolé'}
             </button>
             <button
               className={`nav-item ${currentView === 'security-center' ? 'active' : ''}`}
               onClick={() => setView('security-center')}
             >
-              <span className="nav-icon">🛡️</span>
+              <span className="nav-icon"><ProIcon name="shield-check" /></span>
               {lang === 'fr' ? 'Sécurité & surveillance' : 'Kaaraange'}
             </button>
             <button
               className={`nav-item ${currentView === 'excel-reports' ? 'active' : ''}`}
               onClick={() => setView('excel-reports')}
             >
-              <span className="nav-icon">📊</span>
+              <span className="nav-icon"><ProIcon name="bar-chart" /></span>
               {lang === 'fr' ? 'Rapports Excel' : 'Rapport Excel'}
             </button>
           </>
@@ -549,7 +550,7 @@ export default function Header({
             className={`nav-item ${currentView === 'claims' ? 'active' : ''}`}
             onClick={() => setView('claims')}
           >
-            <span className="nav-icon">💊</span>
+            <span className="nav-icon"><ProIcon name="pill" /></span>
             {portalMode === 'agent' ? t.claims : t.myClaims}
           </button>
         )}
@@ -560,7 +561,7 @@ export default function Header({
             className={`nav-item ${currentView === 'notifications' ? 'active' : ''}`}
             onClick={() => setView('notifications')}
           >
-            <span className="nav-icon">🔔</span>
+            <span className="nav-icon"><ProIcon name="bell" /></span>
             {t.notifications}
           </button>
         )}
@@ -571,7 +572,7 @@ export default function Header({
             className={`nav-item ${currentView === 'cotisations' ? 'active' : ''}`}
             onClick={() => setView('cotisations')}
           >
-            <span className="nav-icon">💰</span>
+            <span className="nav-icon"><ProIcon name="wallet" /></span>
             {portalMode === 'agent' ? t.cotisations : t.myCotisations}
           </button>
         )}
@@ -582,7 +583,7 @@ export default function Header({
             className={`nav-item ${currentView === 'regional-stats' ? 'active' : ''}`}
             onClick={() => setView('regional-stats')}
           >
-            <span className="nav-icon">🗺️</span>
+            <span className="nav-icon"><ProIcon name="map" /></span>
             {t.regionalStats}
           </button>
         )}
@@ -593,7 +594,7 @@ export default function Header({
             className={`nav-item ${currentView === 'partner' ? 'active' : ''}`}
             onClick={() => setView('partner')}
           >
-            <span className="nav-icon">🏥</span>
+            <span className="nav-icon"><ProIcon name="hospital" /></span>
             {t.partner}
           </button>
         )}
@@ -604,7 +605,7 @@ export default function Header({
             className={`nav-item ${currentView === 'payments' ? 'active' : ''}`}
             onClick={() => setView('payments')}
           >
-            <span className="nav-icon">💳</span>
+            <span className="nav-icon"><ProIcon name="credit-card" /></span>
             {t.payments}
           </button>
         )}
@@ -615,7 +616,7 @@ export default function Header({
             className={`nav-item ${currentView === 'loyalty' ? 'active' : ''}`}
             onClick={() => setView('loyalty')}
           >
-            <span className="nav-icon">⭐</span>
+            <span className="nav-icon"><ProIcon name="star" color="#f59e0b" /></span>
             {t.loyalty}
           </button>
         )}
@@ -626,7 +627,7 @@ export default function Header({
             onClick={() => setView('superadmin-governance')}
             style={{ borderLeft: '3px solid #818cf8' }}
           >
-            <span className="nav-icon">👑</span>
+            <span className="nav-icon"><ProIcon name="crown" /></span>
             {lang === 'fr' ? 'Gouvernance Super Admin' : 'Njiit bu rëy Super Admin'}
           </button>
         )}

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
+import ProIcon from '../components/ProIcon';
 
 export default function RsePortal({ portalMode, agentUser }) {
   const [beneficiariesCount, setBeneficiariesCount] = useState(50);
@@ -158,7 +159,7 @@ export default function RsePortal({ portalMode, agentUser }) {
             marginBottom: '1rem',
             display: 'inline-block'
           }}>
-            Espace RSE & impact social 🇸🇳
+            Espace RSE & impact social <ProIcon name="senegal-flag" />
           </span>
           <h1 style={{ color: '#fff', fontSize: '2.25rem', fontWeight: '800', marginBottom: '0.75rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
             Responsabilité sociétale des entreprises
@@ -175,21 +176,21 @@ export default function RsePortal({ portalMode, agentUser }) {
         {isAgentOrAdmin && (
           <div className="grid grid-3" style={{ gap: '1.5rem', marginBottom: '2.5rem' }}>
             <div className="card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', borderTop: '4px solid #10b981' }}>
-              <div style={{ fontSize: '2rem' }}>🎯</div>
+              <div style={{ fontSize: '2rem' }}><ProIcon name="target" /></div>
               <h3 style={{ fontSize: '1.1rem', fontWeight: '700', margin: 0 }}>Impact direct</h3>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', margin: 0, lineHeight: '1.5' }}>
                 Enrôlez directement des enfants talibés, des élèves du primaire ou des familles à faible revenu dans les mutuelles de santé MSD locales.
               </p>
             </div>
             <div className="card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', borderTop: '4px solid #3b82f6' }}>
-              <div style={{ fontSize: '2rem' }}>⚖️</div>
+              <div style={{ fontSize: '2rem' }}><ProIcon name="shield-check" /></div>
               <h3 style={{ fontSize: '1.1rem', fontWeight: '700', margin: 0 }}>Déduction fiscale</h3>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', margin: 0, lineHeight: '1.5' }}>
                 Selon la législation fiscale sénégalaise, les dons RSE aux structures de santé et mutuelles de CMU sont 100% déductibles du bénéfice imposable.
               </p>
             </div>
             <div className="card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem', borderTop: '4px solid #8b5cf6' }}>
-              <div style={{ fontSize: '2rem' }}>🤝</div>
+              <div style={{ fontSize: '2rem' }}><ProIcon name="handshake" /></div>
               <h3 style={{ fontSize: '1.1rem', fontWeight: '700', margin: 0 }}>Valorisation RSE</h3>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', margin: 0, lineHeight: '1.5' }}>
                 Obtenez un label "Partenaire Solidaire National" décerné par l'UNAMUSC pour valoriser votre impact social auprès de vos clients et partenaires.
@@ -205,7 +206,7 @@ export default function RsePortal({ portalMode, agentUser }) {
             {/* Left: Simulator */}
             <div className="card" style={{ padding: '2rem' }}>
               <h2 style={{ fontSize: '1.4rem', fontWeight: '800', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                📊 Simulateur de contribution RSE
+                <ProIcon name="bar-chart" /> Simulateur de contribution RSE
               </h2>
               
               {/* Step 1: Beneficiaries Count */}
@@ -272,7 +273,7 @@ export default function RsePortal({ portalMode, agentUser }) {
 
               {/* Financial Results Table */}
               <div style={{ backgroundColor: 'var(--bg-alt)', borderRadius: '12px', padding: '1.25rem', border: '1px solid var(--border-color)', marginBottom: '1.5rem' }}>
-                <h4 style={{ margin: '0 0 1rem 0', fontSize: '0.95rem', fontWeight: '700', color: 'var(--text-color)' }}>💡 Détail financier & avantages fiscaux</h4>
+                <h4 style={{ margin: '0 0 1rem 0', fontSize: '0.95rem', fontWeight: '700', color: 'var(--text-color)' }}><ProIcon name="lightbulb" /> Détail financier & avantages fiscaux</h4>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.85rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -302,7 +303,7 @@ export default function RsePortal({ portalMode, agentUser }) {
 
               {/* Geo targeting */}
               <div>
-                <label style={{ display: 'block', fontWeight: '600', fontSize: '0.9rem', marginBottom: '0.5rem' }}>🎯 Cibler un département spécifique</label>
+                <label style={{ display: 'block', fontWeight: '600', fontSize: '0.9rem', marginBottom: '0.5rem' }}><ProIcon name="target" /> Cibler un département spécifique</label>
                 <select className="input" value={selectedDept} onChange={(e) => setSelectedDept(e.target.value)} style={{ width: '100%' }}>
                   <option value="Dakar">MSD mutuelle de santé départementale de Dakar</option>
                   <option value="Pikine">MSD mutuelle de santé départementale de Pikine</option>
@@ -322,7 +323,7 @@ export default function RsePortal({ portalMode, agentUser }) {
             <div className="card" style={{ padding: '2rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <div>
                 <h2 style={{ fontSize: '1.4rem', fontWeight: '800', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  ✍️ Promesse de parrainage
+                  <ProIcon name="pen-tool" /> Promesse de parrainage
                 </h2>
                 <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', marginBottom: '1.5rem' }}>
                   Soumettez votre intention de parrainage pour initier la convention RSE officielle avec les représentants nationaux.
@@ -391,7 +392,7 @@ export default function RsePortal({ portalMode, agentUser }) {
                     className="btn btn-primary" 
                     style={{ width: '100%', padding: '0.75rem', fontSize: '0.95rem', fontWeight: '700', marginTop: '0.5rem' }}
                   >
-                    🚀 Envoyer la promesse RSE
+                    <ProIcon name="rocket" /> Envoyer la promesse RSE
                   </button>
                 </form>
               </div>
@@ -401,7 +402,7 @@ export default function RsePortal({ portalMode, agentUser }) {
           <div style={{ maxWidth: '650px', margin: '0 auto 3rem auto' }}>
             <div className="card" style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', textAlign: 'left' }}>
               <h2 style={{ fontSize: '1.4rem', fontWeight: '800', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--primary)' }}>
-                ✍️ Promesse de parrainage
+                <ProIcon name="pen-tool" /> Promesse de parrainage
               </h2>
               <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', marginBottom: '1rem' }}>
                 Soumettez votre intention de parrainage pour initier la convention RSE officielle avec les représentants nationaux.
@@ -506,7 +507,7 @@ export default function RsePortal({ portalMode, agentUser }) {
                   className="btn btn-primary" 
                   style={{ width: '100%', padding: '0.75rem', fontSize: '0.95rem', fontWeight: '700', marginTop: '0.5rem' }}
                 >
-                  🚀 Envoyer la promesse RSE
+                  <ProIcon name="rocket" /> Envoyer la promesse RSE
                 </button>
               </form>
             </div>
@@ -518,7 +519,7 @@ export default function RsePortal({ portalMode, agentUser }) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
               <h2 style={{ fontSize: '1.5rem', fontWeight: '800', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                📢 Campagnes de plaidoyer actives (UNAMUSC)
+                <ProIcon name="megaphone" /> Campagnes de plaidoyer actives (UNAMUSC)
               </h2>
               <p style={{ fontSize: '0.9rem', color: 'var(--text-sub)', margin: '0.25rem 0 0 0' }}>
                 Les membres et agents régionaux de l'UNAMUSC sollicitent l'appui des entreprises pour parrainer des communautés ciblées.
@@ -542,7 +543,7 @@ export default function RsePortal({ portalMode, agentUser }) {
 
           {showCreateAdvocacy && (
             <div className="card text-left fade-in-up" style={{ padding: '2rem', marginBottom: '2rem', borderLeft: '4px solid var(--secondary)', borderRadius: '12px' }}>
-              <h3 style={{ margin: '0 0 1.25rem 0', fontSize: '1.2rem', fontWeight: '850', color: 'var(--secondary)' }}>➕ Lancer une nouvelle campagne de plaidoyer (UNAMUSC)</h3>
+              <h3 style={{ margin: '0 0 1.25rem 0', fontSize: '1.2rem', fontWeight: '850', color: 'var(--secondary)' }}><ProIcon name="plus" /> Lancer une nouvelle campagne de plaidoyer (UNAMUSC)</h3>
               <form onSubmit={handleCreateAdvocacy} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <div>
@@ -648,12 +649,12 @@ export default function RsePortal({ portalMode, agentUser }) {
                     borderRadius: '4px',
                     textTransform: 'uppercase'
                   }}>
-                    En cours de signature ✅
+                    En cours de signature <ProIcon name="check-circle" color="#059669" />
                   </div>
                 )}
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '0.5rem' }}>
                   <span style={{ fontSize: '0.75rem', backgroundColor: 'var(--bg-alt)', padding: '0.2rem 0.5rem', borderRadius: '4px', fontWeight: '600' }}>
-                    📍 MSD {campaign.targetDept}
+                    <ProIcon name="map-pin" /> MSD {campaign.targetDept}
                   </span>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-sub)' }}>
                     Par {campaign.initiator}
@@ -689,7 +690,7 @@ export default function RsePortal({ portalMode, agentUser }) {
                     }}
                     style={{ marginTop: '1rem', width: '100%', padding: '0.5rem' }}
                   >
-                    🤝 Répondre à ce plaidoyer
+                    <ProIcon name="handshake" /> Répondre à ce plaidoyer
                   </button>
                 ) : (
                   <div style={{ color: '#10b981', fontSize: '0.8rem', fontWeight: '700', marginTop: '1rem', textAlign: 'center' }}>
@@ -705,7 +706,7 @@ export default function RsePortal({ portalMode, agentUser }) {
         {pledges.length > 0 && (
           <section style={{ marginBottom: '3rem' }}>
             <h2 style={{ fontSize: '1.3rem', fontWeight: '800', marginBottom: '1rem' }}>
-              📜 Vos engagements enregistrés ({pledges.length})
+              <ProIcon name="scroll-text" /> Vos engagements enregistrés ({pledges.length})
             </h2>
             <div className="card" style={{ padding: '0' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
@@ -761,12 +762,12 @@ export default function RsePortal({ portalMode, agentUser }) {
         }}>
           <div className="card" style={{ maxWidth: '500px', width: '90%', padding: '2rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', color: 'var(--text-color)', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '16px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '800' }}>🤝 Répondre au plaidoyer</h3>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '800' }}><ProIcon name="handshake" /> Répondre au plaidoyer</h3>
               <button 
                 onClick={() => setShowPledgeModal(null)} 
                 style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer', color: 'var(--text-sub)' }}
               >
-                ✕
+                <ProIcon name="x" />
               </button>
             </div>
             

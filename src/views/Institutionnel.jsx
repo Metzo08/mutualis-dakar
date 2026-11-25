@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import ProIcon from '../components/ProIcon';
 
 export default function Institutionnel({ lang }) {
   const dict = {
@@ -145,15 +146,15 @@ export default function Institutionnel({ lang }) {
       <section className="container section-padding">
         <div className="grid grid-3">
           <div className="card">
-            <h3 style={{ color: 'var(--primary)', marginBottom: '1rem' }}>📜 {t.historyTitle}</h3>
+            <h3 style={{ color: 'var(--primary)', marginBottom: '1rem' }}><ProIcon name="scroll-text" /> {t.historyTitle}</h3>
             <p>{t.historyText}</p>
           </div>
           <div className="card">
-            <h3 style={{ color: 'var(--primary)', marginBottom: '1rem' }}>🎯 {t.missionTitle}</h3>
+            <h3 style={{ color: 'var(--primary)', marginBottom: '1rem' }}><ProIcon name="target" /> {t.missionTitle}</h3>
             <p>{t.missionText}</p>
           </div>
           <div className="card">
-            <h3 style={{ color: 'var(--primary)', marginBottom: '1rem' }}>💡 {t.visionTitle}</h3>
+            <h3 style={{ color: 'var(--primary)', marginBottom: '1rem' }}><ProIcon name="lightbulb" /> {t.visionTitle}</h3>
             <p>{t.visionText}</p>
           </div>
         </div>
@@ -212,28 +213,28 @@ export default function Institutionnel({ lang }) {
           <ul className="governance-list">
             <li className="governance-item">
               <div className="doc-info">
-                <span className="doc-icon">📁</span>
+                <span className="doc-icon"><ProIcon name="folder" /></span>
                 <span style={{ fontWeight: '600' }}>{t.doc1}</span>
               </div>
               <button className="btn btn-outline btn-sm" onClick={() => handleDownload(t.doc1)}>{t.downloadBtn}</button>
             </li>
             <li className="governance-item">
               <div className="doc-info">
-                <span className="doc-icon">📁</span>
+                <span className="doc-icon"><ProIcon name="folder" /></span>
                 <span style={{ fontWeight: '600' }}>{t.doc2}</span>
               </div>
               <button className="btn btn-outline btn-sm" onClick={() => handleDownload(t.doc2)}>{t.downloadBtn}</button>
             </li>
             <li className="governance-item">
               <div className="doc-info">
-                <span className="doc-icon">📄</span>
+                <span className="doc-icon"><ProIcon name="file-text" /></span>
                 <span style={{ fontWeight: '600' }}>{t.doc3}</span>
               </div>
               <button className="btn btn-outline btn-sm" onClick={() => handleDownload(t.doc3)}>{t.downloadBtn}</button>
             </li>
             <li className="governance-item">
               <div className="doc-info">
-                <span className="doc-icon">📋</span>
+                <span className="doc-icon"><ProIcon name="clipboard-list" /></span>
                 <span style={{ fontWeight: '600' }}>{t.doc4}</span>
               </div>
               <button className="btn btn-outline btn-sm" onClick={() => handleDownload(t.doc4)}>{t.downloadBtn}</button>

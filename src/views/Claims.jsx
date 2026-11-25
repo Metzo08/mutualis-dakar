@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
 import { formatFCFA } from '../utils/formatters';
+import ProIcon from '../components/ProIcon';
 
 // Design Premium Haut de Gamme — Bons & Garanties (Prises en charge Tiers-Payant UNAMUSC)
 export default function Claims({ portalMode, citizenUser, agentUser }) {
@@ -150,7 +151,7 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
       <div style={{ borderBottom: '1px solid var(--border-color)', background: 'var(--bg-card-subtle)', padding: '1rem 2rem' }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <h5 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>Bons & garanties 🇸🇳</h5>
+            <h5 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>Bons & garanties <ProIcon name="senegal-flag" /></h5>
             <span style={{ height: '16px', width: '1.5px', background: 'var(--border-color)' }} />
             <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '20px', fontSize: '0.78rem', fontWeight: '700', padding: '0.35rem 0.9rem' }}>
               ● Session sécurisée UNAMUSC
@@ -164,10 +165,10 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
               className="form-select form-select-sm fw-bold"
               style={{ background: 'var(--bg-card)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '12px', padding: '0.5rem 1rem', fontSize: '0.84rem', cursor: 'pointer', minHeight: '40px' }}
             >
-              <option value="">🔍 Filtrer par statut (Tous)</option>
-              <option value="pending">⏳ En attente</option>
-              <option value="approved">✅ Validé</option>
-              <option value="rejected">❌ Refusé</option>
+              <option value="">Filtrer par statut (Tous)</option>
+              <option value="pending">En attente</option>
+              <option value="approved">Validé</option>
+              <option value="rejected">Refusé</option>
             </select>
           </div>
         </div>
@@ -190,7 +191,7 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
               boxShadow: '0 16px 40px rgba(0, 0, 0, 0.28)' 
             }}>
               <span style={{ background: '#059669', color: '#ffffff', padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.82rem', fontWeight: '800', display: 'inline-block', marginBottom: '0.85rem', width: 'fit-content', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.3)' }}>
-                🇸🇳 UNAMUSC Sénégal
+                <ProIcon name="senegal-flag" /> UNAMUSC Sénégal
               </span>
               <h1 className="fw-black text-white mb-2" style={{ fontSize: '2.2rem', letterSpacing: '-0.02em', textShadow: '0 3px 6px rgba(0,0,0,0.4)' }}>
                 Gestion des prises en charge
@@ -212,14 +213,14 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
                     </h3>
                   </div>
                   <div style={{ width: '52px', height: '52px', borderRadius: '16px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem', border: '1.5px solid rgba(16, 185, 129, 0.3)' }}>
-                    📑
+                    <ProIcon name="file-spreadsheet" />
                   </div>
                 </div>
 
                 <div className="d-flex flex-column gap-2 mb-3.5">
                   <div className="d-flex align-items-center gap-2">
                     <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '20px', fontSize: '0.78rem', fontWeight: '800', padding: '0.3rem 0.85rem' }}>
-                      ⚡ Tiers-payant actif
+                      <ProIcon name="zap" /> Tiers-payant actif
                     </span>
                     <span style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '20px', fontSize: '0.76rem', fontWeight: '700', padding: '0.3rem 0.75rem' }}>
                       80% Hospit • 50% Pharma
@@ -284,7 +285,7 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
                       setForm({ ...form, structureName: 'Hôpital Universitaire de Fann (Dakar)', amount: '45000' });
                     }}
                   >
-                    🏥 Hôpital (80%)
+                    <ProIcon name="hospital" /> Hôpital (80%)
                   </button>
 
                   <button 
@@ -305,7 +306,7 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
                       setForm({ ...form, structureName: 'Pharmacie Cheikh Anta Diop', amount: '12500' });
                     }}
                   >
-                    💊 Pharmacie (50%)
+                    <ProIcon name="pill" /> Pharmacie (50%)
                   </button>
                 </div>
               </div>
@@ -424,7 +425,7 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
                         <div>
                           <div className="d-flex align-items-center gap-2 mb-2">
                             <span className="badge fw-extrabold px-3 py-1.5" style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.35)', borderRadius: '12px', fontSize: '0.82rem' }}>
-                              🛡️ Couverture UNAMUSC ({rate}%)
+                              <ProIcon name="shield-check" /> Couverture UNAMUSC ({rate}%)
                             </span>
                             <span style={{ fontSize: '0.78rem', color: 'var(--text-sub)', fontWeight: '700' }}>Tiers-payant régional</span>
                           </div>
@@ -508,7 +509,7 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
                       </>
                     ) : (
                       <>
-                        <span>📤</span> Soumettre la demande à l'UNAMUSC
+                        <span><ProIcon name="upload" /></span> Soumettre la demande à l'UNAMUSC
                       </>
                     )}
                   </button>
@@ -526,7 +527,7 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
               <div className="p-4 rounded-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '24px' }}>
                 <div className="d-flex align-items-center gap-2 mb-3.5 pb-2 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
                   <span style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem' }}>
-                    ❓
+                    <ProIcon name="help" />
                   </span>
                   <h6 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '0.98rem' }}>
                     Informations importantes
@@ -610,7 +611,7 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
                     style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '14px', padding: '0.75rem 1.15rem', minHeight: '46px', width: '100%', fontSize: '0.86rem' }}
                     onClick={() => window.location.hash = '#/directory'}
                   >
-                    <span>🗺️ Structures agréées</span>
+                    <span><ProIcon name="map" /> Structures agréées</span>
                     <span style={{ fontSize: '1.1rem' }}>›</span>
                   </button>
                 </div>
@@ -679,7 +680,7 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
                       <td className="py-3.5" style={{ minWidth: '220px' }}>
                         <div className="d-flex align-items-center gap-3">
                           <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: c.care_type === 'hospitalisation' ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.2)', color: c.care_type === 'hospitalisation' ? '#10b981' : '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', flexShrink: 0 }}>
-                            {c.care_type === 'hospitalisation' ? '🏥' : '💊'}
+                            {c.care_type === 'hospitalisation' ? <ProIcon name="hospital" /> : <ProIcon name="pill" />}
                           </div>
                           <div>
                             <strong className="d-block" style={{ color: 'var(--text-main)', fontSize: '0.92rem' }}>
@@ -727,7 +728,7 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
                             style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)', borderRadius: '12px', padding: '0.45rem 0.95rem', fontSize: '0.82rem', minHeight: '38px' }} 
                             onClick={() => setShowDetailModal(c)}
                           >
-                            <span>👁️</span> Voir
+                            <span><ProIcon name="eye" /></span> Voir
                           </button>
                           
                           {isAgent && c.status === 'pending' && (
@@ -881,7 +882,7 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
             {/* Header with Title and Close Button on same row */}
             <div className="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom" style={{ borderColor: 'var(--border-color, rgba(255,255,255,0.1))' }}>
               <div className="d-flex align-items-center gap-2.5">
-                <span style={{ fontSize: '1.6rem' }}>📄</span>
+                <span style={{ fontSize: '1.6rem' }}><ProIcon name="file-text" /></span>
                 <div>
                   <h5 className="fw-black mb-0" style={{ color: 'var(--text-main, #ffffff)', fontSize: '1.25rem' }}>
                     Détails de la prise en charge
@@ -897,7 +898,7 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
                 style={{ width: '38px', height: '38px', borderRadius: '12px', background: 'var(--bg-card-subtle, rgba(255,255,255,0.06))', color: 'var(--text-sub, #9ca3af)', border: '1px solid var(--border-color, rgba(255,255,255,0.1))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', cursor: 'pointer' }}
                 onClick={() => setShowDetailModal(null)}
               >
-                ✕
+                <ProIcon name="x" />
               </button>
             </div>
 
@@ -945,7 +946,7 @@ export default function Claims({ portalMode, citizenUser, agentUser }) {
                 style={{ background: '#059669', color: '#ffffff', border: '1.5px solid #10b981', borderRadius: '14px', minHeight: '48px', padding: '0.65rem 1.6rem', fontSize: '0.88rem', boxShadow: '0 4px 14px rgba(5,150,105,0.3)', cursor: 'pointer' }} 
                 onClick={() => handleDownloadClaimDoc(showDetailModal)}
               >
-                <span>📥</span> Télécharger le document PDF (🇸🇳)
+                <span><ProIcon name="download" /></span> Télécharger le document PDF (🇸🇳)
               </button>
             </div>
           </div>

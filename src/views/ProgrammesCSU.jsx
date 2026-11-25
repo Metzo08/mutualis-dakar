@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ProIcon from '../components/ProIcon';
 
 export default function ProgrammesCSU({ lang, setViewTab }) {
   const [activeAccordion, setActiveAccordion] = useState(null);
@@ -28,16 +29,16 @@ export default function ProgrammesCSU({ lang, setViewTab }) {
       heroCta: 'Je m\'inscris à la CSU',
       whyTitle: 'Pourquoi s\'inscrire ?',
       whyFeatures: [
-        { icon: '🩺', title: 'Accès aux soins', desc: 'Accès rapide dans tous les postes, centres de santé et hôpitaux du Sénégal.' },
-        { icon: '💰', title: 'Prix accessibles', desc: 'Soins de santé subventionnés et tarifs réduits pour tous les membres.' },
+        { icon: <ProIcon name="stethoscope" />, title: 'Accès aux soins', desc: 'Accès rapide dans tous les postes, centres de santé et hôpitaux du Sénégal.' },
+        { icon: <ProIcon name="wallet" />, title: 'Prix accessibles', desc: 'Soins de santé subventionnés et tarifs réduits pour tous les membres.' },
         { icon: '🌿', title: 'Démarches simples', desc: 'Inscription claire, rapide et décentralisée dans votre commune.' },
-        { icon: '🛡️', title: 'Protection prioritaire', desc: 'Couverture totale pour les enfants de moins de 5 ans et les personnes vulnérables.' }
+        { icon: <ProIcon name="shield-check" />, title: 'Protection prioritaire', desc: 'Couverture totale pour les enfants de moins de 5 ans et les personnes vulnérables.' }
       ],
       gratuiteTitle: 'Les programmes de gratuité',
       gratuitePrograms: [
         {
           title: 'Prise en charge de la dialyse',
-          icon: '🩸',
+          icon: <ProIcon name="droplet" color="#dc2626" />,
           img: '/csu_dialysis_real.png',
           desc: 'La Couverture Sanitaire Universelle garantit la gratuité totale de la dialyse pour tous les insuffisants rénaux dans les structures de santé publiques. Ce programme soulage considérablement les familles d\'un lourd fardeau financier.'
         },
@@ -55,13 +56,13 @@ export default function ProgrammesCSU({ lang, setViewTab }) {
         },
         {
           title: 'CSU élèves & daaras',
-          icon: '📚',
+          icon: <ProIcon name="book-open" />,
           img: '/csu_students_real.png',
           desc: 'Assurance maladie dédiée aux élèves et aux talibés. Pour seulement 1 000 FCFA par an, le ticket modérateur est entièrement couvert pour les consultations et soins en milieu scolaire.'
         },
         {
           title: 'Bourses de sécurité familiale & CEC',
-          icon: '💳',
+          icon: <ProIcon name="credit-card" />,
           img: '/csu_bsf_real.png',
           desc: 'Prise en charge à 100 % dans les mutuelles de santé communautaires pour les bénéficiaires des BSF et les personnes vivant avec un handicap détentrices de la Carte d\'Égalité des Chances (CEC).'
         }
@@ -83,16 +84,16 @@ export default function ProgrammesCSU({ lang, setViewTab }) {
       heroCta: 'Ma mbindu ci CSU',
       whyTitle: 'Lu tax ñu mbindu ?',
       whyFeatures: [
-        { icon: '🩺', title: 'Faju bu yomb', desc: 'Mën a faju ci poste, centre de santé ak hôpital yi ci Sénégal yëpp.' },
-        { icon: '💰', title: 'Njeeg yu woyof', desc: 'Faju gu ñu jàppale ngir ñëpp ñi bokk ci mutuelle bi.' },
+        { icon: <ProIcon name="stethoscope" />, title: 'Faju bu yomb', desc: 'Mën a faju ci poste, centre de santé ak hôpital yi ci Sénégal yëpp.' },
+        { icon: <ProIcon name="wallet" />, title: 'Njeeg yu woyof', desc: 'Faju gu ñu jàppale ngir ñëpp ñi bokk ci mutuelle bi.' },
         { icon: '🌿', title: 'Yoon wu leer', desc: 'Mbindu gu gaaw te yomb ci sa gox.' },
-        { icon: '🛡️', title: 'Aar ñi gën a ñàkk', desc: 'Faju bu mat sëkk ngir xale yi amul 5 at ak ñi gën a waayadi.' }
+        { icon: <ProIcon name="shield-check" />, title: 'Aar ñi gën a ñàkk', desc: 'Faju bu mat sëkk ngir xale yi amul 5 at ak ñi gën a waayadi.' }
       ],
       gratuiteTitle: 'Përogaraam Faju yu Amul Fay',
       gratuitePrograms: [
         {
           title: 'Dialyse bu amul fay',
-          icon: '🩸',
+          icon: <ProIcon name="droplet" color="#dc2626" />,
           img: '/csu_dialysis_real.png',
           desc: 'Couverture Sanitaire Universelle dafay fajj ñiy def dialyse ci hôpital lëétat yi te duñu fay dara. Lii dafay wàññi bu baax coonoy njaboot yi.'
         },
@@ -110,13 +111,13 @@ export default function ProgrammesCSU({ lang, setViewTab }) {
         },
         {
           title: 'CSU Ndongo Daara ak Élèves',
-          icon: '📚',
+          icon: <ProIcon name="book-open" />,
           img: '/csu_students_real.png',
           desc: 'Mutuelle ngir ndongo ekool yi ak daara yi. 1 000 FCFA kese nga fay ci at mi, ñu fajj la sa yaram tawfeex.'
         },
         {
           title: 'Bourses de Sécurité Familiale & CEC',
-          icon: '💳',
+          icon: <ProIcon name="credit-card" />,
           img: '/csu_bsf_real.png',
           desc: 'Faju 100% ci mutuelle yi ngir ñiy jël BSF ak ñi am yàq-yàq ci yaram te yore Carte Égalité des Chances (CEC).'
         }
@@ -264,12 +265,12 @@ function ProgramMeta({ audience, rate }) {
     <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
       {audience && (
         <span style={{ background: 'rgba(5,150,105,0.1)', color: 'var(--primary)', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '600' }}>
-          🎯 {audience}
+          <ProIcon name="target" /> {audience}
         </span>
       )}
       {rate != null && (
         <span style={{ background: 'rgba(34,197,94,0.1)', color: '#16a34a', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: '600' }}>
-          ✅ Prise en charge {rate}%
+          <ProIcon name="check-circle" color="#059669" /> Prise en charge {rate}%
         </span>
       )}
     </div>

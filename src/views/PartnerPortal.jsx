@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ProIcon from '../components/ProIcon';
 
 // Espace partenaire pour les structures de soins et les prestataires conventionnés.
 // Inclut le Module de Gestion des Prestataires & Médecins pour les Administrateurs d'Unions Départementales (UDMS).
@@ -486,7 +487,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
               border: '1px solid rgba(255, 255, 255, 0.3)'
             }}
           >
-            🏥 UNAMUSC — Administration des unions départementales & espace partenaires
+            <ProIcon name="hospital" /> UNAMUSC — Administration des unions départementales & espace partenaires
           </span>
           <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
             {t.title}
@@ -507,11 +508,11 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
               <div className="card shadow-lg border-0 p-4 p-md-5 h-100 rounded-4 text-left d-flex flex-column justify-content-between" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', borderTop: '6px solid #059669', padding: '3rem 2.5rem' }}>
                 <div>
                   <span className="badge bg-success-subtle text-success border border-success px-3.5 py-2 fw-bold mb-4 d-inline-block" style={{ borderRadius: '20px', fontSize: '0.85rem' }}>
-                    🏥 PORTAIL OFFICIEL DES STRUCTURES DE SANTÉ CONVENTIONNÉES
+                    <ProIcon name="hospital" /> PORTAIL OFFICIEL DES STRUCTURES DE SANTÉ CONVENTIONNÉES
                   </span>
                   
                   <h2 className="fw-extrabold mb-3.5" style={{ color: 'var(--primary)', fontSize: '2rem', lineHeight: '1.3', letterSpacing: '-0.01em' }}>
-                    Espace prestataires de santé & administration UDMS 🇸🇳
+                    Espace prestataires de santé & administration UDMS <ProIcon name="senegal-flag" />
                   </h2>
                   
                   <p className="text-muted mb-4" style={{ lineHeight: '1.7', fontSize: '1.02rem', opacity: 0.9 }}>
@@ -520,7 +521,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
 
                   <div className="d-flex flex-column gap-3.5 mb-4">
                     <div className="d-flex gap-3.5 align-items-start p-3.5 rounded-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
-                      <div style={{ fontSize: '1.85rem', color: '#059669', minWidth: '40px' }}>💳</div>
+                      <div style={{ fontSize: '1.85rem', color: '#059669', minWidth: '40px' }}><ProIcon name="credit-card" /></div>
                       <div>
                         <h5 className="fw-bold mb-1.5" style={{ color: 'var(--primary)', fontSize: '1.05rem' }}>Télétransmission & Tiers-payant (80% à 100%)</h5>
                         <p className="text-muted mb-0" style={{ fontSize: '0.88rem', lineHeight: '1.55' }}>Validation en temps réel des cartes CMU et remboursement sous 72h des bordereaux d'actes médicaux.</p>
@@ -528,7 +529,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                     </div>
 
                     <div className="d-flex gap-3.5 align-items-start p-3.5 rounded-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
-                      <div style={{ fontSize: '1.85rem', color: '#059669', minWidth: '40px' }}>🏛️</div>
+                      <div style={{ fontSize: '1.85rem', color: '#059669', minWidth: '40px' }}><ProIcon name="landmark" /></div>
                       <div>
                         <h5 className="fw-bold mb-1.5" style={{ color: 'var(--primary)', fontSize: '1.05rem' }}>Habilitation des Unions Départementales (UDMS)</h5>
                         <p className="text-muted mb-0" style={{ fontSize: '0.88rem', lineHeight: '1.55' }}>Gestion du conventionnement local des médecins, des tarifs réglementés et du contrôle médical.</p>
@@ -540,7 +541,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                 {/* Comptes Démo Rapides */}
                 <div className="p-4 rounded-4 border mt-4" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
                   <span className="small text-muted fw-bold d-block mb-3" style={{ fontSize: '0.82rem' }}>
-                    💡 Comptes démo pré-remplis (cliquez pour tester instantanément) :
+                    <ProIcon name="lightbulb" /> Comptes démo pré-remplis (cliquez pour tester instantanément) :
                   </span>
                   <div className="d-flex flex-wrap gap-2.5">
                     <button 
@@ -549,7 +550,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                       style={{ fontSize: '0.82rem', borderRadius: '10px' }}
                       onClick={() => setLoginForm({ username: 'AGR-2026-DKR-101', password: 'partenaire2026' })}
                     >
-                      🩺 Dr. Ousmane Ndiaye (AGR-2026-DKR-101)
+                      <ProIcon name="stethoscope" /> Dr. Ousmane Ndiaye (AGR-2026-DKR-101)
                     </button>
                     <button 
                       type="button" 
@@ -557,7 +558,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                       style={{ fontSize: '0.82rem', borderRadius: '10px' }}
                       onClick={() => setLoginForm({ username: 'AGR-2026-DKR-404', password: 'partenaire2026' })}
                     >
-                      💊 Pharmacie de la Médina (AGR-2026-DKR-404)
+                      <ProIcon name="pill" /> Pharmacie de la Médina (AGR-2026-DKR-404)
                     </button>
                     <button 
                       type="button" 
@@ -565,7 +566,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                       style={{ fontSize: '0.82rem', borderRadius: '10px' }}
                       onClick={() => setLoginForm({ username: 'partenaire@unamusc.sn', password: 'partenaire2026' })}
                     >
-                      🏛️ UDMS Dakar (partenaire@unamusc.sn)
+                      <ProIcon name="landmark" /> UDMS Dakar (partenaire@unamusc.sn)
                     </button>
                   </div>
                 </div>
@@ -577,7 +578,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
               <div className="card shadow-lg border-0 p-4 p-md-5 h-100 rounded-4 text-left d-flex flex-column justify-content-center" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)', padding: '3rem 2.5rem' }}>
                 <div className="text-center mb-4 pb-2">
                   <div style={{ width: '72px', height: '72px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.2rem', margin: '0 auto 1.25rem', boxShadow: '0 8px 20px rgba(16, 185, 129, 0.2)' }}>
-                    🔐
+                    <ProIcon name="lock" />
                   </div>
                   <h3 className="fw-bold mb-2" style={{ color: 'var(--text-main)', fontSize: '1.5rem' }}>Connexion espace prestataires</h3>
                   <p className="small text-muted mb-0" style={{ fontSize: '0.9rem', lineHeight: '1.5' }}>Accès réservé aux praticiens de santé agréés et administrateurs d'Unions Départementales (UDMS).</p>
@@ -634,7 +635,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
           {/* GRILLE DES 4 GRANDS AXES PRESTATAIRES */}
           <div className="grid grid-4" style={{ gap: '1.5rem' }}>
             <div className="card p-4 text-left shadow-sm" style={{ borderRadius: '20px', background: 'var(--card-bg)', border: '1px solid var(--border-color)', padding: '1.75rem 1.5rem' }}>
-              <div style={{ fontSize: '2.4rem', marginBottom: '0.75rem' }}>🏥</div>
+              <div style={{ fontSize: '2.4rem', marginBottom: '0.75rem' }}><ProIcon name="hospital" /></div>
               <h5 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.5rem' }}>Hôpitaux & cliniques</h5>
               <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', margin: 0, lineHeight: '1.6' }}>
                 Prise en charge directe des lettres de garantie (80%) et télé-admission des urgences médicales.
@@ -642,7 +643,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
             </div>
 
             <div className="card p-4 text-left shadow-sm" style={{ borderRadius: '16px', background: 'var(--card-bg)', border: '1px solid var(--border-color)', padding: '1.75rem 1.5rem' }}>
-              <div style={{ fontSize: '2.4rem', marginBottom: '0.75rem' }}>💊</div>
+              <div style={{ fontSize: '2.4rem', marginBottom: '0.75rem' }}><ProIcon name="pill" /></div>
               <h5 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.5rem' }}>Officines de pharmacie</h5>
               <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', margin: 0, lineHeight: '1.6' }}>
                 Saisie des bons de commande pharmacie (50%) et remboursement direct du Tiers-payant.
@@ -650,7 +651,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
             </div>
 
             <div className="card p-4 text-left shadow-sm" style={{ borderRadius: '16px', background: 'var(--card-bg)', border: '1px solid var(--border-color)', padding: '1.75rem 1.5rem' }}>
-              <div style={{ fontSize: '2.4rem', marginBottom: '0.75rem' }}>🩻</div>
+              <div style={{ fontSize: '2.4rem', marginBottom: '0.75rem' }}><ProIcon name="scan" /></div>
               <h5 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.5rem' }}>Imagerie & laboratoires</h5>
               <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', margin: 0, lineHeight: '1.6' }}>
                 Télétransmission des clichés radiologiques DICOM HD et des comptes-rendus d'examens biologiques.
@@ -658,7 +659,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
             </div>
 
             <div className="card p-4 text-left shadow-sm" style={{ borderRadius: '16px', background: 'var(--card-bg)', border: '1px solid var(--border-color)', padding: '1.75rem 1.5rem' }}>
-              <div style={{ fontSize: '2.4rem', marginBottom: '0.75rem' }}>🏛️</div>
+              <div style={{ fontSize: '2.4rem', marginBottom: '0.75rem' }}><ProIcon name="landmark" /></div>
               <h5 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.5rem' }}>Unions départementales</h5>
               <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', margin: 0, lineHeight: '1.6' }}>
                 Agrément local des praticiens, enregistrement des conventions régionales et audits de réclamations.
@@ -671,7 +672,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
           {/* User Status Bar with Logout */}
           <div className="d-flex justify-content-between align-items-center mb-4 p-3.5 rounded-4" style={{ background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: '16px' }}>
             <div className="d-flex align-items-center gap-3">
-              <span className="badge bg-success text-white p-2 fw-bold" style={{ borderRadius: '10px', fontSize: '0.85rem' }}>⚡ Connecté</span>
+              <span className="badge bg-success text-white p-2 fw-bold" style={{ borderRadius: '10px', fontSize: '0.85rem' }}><ProIcon name="zap" /> Connecté</span>
               <div>
                 <strong className="d-block" style={{ color: 'var(--text-main)', fontSize: '1rem', fontWeight: '800' }}>
                   {partner?.structureName || partner?.name || (agentUser ? `${agentUser.firstName} ${agentUser.lastName}` : 'Centre Hospitalier Abass Ndao')}
@@ -698,7 +699,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
             <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2 border-bottom pb-3" style={{ borderColor: 'var(--border-color)' }}>
               <div>
                 <h4 className="fw-bold mb-1 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-                  <span>🏛️</span> Module d'administration de l'union départementale (UDMS)
+                  <span><ProIcon name="landmark" /></span> Module d'administration de l'union départementale (UDMS)
                 </h4>
                 <p className="small text-muted mb-0">
                   Chaque administrateur d'union départementale peut agréer et créer des médecins, pharmacies, labos et centres de radiologie avec leurs rôles.
@@ -725,7 +726,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                   </select>
                 ) : (
                   <span className="badge bg-primary-subtle text-primary border border-primary px-3 py-2 fw-bold d-flex align-items-center gap-1.5" style={{ borderRadius: '10px', fontSize: '0.88rem' }}>
-                    🏛️ UDMS Dakar
+                    <ProIcon name="landmark" /> UDMS Dakar
                   </span>
                 )}
               </div>
@@ -733,7 +734,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
 
             {udmsToast && (
               <div className="alert alert-success d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm">
-                <span className="fs-4 me-2">✅</span>
+                <span className="fs-4 me-2"><ProIcon name="check-circle" color="#059669" /></span>
                 <div style={{ color: 'var(--text-main)' }}>{udmsToast}</div>
               </div>
             )}
@@ -744,7 +745,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                 <div className="col-lg-5">
                   <div className="p-4 rounded-4 border" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
                     <h5 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--primary)' }}>
-                      <span>✍️</span> Enregistrer un prestataire / médecin
+                      <span><ProIcon name="pen-tool" /></span> Enregistrer un prestataire / médecin
                     </h5>
 
                     <form onSubmit={handleCreatePrestataireByUdms}>
@@ -866,7 +867,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                         className="btn text-white fw-bold w-100 py-2.5 shadow-sm"
                         style={{ background: 'var(--primary)', borderColor: 'var(--primary)', borderRadius: '12px', fontSize: '0.95rem' }}
                       >
-                        ➕ Enregistrer & agréer le prestataire
+                        <ProIcon name="plus" /> Enregistrer & agréer le prestataire
                       </button>
                     </form>
                   </div>
@@ -878,7 +879,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                     <div className="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3 border-bottom pb-3.5" style={{ borderColor: 'var(--border-color)' }}>
                       <div>
                         <span className="badge px-3 py-1.5 fw-bold mb-2 d-inline-block" style={{ background: 'rgba(59, 130, 246, 0.12)', color: 'var(--primary)', border: '1px solid rgba(59, 130, 246, 0.3)', borderRadius: '20px', fontSize: '0.82rem' }}>
-                          🔒 Accès praticien & structure santé (mode lecteur seul)
+                          <ProIcon name="lock" /> Accès praticien & structure santé (mode lecteur seul)
                         </span>
                         <h4 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.38rem', letterSpacing: '-0.01em' }}>
                           Convention & agrément UNAMUSC : <span style={{ color: 'var(--primary)' }}>{partner?.structureName || 'Centre Hospitalier Abass Ndao'}</span>
@@ -889,7 +890,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                       </div>
                       
                       <div className="d-flex align-items-center gap-2 px-3 py-2 rounded-3" style={{ background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)', color: 'var(--success)' }}>
-                        <span style={{ fontSize: '1.1rem' }}>✅</span>
+                        <span style={{ fontSize: '1.1rem' }}><ProIcon name="check-circle" color="#059669" /></span>
                         <span className="fw-bold" style={{ fontSize: '0.85rem' }}>Structure agréée UNAMUSC</span>
                       </div>
                     </div>
@@ -908,7 +909,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                             </strong>
                           </div>
                           <span className="text-muted fw-semibold d-block mt-2 pt-2 border-top" style={{ fontSize: '0.82rem', borderColor: 'var(--border-color)' }}>
-                            👨‍⚕️ {partner?.name || 'Dr. Cheikh Anta Diop'}
+                            <ProIcon name="stethoscope" /> {partner?.name || 'Dr. Cheikh Anta Diop'}
                           </span>
                         </div>
                       </div>
@@ -925,7 +926,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                             </code>
                           </div>
                           <span className="text-muted fw-semibold d-block mt-2 pt-2 border-top" style={{ fontSize: '0.82rem', borderColor: 'var(--border-color)' }}>
-                            🏛️ UDMS : {partner?.udms || 'UDMS Dakar'}
+                            <ProIcon name="landmark" /> UDMS : {partner?.udms || 'UDMS Dakar'}
                           </span>
                         </div>
                       </div>
@@ -942,7 +943,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                             </strong>
                           </div>
                           <span className="text-muted fw-semibold d-block mt-2 pt-2 border-top" style={{ fontSize: '0.82rem', borderColor: 'var(--border-color)' }}>
-                            ⚡ Remboursement direct 72h
+                            <ProIcon name="zap" /> Remboursement direct 72h
                           </span>
                         </div>
                       </div>
@@ -955,11 +956,11 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                               Rôle d'accès système :
                             </span>
                             <span className="badge bg-secondary-subtle text-secondary fw-bold mb-1 d-inline-block px-2.5 py-1" style={{ borderRadius: '8px', fontSize: '0.8rem' }}>
-                              👁️ Lecteur seul (praticien)
+                              <ProIcon name="eye" /> Lecteur seul (praticien)
                             </span>
                           </div>
                           <span className="text-muted fw-semibold d-block mt-2 pt-2 border-top" style={{ fontSize: '0.78rem', borderColor: 'var(--border-color)' }}>
-                            🔒 Modifications réservées à l'UDMS
+                            <ProIcon name="lock" /> Modifications réservées à l'UDMS
                           </span>
                         </div>
                       </div>
@@ -973,7 +974,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                 <div className="p-4 rounded-4 border h-100 d-flex flex-column" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
                   <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                     <h5 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-                      <span>📋</span> {
+                      <span><ProIcon name="clipboard-list" /></span> {
                         isSuperAdmin 
                           ? `Tous les prestataires agréés du Sénégal (${filteredPrestataires.length})` 
                           : isUdmsAgentOrAdmin 
@@ -1025,10 +1026,10 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                                     {p.name}
                                   </div>
                                   <div className="text-muted fw-normal" style={{ fontSize: '0.84rem', lineHeight: '1.3' }}>
-                                    📍 Adresse : {p.commune}
+                                    <ProIcon name="map-pin" /> Adresse : {p.commune}
                                   </div>
                                   <div className="text-muted fw-normal" style={{ fontSize: '0.8rem', lineHeight: '1.3' }}>
-                                    📞 Tél : {p.phone}
+                                    <ProIcon name="phone" /> Tél : {p.phone}
                                   </div>
                                 </div>
                               </td>
@@ -1039,7 +1040,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                               </td>
                               <td style={{ padding: '0.85rem 0.75rem' }}>
                                 <span className="fw-bold d-block mb-1" style={{ color: 'var(--text-main)', fontSize: '0.85rem' }}>
-                                  🏛️ {p.udms}
+                                  <ProIcon name="landmark" /> {p.udms}
                                 </span>
                                 <code className="text-success fw-bold d-block" style={{ fontSize: '0.82rem', letterSpacing: '0.5px' }}>
                                   📜 {p.agreement}
@@ -1050,7 +1051,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
                               </td>
                               <td style={{ padding: '0.85rem 0.75rem', textAlign: 'right' }}>
                                 <span className="badge bg-success text-white px-3 py-1.5 fw-bold d-inline-block" style={{ borderRadius: '12px', fontSize: '0.78rem' }}>
-                                  ✅ {p.status}
+                                  <ProIcon name="check-circle" color="#059669" /> {p.status}
                                 </span>
                               </td>
                             </tr>
@@ -1072,7 +1073,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
             <div>
               <div className="card shadow-sm border-0 p-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)', marginBottom: '2rem' }}>
                 <h5 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-                  <span>🔍</span> {t.verifyTitle}
+                  <span><ProIcon name="search" /></span> {t.verifyTitle}
                 </h5>
                 <form onSubmit={verifyCard} className="mb-3">
                   <div className="row g-2 mb-3">
@@ -1104,7 +1105,7 @@ export default function PartnerPortal({ lang = 'fr', portalMode, agentUser, part
             <div>
               <div className="card shadow-sm border-0 p-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
                 <h5 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-                  <span>📋</span> {t.tpTitle}
+                  <span><ProIcon name="clipboard-list" /></span> {t.tpTitle}
                 </h5>
 
                 {tpResult && (

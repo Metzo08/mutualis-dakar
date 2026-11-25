@@ -1,3 +1,4 @@
+import ProIcon from '../../components/ProIcon';
 /**
  * ProductionPanel.jsx — Historique de production d'un lot (§1.3 — Étape 2).
  * Événements INITIAL, REPRINT, REPLACEMENT, DESTROYED avec tarifs figés.
@@ -20,17 +21,17 @@ export default function ProductionPanel({ detail, onClose }) {
     <div style={{ background: '#fffbeb', border: '1.5px solid #fcd34d', borderRadius: '14px', padding: '1rem 1.25rem', marginBottom: '1.25rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
         <h4 style={{ margin: 0, fontWeight: 900, fontSize: '1rem', color: '#92400e' }}>
-          📜 Production — {detail.code}
+          <ProIcon name="scroll-text" /> Production — {detail.code}
         </h4>
         <button type="button" onClick={onClose}
           style={{ background: 'transparent', border: 'none', color: '#92400e', fontWeight: 700, cursor: 'pointer', fontSize: '0.82rem' }}>
-          ✖ Fermer
+          <ProIcon name="x" /> Fermer
         </button>
       </div>
       {detail.loading ? (
-        <div style={{ fontSize: '0.82rem', color: '#92400e', marginTop: '0.5rem' }}>⏳ Chargement de l'historique…</div>
+        <div style={{ fontSize: '0.82rem', color: '#92400e', marginTop: '0.5rem' }}><ProIcon name="hourglass" /> Chargement de l'historique…</div>
       ) : detail.error ? (
-        <div style={{ fontSize: '0.82rem', color: '#991b1b', marginTop: '0.5rem' }}>❌ {detail.error}</div>
+        <div style={{ fontSize: '0.82rem', color: '#991b1b', marginTop: '0.5rem' }}><ProIcon name="x-circle" color="#dc2626" /> {detail.error}</div>
       ) : (detail.events || []).length === 0 ? (
         <div style={{ fontSize: '0.82rem', color: '#78350f', marginTop: '0.5rem' }}>Aucun événement — le lot n'a pas encore été remis.</div>
       ) : (

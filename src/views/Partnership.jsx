@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import DeleteModal from '../components/DeleteModal';
+import ProIcon from '../components/ProIcon';
 
 const PARTNERS = [
   { name: 'UNAMUSC SÉNÉGAL', logo: '/logo_partner_unamusc.png', isImage: true },
@@ -298,7 +299,7 @@ export default function Partnership({ lang, portalMode, agentUser }) {
         `}</style>
         
         <h4 style={{ fontSize: '0.85rem', fontWeight: '750', color: 'var(--text-sub)', marginBottom: '0.75rem', textAlign: 'left', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          🤝 {lang === 'fr' ? 'Nos partenaires institutionnels & RSE' : 'Giñ bokk liggéey (Partenaires)'}
+          <ProIcon name="handshake" /> {lang === 'fr' ? 'Nos partenaires institutionnels & RSE' : 'Giñ bokk liggéey (Partenaires)'}
         </h4>
         
         <div className="partner-carousel-container">
@@ -329,7 +330,7 @@ export default function Partnership({ lang, portalMode, agentUser }) {
         // Administrative view of partnerships
         <div className="card text-left fade-in-up" style={{ padding: '2rem', borderRadius: '16px' }}>
           <h3 style={{ fontSize: '1.25rem', fontWeight: '850', color: 'var(--primary)', marginBottom: '1.5rem' }}>
-            💼 {t.adminTitle}
+            <ProIcon name="briefcase" /> {t.adminTitle}
           </h3>
 
           <div className="table-responsive">
@@ -410,7 +411,7 @@ export default function Partnership({ lang, portalMode, agentUser }) {
                           style={{ padding: '0.25rem 0.4rem', fontSize: '0.7rem', borderColor: 'var(--primary)', color: 'var(--primary)' }}
                           title="Modifier"
                         >
-                          ✏️
+                          <ProIcon name="edit" />
                         </button>
                         <button 
                           className="btn btn-outline btn-sm" 
@@ -418,7 +419,7 @@ export default function Partnership({ lang, portalMode, agentUser }) {
                           style={{ padding: '0.25rem 0.4rem', fontSize: '0.7rem', borderColor: 'var(--danger)', color: 'var(--danger)' }}
                           title="Supprimer"
                         >
-                          🗑️
+                          <ProIcon name="trash" />
                         </button>
                       </td>
                     </tr>
@@ -436,7 +437,7 @@ export default function Partnership({ lang, portalMode, agentUser }) {
                 disabled={!partnershipsPayload.pagination.hasPrev}
                 onClick={() => setPage(prev => Math.max(1, prev - 1))}
               >
-                ⬅️ Précédent / Bi weesu
+                <ProIcon name="arrow-left" /> Précédent / Bi weesu
               </button>
               <span style={{ fontSize: '0.85rem', color: 'var(--text-sub)', fontWeight: '600' }}>
                 Page {page} sur {partnershipsPayload.pagination.totalPages}
@@ -446,7 +447,7 @@ export default function Partnership({ lang, portalMode, agentUser }) {
                 disabled={!partnershipsPayload.pagination.hasNext}
                 onClick={() => setPage(prev => Math.min(partnershipsPayload.pagination.totalPages, prev + 1))}
               >
-                Suivant / Bi ci top ➡️
+                Suivant / Bi ci top <ProIcon name="arrow-right" />
               </button>
             </div>
           )}
@@ -458,7 +459,7 @@ export default function Partnership({ lang, portalMode, agentUser }) {
           <div style={{ gridColumn: 'span 2' }}>
             <div className="card text-left" style={{ padding: '2.5rem', borderRadius: '16px' }}>
               <h3 style={{ fontSize: '1.35rem', fontWeight: '850', color: 'var(--primary)', marginBottom: '1.5rem' }}>
-                🤝 {lang === 'fr' ? 'Proposer une collaboration' : 'Proposer une collaboration'}
+                <ProIcon name="handshake" /> {lang === 'fr' ? 'Proposer une collaboration' : 'Proposer une collaboration'}
               </h3>
 
               {success && (
@@ -562,7 +563,7 @@ export default function Partnership({ lang, portalMode, agentUser }) {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div className="card text-left" style={{ padding: '1.5rem', background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
               <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--secondary)', marginBottom: '1rem' }}>
-                🤝 {lang === 'fr' ? 'Pourquoi collaborer ?' : 'Pourquoi collaborer ?'}
+                <ProIcon name="handshake" /> {lang === 'fr' ? 'Pourquoi collaborer ?' : 'Pourquoi collaborer ?'}
               </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.85rem', color: 'var(--text-sub)' }}>
                 <p style={{ margin: 0 }}>
@@ -607,13 +608,13 @@ export default function Partnership({ lang, portalMode, agentUser }) {
             position: 'relative'
           }}>
             <h2 style={{ fontSize: '1.3rem', color: 'var(--text-main)', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem', marginBottom: '1.5rem', fontWeight: '800' }}>
-              ✏️ Modifier la demande
+              <ProIcon name="edit" /> Modifier la demande
             </h2>
             <button 
               onClick={() => setEditingPartnership(null)} 
               style={{ position: 'absolute', top: '24px', right: '24px', background: 'transparent', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--text-sub)' }}
             >
-              ✕
+              <ProIcon name="x" />
             </button>
             <form onSubmit={handleSaveEdit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div className="form-group" style={{ margin: 0 }}>
@@ -706,7 +707,7 @@ export default function Partnership({ lang, portalMode, agentUser }) {
           alignItems: 'center',
           gap: '0.5rem'
         }}>
-          <span>✅</span>
+          <span><ProIcon name="check-circle" color="#059669" /></span>
           <span>{toastMessage}</span>
         </div>
       )}

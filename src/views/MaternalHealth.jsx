@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
 import DeleteModal from '../components/DeleteModal';
 import { playHybridVoiceReminder, playEmergencyVoiceInstruction, speakCleanText } from '../services/voiceAudioService';
+import ProIcon from '../components/ProIcon';
 
 // Design Premium Haut de Gamme — Carnet Maternité & Santé Enfant
 
@@ -15,7 +16,7 @@ const getMedicalHeroStyle = (patient) => {
       badgeColor: '#059669',
       badgeText: '🇸🇳 Espace prise en charge 100% CSU',
       imageTag: '🏥 Imagerie médicale - général',
-      icon: '🏥'
+      icon: <ProIcon name="hospital" />
     };
   }
 
@@ -30,7 +31,7 @@ const getMedicalHeroStyle = (patient) => {
       badgeColor: '#d97706',
       badgeText: '🇸🇳 Espace traumatologie & chirurgie orthopédique UNAMUSC',
       imageTag: '🦴 Visual — cliché de radiographie osseuse',
-      icon: '🩹'
+      icon: <ProIcon name="bandage" />
     };
   }
 
@@ -42,7 +43,7 @@ const getMedicalHeroStyle = (patient) => {
       badgeColor: '#0891b2',
       badgeText: '🇸🇳 Espace pneumologie & affections respiratoires ALD',
       imageTag: '🫁 Visual — cliché de radiographie thoracique',
-      icon: '🫁'
+      icon: <ProIcon name="activity" />
     };
   }
 
@@ -54,7 +55,7 @@ const getMedicalHeroStyle = (patient) => {
       badgeColor: '#dc2626',
       badgeText: '🇸🇳 Espace cardiologie & hypertension artérielle (ALD 100%)',
       imageTag: '🫀 Visual — schéma de l\'appareil cardiovasculaire',
-      icon: '🫀'
+      icon: <ProIcon name="heart-pulse" color="#dc2626" />
     };
   }
 
@@ -69,7 +70,7 @@ const getMedicalHeroStyle = (patient) => {
       // laisser croire qu'un compte-rendu existe : on le formule comme le
       // contenu du visuel, pas comme un résultat biologique de l'assuré.
       imageTag: '🩸 Visual — tube de prélèvement de sang',
-      icon: '🩸'
+      icon: <ProIcon name="droplet" color="#dc2626" />
     };
   }
 
@@ -81,7 +82,7 @@ const getMedicalHeroStyle = (patient) => {
       badgeColor: '#2563eb',
       badgeText: '🇸🇳 Espace pédiatrique & programme élargi de vaccination (PEV)',
       imageTag: '👶 Carnet de santé pédiatrique & vaccins 0-5 ans',
-      icon: '👶'
+      icon: <ProIcon name="baby" />
     };
   }
 
@@ -92,7 +93,7 @@ const getMedicalHeroStyle = (patient) => {
     badgeColor: '#059669',
     badgeText: '🇸🇳 Espace premium santé maternelle UNAMUSC',
     imageTag: '🤰 Suivi prénatal CPN & échographie obstétrique',
-    icon: '🤰'
+    icon: <ProIcon name="heart-pulse" />
   };
 };
 
@@ -763,7 +764,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
   const [selectedAdviceArticle, setSelectedAdviceArticle] = useState(null);
   const [showAddAdviceModal, setShowAddAdviceModal] = useState(false);
   const [newAdviceForm, setNewAdviceForm] = useState({
-    icon: '💡',
+    icon: <ProIcon name="lightbulb" />,
     badge: 'Santé & Nutrition',
     title: '',
     subtitle: '',
@@ -810,7 +811,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
     },
     {
       id: 'fievre_pev',
-      icon: '🌡️',
+      icon: <ProIcon name="thermometer" />,
       badge: 'Vaccination PEV',
       title: 'Que faire en cas de fièvre après vaccin PEV ?',
       subtitle: 'Gestes simples et prise de paracétamol adapté',
@@ -912,7 +913,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
             boxShadow: 'var(--shadow-lg)',
             border: '1px solid rgba(255, 255, 255, 0.2)'
           }}>
-            <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>🤱</div>
+            <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}><ProIcon name="baby" /></div>
             <span className="badge mb-2" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.82rem', fontWeight: 'bold' }}>
               Programme national de santé maternelle & infantile
             </span>
@@ -929,7 +930,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                 style={{ borderRadius: '14px', color: '#9d174d', fontSize: '0.98rem', boxShadow: '0 4px 14px rgba(0,0,0,0.15)' }}
                 onClick={() => setView ? setView('login') : (window.location.hash = '#/login')}
               >
-                🔐 Se connecter à mon carnet maternité
+                <ProIcon name="lock" /> Se connecter à mon carnet maternité
               </button>
             </div>
           </div>
@@ -937,7 +938,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
           {/* Quick Search Card */}
           <div className="card p-4 p-md-5 mb-4 text-left shadow-sm" style={{ borderRadius: '20px', background: 'var(--bg-card)', border: '1px solid var(--border-color)', padding: '2.25rem 2rem' }}>
             <h4 style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--primary)', marginBottom: '0.75rem' }}>
-              🔎 Vérifier mes droits à la gratuité maternité (100% CSU)
+              <ProIcon name="search" /> Vérifier mes droits à la gratuité maternité (100% CSU)
             </h4>
             <p style={{ fontSize: '0.92rem', color: 'var(--text-sub)', marginBottom: '1.5rem', lineHeight: '1.6' }}>
               Saisissez le N° de votre carte CSU pour accéder à votre calendrier de consultations prénatales (CPN 1 à 4) et générer vos attestations d'accouchement gratuit.
@@ -954,7 +955,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                 style={{ borderRadius: '12px', background: '#be185d', borderColor: '#be185d', height: '52px', fontSize: '0.95rem' }}
                 onClick={() => setView ? setView('login') : (window.location.hash = '#/login')}
               >
-                🔍 Vérifier mes droits
+                <ProIcon name="search" /> Vérifier mes droits
               </button>
             </div>
           </div>
@@ -962,17 +963,17 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
           {/* Key Advantages Grid */}
           <div className="grid grid-3" style={{ gap: '1.25rem' }}>
             <div className="card p-3 text-left" style={{ borderRadius: '16px', background: 'var(--bg-card-subtle)' }}>
-              <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>🩺</div>
+              <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}><ProIcon name="stethoscope" /></div>
               <h5 style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.25rem' }}>4 CPN 100% gratuites</h5>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)', margin: 0 }}>Consultations prénatales réglementaires, échographies et bilans sanguins entièrement pris en charge par l'UNAMUSC.</p>
             </div>
             <div className="card p-3 text-left" style={{ borderRadius: '16px', background: 'var(--bg-card-subtle)' }}>
-              <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>🏥</div>
+              <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}><ProIcon name="hospital" /></div>
               <h5 style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.25rem' }}>Accouchement 0 FCFA</h5>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)', margin: 0 }}>Prise en charge intégrale des accouchements simples et césariennes d'urgence dans tous les centres publics.</p>
             </div>
             <div className="card p-3 text-left" style={{ borderRadius: '16px', background: 'var(--bg-card-subtle)' }}>
-              <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>👶</div>
+              <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}><ProIcon name="baby" /></div>
               <h5 style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.25rem' }}>Vaccination PEV & pédiatrie</h5>
               <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)', margin: 0 }}>Suivi vaccinal complet du programme PEV et soins gratuits pour les enfants jusqu'à l'âge de 5 ans.</p>
             </div>
@@ -999,7 +1000,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
     };
     setAdviceArticles([newArticle, ...adviceArticles]);
     setShowAddAdviceModal(false);
-    setNewAdviceForm({ icon: '💡', badge: 'Santé & Nutrition', title: '', subtitle: '', author: 'Sage-femme Fatou Diome', content: '', tips: '' });
+    setNewAdviceForm({ icon: <ProIcon name="lightbulb" />, badge: 'Santé & Nutrition', title: '', subtitle: '', author: 'Sage-femme Fatou Diome', content: '', tips: '' });
     alert("✅ La nouvelle fiche conseil a bien été ajoutée au carnet de maternité !");
   };
 
@@ -1451,7 +1452,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
               <div className="d-flex align-items-center gap-2 mb-3">
                 <span style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(10px)', color: '#ffffff', padding: '6px 16px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34d399', display: 'inline-block' }} />
-                  🧪 Structure de santé & laboratoire conventionné UNAMUSC 🇸🇳
+                  <ProIcon name="flask" /> Structure de santé & laboratoire conventionné UNAMUSC <ProIcon name="senegal-flag" />
                 </span>
               </div>
 
@@ -1463,10 +1464,10 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
               </p>
               <div className="d-flex align-items-center flex-wrap mt-4" style={{ gap: '28px', rowGap: '16px' }}>
                 <button className="btn fw-bold px-4 py-2.5 text-white" style={{ background: '#047857', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '14px', fontSize: '0.9rem', boxShadow: '0 6px 18px rgba(0,0,0,0.2)', marginRight: '16px', marginBottom: '8px' }} onClick={() => (window.location.hash = '#/medical-profile')}>
-                  🩻 Transmettre des résultats (DMP)
+                  <ProIcon name="scan" /> Transmettre des résultats (DMP)
                 </button>
                 <button className="btn fw-bold px-4 py-2.5 text-white" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '14px', fontSize: '0.9rem', marginLeft: '4px', marginBottom: '8px' }} onClick={() => (window.location.hash = '#/verify')}>
-                  🔍 Vérifier la carte CSU d'une bénéficiaire
+                  <ProIcon name="search" /> Vérifier la carte CSU d'une bénéficiaire
                 </button>
               </div>
             </div>
@@ -1484,7 +1485,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
           <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
             <div>
               <h4 className="fw-extrabold mb-1 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)', fontSize: '1.25rem' }}>
-                <span>🧪</span> Bilans sanguins & sérologies prénatales (100% CSU UNAMUSC)
+                <span><ProIcon name="flask" /></span> Bilans sanguins & sérologies prénatales (100% CSU UNAMUSC)
               </h4>
               <p className="text-muted small mb-0" style={{ fontSize: '0.88rem' }}>
                 Résultats de bilans biologiques prénatals prescrits lors des consultations CPN 1 à CPN 4+.
@@ -1509,11 +1510,11 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   });
                 }}
               >
-                <span>➕ Prescrire un nouvel examen CPN</span>
+                <span><ProIcon name="plus" /> Prescrire un nouvel examen CPN</span>
               </button>
 
               <span className="badge bg-success-subtle text-success border border-success px-3 py-2 fw-bold" style={{ borderRadius: '12px', fontSize: '0.82rem' }}>
-                💖 Program Gratuité Maternité
+                <ProIcon name="heart-handshake" color="#e11d48" /> Program Gratuité Maternité
               </span>
             </div>
           </div>
@@ -1551,7 +1552,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                       )}
                     </td>
                     <td style={{ padding: '1rem' }}>
-                      <span className="fw-semibold d-block" style={{ fontSize: '0.9rem' }}>👩‍⚕️ {cOrd.midwife}</span>
+                      <span className="fw-semibold d-block" style={{ fontSize: '0.9rem' }}><ProIcon name="stethoscope" /> {cOrd.midwife}</span>
                     </td>
                     <td style={{ padding: '1rem' }}>
                       <span className="badge bg-success text-white px-3 py-1.5 fw-bold" style={{ borderRadius: '10px', fontSize: '0.8rem' }}>{cOrd.coverage}</span>
@@ -1560,7 +1561,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                       <div className="d-flex align-items-center justify-content-end gap-2.5 flex-nowrap">
                         {cOrd.status === 'transmis' ? (
                           <span className="badge bg-success text-white px-3 py-2 fw-bold" style={{ borderRadius: '10px', fontSize: '0.8rem' }}>
-                            ✅ Certifié & transmis
+                            <ProIcon name="check-circle" color="#059669" /> Certifié & transmis
                           </span>
                         ) : (
                           <button 
@@ -1568,7 +1569,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                             style={{ background: '#059669', border: 'none', borderRadius: '12px', fontSize: '0.88rem', boxShadow: '0 4px 14px rgba(5,150,105,0.3)' }} 
                             onClick={() => setUploadCpnTarget(cOrd)}
                           >
-                            📤 Téléverser le bilan PDF (CPN)
+                            <ProIcon name="upload" /> Téléverser le bilan PDF (CPN)
                           </button>
                         )}
 
@@ -1590,7 +1591,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                             setIsNewCpnOrder(false);
                           }}
                         >
-                          ✏️ Modifier
+                          <ProIcon name="edit" /> Modifier
                         </button>
 
                         {/* Bouton SUPPRIMER */}
@@ -1608,7 +1609,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                           title="Supprimer la demande de bilan CPN"
                           onClick={() => handleDeleteCpnOrder(cOrd)}
                         >
-                          🗑️ Supprimer
+                          <ProIcon name="trash" /> Supprimer
                         </button>
                       </div>
                     </td>
@@ -1630,7 +1631,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
               <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
                 <div className="d-flex align-items-center gap-3">
                   <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 'bold', boxShadow: '0 6px 16px rgba(16, 185, 129, 0.3)' }}>
-                    🧪
+                    <ProIcon name="flask" />
                   </div>
                   <div>
                     <h5 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>
@@ -1647,7 +1648,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
               {/* Info Banner */}
               <div className="p-3.5 rounded-4 mb-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
                 <div className="d-flex align-items-start gap-3">
-                  <div className="fs-3">📑</div>
+                  <div className="fs-3"><ProIcon name="file-spreadsheet" /></div>
                   <div>
                     <strong style={{ color: 'var(--text-main)', fontSize: '0.98rem' }}>{uploadCpnTarget.exams}</strong>
                     <p className="text-muted small mb-0 mt-1" style={{ fontSize: '0.85rem' }}>
@@ -1688,7 +1689,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   Annuler
                 </button>
                 <button type="submit" className="btn px-4 py-2.5 fw-bold text-white" style={{ background: '#059669', border: 'none', borderRadius: '12px', fontSize: '0.9rem', boxShadow: '0 4px 14px rgba(5,150,105,0.3)' }}>
-                  ✅ Publier au Carnet Maternité (DMP)
+                  <ProIcon name="check-circle" color="#059669" /> Publier au Carnet Maternité (DMP)
                 </button>
               </div>
             </form>
@@ -1707,7 +1708,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
               <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
                 <div className="d-flex align-items-center gap-3">
                   <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 'bold' }}>
-                    🤰
+                    <ProIcon name="heart-pulse" />
                   </div>
                   <div>
                     <h5 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>
@@ -1814,7 +1815,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   className="btn px-4.5 py-2.5 fw-bold text-white" 
                   style={{ background: '#059669', border: 'none', borderRadius: '12px', fontSize: '0.9rem', boxShadow: '0 4px 14px rgba(5,150,105,0.3)' }}
                 >
-                  💾 Enregistrer le bilan CPN
+                  <ProIcon name="save" /> Enregistrer le bilan CPN
                 </button>
               </div>
 
@@ -1836,7 +1837,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
               <div 
                 style={{ width: '72px', height: '72px', borderRadius: '24px', background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.35) 100%)', border: '2px solid #ef4444', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.2rem', margin: '0 auto 1.25rem auto', boxShadow: '0 10px 25px rgba(239, 68, 68, 0.3)' }}
               >
-                🗑️
+                <ProIcon name="trash" />
               </div>
 
               <h4 className="fw-extrabold mb-2" style={{ color: 'var(--text-main)', fontSize: '1.25rem' }}>
@@ -1868,7 +1869,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                     setConfirmDeleteObj(null);
                   }}
                 >
-                  🗑️ Supprimer définitivement
+                  <ProIcon name="trash" /> Supprimer définitivement
                 </button>
               </div>
             </div>
@@ -1900,7 +1901,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
               <div className="d-flex align-items-center gap-2 mb-3">
                 <span style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(10px)', color: '#ffffff', padding: '6px 16px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34d399', display: 'inline-block' }} />
-                  Pharmacien agréé UNAMUSC 🇸🇳
+                  Pharmacien agréé UNAMUSC <ProIcon name="senegal-flag" />
                 </span>
               </div>
 
@@ -1912,10 +1913,10 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
               </p>
               <div className="d-flex align-items-center flex-wrap mt-4" style={{ gap: '28px', rowGap: '16px' }}>
                 <button className="btn fw-bold px-4 py-2.5 text-white" style={{ background: '#047857', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '14px', fontSize: '0.9rem', boxShadow: '0 6px 18px rgba(0,0,0,0.2)', marginRight: '16px', marginBottom: '8px' }} onClick={() => (window.location.hash = '#/purchase-orders')}>
-                  💊 Accéder au guichet des bons de commande
+                  <ProIcon name="pill" /> Accéder au guichet des bons de commande
                 </button>
                 <button className="btn fw-bold px-4 py-2.5 text-white" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '14px', fontSize: '0.9rem', marginLeft: '4px', marginBottom: '8px' }} onClick={() => (window.location.hash = '#/verify')}>
-                  🔍 Vérifier la carte CSU d'un assuré
+                  <ProIcon name="search" /> Vérifier la carte CSU d'un assuré
                 </button>
               </div>
             </div>
@@ -1954,7 +1955,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   fontSize: '1.4rem',
                   boxShadow: '0 6px 16px rgba(16, 185, 129, 0.15)'
                 }}>
-                  👶
+                  <ProIcon name="baby" />
                 </div>
                 <div>
                   <h5 className="fw-bold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.08rem', letterSpacing: '-0.01em', textTransform: 'none' }}>
@@ -1974,21 +1975,21 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <div className="p-3 rounded-3 d-flex flex-wrap align-items-center justify-content-between" style={{ gap: '0.5rem', background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
                   <div className="d-flex align-items-center gap-2" style={{ minWidth: 0 }}>
-                    <span style={{ fontSize: '1rem' }}>💊</span>
+                    <span style={{ fontSize: '1rem' }}><ProIcon name="pill" /></span>
                     <span style={{ color: 'var(--text-main)', fontSize: '0.85rem', fontWeight: 600 }}>Délivrance kit maternité en pharmacie</span>
                   </div>
                   <span className="badge bg-success-subtle text-success border border-success px-3 py-1.5 fw-bold" style={{ borderRadius: '8px', fontSize: '0.76rem' }}>
-                    🟢 Gratuité 100%
+                    <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Gratuité 100%
                   </span>
                 </div>
 
                 <div className="p-3 rounded-3 d-flex flex-wrap align-items-center justify-content-between" style={{ gap: '0.5rem', background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
                   <div className="d-flex align-items-center gap-2" style={{ minWidth: 0 }}>
-                    <span style={{ fontSize: '1rem' }}>🩺</span>
+                    <span style={{ fontSize: '1rem' }}><ProIcon name="stethoscope" /></span>
                     <span style={{ color: 'var(--text-main)', fontSize: '0.85rem', fontWeight: 600 }}>Saisie des consultations obstétriques</span>
                   </div>
                   <span className="badge bg-secondary-subtle text-secondary border border-secondary px-3 py-1.5 fw-bold" style={{ borderRadius: '8px', fontSize: '0.76rem' }}>
-                    🔴 Sage-femmes
+                    <ProIcon name="status-red" color="#ef4444" fill="#ef4444" size={10} /> Sage-femmes
                   </span>
                 </div>
               </div>
@@ -2011,7 +2012,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                 >
                   <div className="d-flex align-items-start justify-content-between mb-3">
                     <div style={{ width: '48px', height: '48px', borderRadius: '15px', background: 'linear-gradient(135deg, #059669, #10b981)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', boxShadow: '0 6px 16px rgba(5,150,105,0.35)' }}>
-                      💊
+                      <ProIcon name="pill" />
                     </div>
                     <span style={{ background: 'rgba(16, 185, 129, 0.12)', color: '#10b981', fontSize: '0.72rem', fontWeight: 700, padding: '4px 10px', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
                       Guichet principal
@@ -2038,7 +2039,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                 >
                   <div className="d-flex align-items-start justify-content-between mb-3">
                     <div style={{ width: '48px', height: '48px', borderRadius: '15px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-                      🔍
+                      <ProIcon name="search" />
                     </div>
                     <span className="text-muted" style={{ fontSize: '0.72rem', fontWeight: 600 }}>
                       Contrôle CSU
@@ -2065,7 +2066,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                 >
                   <div className="d-flex align-items-start justify-content-between mb-3">
                     <div style={{ width: '48px', height: '48px', borderRadius: '15px', background: 'rgba(2, 132, 199, 0.15)', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', border: '1px solid rgba(2, 132, 199, 0.3)' }}>
-                      🏥
+                      <ProIcon name="hospital" />
                     </div>
                     <span className="text-muted" style={{ fontSize: '0.72rem', fontWeight: 600 }}>
                       Réseau officines
@@ -2092,7 +2093,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                 >
                   <div className="d-flex align-items-start justify-content-between mb-3">
                     <div style={{ width: '48px', height: '48px', borderRadius: '15px', background: 'rgba(217, 119, 6, 0.15)', color: '#d97706', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', border: '1px solid rgba(217, 119, 6, 0.3)' }}>
-                      📊
+                      <ProIcon name="bar-chart" />
                     </div>
                     <span className="text-muted" style={{ fontSize: '0.72rem', fontWeight: 600 }}>
                       Facturation UNAMUSC
@@ -2119,7 +2120,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
       <div className="maternity-view fade-in-up" style={{ minHeight: '80vh', padding: '2rem 1rem' }}>
         <div style={{ maxWidth: '960px', margin: '0 auto' }}>
           <div className="p-4 rounded-4 mb-4 d-flex align-items-center gap-3" style={{ background: 'linear-gradient(90deg, #1e3a5f 0%, #1d4ed8 100%)', borderRadius: '18px', color: '#fff' }}>
-            <span style={{ fontSize: '2.2rem' }}>🛡️</span>
+            <span style={{ fontSize: '2.2rem' }}><ProIcon name="shield-check" /></span>
             <div>
               <strong className="d-block" style={{ fontSize: '1.1rem' }}>Mode Agent Administratif — Statistiques Maternité UNAMUSC</strong>
               <small style={{ opacity: 0.8 }}>Vue agrégée : suivi épidémiologique et statistiques. Le détail clinique reste réservé aux professionnel(le)s de santé.</small>
@@ -2129,21 +2130,21 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
           <div className="row g-4 mb-4">
             <div className="col-md-4">
               <div className="p-4 rounded-4 text-center" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '18px' }}>
-                <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🤰</div>
+                <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}><ProIcon name="heart-pulse" /></div>
                 <h3 className="fw-bold mb-1" style={{ color: 'var(--text-main)' }}>142</h3>
                 <div className="small" style={{ color: 'var(--text-sub)' }}>Grossesses suivies (année)</div>
               </div>
             </div>
             <div className="col-md-4">
               <div className="p-4 rounded-4 text-center" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '18px' }}>
-                <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🏥</div>
+                <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}><ProIcon name="hospital" /></div>
                 <h3 className="fw-bold mb-1 text-success">128</h3>
                 <div className="small" style={{ color: 'var(--text-sub)' }}>Accouchements assistés</div>
               </div>
             </div>
             <div className="col-md-4">
               <div className="p-4 rounded-4 text-center" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '18px' }}>
-                <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>📊</div>
+                <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}><ProIcon name="bar-chart" /></div>
                 <h3 className="fw-bold mb-1" style={{ color: 'var(--text-main)' }}>98%</h3>
                 <div className="small" style={{ color: 'var(--text-sub)' }}>Taux de réussite suivi</div>
               </div>
@@ -2151,9 +2152,9 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
           </div>
 
           <div className="p-4 rounded-4" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '18px' }}>
-            <h5 className="fw-bold mb-3" style={{ color: 'var(--text-main)' }}>📋 Synthèse administrative</h5>
+            <h5 className="fw-bold mb-3" style={{ color: 'var(--text-main)' }}><ProIcon name="clipboard-list" /> Synthèse administrative</h5>
             <div className="p-3 rounded-3" style={{ background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', borderLeft: '4px solid #3b82f6' }}>
-              <strong className="d-block small text-primary">🔒 Détail clinique protégé</strong>
+              <strong className="d-block small text-primary"><ProIcon name="lock" /> Détail clinique protégé</strong>
               <small style={{ color: 'var(--text-sub)' }}>Les données nominatives du carnet de maternité (consultations prénatales, échographies, accouchement) sont protégées par le secret médical et accessibles uniquement aux médecins et sage-femmes agréés.</small>
             </div>
           </div>
@@ -2168,10 +2169,10 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
         <div style={{ maxWidth: '850px', margin: '0 auto' }}>
           <div className="card shadow-lg border-0 p-4 p-md-5 text-center my-4" style={{ borderRadius: '24px', background: 'var(--bg-card)', color: 'var(--text-main)', border: '2px solid #ef4444' }}>
             <div className="d-inline-flex align-items-center justify-content-center p-3 rounded-circle mb-3 mx-auto" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', width: '70px', height: '70px' }}>
-              <span style={{ fontSize: '2.2rem' }}>⚠️</span>
+              <span style={{ fontSize: '2.2rem' }}><ProIcon name="alert-triangle" color="#d97706" /></span>
             </div>
             
-            <h3 className="fw-bold mb-2 text-danger" style={{ fontSize: '1.4rem' }}>⚠️ Accès aux soins de maternité refusé — Couverture CSU suspendue</h3>
+            <h3 className="fw-bold mb-2 text-danger" style={{ fontSize: '1.4rem' }}><ProIcon name="alert-triangle" color="#d97706" /> Accès aux soins de maternité refusé — Couverture CSU suspendue</h3>
             
             <div className="mb-3">
               {/* Le n° de carte était écrit en dur (« CSU-DKR-2026-8812 »)
@@ -2220,7 +2221,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   else window.location.hash = '#payments';
                 }}
               >
-                💳 Renouveler ma cotisation (10 500 FCFA)
+                <ProIcon name="credit-card" /> Renouveler ma cotisation (10 500 FCFA)
               </button>
             </div>
           </div>
@@ -2236,7 +2237,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
       <div style={{ borderBottom: '1px solid var(--border-color)', background: 'var(--bg-card-subtle)', padding: '0.85rem 2rem' }}>
         <div style={{ maxWidth: '1320px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.1rem' }}>UNAMUSC Sénégal 🇸🇳</h5>
+            <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.1rem' }}>UNAMUSC Sénégal <ProIcon name="senegal-flag" /></h5>
             <span style={{ height: '14px', width: '1px', background: 'var(--border-color)' }} />
             <span style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: '20px', fontSize: '0.78rem', fontWeight: '600', padding: '0.3rem 0.85rem' }}>
               {isCitizen
@@ -2281,7 +2282,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                 {/* Gauche: Titre et Statut Dossier Actif */}
                 <div className="d-flex align-items-start gap-3.5" style={{ flex: '1 1 500px' }}>
                   <div style={{ width: '60px', height: '60px', borderRadius: '20px', background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.85rem', fontWeight: 'bold', boxShadow: '0 8px 22px rgba(16,185,129,0.38)', flexShrink: 0 }}>
-                    🏥
+                    <ProIcon name="hospital" />
                   </div>
                   <div>
                     <h4 className="fw-extrabold mb-2" style={{ color: 'var(--text-main)', fontSize: '1.35rem', letterSpacing: '-0.015em', lineHeight: '1.3' }}>
@@ -2299,7 +2300,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
 
                       <span className="d-inline-flex align-items-center gap-2 px-3 py-1.5 rounded-pill" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', color: 'var(--text-main)', fontSize: '0.84rem' }}>
                         <span>Dossier actif :</span>
-                        <strong className="text-success" style={{ letterSpacing: '0.01em' }}>👤 {activeMother.name} ({activeMother.cmuNumber})</strong>
+                        <strong className="text-success" style={{ letterSpacing: '0.01em' }}><ProIcon name="user" /> {activeMother.name} ({activeMother.cmuNumber})</strong>
                       </span>
                     </div>
                   </div>
@@ -2316,7 +2317,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                       value={searchMotherQuery}
                       onChange={(e) => setSearchMotherQuery(e.target.value)}
                     />
-                    <span style={{ position: 'absolute', left: '0.95rem', top: '50%', transform: 'translateY(-50%)', opacity: 0.65, fontSize: '0.95rem' }}>🔍</span>
+                    <span style={{ position: 'absolute', left: '0.95rem', top: '50%', transform: 'translateY(-50%)', opacity: 0.65, fontSize: '0.95rem' }}><ProIcon name="search" /></span>
                   </div>
 
                   <button 
@@ -2338,7 +2339,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                       });
                     }}
                   >
-                    ➕ Inscrire un nouvel assuré
+                    <ProIcon name="plus" /> Inscrire un nouvel assuré
                   </button>
                 </div>
 
@@ -2351,7 +2352,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
               {/* En-tête du Panneau de Filtre */}
               <div className="d-flex align-items-center justify-content-between mb-3.5 flex-wrap gap-3 pb-2 border-bottom" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
                 <div className="d-flex align-items-center gap-2.5">
-                  <span style={{ fontSize: '1.25rem' }}>📂</span>
+                  <span style={{ fontSize: '1.25rem' }}><ProIcon name="folder-open" /></span>
                   <span className="fw-extrabold" style={{ fontSize: '0.85rem', color: 'var(--text-sub)', letterSpacing: '0.04em' }}>
                     Filtrer le registre par spécialité & service médical :
                   </span>
@@ -2364,7 +2365,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                     style={{ fontSize: '0.85rem' }}
                     onClick={() => setRegistryCategoryFilter('all')}
                   >
-                    🔄 Réinitialiser tous les filtres
+                    <ProIcon name="refresh" /> Réinitialiser tous les filtres
                   </button>
                 )}
               </div>
@@ -2383,11 +2384,11 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                 }}
               >
                 {[
-                  { id: 'all', label: 'Tous les services', icon: '🌐', count: maternalRegistry.length, color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)' },
-                  { id: 'maternity', label: 'Gynécologie & maternité (CPN)', icon: '🤰', count: maternalRegistry.filter(m => m.category === 'maternity').length, color: '#ec4899', bg: 'rgba(236, 72, 153, 0.15)' },
-                  { id: 'chronic', label: 'Cardiologie & diabétologie (ALD)', icon: '🩸', count: maternalRegistry.filter(m => m.category === 'chronic').length, color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)' },
-                  { id: 'pediatric', label: 'Pédiatrie & PEV (0-5 ans)', icon: '👶', count: maternalRegistry.filter(m => m.category === 'pediatric').length, color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.15)' },
-                  { id: 'surgery', label: 'Chirurgie & traumatologie', icon: '🩹', count: maternalRegistry.filter(m => m.category === 'surgery').length, color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.15)' }
+                  { id: 'all', label: 'Tous les services', icon: <ProIcon name="globe" />, count: maternalRegistry.length, color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)' },
+                  { id: 'maternity', label: 'Gynécologie & maternité (CPN)', icon: <ProIcon name="heart-pulse" />, count: maternalRegistry.filter(m => m.category === 'maternity').length, color: '#ec4899', bg: 'rgba(236, 72, 153, 0.15)' },
+                  { id: 'chronic', label: 'Cardiologie & diabétologie (ALD)', icon: <ProIcon name="droplet" color="#dc2626" />, count: maternalRegistry.filter(m => m.category === 'chronic').length, color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)' },
+                  { id: 'pediatric', label: 'Pédiatrie & PEV (0-5 ans)', icon: <ProIcon name="baby" />, count: maternalRegistry.filter(m => m.category === 'pediatric').length, color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.15)' },
+                  { id: 'surgery', label: 'Chirurgie & traumatologie', icon: <ProIcon name="bandage" />, count: maternalRegistry.filter(m => m.category === 'surgery').length, color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.15)' }
                 ].map(tab => {
                   const isActive = registryCategoryFilter === tab.id;
                   return (
@@ -2448,7 +2449,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                       .filter(m => !searchMotherQuery || m.name.toLowerCase().includes(searchMotherQuery.toLowerCase()) || m.cmuNumber.toLowerCase().includes(searchMotherQuery.toLowerCase()) || m.pathology.toLowerCase().includes(searchMotherQuery.toLowerCase()) || m.phone.includes(searchMotherQuery))
                       .map((mother) => {
                         const isSelected = mother.id === selectedMotherId;
-                        const icon = mother.category === 'maternity' ? '🤰' : mother.category === 'chronic' ? '🩸' : mother.category === 'pediatric' ? '👶' : mother.category === 'surgery' ? '🩹' : '👤';
+                        const icon = mother.category === 'maternity' ? '🤰' : mother.category === 'chronic' ? '🩸' : mother.category === 'pediatric' ? '👶' : mother.category === 'surgery' ? <ProIcon name="bandage" /> : <ProIcon name="user" />;
                         const categoryBadgeBg = mother.category === 'chronic' ? 'rgba(239, 68, 68, 0.18)' : mother.category === 'maternity' ? 'rgba(236, 72, 153, 0.18)' : mother.category === 'pediatric' ? 'rgba(59, 130, 246, 0.18)' : 'rgba(245, 158, 11, 0.18)';
                         const categoryBadgeColor = mother.category === 'chronic' ? '#f87171' : mother.category === 'maternity' ? '#f472b6' : mother.category === 'pediatric' ? '#60a5fa' : '#fbbf24';
                         const categoryBadgeBorder = mother.category === 'chronic' ? '#ef4444' : mother.category === 'maternity' ? '#ec4899' : mother.category === 'pediatric' ? '#3b82f6' : '#f59e0b';
@@ -2469,7 +2470,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                                     <span className="badge bg-secondary-subtle text-sub border border-secondary" style={{ fontSize: '0.72rem', padding: '2px 7px', borderRadius: '6px' }}>
                                       {mother.gender === 'M' ? 'Homme' : 'Femme'}, {mother.age} ans
                                     </span>
-                                    <span className="text-muted small" style={{ fontSize: '0.78rem' }}>📞 {mother.phone}</span>
+                                    <span className="text-muted small" style={{ fontSize: '0.78rem' }}><ProIcon name="phone" /> {mother.phone}</span>
                                   </div>
                                 </div>
                               </div>
@@ -2478,7 +2479,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                             {/* Col 2: N° CSU */}
                             <td style={{ padding: '1.15rem 1rem' }}>
                               <code className="bg-success text-white px-2.5 py-1 rounded-3 fw-bold small d-inline-block" style={{ fontSize: '0.85rem' }}>{mother.cmuNumber}</code>
-                              <span className="d-block text-emerald small fw-semibold mt-1" style={{ color: '#10b981', fontSize: '0.76rem' }}>✓ 100% Prise en charge</span>
+                              <span className="d-block text-emerald small fw-semibold mt-1" style={{ color: '#10b981', fontSize: '0.76rem' }}><ProIcon name="check" color="#059669" /> 100% Prise en charge</span>
                             </td>
 
                             {/* Col 3: Pathologie */}
@@ -2490,13 +2491,13 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
 
                             {/* Col 4: Échéance */}
                             <td style={{ padding: '1.15rem 1rem' }}>
-                              <span className="fw-bold d-block" style={{ color: 'var(--text-main)', fontSize: '0.88rem' }}>📅 {mother.edd}</span>
+                              <span className="fw-bold d-block" style={{ color: 'var(--text-main)', fontSize: '0.88rem' }}><ProIcon name="calendar" /> {mother.edd}</span>
                               <small className="text-muted d-block mt-0.5" style={{ fontSize: '0.76rem' }}>Dernier soin: {mother.lastConsultation}</small>
                             </td>
 
                             {/* Col 5: Praticien */}
                             <td style={{ padding: '1.15rem 1rem' }}>
-                              <span className="text-muted small fw-semibold d-block" style={{ fontSize: '0.84rem' }}>👨‍⚕️ {mother.doctorRef}</span>
+                              <span className="text-muted small fw-semibold d-block" style={{ fontSize: '0.84rem' }}><ProIcon name="stethoscope" /> {mother.doctorRef}</span>
                             </td>
 
                             {/* Col 6: Actions */}
@@ -2532,7 +2533,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                                     setIsNewMother(false);
                                   }}
                                 >
-                                  ✏️ Modifier
+                                  <ProIcon name="edit" /> Modifier
                                 </button>
 
                                 {/* Bouton SUPPRIMER */}
@@ -2549,7 +2550,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                                   }}
                                   onClick={() => handleDeleteMother(mother)}
                                 >
-                                  🗑️ Supprimer
+                                  <ProIcon name="trash" /> Supprimer
                                 </button>
                               </div>
                             </td>
@@ -2593,7 +2594,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                     onClick={() => setRegistryPage(prev => Math.min(145, prev + 1))}
                     style={{ borderRadius: '10px', padding: '0.35rem 0.85rem' }}
                   >
-                    Suivant ▶
+                    Suivant <ProIcon name="play" />
                   </button>
                 </div>
               </div>
@@ -2611,7 +2612,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
               color: isSuperAdmin ? '#92400e' : '#ffffff',
               border: isSuperAdmin ? '1px solid rgba(234,179,8,0.4)' : 'none'
             }}>
-              <span style={{ fontSize: '1.6rem' }}>{isSuperAdmin ? '👑' : isMidwife ? '🤱' : '🩺'}</span>
+              <span style={{ fontSize: '1.6rem' }}>{isSuperAdmin ? '👑' : isMidwife ? <ProIcon name="baby" /> : <ProIcon name="stethoscope" />}</span>
               <div className="d-flex flex-column gap-1">
                 <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.05rem', color: 'inherit', letterSpacing: '-0.01em' }}>
                   {isSuperAdmin && 'Mode superadmin'}
@@ -2652,7 +2653,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
               border: '1px solid rgba(16,185,129,0.25)',
               color: 'var(--text-main)'
             }}>
-              <span style={{ fontSize: '1.6rem' }}>📖</span>
+              <span style={{ fontSize: '1.6rem' }}><ProIcon name="book-open" /></span>
               <div className="d-flex flex-column gap-1">
                 <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.05rem', color: 'var(--text-main)', letterSpacing: '-0.01em' }}>
                   Mode lecture seule
@@ -2699,7 +2700,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
               }}
               onClick={() => { setCitizenSpecialtyTab('maternity'); setActiveTab('cpn'); }}
             >
-              <span style={{ fontSize: '1.5rem' }}>🤰</span> 1. Carnet Maternité & Grossesse (100% CSU)
+              <span style={{ fontSize: '1.5rem' }}><ProIcon name="heart-pulse" /></span> 1. Carnet Maternité & Grossesse (100% CSU)
             </button>
 
             <button
@@ -2724,7 +2725,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
               }}
               onClick={() => { setCitizenSpecialtyTab('chronic'); setActiveTab('cpn'); }}
             >
-              <span style={{ fontSize: '1.5rem' }}>🩺</span> 2. Spécialités & Pathologies (ALD)
+              <span style={{ fontSize: '1.5rem' }}><ProIcon name="stethoscope" /></span> 2. Spécialités & Pathologies (ALD)
             </button>
           </div>
         )}
@@ -2732,7 +2733,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
         {isCitizen && isMaleUser && (
           <div className="d-flex justify-content-center align-items-center mb-5 w-100">
             <div style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.12) 0%, rgba(16, 185, 129, 0.18) 100%)', border: '1.5px solid rgba(5, 150, 105, 0.4)', borderRadius: '22px', padding: '1.15rem 2.25rem', display: 'inline-flex', alignItems: 'center', gap: '0.85rem', boxShadow: '0 8px 25px rgba(5, 150, 105, 0.12)' }}>
-              <span style={{ fontSize: '1.5rem' }}>🩺</span>
+              <span style={{ fontSize: '1.5rem' }}><ProIcon name="stethoscope" /></span>
               <span style={{ color: 'var(--text-main)', fontWeight: '800', fontSize: '1.08rem' }}>
                 Pôle Spécialités Médicales & Suivi Pathologies Chroniques (ALD 100% / Tiers-Payant UNAMUSC)
               </span>
@@ -2787,7 +2788,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                       {heroStyle.badgeText}
                     </span>
                     <span style={{ background: 'rgba(15, 23, 42, 0.75)', color: '#60a5fa', border: '1px solid rgba(96, 165, 250, 0.4)', backdropFilter: 'blur(10px)', padding: '0.45rem 1.05rem', borderRadius: '20px', fontSize: '0.82rem', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                      📸 {heroStyle.imageTag}
+                      <ProIcon name="camera" /> {heroStyle.imageTag}
                     </span>
                   </div>
 
@@ -2821,7 +2822,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                       style={{ background: 'rgba(15, 23, 42, 0.9)', color: '#ffffff', border: '1.5px solid rgba(255, 255, 255, 0.35)', borderRadius: '16px', padding: '1rem 1.75rem', fontWeight: '800', fontSize: '0.94rem', cursor: 'pointer', backdropFilter: 'blur(10px)', boxShadow: '0 8px 24px rgba(0,0,0,0.35)', display: 'inline-flex', alignItems: 'center', gap: '0.6rem' }} 
                       onClick={handleDownloadCarnet}
                     >
-                      📥 Exporter DMP officiel PDF (🇸🇳)
+                      <ProIcon name="download" /> Exporter DMP officiel PDF (<ProIcon name="senegal-flag" />)
                     </button>
                   </div>
                 </div>
@@ -3007,7 +3008,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                             borderRadius: '18px'
                           }}
                         >
-                          <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>📋</div>
+                          <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}><ProIcon name="clipboard-list" /></div>
                           <h6 className="fw-bold mb-1" style={{ fontSize: '0.95rem', color: 'var(--text-main)' }}>
                             Aucune consultation enregistrée
                           </h6>
@@ -3032,7 +3033,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                         {editingCpnId === item.id ? (
                           <form onSubmit={handleSaveEditCpn} className="d-flex flex-column gap-3">
                             <div className="d-flex justify-content-between align-items-center pb-2 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
-                              <strong className="text-success" style={{ fontSize: '0.95rem' }}>✏️ Modification de la consultation</strong>
+                              <strong className="text-success" style={{ fontSize: '0.95rem' }}><ProIcon name="edit" /> Modification de la consultation</strong>
                               <button type="button" className="btn btn-sm btn-close" onClick={() => setEditingCpnId(null)} />
                             </div>
                             <div>
@@ -3054,7 +3055,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                               </div>
                             </div>
                             <div className="d-flex align-items-center gap-2.5 mt-2">
-                              <button type="submit" className="btn btn-success fw-bold px-4 py-2 hover-lift" style={{ borderRadius: '10px', background: '#059669', borderColor: '#059669' }}>💾 Enregistrer</button>
+                              <button type="submit" className="btn btn-success fw-bold px-4 py-2 hover-lift" style={{ borderRadius: '10px', background: '#059669', borderColor: '#059669' }}><ProIcon name="save" /> Enregistrer</button>
                               <button type="button" className="btn btn-secondary px-3 py-2 hover-lift" style={{ borderRadius: '10px' }} onClick={() => setEditingCpnId(null)}>Annuler</button>
                             </div>
                           </form>
@@ -3077,7 +3078,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                               {/* Groupe 1 (Gauche) : Indicateur + Statut CPN + Date */}
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', rowGap: '0.65rem', flexWrap: 'wrap' }}>
                                 <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: item.completed ? '#10b981' : 'var(--bg-card)', color: item.completed ? '#ffffff' : 'var(--text-sub)', border: item.completed ? 'none' : '1.5px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '800', flexShrink: 0 }}>
-                                  {item.completed ? '✓' : '⌛'}
+                                  {item.completed ? <ProIcon name="check" color="#059669" /> : <ProIcon name="hourglass" />}
                                 </div>
                                 <span style={{ 
                                   background: item.completed ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)', 
@@ -3106,7 +3107,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                                   gap: '0.6rem',
                                   whiteSpace: 'nowrap'
                                 }}>
-                                  📅 {item.date}
+                                  <ProIcon name="calendar" /> {item.date}
                                 </span>
                               </div>
 
@@ -3133,7 +3134,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                                     }} 
                                     onClick={() => openEditCpn(item)}
                                   >
-                                    ✏️ Modifier
+                                    <ProIcon name="edit" /> Modifier
                                   </button>
                                   <button 
                                     type="button" 
@@ -3155,7 +3156,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                                     }} 
                                     onClick={() => handleDeleteCpn(item)}
                                   >
-                                    🗑️ Supprimer
+                                    <ProIcon name="trash" /> Supprimer
                                   </button>
                                 </div>
                               )}
@@ -3167,7 +3168,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                               <p className="mb-2.5" style={{ color: 'var(--text-sub)', fontSize: '0.88rem', lineHeight: '1.55' }}>{item.desc}</p>
                               <div className="d-flex align-items-center gap-2">
                                 <span className="badge bg-success-subtle text-success border border-success px-2.5 py-1" style={{ fontSize: '0.76rem', borderRadius: '8px' }}>
-                                  👨‍⚕️ {item.doctor}
+                                  <ProIcon name="stethoscope" /> {item.doctor}
                                 </span>
                               </div>
                             </div>
@@ -3181,7 +3182,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                 {/* Bouton ajouter consultation — médecin / sage-femme / superadmin */}
                 {canEditMaternity && (
                   <button type="button" className="mt-3.5 hover-lift" style={{ background: 'rgba(16,185,129,0.12)', color: '#10b981', border: '2px dashed #10b981', borderRadius: '14px', padding: '0.85rem', fontWeight: '700', fontSize: '0.9rem', cursor: 'pointer', width: '100%' }} onClick={() => setShowAddCpnModal(true)}>
-                    ➕ Ajouter une consultation de suivi ({activeMother.category === 'chronic' ? 'Cardiologie / ALD' : activeMother.category === 'surgery' ? 'Traumatologie' : 'Médecin / Praticien'})
+                    <ProIcon name="plus" /> Ajouter une consultation de suivi ({activeMother.category === 'chronic' ? 'Cardiologie / ALD' : activeMother.category === 'surgery' ? 'Traumatologie' : 'Médecin / Praticien'})
                   </button>
                 )}
 
@@ -3198,7 +3199,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                     <div style={{ background: 'linear-gradient(135deg, #065f46 0%, #047857 100%)', padding: '1.25rem 1.5rem' }}>
                       <div className="d-flex align-items-center justify-content-between">
                         <div className="d-flex align-items-center gap-2.5">
-                          <div style={{ width: '42px', height: '42px', borderRadius: '14px', background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem' }}>🛡️</div>
+                          <div style={{ width: '42px', height: '42px', borderRadius: '14px', background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3rem' }}><ProIcon name="shield-check" /></div>
                           <div>
                             <h6 className="fw-extrabold mb-0" style={{ color: '#fff', fontSize: '1rem' }}>Surveillance & prévention ALD</h6>
                             <small style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.78rem' }}>Protocoles diabète & HTA UNAMUSC</small>
@@ -3214,7 +3215,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                               setShowAldModal(true);
                             }}
                           >
-                            ➕ Ajouter
+                            <ProIcon name="plus" /> Ajouter
                           </button>
                         )}
                       </div>
@@ -3225,7 +3226,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                       <div className="p-3.5 rounded-4 mb-3" style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.12) 0%, rgba(16,185,129,0.04) 100%)', border: '1.5px solid rgba(16,185,129,0.25)', borderRadius: '18px' }}>
                         <div className="d-flex justify-content-between align-items-start mb-2">
                           <div className="d-flex align-items-center gap-2.5">
-                            <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.95rem', flexShrink: 0 }}>💊</div>
+                            <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.95rem', flexShrink: 0 }}><ProIcon name="pill" /></div>
                             <div>
                               <span className="fw-extrabold d-block" style={{ color: 'var(--text-main)', fontSize: '0.88rem', lineHeight: 1.3 }}>Observance thérapeutique ALD</span>
                               {/* Ni dose ni prescription ne sont affichées sans saisie : la ligne
@@ -3270,7 +3271,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
 
                       {/* Section Title - Bilan */}
                       <div className="d-flex align-items-center gap-2 mb-2.5" style={{ paddingBottom: '0.45rem', borderBottom: '1px solid var(--border-color)' }}>
-                        <span style={{ fontSize: '0.9rem' }}>🩺</span>
+                        <span style={{ fontSize: '0.9rem' }}><ProIcon name="stethoscope" /></span>
                         <small className="fw-bold" style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                           Bilan prévention complications ALD
                         </small>
@@ -3298,10 +3299,10 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                           </p>
                         )}
                         {aldSurveillanceItems.map(item => {
-                          const iconMap = { '👁️': { bg: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', icon: '👁️' }, '👣': { bg: 'linear-gradient(135deg, #f59e0b, #d97706)', icon: '👣' }, '🫀': { bg: 'linear-gradient(135deg, #ef4444, #dc2626)', icon: '🫀' } };
+                          const iconMap = { '👁️': { bg: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', icon: <ProIcon name="eye" /> }, '👣': { bg: 'linear-gradient(135deg, #f59e0b, #d97706)', icon: '👣' }, '🫀': { bg: 'linear-gradient(135deg, #ef4444, #dc2626)', icon: <ProIcon name="heart-pulse" color="#dc2626" /> } };
                           const firstEmoji = item.title.match(/^(\p{Emoji_Presentation}|\p{Extended_Pictographic})/u);
                           const emojiKey = firstEmoji ? firstEmoji[0] : null;
-                          const iconStyle = iconMap[emojiKey] || { bg: 'linear-gradient(135deg, #6366f1, #4f46e5)', icon: '🩺' };
+                          const iconStyle = iconMap[emojiKey] || { bg: 'linear-gradient(135deg, #6366f1, #4f46e5)', icon: <ProIcon name="stethoscope" /> };
                           const cleanTitle = item.title.replace(/^(\p{Emoji_Presentation}|\p{Extended_Pictographic})\s*/u, '');
                           
                           return (
@@ -3316,7 +3317,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                   <span className="fw-bold d-block" style={{ color: 'var(--text-main)', fontSize: '0.84rem', lineHeight: 1.35 }}>{cleanTitle}</span>
                                   <div className="d-flex align-items-center gap-2 mt-1" style={{ flexWrap: 'wrap' }}>
-                                    <span style={{ background: 'rgba(99,102,241,0.15)', color: '#818cf8', fontSize: '0.72rem', fontWeight: 700, padding: '0.2rem 0.55rem', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>📅 {item.date}</span>
+                                    <span style={{ background: 'rgba(99,102,241,0.15)', color: '#818cf8', fontSize: '0.72rem', fontWeight: 700, padding: '0.2rem 0.55rem', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><ProIcon name="calendar" /> {item.date}</span>
                                     <span style={{ background: 'rgba(16,185,129,0.15)', color: '#10b981', fontSize: '0.72rem', fontWeight: 800, padding: '0.2rem 0.55rem', borderRadius: '8px' }}>{item.status}</span>
                                   </div>
                                 </div>
@@ -3339,7 +3340,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                                         cursor: 'pointer'
                                       }}
                                       onClick={() => { setEditingAldItem(item); setShowAldModal(true); }}
-                                    >✏️</button>
+                                    ><ProIcon name="edit" /></button>
                                     <button
                                       type="button"
                                       className="btn btn-sm fw-bold d-inline-flex align-items-center gap-1 hover-lift"
@@ -3355,7 +3356,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                                         cursor: 'pointer'
                                       }}
                                       onClick={() => handleDeleteAldItem(item.id)}
-                                    >🗑️</button>
+                                    ><ProIcon name="trash" /></button>
                                   </div>
                                 )}
                               </div>
@@ -3379,7 +3380,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   <div className="p-4 rounded-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '20px' }}>
                     <div className="d-flex align-items-center justify-content-between mb-3">
                       <div className="d-flex align-items-center gap-2.5">
-                        <span className="fs-4">🩹</span>
+                        <span className="fs-4"><ProIcon name="bandage" /></span>
                         <div>
                           <h6 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '0.98rem' }}>Protocole Post-Opératoire</h6>
                           <small className="text-muted d-block" style={{ fontSize: '0.76rem' }}>Chirurgie & Orthopédie UNAMUSC</small>
@@ -3395,7 +3396,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                             setShowPostOpModal(true);
                           }}
                         >
-                          ➕ Ajouter
+                          <ProIcon name="plus" /> Ajouter
                         </button>
                       )}
                     </div>
@@ -3411,7 +3412,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                         disparaît. */}
                     <div className="p-3 rounded-3 mb-3" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
                       <div className="d-flex justify-content-between align-items-center mb-1.5">
-                        <small className="fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.82rem' }}>💉 Anticoagulation préventive</small>
+                        <small className="fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.82rem' }}><ProIcon name="syringe" /> Anticoagulation préventive</small>
                         <span className="badge bg-secondary-subtle text-muted fw-bold px-2 py-1" style={{ fontSize: '0.72rem', borderRadius: '6px' }}>
                           Statut non renseigné
                         </span>
@@ -3425,7 +3426,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                     <div className="mb-3">
                       <div className="d-flex align-items-center justify-content-between mb-2">
                         <small className="text-muted fw-bold" style={{ fontSize: '0.75rem' }}>
-                          🩺 Soins de cicatrisation & pansements
+                          <ProIcon name="stethoscope" /> Soins de cicatrisation & pansements
                         </small>
                       </div>
 
@@ -3449,7 +3450,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                           <div key={item.id} className="p-2.5 rounded-3 d-flex align-items-center justify-content-between gap-2" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', fontSize: '0.8rem' }}>
                             <div className="d-flex flex-column">
                               <span className="fw-semibold" style={{ color: 'var(--text-main)' }}>{item.title}</span>
-                              <small className="text-muted" style={{ fontSize: '0.72rem' }}>📅 {item.date}</small>
+                              <small className="text-muted" style={{ fontSize: '0.72rem' }}><ProIcon name="calendar" /> {item.date}</small>
                             </div>
 
                             <div className="d-flex align-items-center gap-1.5">
@@ -3471,7 +3472,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                                       cursor: 'pointer'
                                     }}
                                     onClick={() => { setEditingPostOpItem(item); setShowPostOpModal(true); }}
-                                  >✏️</button>
+                                  ><ProIcon name="edit" /></button>
                                   <button
                                     type="button"
                                     className="btn btn-sm fw-bold d-inline-flex align-items-center gap-1 hover-lift"
@@ -3487,7 +3488,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                                       cursor: 'pointer'
                                     }}
                                     onClick={() => handleDeletePostOpItem(item.id)}
-                                  >🗑️</button>
+                                  ><ProIcon name="trash" /></button>
                                 </div>
                               )}
                             </div>
@@ -3513,7 +3514,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   <div className="p-4 rounded-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '20px' }}>
                     <div className="d-flex align-items-center justify-content-between mb-3">
                       <div className="d-flex align-items-center gap-2.5">
-                        <span className="fs-4">💊</span>
+                        <span className="fs-4"><ProIcon name="pill" /></span>
                         <div>
                           <h6 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '0.98rem' }}>Supplémentation & TPI paludisme</h6>
                           <small className="text-muted d-block" style={{ fontSize: '0.76rem' }}>Directives PNLP Sénégal & UNAMUSC</small>
@@ -3529,7 +3530,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                             setShowSupplementsModal(true);
                           }}
                         >
-                          ✏️ Modifier
+                          <ProIcon name="edit" /> Modifier
                         </button>
                       )}
                     </div>
@@ -3537,7 +3538,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                     {/* Fer & Acide Folique */}
                     <div className="p-3 rounded-3 mb-3" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
                       <div className="d-flex justify-content-between align-items-center mb-1.5">
-                        <small className="fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.82rem' }}>💊 Fer & acide folique (anti-anémie)</small>
+                        <small className="fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.82rem' }}><ProIcon name="pill" /> Fer & acide folique (anti-anémie)</small>
                         <span className="badge bg-success-subtle text-success fw-bold px-2 py-1" style={{ fontSize: '0.72rem', borderRadius: '6px' }}>
                           {maternalSupplements.ferFolateDaysTaken} / {maternalSupplements.ferFolateTotalDays} jours
                         </span>
@@ -3594,7 +3595,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                     <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.1rem' }}>
                       {activeMother.category === 'chronic' ? 'Vos garanties ALD 100% CSU' : activeMother.category === 'surgery' ? 'Vos garanties Chirurgie 100% CSU' : 'Vos avantages CSU'}
                     </h6>
-                    <span style={{ fontSize: '1.5rem' }}>🇸🇳</span>
+                    <span style={{ fontSize: '1.5rem' }}><ProIcon name="senegal-flag" /></span>
                   </div>
 
                   <p className="small mb-3" style={{ opacity: 0.95, lineHeight: '1.5' }}>
@@ -3618,7 +3619,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                       seule source du taux applicable à un dossier donné. */}
                   <div className="d-flex flex-column gap-2 mb-4 small fw-semibold">
                     <div className="d-flex align-items-start gap-2">
-                      <span>ℹ️</span>
+                      <span><ProIcon name="info" color="#0284c7" /></span>
                       <span>
                         Le niveau de prise en charge applicable à votre dossier
                         n'est pas renseigné ici. Il dépend de votre commune,
@@ -3627,7 +3628,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                       </span>
                     </div>
                     <div className="d-flex align-items-start gap-2">
-                      <span>ℹ️</span>
+                      <span><ProIcon name="info" color="#0284c7" /></span>
                       <span>
                         Aucun bon de commande, aucune ordonnance et aucune
                         prise en charge validée n'apparaissent dans ce dossier.
@@ -3712,12 +3713,12 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   <div className="col-md-4">
                     <div className="p-3.5 rounded-4 d-flex align-items-center gap-3 h-100" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
                       <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>
-                        💊
+                        <ProIcon name="pill" />
                       </div>
                       <div>
                         <small className="d-block text-muted fw-bold" style={{ fontSize: '0.74rem' }}>Traitement ALD actif</small>
                         <strong style={{ color: 'var(--text-main)', fontSize: '1rem' }}>{aldPrescriptions.length} médicaments prescrits</strong>
-                        <small className="d-block text-danger fw-bold" style={{ fontSize: '0.78rem' }}>✓ Renouvellement 6 mois CSU</small>
+                        <small className="d-block text-danger fw-bold" style={{ fontSize: '0.78rem' }}><ProIcon name="check" color="#059669" /> Renouvellement 6 mois CSU</small>
                       </div>
                     </div>
                   </div>
@@ -3725,7 +3726,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   <div className="col-md-4">
                     <div className="p-3.5 rounded-4 d-flex align-items-center gap-3 h-100" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
                       <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>
-                        🧪
+                        <ProIcon name="flask" />
                       </div>
                       <div>
                         <small className="d-block text-muted fw-bold" style={{ fontSize: '0.74rem' }}>Bilan biologique récent</small>
@@ -3738,7 +3739,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   <div className="col-md-4">
                     <div className="p-3.5 rounded-4 d-flex align-items-center gap-3 h-100" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
                       <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>
-                        🛡️
+                        <ProIcon name="shield-check" />
                       </div>
                       <div>
                         <small className="d-block text-muted fw-bold" style={{ fontSize: '0.74rem' }}>Prise en charge ALD</small>
@@ -3753,7 +3754,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                 <div className="p-4 rounded-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
                   <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
                     <div>
-                      <h5 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>💊 Ordonnance thérapeutique & traitement ALD permanent</h5>
+                      <h5 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}><ProIcon name="pill" /> Ordonnance thérapeutique & traitement ALD permanent</h5>
                       <small className="text-muted" style={{ fontSize: '0.82rem' }}>Délivrance gratuite en pharmacie agréée UNAMUSC sur présentation de la carte CSU N° {activeMother.cmuNumber}</small>
                     </div>
                     <div className="d-flex gap-2">
@@ -3767,11 +3768,11 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                             setShowPrescriptionModal(true);
                           }}
                         >
-                          ➕ Prescrire un médicament
+                          <ProIcon name="plus" /> Prescrire un médicament
                         </button>
                       )}
                       <button type="button" className="btn btn-sm btn-danger fw-bold hover-lift" style={{ borderRadius: '10px', padding: '0.45rem 0.9rem' }} onClick={handleGenerateDeliveryCertificate}>
-                        📜 Imprimer l'ordonnance ALD 100% PDF
+                        <ProIcon name="scroll-text" /> Imprimer l'ordonnance ALD 100% PDF
                       </button>
                     </div>
                   </div>
@@ -3793,7 +3794,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                         {aldPrescriptions.length === 0 && (
                           <tr>
                             <td colSpan={canEditMaternity ? 5 : 4} className="text-center py-4">
-                              <div style={{ fontSize: '1.5rem', marginBottom: '0.35rem' }}>💊</div>
+                              <div style={{ fontSize: '1.5rem', marginBottom: '0.35rem' }}><ProIcon name="pill" /></div>
                               <strong className="d-block mb-1" style={{ color: 'var(--text-main)', fontSize: '0.9rem' }}>
                                 Aucune ordonnance enregistrée
                               </strong>
@@ -3817,8 +3818,8 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                             {canEditMaternity && (
                               <td style={{ textAlign: 'right' }}>
                                 <div className="d-flex justify-content-end gap-1.5">
-                                  <button type="button" className="btn btn-sm btn-outline-primary py-1 px-2 hover-lift" style={{ fontSize: '0.75rem', borderRadius: '6px' }} onClick={() => { setEditingPrescription(p); setShowPrescriptionModal(true); }}>✏️</button>
-                                  <button type="button" className="btn btn-sm btn-outline-danger py-1 px-2 hover-lift" style={{ fontSize: '0.75rem', borderRadius: '6px' }} onClick={() => handleDeletePrescription(p.id)}>🗑️</button>
+                                  <button type="button" className="btn btn-sm btn-outline-primary py-1 px-2 hover-lift" style={{ fontSize: '0.75rem', borderRadius: '6px' }} onClick={() => { setEditingPrescription(p); setShowPrescriptionModal(true); }}><ProIcon name="edit" /></button>
+                                  <button type="button" className="btn btn-sm btn-outline-danger py-1 px-2 hover-lift" style={{ fontSize: '0.75rem', borderRadius: '6px' }} onClick={() => handleDeletePrescription(p.id)}><ProIcon name="trash" /></button>
                                 </div>
                               </td>
                             )}
@@ -3844,7 +3845,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                 <div className="p-4 rounded-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
                   <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
                     <div>
-                      <h5 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>🦴 Galerie d'imagerie radiologique DICOM & examens osseux</h5>
+                      <h5 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}><ProIcon name="bone" /> Galerie d'imagerie radiologique DICOM & examens osseux</h5>
                       <small className="text-muted" style={{ fontSize: '0.82rem' }}>Radio numérique de contrôle post-opératoire et scanners d'ostéosynthèse</small>
                     </div>
                   </div>
@@ -3857,7 +3858,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                       borderRadius: '18px'
                     }}
                   >
-                    <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>🩻</div>
+                    <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}><ProIcon name="scan" /></div>
                     <h6 className="fw-bold mb-1" style={{ fontSize: '0.95rem', color: 'var(--text-main)' }}>
                       Aucun examen d'imagerie enregistré
                     </h6>
@@ -3868,7 +3869,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                 </div>
 
                 <div className="p-4 rounded-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
-                  <h5 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>💊 Ordonnances post-opératoires</h5>
+                  <h5 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}><ProIcon name="pill" /> Ordonnances post-opératoires</h5>
                   <div
                     className="p-4 rounded-4 text-center mt-3"
                     style={{
@@ -3877,7 +3878,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                       borderRadius: '18px'
                     }}
                   >
-                    <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}>📄</div>
+                    <div style={{ fontSize: '1.75rem', marginBottom: '0.5rem' }}><ProIcon name="file-text" /></div>
                     <h6 className="fw-bold mb-1" style={{ fontSize: '0.95rem', color: 'var(--text-main)' }}>
                       Aucune ordonnance enregistrée
                     </h6>
@@ -3896,7 +3897,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                     <div className="p-3.5 rounded-4 d-flex align-items-center justify-content-between h-100" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
                       <div className="d-flex align-items-center gap-3">
                         <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>
-                          👶
+                          <ProIcon name="baby" />
                         </div>
                         <div>
                           <small className="d-block text-muted fw-bold" style={{ fontSize: '0.74rem' }}>Bébé rattaché</small>
@@ -3916,7 +3917,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                         }}
                         title="Modifier le profil du bébé & contact assurée"
                       >
-                        ✏️
+                        <ProIcon name="edit" />
                       </button>
                     </div>
                   </div>
@@ -3924,7 +3925,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   <div className="col-md-4">
                     <div className="p-3.5 rounded-4 d-flex align-items-center gap-3 h-100" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
                       <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>
-                        💉
+                        <ProIcon name="syringe" />
                       </div>
                       <div>
                         <small className="d-block text-muted fw-bold" style={{ fontSize: '0.74rem' }}>Progression vaccinale</small>
@@ -3939,7 +3940,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   <div className="col-md-4">
                     <div className="p-3.5 rounded-4 d-flex align-items-center gap-3 h-100" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-sm)' }}>
                       <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(245, 158, 11, 0.15)', color: '#d97706', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>
-                        📅
+                        <ProIcon name="calendar" />
                       </div>
                       <div>
                         <small className="d-block text-muted fw-bold" style={{ fontSize: '0.74rem' }}>Prochaine échéance</small>
@@ -3949,14 +3950,14 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                             return (
                               <>
                                 <strong style={{ color: 'var(--text-main)', fontSize: '1rem' }}>{nextPending.ageLabel}</strong>
-                                <small className="d-block text-warning fw-semibold" style={{ fontSize: '0.78rem' }}>🏥 {nextPending.structure}</small>
+                                <small className="d-block text-warning fw-semibold" style={{ fontSize: '0.78rem' }}><ProIcon name="hospital" /> {nextPending.structure}</small>
                               </>
                             );
                           }
                           return (
                             <>
                               <strong style={{ color: '#10b981', fontSize: '1rem' }}>Programme accompli 100%</strong>
-                              <small className="d-block text-success fw-semibold" style={{ fontSize: '0.78rem' }}>✅ Vaccins 0-12 mois à jour</small>
+                              <small className="d-block text-success fw-semibold" style={{ fontSize: '0.78rem' }}><ProIcon name="check-circle" color="#059669" /> Vaccins 0-12 mois à jour</small>
                             </>
                           );
                         })()}
@@ -3970,7 +3971,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
                     <div className="d-flex align-items-center gap-2.5">
                       <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem' }}>
-                        🔔
+                        <ProIcon name="bell" />
                       </div>
                       <div>
                         <h6 className="fw-extrabold mb-0 text-white" style={{ fontSize: '1.05rem', letterSpacing: '-0.01em' }}>
@@ -3983,13 +3984,13 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                     </div>
 
                     <span className="badge px-3 py-2 rounded-pill fw-bold" style={{ background: 'rgba(16, 185, 129, 0.25)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.5)', fontSize: '0.78rem' }}>
-                      🟢 Relances automatiques H-48 actives
+                      <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Relances automatiques H-48 actives
                     </span>
                   </div>
 
                   {reminderToast && (
                     <div className="alert d-flex align-items-center p-3 mb-3 rounded-3 border-0 fade-in" style={{ background: 'rgba(5, 150, 105, 0.25)', color: '#a7f3d0', border: '1px solid #059669', boxShadow: '0 4px 15px rgba(5, 150, 105, 0.3)' }}>
-                      <span className="me-2 fs-4">🔊</span>
+                      <span className="me-2 fs-4"><ProIcon name="volume" /></span>
                       <div className="small fw-bold" style={{ lineHeight: '1.45', fontSize: '0.88rem' }}>{reminderToast}</div>
                     </div>
                   )}
@@ -4012,7 +4013,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                           }} 
                           onClick={() => setAudioLang('fr')}
                         >
-                          🗣️ Français
+                          <ProIcon name="message-circle" /> Français
                         </button>
                         <button 
                           type="button" 
@@ -4027,7 +4028,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                           }} 
                           onClick={() => setAudioLang('wolof')}
                         >
-                          🗣️ Wolof
+                          <ProIcon name="message-circle" /> Wolof
                         </button>
                         <button 
                           type="button" 
@@ -4043,7 +4044,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                           }} 
                           onClick={() => setAudioLang('pulaar')}
                         >
-                          🗣️ Pulaar
+                          <ProIcon name="message-circle" /> Pulaar
                         </button>
                       </div>
                     </div>
@@ -4056,7 +4057,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                         disabled={reminderSending}
                         onClick={() => triggerInstantReminder('sms', audioLang)}
                       >
-                        <span>💬</span> {reminderSending ? 'Envoi...' : 'Envoyer un rappel SMS / WhatsApp immédiat'}
+                        <span><ProIcon name="message-square" /></span> {reminderSending ? 'Envoi...' : 'Envoyer un rappel SMS / WhatsApp immédiat'}
                       </button>
 
                       <button 
@@ -4066,7 +4067,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                         disabled={reminderSending}
                         onClick={() => triggerInstantReminder('voice', audioLang)}
                       >
-                        <span>🔊</span> Relance vocale ({audioLang.toUpperCase()})
+                        <span><ProIcon name="volume" /></span> Relance vocale ({audioLang.toUpperCase()})
                       </button>
 
                       <button 
@@ -4078,7 +4079,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                           setShowBabyModal(true);
                         }}
                       >
-                        ⚙️ Configurer le contact
+                        <ProIcon name="settings" /> Configurer le contact
                       </button>
                     </div>
                   </div>
@@ -4089,7 +4090,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
                     <div className="d-flex align-items-center gap-3">
                       <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem', flexShrink: 0 }}>
-                        📊
+                        <ProIcon name="bar-chart" />
                       </div>
                       <div>
                         <h5 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>Courbe de croissance & périmètre crânien OMS (0-24 mois)</h5>
@@ -4099,7 +4100,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
 
                     <div className="d-flex align-items-center gap-2">
                       <span className="badge bg-success-subtle text-success px-3 py-2 fw-bold" style={{ borderRadius: '10px', fontSize: '0.8rem' }}>
-                        🟢 Trajectoire OMS : Harmonieuse (P50)
+                        <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Trajectoire OMS : Harmonieuse (P50)
                       </span>
                       {canEditMaternity && (
                         <button 
@@ -4108,7 +4109,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                           style={{ borderRadius: '10px', padding: '0.45rem 0.9rem', fontSize: '0.82rem', background: '#059669', borderColor: '#059669' }}
                           onClick={() => setShowAddGrowthModal(true)}
                         >
-                          ➕ Consigner une pesée (Pédiatre / Médecin)
+                          <ProIcon name="plus" /> Consigner une pesée (Pédiatre / Médecin)
                         </button>
                       )}
                     </div>
@@ -4117,7 +4118,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   {/* GRAPHIQUE VISUEL INTERACTIF SVG DE LA COURBE OMS */}
                   <div className="p-3.5 rounded-4 mb-4 text-white position-relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', border: '1px solid rgba(16, 185, 129, 0.35)' }}>
                     <div className="d-flex justify-content-between align-items-center mb-3">
-                      <small className="fw-bold text-emerald-400" style={{ fontSize: '0.82rem' }}>📈 Trajectoire de poids (kg) vs couloir vert OMS (percentile 3 à 97)</small>
+                      <small className="fw-bold text-emerald-400" style={{ fontSize: '0.82rem' }}><ProIcon name="trending-up" /> Trajectoire de poids (kg) vs couloir vert OMS (percentile 3 à 97)</small>
                       <small className="text-slate-400" style={{ fontSize: '0.78rem' }}>Dernière pesée : {babyGrowth[babyGrowth.length - 1]?.date} ({babyGrowth[babyGrowth.length - 1]?.weight} kg)</small>
                     </div>
 
@@ -4157,13 +4158,13 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                         {babyGrowth.map((row) => (
                           <tr key={row.id}>
                             <td><strong style={{ color: 'var(--text-main)', fontSize: '0.88rem' }}>{row.month}</strong></td>
-                            <td><span style={{ color: 'var(--text-sub)', fontSize: '0.84rem' }}>📅 {row.date}</span></td>
-                            <td><span className="fw-bold text-success" style={{ fontSize: '0.92rem' }}>⚖️ {row.weight} kg</span></td>
+                            <td><span style={{ color: 'var(--text-sub)', fontSize: '0.84rem' }}><ProIcon name="calendar" /> {row.date}</span></td>
+                            <td><span className="fw-bold text-success" style={{ fontSize: '0.92rem' }}><ProIcon name="shield-check" /> {row.weight} kg</span></td>
                             <td><span style={{ color: 'var(--text-main)', fontSize: '0.88rem' }}>📏 {row.height} cm</span></td>
-                            <td><span style={{ color: 'var(--text-main)', fontSize: '0.88rem' }}>🧠 {row.head} cm</span></td>
+                            <td><span style={{ color: 'var(--text-main)', fontSize: '0.88rem' }}><ProIcon name="brain" /> {row.head} cm</span></td>
                             <td>
                               <span className="badge bg-success-subtle text-success border border-success fw-bold" style={{ borderRadius: '8px', padding: '0.35rem 0.7rem', fontSize: '0.76rem' }}>
-                                🟢 {row.status}
+                                <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> {row.status}
                               </span>
                             </td>
                           </tr>
@@ -4178,7 +4179,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
                     <div className="d-flex align-items-center gap-3">
                       <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem', flexShrink: 0 }}>
-                        🛡️
+                        <ProIcon name="shield-check" />
                       </div>
                       <div>
                         <h5 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>Programme élargi de vaccination (PEV Sénégal 0-12 mois)</h5>
@@ -4192,7 +4193,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                       style={{ borderRadius: '10px', padding: '0.45rem 0.9rem', fontSize: '0.82rem' }}
                       onClick={handleGenerateDeliveryCertificate}
                     >
-                      📥 Télécharger carnet vaccinal PDF
+                      <ProIcon name="download" /> Télécharger carnet vaccinal PDF
                     </button>
                   </div>
 
@@ -4220,7 +4221,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                               <small className="text-muted" style={{ fontSize: '0.74rem' }}>{vac.subtext}</small>
                             </td>
                             <td><span style={{ color: 'var(--text-sub)', fontSize: '0.82rem' }}>{vac.diseases}</span></td>
-                            <td><span style={{ color: 'var(--text-main)', fontSize: '0.82rem' }}>🏥 {vac.structure}</span></td>
+                            <td><span style={{ color: 'var(--text-main)', fontSize: '0.82rem' }}><ProIcon name="hospital" /> {vac.structure}</span></td>
                             <td>
                               <span className={`badge ${vac.completed ? 'bg-success text-white' : 'bg-warning-subtle text-warning border border-warning'}`} style={{ borderRadius: '8px', padding: '0.35rem 0.7rem', fontSize: '0.76rem' }}>
                                 {vac.completed ? '✅ Administré (100% CSU)' : `🗓️ ${vac.status}`}
@@ -4229,8 +4230,8 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                             <td>
                               {canEditMaternity && (
                                 <div className="d-flex gap-2">
-                                  <button type="button" className="btn btn-sm btn-outline-primary" style={{ borderRadius: '6px', fontSize: '0.72rem' }}>✏️ Modifier</button>
-                                  <button type="button" className="btn btn-sm btn-outline-danger" style={{ borderRadius: '6px', fontSize: '0.72rem' }}>🗑️ Supprimer</button>
+                                  <button type="button" className="btn btn-sm btn-outline-primary" style={{ borderRadius: '6px', fontSize: '0.72rem' }}><ProIcon name="edit" /> Modifier</button>
+                                  <button type="button" className="btn btn-sm btn-outline-danger" style={{ borderRadius: '6px', fontSize: '0.72rem' }}><ProIcon name="trash" /> Supprimer</button>
                                 </div>
                               )}
                             </td>
@@ -4248,7 +4249,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                       style={{ background: 'rgba(16,185,129,0.12)', color: '#10b981', border: '2px dashed #10b981', borderRadius: '12px', padding: '0.85rem', fontWeight: '700', fontSize: '0.88rem', cursor: 'pointer', width: '100%' }} 
                       onClick={() => setShowAddVaccineModal(true)}
                     >
-                      ➕ Enregistrer une nouvelle vaccination PEV ({isMidwife ? 'Sage-femme' : isSuperAdmin ? 'SuperAdmin' : 'Médecin'})
+                      <ProIcon name="plus" /> Enregistrer une nouvelle vaccination PEV ({isMidwife ? 'Sage-femme' : isSuperAdmin ? 'SuperAdmin' : 'Médecin'})
                     </button>
                   )}
                 </div>
@@ -4279,7 +4280,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                 onClick={() => setSelectedAdviceArticle(null)}
                 style={{ position: 'absolute', top: '15px', right: '15px', background: 'rgba(0,0,0,0.6)', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '50%', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', fontSize: '1.1rem', zIndex: 10 }}
               >
-                ✖
+                <ProIcon name="x" />
               </button>
 
               <div style={{ position: 'absolute', bottom: '15px', left: '20px', right: '20px', color: '#ffffff' }}>
@@ -4295,8 +4296,8 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
             {/* Modal Body */}
             <div style={{ padding: '2rem 1.75rem' }}>
               <div className="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
-                <small style={{ color: 'var(--text-sub)', fontSize: '0.8rem' }}>👨‍⚕️ Rédigé par : <strong>{selectedAdviceArticle.author}</strong></small>
-                <small style={{ color: '#10b981', fontWeight: '700', fontSize: '0.8rem' }}>⏱️ {selectedAdviceArticle.readTime}</small>
+                <small style={{ color: 'var(--text-sub)', fontSize: '0.8rem' }}><ProIcon name="stethoscope" /> Rédigé par : <strong>{selectedAdviceArticle.author}</strong></small>
+                <small style={{ color: '#10b981', fontWeight: '700', fontSize: '0.8rem' }}><ProIcon name="clock" /> {selectedAdviceArticle.readTime}</small>
               </div>
 
               <p style={{ color: 'var(--text-sub)', fontSize: '0.92rem', fontWeight: '600', marginBottom: '1.25rem', lineHeight: '1.5' }}>
@@ -4307,7 +4308,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
               <div className="d-flex flex-column gap-2.5 mb-4">
                 {selectedAdviceArticle.content.map((point, i) => (
                   <div key={i} className="p-3 rounded-3 d-flex align-items-start gap-2.5" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
-                    <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '1.1rem', flexShrink: 0 }}>✓</span>
+                    <span style={{ color: '#10b981', fontWeight: 'bold', fontSize: '1.1rem', flexShrink: 0 }}><ProIcon name="check" color="#059669" /></span>
                     <span style={{ fontSize: '0.88rem', color: 'var(--text-main)', lineHeight: '1.6' }}>{point}</span>
                   </div>
                 ))}
@@ -4354,7 +4355,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                     });
                   }}
                 >
-                  🖨️ Imprimer la fiche conseil PDF
+                  <ProIcon name="printer" /> Imprimer la fiche conseil PDF
                 </button>
               </div>
             </div>
@@ -4370,7 +4371,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
           <form onSubmit={handleAddAdvice} style={{ maxWidth: '600px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2.5rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
             <div className="d-flex justify-content-between align-items-center mb-3">
               <div>
-                <h5 className="fw-bold text-success mb-1" style={{ fontSize: '1.15rem' }}>👩‍⚕️ Espace Infirmière / Sage-Femme</h5>
+                <h5 className="fw-bold text-success mb-1" style={{ fontSize: '1.15rem' }}><ProIcon name="stethoscope" /> Espace Infirmière / Sage-Femme</h5>
                 <small style={{ color: 'var(--text-sub)', fontSize: '0.8rem' }}>Publier une nouvelle fiche conseil certifiée pour le carnet de maternité</small>
               </div>
               <button type="button" className="btn-close" onClick={() => setShowAddAdviceModal(false)}></button>
@@ -4409,7 +4410,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
 
             <div className="d-flex justify-content-end gap-3">
               <button type="button" className="btn btn-outline" style={{ borderRadius: '12px' }} onClick={() => setShowAddAdviceModal(false)}>Annuler</button>
-              <button type="submit" className="btn btn-success fw-bold" style={{ borderRadius: '12px', background: '#10b981', borderColor: '#10b981' }}>✅ Enregistrer la fiche</button>
+              <button type="submit" className="btn btn-success fw-bold" style={{ borderRadius: '12px', background: '#10b981', borderColor: '#10b981' }}><ProIcon name="check-circle" color="#059669" /> Enregistrer la fiche</button>
             </div>
           </form>
         </div>,
@@ -4421,7 +4422,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
           <div style={{ maxWidth: '680px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2.5rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
             <div className="d-flex justify-content-between align-items-center mb-4">
-              <h5 className="fw-bold text-success mb-0" style={{ fontSize: '1.15rem' }}>📜 Lettre de garantie hospitalière (100% UNAMUSC 🇸🇳)</h5>
+              <h5 className="fw-bold text-success mb-0" style={{ fontSize: '1.15rem' }}><ProIcon name="scroll-text" /> Lettre de garantie hospitalière (100% UNAMUSC <ProIcon name="senegal-flag" />)</h5>
               <button className="btn-close" onClick={() => setShowGuaranteeModal(false)}></button>
             </div>
 
@@ -4450,7 +4451,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
 
             <div className="d-flex justify-content-end gap-3">
               <button type="button" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.6rem 1.2rem', fontWeight: '600', fontSize: '0.88rem' }} onClick={() => setShowGuaranteeModal(false)}>Fermer</button>
-              <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.6rem 1.4rem', fontWeight: '700', fontSize: '0.88rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }} onClick={handleDownloadGuarantee}>📥 Télécharger la lettre PDF certifiée (🇸🇳)</button>
+              <button type="button" style={{ background: '#10b981', color: '#ffffff', border: 'none', borderRadius: '10px', padding: '0.6rem 1.4rem', fontWeight: '700', fontSize: '0.88rem', cursor: 'pointer', boxShadow: '0 4px 12px rgba(16,185,129,0.3)' }} onClick={handleDownloadGuarantee}><ProIcon name="download" /> Télécharger la lettre PDF certifiée (<ProIcon name="senegal-flag" />)</button>
             </div>
           </div>
         </div>,
@@ -4462,7 +4463,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
           <form onSubmit={handleSendQuestion} style={{ maxWidth: '560px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2.5rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
             <div className="d-flex justify-content-between align-items-center mb-4">
-              <h5 className="fw-bold text-success mb-0" style={{ fontSize: '1.15rem' }}>💬 Poser une question à la sage-femme de garde</h5>
+              <h5 className="fw-bold text-success mb-0" style={{ fontSize: '1.15rem' }}><ProIcon name="message-square" /> Poser une question à la sage-femme de garde</h5>
               <button type="button" className="btn-close" onClick={() => setShowAskMidwifeModal(false)}></button>
             </div>
             
@@ -4551,7 +4552,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
           <div style={{ maxWidth: '560px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2.5rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
             <div className="d-flex justify-content-between align-items-center mb-4">
-              <h5 className="fw-bold text-success mb-0" style={{ fontSize: '1.15rem' }}>📅 Réserver {selectedCpnForBooking.title}</h5>
+              <h5 className="fw-bold text-success mb-0" style={{ fontSize: '1.15rem' }}><ProIcon name="calendar" /> Réserver {selectedCpnForBooking.title}</h5>
               <button type="button" className="btn-close" onClick={() => setShowBookingModal(false)}></button>
             </div>
 
@@ -4589,7 +4590,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                     if (input && input.showPicker) input.showPicker();
                   }}
                 >
-                  <span>📅</span> Calendrier
+                  <span><ProIcon name="calendar" /></span> Calendrier
                 </button>
               </div>
             </div>
@@ -4612,7 +4613,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
             <div className="d-flex justify-content-between align-items-start mb-4 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
               <div className="d-flex align-items-center gap-3.5">
                 <div style={{ width: '56px', height: '56px', borderRadius: '18px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', flexShrink: 0, boxShadow: '0 4px 14px rgba(16,185,129,0.2)' }}>
-                  🛡️
+                  <ProIcon name="shield-check" />
                 </div>
                 <div>
                   <h5 className="fw-bold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.25rem', lineHeight: '1.3' }}>
@@ -4629,7 +4630,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
             {/* Presidential Banner */}
             <div className="p-4 rounded-4 mb-4" style={{ background: 'rgba(16,185,129,0.09)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '22px' }}>
               <div className="d-flex align-items-center gap-2 mb-2">
-                <span style={{ fontSize: '1.25rem' }}>🇸🇳</span>
+                <span style={{ fontSize: '1.25rem' }}><ProIcon name="senegal-flag" /></span>
                 <strong style={{ fontSize: '0.98rem', color: '#047857' }}>Décret présidentiel & protocole UNAMUSC : zéro avance de frais</strong>
               </div>
               <p className="mb-0" style={{ fontSize: '0.88rem', color: 'var(--text-main)', lineHeight: '1.7', opacity: 0.92 }}>
@@ -4638,7 +4639,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
             </div>
 
             <h6 className="fw-bold mb-4" style={{ color: 'var(--text-main)', fontSize: '1.05rem' }}>
-              📋 Détail complémentaire de vos prestations garanties :
+              <ProIcon name="clipboard-list" /> Détail complémentaire de vos prestations garanties :
             </h6>
 
             {/* Spacious 2-Column Grid Cards */}
@@ -4732,7 +4733,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   });
                 }}
               >
-                🖨️ Imprimer la charte des droits en PDF
+                <ProIcon name="printer" /> Imprimer la charte des droits en PDF
               </button>
             </div>
 
@@ -4746,7 +4747,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
           <form onSubmit={handleAddCpn} style={{ maxWidth: '520px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '20px', padding: '2rem', border: '1px solid var(--border-color)', margin: 'auto' }}>
             <div className="d-flex justify-content-between align-items-center mb-3">
-              <h5 className="fw-bold text-success mb-0">➕ Ajouter une consultation CPN</h5>
+              <h5 className="fw-bold text-success mb-0"><ProIcon name="plus" /> Ajouter une consultation CPN</h5>
               <button type="button" className="btn-close" onClick={() => setShowAddCpnModal(false)}></button>
             </div>
             <div className="mb-2">
@@ -4784,7 +4785,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                     }}
                     title="Ouvrir le calendrier"
                   >
-                    📅
+                    <ProIcon name="calendar" />
                   </button>
                 </div>
               </div>
@@ -4799,7 +4800,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
             </div>
             <div className="d-flex justify-content-end gap-2">
               <button type="button" className="btn btn-secondary" onClick={() => setShowAddCpnModal(false)}>Annuler</button>
-              <button type="submit" className="btn btn-success fw-bold text-white">➕ Ajouter la CPN</button>
+              <button type="submit" className="btn btn-success fw-bold text-white"><ProIcon name="plus" /> Ajouter la CPN</button>
             </div>
           </form>
         </div>,
@@ -4811,7 +4812,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', overflowY: 'auto' }}>
           <form onSubmit={handleSaveEditAdvice} style={{ maxWidth: '560px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '20px', padding: '2rem', border: '1px solid var(--border-color)', margin: 'auto' }}>
             <div className="d-flex justify-content-between align-items-center mb-3">
-              <h5 className="fw-bold text-success mb-0">✏️ Modifier la fiche conseil</h5>
+              <h5 className="fw-bold text-success mb-0"><ProIcon name="edit" /> Modifier la fiche conseil</h5>
               <button type="button" className="btn-close" onClick={() => { setEditingAdviceId(null); setEditAdviceForm(null); }}></button>
             </div>
             <div className="mb-2">
@@ -4832,7 +4833,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
             </div>
             <div className="d-flex justify-content-end gap-2">
               <button type="button" className="btn btn-secondary" onClick={() => { setEditingAdviceId(null); setEditAdviceForm(null); }}>Annuler</button>
-              <button type="submit" className="btn btn-success fw-bold text-white">💾 Enregistrer</button>
+              <button type="submit" className="btn btn-success fw-bold text-white"><ProIcon name="save" /> Enregistrer</button>
             </div>
           </form>
         </div>,
@@ -4844,7 +4845,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
           <form onSubmit={handleSaveVitals} style={{ maxWidth: '520px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2rem', border: '1px solid var(--border-color)', margin: 'auto' }}>
             <div className="d-flex justify-content-between align-items-center mb-3">
-              <h5 className="fw-bold text-success mb-0">📈 Mettre à jour les constantes vitales</h5>
+              <h5 className="fw-bold text-success mb-0"><ProIcon name="trending-up" /> Mettre à jour les constantes vitales</h5>
               <button type="button" className="btn-close" onClick={() => setShowVitalsModal(false)}></button>
             </div>
 
@@ -4900,7 +4901,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
 
             <div className="d-flex justify-content-end gap-2">
               <button type="button" className="btn btn-secondary" onClick={() => setShowVitalsModal(false)}>Annuler</button>
-              <button type="submit" className="btn btn-success fw-bold text-white">💾 Enregistrer les constantes</button>
+              <button type="submit" className="btn btn-success fw-bold text-white"><ProIcon name="save" /> Enregistrer les constantes</button>
             </div>
           </form>
         </div>,
@@ -4913,7 +4914,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
           <form onSubmit={handleAddVaccine} style={{ maxWidth: '620px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2.25rem', border: '1px solid var(--border-color)', boxShadow: '0 20px 50px rgba(0,0,0,0.4)', margin: 'auto', maxHeight: '90vh', overflowY: 'auto' }}>
             <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
               <div className="d-flex align-items-center gap-2">
-                <span className="fs-4">💉</span>
+                <span className="fs-4"><ProIcon name="syringe" /></span>
                 <div>
                   <h5 className="fw-extrabold text-success mb-0" style={{ fontSize: '1.2rem' }}>Enregistrer une vaccination PEV</h5>
                   <small className="text-muted" style={{ fontSize: '0.8rem' }}>Programme Élargi de Vaccination du Sénégal (0-12 mois)</small>
@@ -4944,18 +4945,18 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   flexShrink: 0,
                   boxShadow: '0 4px 14px rgba(5, 150, 105, 0.35)'
                 }}>
-                  👶
+                  <ProIcon name="baby" />
                 </div>
                 <div>
                   <div className="d-flex align-items-center gap-2 mb-0.5">
                     <span className="small text-muted fw-bold" style={{ fontSize: '0.76rem' }}>Bébé rattaché</span>
-                    <span className="badge bg-success-subtle text-success px-2 py-0.5 fw-bold" style={{ borderRadius: '6px', fontSize: '0.7rem' }}>🟢 Profil certifié</span>
+                    <span className="badge bg-success-subtle text-success px-2 py-0.5 fw-bold" style={{ borderRadius: '6px', fontSize: '0.7rem' }}><ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Profil certifié</span>
                   </div>
                   <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.05rem', color: 'var(--text-main)' }}>
                     {babyProfile.name}
                   </h6>
                   <small className="text-muted" style={{ fontSize: '0.82rem' }}>
-                    🗓️ Né le <strong className="text-success">{new Date(babyProfile.birthDate).toLocaleDateString('fr-FR')}</strong> (Date de naissance enregistrée)
+                    <ProIcon name="calendar-days" /> Né le <strong className="text-success">{new Date(babyProfile.birthDate).toLocaleDateString('fr-FR')}</strong> (Date de naissance enregistrée)
                   </small>
                 </div>
               </div>
@@ -4967,7 +4968,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                      fontSize: '0.85rem',
                      border: '1px solid rgba(255,255,255,0.2)'
                    }}>
-                <span>⚡</span>
+                <span><ProIcon name="zap" /></span>
                 <span>Âge calculé automatique : <strong>{calculateBabyAge(babyProfile.birthDate)}</strong></span>
               </div>
             </div>
@@ -4981,9 +4982,9 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
               <div className="col-md-6">
                 <label className="form-label small fw-bold">Statut PEV *</label>
                 <select className="form-select fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newVaccineForm.status} onChange={e => setNewVaccineForm({ ...newVaccineForm, status: e.target.value, completed: e.target.value.includes('Administré') })}>
-                  <option value="Administré (100% CSU)">✅ Administré (100% CSU)</option>
-                  <option value="À venir (Mois prochain)">⏳ À venir (Mois prochain)</option>
-                  <option value="Programmé">🗓️ Programmé</option>
+                  <option value="Administré (100% CSU)">Administré (100% CSU)</option>
+                  <option value="À venir (Mois prochain)">À venir (Mois prochain)</option>
+                  <option value="Programmé">Programmé</option>
                 </select>
               </div>
             </div>
@@ -5010,7 +5011,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
 
             <div className="d-flex justify-content-end gap-2.5 pt-2 border-top" style={{ borderColor: 'var(--border-color)' }}>
               <button type="button" className="btn px-4 py-2.5 fw-bold hover-lift" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.88rem' }} onClick={() => setShowAddVaccineModal(false)}>Annuler</button>
-              <button type="submit" className="btn px-4 py-2.5 fw-bold text-white shadow-sm hover-lift" style={{ background: '#059669', borderColor: '#059669', borderRadius: '12px', fontSize: '0.9rem' }}>💾 Enregistrer la vaccination</button>
+              <button type="submit" className="btn px-4 py-2.5 fw-bold text-white shadow-sm hover-lift" style={{ background: '#059669', borderColor: '#059669', borderRadius: '12px', fontSize: '0.9rem' }}><ProIcon name="save" /> Enregistrer la vaccination</button>
             </div>
           </form>
         </div>,
@@ -5023,7 +5024,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
           <form onSubmit={handleSaveEditVaccine} style={{ maxWidth: '620px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2.25rem', border: '1px solid var(--border-color)', boxShadow: '0 20px 50px rgba(0,0,0,0.4)', margin: 'auto', maxHeight: '90vh', overflowY: 'auto' }}>
             <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
               <div className="d-flex align-items-center gap-2">
-                <span className="fs-4">✏️</span>
+                <span className="fs-4"><ProIcon name="edit" /></span>
                 <div>
                   <h5 className="fw-extrabold text-success mb-0" style={{ fontSize: '1.2rem' }}>Modifier la dose de vaccination</h5>
                   <small className="text-muted" style={{ fontSize: '0.8rem' }}>Modification des informations de la fiche vaccinale PEV</small>
@@ -5054,18 +5055,18 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   flexShrink: 0,
                   boxShadow: '0 4px 14px rgba(5, 150, 105, 0.35)'
                 }}>
-                  👶
+                  <ProIcon name="baby" />
                 </div>
                 <div>
                   <div className="d-flex align-items-center gap-2 mb-0.5">
                     <span className="small text-muted fw-bold" style={{ fontSize: '0.76rem' }}>Bébé rattaché</span>
-                    <span className="badge bg-success-subtle text-success px-2 py-0.5 fw-bold" style={{ borderRadius: '6px', fontSize: '0.7rem' }}>🟢 Profil certifié</span>
+                    <span className="badge bg-success-subtle text-success px-2 py-0.5 fw-bold" style={{ borderRadius: '6px', fontSize: '0.7rem' }}><ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Profil certifié</span>
                   </div>
                   <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.05rem', color: 'var(--text-main)' }}>
                     {babyProfile.name}
                   </h6>
                   <small className="text-muted" style={{ fontSize: '0.82rem' }}>
-                    🗓️ Né le <strong className="text-success">{new Date(babyProfile.birthDate).toLocaleDateString('fr-FR')}</strong> (Date de naissance enregistrée)
+                    <ProIcon name="calendar-days" /> Né le <strong className="text-success">{new Date(babyProfile.birthDate).toLocaleDateString('fr-FR')}</strong> (Date de naissance enregistrée)
                   </small>
                 </div>
               </div>
@@ -5077,7 +5078,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                      fontSize: '0.85rem',
                      border: '1px solid rgba(255,255,255,0.2)'
                    }}>
-                <span>⚡</span>
+                <span><ProIcon name="zap" /></span>
                 <span>Âge calculé automatique : <strong>{calculateBabyAge(babyProfile.birthDate)}</strong></span>
               </div>
             </div>
@@ -5091,9 +5092,9 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
               <div className="col-md-6">
                 <label className="form-label small fw-bold">Statut PEV *</label>
                 <select className="form-select fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={editVaccineForm.status} onChange={e => setEditVaccineForm({ ...editVaccineForm, status: e.target.value, completed: e.target.value.includes('Administré') })}>
-                  <option value="Administré (100% CSU)">✅ Administré (100% CSU)</option>
-                  <option value="À venir (Mois prochain)">⏳ À venir (Mois prochain)</option>
-                  <option value="Programmé">🗓️ Programmé</option>
+                  <option value="Administré (100% CSU)">Administré (100% CSU)</option>
+                  <option value="À venir (Mois prochain)">À venir (Mois prochain)</option>
+                  <option value="Programmé">Programmé</option>
                 </select>
               </div>
             </div>
@@ -5120,7 +5121,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
 
             <div className="d-flex justify-content-end gap-2.5 pt-2 border-top" style={{ borderColor: 'var(--border-color)' }}>
               <button type="button" className="btn px-4 py-2.5 fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.88rem' }} onClick={() => { setEditingVaccineId(null); setEditVaccineForm(null); }}>Annuler</button>
-              <button type="submit" className="btn px-4 py-2.5 fw-bold text-white shadow-sm" style={{ background: '#059669', borderColor: '#059669', borderRadius: '12px', fontSize: '0.9rem' }}>💾 Enregistrer les modifications</button>
+              <button type="submit" className="btn px-4 py-2.5 fw-bold text-white shadow-sm" style={{ background: '#059669', borderColor: '#059669', borderRadius: '12px', fontSize: '0.9rem' }}><ProIcon name="save" /> Enregistrer les modifications</button>
             </div>
           </form>
         </div>,
@@ -5134,7 +5135,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
             <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom" style={{ borderColor: 'rgba(255,255,255,0.15)' }}>
               <div className="d-flex align-items-center gap-3">
                 <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'rgba(239,68,68,0.25)', color: '#f87171', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.8rem', flexShrink: 0 }}>
-                  🚨
+                  <ProIcon name="siren" color="#dc2626" />
                 </div>
                 <div>
                   <h5 className="fw-extrabold text-white mb-0" style={{ fontSize: '1.25rem' }}>Protocole d'urgence & signes de danger</h5>
@@ -5145,7 +5146,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
             </div>
 
             <div className="p-3.5 rounded-3 mb-4" style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid #ef4444', color: '#fca5a5', fontSize: '0.88rem', lineHeight: '1.55' }}>
-              <span className="fw-bold d-block text-white mb-1">⚠️ AVERTISSEMENT MÉDICAL URGENT :</span>
+              <span className="fw-bold d-block text-white mb-1"><ProIcon name="alert-triangle" color="#d97706" /> AVERTISSEMENT MÉDICAL URGENT :</span>
               Si la femme enceinte présente l'un des symptômes ci-dessous, elle doit se rendre immédiatement dans la maternité la plus proche. La prise en charge d'urgence est couverte à 100% par l'UNAMUSC.
             </div>
 
@@ -5185,7 +5186,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                 className="btn btn-lg fw-extrabold text-white d-flex align-items-center justify-content-center gap-2 shadow"
                 style={{ background: '#dc2626', borderColor: '#b91c1c', borderRadius: '14px', fontSize: '1.05rem', padding: '0.85rem' }}
               >
-                <span>📞</span> APPLER LE SAMU SÉNÉGAL (1515) — APPEL GRATUIT
+                <span><ProIcon name="phone" /></span> APPLER LE SAMU SÉNÉGAL (1515) — APPEL GRATUIT
               </a>
 
               <div className="d-flex gap-2">
@@ -5197,7 +5198,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                     playEmergencyVoiceInstruction(selectedDangerSign, audioLang);
                   }}
                 >
-                  <span>🔊</span> Consignes audio (Wolof / FR)
+                  <span><ProIcon name="volume" /></span> Consignes audio (Wolof / FR)
                 </button>
                 <button 
                   type="button" 
@@ -5220,7 +5221,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
           <form onSubmit={handleSaveSupplements} style={{ maxWidth: '580px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2.25rem', border: '1px solid var(--border-color)', boxShadow: '0 20px 50px rgba(0,0,0,0.4)', margin: 'auto', maxHeight: '90vh', overflowY: 'auto' }}>
             <div className="d-flex justify-content-between align-items-center mb-3.5 pb-2 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
               <div className="d-flex align-items-center gap-2">
-                <span className="fs-4">💊</span>
+                <span className="fs-4"><ProIcon name="pill" /></span>
                 <div>
                   <h5 className="fw-extrabold text-success mb-0" style={{ fontSize: '1.2rem' }}>Mettre à jour la supplémentation & TPI</h5>
                   <small className="text-muted" style={{ fontSize: '0.8rem' }}>Directives PNLP Sénégal & UNAMUSC</small>
@@ -5284,7 +5285,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
 
             <div className="d-flex justify-content-end gap-2.5 pt-2 border-top" style={{ borderColor: 'var(--border-color)' }}>
               <button type="button" className="btn px-4 py-2.5 fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.88rem' }} onClick={() => setShowSupplementsModal(false)}>Annuler</button>
-              <button type="submit" className="btn px-4 py-2.5 fw-bold text-white shadow-sm" style={{ background: '#059669', borderColor: '#059669', borderRadius: '12px', fontSize: '0.9rem' }}>💾 Enregistrer la supplémentation</button>
+              <button type="submit" className="btn px-4 py-2.5 fw-bold text-white shadow-sm" style={{ background: '#059669', borderColor: '#059669', borderRadius: '12px', fontSize: '0.9rem' }}><ProIcon name="save" /> Enregistrer la supplémentation</button>
             </div>
           </form>
         </div>,
@@ -5297,7 +5298,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
           <form onSubmit={handleAddGrowthEntry} style={{ maxWidth: '580px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2.25rem', border: '1px solid var(--border-color)', boxShadow: '0 20px 50px rgba(0,0,0,0.4)', margin: 'auto', maxHeight: '90vh', overflowY: 'auto' }}>
             <div className="d-flex justify-content-between align-items-center mb-3.5 pb-2 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
               <div className="d-flex align-items-center gap-2">
-                <span className="fs-4">📊</span>
+                <span className="fs-4"><ProIcon name="bar-chart" /></span>
                 <div>
                   <h5 className="fw-extrabold text-success mb-0" style={{ fontSize: '1.2rem' }}>Consigner une pesée & taille (OMS)</h5>
                   <small className="text-muted" style={{ fontSize: '0.8rem' }}>Suivi de la courbe de croissance du bébé {babyProfile.name}</small>
@@ -5338,15 +5339,15 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
             <div className="mb-4">
               <label className="form-label small fw-bold">Statut de croissance OMS *</label>
               <select className="form-select fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={newGrowthForm.status} onChange={e => setNewGrowthForm({ ...newGrowthForm, status: e.target.value })}>
-                <option value="Harmonieuse (Percentile 50)">🟢 Harmonieuse (Percentile 50)</option>
-                <option value="Excellente (Percentile 75)">🟢 Excellente (Percentile 75)</option>
-                <option value="À surveiller (Percentile 15)">⚠️ À surveiller (Percentile 15)</option>
+                <option value="Harmonieuse (Percentile 50)">Harmonieuse (Percentile 50)</option>
+                <option value="Excellente (Percentile 75)">Excellente (Percentile 75)</option>
+                <option value="À surveiller (Percentile 15)">À surveiller (Percentile 15)</option>
               </select>
             </div>
 
             <div className="d-flex justify-content-end gap-2.5 pt-2 border-top" style={{ borderColor: 'var(--border-color)' }}>
               <button type="button" className="btn px-4 py-2.5 fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.88rem' }} onClick={() => setShowAddGrowthModal(false)}>Annuler</button>
-              <button type="submit" className="btn px-4 py-2.5 fw-bold text-white shadow-sm" style={{ background: '#059669', borderColor: '#059669', borderRadius: '12px', fontSize: '0.9rem' }}>💾 Enregistrer la pesée</button>
+              <button type="submit" className="btn px-4 py-2.5 fw-bold text-white shadow-sm" style={{ background: '#059669', borderColor: '#059669', borderRadius: '12px', fontSize: '0.9rem' }}><ProIcon name="save" /> Enregistrer la pesée</button>
             </div>
           </form>
         </div>,
@@ -5368,7 +5369,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
           <form onSubmit={handleSaveBabyProfile} style={{ maxWidth: '620px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2.25rem', border: '1px solid var(--border-color)', boxShadow: '0 20px 50px rgba(0,0,0,0.4)', margin: 'auto', maxHeight: '90vh', overflowY: 'auto' }}>
             <div className="d-flex justify-content-between align-items-center mb-3.5 pb-2 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
               <div className="d-flex align-items-center gap-2">
-                <span className="fs-4">👶</span>
+                <span className="fs-4"><ProIcon name="baby" /></span>
                 <div>
                   <h5 className="fw-extrabold text-success mb-0" style={{ fontSize: '1.2rem' }}>Profil Bébé & Contact Assurée</h5>
                   <small className="text-muted" style={{ fontSize: '0.8rem' }}>Calcul automatique d'âge et système de rappels automatiques</small>
@@ -5387,7 +5388,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
               <input type="date" className="form-control fw-semibold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={babyForm.birthDate} onChange={e => setBabyForm({ ...babyForm, birthDate: e.target.value })} required />
               
               <div className="mt-2 p-2.5 rounded-3 d-flex align-items-center justify-content-between" style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-                <span className="small text-success fw-bold">⚡ Calcul automatique d'âge en temps réel :</span>
+                <span className="small text-success fw-bold"><ProIcon name="zap" /> Calcul automatique d'âge en temps réel :</span>
                 <span className="badge bg-success text-white fw-bold px-3 py-1.5 fs-6">{calculateBabyAge(babyForm.birthDate)}</span>
               </div>
             </div>
@@ -5407,10 +5408,10 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
             <div className="mb-3">
               <label className="form-label small fw-bold">Canal de relance privilégié</label>
               <select className="form-select fw-semibold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '0.65rem 0.9rem' }} value={babyForm.reminderChannel} onChange={e => setBabyForm({ ...babyForm, reminderChannel: e.target.value })}>
-                <option value="SMS & WhatsApp 💬">💬 SMS & WhatsApp (Recommandé)</option>
-                <option value="SMS uniquement 📱">📱 SMS uniquement</option>
-                <option value="Relance vocale Wolof 🔊">🔊 Relance vocale automatique (Wolof)</option>
-                <option value="Relance vocale Français 🔊">🔊 Relance vocale automatique (Français)</option>
+                <option value="SMS & WhatsApp 💬">SMS & WhatsApp (Recommandé)</option>
+                <option value="SMS uniquement 📱">SMS uniquement</option>
+                <option value="Relance vocale Wolof 🔊">Relance vocale automatique (Wolof)</option>
+                <option value="Relance vocale Français 🔊">Relance vocale automatique (Français)</option>
               </select>
             </div>
 
@@ -5423,7 +5424,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
 
             <div className="d-flex justify-content-end gap-2.5 pt-2 border-top" style={{ borderColor: 'var(--border-color)' }}>
               <button type="button" className="btn px-4 py-2.5 fw-bold" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.88rem' }} onClick={() => setShowBabyModal(false)}>Annuler</button>
-              <button type="submit" className="btn px-4 py-2.5 fw-bold text-white shadow-sm" style={{ background: '#059669', borderColor: '#059669', borderRadius: '12px', fontSize: '0.9rem' }}>💾 Enregistrer le profil & rappels</button>
+              <button type="submit" className="btn px-4 py-2.5 fw-bold text-white shadow-sm" style={{ background: '#059669', borderColor: '#059669', borderRadius: '12px', fontSize: '0.9rem' }}><ProIcon name="save" /> Enregistrer le profil & rappels</button>
             </div>
           </form>
         </div>,
@@ -5441,7 +5442,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
             <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
               <div className="d-flex align-items-center gap-3">
                 <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 'bold' }}>
-                  🏥
+                  <ProIcon name="hospital" />
                 </div>
                 <div>
                   <h5 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>
@@ -5531,10 +5532,10 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   value={editingMother.category || 'maternity'}
                   onChange={(e) => setEditingMother({ ...editingMother, category: e.target.value })}
                 >
-                  <option value="maternity">🤰 Maternité & CPN</option>
-                  <option value="chronic">🩸 Maladies Chroniques (Diabète/HTA)</option>
-                  <option value="pediatric">👶 Pédiatrie (0-5 ans)</option>
-                  <option value="surgery">🩹 Traumatologie & Chirurgie</option>
+                  <option value="maternity">Maternité & CPN</option>
+                  <option value="chronic">Maladies Chroniques (Diabète/HTA)</option>
+                  <option value="pediatric">Pédiatrie (0-5 ans)</option>
+                  <option value="surgery">Traumatologie & Chirurgie</option>
                 </select>
               </div>
 
@@ -5591,7 +5592,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                 className="btn px-4.5 py-2.5 fw-bold text-white" 
                 style={{ background: '#059669', border: 'none', borderRadius: '12px', fontSize: '0.9rem', boxShadow: '0 4px 14px rgba(5,150,105,0.3)' }}
               >
-                💾 Enregistrer au registre
+                <ProIcon name="save" /> Enregistrer au registre
               </button>
             </div>
 
@@ -5604,7 +5605,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
       {showAldModal && editingAldItem && createPortal(
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
           <div style={{ maxWidth: '500px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '1.75rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)' }}>
-            <h5 className="fw-extrabold mb-3 text-danger">🛡️ {editingAldItem.id ? "Modifier un bilan ALD" : "Ajouter un examen de surveillance ALD"}</h5>
+            <h5 className="fw-extrabold mb-3 text-danger"><ProIcon name="shield-check" /> {editingAldItem.id ? "Modifier un bilan ALD" : "Ajouter un examen de surveillance ALD"}</h5>
             <form onSubmit={handleSaveAldItem} className="d-flex flex-column gap-3">
               <div>
                 <label className="form-label small fw-bold mb-1">Intitulé de l'examen / bilan *</label>
@@ -5637,11 +5638,11 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   value={editingAldItem.status || '✅ Normal'}
                   onChange={(e) => setEditingAldItem({ ...editingAldItem, status: e.target.value })}
                 >
-                  <option value="✅ Normal">✅ Normal</option>
-                  <option value="✅ Pas de lésion">✅ Pas de lésion</option>
-                  <option value="✅ Effectué">✅ Effectué</option>
-                  <option value="⏳ Programmé">⏳ Programmé / À venir</option>
-                  <option value="⚠️ À surveiller">⚠️ À surveiller</option>
+                  <option value="✅ Normal">Normal</option>
+                  <option value="✅ Pas de lésion">Pas de lésion</option>
+                  <option value="✅ Effectué">Effectué</option>
+                  <option value="⏳ Programmé">Programmé / À venir</option>
+                  <option value="⚠️ À surveiller">À surveiller</option>
                 </select>
               </div>
               <div className="d-flex justify-content-end gap-2 pt-2">
@@ -5658,7 +5659,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
       {showPostOpModal && editingPostOpItem && createPortal(
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
           <div style={{ maxWidth: '500px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '1.75rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)' }}>
-            <h5 className="fw-extrabold mb-3 text-primary">🩹 {editingPostOpItem.id ? "Modifier un soin Post-Op" : "Ajouter un élément de suivi Post-Op"}</h5>
+            <h5 className="fw-extrabold mb-3 text-primary"><ProIcon name="bandage" /> {editingPostOpItem.id ? "Modifier un soin Post-Op" : "Ajouter un élément de suivi Post-Op"}</h5>
             <form onSubmit={handleSavePostOpItem} className="d-flex flex-column gap-3">
               <div>
                 <label className="form-label small fw-bold mb-1">Intitulé du soin / intervention *</label>
@@ -5691,10 +5692,10 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   value={editingPostOpItem.status || '✅ Fait'}
                   onChange={(e) => setEditingPostOpItem({ ...editingPostOpItem, status: e.target.value })}
                 >
-                  <option value="✅ Fait">✅ Fait</option>
-                  <option value="✅ Ablation faite">✅ Ablation faite</option>
-                  <option value="⏳ En cours">⏳ En cours</option>
-                  <option value="📅 Programmé">📅 Programmé</option>
+                  <option value="✅ Fait">Fait</option>
+                  <option value="✅ Ablation faite">Ablation faite</option>
+                  <option value="⏳ En cours">En cours</option>
+                  <option value="📅 Programmé">Programmé</option>
                 </select>
               </div>
               <div className="d-flex justify-content-end gap-2 pt-2">
@@ -5711,7 +5712,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
       {showPrescriptionModal && editingPrescription && createPortal(
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
           <div style={{ maxWidth: '520px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '1.75rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)' }}>
-            <h5 className="fw-extrabold mb-3 text-danger">💊 {editingPrescription.id ? "Modifier la prescription ALD" : "Prescrire un nouveau traitement ALD"}</h5>
+            <h5 className="fw-extrabold mb-3 text-danger"><ProIcon name="pill" /> {editingPrescription.id ? "Modifier la prescription ALD" : "Prescrire un nouveau traitement ALD"}</h5>
             <form onSubmit={handleSavePrescription} className="d-flex flex-column gap-3">
               <div>
                 <label className="form-label small fw-bold mb-1">Nom du médicament & Dosage *</label>
@@ -5744,11 +5745,11 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   value={editingPrescription.specialty || '🩸 Diabétologie'}
                   onChange={(e) => setEditingPrescription({ ...editingPrescription, specialty: e.target.value })}
                 >
-                  <option value="🩸 Diabétologie">🩸 Diabétologie</option>
-                  <option value="🫀 Cardiologie / HTA">🫀 Cardiologie / HTA</option>
-                  <option value="🔬 Auto-Contrôle">🔬 Auto-Contrôle (Kit & Bandelettes)</option>
-                  <option value="🧠 Neurologie">🧠 Neurologie</option>
-                  <option value="🩺 Médecine Générale">🩺 Médecine Générale</option>
+                  <option value="🩸 Diabétologie">Diabétologie</option>
+                  <option value="🫀 Cardiologie / HTA">Cardiologie / HTA</option>
+                  <option value="🔬 Auto-Contrôle">Auto-Contrôle (Kit & Bandelettes)</option>
+                  <option value="🧠 Neurologie">Neurologie</option>
+                  <option value="🩺 Médecine Générale">Médecine Générale</option>
                 </select>
               </div>
               <div>
@@ -5774,7 +5775,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
               </div>
               <div className="d-flex justify-content-end gap-2 pt-2">
                 <button type="button" className="btn btn-outline-secondary rounded-3" onClick={() => setShowPrescriptionModal(false)}>Annuler</button>
-                <button type="submit" className="btn btn-danger rounded-3 fw-bold text-white">💾 Enregistrer la prescription</button>
+                <button type="submit" className="btn btn-danger rounded-3 fw-bold text-white"><ProIcon name="save" /> Enregistrer la prescription</button>
               </div>
             </form>
           </div>
@@ -5786,7 +5787,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
       {showAldVitalModal && editingAldVital && createPortal(
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(10px)', zIndex: 999999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
           <div style={{ maxWidth: '500px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '1.75rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)' }}>
-            <h5 className="fw-extrabold mb-3 text-success">📈 {editingAldVital.id ? "Modifier la constante vitale" : "Consigner une constante vitale ALD"}</h5>
+            <h5 className="fw-extrabold mb-3 text-success"><ProIcon name="trending-up" /> {editingAldVital.id ? "Modifier la constante vitale" : "Consigner une constante vitale ALD"}</h5>
             <form onSubmit={handleSaveAldVital} className="d-flex flex-column gap-3">
               <div>
                 <label className="form-label small fw-bold mb-1">Type de constante *</label>
@@ -5831,16 +5832,16 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   value={editingAldVital.status || '🟢 Dans la cible'}
                   onChange={(e) => setEditingAldVital({ ...editingAldVital, status: e.target.value })}
                 >
-                  <option value="🟢 Dans la cible">🟢 Dans la cible</option>
-                  <option value="🟢 Contrôlée">🟢 Contrôlée</option>
-                  <option value="🟢 Optimal">🟢 Optimal</option>
-                  <option value="⚠️ À surveiller">⚠️ À surveiller</option>
-                  <option value="🔴 Élevée">🔴 Élevée / Attention</option>
+                  <option value="🟢 Dans la cible">Dans la cible</option>
+                  <option value="🟢 Contrôlée">Contrôlée</option>
+                  <option value="🟢 Optimal">Optimal</option>
+                  <option value="⚠️ À surveiller">À surveiller</option>
+                  <option value="🔴 Élevée">Élevée / Attention</option>
                 </select>
               </div>
               <div className="d-flex justify-content-end gap-2 pt-2">
                 <button type="button" className="btn btn-outline-secondary rounded-3" onClick={() => setShowAldVitalModal(false)}>Annuler</button>
-                <button type="submit" className="btn btn-success rounded-3 fw-bold text-white">💾 Enregistrer constante</button>
+                <button type="submit" className="btn btn-success rounded-3 fw-bold text-white"><ProIcon name="save" /> Enregistrer constante</button>
               </div>
             </form>
           </div>
@@ -5861,7 +5862,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
             <div 
               style={{ width: '72px', height: '72px', borderRadius: '24px', background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.35) 100%)', border: '2px solid #ef4444', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.2rem', margin: '0 auto 1.25rem auto', boxShadow: '0 10px 25px rgba(239, 68, 68, 0.3)' }}
             >
-              🗑️
+              <ProIcon name="trash" />
             </div>
 
             <h4 className="fw-extrabold mb-2" style={{ color: 'var(--text-main)', fontSize: '1.25rem' }}>
@@ -5893,7 +5894,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
                   setConfirmDeleteObj(null);
                 }}
               >
-                🗑️ Supprimer définitivement
+                <ProIcon name="trash" /> Supprimer définitivement
               </button>
             </div>
           </div>

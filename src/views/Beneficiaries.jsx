@@ -3,6 +3,7 @@ import QRCode from 'qrcode';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
 import { collectAttachedMinorIds, resolveMinorDependents } from '../utils/householdMinors';
 import DeleteModal from '../components/DeleteModal';
+import ProIcon from '../components/ProIcon';
 
 export default function Beneficiaries({ lang, agentUser }) {
   const [deleteConfirmTarget, setDeleteConfirmTarget] = useState(null);
@@ -476,7 +477,7 @@ export default function Beneficiaries({ lang, agentUser }) {
         fontSize: '0.85rem'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-          <span style={{ fontSize: '1.2rem' }}>📊</span>
+          <span style={{ fontSize: '1.2rem' }}><ProIcon name="bar-chart" /></span>
           <div>
             <strong style={{ color: 'var(--text-main)' }}>Registre Régional des Assurés CSU :</strong>{' '}
             {/* Total issu de la PAGINATION du serveur, pas du tableau affiché :
@@ -501,7 +502,7 @@ export default function Beneficiaries({ lang, agentUser }) {
               }}
               style={{ fontSize: '0.72rem', padding: '0.2rem 0.6rem', borderRadius: '6px' }}
             >
-              🔄 Réinitialiser les filtres
+              <ProIcon name="refresh" /> Réinitialiser les filtres
             </button>
           )}
         </div>
@@ -592,7 +593,7 @@ export default function Beneficiaries({ lang, agentUser }) {
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: '2px'
-                        }}>🤝 {lang === 'fr' ? 'Parrainé' : 'Parrainé'}</span>
+                        }}><ProIcon name="handshake" /> {lang === 'fr' ? 'Parrainé' : 'Parrainé'}</span>
                       )}
                       {!b.isFamilyMember && minorsByHead.has(b.id) && (
                         <span style={{
@@ -605,11 +606,11 @@ export default function Beneficiaries({ lang, agentUser }) {
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: '2px'
-                        }}>👶 {minorsByHead.get(b.id).length} {lang === 'fr' ? 'enfant(s) pris en charge' : 'Xaaj yi'}</span>
+                        }}><ProIcon name="baby" /> {minorsByHead.get(b.id).length} {lang === 'fr' ? 'enfant(s) pris en charge' : 'Xaaj yi'}</span>
                       )}
                     </div>
                     <div style={{ fontSize: '0.8rem', color: 'var(--text-sub)', marginTop: '0.2rem' }}>
-                      📞 {b.phone ? <a href={`tel:${b.phone.replace(/[^0-9+]/g, '')}`} style={{ color: 'inherit', textDecoration: 'underline' }}>{b.phone}</a> : 'Non renseigné'}
+                      <ProIcon name="phone" /> {b.phone ? <a href={`tel:${b.phone.replace(/[^0-9+]/g, '')}`} style={{ color: 'inherit', textDecoration: 'underline' }}>{b.phone}</a> : 'Non renseigné'}
                       {b.isFamilyMember && b.chefName && ` (Chef: ${b.chefName})`}
                     </div>
                   </td>
@@ -652,7 +653,7 @@ export default function Beneficiaries({ lang, agentUser }) {
                         title={t.btnDetails}
                         style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem', borderRadius: '10px' }}
                       >
-                        👁️ {t.btnDetails}
+                        <ProIcon name="eye" /> {t.btnDetails}
                       </button>
                       
                       {b.sponsorPhone && (
@@ -662,7 +663,7 @@ export default function Beneficiaries({ lang, agentUser }) {
                           title="Télécharger Reçu de Parrainage PDF"
                           style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem', borderRadius: '10px' }}
                         >
-                          📄 Reçu
+                          <ProIcon name="file-text" /> Reçu
                         </button>
                       )}
 
@@ -680,7 +681,7 @@ export default function Beneficiaries({ lang, agentUser }) {
                         title={t.btnDelete}
                         style={{ padding: '0.35rem 0.85rem', borderRadius: '10px', color: 'var(--danger)', borderColor: 'var(--danger)' }}
                       >
-                        🗑️
+                        <ProIcon name="trash" />
                       </button>
                     </div>
                   </td>
@@ -799,7 +800,7 @@ export default function Beneficiaries({ lang, agentUser }) {
               onClick={() => setSelectedBeneficiary(null)} 
               style={{ position: 'absolute', top: '24px', right: '24px', background: 'transparent', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--text-sub)' }}
             >
-              ✕
+              <ProIcon name="x" />
             </button>
 
             {/* Detailed Body */}
@@ -858,8 +859,8 @@ export default function Beneficiaries({ lang, agentUser }) {
                     {t.modalContact}
                   </strong>
                   <span style={{ fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: '600' }}>
-                    📞 {selectedBeneficiary.phone ? <a href={`tel:${selectedBeneficiary.phone.replace(/[^0-9+]/g, '')}`} style={{ color: 'inherit', textDecoration: 'underline' }}>{selectedBeneficiary.phone}</a> : 'Non renseigné'} <br />
-                    📧 {selectedBeneficiary.email || 'Aucun email'}
+                    <ProIcon name="phone" /> {selectedBeneficiary.phone ? <a href={`tel:${selectedBeneficiary.phone.replace(/[^0-9+]/g, '')}`} style={{ color: 'inherit', textDecoration: 'underline' }}>{selectedBeneficiary.phone}</a> : 'Non renseigné'} <br />
+                    <ProIcon name="mail" /> {selectedBeneficiary.email || 'Aucun email'}
                   </span>
                 </div>
 
@@ -868,7 +869,7 @@ export default function Beneficiaries({ lang, agentUser }) {
                     {t.modalAddress}
                   </strong>
                   <span style={{ fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: '600' }}>
-                    📍 {selectedBeneficiary.address || 'Non spécifiée'}
+                    <ProIcon name="map-pin" /> {selectedBeneficiary.address || 'Non spécifiée'}
                   </span>
                 </div>
 
@@ -886,7 +887,7 @@ export default function Beneficiaries({ lang, agentUser }) {
                     {t.modalPayment}
                   </strong>
                   <span style={{ fontSize: '0.9rem', color: 'var(--text-main)', fontWeight: '600', textTransform: 'uppercase' }}>
-                    💳 {selectedBeneficiary.paymentMethod} ({selectedBeneficiary.packageType})
+                    <ProIcon name="credit-card" /> {selectedBeneficiary.paymentMethod} ({selectedBeneficiary.packageType})
                   </span>
                 </div>
               </div>
@@ -938,7 +939,7 @@ export default function Beneficiaries({ lang, agentUser }) {
                     color: 'var(--text-main)',
                     fontWeight: '600'
                   }}>
-                    👤 {selectedBeneficiary.chefName} (Chef de ménage)
+                    <ProIcon name="user" /> {selectedBeneficiary.chefName} (Chef de ménage)
                   </div>
                 </div>
               )}
@@ -955,7 +956,7 @@ export default function Beneficiaries({ lang, agentUser }) {
                       onClick={() => handleDownloadSponsorReceipt(selectedBeneficiary)}
                       style={{ fontSize: '0.75rem', padding: '0.3rem 0.75rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}
                     >
-                      📄 Reçu Parrainage (PDF)
+                      <ProIcon name="file-text" /> Reçu Parrainage (PDF)
                     </button>
                   </div>
                   
@@ -991,7 +992,7 @@ export default function Beneficiaries({ lang, agentUser }) {
                         Parrainage Social / Sponsor
                       </strong>
                       <span style={{ fontSize: '0.85rem', color: 'var(--text-main)', fontWeight: '700' }}>
-                        👤 {
+                        <ProIcon name="user" /> {
                           beneficiaries.find(b => b.phone === selectedBeneficiary.sponsorPhone && b.packageType === 'parrainage') 
                             ? `${beneficiaries.find(b => b.phone === selectedBeneficiary.sponsorPhone && b.packageType === 'parrainage').firstName} ${beneficiaries.find(b => b.phone === selectedBeneficiary.sponsorPhone && b.packageType === 'parrainage').lastName} (${selectedBeneficiary.sponsorPhone})`
                             : `Sponsor Tél: ${selectedBeneficiary.sponsorPhone}`
@@ -1014,7 +1015,7 @@ export default function Beneficiaries({ lang, agentUser }) {
                       }}
                       style={{ fontSize: '0.75rem', padding: '0.3rem 0.75rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}
                     >
-                      📄 Reçu du Parrain (PDF)
+                      <ProIcon name="file-text" /> Reçu du Parrain (PDF)
                     </button>
                   </div>
                 </div>

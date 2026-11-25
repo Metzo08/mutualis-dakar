@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ProIcon from '../components/ProIcon';
 
 // Suivi des cotisations annuelles + rappels automatiques.
 // - Citoyen : voit son historique de cotisations + statut (payé/expiré)
@@ -155,7 +156,7 @@ export default function Cotisations({ lang, portalMode, citizenUser, agentUser }
         textAlign: 'center'
       }}>
         <div className="container" style={{ position: 'relative', zIndex: 2 }}>
-          <h1 style={{ color: '#fff', fontSize: '2.35rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 3px 6px rgba(0,0,0,0.4)', letterSpacing: '-0.02em' }}>💰 {t.title}</h1>
+          <h1 style={{ color: '#fff', fontSize: '2.35rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 3px 6px rgba(0,0,0,0.4)', letterSpacing: '-0.02em' }}><ProIcon name="wallet" /> {t.title}</h1>
           <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '1.05rem', fontWeight: '500', maxWidth: '750px', margin: '0 auto', textShadow: '0 1px 3px rgba(0,0,0,0.3)', lineHeight: '1.6' }}>{t.subtitle}</p>
         </div>
       </section>
@@ -182,7 +183,7 @@ export default function Cotisations({ lang, portalMode, citizenUser, agentUser }
             </p>
             {daysRemaining <= 60 && (
               <span style={{ fontSize: '0.78rem', color: '#b45309', fontWeight: 'bold', marginTop: '0.25rem' }}>
-                ⚠️ {lang === 'fr' ? 'Pensez à renouveler dès maintenant pour éviter toute interruption.' : 'Fayal sa cotisation léegi ngir bagn ko jeexal.'}
+                <ProIcon name="alert-triangle" color="#d97706" /> {lang === 'fr' ? 'Pensez à renouveler dès maintenant pour éviter toute interruption.' : 'Fayal sa cotisation léegi ngir bagn ko jeexal.'}
               </span>
             )}
           </div>
@@ -200,7 +201,7 @@ export default function Cotisations({ lang, portalMode, citizenUser, agentUser }
       {/* Bloc rappels automatiques (agent) */}
       {isAgent && (
         <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem', borderLeft: '4px solid #f59e0b' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '0.5rem' }}>🔔 {t.reminderTitle}</h3>
+          <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '0.5rem' }}><ProIcon name="bell" /> {t.reminderTitle}</h3>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>{t.reminderDesc}</p>
           <button className="btn btn-primary btn-sm" onClick={sendReminders} disabled={reminderLoading}>
             {reminderLoading ? '...' : `📨 ${t.sendReminders}`}
@@ -208,10 +209,10 @@ export default function Cotisations({ lang, portalMode, citizenUser, agentUser }
           {reminderResult && (
             <div style={{ marginTop: '1rem', padding: '0.75rem', borderRadius: '8px', background: reminderResult.error ? 'rgba(239,68,68,0.1)' : 'rgba(34,197,94,0.1)' }}>
               {reminderResult.error ? (
-                <span style={{ color: '#ef4444' }}>❌ {reminderResult.error}</span>
+                <span style={{ color: '#ef4444' }}><ProIcon name="x-circle" color="#dc2626" /> {reminderResult.error}</span>
               ) : (
                 <span style={{ color: '#22c55e' }}>
-                  ✅ {reminderResult.message}<br />
+                  <ProIcon name="check-circle" color="#059669" /> {reminderResult.message}<br />
                   <small>{reminderResult.expiringSoon} expirant bientôt · {reminderResult.expired} expirées</small>
                 </span>
               )}
@@ -254,7 +255,7 @@ export default function Cotisations({ lang, portalMode, citizenUser, agentUser }
               fontSize: '0.85rem'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <span style={{ fontSize: '1.2rem' }}>💳</span>
+                <span style={{ fontSize: '1.2rem' }}><ProIcon name="credit-card" /></span>
                 <div>
                   {isAgent ? (
                     <>
@@ -323,7 +324,7 @@ export default function Cotisations({ lang, portalMode, citizenUser, agentUser }
                             <td style={{ padding: '0.75rem', fontWeight: '700', fontFamily: 'monospace', color: 'var(--primary)' }}>#{c.id}</td>
                             <td style={{ padding: '0.75rem', fontWeight: 'bold', color: 'var(--text-main)' }}>{c.adherent_name || 'Assuré Dakar'}</td>
                             <td style={{ padding: '0.75rem', fontFamily: 'monospace', fontSize: '0.8rem' }}>{c.cmu_number || '—'}</td>
-                            <td style={{ padding: '0.75rem' }}>📞 {c.phone}</td>
+                            <td style={{ padding: '0.75rem' }}><ProIcon name="phone" /> {c.phone}</td>
                             <td style={{ padding: '0.75rem', fontWeight: '800', color: 'var(--primary)' }}>{new Intl.NumberFormat('fr-FR').format(c.amount)} FCFA</td>
                             <td style={{ padding: '0.75rem', textTransform: 'uppercase', fontSize: '0.78rem' }}>
                               <span className="badge badge-outline">{c.payment_method}</span>

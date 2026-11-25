@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ProIcon from './ProIcon';
 
 export default function Footer({ lang, setView }) {
   const [email, setEmail] = useState('');
@@ -71,10 +72,10 @@ export default function Footer({ lang, setView }) {
             <p style={{ color: '#94a3b8', fontSize: '0.9rem', lineHeight: '1.5', marginBottom: '1.5rem' }}>{t.desc}</p>
             {/* Social handles mockup */}
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <span style={{ cursor: 'pointer', color: '#64748b' }}>🌐</span>
+              <span style={{ cursor: 'pointer', color: '#64748b' }}><ProIcon name="globe" /></span>
               <span style={{ cursor: 'pointer', color: '#64748b' }}>📘</span>
               <span style={{ cursor: 'pointer', color: '#64748b' }}>🐦</span>
-              <span style={{ cursor: 'pointer', color: '#64748b' }}>💬</span>
+              <span style={{ cursor: 'pointer', color: '#64748b' }}><ProIcon name="message-square" /></span>
             </div>
           </div>
 

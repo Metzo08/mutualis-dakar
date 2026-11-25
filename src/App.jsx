@@ -48,6 +48,7 @@ const SecurityCenter = lazy(() => import('./views/SecurityCenter'));
 const ExcelReports = lazy(() => import('./views/ExcelReports'));
 const ImportControl = lazy(() => import('./views/ImportControl'));
 import { syncOutbox, outboxCount, cacheSet, cacheGet } from './utils/offline';
+import ProIcon from './components/ProIcon';
 
 // Import Styles
 import './index.css';
@@ -81,7 +82,7 @@ class ErrorBoundary extends Component {
       // devant l'assuré — mauvais pour la confiance, inutile pour lui.
       return (
         <div className="card text-center" style={{ padding: '3rem', margin: '2rem auto', maxWidth: '640px', borderRadius: '24px', borderLeft: '6px solid var(--danger)', boxShadow: '0 10px 40px rgba(0,0,0,0.08)' }}>
-          <div style={{ fontSize: '3.2rem', marginBottom: '0.75rem' }}>🛠️</div>
+          <div style={{ fontSize: '3.2rem', marginBottom: '0.75rem' }}><ProIcon name="wrench" /></div>
           <h2 style={{ color: 'var(--danger)', fontSize: '1.5rem', fontWeight: '800', marginBottom: '0.6rem' }}>
             Une erreur inattendue est survenue
           </h2>
@@ -95,14 +96,14 @@ class ErrorBoundary extends Component {
               style={{ borderRadius: '12px', background: '#059669', border: 'none' }}
               onClick={() => this.setState({ hasError: false, error: null })}
             >
-              🔄 Réessayer
+              <ProIcon name="refresh" /> Réessayer
             </button>
             <button
               className="btn btn-outline-secondary fw-bold px-4 py-2.5"
               style={{ borderRadius: '12px' }}
               onClick={() => { window.location.hash = '#home'; window.location.reload(); }}
             >
-              🏠 Retour à l'accueil
+              <ProIcon name="home" /> Retour à l'accueil
             </button>
           </div>
           <details style={{ textAlign: 'left' }}>
@@ -729,7 +730,7 @@ export default function App() {
           } else {
             return (
               <div className="card text-center fade-in-up" style={{ padding: '3rem', margin: '2rem auto', maxWidth: '600px', borderRadius: '16px', borderTop: '4px solid var(--danger)' }}>
-                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⛔</div>
+                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}><ProIcon name="ban" color="#dc2626" /></div>
                 <h2 style={{ color: 'var(--danger)', fontWeight: '850' }}>Accès refusé</h2>
                 <p style={{ color: 'var(--text-sub)', marginTop: '0.5rem' }}>Seul le Super Admin est autorisé à consulter le journal d'audit complet de la plateforme.</p>
                 <button className="btn btn-primary" style={{ marginTop: '1.5rem', fontWeight: 'bold' }} onClick={() => setView('home')}>
@@ -778,7 +779,7 @@ export default function App() {
             return (
               <div className="container py-5 text-center">
                 <div className="card shadow-lg border-0 p-5 mx-auto" style={{ maxWidth: '500px', borderRadius: '24px', background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
-                  <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🛡️</div>
+                  <div style={{ fontSize: '3rem', marginBottom: '1rem' }}><ProIcon name="shield-check" /></div>
                   <h4 className="fw-bold mb-2">Accès Restreint : Espace Agent & Administration</h4>
                   <p className="small text-muted mb-4">Cette section est réservée aux agents mutualistes et administrateurs d'Unions Régionales (URMSCD).</p>
                   <button
@@ -789,7 +790,7 @@ export default function App() {
                       setView('login');
                     }}
                   >
-                    🔐 Se Connecter comme Agent
+                    <ProIcon name="lock" /> Se Connecter comme Agent
                   </button>
                 </div>
               </div>
@@ -881,7 +882,7 @@ export default function App() {
           }
           return (
             <div className="card text-center fade-in-up" style={{ padding: '3rem', margin: '2rem auto', maxWidth: '600px', borderRadius: '16px', borderTop: '4px solid var(--danger)' }}>
-              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⛔</div>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}><ProIcon name="ban" color="#dc2626" /></div>
               <h2 style={{ color: 'var(--danger)', fontWeight: '850' }}>Accès réservé au Super Admin</h2>
               <p style={{ color: 'var(--text-sub)', marginTop: '0.5rem' }}>
                 Le tableau de bord de Gouvernance (comptes utilisateurs, statistiques financières, habilitations médicales)
@@ -893,7 +894,7 @@ export default function App() {
                   style={{ fontWeight: 'bold' }}
                   onClick={() => { setPortalMode('agent'); setView('login'); }}
                 >
-                  🔐 Se connecter en Super Admin
+                  <ProIcon name="lock" /> Se connecter en Super Admin
                 </button>
                 <button className="btn btn-outline" style={{ fontWeight: 'bold' }} onClick={() => setView('home')}>
                   Retour à l'accueil
@@ -909,14 +910,14 @@ export default function App() {
           }
           return (
             <div className="card text-center fade-in-up" style={{ padding: '3rem', margin: '2rem auto', maxWidth: '700px', borderRadius: '16px', borderTop: '4px solid var(--danger)' }}>
-              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🗂️</div>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}><ProIcon name="archive" /></div>
               <h2 style={{ color: 'var(--danger)', fontWeight: '850' }}>Accès réservé à l'administration</h2>
               <p style={{ color: 'var(--text-sub)', marginTop: '0.5rem' }}>
                 La gestion des comptes et des cartes est réservée aux agents MSD et administrateurs habilités.
               </p>
               <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '1.5rem', flexWrap: 'wrap' }}>
                 <button className="btn btn-primary fw-bold py-2 px-4 text-white" style={{ borderRadius: '12px' }} onClick={() => { setPortalMode('agent'); setView('login'); }}>
-                  🔐 Se Connecter en Agent
+                  <ProIcon name="lock" /> Se Connecter en Agent
                 </button>
                 <button className="btn btn-outline" style={{ fontWeight: 'bold' }} onClick={() => setView('home')}>
                   Retour à l'accueil
@@ -941,7 +942,7 @@ export default function App() {
           }
           return (
             <div className="card text-center fade-in-up" style={{ padding: '3rem', margin: '2rem auto', maxWidth: '700px', borderRadius: '16px', borderTop: '4px solid var(--danger)' }}>
-              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🛡️</div>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}><ProIcon name="shield-check" /></div>
               <h2 style={{ color: 'var(--danger)', fontWeight: '850' }}>Accès réservé à l'administration</h2>
               <p style={{ color: 'var(--text-sub)', marginTop: '0.5rem' }}>
                 Le Centre de sécurité est accessible par les agents et administrateurs de l'Union Régionale (URMSCD).
@@ -956,7 +957,7 @@ export default function App() {
                     setView('login');
                   }}
                 >
-                  🔐 Se Connecter en Agent
+                  <ProIcon name="lock" /> Se Connecter en Agent
                 </button>
                 <button className="btn btn-outline" style={{ fontWeight: 'bold' }} onClick={() => setView('home')}>
                   Retour à l'accueil
@@ -981,7 +982,7 @@ export default function App() {
           }
           return (
             <div className="card text-center fade-in-up" style={{ padding: '3rem', margin: '2rem auto', maxWidth: '700px', borderRadius: '16px', borderTop: '4px solid var(--danger)' }}>
-              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📊</div>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}><ProIcon name="bar-chart" /></div>
               <h2 style={{ color: 'var(--danger)', fontWeight: '850' }}>Accès réservé à l'administration</h2>
               <p style={{ color: 'var(--text-sub)', marginTop: '0.5rem' }}>
                 Les rapports Excel sont générés côté serveur (backend) et exportés en fichier .xlsx cloisonné par MSD.
@@ -996,7 +997,7 @@ export default function App() {
                     setView('login');
                   }}
                 >
-                  🔐 Se Connecter en Agent
+                  <ProIcon name="lock" /> Se Connecter en Agent
                 </button>
                 <button className="btn btn-outline" style={{ fontWeight: 'bold' }} onClick={() => setView('home')}>
                   Retour à l'accueil
@@ -1066,7 +1067,7 @@ export default function App() {
           } else {
             return (
               <div className="card text-center fade-in-up" style={{ padding: '3rem', margin: '2rem auto', maxWidth: '600px', borderRadius: '16px', borderTop: '4px solid var(--danger)' }}>
-                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⛔</div>
+                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}><ProIcon name="ban" color="#dc2626" /></div>
                 <h2 style={{ color: 'var(--danger)', fontWeight: '850' }}>Accès réservé au Super Admin</h2>
                 <p style={{ color: 'var(--text-sub)', marginTop: '0.5rem' }}>Le studio de conception et d'impression des cartes d'assurés CSU est strictement réservé à la gouvernance Super Admin.</p>
                 <button className="btn btn-primary" style={{ marginTop: '1.5rem', fontWeight: 'bold' }} onClick={() => setView('home')}>
@@ -1138,7 +1139,7 @@ export default function App() {
               onClick={() => setSidebarOpen(true)}
               aria-label="Open Menu"
             >
-              ☰
+              <ProIcon name="menu" />
             </button>
             <div className="top-navbar-title">
               {view === 'home' && (
@@ -1157,7 +1158,7 @@ export default function App() {
               {view === 'about' && (lang === 'fr' ? 'L\'union régionale (URMSCD)' : 'Union régionale')}
               {view === 'audit-logs' && (lang === 'fr' ? 'Journal d\'audit régional' : 'Registre audit')}
               {view === 'profile' && (lang === 'fr' ? 'Mon compte' : 'Sama compte')}
-              {view === 'parrainage-solidaire' && (lang === 'fr' ? 'Parrainage solidaire 🤝' : 'Dimbalé (parrainage) 🤝')}
+              {view === 'parrainage-solidaire' && (lang === 'fr' ? 'Parrainage solidaire' : 'Dimbalé (parrainage) 🤝')}
               {view === 'galerie' && (lang === 'fr' ? 'Galerie des activités CSU' : 'Natalu CSU')}
               {view === 'infos-csu' && (lang === 'fr' ? 'Informations CSU Sénégal' : 'Xibaari CSU Sénégal')}
               {view === 'blog-experts' && (lang === 'fr' ? 'Espace blog & paroles d\'experts' : 'Waxu docteur yi')}
@@ -1172,7 +1173,7 @@ export default function App() {
               {view === 'regional-stats' && (lang === 'fr' ? 'Statistiques inter-régions' : 'Stats région')}
               {view === 'loyalty' && (lang === 'fr' ? 'Programme fidélité' : 'Fidélité')}
               {view === 'payments' && (lang === 'fr' ? 'Paiement en ligne' : 'Fay')}
-              {view === 'superadmin-governance' && (lang === 'fr' ? 'Gouvernance & Supervision Super Admin 👑' : 'Gouvernance Super Admin 👑')}
+              {view === 'superadmin-governance' && (lang === 'fr' ? 'Gouvernance & Supervision Super Admin' : 'Gouvernance Super Admin 👑')}
               {view === 'guarantees' && (lang === 'fr' ? 'Lettres de garantie & prises en charge (80%)' : 'Bataaxalu garantie')}
               {view === 'purchase-orders' && (lang === 'fr' ? 'Bons de commande pharmacie (50%)' : 'Bonu garab pharmacie')}
               {view === 'telemedicine' && (lang === 'fr' ? 'Télémédecine & consultations vidéo' : 'Téléconsultation')}
@@ -1192,20 +1193,20 @@ export default function App() {
             {/* Display logged in status quick indicator */}
             {portalMode === 'citizen' && citizenUser && (
               <span className="badge badge-success topbar-user-badge" style={{ fontSize: '0.75rem', fontWeight: 'bold', whiteSpace: 'nowrap' }}>
-                💚 {citizenUser.firstName} {citizenUser.lastName} (Connecté)
+                <ProIcon name="heart" color="#059669" /> {citizenUser.firstName} {citizenUser.lastName} (Connecté)
               </span>
             )}
 
             {portalMode === 'agent' && agentUser && (
               <span className="badge badge-success topbar-user-badge" style={{ fontSize: '0.75rem', fontWeight: 'bold', backgroundColor: 'rgba(59, 130, 246, 0.15)', color: 'var(--primary)', whiteSpace: 'nowrap' }}>
-                💼 {agentUser.firstName} {agentUser.lastName} (Agent)
+                <ProIcon name="briefcase" /> {agentUser.firstName} {agentUser.lastName} (Agent)
               </span>
             )}
 
             {/* Offline Indicator */}
             {isOffline && (
               <span className="badge badge-danger" style={{ fontSize: '0.75rem', fontWeight: 'bold', backgroundColor: 'var(--danger)', color: '#fff', animation: 'pulse 2s infinite' }}>
-                ⚠️ Mode Hors Ligne
+                <ProIcon name="alert-triangle" color="#d97706" /> Mode Hors Ligne
               </span>
             )}
 
@@ -1216,7 +1217,7 @@ export default function App() {
               title={theme === 'light' ? 'Activer le mode sombre' : 'Activer le mode clair'}
               style={{ fontSize: '1.15rem' }}
             >
-              {theme === 'light' ? '🌙' : '☀️'}
+              {theme === 'light' ? <ProIcon name="moon" /> : <ProIcon name="sun" />}
             </button>
 
             {/* Language Selection Quick Switch */}
@@ -1230,7 +1231,7 @@ export default function App() {
             </button>
             {/* Search Input Bar */}
             <div className="top-navbar-search">
-              <span>🔍</span>
+              <span><ProIcon name="search" /></span>
               <input 
                 type="text" 
                 className="top-navbar-search-input" 
@@ -1247,7 +1248,7 @@ export default function App() {
                 aria-label="Notifications" 
                 onClick={toggleNotifications}
               >
-                🔔
+                <ProIcon name="bell" />
                 {unreadNotifications > 0 && <span className="top-navbar-dot"></span>}
               </button>
               

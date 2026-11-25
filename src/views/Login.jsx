@@ -1,21 +1,22 @@
 import { useState } from 'react';
 import { API_BASE, setTokens } from '../utils/api';
+import ProIcon from '../components/ProIcon';
 
 // Registre des 13 profils d'accès avec E-mail et Mot de passe uniques
 export const PRESET_ACCOUNTS_13 = [
-  { code: 'ACC-01', title: '1. Assuré individuel / famille', cat: 'Citoyens & assurés', email: 'modou.diop@csu.sn', password: 'Modou2026!', portal: 'citizen', view: 'profile', icon: '👤', user: { id: 1, firstName: 'Modou', lastName: 'Diop', phone: '771234567', email: 'modou.diop@csu.sn', mutuelleName: 'Mutuelle de la Médina', packageType: 'individuel', cmuNumber: 'SN-DK-MED-8472', status: 'active' } },
-  { code: 'ACC-02', title: '2. Élève / étudiant (CSU jeunes)', cat: 'Citoyens & assurés', email: 'ibrahima.sarr@ucad.edu.sn', password: 'Etudiant2026!', portal: 'citizen', view: 'profile', icon: '🎓', user: { id: 3, firstName: 'Ibrahima', lastName: 'Sarr', phone: '774567890', email: 'ibrahima.sarr@ucad.edu.sn', mutuelleName: 'Mutuelle Étudiante UCAD', packageType: 'scolaire', cmuNumber: 'SN-DK-UCAD-3012', status: 'active' } },
-  { code: 'ACC-03', title: '3. Bénéficiaire BSF (filet social)', cat: 'Citoyens & assurés', email: 'fatou.diallo@bsf.sn', password: 'Bsf2026!', portal: 'citizen', view: 'profile', icon: '🌟', user: { id: 4, firstName: 'Fatou', lastName: 'Diallo', phone: '778901234', email: 'fatou.diallo@bsf.sn', mutuelleName: 'Mutuelle Communale Pikine', packageType: 'gratuité', cmuNumber: 'SN-DK-BSF-9901', status: 'active' } },
-  { code: 'ACC-04', title: '4. Médecin / praticien traitant', cat: 'Plateau médical', email: 'dr.diop@hopital-fann.sn', password: 'Medecin2026!', portal: 'partner', view: 'telemedicine', icon: '🩺', user: { id: 10, username: 'dr.diop@hopital-fann.sn', contactName: 'Dr. Cheikh Anta Diop', structureName: 'Centre Hospitalier Abass Ndao', structureType: 'hopital', role: 'medecin' } },
-  { code: 'ACC-05', title: '5. Infirmier / sage-femme', cat: 'Plateau médical', email: 'aissatou.sow@sante.sn', password: 'Infirmiere2026!', portal: 'partner', view: 'maternity', icon: '👩‍⚕️', user: { id: 11, username: 'aissatou.sow@sante.sn', contactName: 'Aïssatou Sow (Sage-Femme)', structureName: 'Poste de Santé de la Médina', structureType: 'poste_sante', role: 'soignant' } },
-  { code: 'ACC-06', title: '6. Pharmacien d\'officine agréée', cat: 'Plateau médical', email: 'dr.fatou.sow@pharmacie-medina.sn', password: 'Pharma2026!', portal: 'partner', view: 'medicaments', icon: '💊', user: { id: 12, username: 'dr.fatou.sow@pharmacie-medina.sn', contactName: 'Dr. Fatou Sow (Pharmacienne)', structureName: 'Grande Pharmacie de la Médina', structureType: 'pharmacie', role: 'pharmacien' } },
-  { code: 'ACC-07', title: '7. Biologie & radiologie (laboratoire)', cat: 'Plateau médical', email: 'dr.ousmane.kane@pasteur-dakar.sn', password: 'Biologie2026!', portal: 'partner', view: 'partner', icon: '🔬', user: { id: 13, username: 'dr.ousmane.kane@pasteur-dakar.sn', contactName: 'Dr. Ousmane Kane (Biologiste)', structureName: 'Laboratoire Pasteur Dakar', structureType: 'laboratoire', role: 'laboratoire' } },
-  { code: 'ACC-08', title: '8. Direction EPS & gestion hôpital', cat: 'Plateau médical', email: 'direction@hopital-principal.sn', password: 'Eps2026!', portal: 'partner', view: 'guarantees', icon: '🏥', user: { id: 14, username: 'direction@hopital-principal.sn', contactName: 'Direction EPS Hôpital Principal', structureName: 'Hôpital Principal de Dakar', structureType: 'hopital_eps', role: 'gestionnaire_eps' } },
-  { code: 'ACC-09', title: '9. Agent mutuelle UDMS (terrain)', cat: 'Mutuelles communautaires', email: 'amadou.sall@udms-dakar.sn', password: 'Agent2026!', portal: 'agent', view: 'beneficiaries', icon: '💼', user: { id: 15, username: 'amadou.sall@udms-dakar.sn', firstName: 'Amadou', lastName: 'Sall', role: 'Agent d\'Enrôlement Terrain UDMS' } },
-  { code: 'ACC-10', title: '10. Superviseur régional URMSCD', cat: 'Mutuelles communautaires', email: 'mariama.ba@urmscd-dakar.sn', password: 'Supervisor2026!', portal: 'agent', view: 'dashboard', icon: '📊', user: { id: 16, username: 'mariama.ba@urmscd-dakar.sn', firstName: 'Mariama', lastName: 'Ba', role: 'Superviseur Régional URMSCD' } },
-  { code: 'ACC-11', title: '11. Super admin ANACSU & ministère', cat: 'Gouvernance nationale', email: 'superadmin@anacsu.sn', password: 'SuperAdmin2026!', portal: 'agent', view: 'superadmin-governance', icon: '👑', user: { id: 99, username: 'superadmin@anacsu.sn', firstName: 'Dr. Mamadou', lastName: 'Ba', role: 'Super Admin' } },
-  { code: 'ACC-12', title: '12. Entreprise / employeur privé', cat: 'Entreprises & mécènes', email: 'rh@patisen.sn', password: 'Entreprise2026!', portal: 'partner', view: 'rse', icon: '🏢', user: { id: 20, username: 'rh@patisen.sn', contactName: 'Direction RH Patisen', structureName: 'Groupe PATISEN SA', structureType: 'entreprise', role: 'entreprise' } },
-  { code: 'ACC-13', title: '13. Parrain solidaire & mécène RSE', cat: 'Entreprises & mécènes', email: 'fondation@wave.sn', password: 'Parrain2026!', portal: 'partner', view: 'parrainage-solidaire', icon: '🤝', user: { id: 21, username: 'fondation@wave.sn', contactName: 'Fondation WAVE & Sonatel Mécénat', structureName: 'Parrain Solidaire Régional', structureType: 'fondation_rse', role: 'parrain_rse' } }
+  { code: 'ACC-01', title: '1. Assuré individuel / famille', cat: 'Citoyens & assurés', email: 'modou.diop@csu.sn', password: 'Modou2026!', portal: 'citizen', view: 'profile', icon: <ProIcon name="user" />, user: { id: 1, firstName: 'Modou', lastName: 'Diop', phone: '771234567', email: 'modou.diop@csu.sn', mutuelleName: 'Mutuelle de la Médina', packageType: 'individuel', cmuNumber: 'SN-DK-MED-8472', status: 'active' } },
+  { code: 'ACC-02', title: '2. Élève / étudiant (CSU jeunes)', cat: 'Citoyens & assurés', email: 'ibrahima.sarr@ucad.edu.sn', password: 'Etudiant2026!', portal: 'citizen', view: 'profile', icon: <ProIcon name="graduation-cap" />, user: { id: 3, firstName: 'Ibrahima', lastName: 'Sarr', phone: '774567890', email: 'ibrahima.sarr@ucad.edu.sn', mutuelleName: 'Mutuelle Étudiante UCAD', packageType: 'scolaire', cmuNumber: 'SN-DK-UCAD-3012', status: 'active' } },
+  { code: 'ACC-03', title: '3. Bénéficiaire BSF (filet social)', cat: 'Citoyens & assurés', email: 'fatou.diallo@bsf.sn', password: 'Bsf2026!', portal: 'citizen', view: 'profile', icon: <ProIcon name="sparkles" color="#f59e0b" />, user: { id: 4, firstName: 'Fatou', lastName: 'Diallo', phone: '778901234', email: 'fatou.diallo@bsf.sn', mutuelleName: 'Mutuelle Communale Pikine', packageType: 'gratuité', cmuNumber: 'SN-DK-BSF-9901', status: 'active' } },
+  { code: 'ACC-04', title: '4. Médecin / praticien traitant', cat: 'Plateau médical', email: 'dr.diop@hopital-fann.sn', password: 'Medecin2026!', portal: 'partner', view: 'telemedicine', icon: <ProIcon name="stethoscope" />, user: { id: 10, username: 'dr.diop@hopital-fann.sn', contactName: 'Dr. Cheikh Anta Diop', structureName: 'Centre Hospitalier Abass Ndao', structureType: 'hopital', role: 'medecin' } },
+  { code: 'ACC-05', title: '5. Infirmier / sage-femme', cat: 'Plateau médical', email: 'aissatou.sow@sante.sn', password: 'Infirmiere2026!', portal: 'partner', view: 'maternity', icon: <ProIcon name="stethoscope" />, user: { id: 11, username: 'aissatou.sow@sante.sn', contactName: 'Aïssatou Sow (Sage-Femme)', structureName: 'Poste de Santé de la Médina', structureType: 'poste_sante', role: 'soignant' } },
+  { code: 'ACC-06', title: '6. Pharmacien d\'officine agréée', cat: 'Plateau médical', email: 'dr.fatou.sow@pharmacie-medina.sn', password: 'Pharma2026!', portal: 'partner', view: 'medicaments', icon: <ProIcon name="pill" />, user: { id: 12, username: 'dr.fatou.sow@pharmacie-medina.sn', contactName: 'Dr. Fatou Sow (Pharmacienne)', structureName: 'Grande Pharmacie de la Médina', structureType: 'pharmacie', role: 'pharmacien' } },
+  { code: 'ACC-07', title: '7. Biologie & radiologie (laboratoire)', cat: 'Plateau médical', email: 'dr.ousmane.kane@pasteur-dakar.sn', password: 'Biologie2026!', portal: 'partner', view: 'partner', icon: <ProIcon name="microscope" />, user: { id: 13, username: 'dr.ousmane.kane@pasteur-dakar.sn', contactName: 'Dr. Ousmane Kane (Biologiste)', structureName: 'Laboratoire Pasteur Dakar', structureType: 'laboratoire', role: 'laboratoire' } },
+  { code: 'ACC-08', title: '8. Direction EPS & gestion hôpital', cat: 'Plateau médical', email: 'direction@hopital-principal.sn', password: 'Eps2026!', portal: 'partner', view: 'guarantees', icon: <ProIcon name="hospital" />, user: { id: 14, username: 'direction@hopital-principal.sn', contactName: 'Direction EPS Hôpital Principal', structureName: 'Hôpital Principal de Dakar', structureType: 'hopital_eps', role: 'gestionnaire_eps' } },
+  { code: 'ACC-09', title: '9. Agent mutuelle UDMS (terrain)', cat: 'Mutuelles communautaires', email: 'amadou.sall@udms-dakar.sn', password: 'Agent2026!', portal: 'agent', view: 'beneficiaries', icon: <ProIcon name="briefcase" />, user: { id: 15, username: 'amadou.sall@udms-dakar.sn', firstName: 'Amadou', lastName: 'Sall', role: 'Agent d\'Enrôlement Terrain UDMS' } },
+  { code: 'ACC-10', title: '10. Superviseur régional URMSCD', cat: 'Mutuelles communautaires', email: 'mariama.ba@urmscd-dakar.sn', password: 'Supervisor2026!', portal: 'agent', view: 'dashboard', icon: <ProIcon name="bar-chart" />, user: { id: 16, username: 'mariama.ba@urmscd-dakar.sn', firstName: 'Mariama', lastName: 'Ba', role: 'Superviseur Régional URMSCD' } },
+  { code: 'ACC-11', title: '11. Super admin ANACSU & ministère', cat: 'Gouvernance nationale', email: 'superadmin@anacsu.sn', password: 'SuperAdmin2026!', portal: 'agent', view: 'superadmin-governance', icon: <ProIcon name="crown" />, user: { id: 99, username: 'superadmin@anacsu.sn', firstName: 'Dr. Mamadou', lastName: 'Ba', role: 'Super Admin' } },
+  { code: 'ACC-12', title: '12. Entreprise / employeur privé', cat: 'Entreprises & mécènes', email: 'rh@patisen.sn', password: 'Entreprise2026!', portal: 'partner', view: 'rse', icon: <ProIcon name="building2" />, user: { id: 20, username: 'rh@patisen.sn', contactName: 'Direction RH Patisen', structureName: 'Groupe PATISEN SA', structureType: 'entreprise', role: 'entreprise' } },
+  { code: 'ACC-13', title: '13. Parrain solidaire & mécène RSE', cat: 'Entreprises & mécènes', email: 'fondation@wave.sn', password: 'Parrain2026!', portal: 'partner', view: 'parrainage-solidaire', icon: <ProIcon name="handshake" />, user: { id: 21, username: 'fondation@wave.sn', contactName: 'Fondation WAVE & Sonatel Mécénat', structureName: 'Parrain Solidaire Régional', structureType: 'fondation_rse', role: 'parrain_rse' } }
 ];
 
 export default function Login({ lang, setView, portalMode, setPortalMode, setCitizenUser, setAgentUser, setPartnerUser }) {
@@ -171,7 +172,7 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
       }}>
         <div className="container" style={{ position: 'relative', zIndex: 2 }}>
           <h1 style={{ color: '#fff', fontSize: '2.2rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
-            🔑 Portail unique d'authentification CSU Sénégal
+            <ProIcon name="key" /> Portail unique d'authentification CSU Sénégal
           </h1>
           <p style={{ color: '#f8fafc', fontSize: '1.05rem', fontWeight: '500', maxWidth: '750px', margin: '0 auto', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
             Connexion sécurisée par e-mail & mot de passe unique pour les 13 profils d'accès nationaux.
@@ -200,7 +201,7 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
           <div>
             <h3 style={{ fontSize: '1.15rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '0.25rem' }}>
-              🛡️ Sélection d'accès aux 13 profils (Identifiants dédiés) :
+              <ProIcon name="shield-check" /> Sélection d'accès aux 13 profils (Identifiants dédiés) :
             </h3>
             <span style={{ fontSize: '0.82rem', color: 'var(--text-sub)' }}>
               Cliquez sur n'importe quel profil pour pré-remplir ses identifiants uniques e-mail & mot de passe
@@ -240,7 +241,7 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
                   {acc.title}
                 </div>
                 <div style={{ fontSize: '0.72rem', color: 'var(--text-sub)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  📧 {acc.email}
+                  <ProIcon name="mail" /> {acc.email}
                 </div>
               </div>
             );
@@ -269,7 +270,7 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
 
           <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
             <h2 style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--primary)' }}>
-              🔐 Se connecter à sa session CSU
+              <ProIcon name="lock" /> Se connecter à sa session CSU
             </h2>
             <p style={{ fontSize: '0.82rem', color: 'var(--text-sub)', marginTop: '0.25rem' }}>
               Profil sélectionné : <strong>{PRESET_ACCOUNTS_13.find(a => a.code === selectedAccCode)?.title || 'Compte personnel'}</strong>
@@ -287,7 +288,7 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
               marginBottom: '1.25rem',
               borderLeft: '4px solid var(--danger)'
             }}>
-              ⚠️ {error}
+              <ProIcon name="alert-triangle" color="#d97706" /> {error}
             </div>
           )}
 
@@ -336,7 +337,7 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
               border: '1px dashed var(--border-color)',
               lineHeight: '1.4'
             }}>
-              💡 <strong>Identifiants uniques :</strong> Chaque profil possède son adresse e-mail et son mot de passe dédiés. Le Super Admin et les Agents peuvent également accorder l'ouverture de votre compte.
+              <ProIcon name="lightbulb" /> <strong>Identifiants uniques :</strong> Chaque profil possède son adresse e-mail et son mot de passe dédiés. Le Super Admin et les Agents peuvent également accorder l'ouverture de votre compte.
             </div>
           </form>
         </div>

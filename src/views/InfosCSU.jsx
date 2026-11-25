@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import ProIcon from '../components/ProIcon';
 
 export default function InfosCSU({ lang }) {
   const [activePolicy, setActivePolicy] = useState(0);
@@ -53,7 +54,7 @@ export default function InfosCSU({ lang }) {
     {
       title_fr: 'Césariennes gratuites',
       title_wo: 'Césarienne Gratuit',
-      icon: '🤰',
+      icon: <ProIcon name="heart-pulse" />,
       description_fr: 'Afin de réduire la mortalité maternelle, l\'accouchement par césarienne (simple ou d\'urgence) est entièrement gratuit dans tous les hôpitaux publics agréés.',
       description_wo: 'Ngir wanni réy xale ak yaay yi, accouchement césarienne dafa gratuit 100% ci hôpitaux publics yëpp.',
       impact: '40 000+ césariennes prises en charge chaque année'
@@ -61,7 +62,7 @@ export default function InfosCSU({ lang }) {
     {
       title_fr: 'Petite enfance (< 5 ans)',
       title_wo: 'Xale yu amul 5 at',
-      icon: '👶',
+      icon: <ProIcon name="baby" />,
       description_fr: 'Les enfants âgés de 0 à 5 ans bénéficient de la gratuité des consultations de médecine générale et pédiatrique, des vaccinations obligatoires et des soins infirmiers de base.',
       description_wo: 'Xale yi amul 5 at danguay fajjoo gratuit ci poste de santé yi ci consultation, vaccin ak urgences.',
       impact: '2.5 millions d\'enfants enrôlés au niveau national'
@@ -69,7 +70,7 @@ export default function InfosCSU({ lang }) {
     {
       title_fr: 'Dialyse subventionnée',
       title_wo: 'Dialyse gratuit',
-      icon: '🏥',
+      icon: <ProIcon name="hospital" />,
       description_fr: 'Les séances de dialyse pour l\'insuffisance rénale chronique sont gratuites dans tous les centres publics du Sénégal, soulageant les familles d\'un coût mensuel de plus de 150 000 FCFA.',
       description_wo: 'Séance dialyse yi dafa gratuit ci bir hôpitaux public yi ci Sénégal ngir wanni fay bi ci njabot yi.',
       impact: 'Gratuité totale de la dialyse dans les structures publiques'
@@ -213,7 +214,7 @@ export default function InfosCSU({ lang }) {
                     {lang === 'fr' ? p.descfr : p.descwo}
                   </p>
                   <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--secondary)', marginTop: '0.5rem' }}>
-                    📊 {p.impact}
+                    <ProIcon name="bar-chart" /> {p.impact}
                   </div>
                 </div>
               </div>
@@ -275,7 +276,7 @@ export default function InfosCSU({ lang }) {
 
           <div style={{ marginTop: '2rem', padding: '1.25rem', borderRadius: '12px', background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
             <span style={{ fontWeight: '800', color: 'var(--text-main)', fontSize: '0.95rem', display: 'block', marginBottom: '0.5rem' }}>
-              💡 {lang === 'fr' ? 'Le saviez-vous ?' : 'Xam nga ko ?'}
+              <ProIcon name="lightbulb" /> {lang === 'fr' ? 'Le saviez-vous ?' : 'Xam nga ko ?'}
             </span>
             <p style={{ fontSize: '0.82rem', color: 'var(--text-sub)', margin: 0 }}>
               {lang === 'fr' 

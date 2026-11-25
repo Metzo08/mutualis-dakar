@@ -17,6 +17,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import * as XLSX from 'xlsx';
 import { apiFetch } from '../utils/api';
+import ProIcon from '../components/ProIcon';
 
 function formatDate(iso) {
   if (!iso) return '—';
@@ -293,7 +294,7 @@ export default function ImportControl() {
 
   return (
     <div className="container py-4">
-      <h1 className="h4 mb-1">📥 Importation contrôlée des adhérents</h1>
+      <h1 className="h4 mb-1"><ProIcon name="download" /> Importation contrôlée des adhérents</h1>
       <p className="text-muted small mb-3">
         Aucun dossier n'entre dans le registre avant la prévisualisation et la validation explicite. Les photos sont
         associées par le <strong>matricule</strong> présent dans le nom du fichier, jamais par le seul nom ou prénom.
@@ -331,10 +332,10 @@ export default function ImportControl() {
       <div className="card mb-3">
         <div className="d-flex justify-content-between align-items-center">
           <h5 className="mb-0">2 · Lots d'importation</h5>
-          <button className="btn btn-sm btn-outline-secondary" onClick={loadBatches} disabled={listLoading}>🔄 Actualiser</button>
+          <button className="btn btn-sm btn-outline-secondary" onClick={loadBatches} disabled={listLoading}><ProIcon name="refresh" /> Actualiser</button>
         </div>
         {listLoading ? (
-          <div className="text-muted small mt-2">⏳ Chargement…</div>
+          <div className="text-muted small mt-2"><ProIcon name="hourglass" /> Chargement…</div>
         ) : batches.length === 0 ? (
           <div className="small text-muted mt-2">Aucun lot pour le moment.</div>
         ) : (
@@ -373,16 +374,16 @@ export default function ImportControl() {
             <h5 className="mb-0">3 · Prévisualisation — {b.reference}</h5>
             <div className="d-flex gap-2 flex-wrap">
               <button className="btn btn-sm btn-outline-primary" onClick={() => relaunchControls(b.id)} disabled={!!busy}>
-                {busy === 'controls' ? '⏳' : '🔁'} Relancer les contrôles
+                {busy === 'controls' ? <ProIcon name="hourglass" /> : <ProIcon name="refresh" />} Relancer les contrôles
               </button>
               <button className="btn btn-sm btn-outline-success" onClick={() => validateBatch(b.id)} disabled={!!busy || s.conformes === 0}>
-                ✅ Valider le lot
+                <ProIcon name="check-circle" color="#059669" /> Valider le lot
               </button>
               <button className="btn btn-sm btn-success" onClick={() => integrateBatch(b.id)} disabled={!!busy || !b.validatedAt}>
                 ⬆️ Intégrer les conformes
               </button>
               <button className="btn btn-sm btn-outline-secondary" onClick={() => downloadReport(b.id, b.reference)} disabled={!!busy}>
-                📊 Rapport Excel
+                <ProIcon name="bar-chart" /> Rapport Excel
               </button>
             </div>
           </div>
@@ -482,7 +483,7 @@ export default function ImportControl() {
                 </div>
                 <div className="col-md-9 d-flex gap-2">
                   <button className="btn btn-sm btn-primary" onClick={saveCorrection} disabled={!!busy}>
-                    {busy === 'correct' ? '⏳' : '💾'} Enregistrer et re-contrôler
+                    {busy === 'correct' ? <ProIcon name="hourglass" /> : <ProIcon name="save" />} Enregistrer et re-contrôler
                   </button>
                   <button className="btn btn-sm btn-outline-secondary" onClick={() => setCorrection(null)}>Annuler</button>
                 </div>

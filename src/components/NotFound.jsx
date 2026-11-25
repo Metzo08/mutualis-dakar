@@ -1,3 +1,4 @@
+import ProIcon from './ProIcon';
 // ═══════════════════════════════════════════════════════════════════════════
 // PAGE 404 — URL introuvable
 // ═══════════════════════════════════════════════════════════════════════════
@@ -10,12 +11,12 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 const SHORTCUTS = [
-  { icon: '🏠', label: 'Accueil', view: 'home' },
-  { icon: '👥', label: 'Bénéficiaires', view: 'beneficiaries' },
+  { icon: <ProIcon name="home" />, label: 'Accueil', view: 'home' },
+  { icon: <ProIcon name="users" />, label: 'Bénéficiaires', view: 'beneficiaries' },
   { icon: '🧰', label: 'Services en ligne', view: 'services' },
-  { icon: '🏥', label: 'Cartographie', view: 'map' },
-  { icon: '📋', label: 'Réclamations', view: 'complaints' },
-  { icon: '🔐', label: 'Connexion', view: 'login' }
+  { icon: <ProIcon name="hospital" />, label: 'Cartographie', view: 'map' },
+  { icon: <ProIcon name="clipboard-list" />, label: 'Réclamations', view: 'complaints' },
+  { icon: <ProIcon name="lock" />, label: 'Connexion', view: 'login' }
 ];
 
 export default function NotFound({ requestedView, setView }) {
@@ -30,7 +31,7 @@ export default function NotFound({ requestedView, setView }) {
           boxShadow: '0 10px 40px rgba(0,0,0,0.08)'
         }}
       >
-        <div style={{ fontSize: '3.5rem', marginBottom: '0.75rem' }}>🧭</div>
+        <div style={{ fontSize: '3.5rem', marginBottom: '0.75rem' }}><ProIcon name="navigation" /></div>
         <h1 style={{ fontSize: '2.2rem', fontWeight: '850', color: 'var(--text-main)', marginBottom: '0.4rem' }}>
           404
         </h1>

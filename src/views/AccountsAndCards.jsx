@@ -23,6 +23,7 @@
  */
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch } from '../utils/api';
+import ProIcon from '../components/ProIcon';
 
 function formatDate(iso) {
   if (!iso) return '—';
@@ -364,7 +365,7 @@ export default function AccountsAndCards() {
 
   return (
     <div className="container py-4">
-      <h1 className="h4 mb-1">🗂️ Gestion des comptes et des cartes</h1>
+      <h1 className="h4 mb-1"><ProIcon name="archive" /> Gestion des comptes et des cartes</h1>
       <p className="text-muted small mb-3">
         Le <strong>dossier</strong>, le <strong>compte</strong>, la <strong>carte</strong> et les <strong>droits</strong> sont
         des objets distincts. Bloquer une carte n'affecte ni le dossier ni le compte de l'assuré. Toute opération sensible
@@ -445,7 +446,7 @@ export default function AccountsAndCards() {
       </div>
 
       {/* 2 — Fiche détaillée */}
-      {ficheLoading && <div className="text-muted small mb-3">⏳ Chargement de la fiche…</div>}
+      {ficheLoading && <div className="text-muted small mb-3"><ProIcon name="hourglass" /> Chargement de la fiche…</div>}
       {ficheError && <div className="alert alert-danger small">{ficheError}</div>}
 
       {id && !ficheLoading && (
@@ -494,7 +495,7 @@ export default function AccountsAndCards() {
           <div className="card mb-4 p-4" style={{ border: '2px solid #059669', borderRadius: '18px', background: 'rgba(5, 150, 105, 0.04)' }}>
             <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
               <div>
-                <h5 className="mb-1 fw-bold" style={{ color: '#047857' }}>🔑 Code d&apos;accès mobile de l&apos;assuré</h5>
+                <h5 className="mb-1 fw-bold" style={{ color: '#047857' }}><ProIcon name="key" /> Code d&apos;accès mobile de l&apos;assuré</h5>
                 <div className="small text-muted">
                   Permet à l&apos;assuré (même sans numéro de téléphone) d&apos;ouvrir son espace mobile après scan de sa carte QR.
                 </div>
@@ -530,7 +531,7 @@ export default function AccountsAndCards() {
                     setAccessCodeMsg(`Code ${insuredAccessCode} copié dans le presse-papiers.`);
                   }}
                 >
-                  📋 Copier
+                  <ProIcon name="clipboard-list" /> Copier
                 </button>
                 <a
                   className="btn btn-sm fw-bold px-3 py-2"
@@ -546,7 +547,7 @@ export default function AccountsAndCards() {
                   rel="noopener noreferrer"
                   href={`https://wa.me/${String(insuredPhone || '').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Bonjour ${id.firstName || ''} ${id.lastName || ''}, voici votre code d'accès personnel SenMutuelles pour ouvrir votre carte mobile (${id.cmuNumber}) : ${insuredAccessCode}`)}`}
                 >
-                  💬 Envoyer par WhatsApp
+                  <ProIcon name="message-square" /> Envoyer par WhatsApp
                 </a>
               </div>
             </div>
@@ -576,13 +577,13 @@ export default function AccountsAndCards() {
                 disabled={accessCodeBusy}
                 onClick={() => updateInsuredAccessCode(false)}
               >
-                🔄 Générer un nouveau code aléatoire
+                <ProIcon name="refresh" /> Générer un nouveau code aléatoire
               </button>
             </div>
 
             {accessCodeMsg && (
               <div className="alert alert-success py-2 px-3 mt-3 mb-0 small fw-bold" style={{ borderRadius: '10px' }}>
-                ✅ {accessCodeMsg}
+                <ProIcon name="check-circle" color="#059669" /> {accessCodeMsg}
               </div>
             )}
           </div>
@@ -640,7 +641,7 @@ export default function AccountsAndCards() {
             )}
             {oneTimeCode && (
               <div className="alert alert-warning small">
-                <div className="fw-bold">🔑 Code d'accès assuré généré — à communiquer à l'assuré</div>
+                <div className="fw-bold"><ProIcon name="key" /> Code d'accès assuré généré — à communiquer à l'assuré</div>
                 <div className="mt-2 d-flex align-items-center gap-2 flex-wrap">
                   <code style={{ fontSize: '1.2rem', fontWeight: 800, padding: '4px 10px', background: '#fff', borderRadius: '8px', border: '1px solid #f59e0b' }}>
                     {oneTimeCode.code}
@@ -650,7 +651,7 @@ export default function AccountsAndCards() {
                     className="btn btn-sm btn-outline-dark fw-bold"
                     onClick={() => navigator.clipboard?.writeText(String(oneTimeCode.code || ''))}
                   >
-                    📋 Copier le code
+                    <ProIcon name="clipboard-list" /> Copier le code
                   </button>
                   <a
                     className="btn btn-sm btn-success text-white fw-bold"
@@ -658,7 +659,7 @@ export default function AccountsAndCards() {
                     rel="noopener noreferrer"
                     href={`https://wa.me/?text=${encodeURIComponent(`Bonjour, voici votre code d'accès personnel SenMutuelles / UNAMUSC pour votre carte ${cmu} : ${oneTimeCode.code} (valable jusqu'au ${formatDate(oneTimeCode.expiresAt)}).`)}`}
                   >
-                    💬 Communiquer par WhatsApp
+                    <ProIcon name="message-square" /> Communiquer par WhatsApp
                   </a>
                 </div>
                 <div className="mt-1">
@@ -745,7 +746,7 @@ export default function AccountsAndCards() {
             )}
 
             <div className="border rounded p-2 mb-2" style={{ background: 'var(--bg-subtle, #f8fafc)' }}>
-              <div className="fw-bold small mb-1">🔑 Réinitialiser le mot de passe</div>
+              <div className="fw-bold small mb-1"><ProIcon name="key" /> Réinitialiser le mot de passe</div>
               <div className="small text-muted mb-2">
                 Aucun mot de passe n'est affiché, défini ni envoyé : un code à usage unique (15 minutes) est généré, les
                 sessions sont révoquées, et l'agent ne lit jamais le nouveau mot de passe.
@@ -760,7 +761,7 @@ export default function AccountsAndCards() {
             </div>
 
             <div className="border rounded p-2" style={{ background: 'var(--bg-subtle, #f8fafc)' }}>
-              <div className="fw-bold small mb-1">✏️ Modifier les informations administratives</div>
+              <div className="fw-bold small mb-1"><ProIcon name="edit" /> Modifier les informations administratives</div>
               <div className="small text-muted mb-2">
                 Téléphone, adresse et motif obligatoire. Le nom, la pièce et la MSD ne sont modifiables que par un administrateur.
               </div>
@@ -881,7 +882,7 @@ export default function AccountsAndCards() {
           </div>
         </div>
         {reqsLoading ? (
-          <div className="text-muted small">⏳ Chargement…</div>
+          <div className="text-muted small"><ProIcon name="hourglass" /> Chargement…</div>
         ) : reqs.length === 0 ? (
           <div className="text-muted small">Aucune demande pour votre MSD.</div>
         ) : (
@@ -909,10 +910,10 @@ export default function AccountsAndCards() {
                       <td className="text-nowrap">
                         {open ? (
                           <div className="btn-group">
-                            <button className="btn btn-sm btn-outline-primary" title="Démarrer" onClick={() => transitionRequest(r.reference, 'EN_COURS')}>▶</button>
+                            <button className="btn btn-sm btn-outline-primary" title="Démarrer" onClick={() => transitionRequest(r.reference, 'EN_COURS')}><ProIcon name="play" /></button>
                             <button className="btn btn-sm btn-outline-secondary" title="Attente de double validation" onClick={() => transitionRequest(r.reference, 'EN_ATTENTE_VALIDATION')}>⏸</button>
-                            <button className="btn btn-sm btn-outline-success" title="Traitée" onClick={() => transitionRequest(r.reference, 'TRAITEE')}>✔</button>
-                            <button className="btn btn-sm btn-outline-danger" title="Refuser" onClick={() => transitionRequest(r.reference, 'REFUSEE')}>✖</button>
+                            <button className="btn btn-sm btn-outline-success" title="Traitée" onClick={() => transitionRequest(r.reference, 'TRAITEE')}><ProIcon name="check" color="#059669" /></button>
+                            <button className="btn btn-sm btn-outline-danger" title="Refuser" onClick={() => transitionRequest(r.reference, 'REFUSEE')}><ProIcon name="x" /></button>
                           </div>
                         ) : (
                           <span className="small text-muted">{r.resolved_by ? `clôturée par ${r.resolved_by}` : 'clôturée'}</span>

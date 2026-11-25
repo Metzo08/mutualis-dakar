@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import ProIcon from '../components/ProIcon';
 
 export default function AuditLogs({ lang = 'fr' }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -175,21 +176,21 @@ export default function AuditLogs({ lang = 'fr' }) {
   const getActionBadge = (action = '') => {
     const act = action.toUpperCase();
     if (act.includes('CONNEXION') || act.includes('SCAN')) {
-      return { bg: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', border: 'rgba(59, 130, 246, 0.35)', icon: '🔐' };
+      return { bg: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', border: 'rgba(59, 130, 246, 0.35)', icon: <ProIcon name="lock" /> };
     }
     if (act.includes('RENOUVELLEMENT') || act.includes('VALIDEE') || act.includes('APPROBATION') || act.includes('ACCREDITATION')) {
-      return { bg: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: 'rgba(16, 185, 129, 0.35)', icon: '✅' };
+      return { bg: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: 'rgba(16, 185, 129, 0.35)', icon: <ProIcon name="check-circle" color="#059669" /> };
     }
     if (act.includes('DEMANDE') || act.includes('INSCRIPTION')) {
-      return { bg: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', border: 'rgba(245, 158, 11, 0.35)', icon: '💳' };
+      return { bg: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', border: 'rgba(245, 158, 11, 0.35)', icon: <ProIcon name="credit-card" /> };
     }
     if (act.includes('SUPPRESSION') || act.includes('ANNULATION')) {
-      return { bg: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: 'rgba(239, 68, 68, 0.35)', icon: '⚠️' };
+      return { bg: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: 'rgba(239, 68, 68, 0.35)', icon: <ProIcon name="alert-triangle" color="#d97706" /> };
     }
     if (act.includes('TELECONSULTATION') || act.includes('DICOM')) {
-      return { bg: 'rgba(168, 85, 247, 0.15)', color: '#a855f7', border: 'rgba(168, 85, 247, 0.35)', icon: '💻' };
+      return { bg: 'rgba(168, 85, 247, 0.15)', color: '#a855f7', border: 'rgba(168, 85, 247, 0.35)', icon: <ProIcon name="laptop" /> };
     }
-    return { bg: 'rgba(148, 163, 184, 0.15)', color: '#94a3b8', border: 'rgba(148, 163, 184, 0.35)', icon: '📜' };
+    return { bg: 'rgba(148, 163, 184, 0.15)', color: '#94a3b8', border: 'rgba(148, 163, 184, 0.35)', icon: <ProIcon name="scroll-text" /> };
   };
 
   const filteredLogs = allLogs.filter(log => {
@@ -251,10 +252,10 @@ export default function AuditLogs({ lang = 'fr' }) {
           <div>
             <div className="d-flex align-items-center gap-2 mb-2 flex-wrap">
               <span className="badge" style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', color: '#fff', border: '1px solid rgba(255, 255, 255, 0.35)', backdropFilter: 'blur(6px)', padding: '0.4rem 1rem', fontSize: '0.82rem', fontWeight: '800', borderRadius: '20px' }}>
-                🔒 Traçabilité & sécurité nationale UNAMUSC
+                <ProIcon name="lock" /> Traçabilité & sécurité nationale UNAMUSC
               </span>
               <span className="badge bg-success text-white border border-white px-3 py-1.5 fw-extrabold" style={{ borderRadius: '20px', fontSize: '0.78rem' }}>
-                🟢 Live sync ({lastSyncTime})
+                <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Live sync ({lastSyncTime})
               </span>
             </div>
             <h2 style={{ fontSize: '2.1rem', color: '#fff', marginBottom: '0.4rem', fontWeight: '900', textShadow: '0 3px 6px rgba(0,0,0,0.5)', letterSpacing: '-0.02em' }}>
@@ -271,7 +272,7 @@ export default function AuditLogs({ lang = 'fr' }) {
             style={{ borderRadius: '14px', fontSize: '0.9rem', cursor: 'pointer' }}
             onClick={() => loadAuditLogs()}
           >
-            🔄 Actualiser le journal
+            <ProIcon name="refresh" /> Actualiser le journal
           </button>
         </div>
       </section>
@@ -298,10 +299,10 @@ export default function AuditLogs({ lang = 'fr' }) {
         >
           <div className="d-flex align-items-center justify-content-between mb-3">
             <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'linear-gradient(135deg, #059669, #10b981)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', boxShadow: '0 6px 16px rgba(16,185,129,0.35)', flexShrink: 0 }}>
-              📊
+              <ProIcon name="bar-chart" />
             </div>
             <span className="badge px-3 py-1.5 fw-extrabold" style={{ background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.4)', borderRadius: '12px', fontSize: '0.74rem' }}>
-              🛡️ Certifié
+              <ProIcon name="shield-check" /> Certifié
             </span>
           </div>
 
@@ -333,10 +334,10 @@ export default function AuditLogs({ lang = 'fr' }) {
         >
           <div className="d-flex align-items-center justify-content-between mb-3">
             <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'linear-gradient(135deg, #2563eb, #3b82f6)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', boxShadow: '0 6px 16px rgba(59,130,246,0.35)', flexShrink: 0 }}>
-              🔐
+              <ProIcon name="lock" />
             </div>
             <span className="badge px-3 py-1.5 fw-extrabold" style={{ background: 'rgba(59, 130, 246, 0.2)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.4)', borderRadius: '12px', fontSize: '0.74rem' }}>
-              🔑 MFA actif
+              <ProIcon name="key" /> MFA actif
             </span>
           </div>
 
@@ -368,10 +369,10 @@ export default function AuditLogs({ lang = 'fr' }) {
         >
           <div className="d-flex align-items-center justify-content-between mb-3">
             <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'linear-gradient(135deg, #d97706, #f59e0b)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', boxShadow: '0 6px 16px rgba(245,158,11,0.35)', flexShrink: 0 }}>
-              💳
+              <ProIcon name="credit-card" />
             </div>
             <span className="badge px-3 py-1.5 fw-extrabold" style={{ background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.4)', borderRadius: '12px', fontSize: '0.74rem' }}>
-              💳 80% UNAMUSC
+              <ProIcon name="credit-card" /> 80% UNAMUSC
             </span>
           </div>
 
@@ -403,10 +404,10 @@ export default function AuditLogs({ lang = 'fr' }) {
         >
           <div className="d-flex align-items-center justify-content-between mb-3">
             <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'linear-gradient(135deg, #7e22ce, #a855f7)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', boxShadow: '0 6px 16px rgba(168,85,247,0.35)', flexShrink: 0 }}>
-              💻
+              <ProIcon name="laptop" />
             </div>
             <span className="badge px-3 py-1.5 fw-extrabold" style={{ background: 'rgba(168, 85, 247, 0.2)', color: '#a855f7', border: '1px solid rgba(168, 85, 247, 0.4)', borderRadius: '12px', fontSize: '0.74rem' }}>
-              🇸🇳 CNOM agréé
+              <ProIcon name="senegal-flag" /> CNOM agréé
             </span>
           </div>
 
@@ -438,10 +439,10 @@ export default function AuditLogs({ lang = 'fr' }) {
           borderBottom: '1px solid var(--border-color)'
         }}>
           {[
-            { id: 'ALL', label: 'Tous les événements', icon: '📜' },
-            { id: 'SECURITY', label: 'Sécurité & accès', icon: '🔐' },
-            { id: 'PAYMENT', label: 'Tiers-payant & cotisations', icon: '💳' },
-            { id: 'TELEMEDICINE', label: 'Télémédecine & DICOM', icon: '💻' }
+            { id: 'ALL', label: 'Tous les événements', icon: <ProIcon name="scroll-text" /> },
+            { id: 'SECURITY', label: 'Sécurité & accès', icon: <ProIcon name="lock" /> },
+            { id: 'PAYMENT', label: 'Tiers-payant & cotisations', icon: <ProIcon name="credit-card" /> },
+            { id: 'TELEMEDICINE', label: 'Télémédecine & DICOM', icon: <ProIcon name="laptop" /> }
           ].map(cat => (
             <button
               key={cat.id}
@@ -472,7 +473,7 @@ export default function AuditLogs({ lang = 'fr' }) {
           <div style={{ flex: '1 1 320px' }}>
             <div className="input-group">
               <span className="input-group-text" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', color: 'var(--text-sub)' }}>
-                🔍
+                <ProIcon name="search" />
               </span>
               <input
                 type="text"
@@ -494,7 +495,7 @@ export default function AuditLogs({ lang = 'fr' }) {
               style={{ background: '#059669', border: 'none', borderRadius: '12px', fontSize: '0.88rem', boxShadow: '0 4px 14px rgba(5,150,105,0.3)', cursor: 'pointer', whiteSpace: 'nowrap' }}
               onClick={handleExportCSV}
             >
-              📥 {t.exportBtn}
+              <ProIcon name="download" /> {t.exportBtn}
             </button>
           </div>
         </div>
@@ -537,7 +538,7 @@ export default function AuditLogs({ lang = 'fr' }) {
                           {formatDate(log.created_at)}
                         </strong>
                         <small className="fw-mono" style={{ color: 'var(--text-sub)', fontSize: '0.78rem' }}>
-                          🕒 {formatTime(log.created_at)}
+                          <ProIcon name="clock" /> {formatTime(log.created_at)}
                         </small>
                       </td>
 
@@ -555,11 +556,11 @@ export default function AuditLogs({ lang = 'fr' }) {
                       {/* Acteur / Utilisateur */}
                       <td style={{ padding: '1rem 1.25rem' }}>
                         <strong className="d-block" style={{ fontSize: '0.9rem', color: 'var(--text-main)' }}>
-                          👤 {log.actor}
+                          <ProIcon name="user" /> {log.actor}
                         </strong>
                         {log.ip && (
                           <small style={{ color: 'var(--text-sub)', fontSize: '0.75rem' }}>
-                            📍 {log.ip}
+                            <ProIcon name="map-pin" /> {log.ip}
                           </small>
                         )}
                       </td>
@@ -580,7 +581,7 @@ export default function AuditLogs({ lang = 'fr' }) {
                             setSelectedLogModal(log);
                           }}
                         >
-                          👁 Inspecter
+                          <ProIcon name="eye" /> Inspecter
                         </button>
                       </td>
                     </tr>
@@ -637,7 +638,7 @@ export default function AuditLogs({ lang = 'fr' }) {
             <div className="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
               <div className="d-flex align-items-center gap-3">
                 <div style={{ width: '52px', height: '52px', borderRadius: '16px', background: 'linear-gradient(135deg, #059669, #10b981)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', boxShadow: '0 6px 20px rgba(16,185,129,0.35)', flexShrink: 0 }}>
-                  🔒
+                  <ProIcon name="lock" />
                 </div>
                 <div>
                   <h4 className="fw-extrabold mb-0 text-success" style={{ fontSize: '1.3rem' }}>
@@ -666,12 +667,12 @@ export default function AuditLogs({ lang = 'fr' }) {
 
               <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
                 <span className="text-muted fw-bold">Acteur / initiateur :</span>
-                <strong>👤 {selectedLogModal.actor}</strong>
+                <strong><ProIcon name="user" /> {selectedLogModal.actor}</strong>
               </div>
 
               <div className="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
                 <span className="text-muted fw-bold">Origine IP & réseau :</span>
-                <span className="fw-mono">📍 {selectedLogModal.ip || '196.207.240.12 (Dakar Plateau)'}</span>
+                <span className="fw-mono"><ProIcon name="map-pin" /> {selectedLogModal.ip || '196.207.240.12 (Dakar Plateau)'}</span>
               </div>
 
               <div className="mt-3">
@@ -684,7 +685,7 @@ export default function AuditLogs({ lang = 'fr' }) {
 
             <div className="p-3.5 rounded-4 mb-4 border border-success" style={{ background: 'rgba(16, 185, 129, 0.08)', fontSize: '0.84rem' }}>
               <div className="d-flex align-items-center gap-2 text-success fw-bold mb-1">
-                <span>🛡️</span> Empreinte cryptographique d'intégrité (Hash SHA-256) :
+                <span><ProIcon name="shield-check" /></span> Empreinte cryptographique d'intégrité (Hash SHA-256) :
               </div>
               <code className="d-block text-break fw-mono" style={{ color: '#10b981', fontSize: '0.76rem' }}>
                 e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855

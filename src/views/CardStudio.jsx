@@ -48,6 +48,7 @@ import {
   resolveUnion,
   SOLUTION_PHONE
 } from '../utils/cardPrograms';
+import ProIcon from '../components/ProIcon';
 
 // Vecteur SVG officiel du Drapeau du Sénégal (Vert, Jaune avec étoile verte, Rouge)
 const SenegalFlagSvg = ({ style }) => (
@@ -179,7 +180,7 @@ function SchoolCardFront({ cardData, currentUnion, getMsdLogo, customLogo = null
         {showIef && (
           <div className="school-card-wide"><span style={labelStyle}>IA / IEF</span><strong style={valueStyle}>{cardData.academicData.ia || 'IA à renseigner'} — {cardData.academicData.ief || 'IEF à renseigner'}</strong></div>
         )}
-        <div className="school-card-wide"><span style={labelStyle}>👤 {program.referralLabel}</span><strong style={valueStyle}>{cardData.tuteurName || cardData.sponsorName || cardData.fullName} • {cardData.tuteurPhone || cardData.phone || 'téléphone à renseigner'}</strong></div>
+        <div className="school-card-wide"><span style={labelStyle}><ProIcon name="user" /> {program.referralLabel}</span><strong style={valueStyle}>{cardData.tuteurName || cardData.sponsorName || cardData.fullName} • {cardData.tuteurPhone || cardData.phone || 'téléphone à renseigner'}</strong></div>
       </div>
       <div className="school-card-photo">
         {/* SecurePhoto : les photos servies par /api/beneficiaries/:id/photo
@@ -257,7 +258,7 @@ function StudioOverviewPanel() {
         aria-expanded={open}
       >
         <span className="d-flex align-items-center gap-2">
-          <span style={{ fontSize: '1.35rem' }}>🗺️</span>
+          <span style={{ fontSize: '1.35rem' }}><ProIcon name="map" /></span>
           <span>
             <span className="fw-extrabold d-block" style={{ fontSize: '1.02rem', color: 'var(--text-main)' }}>
               Vue générale — production des cartes par région, département et MSD
@@ -2573,13 +2574,13 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
           <div>
             <div className="d-flex align-items-center gap-2.5 mb-3 flex-wrap">
               <span className="badge" style={{ backgroundColor: '#064e3b', color: '#ffffff', border: '1px solid #10b981', padding: '0.5rem 1.2rem', fontSize: '0.86rem', fontWeight: '800', borderRadius: '20px' }}>
-                🪪 Studio national de conception des cartes UNAMUSC / SEN-CSU
+                <ProIcon name="id-card" /> Studio national de conception des cartes UNAMUSC / SEN-CSU
               </span>
               <span className="badge fw-extrabold px-3.5 py-2" style={{ borderRadius: '20px', fontSize: '0.82rem', backgroundColor: '#78350f', color: '#fef3c7', border: '1px solid #f59e0b' }}>
-                👑 Restreint super admin
+                <ProIcon name="crown" /> Restreint super admin
               </span>
               <span className="badge fw-extrabold px-3.5 py-2" style={{ borderRadius: '20px', fontSize: '0.82rem', backgroundColor: '#0369a1', color: '#e0f2fe', border: '1px solid #38bdf8' }}>
-                🖨️ Calibré PVC Epson L8050
+                <ProIcon name="printer" /> Calibré PVC Epson L8050
               </span>
             </div>
             <h2 style={{ fontSize: '2.2rem', color: '#fff', marginBottom: '0.5rem', fontWeight: '900', textShadow: '0 3px 6px rgba(0,0,0,0.5)', letterSpacing: '-0.02em' }}>
@@ -2597,7 +2598,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
               style={{ borderRadius: '16px', fontSize: '0.92rem', background: '#0f172a', color: '#ffffff', border: '1.5px solid #10b981', minHeight: '48px' }}
               onClick={handleTestVerifyClick}
             >
-              <span>📲</span> Tester la vérification (#/verify)
+              <span><ProIcon name="smartphone" /></span> Tester la vérification (#/verify)
             </button>
 
             {/* Téléchargement PNG HD (Recto & Verso) */}
@@ -2672,7 +2673,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
         <div className="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-3">
           <div>
             <h5 className="fw-extrabold mb-1 text-success d-flex align-items-center gap-2.5" style={{ fontSize: '1.25rem' }}>
-              <span>📥</span> 0. Import en masse — création de cartes à partir d'un fichier Excel
+              <span><ProIcon name="download" /></span> 0. Import en masse — création de cartes à partir d'un fichier Excel
             </h5>
             <p className="text-sub small mb-0" style={{ fontSize: '0.88rem' }}>
               Chargez le fichier MSD Dakar (ex : <strong>MSD de Grand Yoff.xlsx</strong>) puis le dossier de photos.
@@ -2720,7 +2721,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
               disabled={bulkImporting}
               onClick={() => { if (photosInputRef.current) photosInputRef.current.click(); }}
             >
-              🗂️ 1️⃣ Dossier de photos…
+              <ProIcon name="archive" /> 1️⃣ Dossier de photos…
             </button>
             <button
               type="button"
@@ -2826,7 +2827,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                 border: '1.5px solid #059669'
               }}
             >
-              <span style={{ fontSize: '1.15rem', lineHeight: 1.2 }} aria-hidden="true">🔢</span>
+              <span style={{ fontSize: '1.15rem', lineHeight: 1.2 }} aria-hidden="true"><ProIcon name="list-checks" /></span>
               <div className="flex-grow-1">
                 <div style={{ fontSize: '0.86rem', fontWeight: '800', color: '#047857' }}>
                   Codage du lot
@@ -2940,7 +2941,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
         )}
 
         <small className="text-muted d-block mt-2" style={{ fontSize: '0.76rem' }}>
-          💾 Zéro perte : les bénéficiaires importés sont enregistrés dans le store du studio ET poussés vers le backend.
+          <ProIcon name="save" /> Zéro perte : les bénéficiaires importés sont enregistrés dans le store du studio ET poussés vers le backend.
           Si PostgreSQL est indisponible, le serveur les conserve dans son fichier secours
           (<code>backend/data/store.json</code>) et les rejoue automatiquement à la reconnexion de la base.
         </small>
@@ -2953,7 +2954,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
           <div className="card p-4 p-md-5 rounded-4 h-100 shadow-sm" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '28px' }}>
             <div className="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
               <h5 className="fw-extrabold mb-0 text-success d-flex align-items-center gap-2.5" style={{ fontSize: '1.25rem' }}>
-                <span>👤</span> 1. Dossier adhérent principal
+                <span><ProIcon name="user" /></span> 1. Dossier adhérent principal
               </h5>
               <div className="d-flex gap-2 flex-wrap">
                 <button
@@ -3014,7 +3015,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   onClick={() => setDeleteTargets([currentMember])}
                   title="Retirer définitivement la fiche affichée (registre local et base)"
                 >
-                  🗑️ Supprimer la fiche affichée
+                  <ProIcon name="trash" /> Supprimer la fiche affichée
                 </button>
                 {legacyCount > 0 && (
                   <button
@@ -3025,7 +3026,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                     disabled={deleteBusy}
                     title="Retirer toutes les fiches porteuses d'un ancien code provisoire (DKR-2600172). Un réimport les recrée au format officiel. Les cartes déjà imprimées ne sont jamais concernées."
                   >
-                    🧹 Purger les {legacyCount} cartes à l'ancien code
+                    <ProIcon name="trash" /> Purger les {legacyCount} cartes à l'ancien code
                   </button>
                 )}
               </div>
@@ -3037,7 +3038,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
             <div className="studio-form-group mb-3">
               {/* Titre de la zone : agrandi, elle regroupe les actions sensibles. */}
               <label className="form-label text-sub fw-extrabold d-flex align-items-center gap-2" style={{ fontSize: '1rem' }}>
-                <span>📦 Lot de campagne d'enrôlement</span>
+                <span><ProIcon name="package" /> Lot de campagne d'enrôlement</span>
               </label>
               <select
                 className="form-select py-2.5 px-3 fw-extrabold"
@@ -3045,7 +3046,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                 onChange={(e) => setLotFilter(e.target.value)}
                 style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid #a7f3d0', borderRadius: '14px', fontSize: '0.95rem', minHeight: '52px' }}
               >
-                <option value="ALL">🌐 Tous les lots ({members.length} dossier(s))</option>
+                <option value="ALL">Tous les lots ({members.length} dossier(s))</option>
                 {lotList.map(l => (
                   <option key={l.code} value={l.code}>
                     {lotLabel(l.code)} — {l.dossiers} dossier(s) / {l.people} personne(s)
@@ -3073,7 +3074,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                 }}>
                   <div className="d-flex align-items-center justify-content-between gap-2 mb-2 flex-wrap">
                     <div className="d-flex align-items-center gap-2">
-                      <span style={{ fontSize: '1.1rem' }}>📊</span>
+                      <span style={{ fontSize: '1.1rem' }}><ProIcon name="bar-chart" /></span>
                       <strong style={{ fontSize: '0.95rem', color: 'var(--text-main)' }}>
                         Centre de contrôle — enrôlements de masse par MSD
                       </strong>
@@ -3091,13 +3092,13 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                       return (
                         <div className="d-flex gap-2 flex-wrap">
                           <span className="badge px-2.5 py-1.5" style={{ borderRadius: '12px', fontSize: '0.75rem', fontWeight: 800, background: 'rgba(2,132,199,0.12)', color: '#0369a1', border: '1px solid #38bdf8' }}>
-                            🪪 {totales} carte(s) au total
+                            <ProIcon name="id-card" /> {totales} carte(s) au total
                           </span>
                           <span className="badge px-2.5 py-1.5" style={{ borderRadius: '12px', fontSize: '0.75rem', fontWeight: 800, background: 'rgba(5,150,105,0.12)', color: '#047857', border: '1px solid #10b981' }}>
-                            ✅ {conformes} conforme(s)
+                            <ProIcon name="check-circle" color="#059669" /> {conformes} conforme(s)
                           </span>
                           <span className="badge px-2.5 py-1.5" style={{ borderRadius: '12px', fontSize: '0.75rem', fontWeight: 800, background: 'rgba(180,83,9,0.12)', color: '#b45309', border: '1px solid #f59e0b' }}>
-                            💰 Gain admin : {gain.toLocaleString('fr-FR')} FCFA ({LOT_PRIX_CARTE} F/carte)
+                            <ProIcon name="wallet" /> Gain admin : {gain.toLocaleString('fr-FR')} FCFA ({LOT_PRIX_CARTE} F/carte)
                           </span>
                         </div>
                       );
@@ -3105,7 +3106,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   </div>
                   {controlError && (
                     <small className="d-block mb-2" style={{ fontSize: '0.72rem', color: '#b45309' }}>
-                      ⚠ Base injoignable : statistiques calculées sur le registre local (dates et gain approximatifs).
+                      <ProIcon name="alert-triangle" color="#d97706" /> Base injoignable : statistiques calculées sur le registre local (dates et gain approximatifs).
                     </small>
                   )}
                   <div className="table-responsive">
@@ -3170,15 +3171,15 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                                 </td>
                                 <td style={{ padding: '0.45rem 0.5rem', fontWeight: 800, color: conformes === cartes ? '#047857' : nonConformes > 0 ? '#b45309' : 'inherit' }}>
                                   {conformes}/{cartes}
-                                  {nonConformes > 0 && <span style={{ color: '#b45309' }}> ⚠ {nonConformes} à compléter</span>}
+                                  {nonConformes > 0 && <span style={{ color: '#b45309' }}> <ProIcon name="alert-triangle" color="#d97706" /> {nonConformes} à compléter</span>}
                                 </td>
                                 <td style={{ padding: '0.45rem 0.5rem', fontWeight: 800, color: '#047857' }}>
                                   {fmtFcfa(gain)}
                                 </td>
                                 <td style={{ padding: '0.45rem 0.5rem' }}>
                                   {s && s.printed
-                                    ? <span className="badge px-2 py-1" style={{ borderRadius: '8px', fontSize: '0.66rem', fontWeight: 800, background: 'rgba(5,150,105,0.15)', color: '#047857', border: '1px solid #10b981' }}>🖨️ Remise {s.printedAt ? fmtDate(s.printedAt) : ''}</span>
-                                    : <span className="badge px-2 py-1" style={{ borderRadius: '8px', fontSize: '0.66rem', fontWeight: 800, background: 'rgba(100,116,139,0.15)', color: '#475569', border: '1px solid #cbd5e1' }}>⏳ En préparation</span>}
+                                    ? <span className="badge px-2 py-1" style={{ borderRadius: '8px', fontSize: '0.66rem', fontWeight: 800, background: 'rgba(5,150,105,0.15)', color: '#047857', border: '1px solid #10b981' }}><ProIcon name="printer" /> Remise {s.printedAt ? fmtDate(s.printedAt) : ''}</span>
+                                    : <span className="badge px-2 py-1" style={{ borderRadius: '8px', fontSize: '0.66rem', fontWeight: 800, background: 'rgba(100,116,139,0.15)', color: '#475569', border: '1px solid #cbd5e1' }}><ProIcon name="hourglass" /> En préparation</span>}
                                 </td>
                                 <td style={{ padding: '0.45rem 0.5rem', whiteSpace: 'nowrap' }}>
                                   {/* Remise à la MSD : acte comptable — la
@@ -3270,7 +3271,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                     onClick={handleExportComptable}
                     title="Télécharge le bordereau comptable CSV (MSD, dates, cartes, gain 350 F/carte)"
                   >
-                    💰 Exporter le bordereau comptable (CSV)
+                    <ProIcon name="wallet" /> Exporter le bordereau comptable (CSV)
                   </button>
                 </div>
               )}
@@ -3288,11 +3289,11 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                 disabled={memberOptions.length === 0 || deleteBusy}
                 title="Supprime toutes les fiches affichées (registre local ET base) afin de pouvoir réimporter le fichier avec les matricules officiels"
               >
-                🧹 Vider {lotFilter === 'ALL' ? 'tout le registre' : lotLabel(lotFilter)} ({memberOptions.length})
+                <ProIcon name="trash" /> Vider {lotFilter === 'ALL' ? 'tout le registre' : lotLabel(lotFilter)} ({memberOptions.length})
               </button>
               {lotFilter === 'ALL' && memberOptions.length > 0 && (
                 <small className="d-block mt-1" style={{ fontSize: '0.72rem', color: '#b91c1c', fontWeight: '700' }}>
-                  ⚠️ Voulez-vous retirer les cartes DÉJÀ IMPRIMÉES ? Choisissez d’abord leur lot dans la liste ci-dessus.
+                  <ProIcon name="alert-triangle" color="#d97706" /> Voulez-vous retirer les cartes DÉJÀ IMPRIMÉES ? Choisissez d’abord leur lot dans la liste ci-dessus.
                 </small>
               )}
 
@@ -3320,7 +3321,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                 disabled={memberOptions.length === 0 || sponsorLogoBusy}
                 title="Applique le logo en filigrane sur toutes les cartes du lot affiché"
               >
-                🏷️ Appliquer un logo à {lotFilter === 'ALL' ? 'tout le registre' : `le lot ${lotFilter}`} ({memberOptions.length})
+                <ProIcon name="package" /> Appliquer un logo à {lotFilter === 'ALL' ? 'tout le registre' : `le lot ${lotFilter}`} ({memberOptions.length})
               </button>
 
               {/* Bouton miroir : annule le logo du lot. Indispensable quand le
@@ -3337,13 +3338,13 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                 disabled={memberOptions.length === 0 || sponsorLogoBusy}
                 title="Retire le logo appliqué à ce lot et restaure les cartes d'origine"
               >
-                🗑️ Retirer le logo de {lotFilter === 'ALL' ? 'tout le registre' : `ce lot`}
+                <ProIcon name="trash" /> Retirer le logo de {lotFilter === 'ALL' ? 'tout le registre' : `ce lot`}
               </button>
             </div>
 
             <div className="studio-form-group mb-4">
               <label className="form-label text-sub fw-extrabold" style={{ fontSize: '0.9rem' }}>
-                🏛️ Sélectionner l'adhérent MSD Dakar ({selectableMembers.length} dossier(s){lotFilter === 'ALL' ? '' : ` du lot ${lotFilter}`}) :
+                <ProIcon name="landmark" /> Sélectionner l'adhérent MSD Dakar ({selectableMembers.length} dossier(s){lotFilter === 'ALL' ? '' : ` du lot ${lotFilter}`}) :
               </label>
               <select
                 className="form-select py-3 px-3.5 fw-extrabold"
@@ -3387,7 +3388,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   />
                   <div className="d-flex flex-wrap gap-2 mb-2">
                     <button type="button" className="btn btn-sm fw-bold" onClick={() => setCheckedIds(new Set(multiFiltered.map(m => m.id)))}>
-                      ✅ Tout cocher ({multiFiltered.length})
+                      <ProIcon name="check-circle" color="#059669" /> Tout cocher ({multiFiltered.length})
                     </button>
                     <button type="button" className="btn btn-sm fw-bold" onClick={() => setCheckedIds(new Set())}>
                       ⬜ Tout décocher
@@ -3427,7 +3428,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                       title="Rattache la sélection à un lot de campagne puis la recode au format REGION-MSD-ANNEE-SEQUENCE"
                       onClick={() => handleAssignLotAndRecode(members.filter(m => checkedIds.has(m.id)))}
                     >
-                      🔢 Attribuer un lot + recoder ({checkedIds.size})
+                      <ProIcon name="list-checks" /> Attribuer un lot + recoder ({checkedIds.size})
                     </button>
                     <button
                       type="button"
@@ -3436,7 +3437,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                       disabled={checkedIds.size === 0 || deleteBusy}
                       onClick={() => setDeleteTargets(members.filter(m => checkedIds.has(m.id)))}
                     >
-                      🗑️ Supprimer la sélection ({checkedIds.size})
+                      <ProIcon name="trash" /> Supprimer la sélection ({checkedIds.size})
                     </button>
                   </div>
                 </div>
@@ -3446,7 +3447,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
             {/* Cible du QR Code pour test scan mobile Wi-Fi */}
             <div className="p-4 rounded-4" style={{ background: 'var(--bg-card-subtle)', border: '1.5px solid var(--border-color)', borderRadius: '20px' }}>
               <label className="form-label text-sub fw-extrabold mb-3.5 d-block" style={{ fontSize: '0.88rem' }}>
-                📡 Mode de destination du QR code :
+                <ProIcon name="radio" /> Mode de destination du QR code :
               </label>
 
               <div className="d-flex flex-wrap gap-3.5 mb-4">
@@ -3463,7 +3464,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   }}
                   onClick={() => setQrTargetMode('HTTPS')}
                 >
-                  🌐 URL web (https://senmutuelles.sn)
+                  <ProIcon name="globe" /> URL web (https://senmutuelles.sn)
                 </button>
 
                 <button
@@ -3495,14 +3496,14 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   }}
                   onClick={() => setQrTargetMode('RAW_CODE')}
                 >
-                  📋 Code brut ({cardData.cmuNumber})
+                  <ProIcon name="clipboard-list" /> Code brut ({cardData.cmuNumber})
                 </button>
               </div>
 
               {qrTargetMode === 'HTTPS' && (
                 <div className="mt-3.5 pt-1">
                   <label className="form-label text-sub fw-bold mb-2.5 d-block" style={{ fontSize: '0.82rem' }}>
-                    🌐 URL Publique / Tunnel / En Ligne (Accessible depuis TOUT Wi-Fi & 4G/5G) :
+                    <ProIcon name="globe" /> URL Publique / Tunnel / En Ligne (Accessible depuis TOUT Wi-Fi & 4G/5G) :
                   </label>
                   <div className="d-flex gap-2.5 mb-2 flex-wrap">
                     <input
@@ -3518,7 +3519,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                     />
                   </div>
                   <small className="text-muted d-block mt-1" style={{ fontSize: '0.76rem' }}>
-                    🚀 <strong>Accès Universel</strong> : Ce mode encode une URL accessible depuis <strong>n'importe quel smartphone, sur n'importe quel réseau Wi-Fi ou connexion mobile 4G/5G</strong> dans le monde !
+                    <ProIcon name="rocket" /> <strong>Accès Universel</strong> : Ce mode encode une URL accessible depuis <strong>n'importe quel smartphone, sur n'importe quel réseau Wi-Fi ou connexion mobile 4G/5G</strong> dans le monde !
                   </small>
                 </div>
               )}
@@ -3556,7 +3557,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                         });
                       }}
                     >
-                      ⚡ Actualiser IP
+                      <ProIcon name="zap" /> Actualiser IP
                     </button>
                   </div>
                   <small className="text-muted d-block mt-1" style={{ fontSize: '0.76rem' }}>
@@ -3570,9 +3571,9 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
               )}
 
               <div className="alert alert-warning p-3.5 mt-3.5 mb-0 rounded-4 border-0" style={{ fontSize: '0.82rem', background: 'rgba(245, 158, 11, 0.15)', color: '#d97706', lineHeight: '1.55' }}>
-                <strong>💡 Pour scanner sur Wi-Fi local :</strong>
+                <strong><ProIcon name="lightbulb" /> Pour scanner sur Wi-Fi local :</strong>
                 <div className="mt-1">
-                  Vérifiez que votre PC et votre smartphone sont sur le même réseau Wi-Fi avec l'IP <strong>{isValidLanIp(customWifiIp) ? customWifiIp : 'non détectée'}</strong>. Pour scanner depuis <strong>n'importe quel réseau Wi-Fi ou en 4G/5G</strong>, utilisez le mode <strong>🌐 URL web / Tunnel</strong> ci-dessus !
+                  Vérifiez que votre PC et votre smartphone sont sur le même réseau Wi-Fi avec l'IP <strong>{isValidLanIp(customWifiIp) ? customWifiIp : 'non détectée'}</strong>. Pour scanner depuis <strong>n'importe quel réseau Wi-Fi ou en 4G/5G</strong>, utilisez le mode <strong><ProIcon name="globe" /> URL web / Tunnel</strong> ci-dessus !
                 </div>
               </div>
             </div>
@@ -3583,7 +3584,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
         <div>
           <div className="card p-4 p-md-5 rounded-4 h-100 shadow-sm" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '28px' }}>
             <h5 className="fw-extrabold mb-3 text-emerald d-flex align-items-center gap-2.5" style={{ fontSize: '1.25rem' }}>
-              <span>🪪</span> 2. Sélectionner la carte individuelle à générer
+              <span><ProIcon name="id-card" /></span> 2. Sélectionner la carte individuelle à générer
             </h5>
             <p className="text-sub small mb-4" style={{ fontSize: '0.88rem' }}>
               Chaque adulte bénéficie d'une carte plastique CNI 85.6mm × 53.98mm avec photo et QR code individuel :
@@ -3606,7 +3607,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                 onClick={() => setSelectedCardType('PRINCIPAL')}
               >
                 <div className="d-flex align-items-center gap-3">
-                  <span style={{ fontSize: '1.4rem' }}>🪪</span>
+                  <span style={{ fontSize: '1.4rem' }}><ProIcon name="id-card" /></span>
                   <div>
                     <div className="fw-black" style={{ fontSize: '1.02rem' }}>
                       Carte titulaire principal ({currentMember.firstName} {currentMember.lastName})
@@ -3639,7 +3640,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   onClick={() => setSelectedCardType(`MAJOR_${idx}`)}
                 >
                   <div className="d-flex align-items-center gap-3">
-                    <span style={{ fontSize: '1.4rem' }}>👤</span>
+                    <span style={{ fontSize: '1.4rem' }}><ProIcon name="user" /></span>
                     <div>
                       <div className="fw-black" style={{ fontSize: '1.02rem' }}>
                         Carte ayant droit majeur ({dep.name})
@@ -3666,7 +3667,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
           <div className="card p-4 p-md-5 rounded-4 h-100 shadow-sm" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '28px' }}>
             <div className="d-flex align-items-center justify-content-between mb-4">
               <h5 className="fw-extrabold mb-0 text-emerald d-flex align-items-center gap-2.5" style={{ fontSize: '1.2rem' }}>
-                <span>📸</span> Photo & identité de l'assuré
+                <span><ProIcon name="camera" /></span> Photo & identité de l'assuré
               </h5>
               <span className="badge bg-success-subtle text-success fw-bold px-3 py-1.5" style={{ fontSize: '0.82rem', borderRadius: '10px' }}>
                 Adulte adhérent
@@ -3684,7 +3685,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                 />
               ) : (
                 <div style={{ width: '76px', height: '76px', borderRadius: '50%', background: 'var(--bg-card-subtle)', border: '2px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.2rem', color: 'var(--text-sub)', flexShrink: 0 }}>
-                  👤
+                  <ProIcon name="user" />
                 </div>
               )}
               <div className="flex-grow-1">
@@ -3693,7 +3694,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                 </label>
                 <div className="d-flex gap-3 align-items-center flex-wrap">
                   <label className="btn text-white fw-extrabold px-3.5 py-2.5 shadow-sm hover-lift" style={{ borderRadius: '14px', cursor: 'pointer', fontSize: '0.86rem', background: '#059669', border: '1.5px solid #10b981', minHeight: '46px', display: 'inline-flex', alignItems: 'center' }}>
-                    📁 Importer une photo...
+                    <ProIcon name="folder" /> Importer une photo...
                     <input
                       type="file"
                       accept="image/*"
@@ -3777,7 +3778,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
         <div>
           <div className="card p-4 p-md-5 rounded-4 h-100 shadow-sm" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '28px' }}>
             <h5 className="fw-extrabold mb-4 text-emerald d-flex align-items-center gap-2.5" style={{ fontSize: '1.2rem' }}>
-              <span>🏥</span> Couverture & paramètres santé
+              <span><ProIcon name="hospital" /></span> Couverture & paramètres santé
             </h5>
 
             <div className="studio-form-grid-2">
@@ -3805,7 +3806,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
               </div>
 
               <div className="studio-form-group">
-                <label>🩸 Groupe sanguin :</label>
+                <label><ProIcon name="droplet" color="#dc2626" /> Groupe sanguin :</label>
                 <select
                   className="form-select fw-bold"
                   value={editForm.bloodGroup || ''}
@@ -3851,11 +3852,11 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
       {/* 2.b PROGRAMME DE CARTE ET DONNÉES SCOLAIRES */}
       <div className="card p-4 p-md-5 rounded-4 mb-5 shadow-sm" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '28px' }}>
         <div className="mb-4">
-          <h5 className="fw-extrabold mb-1 text-emerald d-flex align-items-center gap-2.5" style={{ fontSize: '1.3rem' }}><span>🪪</span> Type et données de la carte</h5>
+          <h5 className="fw-extrabold mb-1 text-emerald d-flex align-items-center gap-2.5" style={{ fontSize: '1.3rem' }}><span><ProIcon name="id-card" /></span> Type et données de la carte</h5>
           <p className="text-sub small mb-0">Choisissez le gabarit à générer. Les données annuelles sont sauvegardées pour cette carte et encodées dans le QR code.</p>
         </div>
         <div className="d-flex flex-wrap gap-3 mb-4">
-          {Object.entries(CARD_PROGRAMS).map(([key, program]) => <button key={key} type="button" className="btn fw-extrabold px-4 py-3" onClick={() => updateCardProgram(key)} style={{ borderRadius: '14px', background: cardProgram === key ? program.accent : 'var(--bg-card-subtle)', color: cardProgram === key ? '#fff' : 'var(--text-main)', border: `2px solid ${cardProgram === key ? program.accent : 'var(--border-color)'}` }}>{key === 'CLASSIC' ? '🩺' : key === 'CMU_ELEVES' ? '🎓' : '📖'} {program.label}</button>)}
+          {Object.entries(CARD_PROGRAMS).map(([key, program]) => <button key={key} type="button" className="btn fw-extrabold px-4 py-3" onClick={() => updateCardProgram(key)} style={{ borderRadius: '14px', background: cardProgram === key ? program.accent : 'var(--bg-card-subtle)', color: cardProgram === key ? '#fff' : 'var(--text-main)', border: `2px solid ${cardProgram === key ? program.accent : 'var(--border-color)'}` }}>{key === 'CLASSIC' ? '🩺' : key === 'CMU_ELEVES' ? <ProIcon name="graduation-cap" /> : <ProIcon name="book-open" />} {program.label}</button>)}
         </div>
         {cardProgram !== 'CLASSIC' && <div className="studio-form-grid-3 mb-0">
           <div className="studio-form-group"><label>Année scolaire *</label><input className="form-control fw-bold" value={academicData.academicYear} onChange={(e) => updateAcademicData({ academicYear: e.target.value })} placeholder="2026-2027" /></div>
@@ -3881,7 +3882,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
         <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
           <div>
             <h5 className="fw-extrabold mb-1 text-emerald d-flex align-items-center gap-2.5" style={{ fontSize: '1.3rem' }}>
-              <span>🎨</span> Personnalisation complète de la carte
+              <span><ProIcon name="palette" /></span> Personnalisation complète de la carte
             </h5>
             <p className="text-sub small mb-0" style={{ fontSize: '0.86rem' }}>
               Personnalisez le logo en filigrane, les couleurs et les contours de la carte <strong className="font-monospace">{cardCmuNumber}</strong>.
@@ -3977,7 +3978,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                     else if (cardLogo) { setCardLogo(cardCmuNumber, null); setCardLogoState(null); setSponsorNotice({ type: 'success', text: 'Logo personnalisé retiré de cette carte.' }); }
                   }}
                 >
-                  🗑️ Retirer le logo
+                  <ProIcon name="trash" /> Retirer le logo
                 </button>
               </div>
             </div>
@@ -3987,7 +3988,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                 : 'Sélectionnez un parrain ci-dessus pour que son logo se réplique automatiquement sur toutes ses cartes.'}
             </small>
             <small className="text-muted d-block mt-1" style={{ fontSize: '0.76rem' }}>
-              💾 Toute taille de fichier est acceptée : le logo est automatiquement réduit à {LOGO_MAX_DIMENSION} px et compressé avant enregistrement, afin de ne pas alourdir la base. Le message de confirmation indique le poids final.
+              <ProIcon name="save" /> Toute taille de fichier est acceptée : le logo est automatiquement réduit à {LOGO_MAX_DIMENSION} px et compressé avant enregistrement, afin de ne pas alourdir la base. Le message de confirmation indique le poids final.
             </small>
             <small className="text-muted d-block mt-1" style={{ fontSize: '0.76rem' }}>
               Le logo est enregistré dans la base (colonne <code>beneficiaries.sponsor_logo</code>) et mis en cache localement : il reste disponible même sans connexion.
@@ -4015,7 +4016,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
         <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
           <div>
             <h5 className="fw-extrabold mb-1 text-emerald d-flex align-items-center gap-2.5" style={{ fontSize: '1.3rem' }}>
-              <span>👶</span> 3. Enfants mineurs à charge (&lt; 18 ans)
+              <span><ProIcon name="baby" /></span> 3. Enfants mineurs à charge (&lt; 18 ans)
             </h5>
             <p className="text-sub small mb-0" style={{ fontSize: '0.86rem' }}>
               Rattachés directement au garant avec photo propre, carnet vaccinal PEV et antécédents médicaux enregistrés :
@@ -4028,7 +4029,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
             style={{ borderRadius: '16px', fontSize: '0.92rem', background: '#059669', border: '1.5px solid #10b981' }}
             onClick={handleAddMinorChild}
           >
-            <span>➕</span> Ajouter un enfant mineur
+            <span><ProIcon name="plus" /></span> Ajouter un enfant mineur
           </button>
         </div>
 
@@ -4054,7 +4055,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                     style={{ fontSize: '0.84rem', borderRadius: '12px', background: '#991b1b', color: '#ffffff', border: '1px solid #ef4444' }}
                     onClick={() => handleRemoveChild(cIdx)}
                   >
-                    🗑️ Supprimer cet enfant
+                    <ProIcon name="trash" /> Supprimer cet enfant
                   </button>
                 </div>
 
@@ -4072,7 +4073,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                     </label>
                     <div className="d-flex gap-3 align-items-center flex-wrap">
                       <label className="btn text-white fw-extrabold px-3.5 py-2 shadow-sm hover-lift" style={{ borderRadius: '12px', cursor: 'pointer', fontSize: '0.84rem', background: '#059669', border: '1.5px solid #10b981', minHeight: '44px', display: 'inline-flex', alignItems: 'center' }}>
-                        📸 Importer une photo enfant...
+                        <ProIcon name="camera" /> Importer une photo enfant...
                         <input 
                           type="file" 
                           accept="image/*" 
@@ -4166,7 +4167,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
 
                   {/* Groupe Sanguin Selecteur Smart */}
                   <div className="studio-form-group">
-                    <label>🩸 Groupe sanguin :</label>
+                    <label><ProIcon name="droplet" color="#dc2626" /> Groupe sanguin :</label>
                     <select 
                       className="form-select fw-bold"
                       value={child.bloodGroup || ''}
@@ -4186,7 +4187,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
 
                   {/* Allergies & Intolérances */}
                   <div className="studio-form-group">
-                    <label>⚠️ Allergies :</label>
+                    <label><ProIcon name="alert-triangle" color="#d97706" /> Allergies :</label>
                     <input 
                       type="text" 
                       className="form-control fw-bold" 
@@ -4198,7 +4199,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
 
                   {/* Statut Vaccinal PEV */}
                   <div className="studio-form-group">
-                    <label>💉 PEV / carnet vaccinal :</label>
+                    <label><ProIcon name="syringe" /> PEV / carnet vaccinal :</label>
                     <input 
                       type="text" 
                       className="form-control fw-bold" 
@@ -4212,7 +4213,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                 {/* Ligne 4 : Antécédents Médicaux & Suivi Pédiatrique + 3 Raccourcis ultra-aérés */}
                 <div className="studio-form-group mt-2">
                   <label>
-                    <span>🏥 Antécédents médicaux & suivi pédiatrique :</span>
+                    <span><ProIcon name="hospital" /> Antécédents médicaux & suivi pédiatrique :</span>
                     <span className="text-emerald fw-bold" style={{ fontSize: '0.82rem' }}>Saisie libre ou pré-remplie</span>
                   </label>
                   <textarea 
@@ -4231,7 +4232,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                       style={{ borderRadius: '14px', fontSize: '0.86rem', background: 'rgba(16,185,129,0.12)', minHeight: '46px' }}
                       onClick={() => handleUpdateChildField(cIdx, 'antecedents', 'Développement et courbe de croissance normaux. Aucun traitement en cours.')}
                     >
-                      ✅ Normal / 100% sain
+                      <ProIcon name="check-circle" color="#059669" /> Normal / 100% sain
                     </button>
                     <button 
                       type="button" 
@@ -4239,7 +4240,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                       style={{ borderRadius: '14px', fontSize: '0.86rem', background: 'rgba(245,158,11,0.12)', minHeight: '46px' }}
                       onClick={() => handleUpdateChildField(cIdx, 'antecedents', 'Asthme saisonnier léger (traitement inhalé ponctuel).')}
                     >
-                      🫁 Asthme saisonnier
+                      <ProIcon name="activity" /> Asthme saisonnier
                     </button>
                     <button 
                       type="button" 
@@ -4247,7 +4248,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                       style={{ borderRadius: '14px', fontSize: '0.86rem', background: 'rgba(2,132,199,0.12)', minHeight: '46px' }}
                       onClick={() => handleUpdateChildField(cIdx, 'antecedents', 'Suivi pédiatrique annuel régulier. Carnet PEV à jour.')}
                     >
-                      👶 Suivi annuel PEV
+                      <ProIcon name="baby" /> Suivi annuel PEV
                     </button>
                   </div>
                 </div>
@@ -4256,7 +4257,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
           </div>
         ) : (
           <div className="p-4 p-md-5 rounded-4 border text-muted text-center" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)', fontSize: '0.9rem', borderRadius: '20px' }}>
-            ℹ️ Aucun enfant mineur rattaché à cet adhérent principal. Cliquez sur <strong>"➕ Ajouter un enfant mineur"</strong> ci-dessus pour rattacher un enfant.
+            <ProIcon name="info" color="#0284c7" /> Aucun enfant mineur rattaché à cet adhérent principal. Cliquez sur <strong>"<ProIcon name="plus" /> Ajouter un enfant mineur"</strong> ci-dessus pour rattacher un enfant.
           </div>
         )}
       </div>
@@ -4288,7 +4289,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
               disabled={isGeneratingPdf}
               title="Télécharger les fichiers PNG 600 DPI pour le bac d'impression PVC Epson L8050"
             >
-              🖼️ PNG Recto/Verso (600 DPI)
+              <ProIcon name="image" /> PNG Recto/Verso (600 DPI)
             </button>
 
             {/* Télécharger PDF 2 Pages */}
@@ -4320,7 +4321,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
           {/* RECTO (PAGE 1 DU PDF) — PHOTO À DROITE, ÉPURÉ SANS AUCUN TRAIT NI ENCADRÉ PARASITE */}
           <div className="d-flex flex-column align-items-center w-100">
             <div className="d-flex align-items-center justify-content-between w-100 mb-3 px-2 flex-wrap gap-2" style={{ maxWidth: '520px' }}>
-              <h6 className="fw-extrabold text-sub mb-0" style={{ fontSize: '0.95rem' }}>📄 Recto (page 1 du PDF / Face PVC)</h6>
+              <h6 className="fw-extrabold text-sub mb-0" style={{ fontSize: '0.95rem' }}><ProIcon name="file-text" /> Recto (page 1 du PDF / Face PVC)</h6>
               <div className="d-flex gap-2">
                 <button
                   type="button"
@@ -4330,7 +4331,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   disabled={isGeneratingPdf}
                   title="Télécharger le Recto en PNG Ultra HD 600 DPI"
                 >
-                  🖼️ PNG Recto (600 DPI)
+                  <ProIcon name="image" /> PNG Recto (600 DPI)
                 </button>
                 <button
                   type="button"
@@ -4340,7 +4341,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   disabled={isGeneratingPdf}
                   title="Télécharger le Recto seul en PDF 1 page CNI"
                 >
-                  📄 PDF Recto
+                  <ProIcon name="file-text" /> PDF Recto
                 </button>
               </div>
             </div>
@@ -4479,7 +4480,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
 
                   {/* Date & Lieu de Naissance */}
                   <div style={{ marginBottom: '4px' }}>
-                    <span style={{ fontSize: '0.48rem', color: '#047857', fontWeight: '900', display: 'block', textTransform: 'uppercase', lineHeight: 1 }}>📅 Né(e) le & Lieu de naissance</span>
+                    <span style={{ fontSize: '0.48rem', color: '#047857', fontWeight: '900', display: 'block', textTransform: 'uppercase', lineHeight: 1 }}><ProIcon name="calendar" /> Né(e) le & Lieu de naissance</span>
                     <strong style={{ fontSize: '0.80rem', fontWeight: '900', color: '#064e3b', lineHeight: 1.15, display: 'block', marginTop: '1px' }}>
                       {cardData.birthDate} {cardData.birthPlace ? `à ${cardData.birthPlace}` : ''}
                     </strong>
@@ -4532,7 +4533,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                       />
                     ) : (
                       <div style={{ width: '100%', height: '100%', background: 'linear-gradient(145deg, #f8fafc 0%, #e2e8f0 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#475569', textAlign: 'center', padding: '4px' }}>
-                        <span style={{ fontSize: '2.4rem', lineHeight: 1, marginBottom: '4px' }}>👤</span>
+                        <span style={{ fontSize: '2.4rem', lineHeight: 1, marginBottom: '4px' }}><ProIcon name="user" /></span>
                         <span style={{ fontSize: '0.45rem', fontWeight: '800', textTransform: 'uppercase', color: '#0f172a', letterSpacing: '0.02em' }}>PHOTO EN ATTENTE</span>
                         <span style={{ fontSize: '0.38rem', fontWeight: '700', color: '#059669', marginTop: '2px' }}>UNAMUSC SÉNÉGAL</span>
                       </div>
@@ -4561,7 +4562,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
           {/* VERSO (PAGE 2 DU PDF) — DESIGN ÉPURÉ LISSE SANS ROCNAGE NI DÉBORDEMENT */}
           <div className="d-flex flex-column align-items-center w-100">
             <div className="d-flex align-items-center justify-content-between w-100 mb-3 px-2 flex-wrap gap-2" style={{ maxWidth: '520px' }}>
-              <h6 className="fw-extrabold text-sub mb-0" style={{ fontSize: '0.95rem' }}>📄 Verso (page 2 du PDF / Face PVC)</h6>
+              <h6 className="fw-extrabold text-sub mb-0" style={{ fontSize: '0.95rem' }}><ProIcon name="file-text" /> Verso (page 2 du PDF / Face PVC)</h6>
               <div className="d-flex gap-2">
                 <button
                   type="button"
@@ -4571,7 +4572,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   disabled={isGeneratingPdf}
                   title="Télécharger le Verso en PNG Ultra HD 600 DPI"
                 >
-                  🖼️ PNG Verso (600 DPI)
+                  <ProIcon name="image" /> PNG Verso (600 DPI)
                 </button>
                 <button
                   type="button"
@@ -4581,7 +4582,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   disabled={isGeneratingPdf}
                   title="Télécharger le Verso seul en PDF 1 page CNI"
                 >
-                  📄 PDF Verso
+                  <ProIcon name="file-text" /> PDF Verso
                 </button>
               </div>
             </div>
@@ -4671,7 +4672,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                   
                   {/* Titre du Coupon de Garantie */}
                   <div style={{ fontSize: '0.54rem', color: '#047857', fontWeight: '900', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '2px' }}>
-                    <span>📜</span> COUPON DE GARANTIE
+                    <span><ProIcon name="scroll-text" /></span> COUPON DE GARANTIE
                   </div>
 
                   {/* Texte Officiel Dynamique (Ajusté au nombre d'ayants droit à charge) */}
@@ -4707,7 +4708,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                       
                       {/* Badge Ayants Droit Mineurs */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '3px', background: '#ffffff', padding: '1px 6px', borderRadius: '5px', border: '1px solid #bbf7d0', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', whiteSpace: 'nowrap' }}>
-                        <span style={{ fontSize: '0.48rem' }}>👶</span>
+                        <span style={{ fontSize: '0.48rem' }}><ProIcon name="baby" /></span>
                         <span style={{ fontSize: '0.44rem', color: '#047857', fontWeight: '800' }}>
                           Ayants droit mineurs :
                         </span>
@@ -4719,7 +4720,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                       {/* Badge Samu Urgence */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '3px', background: '#ffffff', padding: '1px 6px', borderRadius: '5px', border: '1px solid #fecaca', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', whiteSpace: 'nowrap' }}>
                         <span style={{ fontSize: '0.44rem', color: '#334155', fontWeight: '800' }}>
-                          🚑 Samu :
+                          <ProIcon name="siren" color="#dc2626" /> Samu :
                         </span>
                         <strong style={{ fontSize: '0.44rem', color: '#dc2626', fontWeight: '900', background: '#fef2f2', padding: '1px 4px', borderRadius: '3px', border: '1px solid #fecaca' }}>
                           15
@@ -4731,7 +4732,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
                     {/* Ligne 2 : Contact Mutuelle (3 Hotlines : 76 845 54 99 • 77 742 90 73 • 33 820 21 11) */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#ffffff', padding: '2px 6px', borderRadius: '5px', border: '1px solid #bbf7d0', width: '100%', boxSizing: 'border-box' }}>
                       <span style={{ fontSize: '0.44rem', color: '#047857', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '2px', whiteSpace: 'nowrap' }}>
-                        📞 Mutuelle :
+                        <ProIcon name="phone" /> Mutuelle :
                       </span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '3px', whiteSpace: 'nowrap' }}>
                         <strong style={{ fontSize: '0.43rem', color: '#047857', fontWeight: '900', background: '#ecfdf5', padding: '1px 4px', borderRadius: '3px', border: '1px solid #a7f3d0', fontFamily: 'monospace, sans-serif' }}>
@@ -4804,7 +4805,7 @@ const safeProgram = CARD_PROGRAMS[nextProgram] ? nextProgram : 'CLASSIC';
               <div className="modal-content" style={{ background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '20px', border: '1px solid var(--border-color)' }}>
                 <div className="modal-header border-bottom" style={{ borderColor: 'var(--border-color)' }}>
                   <h5 className="modal-title fw-extrabold text-success d-flex align-items-center gap-2">
-                    <span>🔍</span> Inspection des données du QR code (format Mon compte scannable)
+                    <span><ProIcon name="search" /></span> Inspection des données du QR code (format Mon compte scannable)
                   </h5>
                   <button type="button" className="btn-close" onClick={() => setShowQrInspector(false)}></button>
                 </div>

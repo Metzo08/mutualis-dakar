@@ -12,6 +12,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { apiFetch } from '../../utils/api';
 import LotsTable from './LotsTable';
 import ProductionPanel from './ProductionPanel';
+import ProIcon from '../../components/ProIcon';
 
 const PRIX_CARTE_FCFA = 350;
 
@@ -71,7 +72,7 @@ function RegionCard({ region, onSelect }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
         <div>
           <div style={{ fontWeight: 900, fontSize: '1.05rem', color: 'var(--text-main, #0f172a)' }}>
-            🗺️ {region.name}
+            <ProIcon name="map" /> {region.name}
           </div>
           <div style={{ fontSize: '0.72rem', color: 'var(--text-sub, #64748b)', marginTop: '0.15rem' }}>
             {region.departmentCount} département{region.departmentCount > 1 ? 's' : ''} · {region.msdCount} MSD
@@ -215,20 +216,20 @@ export default function StudioOverview({ onSelectRegion }) {
 
   if (loading) return (
     <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-sub, #64748b)' }}>
-      <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>⏳</div>
+      <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}><ProIcon name="hourglass" /></div>
       <div>Chargement du tableau de bord…</div>
     </div>
   );
 
   if (error) return (
     <div style={{ background: '#fef2f2', border: '1px solid #fca5a5', borderRadius: '12px', padding: '1.5rem', margin: '1rem 0' }}>
-      <div style={{ fontWeight: 800, color: '#dc2626', marginBottom: '0.5rem' }}>❌ Données non disponibles</div>
+      <div style={{ fontWeight: 800, color: '#dc2626', marginBottom: '0.5rem' }}><ProIcon name="x-circle" color="#dc2626" /> Données non disponibles</div>
       <div style={{ fontSize: '0.85rem', color: '#7f1d1d' }}>{error}</div>
       <button
         onClick={load}
         style={{ marginTop: '0.75rem', background: '#dc2626', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.4rem 1rem', fontWeight: 700, cursor: 'pointer' }}
       >
-        🔄 Réessayer
+        <ProIcon name="refresh" /> Réessayer
       </button>
     </div>
   );
@@ -241,7 +242,7 @@ export default function StudioOverview({ onSelectRegion }) {
       {/* En-tête */}
       <div style={{ marginBottom: '1.5rem' }}>
         <h2 style={{ margin: 0, fontWeight: 900, fontSize: '1.35rem', color: 'var(--text-main, #0f172a)' }}>
-          📊 Vue générale — Studio Cartes
+          <ProIcon name="bar-chart" /> Vue générale — Studio Cartes
         </h2>
         <p style={{ margin: '0.3rem 0 0', fontSize: '0.85rem', color: 'var(--text-sub, #64748b)' }}>
           Production des cartes CSU sur l'ensemble des régions · Tarif unitaire : {PRIX_CARTE_FCFA} FCFA/carte imprimée
@@ -273,7 +274,7 @@ export default function StudioOverview({ onSelectRegion }) {
           alignItems: 'center',
           gap: '0.75rem'
         }}>
-          <span style={{ fontSize: '1.3rem' }}>⚠️</span>
+          <span style={{ fontSize: '1.3rem' }}><ProIcon name="alert-triangle" color="#d97706" /></span>
           <div>
             <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#92400e' }}>
               {(g.beneficiaryCount - g.conformCount).toLocaleString('fr-FR')} dossier(s) nécessitent une correction
@@ -308,16 +309,16 @@ export default function StudioOverview({ onSelectRegion }) {
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
             <h4 style={{ margin: 0, fontWeight: 900, fontSize: '1.05rem', color: '#065f46' }}>
-              🗺️ {regionDetail.region || regionDetail.name}
+              <ProIcon name="map" /> {regionDetail.region || regionDetail.name}
             </h4>
             <button
               type="button"
               onClick={() => setRegionDetail(null)}
               style={{ background: 'transparent', border: 'none', color: '#065f46', fontWeight: 700, cursor: 'pointer', fontSize: '0.82rem' }}
-            >✖ Fermer le détail</button>
+            ><ProIcon name="x" /> Fermer le détail</button>
           </div>
           {regionDetail.error ? (
-            <div style={{ fontSize: '0.82rem', color: '#991b1b', marginTop: '0.5rem' }}>❌ {regionDetail.error}</div>
+            <div style={{ fontSize: '0.82rem', color: '#991b1b', marginTop: '0.5rem' }}><ProIcon name="x-circle" color="#dc2626" /> {regionDetail.error}</div>
           ) : (
             <>
               <div style={{ fontSize: '0.8rem', color: '#047857', margin: '0.35rem 0 0.75rem' }}>
@@ -330,7 +331,7 @@ export default function StudioOverview({ onSelectRegion }) {
                        style={{
                     background: '#fff', border: '1px solid #d1fae5', borderRadius: '10px', padding: '0.65rem 0.8rem', cursor: 'pointer'
                   }}>
-                    <div style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--text-main, #0f172a)' }}>🏛️ {d.name}</div>
+                    <div style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--text-main, #0f172a)' }}><ProIcon name="landmark" /> {d.name}</div>
                     <div style={{ fontSize: '0.72rem', color: 'var(--text-sub, #64748b)', marginTop: '0.2rem' }}>
                       {d.msdCount} MSD · {d.beneficiaryCount} adhérent(s)
                     </div>
@@ -357,16 +358,16 @@ export default function StudioOverview({ onSelectRegion }) {
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
             <h4 style={{ margin: 0, fontWeight: 900, fontSize: '1.05rem', color: '#1e40af' }}>
-              🏛️ {deptDetail.department || deptDetail.name}
+              <ProIcon name="landmark" /> {deptDetail.department || deptDetail.name}
             </h4>
             <button
               type="button"
               onClick={() => setDeptDetail(null)}
               style={{ background: 'transparent', border: 'none', color: '#1e40af', fontWeight: 700, cursor: 'pointer', fontSize: '0.82rem' }}
-            >✖ Fermer le détail</button>
+            ><ProIcon name="x" /> Fermer le détail</button>
           </div>
           {deptDetail.error ? (
-            <div style={{ fontSize: '0.82rem', color: '#991b1b', marginTop: '0.5rem' }}>❌ {deptDetail.error}</div>
+            <div style={{ fontSize: '0.82rem', color: '#991b1b', marginTop: '0.5rem' }}><ProIcon name="x-circle" color="#dc2626" /> {deptDetail.error}</div>
           ) : (
             <>
               <div style={{ fontSize: '0.8rem', color: '#1d4ed8', margin: '0.35rem 0 0.75rem' }}>
@@ -380,7 +381,7 @@ export default function StudioOverview({ onSelectRegion }) {
                     <div key={m.name} style={{
                       background: '#fff', border: '1px solid #bfdbfe', borderRadius: '10px', padding: '0.65rem 0.8rem'
                     }}>
-                      <div style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--text-main, #0f172a)' }}>🏥 {m.name}</div>
+                      <div style={{ fontWeight: 800, fontSize: '0.9rem', color: 'var(--text-main, #0f172a)' }}><ProIcon name="hospital" /> {m.name}</div>
                       <div style={{ fontSize: '0.72rem', color: 'var(--text-sub, #64748b)', marginTop: '0.2rem' }}>
                         {m.commune} · {m.status || 'statut inconnu'}
                       </div>
@@ -398,7 +399,7 @@ export default function StudioOverview({ onSelectRegion }) {
 
       {regions.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-sub, #94a3b8)', background: 'var(--bg-subtle, #f8fafc)', borderRadius: '12px' }}>
-          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🗺️</div>
+          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}><ProIcon name="map" /></div>
           <div style={{ fontWeight: 600 }}>Aucune région configurée</div>
           <div style={{ fontSize: '0.8rem', marginTop: '0.3rem' }}>Importez des données via le module d'importation.</div>
         </div>
@@ -446,13 +447,13 @@ export default function StudioOverview({ onSelectRegion }) {
             onClick={() => loadLots(1)}
             style={{ background: '#059669', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.4rem 1rem', fontWeight: 700, cursor: 'pointer', fontSize: '0.82rem' }}
           >
-            🔍 Rechercher
+            <ProIcon name="search" /> Rechercher
           </button>
         </div>
       </div>
 
       {lotsLoading && (
-        <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-sub, #64748b)' }}>⏳ Recherche en cours…</div>
+        <div style={{ textAlign: 'center', padding: '1rem', color: 'var(--text-sub, #64748b)' }}><ProIcon name="hourglass" /> Recherche en cours…</div>
       )}
       {lotsData && !lotsLoading && !lotsData.error && (lotsData.data || []).length === 0 && lotsData.pagination && (
         <div style={{ fontSize: '0.82rem', color: '#64748b', marginBottom: '1rem' }}>Aucune adhésion ne correspond à la recherche.</div>
@@ -479,7 +480,7 @@ export default function StudioOverview({ onSelectRegion }) {
         alignItems: 'flex-start',
         gap: '0.5rem'
       }}>
-        <span>ℹ️</span>
+        <span><ProIcon name="info" color="#0284c7" /></span>
         <div>
           <strong>Règle financière</strong> : Sen-E-Carte perçoit <strong>{PRIX_CARTE_FCFA} FCFA</strong> par carte dont l'impression est effectivement enregistrée
           (production initiale, réimpression ou remplacement — destruction exclue).

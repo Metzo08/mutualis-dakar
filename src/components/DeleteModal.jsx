@@ -1,4 +1,5 @@
 import { createPortal } from 'react-dom';
+import ProIcon from './ProIcon';
 
 /**
  * Modale universelle de confirmation de suppression ultra-moderne (Design Émeraude & Crimson Red Glassmorphism).
@@ -77,7 +78,7 @@ export default function DeleteModal({
           border: '2px solid rgba(239, 68, 68, 0.4)',
           boxShadow: '0 0 25px rgba(239, 68, 68, 0.35)'
         }}>
-          🗑️
+          <ProIcon name="trash" />
         </div>
 
         <h4 style={{ color: '#ffffff', fontWeight: '850', fontSize: '1.4rem', marginBottom: '0.4rem', letterSpacing: '-0.02em' }}>
@@ -117,7 +118,7 @@ export default function DeleteModal({
           textAlign: 'left',
           lineHeight: '1.45'
         }}>
-          ⚠️ <strong>Attention :</strong> Cette action est irréversible et sera immédiatement journalisée dans le registre national de sécurité et d'audit UNAMUSC.
+          <ProIcon name="alert-triangle" color="#d97706" /> <strong>Attention :</strong> Cette action est irréversible et sera immédiatement journalisée dans le registre national de sécurité et d'audit UNAMUSC.
         </div>
 
         {/* Boutons d'action */}
@@ -159,7 +160,7 @@ export default function DeleteModal({
               boxShadow: '0 6px 20px rgba(220, 38, 38, 0.4)'
             }}
           >
-            🗑️ Confirmer la suppression
+            <ProIcon name="trash" /> Confirmer la suppression
           </button>
         </div>
       </div>

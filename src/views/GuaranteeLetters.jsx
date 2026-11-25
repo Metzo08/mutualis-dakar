@@ -4,6 +4,7 @@ import { generateOfficialPdf } from '../utils/pdfGenerator';
 import { getBeneficiaryInfo } from '../utils/csuFormatter';
 import { detectMsdCode, getMsdWhatsappInfo, refreshMsdWhatsappDirectory, compressImageFile, getMsdWhatsappDirectory } from '../utils/msdWhatsappConfig';
 import { formatTitleCase, formatSentenceCase } from '../utils/formatters';
+import ProIcon from '../components/ProIcon';
 
 /**
  * Détermine le contexte temporel de délivrance d'une Lettre de Garantie :
@@ -655,7 +656,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
         </head>
         <body>
           <div class="no-print">
-            <button onclick="window.print()" class="btn btn-success fw-bold px-4 py-2 me-2" style="background: #059669; border-color: #059669;">🖨️ Imprimer / Télécharger le PDF A4</button>
+            <button onclick="window.print()" class="btn btn-success fw-bold px-4 py-2 me-2" style="background: #059669; border-color: #059669;"><ProIcon name="printer" /> Imprimer / Télécharger le PDF A4</button>
             <button onclick="window.close()" class="btn btn-secondary fw-bold px-3 py-2">Fermer la fenêtre</button>
           </div>
 
@@ -686,7 +687,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
             <!-- Grille des caractéristiques & prise en charge -->
             <div class="row g-4 mb-4 p-4 rounded-3" style="background: #f8fafc; border: 1.5px solid #cbd5e1;">
               <div class="col-6">
-                <span class="small fw-bold d-block mb-1 text-muted text-uppercase">👤 BÉNÉFICIAIRE ASSURÉ(E) :</span>
+                <span class="small fw-bold d-block mb-1 text-muted text-uppercase"><ProIcon name="user" /> BÉNÉFICIAIRE ASSURÉ(E) :</span>
                 <h5 class="fw-bold mb-1" style="color: #0f172a;">${letter.first_name} ${letter.last_name}</h5>
                 <div class="small mb-1" style="color: #334155;">
                   <strong>N° CSU Bénéficiaire :</strong> <span style="color: #047857; font-weight: bold; font-family: monospace;">${bInfo.beneficiaryCode}</span> <span class="badge bg-success-subtle text-success border border-success" style="font-size: 0.68rem;">${bInfo.index === 1 ? 'Titulaire .1' : 'Ayant droit .' + bInfo.index}</span>
@@ -698,18 +699,18 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               </div>
 
               <div class="col-6">
-                <span class="small fw-bold d-block mb-1 text-muted text-uppercase">🏥 STRUCTURE HOSPITALIÈRE D'ACCUEIL :</span>
+                <span class="small fw-bold d-block mb-1 text-muted text-uppercase"><ProIcon name="hospital" /> STRUCTURE HOSPITALIÈRE D'ACCUEIL :</span>
                 <h6 class="fw-bold mb-1" style="color: #047857; font-size: 1rem;">${letter.hospital_name || letter.medical_act}</h6>
                 <div class="small" style="color: #334155;">Conventionné Tiers-payant UNAMUSC (Validation 100% Humaine)</div>
               </div>
 
               <div class="col-6 border-top pt-3" style="border-color: #e2e8f0 !important;">
-                <span class="small fw-bold d-block mb-1 text-muted text-uppercase">📋 ACTE MÉDICAL : HOSPITALISATION PRESCRITE :</span>
+                <span class="small fw-bold d-block mb-1 text-muted text-uppercase"><ProIcon name="clipboard-list" /> ACTE MÉDICAL : HOSPITALISATION PRESCRITE :</span>
                 <strong class="d-block" style="color: #0f172a; font-size: 0.95rem;">${letter.medical_act}</strong>
               </div>
 
               <div class="col-6 border-top pt-3" style="border-color: #e2e8f0 !important;">
-                <span class="small fw-bold d-block mb-1 text-muted text-uppercase">💰 MONTANT ESTIMÉ & ACCORD DE PRISE EN CHARGE :</span>
+                <span class="small fw-bold d-block mb-1 text-muted text-uppercase"><ProIcon name="wallet" /> MONTANT ESTIMÉ & ACCORD DE PRISE EN CHARGE :</span>
                 <div class="small" style="color: #334155;">
                   Devis Soumis : <strong>${Number(letter.estimated_amount).toLocaleString()} FCFA</strong><br />
                   ${letter.is_sesame || letter.is_senior ? `
@@ -734,7 +735,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 </p>
                 ${letter.is_emergency_issuance ? `
                   <div class="mt-2 text-primary fw-bold" style="font-size: 0.76rem;">
-                    🚨 Délivrance d'Urgence Permanente : ${letter.emergency_period === 'weekend' ? 'Week-End (24h/24)' : 'Garde de Nuit (17h00 - 07h59)'} • Soins garantis 7j/7.
+                    <ProIcon name="siren" color="#dc2626" /> Délivrance d'Urgence Permanente : ${letter.emergency_period === 'weekend' ? 'Week-End (24h/24)' : 'Garde de Nuit (17h00 - 07h59)'} • Soins garantis 7j/7.
                   </div>
                 ` : ''}
               </div>
@@ -1130,7 +1131,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               <div className="d-flex align-items-center gap-2 mb-3">
                 <span style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(10px)', color: '#ffffff', padding: '6px 16px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34d399', display: 'inline-block' }} />
-                  🧪 Structure de santé & laboratoire conventionné UNAMUSC 🇸🇳
+                  <ProIcon name="flask" /> Structure de santé & laboratoire conventionné UNAMUSC <ProIcon name="senegal-flag" />
                 </span>
               </div>
 
@@ -1143,10 +1144,10 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
               <div className="d-flex align-items-center flex-wrap mt-4" style={{ gap: '28px', rowGap: '16px' }}>
                 <button className="btn fw-bold px-4 py-2.5 text-white" style={{ background: '#047857', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '14px', fontSize: '0.9rem', boxShadow: '0 6px 18px rgba(0,0,0,0.2)', marginRight: '16px', marginBottom: '8px' }} onClick={() => (window.location.hash = '#/medical-profile')}>
-                  🩻 Accéder au dossier & radios DICOM
+                  <ProIcon name="scan" /> Accéder au dossier & radios DICOM
                 </button>
                 <button className="btn fw-bold px-4 py-2.5 text-white" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '14px', fontSize: '0.9rem', marginLeft: '4px', marginBottom: '8px' }} onClick={() => (window.location.hash = '#/verify')}>
-                  🔍 Vérifier la carte CSU d'un assuré
+                  <ProIcon name="search" /> Vérifier la carte CSU d'un assuré
                 </button>
               </div>
             </div>
@@ -1164,7 +1165,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
           <div className="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
             <div>
               <h4 className="fw-extrabold mb-1 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)', fontSize: '1.25rem' }}>
-                <span>🧪</span> Bilans sanguins & Examens d'imagerie prescrits
+                <span><ProIcon name="flask" /></span> Bilans sanguins & Examens d'imagerie prescrits
               </h4>
               <p className="text-muted small mb-0" style={{ fontSize: '0.88rem' }}>
                 Demandes d'analyses et de clichés d'imagerie transmises par les médecins conventionnés (Tiers-payant UNAMUSC 80% - 100%).
@@ -1191,11 +1192,11 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   });
                 }}
               >
-                <span>➕ Prescrire un nouvel examen / bilan</span>
+                <span><ProIcon name="plus" /> Prescrire un nouvel examen / bilan</span>
               </button>
 
               <span className="badge bg-success-subtle text-success border border-success px-3 py-2 fw-bold" style={{ borderRadius: '12px', fontSize: '0.82rem' }}>
-                🟢 Tiers-payant Actif
+                <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Tiers-payant Actif
               </span>
             </div>
           </div>
@@ -1217,7 +1218,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     <td style={{ padding: '1rem' }}>
                       <div className="d-flex align-items-center gap-2.5">
                         <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '1.05rem' }}>
-                          👤
+                          <ProIcon name="user" />
                         </div>
                         <div>
                           <strong className="d-block" style={{ fontSize: '0.98rem', color: 'var(--text-main)' }}>{order.patientName}</strong>
@@ -1236,7 +1237,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                       </div>
                     </td>
                     <td style={{ padding: '1rem' }}>
-                      <span className="fw-semibold d-block" style={{ fontSize: '0.9rem' }}>👨‍⚕️ {order.doctor}</span>
+                      <span className="fw-semibold d-block" style={{ fontSize: '0.9rem' }}><ProIcon name="stethoscope" /> {order.doctor}</span>
                     </td>
                     <td style={{ padding: '1rem' }}>
                       <span className={`badge ${order.coverage?.includes('100%') ? 'bg-success' : 'bg-emerald-600'} text-white px-3 py-1.5 fw-bold`} style={{ borderRadius: '10px', fontSize: '0.8rem', background: '#059669' }}>
@@ -1247,7 +1248,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                       <div className="d-flex align-items-center justify-content-end gap-3 flex-nowrap">
                         {order.status === 'transmis' ? (
                           <span className="badge bg-success text-white px-3 py-2 fw-bold" style={{ borderRadius: '10px', fontSize: '0.82rem' }}>
-                            ✅ Transmis au DMP
+                            <ProIcon name="check-circle" color="#059669" /> Transmis au DMP
                           </span>
                         ) : (
                           <button 
@@ -1277,7 +1278,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                             setIsNewLabOrder(false);
                           }}
                         >
-                          ✏️ Modifier
+                          <ProIcon name="edit" /> Modifier
                         </button>
 
                         {/* Bouton SUPPRIMER Examen */}
@@ -1295,7 +1296,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                           title="Supprimer la prescription"
                           onClick={() => handleDeleteLabOrder(order)}
                         >
-                          🗑️ Supprimer
+                          <ProIcon name="trash" /> Supprimer
                         </button>
                       </div>
                     </td>
@@ -1318,7 +1319,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
                 <div className="d-flex align-items-center gap-3">
                   <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 'bold', boxShadow: '0 6px 16px rgba(16, 185, 129, 0.3)' }}>
-                    {uploadLabTargetOrder.id === 2 ? '🩻' : '🧪'}
+                    {uploadLabTargetOrder.id === 2 ? <ProIcon name="scan" /> : <ProIcon name="flask" />}
                   </div>
                   <div>
                     <h5 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>
@@ -1336,7 +1337,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               <div className="p-3.5 rounded-4 mb-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}>
                 <div className="d-flex justify-content-between align-items-center mb-2.5">
                   <div className="d-flex align-items-center gap-2">
-                    <span style={{ fontSize: '1.1rem' }}>👤</span>
+                    <span style={{ fontSize: '1.1rem' }}><ProIcon name="user" /></span>
                     <strong style={{ fontSize: '1.05rem', color: 'var(--text-main)' }}>{uploadLabTargetOrder.patientName}</strong>
                   </div>
                   <code className="bg-success text-white px-2.5 py-1 rounded-3 fw-bold small">{uploadLabTargetOrder.cmuNumber}</code>
@@ -1344,11 +1345,11 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
                 <div className="d-flex flex-column gap-2 mt-2 pt-2.5 border-top" style={{ borderColor: 'var(--border-color)', fontSize: '0.88rem' }}>
                   <div>
-                    <span className="text-muted fw-semibold">📋 Examen prescrit : </span>
+                    <span className="text-muted fw-semibold"><ProIcon name="clipboard-list" /> Examen prescrit : </span>
                     <strong className="text-primary">{uploadLabTargetOrder.examName}</strong>
                   </div>
                   <div>
-                    <span className="text-muted fw-semibold">👨‍⚕️ Médecin prescripteur : </span>
+                    <span className="text-muted fw-semibold"><ProIcon name="stethoscope" /> Médecin prescripteur : </span>
                     <strong style={{ color: 'var(--text-main)' }}>{uploadLabTargetOrder.doctor}</strong>
                   </div>
                 </div>
@@ -1357,7 +1358,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               {/* File Selector Zone */}
               <div className="mb-4">
                 <label className="form-label small fw-bold mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}>
-                  📁 Sélectionner le fichier ({uploadLabTargetOrder.id === 2 ? 'Format .DCM, .ZIP ou cliché radiologique' : 'Document PDF d\'analyses certifié'}) *
+                  <ProIcon name="folder" /> Sélectionner le fichier ({uploadLabTargetOrder.id === 2 ? 'Format .DCM, .ZIP ou cliché radiologique' : 'Document PDF d\'analyses certifié'}) *
                 </label>
 
                 <div style={{ border: '2px dashed #10b981', borderRadius: '18px', padding: '1.75rem 1.25rem', textAlign: 'center', background: 'rgba(16, 185, 129, 0.04)', transition: 'all 0.2s ease' }}>
@@ -1374,7 +1375,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   />
                   <label htmlFor="lab-file-upload-input" style={{ cursor: 'pointer', margin: 0, width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
                     <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
-                      {uploadLabTargetOrder.id === 2 ? '🩻' : '📄'}
+                      {uploadLabTargetOrder.id === 2 ? <ProIcon name="scan" /> : <ProIcon name="file-text" />}
                     </div>
                     <strong className="d-block text-primary" style={{ fontSize: '0.94rem' }}>
                       {uploadLabFileName ? `✓ Fichier sélectionné : ${uploadLabFileName}` : 'Cliquez ici pour choisir le document ou glissez-le'}
@@ -1389,7 +1390,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               {/* Biologist Notes */}
               <div className="mb-4">
                 <label className="form-label small fw-bold mb-2" style={{ color: 'var(--text-sub)', fontSize: '0.88rem' }}>
-                  📝 Conclusions du biologiste & valeurs clés (DMP)
+                  <ProIcon name="edit" /> Conclusions du biologiste & valeurs clés (DMP)
                 </label>
                 <textarea 
                   className="form-control py-2.5 px-3" 
@@ -1416,7 +1417,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   className="btn px-4.5 py-2.5 fw-bold text-white" 
                   style={{ background: '#059669', border: 'none', borderRadius: '12px', fontSize: '0.9rem', boxShadow: '0 4px 14px rgba(5,150,105,0.3)' }}
                 >
-                  ✅ Valider & transmettre au DMP
+                  <ProIcon name="check-circle" color="#059669" /> Valider & transmettre au DMP
                 </button>
               </div>
 
@@ -1436,7 +1437,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
                 <div className="d-flex align-items-center gap-3">
                   <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 'bold' }}>
-                    🧪
+                    <ProIcon name="flask" />
                   </div>
                   <div>
                     <h5 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>
@@ -1541,8 +1542,8 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     value={editingLabOrder.status || 'prescrit'}
                     onChange={(e) => setEditingLabOrder({ ...editingLabOrder, status: e.target.value })}
                   >
-                    <option value="prescrit">⏳ Prescrit (En attente de résultats)</option>
-                    <option value="transmis">✅ Transmis au DMP</option>
+                    <option value="prescrit">Prescrit (En attente de résultats)</option>
+                    <option value="transmis">Transmis au DMP</option>
                   </select>
                 </div>
               </div>
@@ -1561,7 +1562,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   className="btn px-4.5 py-2.5 fw-bold text-white" 
                   style={{ background: '#059669', border: 'none', borderRadius: '12px', fontSize: '0.9rem', boxShadow: '0 4px 14px rgba(5,150,105,0.3)' }}
                 >
-                  💾 Enregistrer la prescription
+                  <ProIcon name="save" /> Enregistrer la prescription
                 </button>
               </div>
 
@@ -1583,7 +1584,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               <div 
                 style={{ width: '72px', height: '72px', borderRadius: '24px', background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.35) 100%)', border: '2px solid #ef4444', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.2rem', margin: '0 auto 1.25rem auto', boxShadow: '0 10px 25px rgba(239, 68, 68, 0.3)' }}
               >
-                🗑️
+                <ProIcon name="trash" />
               </div>
 
               <h4 className="fw-extrabold mb-2" style={{ color: 'var(--text-main)', fontSize: '1.25rem' }}>
@@ -1615,7 +1616,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     setConfirmDeleteObj(null);
                   }}
                 >
-                  🗑️ Supprimer définitivement
+                  <ProIcon name="trash" /> Supprimer définitivement
                 </button>
               </div>
             </div>
@@ -1647,7 +1648,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               <div className="d-flex align-items-center gap-2 mb-3">
                 <span style={{ background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(10px)', color: '#ffffff', padding: '6px 16px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34d399', display: 'inline-block' }} />
-                  Pharmacien agréé UNAMUSC 🇸🇳
+                  Pharmacien agréé UNAMUSC <ProIcon name="senegal-flag" />
                 </span>
               </div>
 
@@ -1660,10 +1661,10 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
               <div className="d-flex align-items-center flex-wrap mt-4" style={{ gap: '28px', rowGap: '16px' }}>
                 <button className="btn fw-bold px-4 py-2.5 text-white" style={{ background: '#047857', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '14px', fontSize: '0.9rem', boxShadow: '0 6px 18px rgba(0,0,0,0.2)', marginRight: '16px', marginBottom: '8px' }} onClick={() => (window.location.hash = '#/purchase-orders')}>
-                  💊 Accéder au guichet des bons de commande
+                  <ProIcon name="pill" /> Accéder au guichet des bons de commande
                 </button>
                 <button className="btn fw-bold px-4 py-2.5 text-white" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '14px', fontSize: '0.9rem', marginLeft: '4px', marginBottom: '8px' }} onClick={() => (window.location.hash = '#/verify')}>
-                  🔍 Vérifier la carte CSU d'un assuré
+                  <ProIcon name="search" /> Vérifier la carte CSU d'un assuré
                 </button>
               </div>
             </div>
@@ -1702,7 +1703,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   fontSize: '1.4rem',
                   boxShadow: '0 6px 16px rgba(16, 185, 129, 0.15)'
                 }}>
-                  🛡️
+                  <ProIcon name="shield-check" />
                 </div>
                 <div>
                   <h5 className="fw-bold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.08rem', letterSpacing: '-0.01em', textTransform: 'none' }}>
@@ -1722,21 +1723,21 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <div className="p-3 rounded-3 d-flex align-items-center justify-content-between" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
                   <div className="d-flex align-items-center gap-2">
-                    <span style={{ fontSize: '1rem' }}>💊</span>
+                    <span style={{ fontSize: '1rem' }}><ProIcon name="pill" /></span>
                     <span style={{ color: 'var(--text-main)', fontSize: '0.85rem', fontWeight: 600 }}>Délivrance de médicaments (50% / 80%)</span>
                   </div>
                   <span className="badge bg-success-subtle text-success border border-success px-3 py-1.5 fw-bold" style={{ borderRadius: '8px', fontSize: '0.76rem' }}>
-                    🟢 Autorisé
+                    <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Autorisé
                   </span>
                 </div>
 
                 <div className="p-3 rounded-3 d-flex align-items-center justify-content-between" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
                   <div className="d-flex align-items-center gap-2">
-                    <span style={{ fontSize: '1rem' }}>🏥</span>
+                    <span style={{ fontSize: '1rem' }}><ProIcon name="hospital" /></span>
                     <span style={{ color: 'var(--text-main)', fontSize: '0.85rem', fontWeight: 600 }}>Prise en charge hospitalière</span>
                   </div>
                   <span className="badge bg-secondary-subtle text-secondary border border-secondary px-3 py-1.5 fw-bold" style={{ borderRadius: '8px', fontSize: '0.76rem' }}>
-                    🔴 Non concerné
+                    <ProIcon name="status-red" color="#ef4444" fill="#ef4444" size={10} /> Non concerné
                   </span>
                 </div>
               </div>
@@ -1759,7 +1760,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 >
                   <div className="d-flex align-items-start justify-content-between mb-3">
                     <div style={{ width: '48px', height: '48px', borderRadius: '15px', background: 'linear-gradient(135deg, #059669, #10b981)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', boxShadow: '0 6px 16px rgba(5,150,105,0.35)' }}>
-                      💊
+                      <ProIcon name="pill" />
                     </div>
                     <span style={{ background: 'rgba(16, 185, 129, 0.12)', color: '#10b981', fontSize: '0.72rem', fontWeight: 700, padding: '4px 10px', borderRadius: '8px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
                       Guichet principal
@@ -1786,7 +1787,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 >
                   <div className="d-flex align-items-start justify-content-between mb-3">
                     <div style={{ width: '48px', height: '48px', borderRadius: '15px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-                      🔍
+                      <ProIcon name="search" />
                     </div>
                     <span className="text-muted" style={{ fontSize: '0.72rem', fontWeight: 600 }}>
                       Contrôle CSU
@@ -1813,7 +1814,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 >
                   <div className="d-flex align-items-start justify-content-between mb-3">
                     <div style={{ width: '48px', height: '48px', borderRadius: '15px', background: 'rgba(2, 132, 199, 0.15)', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', border: '1px solid rgba(2, 132, 199, 0.3)' }}>
-                      🏥
+                      <ProIcon name="hospital" />
                     </div>
                     <span className="text-muted" style={{ fontSize: '0.72rem', fontWeight: 600 }}>
                       Réseau officines
@@ -1840,7 +1841,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 >
                   <div className="d-flex align-items-start justify-content-between mb-3">
                     <div style={{ width: '48px', height: '48px', borderRadius: '15px', background: 'rgba(217, 119, 6, 0.15)', color: '#d97706', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.35rem', border: '1px solid rgba(217, 119, 6, 0.3)' }}>
-                      📊
+                      <ProIcon name="bar-chart" />
                     </div>
                     <span className="text-muted" style={{ fontSize: '0.72rem', fontWeight: 600 }}>
                       Facturation UNAMUSC
@@ -1867,10 +1868,10 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
         <div style={{ maxWidth: '850px', margin: '0 auto' }}>
           <div className="card shadow-lg border-0 p-4 p-md-5 text-center my-4" style={{ borderRadius: '24px', background: 'var(--bg-card)', color: 'var(--text-main)', border: '2px solid #ef4444' }}>
             <div className="d-inline-flex align-items-center justify-content-center p-3 rounded-circle mb-3 mx-auto" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', width: '70px', height: '70px' }}>
-              <span style={{ fontSize: '2.2rem' }}>⚠️</span>
+              <span style={{ fontSize: '2.2rem' }}><ProIcon name="alert-triangle" color="#d97706" /></span>
             </div>
             
-            <h3 className="fw-bold mb-2 text-danger" style={{ fontSize: '1.4rem' }}>⚠️ Accès aux garanties refusé : Couverture CSU suspendue</h3>
+            <h3 className="fw-bold mb-2 text-danger" style={{ fontSize: '1.4rem' }}><ProIcon name="alert-triangle" color="#d97706" /> Accès aux garanties refusé : Couverture CSU suspendue</h3>
             
             <div className="mb-3">
               <code className="px-3 py-1.5 bg-dark text-warning border border-warning rounded-3 fw-bold d-inline-block" style={{ fontSize: '1.05rem', color: '#f59e0b' }}>
@@ -1901,7 +1902,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   window.location.hash = '#payments';
                 }}
               >
-                💳 Renouveler ma cotisation (10 500 FCFA)
+                <ProIcon name="credit-card" /> Renouveler ma cotisation (10 500 FCFA)
               </button>
             </div>
           </div>
@@ -1964,7 +1965,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 border: '1px solid rgba(255,255,255,0.25)'
               }}>
                 <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34d399', display: 'inline-block', boxShadow: '0 0 12px #34d399', animation: 'pulse-icon 1.5s ease-in-out infinite' }} />
-                🇸🇳 UNAMUSC Sénégal • Tiers-payant national
+                <ProIcon name="senegal-flag" /> UNAMUSC Sénégal • Tiers-payant national
               </span>
             </div>
 
@@ -1986,7 +1987,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 boxShadow: '0 8px 20px rgba(0,0,0,0.2)',
                 border: '2px solid rgba(255,255,255,0.3)'
               }}>
-                📋
+                <ProIcon name="clipboard-list" />
               </div>
               <h1 className="fw-extrabold mb-0 text-white" style={{ fontSize: '2.2rem', letterSpacing: '-0.02em', textShadow: '0 3px 8px rgba(0,0,0,0.3)', lineHeight: '1.1' }}>
                 {lang === 'wo' ? 'Bataaxal u garansi & Bons' : 'Lettres de garantie & Bons de commande'}
@@ -2026,7 +2027,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 }}
                 onClick={() => setActiveTab('list')}
               >
-                <span style={{ fontSize: '1.1rem', marginRight: '8px' }}>📋</span> 
+                <span style={{ fontSize: '1.1rem', marginRight: '8px' }}><ProIcon name="clipboard-list" /></span> 
                 {canInstruire ? `Instructions agent (${letters.length})` : (isDoctor || isMidwife) ? `Dossiers patients (${visibleLetters.length})` : `Mes dossiers (${visibleLetters.length})`}
               </button>
 
@@ -2050,7 +2051,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   }}
                   onClick={() => { setActiveTab('new'); setWizardStep(1); }}
                 >
-                  <span style={{ fontSize: '1.1rem', marginRight: '8px' }}>➕</span> 
+                  <span style={{ fontSize: '1.1rem', marginRight: '8px' }}><ProIcon name="plus" /></span> 
                   {lang === 'wo' ? 'Demande bu bees' : 'Nouvelle demande'}
                 </button>
               )}
@@ -2096,7 +2097,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
             className="btn fw-bold px-3.5 py-2 d-inline-flex align-items-center gap-2 text-white shadow-sm"
             style={{ borderRadius: '12px', background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', border: 'none' }}
           >
-            🏥 {lang === 'wo' ? 'Bataaxalu Garantie (Hôpital 80%)' : 'Lettres de Garantie (Hôpital 80% / SESAME 100%)'}
+            <ProIcon name="hospital" /> {lang === 'wo' ? 'Bataaxalu Garantie (Hôpital 80%)' : 'Lettres de Garantie (Hôpital 80% / SESAME 100%)'}
           </button>
           <button
             type="button"
@@ -2131,7 +2132,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
             style={{ borderRadius: '10px', background: 'rgba(37, 211, 102, 0.14)', color: '#25d366', border: '1.5px solid #25d366' }}
             onClick={() => openLetterWhatsAppModal(lastCreatedItem || visibleLetters[0] || letters[0])}
           >
-            📲 {lang === 'wo' ? 'Jot sa Bataaxal ci WhatsApp' : 'Recevoir ma Lettre sur WhatsApp'}
+            <ProIcon name="smartphone" /> {lang === 'wo' ? 'Jot sa Bataaxal ci WhatsApp' : 'Recevoir ma Lettre sur WhatsApp'}
           </button>
         </div>
       </div>
@@ -2221,7 +2222,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   <div className="d-flex align-items-center justify-content-between mb-3">
                     <span className="small text-muted fw-bold text-uppercase" style={{ letterSpacing: '0.04em', fontSize: '0.78rem' }}>Mes demandes</span>
                     <div className="kpi-icon-animated" style={{ background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(96, 165, 250, 0.25) 100%)', color: '#3b82f6' }}>
-                      📁
+                      <ProIcon name="folder" />
                     </div>
                   </div>
                   <h3 className="fw-extrabold mb-1 text-primary" style={{ fontSize: '2.3rem', letterSpacing: '-0.02em' }}>{visibleLetters.length}</h3>
@@ -2240,7 +2241,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   <div className="d-flex align-items-center justify-content-between mb-3">
                     <span className="small text-muted fw-bold text-uppercase" style={{ letterSpacing: '0.04em', fontSize: '0.78rem' }}>En instruction</span>
                     <div className="kpi-icon-animated" style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(251, 191, 36, 0.25) 100%)', color: '#f59e0b' }}>
-                      ⏳
+                      <ProIcon name="hourglass" />
                     </div>
                   </div>
                   <h3 className="fw-extrabold mb-1 text-warning" style={{ fontSize: '2.3rem', letterSpacing: '-0.02em' }}>{citizenPendingCount}</h3>
@@ -2259,7 +2260,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   <div className="d-flex align-items-center justify-content-between mb-3">
                     <span className="small text-muted fw-bold text-uppercase" style={{ letterSpacing: '0.04em', fontSize: '0.78rem' }}>Accordées</span>
                     <div className="kpi-icon-animated" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(52, 211, 153, 0.25) 100%)', color: '#10b981' }}>
-                      ✅
+                      <ProIcon name="check-circle" color="#059669" />
                     </div>
                   </div>
                   <h3 className="fw-extrabold mb-1 text-success" style={{ fontSize: '2.3rem', letterSpacing: '-0.02em' }}>{citizenApprovedCount}</h3>
@@ -2278,7 +2279,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   <div className="d-flex align-items-center justify-content-between mb-3">
                     <span className="small text-muted fw-bold text-uppercase" style={{ letterSpacing: '0.04em', fontSize: '0.78rem' }}>Montant couvert</span>
                     <div className="kpi-icon-animated" style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.2) 0%, rgba(16, 185, 129, 0.3) 100%)', color: '#059669' }}>
-                      💰
+                      <ProIcon name="wallet" />
                     </div>
                   </div>
                   <h3 className="fw-extrabold mb-1" style={{ fontSize: '1.85rem', letterSpacing: '-0.02em', color: '#059669' }}>
@@ -2304,7 +2305,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 <div className="d-flex align-items-center justify-content-between mb-3">
                   <span className="small text-muted fw-bold text-uppercase" style={{ letterSpacing: '0.04em', fontSize: '0.78rem' }}>Demandes reçues</span>
                   <div className="kpi-icon-animated" style={{ background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(96, 165, 250, 0.25) 100%)', color: '#3b82f6' }}>
-                    📊
+                    <ProIcon name="bar-chart" />
                   </div>
                 </div>
                 <h3 className="fw-extrabold mb-1 text-primary" style={{ fontSize: '2.3rem', letterSpacing: '-0.02em' }}>{visibleLetters.length.toLocaleString('fr-FR')}</h3>
@@ -2322,7 +2323,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 <div className="d-flex align-items-center justify-content-between mb-3">
                   <span className="small text-muted fw-bold text-uppercase" style={{ letterSpacing: '0.04em', fontSize: '0.78rem' }}>En instruction</span>
                   <div className="kpi-icon-animated" style={{ background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(251, 191, 36, 0.25) 100%)', color: '#f59e0b' }}>
-                    ⏳
+                    <ProIcon name="hourglass" />
                   </div>
                 </div>
                 <h3 className="fw-extrabold mb-1 text-warning" style={{ fontSize: '2.3rem', letterSpacing: '-0.02em' }}>
@@ -2342,7 +2343,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 <div className="d-flex align-items-center justify-content-between mb-3">
                   <span className="small text-muted fw-bold text-uppercase" style={{ letterSpacing: '0.04em', fontSize: '0.78rem' }}>Accordées</span>
                   <div className="kpi-icon-animated" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(52, 211, 153, 0.25) 100%)', color: '#10b981' }}>
-                    ✅
+                    <ProIcon name="check-circle" color="#059669" />
                   </div>
                 </div>
                 <h3 className="fw-extrabold mb-1 text-success" style={{ fontSize: '2.3rem', letterSpacing: '-0.02em' }}>
@@ -2362,7 +2363,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 <div className="d-flex align-items-center justify-content-between mb-3">
                   <span className="small text-muted fw-bold text-uppercase" style={{ letterSpacing: '0.04em', fontSize: '0.78rem' }}>Total garanti</span>
                   <div className="kpi-icon-animated" style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.2) 0%, rgba(16, 185, 129, 0.3) 100%)', color: '#059669' }}>
-                    💰
+                    <ProIcon name="wallet" />
                   </div>
                 </div>
                 <h3 className="fw-extrabold mb-1" style={{ fontSize: '1.85rem', letterSpacing: '-0.02em', color: '#059669' }}>
@@ -2377,7 +2378,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
       {successMsg && (
         <div className="alert alert-success d-flex align-items-center mb-4 rounded-3 border-0 shadow-sm">
-          <span className="fs-4 me-2">✅</span>
+          <span className="fs-4 me-2"><ProIcon name="check-circle" color="#059669" /></span>
           <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 w-100" style={{ color: 'var(--text-main)' }}>
             <span>{successMsg}</span>
             <div className="d-flex align-items-center gap-2 flex-wrap">
@@ -2388,7 +2389,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   style={{ background: '#25d366', border: 'none', borderRadius: '10px' }}
                   onClick={() => openLetterWhatsAppModal(lastCreatedItem || visibleLetters[0])}
                 >
-                  📲 Recevoir sur WhatsApp
+                  <ProIcon name="smartphone" /> Recevoir sur WhatsApp
                 </button>
               )}
               {lastCreatedItem?.order_code && (
@@ -2401,7 +2402,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     window.location.hash = '#/purchase-orders';
                   }}
                 >
-                  💊 Voir mes Bons de Commande Pharmacie
+                  <ProIcon name="pill" /> Voir mes Bons de Commande Pharmacie
                 </button>
               )}
             </div>
@@ -2415,14 +2416,14 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
           <div className="card shadow-lg border-0 p-4" style={{ maxWidth: '820px', width: '100%', maxHeight: '90vh', overflowY: 'auto', borderRadius: '24px', background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)', margin: 'auto' }}>
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h4 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: 'var(--primary)' }}>
-                <span>➕</span> Nouvelle demande sous le Tiers-payant UNAMUSC
+                <span><ProIcon name="plus" /></span> Nouvelle demande sous le Tiers-payant UNAMUSC
               </h4>
               <button type="button" className="btn-close" onClick={() => setActiveTab('list')}></button>
             </div>
 
             {/* BANDEAU CONTEXTE HORAIRE & DÉLIVRANCE 24/7 */}
             <div className="p-3.5 rounded-4 mb-4 d-flex align-items-center gap-3" style={{ background: emergencyTimeInfo.badgeBg, border: `1.5px solid ${emergencyTimeInfo.badgeColor}` }}>
-              <div style={{ fontSize: '1.8rem' }}>{emergencyTimeInfo.period === 'weekend' ? '🏥' : emergencyTimeInfo.period === 'night' ? '🌙' : '☀️'}</div>
+              <div style={{ fontSize: '1.8rem' }}>{emergencyTimeInfo.period === 'weekend' ? '🏥' : emergencyTimeInfo.period === 'night' ? <ProIcon name="moon" /> : <ProIcon name="sun" />}</div>
               <div>
                 <strong className="d-block" style={{ color: emergencyTimeInfo.badgeColor, fontSize: '0.94rem', fontWeight: '800' }}>
                   {emergencyTimeInfo.label} — Continuité des soins 7j/7
@@ -2441,7 +2442,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 onClick={() => setRequestCategory('hospital')}
                 style={{ borderRadius: '12px', marginRight: '6px' }}
               >
-                🏥 Lettre de Garantie Hospitalière (80% / Plan SESAME 100%)
+                <ProIcon name="hospital" /> Lettre de Garantie Hospitalière (80% / Plan SESAME 100%)
               </button>
               <button 
                 type="button" 
@@ -2449,7 +2450,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 onClick={() => setRequestCategory('pharmacy')}
                 style={{ borderRadius: '12px', marginLeft: '6px' }}
               >
-                💊 Bon de Commande Pharmacie (50% / 50%)
+                <ProIcon name="pill" /> Bon de Commande Pharmacie (50% / 50%)
               </button>
             </div>
 
@@ -2583,7 +2584,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               {requestCategory === 'pharmacy' && (
                 <div className="mb-4 p-4 rounded-3" style={{ background: 'rgba(5,150,105,0.07)', border: '2px dashed #059669', borderRadius: '16px' }}>
                   <div className="d-flex align-items-center gap-2 mb-2">
-                    <span style={{ fontSize: '1.4rem' }}>📋</span>
+                    <span style={{ fontSize: '1.4rem' }}><ProIcon name="clipboard-list" /></span>
                     <div>
                       <strong className="d-block fw-bold" style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>Téléverser l'ordonnance médicale *</strong>
                       <small className="text-muted">Prenez en photo l'ordonnance prescrite par votre médecin et téléversez-la. Le gérant UNAMUSC vérifiera l'ordonnance avant d'accorder le bon de commande.</small>
@@ -2609,11 +2610,11 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                           alt="Aperçu ordonnance"
                           style={{ maxHeight: '160px', maxWidth: '100%', borderRadius: '8px', objectFit: 'contain', marginBottom: '0.5rem' }}
                         />
-                        <small className="text-success fw-bold d-block">✅ Ordonnance chargée : Cliquer pour modifier</small>
+                        <small className="text-success fw-bold d-block"><ProIcon name="check-circle" color="#059669" /> Ordonnance chargée : Cliquer pour modifier</small>
                       </div>
                     ) : (
                       <div className="text-center text-muted">
-                        <div style={{ fontSize: '2.5rem', marginBottom: '0.4rem' }}>📷</div>
+                        <div style={{ fontSize: '2.5rem', marginBottom: '0.4rem' }}><ProIcon name="camera" /></div>
                         <span className="fw-semibold d-block" style={{ fontSize: '0.9rem' }}>Cliquer pour prendre/sélectionner la photo de l'ordonnance</span>
                         <small>Formats acceptés : JPG, PNG, HEIC (Max 10 Mo)</small>
                       </div>
@@ -2630,7 +2631,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
                   {!prescriptionPreview && (
                     <small className="d-block text-warning fw-semibold mt-2">
-                      ⚠️ Aucune ordonnance téléversée. Le bon ne sera accordé qu'après vérification par le gérant UNAMUSC.
+                      <ProIcon name="alert-triangle" color="#d97706" /> Aucune ordonnance téléversée. Le bon ne sera accordé qu'après vérification par le gérant UNAMUSC.
                     </small>
                   )}
                 </div>
@@ -2689,7 +2690,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                             Part UNAMUSC : <strong>{unamuscVal.toLocaleString()} FCFA</strong> • Contrepartie Plan SESAME : <strong>{sesameVal.toLocaleString()} FCFA</strong>
                           </span>
                           <small className="text-success fw-bold d-block mt-1">
-                            🎉 Reste à charge patient : 0 FCFA (Prise en charge intégrale)
+                            <ProIcon name="sparkles" color="#059669" /> Reste à charge patient : 0 FCFA (Prise en charge intégrale)
                           </small>
                         </div>
                         <div className="text-end">
@@ -2759,7 +2760,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
           <div className="card shadow-lg border-0 p-4 p-md-5 rounded-4 text-left" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', borderTop: '6px solid #059669', boxShadow: 'var(--shadow-lg)', padding: '2.75rem 2.25rem' }}>
             <div className="d-flex align-items-center gap-3.5 mb-4">
               <div style={{ background: 'rgba(5, 150, 105, 0.15)', color: '#059669', padding: '0.85rem 1rem', borderRadius: '18px', fontSize: '2rem' }}>
-                🔒
+                <ProIcon name="lock" />
               </div>
               <div>
                 <h3 className="fw-extrabold mb-1.5" style={{ color: 'var(--primary)', fontSize: '1.45rem' }}>
@@ -2774,7 +2775,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
             {/* Barre de recherche avec exemples et bouton */}
             <div className="p-4 rounded-4 mb-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)' }}>
               <label className="form-label small fw-bold mb-2.5" style={{ color: 'var(--primary)', fontSize: '0.85rem' }}>
-                🔎 Rechercher directement mon dossier avec mon n° de carte CMU ou code d'homologation :
+                <ProIcon name="search" /> Rechercher directement mon dossier avec mon n° de carte CMU ou code d'homologation :
               </label>
               <div className="input-group mb-3">
                 <input 
@@ -2789,7 +2790,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   className="btn btn-success fw-bold px-4" 
                   style={{ borderRadius: '0 14px 14px 0', background: '#059669', fontSize: '1rem', height: '54px' }}
                 >
-                  🔍 Consulter mon dossier
+                  <ProIcon name="search" /> Consulter mon dossier
                 </button>
               </div>
 
@@ -2825,7 +2826,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   onClick={() => setView('login')} 
                   style={{ borderRadius: '14px', background: '#059669', fontSize: '0.98rem', boxShadow: '0 6px 16px rgba(5,150,105,0.35)', minHeight: '52px', marginRight: '10px' }}
                 >
-                  🔐 Se connecter à mon espace assuré : agent
+                  <ProIcon name="lock" /> Se connecter à mon espace assuré : agent
                 </button>
               )}
               <button 
@@ -2833,7 +2834,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 onClick={() => setActiveTab('new')} 
                 style={{ borderRadius: '14px', fontSize: '0.98rem', minHeight: '52px', marginLeft: '10px' }}
               >
-                ➕ Soumettre une demande de prise en charge (80%)
+                <ProIcon name="plus" /> Soumettre une demande de prise en charge (80%)
               </button>
             </div>
           </div>
@@ -2865,7 +2866,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                       onClick={() => setSimType('hospital')}
                       style={{ borderRadius: '12px', fontSize: '0.9rem', height: '48px' }}
                     >
-                      🏥 Hospitalisation : chirurgie (80%)
+                      <ProIcon name="hospital" /> Hospitalisation : chirurgie (80%)
                     </button>
                     <button 
                       type="button" 
@@ -2873,7 +2874,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                       onClick={() => setSimType('pharmacy')}
                       style={{ borderRadius: '12px', fontSize: '0.9rem', height: '48px' }}
                     >
-                      💊 Ordonnance pharmacie (50%)
+                      <ProIcon name="pill" /> Ordonnance pharmacie (50%)
                     </button>
                   </div>
                 </div>
@@ -2925,7 +2926,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                           style={{ borderRadius: '12px', background: '#059669', height: '52px', fontSize: '1.02rem' }}
                           onClick={() => setActiveTab('new')}
                         >
-                          📋 Demander cette prise en charge officielle
+                          <ProIcon name="clipboard-list" /> Demander cette prise en charge officielle
                         </button>
                       </div>
                     </div>
@@ -2938,7 +2939,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
           {/* GRILLE DES 4 ENGAGEMENTS TIERS-PAYANT UNAMUSC */}
           <div className="grid grid-4" style={{ gap: '1.5rem' }}>
             <div className="card p-4 text-left shadow-sm" style={{ borderRadius: '20px', background: 'var(--card-bg)', border: '1px solid var(--border-color)', padding: '1.75rem 1.5rem' }}>
-              <div style={{ fontSize: '2.4rem', marginBottom: '0.75rem' }}>🏥</div>
+              <div style={{ fontSize: '2.4rem', marginBottom: '0.75rem' }}><ProIcon name="hospital" /></div>
               <h5 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.5rem' }}>Hospitalisation : chirurgie</h5>
               <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', margin: 0, lineHeight: '1.6' }}>
                 Prise en charge à 80% des frais de bloc, séjour et soins intégraux dans tous les centres hospitaliers régionaux.
@@ -2946,7 +2947,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
             </div>
 
             <div className="card p-4 text-left shadow-sm" style={{ borderRadius: '20px', background: 'var(--card-bg)', border: '1px solid var(--border-color)', padding: '1.75rem 1.5rem' }}>
-              <div style={{ fontSize: '2.4rem', marginBottom: '0.75rem' }}>💊</div>
+              <div style={{ fontSize: '2.4rem', marginBottom: '0.75rem' }}><ProIcon name="pill" /></div>
               <h5 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.5rem' }}>Bons de commande pharmacie</h5>
               <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', margin: 0, lineHeight: '1.6' }}>
                 Délivrance directe des médicaments essentiels prescrits avec 50% de réduction immédiate en officine conventionnée.
@@ -2954,7 +2955,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
             </div>
 
             <div className="card p-4 text-left shadow-sm" style={{ borderRadius: '20px', background: 'var(--card-bg)', border: '1px solid var(--border-color)', padding: '1.75rem 1.5rem' }}>
-              <div style={{ fontSize: '2.4rem', marginBottom: '0.75rem' }}>⚡</div>
+              <div style={{ fontSize: '2.4rem', marginBottom: '0.75rem' }}><ProIcon name="zap" /></div>
               <h5 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.5rem' }}>Instruction rapide 48h</h5>
               <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', margin: 0, lineHeight: '1.6' }}>
                 Validation et homologation par l'Agent Régional mutualiste sous 48 heures ouvrées avec notification SMS.
@@ -2962,7 +2963,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
             </div>
 
             <div className="card p-4 text-left shadow-sm" style={{ borderRadius: '20px', background: 'var(--card-bg)', border: '1px solid var(--border-color)', padding: '1.75rem 1.5rem' }}>
-              <div style={{ fontSize: '2.4rem', marginBottom: '0.75rem' }}>📜</div>
+              <div style={{ fontSize: '2.4rem', marginBottom: '0.75rem' }}><ProIcon name="scroll-text" /></div>
               <h5 style={{ fontSize: '1.05rem', fontWeight: 'bold', color: 'var(--primary)', marginBottom: '0.5rem' }}>Attestation QR code officielle</h5>
               <p style={{ fontSize: '0.88rem', color: 'var(--text-sub)', margin: 0, lineHeight: '1.6' }}>
                 Tampon numérique infalsifiable imprimable ou téléchargeable en PDF A4 officiel pour les admissions d'urgence.
@@ -2973,7 +2974,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
           {/* RÉSEAU HOSPITALIER CONVENTIONNÉ SÉNÉGAL */}
           <div className="card shadow-sm border-0 p-4 p-md-5 rounded-4 text-left" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)', padding: '2.5rem 2rem' }}>
             <h4 className="fw-bold mb-4 d-flex align-items-center gap-2.5" style={{ color: 'var(--primary)', fontSize: '1.25rem' }}>
-              <span>🏛️</span> Établissements Hospitaliers Référents Conventionnés Tiers-Payant UNAMUSC
+              <span><ProIcon name="landmark" /></span> Établissements Hospitaliers Référents Conventionnés Tiers-Payant UNAMUSC
             </h4>
 
             <div className="grid grid-3" style={{ gap: '1.25rem' }}>
@@ -3010,7 +3011,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               border: isSuperAdmin ? '1px solid rgba(234,179,8,0.4)' : 'none'
             }}>
               <span style={{ fontSize: '1.6rem' }}>
-                {isSuperAdmin ? '👑' : isAgent ? '🛡️' : '🩺'}
+                {isSuperAdmin ? '👑' : isAgent ? <ProIcon name="shield-check" /> : <ProIcon name="stethoscope" />}
               </span>
               <div className="d-flex flex-column gap-1">
                 <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.05rem', color: 'inherit', letterSpacing: '-0.01em' }}>
@@ -3031,7 +3032,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
           <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
             <h4 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-              <span>📋</span> {canInstruire ? 'Gestion & instruction des lettres de garantie UNAMUSC' : (isDoctor || isMidwife) ? 'Dossiers patients — lettres de garantie' : 'Mes lettres de garantie & attestations habilitées'}
+              <span><ProIcon name="clipboard-list" /></span> {canInstruire ? 'Gestion & instruction des lettres de garantie UNAMUSC' : (isDoctor || isMidwife) ? 'Dossiers patients — lettres de garantie' : 'Mes lettres de garantie & attestations habilitées'}
             </h4>
 
             <div className="d-flex align-items-center gap-2 flex-wrap">
@@ -3056,13 +3057,13 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     });
                   }}
                 >
-                  <span>➕ Émettre une nouvelle lettre de garantie</span>
+                  <span><ProIcon name="plus" /> Émettre une nouvelle lettre de garantie</span>
                 </button>
               )}
 
               {isCitizen && (
                 <span className="badge bg-success-subtle text-success border border-success px-3 py-2 fw-bold" style={{ borderRadius: '12px' }}>
-                  👤 Assuré connecté : {activeFirstName} {activeLastName} ({activeCmuNumber})
+                  <ProIcon name="user" /> Assuré connecté : {activeFirstName} {activeLastName} ({activeCmuNumber})
                 </span>
               )}
             </div>
@@ -3140,7 +3141,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                             </strong>
                             {item.hospital_name && (
                               <small className="text-muted d-block" style={{ fontSize: '0.82rem' }}>
-                                🏥 {item.hospital_name}
+                                <ProIcon name="hospital" /> {item.hospital_name}
                               </small>
                             )}
                           </div>
@@ -3197,27 +3198,27 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                         <td style={{ padding: '1.1rem 1rem', border: '1px solid rgba(255, 255, 255, 0.2)', verticalAlign: 'top' }}>
                           {item.status === 'approved' && (
                             <span className="badge bg-success px-3 py-2 text-white fw-bold d-inline-block shadow-sm" style={{ borderRadius: '12px', fontSize: '0.8rem' }}>
-                              ✅ Validée UNAMUSC
+                              <ProIcon name="check-circle" color="#059669" /> Validée UNAMUSC
                             </span>
                           )}
                           {item.status === 'emergency_issued' && (
                             <div className="d-flex flex-column gap-1">
                               <span className="badge px-3 py-1.5 text-white fw-bold d-inline-block shadow-sm" style={{ background: '#7c3aed', borderRadius: '10px', fontSize: '0.78rem' }}>
-                                🚨 Délivrée d'urgence (7j/7)
+                                <ProIcon name="siren" color="#dc2626" /> Délivrée d'urgence (7j/7)
                               </span>
                               <small className="text-muted fw-semibold" style={{ fontSize: '0.72rem' }}>
-                                ⏳ Régularisation agent due
+                                <ProIcon name="hourglass" /> Régularisation agent due
                               </small>
                             </div>
                           )}
                           {item.status === 'pending' && (
                             <span className="badge bg-warning text-dark px-3 py-2 fw-bold d-inline-block shadow-sm" style={{ borderRadius: '12px', fontSize: '0.8rem' }}>
-                              ⏳ En instruction agent
+                              <ProIcon name="hourglass" /> En instruction agent
                             </span>
                           )}
                           {item.status === 'rejected' && (
                             <span className="badge bg-danger text-white px-3 py-2 fw-bold d-inline-block shadow-sm" style={{ borderRadius: '12px', fontSize: '0.8rem' }}>
-                              ❌ Rejetée
+                              <ProIcon name="x-circle" color="#dc2626" /> Rejetée
                             </span>
                           )}
                         </td>
@@ -3240,7 +3241,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                                 onClick={() => openInstructionModal(item)}
                                 style={{ background: isSuperAdmin ? '#92400e' : '#059669', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.84rem' }}
                               >
-                                {isSuperAdmin ? '👑' : '🛡️'} {item.status === 'approved' ? '📄 Certificat PDF' : '⚙️ Instruire'}
+                                {isSuperAdmin ? <ProIcon name="crown" /> : <ProIcon name="shield-check" />} {item.status === 'approved' ? '📄 Certificat PDF' : '⚙️ Instruire'}
                               </button>
                             ) : isDoctor || isMidwife ? (
                               <>
@@ -3251,7 +3252,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                                   title="Consultation du dossier patient (lecture)"
                                   style={{ borderRadius: '10px', fontSize: '0.84rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
                                 >
-                                  🩺 Voir dossier
+                                  <ProIcon name="stethoscope" /> Voir dossier
                                 </button>
                                 <button
                                   type="button"
@@ -3259,7 +3260,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                                   onClick={() => generateAndPrintPDFWindow(item)}
                                   style={{ background: '#059669', border: 'none', borderRadius: '10px', fontSize: '0.84rem', boxShadow: '0 3px 10px rgba(5,150,105,0.3)', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
                                 >
-                                  🖨️ PDF
+                                  <ProIcon name="printer" /> PDF
                                 </button>
                               </>
                             ) : (
@@ -3269,7 +3270,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                                 onClick={() => generateAndPrintPDFWindow(item)}
                                 style={{ background: '#059669', border: 'none', borderRadius: '10px', cursor: 'pointer', fontSize: '0.84rem' }}
                               >
-                                🖨️ Certificat PDF
+                                <ProIcon name="printer" /> Certificat PDF
                               </button>
                             )}
 
@@ -3287,7 +3288,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                               title="Recevoir ou envoyer cette lettre de garantie sur WhatsApp"
                               onClick={() => openLetterWhatsAppModal(item)}
                             >
-                              📲 WhatsApp
+                              <ProIcon name="smartphone" /> WhatsApp
                             </button>
 
                             {/* Régularisation d'urgence par l'Agent / SuperAdmin */}
@@ -3299,7 +3300,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                                 title="Homologuer et régulariser cette prise en charge d'urgence"
                                 onClick={() => handleRegularizeEmergency(item)}
                               >
-                                ✅ Régulariser
+                                <ProIcon name="check-circle" color="#059669" /> Régulariser
                               </button>
                             )}
 
@@ -3321,7 +3322,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                                 setIsNewLetterObj(false);
                               }}
                             >
-                              ✏️ Modifier
+                              <ProIcon name="edit" /> Modifier
                             </button>
 
                             {/* Bouton SUPPRIMER la garantie */}
@@ -3339,7 +3340,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                               title="Supprimer la garantie"
                               onClick={() => handleDeleteLetterObj(item)}
                             >
-                              🗑️ Supprimer
+                              <ProIcon name="trash" /> Supprimer
                             </button>
                           </div>
                         </td>
@@ -3444,10 +3445,10 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
             >
               <div>
                 <span className="badge px-3 py-1 mb-2 fw-bold text-white d-inline-block" style={{ background: 'rgba(255,255,255,0.25)', borderRadius: '20px' }}>
-                  🇸🇳 UNAMUSC — Dossier de prise en charge #{selectedLetter.validation_code}
+                  <ProIcon name="senegal-flag" /> UNAMUSC — Dossier de prise en charge #{selectedLetter.validation_code}
                 </span>
                 <h4 className="fw-bold mb-1 text-white" style={{ textTransform: 'none' }}>
-                  📄 Instruction & attestation de garantie : {selectedLetter.first_name} {selectedLetter.last_name}
+                  <ProIcon name="file-text" /> Instruction & attestation de garantie : {selectedLetter.first_name} {selectedLetter.last_name}
                 </h4>
                 <small className="text-white-50">
                   Homologation 100% humaine par l'agent habilité de l'Union Nationale des Mutuelles de Santé Communautaires (UNAMUSC).
@@ -3473,7 +3474,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 }}
                 onClick={() => setModalTab('instruction')}
               >
-                ⚙️ 1. Instruction & décision agent UNAMUSC
+                <ProIcon name="settings" /> 1. Instruction & décision agent UNAMUSC
               </button>
               <button 
                 type="button" 
@@ -3490,7 +3491,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 }}
                 onClick={() => setModalTab('certificate')}
               >
-                📄 2. Certificat officiel & prise en charge PDF
+                <ProIcon name="file-text" /> 2. Certificat officiel & prise en charge PDF
               </button>
             </div>
 
@@ -3508,7 +3509,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     }}
                     style={{ background: '#25d366', borderColor: '#25d366', borderRadius: '10px', textTransform: 'none' }}
                   >
-                    📲 Recevoir / Envoyer sur WhatsApp
+                    <ProIcon name="smartphone" /> Recevoir / Envoyer sur WhatsApp
                   </button>
                 </div>
               )}
@@ -3518,7 +3519,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     {/* Carte Bénéficiaire */}
                     <div className="col-md-6">
                       <div className="p-3.5 rounded-4 border" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)' }}>
-                        <span className="small text-muted d-block mb-1">👤 Assuré bénéficiaire :</span>
+                        <span className="small text-muted d-block mb-1"><ProIcon name="user" /> Assuré bénéficiaire :</span>
                         <h5 className="fw-bold mb-1" style={{ color: 'var(--text-main)' }}>{selectedLetter.first_name} {selectedLetter.last_name}</h5>
                         <div className="d-flex flex-wrap gap-2 align-items-center mt-2">
                           <code className="px-2.5 py-1 bg-dark text-success border border-success rounded-3 fw-bold">
@@ -3534,7 +3535,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     {/* Carte Établissement & Acte */}
                     <div className="col-md-6">
                       <div className="p-3.5 rounded-4 border" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)' }}>
-                        <span className="small text-muted d-block mb-1">🏥 Acte & établissement récepteur :</span>
+                        <span className="small text-muted d-block mb-1"><ProIcon name="hospital" /> Acte & établissement récepteur :</span>
                         <h6 className="fw-bold mb-1 text-success">{selectedLetter.medical_act}</h6>
                         <small className="text-muted d-block mt-1">Devis d'hospitalisation soumis : <strong>{Number(selectedLetter.estimated_amount).toLocaleString()} FCFA</strong></small>
                       </div>
@@ -3545,7 +3546,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   {selectedLetter.prescription_photo && selectedLetter.prescription_photo !== '/ordonnance_demo.jpg' && (
                     <div className="mb-4 p-3 rounded-3" style={{ background: 'rgba(5,150,105,0.07)', border: '2px dashed #059669', borderRadius: '14px' }}>
                       <strong className="d-block mb-2 fw-bold text-success" style={{ fontSize: '0.9rem' }}>
-                        📋 Ordonnance médicale téléversée par l'assuré : à vérifier avant accord :
+                        <ProIcon name="clipboard-list" /> Ordonnance médicale téléversée par l'assuré : à vérifier avant accord :
                       </strong>
                       <img
                         src={selectedLetter.prescription_photo}
@@ -3554,10 +3555,10 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                       />
                       <div className="d-flex gap-2 mt-3 flex-wrap">
                         <span className="badge px-3 py-2 fw-bold" style={{ background: '#f59e0b', color: '#0f172a', borderRadius: '10px', fontSize: '0.82rem' }}>
-                          ⏳ En attente de validation du gérant
+                          <ProIcon name="hourglass" /> En attente de validation du gérant
                         </span>
                         <span className="badge bg-white text-dark border px-3 py-2 fw-bold" style={{ borderRadius: '10px', fontSize: '0.82rem' }}>
-                          🔍 Vérifiez lisibilité, signature & tampon médecin
+                          <ProIcon name="search" /> Vérifiez lisibilité, signature & tampon médecin
                         </span>
                       </div>
                     </div>
@@ -3566,7 +3567,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   {/* CALCULATEUR EXÉCUTIF DE COUVERTURE & RESTES À CHARGE */}
                   <div className="card p-4 rounded-4 border-0 mb-4 shadow-sm" style={{ background: 'rgba(5, 150, 105, 0.06)', borderLeft: '5px solid var(--primary)' }}>
                     <h5 className="fw-bold mb-3 text-success d-flex align-items-center gap-2" style={{ textTransform: 'none' }}>
-                      <span>⚙️</span> Calculateur UNAMUSC de prise en charge & plafond tiers-payant
+                      <span><ProIcon name="settings" /></span> Calculateur UNAMUSC de prise en charge & plafond tiers-payant
                     </h5>
 
                     <div className="row g-4 align-items-center mb-4">
@@ -3697,7 +3698,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     <div className="row g-4 mb-4 p-4 rounded-3" style={{ background: '#ffffff', border: '1.5px solid #cbd5e1', boxShadow: 'inset 0 0 0 1px #f1f5f9' }}>
                       <div className="col-md-6">
                         <span className="small fw-bold d-block mb-1" style={{ color: '#475569', textTransform: 'none', letterSpacing: 'normal' }}>
-                          👤 Bénéficiaire assuré :
+                          <ProIcon name="user" /> Bénéficiaire assuré :
                         </span>
                         <h5 className="fw-bold mb-1" style={{ color: '#0f172a' }}>{selectedLetter.first_name} {selectedLetter.last_name}</h5>
                         <div className="small" style={{ color: '#334155' }}>
@@ -3710,7 +3711,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
                       <div className="col-md-6">
                         <span className="small fw-bold d-block mb-1" style={{ color: '#475569', textTransform: 'none', letterSpacing: 'normal' }}>
-                          🏥 Structure hospitalière d'accueil :
+                          <ProIcon name="hospital" /> Structure hospitalière d'accueil :
                         </span>
                         <h6 className="fw-bold mb-1" style={{ color: '#047857', fontSize: '1rem' }}>
                           {selectedLetter.hospital_name || selectedLetter.medical_act}
@@ -3722,14 +3723,14 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
                       <div className="col-md-6 border-top pt-3" style={{ borderColor: '#e2e8f0' }}>
                         <span className="small fw-bold d-block mb-1" style={{ color: '#475569', textTransform: 'none', letterSpacing: 'normal' }}>
-                          📋 Acte médical / hospitalisation prescrite :
+                          <ProIcon name="clipboard-list" /> Acte médical / hospitalisation prescrite :
                         </span>
                         <strong className="d-block" style={{ color: '#0f172a', fontSize: '0.95rem' }}>{selectedLetter.medical_act}</strong>
                       </div>
 
                       <div className="col-md-6 border-top pt-3" style={{ borderColor: '#e2e8f0' }}>
                         <span className="small fw-bold d-block mb-1" style={{ color: '#475569', textTransform: 'none', letterSpacing: 'normal' }}>
-                          💰 Montant estimé & accord de prise en charge :
+                          <ProIcon name="wallet" /> Montant estimé & accord de prise en charge :
                         </span>
                         <div className="small" style={{ color: '#334155' }}>
                           Devis soumis : <strong style={{ color: '#0f172a' }}>{Number(selectedLetter.estimated_amount).toLocaleString()} FCFA</strong><br />
@@ -3760,7 +3761,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                           </p>
                           {selectedLetter.is_emergency_issuance && (
                             <div className="mt-2 text-primary fw-bold" style={{ fontSize: '0.78rem' }}>
-                              🚨 Délivrance d'Urgence Permanente : {selectedLetter.emergency_period === 'weekend' ? 'Permanence Week-End (24h/24)' : 'Permanence de Garde (17h00 - 07h59)'} • Soins garantis 7j/7.
+                              <ProIcon name="siren" color="#dc2626" /> Délivrance d'Urgence Permanente : {selectedLetter.emergency_period === 'weekend' ? 'Permanence Week-End (24h/24)' : 'Permanence de Garde (17h00 - 07h59)'} • Soins garantis 7j/7.
                             </div>
                           )}
                         </div>
@@ -3787,7 +3788,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                       onClick={handleDownloadPDF}
                       style={{ borderRadius: '12px', background: '#059669', borderColor: '#059669', textTransform: 'none' }}
                     >
-                      📥 Télécharger le certificat PDF officiel
+                      <ProIcon name="download" /> Télécharger le certificat PDF officiel
                     </button>
 
                     <button 
@@ -3796,7 +3797,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                       onClick={handleDownloadDocx}
                       style={{ borderRadius: '12px', textTransform: 'none' }}
                     >
-                      📝 Version Word (.docx) éditable
+                      <ProIcon name="edit" /> Version Word (.docx) éditable
                     </button>
 
                     <button 
@@ -3809,7 +3810,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                       }}
                       style={{ borderRadius: '12px', textTransform: 'none' }}
                     >
-                      🔍 Tester la vérification instantanée (#/verify)
+                      <ProIcon name="search" /> Tester la vérification instantanée (#/verify)
                     </button>
 
                     <button 
@@ -3818,7 +3819,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                       onClick={handlePrintCertificate}
                       style={{ borderRadius: '12px', background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', color: 'var(--text-main)', textTransform: 'none' }}
                     >
-                      🖨️ Imprimer la lettre de garantie
+                      <ProIcon name="printer" /> Imprimer la lettre de garantie
                     </button>
                   </div>
                 </div>
@@ -3848,7 +3849,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     }}
                     style={{ background: '#25d366', borderColor: '#25d366', borderRadius: '10px', textTransform: 'none' }}
                   >
-                    📲 Recevoir / Envoyer sur WhatsApp
+                    <ProIcon name="smartphone" /> Recevoir / Envoyer sur WhatsApp
                   </button>
                 </div>
               )}
@@ -3860,7 +3861,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     onClick={() => handleValidateAgent('rejected')}
                     style={{ borderRadius: '10px', textTransform: 'none' }}
                   >
-                    ❌ Rejeter la demande
+                    <ProIcon name="x-circle" color="#dc2626" /> Rejeter la demande
                   </button>
 
                   <button 
@@ -3869,7 +3870,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                     onClick={() => handleValidateAgent('approved')}
                     style={{ background: '#059669', borderColor: '#059669', borderRadius: '10px' }}
                   >
-                    ✅ Émettre & Certifier la Garantie à 100% / 80%
+                    <ProIcon name="check-circle" color="#059669" /> Émettre & Certifier la Garantie à 100% / 80%
                   </button>
                 </div>
               )}
@@ -3890,7 +3891,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
             <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
               <div className="d-flex align-items-center gap-3">
                 <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 'bold' }}>
-                  📜
+                  <ProIcon name="scroll-text" />
                 </div>
                 <div>
                   <h5 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>
@@ -4022,9 +4023,9 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   value={editingLetterObj.status || 'approved'}
                   onChange={(e) => setEditingLetterObj({ ...editingLetterObj, status: e.target.value })}
                 >
-                  <option value="approved">✅ Validée (Homologuée)</option>
-                  <option value="pending">⏳ En instruction agent</option>
-                  <option value="rejected">❌ Rejetée</option>
+                  <option value="approved">Validée (Homologuée)</option>
+                  <option value="pending">En instruction agent</option>
+                  <option value="rejected">Rejetée</option>
                 </select>
               </div>
             </div>
@@ -4055,7 +4056,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 className="btn px-4.5 py-2.5 fw-bold text-white" 
                 style={{ background: '#059669', border: 'none', borderRadius: '12px', fontSize: '0.9rem', boxShadow: '0 4px 14px rgba(5,150,105,0.3)' }}
               >
-                💾 Enregistrer la lettre de garantie
+                <ProIcon name="save" /> Enregistrer la lettre de garantie
               </button>
             </div>
 
@@ -4072,7 +4073,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
           <div style={{ maxWidth: '580px', width: '100%', background: 'var(--bg-card, #1e293b)', color: 'var(--text-main, #ffffff)', borderRadius: '24px', border: '2px solid #25d366', boxShadow: '0 25px 60px rgba(0,0,0,0.5)', overflow: 'hidden', margin: 'auto' }}>
             <div className="p-3.5 d-flex justify-content-between align-items-center" style={{ background: 'linear-gradient(135deg, #128c7e 0%, #25d366 100%)', color: '#ffffff' }}>
               <div className="d-flex align-items-center gap-2">
-                <span style={{ fontSize: '1.35rem' }}>📲</span>
+                <span style={{ fontSize: '1.35rem' }}><ProIcon name="smartphone" /></span>
                 <div>
                   <h5 className="fw-bold mb-0" style={{ fontSize: '1.05rem', color: '#ffffff' }}>
                     {lang === 'wo' ? 'Jot Bataaxalu Garantie bi ci WhatsApp' : 'Recevoir / Envoyer la Lettre de Garantie par WhatsApp'}
@@ -4088,7 +4089,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
             <div className="p-4">
               <div className="mb-3">
                 <label className="form-label small fw-bold mb-1" style={{ color: '#25d366' }}>
-                  📱 {lang === 'wo' ? 'Nimero téléphone WhatsApp assuré bi :' : 'Numéro WhatsApp de l\'assuré (Sénégal +221) :'}
+                  <ProIcon name="smartphone" /> {lang === 'wo' ? 'Nimero téléphone WhatsApp assuré bi :' : 'Numéro WhatsApp de l\'assuré (Sénégal +221) :'}
                 </label>
                 <input
                   type="tel"
@@ -4128,7 +4129,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   style={{ background: '#25d366', border: 'none', borderRadius: '12px', boxShadow: '0 4px 14px rgba(37, 211, 102, 0.35)' }}
                   onClick={() => handleSendLetterWhatsApp(whatsappLetterModal, whatsappPhoneInput)}
                 >
-                  📲 Ouvrir WhatsApp et Envoyer maintenant
+                  <ProIcon name="smartphone" /> Ouvrir WhatsApp et Envoyer maintenant
                 </button>
               </div>
             </div>
@@ -4180,7 +4181,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               className="d-flex justify-content-between align-items-center"
             >
               <div className="d-flex align-items-center gap-2">
-                <span style={{ fontSize: '1.6rem' }}>💬</span>
+                <span style={{ fontSize: '1.6rem' }}><ProIcon name="message-square" /></span>
                 <div>
                   <h5 className="fw-bold mb-0 text-white" style={{ fontSize: '1.05rem' }}>
                     Demander une Lettre ou un Bon par WhatsApp
@@ -4230,7 +4231,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                       }
                     }}
                   >
-                    🏥 Lettre de Garantie (Hôpital 80%)
+                    <ProIcon name="hospital" /> Lettre de Garantie (Hôpital 80%)
                   </button>
                   <button
                     type="button"
@@ -4248,7 +4249,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                       }
                     }}
                   >
-                    💊 Bon de Commande (Pharmacie 50%)
+                    <ProIcon name="pill" /> Bon de Commande (Pharmacie 50%)
                   </button>
                 </div>
               </div>
@@ -4256,7 +4257,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               {/* Choix de la MSD / Département */}
               <div className="mb-3">
                 <label className="form-label small fw-bold mb-1" style={{ color: 'var(--text-main)' }}>
-                  🏛️ Mutuelle de Santé (MSD) / Département de rattachement :
+                  <ProIcon name="landmark" /> Mutuelle de Santé (MSD) / Département de rattachement :
                 </label>
                 <select
                   className="form-select"
@@ -4327,7 +4328,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               {/* PIÈCE JOINTE : DEVIS OU ORDONNANCE */}
               <div className="mb-3 p-3 rounded-3" style={{ background: 'rgba(5, 150, 105, 0.08)', border: '1.5px dashed #059669' }}>
                 <label className="form-label small fw-bold mb-1 d-flex align-items-center justify-content-between" style={{ color: 'var(--text-main)' }}>
-                  <span>📎 Joindre {waReqType === 'purchase_order' ? 'l\'ordonnance' : 'le devis hospitalier'} (Photo / Scan) :</span>
+                  <span><ProIcon name="paperclip" /> Joindre {waReqType === 'purchase_order' ? 'l\'ordonnance' : 'le devis hospitalier'} (Photo / Scan) :</span>
                   <span className="badge bg-success" style={{ fontSize: '0.72rem' }}>Recommandé</span>
                 </label>
                 <input
@@ -4339,13 +4340,13 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 />
                 {waAttachment ? (
                   <div className="d-flex align-items-center gap-2 mt-2 text-success fw-bold small">
-                    <span>✓ Pièce jointe prête et compressée ({Math.round(waAttachment.length / 1024)} Ko)</span>
+                    <span><ProIcon name="check" color="#059669" /> Pièce jointe prête et compressée ({Math.round(waAttachment.length / 1024)} Ko)</span>
                     <button
                       type="button"
                       className="btn btn-sm btn-link text-danger p-0 ms-auto text-decoration-none"
                       onClick={() => setWaAttachment('')}
                     >
-                      ✕ Supprimer
+                      <ProIcon name="x" /> Supprimer
                     </button>
                   </div>
                 ) : (
@@ -4359,7 +4360,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
               <div className="row g-2 mb-3">
                 <div className="col-md-6">
                   <label className="form-label small fw-bold mb-1" style={{ color: 'var(--text-main)' }}>
-                    📱 Votre numéro WhatsApp (pour recevoir) :
+                    <ProIcon name="smartphone" /> Votre numéro WhatsApp (pour recevoir) :
                   </label>
                   <input
                     type="tel"
@@ -4372,7 +4373,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                 </div>
                 <div className="col-md-6">
                   <label className="form-label small fw-bold mb-1" style={{ color: 'var(--text-main)' }}>
-                    🏢 Guichet WhatsApp de la Mutuelle :
+                    <ProIcon name="building2" /> Guichet WhatsApp de la Mutuelle :
                   </label>
                   <input
                     type="tel"
@@ -4391,7 +4392,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                         onClick={handleSaveMsdWhatsappNumber}
                         title="Enregistrer ce numéro comme contact officiel de cette MSD"
                       >
-                        💾 Sauvegarder pour la MSD {waSelectedMsd}
+                        <ProIcon name="save" /> Sauvegarder pour la MSD {waSelectedMsd}
                       </button>
                       {waSaveMsg && <span className="text-success small fw-bold">{waSaveMsg}</span>}
                     </div>
@@ -4436,7 +4437,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   className="btn fw-bold px-4 text-white d-inline-flex align-items-center gap-2"
                   style={{ background: '#25d366', border: 'none', borderRadius: '12px', boxShadow: '0 4px 14px rgba(37, 211, 102, 0.35)' }}
                 >
-                  💬 Enregistrer & Envoyer ma demande sur WhatsApp
+                  <ProIcon name="message-square" /> Enregistrer & Envoyer ma demande sur WhatsApp
                 </button>
               </div>
             </form>
@@ -4457,7 +4458,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
             <div 
               style={{ width: '72px', height: '72px', borderRadius: '24px', background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.35) 100%)', border: '2px solid #ef4444', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.2rem', margin: '0 auto 1.25rem auto', boxShadow: '0 10px 25px rgba(239, 68, 68, 0.3)' }}
             >
-              🗑️
+              <ProIcon name="trash" />
             </div>
 
             <h4 className="fw-extrabold mb-2" style={{ color: 'var(--text-main)', fontSize: '1.25rem' }}>
@@ -4489,7 +4490,7 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
                   setConfirmDeleteObj(null);
                 }}
               >
-                🗑️ Supprimer définitivement
+                <ProIcon name="trash" /> Supprimer définitivement
               </button>
             </div>
           </div>

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
 import { outboxAdd } from '../utils/offline';
+import ProIcon from '../components/ProIcon';
 
 /**
  * Photo d'identité → data-URL JPEG COMPRESSÉE (300px, ~20-40 Ko).
@@ -789,7 +790,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
             alignItems: 'center',
             boxShadow: 'var(--shadow-sm)'
           }}>
-            <span>⚠️ {error}</span>
+            <span><ProIcon name="alert-triangle" color="#d97706" /> {error}</span>
             <button 
               onClick={() => setError('')} 
               style={{
@@ -803,7 +804,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
               }}
               aria-label="Fermer"
             >
-              ✕
+              <ProIcon name="x" />
             </button>
           </div>
         )}
@@ -840,7 +841,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                       onClick={() => setSelectedPackage('individuel')}
                       style={{ border: selectedPackage === 'individuel' ? '2px solid var(--primary)' : '1px solid var(--border-color)', cursor: 'pointer', padding: '1.5rem' }}
                     >
-                      <div style={{ fontSize: '2rem' }}>👤</div>
+                      <div style={{ fontSize: '2rem' }}><ProIcon name="user" /></div>
                       <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem' }}>{t.packageIndiv}</h3>
                       <div className="stat-number" style={{ fontSize: '1.5rem', margin: '0.5rem 0', color: 'var(--primary)' }}>4 500 FCFA / an</div>
                       <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? '1 000 FCFA pour la carte + 3 500 FCFA de cotisation.' : '1 000 FCFA carte bi + 3 500 FCFA de cotisation.'}</p>
@@ -852,7 +853,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                       onClick={() => setSelectedPackage('familial')}
                       style={{ border: selectedPackage === 'familial' ? '2px solid var(--primary)' : '1px solid var(--border-color)', cursor: 'pointer', padding: '1.5rem' }}
                     >
-                      <div style={{ fontSize: '2rem' }}>👨‍👩‍👧‍👦</div>
+                      <div style={{ fontSize: '2rem' }}><ProIcon name="users" /></div>
                       <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem' }}>{t.packageFam}</h3>
                       <div className="stat-number" style={{ fontSize: '1.5rem', margin: '0.5rem 0', color: 'var(--secondary)' }}>1 000 FCFA + 3 500 FCFA / pers.</div>
                       <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Une seule carte à 1 000 FCFA pour l\'adhérent, puis 3 500 FCFA par membre.' : 'Benn carte 1 000 FCFA ngir adhérent bi, ak 3 500 FCFA par bokk.'}</p>
@@ -872,7 +873,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                       }}
                       style={{ border: selectedPackage === 'parrainage' ? '1px solid var(--border-color)' : '1px solid var(--border-color)', cursor: 'pointer', padding: '1.5rem' }}
                     >
-                      <div style={{ fontSize: '2rem' }}>🤝</div>
+                      <div style={{ fontSize: '2rem' }}><ProIcon name="handshake" /></div>
                       <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem' }}>{lang === 'fr' ? 'Parrainage solidaire' : 'Parrainage solidaire'}</h3>
                       <div className="stat-number" style={{ fontSize: '1.5rem', margin: '0.5rem 0', color: 'var(--success)' }}>4 500 FCFA / filleul</div>
                       <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Offrez la couverture maladie complète (carte + cotisation) à un ou plusieurs bénéficiaires.' : 'Mayé assurance wér-gi-yaram (carte + cotisation) ngir ñu bari.'}</p>
@@ -884,7 +885,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                       onClick={() => setSelectedPackage('csu_eleves')}
                       style={{ border: selectedPackage === 'csu_eleves' ? '2px solid var(--primary)' : '1px solid var(--border-color)', cursor: 'pointer', padding: '1.5rem' }}
                     >
-                      <div style={{ fontSize: '2rem' }}>🎓</div>
+                      <div style={{ fontSize: '2rem' }}><ProIcon name="graduation-cap" /></div>
                       <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem' }}>{lang === 'fr' ? 'CSU élèves ou Daara' : 'CSU élèves ak Daara'}</h3>
                       <div className="stat-number" style={{ fontSize: '1.5rem', margin: '0.5rem 0', color: 'var(--info)' }}>1 000 FCFA / élève</div>
                       <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Tarif collectif scolaire subventionné par l\'État pour les écoles et Daaras.' : 'Fay subventionné par État bi ngir daara yi ak écoles yi.'}</p>
@@ -896,7 +897,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                       onClick={() => setSelectedPackage('adhesion_masse')}
                       style={{ border: selectedPackage === 'adhesion_masse' ? '2px solid var(--primary)' : '1px solid var(--border-color)', cursor: 'pointer', padding: '1.5rem' }}
                     >
-                      <div style={{ fontSize: '2rem' }}>📊</div>
+                      <div style={{ fontSize: '2rem' }}><ProIcon name="bar-chart" /></div>
                       <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem' }}>{lang === 'fr' ? 'Adhésion groupe / masse' : 'Mbindum mboloo'}</h3>
                       <div className="stat-number" style={{ fontSize: '1.5rem', margin: '0.5rem 0', color: 'var(--primary)' }}>4 500 FCFA / pers.</div>
                       <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Importez un fichier CSV ou saisissez une liste pour inscrire tout un groupe (carte + cotisation).' : 'Importé listou mboloo (carte + cotisation) ci CSV.'}</p>
@@ -1270,7 +1271,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                           marginBottom: '1.5rem',
                           textAlign: 'center'
                         }}>
-                          <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>📋</div>
+                          <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}><ProIcon name="clipboard-list" /></div>
                           <h4 style={{ margin: '0 0 0.25rem 0', fontSize: '1rem', fontWeight: '700' }}>
                             {lang === 'fr' ? "Importation collective en masse" : "Mbindum mboloo (CSV)"}
                           </h4>
@@ -1303,7 +1304,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                               className="btn btn-secondary btn-sm"
                               style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem', cursor: 'pointer', margin: 0 }}
                             >
-                              📤 {lang === 'fr' ? 'Sélectionner le fichier CSV' : 'Choisir CSV'}
+                              <ProIcon name="upload" /> {lang === 'fr' ? 'Sélectionner le fichier CSV' : 'Choisir CSV'}
                               <input 
                                 type="file" 
                                 accept=".csv" 
@@ -1478,11 +1479,11 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                         }
                       }}
                     />
-                    {photoReading && <small>⏳ Lecture de la photo…</small>}
+                    {photoReading && <small><ProIcon name="hourglass" /> Lecture de la photo…</small>}
                     {photoPreview && (
                       <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <img src={photoPreview} alt="Aperçu photo" style={{ width: '84px', height: '84px', objectFit: 'cover', borderRadius: '12px', border: '1px solid var(--border-color)' }} />
-                        <small style={{ color: '#047857', fontWeight: 700 }}>✅ Photo prête — elle apparaîtra sur votre carte.</small>
+                        <small style={{ color: '#047857', fontWeight: 700 }}><ProIcon name="check-circle" color="#059669" /> Photo prête — elle apparaîtra sur votre carte.</small>
                       </div>
                     )}
                   </div>
@@ -1705,7 +1706,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                         textAlign: 'center',
                         boxShadow: 'var(--shadow-sm)'
                       }}>
-                        💡 {lang === 'fr' ? 'Indice démo : Saisissez le code OTP 7842' : 'Indice démo : Bindal code OTP 7842'}
+                        <ProIcon name="lightbulb" /> {lang === 'fr' ? 'Indice démo : Saisissez le code OTP 7842' : 'Indice démo : Bindal code OTP 7842'}
                       </div>
                       
                       <div style={{ display: 'flex', gap: '1rem' }}>
@@ -1720,7 +1721,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
               {/* Step 8: Success Card and QR */}
               {regStep === 8 && (
                 <div className="fade-in-up text-center">
-                  <div style={{ fontSize: '4rem', color: 'var(--success)', marginBottom: '1rem' }}>🎉</div>
+                  <div style={{ fontSize: '4rem', color: 'var(--success)', marginBottom: '1rem' }}><ProIcon name="sparkles" color="#059669" /></div>
                   <h2 style={{ fontSize: '1.75rem', color: 'var(--success)', marginBottom: '0.5rem' }}>{t.step8Title}</h2>
                   <p style={{ marginBottom: '2rem' }}>{t.step8Desc}</p>
                   
@@ -1858,7 +1859,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                     required 
                   />
                   <small className="text-muted d-block mt-1" style={{ fontSize: '0.78rem' }}>
-                    💡 Indice : Vos 4 derniers chiffres de code adhérent CSU servent de mot de passe (ex: <strong>8812</strong>).
+                    <ProIcon name="lightbulb" /> Indice : Vos 4 derniers chiffres de code adhérent CSU servent de mot de passe (ex: <strong>8812</strong>).
                   </small>
                 </div>
                 <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '1.5rem' }}>{t.renewLoginBtn}</button>
@@ -1954,7 +1955,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                       textAlign: 'center',
                       boxShadow: 'var(--shadow-sm)'
                     }}>
-                      💡 {lang === 'fr' ? 'Indice démo : Saisissez le code OTP 7842' : 'Indice démo : Bindal code OTP 7842'}
+                      <ProIcon name="lightbulb" /> {lang === 'fr' ? 'Indice démo : Saisissez le code OTP 7842' : 'Indice démo : Bindal code OTP 7842'}
                     </div>
                     
                     <div style={{ display: 'flex', gap: '1rem' }}>
@@ -1968,7 +1969,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
 
             {renewStep === 4 && (
               <div className="fade-in-up text-center">
-                <div style={{ fontSize: '3rem', color: 'var(--success)', marginBottom: '1rem' }}>✓</div>
+                <div style={{ fontSize: '3rem', color: 'var(--success)', marginBottom: '1rem' }}><ProIcon name="check" color="#059669" /></div>
                 <p style={{ fontWeight: '600', color: 'var(--success)', marginBottom: '1.5rem' }}>{t.renewSuccess}</p>
                 <button className="btn btn-primary btn-sm" onClick={() => {
                   setRenewStep(1);
@@ -1988,7 +1989,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
 
             {donateSuccess ? (
               <div className="fade-in-up text-center">
-                <div style={{ fontSize: '4rem', color: 'var(--secondary)', marginBottom: '1rem' }}>❤️</div>
+                <div style={{ fontSize: '4rem', color: 'var(--secondary)', marginBottom: '1rem' }}><ProIcon name="heart" color="#dc2626" /></div>
                 <h3 style={{ color: 'var(--secondary)', marginBottom: '1rem' }}>Jërëjëf ! / Merci !</h3>
                 <p style={{ fontWeight: '500' }}>{t.donateSuccessMsg}</p>
                 <button 
@@ -2157,7 +2158,7 @@ export default function ServicesEnLigne({ lang, initialTab = 'register', initial
                       textAlign: 'center',
                       boxShadow: 'var(--shadow-sm)'
                     }}>
-                      💡 {lang === 'fr' ? 'Indice démo : Saisissez le code OTP 7842' : 'Indice démo : Bindal code OTP 7842'}
+                      <ProIcon name="lightbulb" /> {lang === 'fr' ? 'Indice démo : Saisissez le code OTP 7842' : 'Indice démo : Bindal code OTP 7842'}
                     </div>
                     
                     <div style={{ display: 'flex', gap: '1rem' }}>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getStoredMembers, saveStoredMembers } from '../utils/beneficiaryStore.js';
 import { resolveMinorDependents, collectAttachedMinorIds } from '../utils/householdMinors';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
+import ProIcon from '../components/ProIcon';
 
 /**
  * Met la première lettre de chaque mot en majuscule et le reste en minuscule
@@ -500,11 +501,11 @@ export default function Payments({
       }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
           <div className="d-inline-flex align-items-center gap-2 px-3.5 py-1.5 mb-3 rounded-pill" style={{ background: 'rgba(255, 255, 255, 0.22)', fontSize: '0.84rem', fontWeight: '700' }}>
-            🇸🇳 Mutuelle de santé départementale de Dakar • Tiers-payant UNAMUSC
+            <ProIcon name="senegal-flag" /> Mutuelle de santé départementale de Dakar • Tiers-payant UNAMUSC
           </div>
           
           <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: '800', marginBottom: '0.75rem', letterSpacing: '-0.02em' }}>
-            💳 Paiements, cotisations & solidarité CSU
+            <ProIcon name="credit-card" /> Paiements, cotisations & solidarité CSU
           </h1>
           
           <p style={{ color: '#ecfdf5', fontSize: '0.94rem', margin: '0 auto 1.5rem auto', maxWidth: '650px', lineHeight: '1.6' }}>
@@ -529,7 +530,7 @@ export default function Payments({
             >
               <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
                 <span className="badge bg-primary text-white" style={{ fontSize: '0.76rem', borderRadius: '8px', padding: '5px 10px', fontWeight: '700' }}>
-                  👨‍💼 Espace Agent / Super Admin
+                  <ProIcon name="user" />‍<ProIcon name="briefcase" /> Espace Agent / Super Admin
                 </span>
                 <span className="text-muted fw-bold" style={{ fontSize: '0.82rem' }}>
                   Foyer actif : <strong style={{ color: '#065f46' }}>{activeMember?.cmuNumber}</strong>
@@ -600,7 +601,7 @@ export default function Payments({
             >
               <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
                 <span className="badge" style={{ background: '#059669', color: '#ffffff', fontSize: '0.76rem', borderRadius: '8px', padding: '5px 10px', fontWeight: '700' }}>
-                  🔒 Espace Privé Assuré • Données Sécurisées
+                  <ProIcon name="lock" /> Espace Privé Assuré • Données Sécurisées
                 </span>
                 <span className="badge" style={{ background: '#ecfdf5', color: '#065f46', border: '1px solid #a7f3d0', fontSize: '0.76rem', borderRadius: '8px', padding: '4px 8px', fontWeight: '700' }}>
                   {(activeMember?.dependents || []).length === 0 ? '👤 Assuré Seul (0 ayant droit)' : `👨‍👩‍👧‍👦 Foyer (${1 + (activeMember?.dependents || []).length} pers.)`}
@@ -641,7 +642,7 @@ export default function Payments({
                   <div style={{ background: '#ffffff', border: '1px solid #d1fae5', borderRadius: '10px', padding: '0.45rem 0.65rem' }}>
                     <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase' }}>Téléphone</div>
                     <div style={{ fontSize: '0.84rem', fontWeight: 800, color: '#0f172a' }}>
-                      📞 {activeMember?.phone || 'Non renseigné'}
+                      <ProIcon name="phone" /> {activeMember?.phone || 'Non renseigné'}
                     </div>
                   </div>
                 </div>
@@ -669,7 +670,7 @@ export default function Payments({
             }}
             onClick={() => setActiveTab('cotisation')}
           >
-            <span>👨‍👩‍👧</span>
+            <span><ProIcon name="users" /></span>
             <span>Cotisation famille</span>
             <span className="badge" style={{ background: activeTab === 'cotisation' ? 'rgba(255,255,255,0.3)' : '#e2e8f0', color: activeTab === 'cotisation' ? '#fff' : '#334155', borderRadius: '10px', fontSize: '0.74rem' }}>
               {selectedMemberIds.length}/{familyList.length}
@@ -690,7 +691,7 @@ export default function Payments({
             }}
             onClick={() => setActiveTab('sponsoring')}
           >
-            <span>🤝</span>
+            <span><ProIcon name="handshake" /></span>
             <span>Don & parrainage CSU</span>
           </button>
 
@@ -708,7 +709,7 @@ export default function Payments({
             }}
             onClick={() => setActiveTab('history')}
           >
-            <span>📜</span>
+            <span><ProIcon name="scroll-text" /></span>
             <span>Mes reçus ({personalPayments.length})</span>
           </button>
         </div>
@@ -724,7 +725,7 @@ export default function Payments({
               <div className="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3 mb-4 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
                 <div style={{ flex: 1 }}>
                   <h3 className="fw-extrabold mb-1 d-flex align-items-center gap-2" style={{ fontSize: '1.35rem', color: 'var(--text-main)' }}>
-                    <span>{(activeMember?.dependents || []).length === 0 ? '👤' : '👨‍👩‍👧‍👦'}</span>
+                    <span>{(activeMember?.dependents || []).length === 0 ? <ProIcon name="user" /> : <ProIcon name="users" />}</span>
                     <span>{(activeMember?.dependents || []).length === 0 ? `Dossier de ${formattedHeadName}` : `Foyer de ${formattedHeadName}`}</span>
                   </h3>
                   <p className="text-muted mb-0" style={{ fontSize: '0.88rem' }}>
@@ -762,7 +763,7 @@ export default function Payments({
                     style={{ borderRadius: '12px', fontSize: '0.86rem', background: '#059669', borderColor: '#059669', padding: '10px 16px', height: '44px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                     onClick={() => setShowAddDependentModal(true)}
                   >
-                    <span>➕</span>
+                    <span><ProIcon name="plus" /></span>
                     <span>Rattacher un enfant / ayant droit</span>
                   </button>
                 </div>
@@ -770,7 +771,7 @@ export default function Payments({
 
               {(activeMember?.dependents || []).length === 0 && (
                 <div className="p-3.5 rounded-4 mb-4 d-flex align-items-center gap-3" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
-                  <span style={{ fontSize: '1.4rem' }}>ℹ️</span>
+                  <span style={{ fontSize: '1.4rem' }}><ProIcon name="info" color="#0284c7" /></span>
                   <div className="small text-emerald-900" style={{ fontSize: '0.86rem' }}>
                     <strong>Souscription individuelle active :</strong> Cet assuré ne comporte actuellement aucun enfant mineur ni ayant droit à sa charge. Seule la cotisation du titulaire (3 500 FCFA / an) s'applique. Vous pouvez utiliser le bouton ci-dessus pour rattacher un enfant ou ayant droit.
                   </div>
@@ -824,7 +825,7 @@ export default function Payments({
                             {m.photoUrl ? (
                               <img src={m.photoUrl} alt={m.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             ) : (
-                              <span style={{ fontSize: '1.4rem' }}>{m.isTitulaire ? '🛡️' : (m.isMajor ? '👤' : '👶')}</span>
+                              <span style={{ fontSize: '1.4rem' }}>{m.isTitulaire ? '🛡️' : (m.isMajor ? <ProIcon name="user" /> : <ProIcon name="baby" />)}</span>
                             )}
                           </div>
 
@@ -930,7 +931,7 @@ export default function Payments({
               {/* SECTION PAIEMENT MOBILE SÉCURISÉ (ESPACEMENT SOIGNÉ ET BOUTONS NETS) */}
               <div className="pt-4 border-top" style={{ borderColor: 'var(--border-color)' }}>
                 <label className="fw-bold mb-3 d-block" style={{ fontSize: '0.92rem' }}>
-                  📱 Mode de paiement mobile :
+                  <ProIcon name="smartphone" /> Mode de paiement mobile :
                 </label>
 
                 {/* BOUTONS DES OPÉRATEURS CLAIRS & BIEN DISTINGUÉS (GRILLE RESPONSIVE) */}
@@ -1016,7 +1017,7 @@ export default function Payments({
                   }}
                   onClick={() => handleInitiatePayment('cotisation')}
                 >
-                  <span>🔒</span>
+                  <span><ProIcon name="lock" /></span>
                   <span>Régler {totalCotisationAmount.toLocaleString('fr-FR')} FCFA via {provider === 'wave' ? 'Wave' : 'Orange Money'}</span>
                 </button>
               </div>
@@ -1035,7 +1036,7 @@ export default function Payments({
               <div className="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
                 <div className="d-flex align-items-center gap-3">
                   <div style={{ width: '52px', height: '52px', borderRadius: '16px', background: 'rgba(5, 150, 105, 0.12)', color: '#059669', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.8rem', flexShrink: 0 }}>
-                    🤝
+                    <ProIcon name="handshake" />
                   </div>
                   <div>
                     <h3 className="fw-extrabold mb-1" style={{ fontSize: '1.35rem', color: 'var(--text-main)' }}>
@@ -1047,7 +1048,7 @@ export default function Payments({
                   </div>
                 </div>
                 <span className="badge" style={{ background: 'rgba(5, 150, 105, 0.12)', color: '#059669', fontWeight: '700', padding: '6px 14px', borderRadius: '10px', fontSize: '0.82rem' }}>
-                  🛡️ Initiative solidaire UNAMUSC Dakar
+                  <ProIcon name="shield-check" /> Initiative solidaire UNAMUSC Dakar
                 </span>
               </div>
 
@@ -1161,11 +1162,11 @@ export default function Payments({
                   style={{ borderRadius: '14px', fontSize: '0.92rem', padding: '0.85rem 1.2rem' }}
                 >
                   <option value="Daara Serigne Fallou Fann Hock (10 talibés pris en charge)">🕌 Daara Serigne Fallou Fann Hock (10 talibés pris en charge)</option>
-                  <option value="Orphelinat de la Médina (Enfants vulnérables)">👶 Orphelinat de la Médina (Enfants vulnérables)</option>
-                  <option value="Centre pédiatrique & Foyer social de Pikine">🏥 Centre pédiatrique & Foyer social de Pikine</option>
+                  <option value="Orphelinat de la Médina (Enfants vulnérables)">Orphelinat de la Médina (Enfants vulnérables)</option>
+                  <option value="Centre pédiatrique & Foyer social de Pikine">Centre pédiatrique & Foyer social de Pikine</option>
                   <option value="Daara Thiaroye Gare & Yeumbeul Nord">🕌 Daara Thiaroye Gare & Yeumbeul Nord</option>
-                  <option value="Fonds d'urgence hospitalière & dialyse UNAMUSC Dakar">💖 Fonds d'urgence hospitalière & dialyse UNAMUSC Dakar</option>
-                  <option value="Attribution prioritaire aux familles les plus démunies de Dakar">🤝 Attribution prioritaire aux familles les plus démunies de Dakar</option>
+                  <option value="Fonds d'urgence hospitalière & dialyse UNAMUSC Dakar">Fonds d'urgence hospitalière & dialyse UNAMUSC Dakar</option>
+                  <option value="Attribution prioritaire aux familles les plus démunies de Dakar">Attribution prioritaire aux familles les plus démunies de Dakar</option>
                 </select>
               </div>
 
@@ -1250,7 +1251,7 @@ export default function Payments({
                 style={{ background: '#059669', borderColor: '#059669', borderRadius: '18px', fontSize: '1.05rem', boxShadow: '0 8px 24px rgba(5, 150, 105, 0.3)' }}
                 onClick={() => handleInitiatePayment('sponsoring')}
               >
-                <span>💖</span>
+                <span><ProIcon name="heart-handshake" color="#e11d48" /></span>
                 <span>Valider le don solidaire de {Number(sponsoringAmount || 0).toLocaleString('fr-FR')} FCFA via {provider === 'wave' ? 'Wave' : 'Orange Money'}</span>
               </button>
             </div>
@@ -1268,7 +1269,7 @@ export default function Payments({
               <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
                 <div>
                   <h3 className="fw-extrabold mb-1" style={{ fontSize: '1.35rem', color: 'var(--text-main)' }}>
-                    📜 Reçus & quittances de {formattedHeadName}
+                    <ProIcon name="scroll-text" /> Reçus & quittances de {formattedHeadName}
                   </h3>
                   <p className="text-muted mb-0" style={{ fontSize: '0.88rem' }}>
                     Historique officiel certifié de vos cotisations et attestations de droits CSU.
@@ -1291,13 +1292,13 @@ export default function Payments({
                 <div className="p-3.5 rounded-4 shadow-sm" style={{ background: 'var(--bg-body)', border: '1px solid var(--border-color)' }}>
                   <span className="text-muted fw-bold d-block mb-1" style={{ fontSize: '0.78rem' }}>Couverture médicale :</span>
                   <h4 className="fw-extrabold mb-0" style={{ color: '#10b981', fontSize: '1.2rem' }}>
-                    🛡️ Tiers-payant 80% Actif
+                    <ProIcon name="shield-check" /> Tiers-payant 80% Actif
                   </h4>
                 </div>
                 <div className="p-3.5 rounded-4 shadow-sm" style={{ background: 'var(--bg-body)', border: '1px solid var(--border-color)' }}>
                   <span className="text-muted fw-bold d-block mb-1" style={{ fontSize: '0.78rem' }}>Échéance de validité :</span>
                   <h4 className="fw-extrabold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.2rem' }}>
-                    📅 31 Décembre 2026
+                    <ProIcon name="calendar" /> 31 Décembre 2026
                   </h4>
                 </div>
               </div>
@@ -1305,7 +1306,7 @@ export default function Payments({
               {/* LISTE DES QUITTANCES */}
               {personalPayments.length === 0 ? (
                 <div className="text-center py-5 text-muted">
-                  <span style={{ fontSize: '3rem' }}>📭</span>
+                  <span style={{ fontSize: '3rem' }}><ProIcon name="inbox" /></span>
                   <h5 className="mt-3 mb-1 fw-bold" style={{ color: 'var(--text-main)' }}>Aucun reçu enregistré</h5>
                   <p className="mb-3 text-muted" style={{ fontSize: '0.88rem' }}>Vous n'avez pas encore effectué de paiement pour cet assuré.</p>
                   <button 
@@ -1314,7 +1315,7 @@ export default function Payments({
                     style={{ borderRadius: '12px', background: '#059669', borderColor: '#059669' }}
                     onClick={() => setActiveTab('cotisation')}
                   >
-                    💳 Régler une première cotisation
+                    <ProIcon name="credit-card" /> Régler une première cotisation
                   </button>
                 </div>
               ) : (
@@ -1337,7 +1338,7 @@ export default function Payments({
                                 {p.type}
                               </h5>
                               <span className="badge" style={{ background: 'rgba(5, 150, 105, 0.12)', color: '#059669', fontSize: '0.74rem', fontWeight: '700', borderRadius: '8px', padding: '4px 8px' }}>
-                                ✅ Validé & Homologué
+                                <ProIcon name="check-circle" color="#059669" /> Validé & Homologué
                               </span>
                             </div>
                             <div className="text-muted mt-1" style={{ fontSize: '0.8rem' }}>
@@ -1347,7 +1348,7 @@ export default function Payments({
                         </div>
 
                         <span className="badge" style={{ background: 'var(--bg-body)', color: 'var(--text-sub)', border: '1px solid var(--border-color)', fontSize: '0.76rem', padding: '4px 10px', borderRadius: '8px' }}>
-                          🏢 {p.unionName || 'Mutuelle de santé départementale de Dakar'}
+                          <ProIcon name="building2" /> {p.unionName || 'Mutuelle de santé départementale de Dakar'}
                         </span>
                       </div>
 
@@ -1358,7 +1359,7 @@ export default function Payments({
                             Personnes prises en charge :
                           </span>
                           <p className="fw-bold mb-0" style={{ fontSize: '0.88rem', color: 'var(--text-main)' }}>
-                            👥 {p.beneficiaries}
+                            <ProIcon name="users" /> {p.beneficiaries}
                           </p>
                         </div>
 
@@ -1378,7 +1379,7 @@ export default function Payments({
                             style={{ borderRadius: '14px', fontSize: '0.86rem', background: '#059669', borderColor: '#059669', whiteSpace: 'nowrap' }}
                             onClick={() => handleDownloadReceipt(p)}
                           >
-                            <span>📄</span>
+                            <span><ProIcon name="file-text" /></span>
                             <span>Télécharger reçu PDF</span>
                           </button>
                         </div>
@@ -1397,11 +1398,11 @@ export default function Payments({
             <div className="d-flex align-items-center justify-content-between flex-wrap gap-4">
               <div className="d-flex align-items-center gap-3.5">
                 <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: '#10b981', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.9rem', flexShrink: 0 }}>
-                  ✓
+                  <ProIcon name="check" color="#059669" />
                 </div>
                 <div>
                   <h4 className="fw-extrabold text-success mb-1" style={{ fontSize: '1.3rem' }}>
-                    🎉 Paiement validé & homologué avec succès !
+                    <ProIcon name="sparkles" color="#059669" /> Paiement validé & homologué avec succès !
                   </h4>
                   <p className="text-muted mb-0" style={{ fontSize: '0.88rem' }}>
                     Montant de <strong>{paymentSuccess.amount.toLocaleString('fr-FR')} FCFA</strong> réglé pour <strong>{paymentSuccess.beneficiaries}</strong>.
@@ -1416,7 +1417,7 @@ export default function Payments({
                   style={{ borderRadius: '16px', background: '#059669', borderColor: '#059669', fontSize: '0.95rem' }}
                   onClick={() => handleDownloadReceipt(paymentSuccess)}
                 >
-                  <span>📄</span>
+                  <span><ProIcon name="file-text" /></span>
                   <span>Télécharger le reçu PDF</span>
                 </button>
                 <button
@@ -1447,7 +1448,7 @@ export default function Payments({
               </p>
 
               <div className="my-3 py-2.5 px-4 rounded-pill bg-light text-success fw-bold font-monospace" style={{ fontSize: '1.3rem', display: 'inline-block' }}>
-                ⏱️ 00:{ussdTimer < 10 ? `0${ussdTimer}` : ussdTimer}
+                <ProIcon name="clock" /> 00:{ussdTimer < 10 ? `0${ussdTimer}` : ussdTimer}
               </div>
 
               <div className="progress mb-3" style={{ height: '8px', borderRadius: '10px' }}>
@@ -1470,7 +1471,7 @@ export default function Payments({
           <div className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center" style={{ background: 'rgba(0,0,0,0.65)', zIndex: 9999, backdropFilter: 'blur(4px)', padding: '1rem' }}>
             <div className="card shadow-lg p-4 p-md-5 rounded-4 fade-in" style={{ maxWidth: '520px', width: '100%', background: 'var(--bg-card)', borderRadius: '24px' }}>
               <div className="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
-                <h4 className="fw-bold mb-0" style={{ fontSize: '1.2rem' }}>➕ Ajouter un ayant droit à charge</h4>
+                <h4 className="fw-bold mb-0" style={{ fontSize: '1.2rem' }}><ProIcon name="plus" /> Ajouter un ayant droit à charge</h4>
                 <button type="button" className="btn-close" onClick={() => setShowAddDependentModal(false)}></button>
               </div>
 

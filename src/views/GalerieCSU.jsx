@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery } from '@tanstack/react-query';
+import ProIcon from '../components/ProIcon';
 
 export default function GalerieCSU({ lang }) {
   const [filter, setFilter] = useState('all');
@@ -225,8 +226,8 @@ export default function GalerieCSU({ lang }) {
               </p>
               
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)', borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem', marginTop: 'auto' }}>
-                <span>📍 {item.location.split(',')[0]}</span>
-                <span>📅 {item.date}</span>
+                <span><ProIcon name="map-pin" /> {item.location.split(',')[0]}</span>
+                <span><ProIcon name="calendar" /> {item.date}</span>
               </div>
             </div>
           </div>
@@ -302,7 +303,7 @@ export default function GalerieCSU({ lang }) {
               }}
               title="Fermer la vue plein écran"
             >
-              ✖
+              <ProIcon name="x" />
             </button>
 
             <div style={{
@@ -368,15 +369,15 @@ export default function GalerieCSU({ lang }) {
                   
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', borderTop: '1px solid var(--border-color)', paddingTop: '1.1rem', fontSize: '0.88rem' }}>
                     <div className="d-flex align-items-center gap-2">
-                      <strong style={{ color: 'var(--text-sub)' }}>📍 {t.location} : </strong>
+                      <strong style={{ color: 'var(--text-sub)' }}><ProIcon name="map-pin" /> {t.location} : </strong>
                       <span style={{ fontWeight: '700', color: 'var(--text-main)' }}>{selectedItem.location}</span>
                     </div>
                     <div className="d-flex align-items-center gap-2">
-                      <strong style={{ color: 'var(--text-sub)' }}>📅 {t.date} : </strong>
+                      <strong style={{ color: 'var(--text-sub)' }}><ProIcon name="calendar" /> {t.date} : </strong>
                       <span style={{ fontWeight: '700', color: 'var(--text-main)' }}>{selectedItem.date}</span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'var(--bg-card-subtle)', padding: '0.75rem 1rem', borderRadius: '14px', marginTop: '0.5rem', border: '1px solid var(--border-color)' }}>
-                      <span style={{ fontSize: '1.4rem' }}>📈</span>
+                      <span style={{ fontSize: '1.4rem' }}><ProIcon name="trending-up" /></span>
                       <div>
                         <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-sub)', fontWeight: '700', letterSpacing: '0.5px' }}>{t.impact}</div>
                         <div style={{ fontWeight: '850', color: '#10b981', fontSize: '1rem' }}>{selectedItem.impact}</div>

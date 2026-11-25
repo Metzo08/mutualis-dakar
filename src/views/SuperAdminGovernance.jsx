@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { apiFetch } from '../utils/api';
+import ProIcon from '../components/ProIcon';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // MAINTENANCE PANEL — activer/désactiver le mode global.
@@ -76,7 +77,7 @@ function MaintenancePanel() {
 
       {error && (
         <div className="alert alert-warning" style={{ borderRadius: '12px', padding: '0.85rem 1rem', marginBottom: '1.25rem', fontSize: '0.86rem' }}>
-          ⚠️ {error}
+          <ProIcon name="alert-triangle" color="#d97706" /> {error}
         </div>
       )}
 
@@ -107,7 +108,7 @@ function MaintenancePanel() {
           padding: '1.1rem', marginBottom: '1.25rem'
         }}>
           <strong style={{ display: 'block', color: '#dc2626', fontSize: '0.92rem', marginBottom: '0.4rem' }}>
-            ⚠️ Confirmer la fermeture de la plateforme
+            <ProIcon name="alert-triangle" color="#d97706" /> Confirmer la fermeture de la plateforme
           </strong>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', margin: '0 0 0.85rem', lineHeight: 1.55 }}>
             Tous les utilisateurs non-admin verront l'écran de maintenance. Cliquez à nouveau pour confirmer.
@@ -516,13 +517,13 @@ export default function SuperAdminGovernance({ setView }) {
         <div className="container position-relative" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1.5rem', zIndex: 2 }}>
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(255, 255, 255, 0.18)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', padding: '6px 16px', borderRadius: '30px', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '1rem', border: '1px solid rgba(255, 255, 255, 0.25)' }}>
-              <span style={{ animation: 'float-crown 2s ease-in-out infinite' }}>👑</span>
+              <span style={{ animation: 'float-crown 2s ease-in-out infinite' }}><ProIcon name="crown" /></span>
               <span>SUPER ADMIN PLATEFORME CMU</span>
             </div>
 
             <div className="d-flex align-items-center gap-3 mb-2">
               <div className="super-icon" style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(255, 255, 255, 0.2)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.75rem', fontWeight: 'bold', color: '#ffffff', boxShadow: '0 8px 20px rgba(0,0,0,0.25)', border: '2px solid rgba(255,255,255,0.3)' }}>
-                🛡️
+                <ProIcon name="shield-check" />
               </div>
               <h1 style={{ color: '#fff', fontSize: '2.1rem', fontWeight: '850', margin: 0, textShadow: '0 3px 8px rgba(0,0,0,0.4)', letterSpacing: '-0.02em' }}>
                 Gouvernance & Supervision Intégrale
@@ -548,12 +549,12 @@ export default function SuperAdminGovernance({ setView }) {
       {/* 🎯 TABS MODERNISÉS */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '2rem', padding: '8px', background: 'var(--bg-card)', borderRadius: '16px', border: '1px solid var(--border-color)', boxShadow: '0 2px 8px rgba(0,0,0,0.04)', overflowX: 'auto', flexWrap: 'wrap' }}>
         {[
-          { id: 'stats', icon: '📊', label: 'Tableau de bord', count: null },
-          { id: 'users', icon: '👥', label: 'Utilisateurs', count: usersList.length },
-          { id: 'requests', icon: '📝', label: 'Demandes', count: pendingRequests.filter(r => r.status === 'pending').length },
-          { id: 'communications', icon: '🔒', label: 'Communications', count: complaintsList.length },
-          { id: 'pages', icon: '🗺️', label: 'Inspection', count: 32 },
-          { id: 'maintenance', icon: '🛠️', label: 'Maintenance', count: null }
+          { id: 'stats', icon: <ProIcon name="bar-chart" />, label: 'Tableau de bord', count: null },
+          { id: 'users', icon: <ProIcon name="users" />, label: 'Utilisateurs', count: usersList.length },
+          { id: 'requests', icon: <ProIcon name="edit" />, label: 'Demandes', count: pendingRequests.filter(r => r.status === 'pending').length },
+          { id: 'communications', icon: <ProIcon name="lock" />, label: 'Communications', count: complaintsList.length },
+          { id: 'pages', icon: <ProIcon name="map" />, label: 'Inspection', count: 32 },
+          { id: 'maintenance', icon: <ProIcon name="wrench" />, label: 'Maintenance', count: null }
         ].map(tab => (
           <button
             key={tab.id}
@@ -586,32 +587,32 @@ export default function SuperAdminGovernance({ setView }) {
       {activeTab === 'stats' && (
         <div className="card text-left" style={{ padding: '2rem', borderRadius: '16px' }}>
           <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--primary)', margin: '0 0 1.5rem 0' }}>
-            📊 Statistiques de la plateforme UNAMUSC
+            <ProIcon name="bar-chart" /> Statistiques de la plateforme UNAMUSC
           </h3>
 
           {statsLoading && (
             <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-sub)' }}>
-              <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>⏳</div>
+              <div style={{ fontSize: '2rem', marginBottom: '1rem' }}><ProIcon name="hourglass" /></div>
               <p>Chargement des statistiques en cours...</p>
             </div>
           )}
 
           {statsError && !statsLoading && !dashboardStats && (
             <div style={{ padding: '1.5rem', borderRadius: '12px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#ef4444', marginBottom: '1.5rem' }}>
-              <strong>⚠️ Erreur de chargement des statistiques</strong>
+              <strong><ProIcon name="alert-triangle" color="#d97706" /> Erreur de chargement des statistiques</strong>
               <p style={{ fontSize: '0.85rem', margin: '0.5rem 0 0' }}>{statsError}</p>
               <p style={{ fontSize: '0.82rem', margin: '0.5rem 0 0', color: 'var(--text-sub)' }}>
                 Vérifiez que le backend est démarré (port 5000) et que vous êtes authentifié.
               </p>
-              <button onClick={() => fetchDashboardStats()} className="btn btn-primary" style={{ marginTop: '0.75rem', borderRadius: '8px', fontSize: '0.85rem' }}>🔄 Réessayer</button>
+              <button onClick={() => fetchDashboardStats()} className="btn btn-primary" style={{ marginTop: '0.75rem', borderRadius: '8px', fontSize: '0.85rem' }}><ProIcon name="refresh" /> Réessayer</button>
             </div>
           )}
 
           {statsError && !statsLoading && dashboardStats && (
             <div style={{ padding: '1rem 1.5rem', borderRadius: '12px', background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', color: '#3b82f6', marginBottom: '1.5rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span>💡</span>
+              <span><ProIcon name="lightbulb" /></span>
               <span>{statsError}</span>
-              <button onClick={() => fetchDashboardStats()} style={{ marginLeft: 'auto', background: 'transparent', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '6px', padding: '0.25rem 0.6rem', fontSize: '0.78rem', color: '#3b82f6', cursor: 'pointer' }}>🔄 Réessayer</button>
+              <button onClick={() => fetchDashboardStats()} style={{ marginLeft: 'auto', background: 'transparent', border: '1px solid rgba(59,130,246,0.3)', borderRadius: '6px', padding: '0.25rem 0.6rem', fontSize: '0.78rem', color: '#3b82f6', cursor: 'pointer' }}><ProIcon name="refresh" /> Réessayer</button>
             </div>
           )}
 
@@ -633,19 +634,19 @@ export default function SuperAdminGovernance({ setView }) {
                   const taux = (tot && act !== null) ? Math.round((act / tot) * 100) : null;
                   
                   const kpis = [
-                    { label: 'Assurés totaux', value: tot, icon: '👥', color: '#3b82f6', bgGradient: 'linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(96, 165, 250, 0.18) 100%)', isMoney: false, view: 'beneficiaries', filter: { status: 'all' } },
-                    { label: 'Assurés actifs', value: act, icon: '💳', color: '#10b981', bgGradient: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(52, 211, 153, 0.18) 100%)', isMoney: false, view: 'beneficiaries', filter: { status: 'Actif' } },
-                    { label: 'Dossiers en attente', value: num(ben.pending), icon: '⏳', color: '#f59e0b', bgGradient: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(251, 191, 36, 0.18) 100%)', isMoney: false, view: 'beneficiaries', filter: { status: 'En attente' } },
-                    { label: 'Mutuelles actives', value: num(S.mutuelles), icon: '📋', color: '#8b5cf6', bgGradient: 'linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(167, 139, 250, 0.18) 100%)', isMoney: false, view: 'directory', filter: null },
-                    { label: 'Cotisations', value: cot, icon: '💳', color: '#0ea5e9', bgGradient: 'linear-gradient(135deg, rgba(14, 165, 233, 0.12) 0%, rgba(56, 189, 248, 0.18) 100%)', isMoney: true, view: 'cotisations', filter: null },
-                    { label: 'Dons', value: dons, icon: '❤️', color: '#ec4899', bgGradient: 'linear-gradient(135deg, rgba(236, 72, 153, 0.12) 0%, rgba(244, 114, 182, 0.18) 100%)', isMoney: true, view: 'payments', filter: null },
-                    { label: 'Fonds mobilisés', value: fonds, icon: '🏥', color: '#06b6d4', bgGradient: 'linear-gradient(135deg, rgba(6, 182, 212, 0.12) 0%, rgba(34, 211, 238, 0.18) 100%)', isMoney: true, view: 'payments', filter: null },
-                    { label: 'Taux couverture', value: taux, suffix: ' %', icon: '📈', color: '#22c55e', bgGradient: 'linear-gradient(135deg, rgba(34, 197, 94, 0.12) 0%, rgba(74, 222, 128, 0.18) 100%)', isMoney: false, view: 'dashboard', filter: null },
-                    { label: 'Prises en charge', value: num(cl.total), icon: '📋', color: '#f59e0b', bgGradient: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(251, 191, 36, 0.18) 100%)', isMoney: false, view: 'claims', filter: null },
-                    { label: 'Remboursements', value: num(cl.reimbursedAmount), icon: '💰', color: '#10b981', bgGradient: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(52, 211, 153, 0.18) 100%)', isMoney: true, view: 'claims', filter: null },
-                    { label: 'Sponsors actifs', value: num(par.sponsorsCount), icon: '🤝', color: '#8b5cf6', bgGradient: 'linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(167, 139, 250, 0.18) 100%)', isMoney: false, view: 'parrainage-solidaire', filter: null },
-                    { label: 'Filleuls', value: num(par.sponsoredCount), icon: '🎁', color: '#d97706', bgGradient: 'linear-gradient(135deg, rgba(217, 119, 6, 0.12) 0%, rgba(245, 158, 11, 0.18) 100%)', isMoney: false, view: 'parrainage-solidaire', filter: null },
-                    { label: 'Fonds parrainage', value: num(par.totalAmount), icon: '🪙', color: '#059669', bgGradient: 'linear-gradient(135deg, rgba(5, 150, 105, 0.12) 0%, rgba(16, 185, 129, 0.18) 100%)', isMoney: true, view: 'parrainage-solidaire', filter: null }
+                    { label: 'Assurés totaux', value: tot, icon: <ProIcon name="users" />, color: '#3b82f6', bgGradient: 'linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(96, 165, 250, 0.18) 100%)', isMoney: false, view: 'beneficiaries', filter: { status: 'all' } },
+                    { label: 'Assurés actifs', value: act, icon: <ProIcon name="credit-card" />, color: '#10b981', bgGradient: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(52, 211, 153, 0.18) 100%)', isMoney: false, view: 'beneficiaries', filter: { status: 'Actif' } },
+                    { label: 'Dossiers en attente', value: num(ben.pending), icon: <ProIcon name="hourglass" />, color: '#f59e0b', bgGradient: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(251, 191, 36, 0.18) 100%)', isMoney: false, view: 'beneficiaries', filter: { status: 'En attente' } },
+                    { label: 'Mutuelles actives', value: num(S.mutuelles), icon: <ProIcon name="clipboard-list" />, color: '#8b5cf6', bgGradient: 'linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(167, 139, 250, 0.18) 100%)', isMoney: false, view: 'directory', filter: null },
+                    { label: 'Cotisations', value: cot, icon: <ProIcon name="credit-card" />, color: '#0ea5e9', bgGradient: 'linear-gradient(135deg, rgba(14, 165, 233, 0.12) 0%, rgba(56, 189, 248, 0.18) 100%)', isMoney: true, view: 'cotisations', filter: null },
+                    { label: 'Dons', value: dons, icon: <ProIcon name="heart" color="#dc2626" />, color: '#ec4899', bgGradient: 'linear-gradient(135deg, rgba(236, 72, 153, 0.12) 0%, rgba(244, 114, 182, 0.18) 100%)', isMoney: true, view: 'payments', filter: null },
+                    { label: 'Fonds mobilisés', value: fonds, icon: <ProIcon name="hospital" />, color: '#06b6d4', bgGradient: 'linear-gradient(135deg, rgba(6, 182, 212, 0.12) 0%, rgba(34, 211, 238, 0.18) 100%)', isMoney: true, view: 'payments', filter: null },
+                    { label: 'Taux couverture', value: taux, suffix: ' %', icon: <ProIcon name="trending-up" />, color: '#22c55e', bgGradient: 'linear-gradient(135deg, rgba(34, 197, 94, 0.12) 0%, rgba(74, 222, 128, 0.18) 100%)', isMoney: false, view: 'dashboard', filter: null },
+                    { label: 'Prises en charge', value: num(cl.total), icon: <ProIcon name="clipboard-list" />, color: '#f59e0b', bgGradient: 'linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(251, 191, 36, 0.18) 100%)', isMoney: false, view: 'claims', filter: null },
+                    { label: 'Remboursements', value: num(cl.reimbursedAmount), icon: <ProIcon name="wallet" />, color: '#10b981', bgGradient: 'linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(52, 211, 153, 0.18) 100%)', isMoney: true, view: 'claims', filter: null },
+                    { label: 'Sponsors actifs', value: num(par.sponsorsCount), icon: <ProIcon name="handshake" />, color: '#8b5cf6', bgGradient: 'linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(167, 139, 250, 0.18) 100%)', isMoney: false, view: 'parrainage-solidaire', filter: null },
+                    { label: 'Filleuls', value: num(par.sponsoredCount), icon: <ProIcon name="gift" />, color: '#d97706', bgGradient: 'linear-gradient(135deg, rgba(217, 119, 6, 0.12) 0%, rgba(245, 158, 11, 0.18) 100%)', isMoney: false, view: 'parrainage-solidaire', filter: null },
+                    { label: 'Fonds parrainage', value: num(par.totalAmount), icon: <ProIcon name="coins" />, color: '#059669', bgGradient: 'linear-gradient(135deg, rgba(5, 150, 105, 0.12) 0%, rgba(16, 185, 129, 0.18) 100%)', isMoney: true, view: 'parrainage-solidaire', filter: null }
                   ];
                   
                   return kpis.map((kpi, i) => (
@@ -655,7 +656,7 @@ export default function SuperAdminGovernance({ setView }) {
                           {kpi.icon}
                         </div>
                         <span style={{ fontSize: '0.7rem', padding: '4px 10px', borderRadius: '12px', background: `${kpi.color}15`, color: kpi.color, fontWeight: '700', border: `1px solid ${kpi.color}30` }}>
-                          👉 Cliquer
+                          <ProIcon name="arrow-right" /> Cliquer
                         </span>
                       </div>
                       <div style={{ fontSize: kpi.isMoney ? '1.4rem' : '2.2rem', fontWeight: '800', color: kpi.color, lineHeight: 1.1, marginBottom: '8px', letterSpacing: '-0.02em' }}>
@@ -680,7 +681,7 @@ export default function SuperAdminGovernance({ setView }) {
               {/* Répartition par package si dispo */}
               {dashboardStats.byPackage && (
                 <div style={{ marginBottom: '1.5rem' }}>
-                  <h4 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '0.75rem' }}>📦 Répartition par formule (cliquez pour inspecter les assurés)</h4>
+                  <h4 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '0.75rem' }}><ProIcon name="package" /> Répartition par formule (cliquez pour inspecter les assurés)</h4>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.75rem' }}>
                     {(() => {
                       // byPackage est un TABLEAU [{ package, count }] renvoyé
@@ -752,7 +753,7 @@ export default function SuperAdminGovernance({ setView }) {
 
               {/* Métadonnées de la requête */}
               <div style={{ padding: '1rem', borderRadius: '10px', background: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.15)', fontSize: '0.8rem', color: 'var(--text-sub)' }}>
-                💡 Les données sont récupérées en temps réel depuis le backend via <code>/api/dashboard/stats</code>.
+                <ProIcon name="lightbulb" /> Les données sont récupérées en temps réel depuis le backend via <code>/api/dashboard/stats</code>.
                 {!statsError && <span style={{ color: '#10b981' }}> ● Synchronisé</span>}
               </div>
             </>
@@ -760,9 +761,9 @@ export default function SuperAdminGovernance({ setView }) {
 
           {!dashboardStats && !statsLoading && !statsError && (
             <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-sub)' }}>
-              <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>📭</div>
+              <div style={{ fontSize: '2rem', marginBottom: '1rem' }}><ProIcon name="inbox" /></div>
               <p>Aucune donnée statistique disponible pour le moment.</p>
-              <button onClick={() => fetchDashboardStats()} className="btn btn-primary" style={{ marginTop: '0.75rem', borderRadius: '8px' }}>🔄 Charger les statistiques</button>
+              <button onClick={() => fetchDashboardStats()} className="btn btn-primary" style={{ marginTop: '0.75rem', borderRadius: '8px' }}><ProIcon name="refresh" /> Charger les statistiques</button>
             </div>
           )}
         </div>
@@ -774,7 +775,7 @@ export default function SuperAdminGovernance({ setView }) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
             <div>
               <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--primary)', margin: 0 }}>
-                👥 Annuaire Centralisé des Utilisateurs & Rôles
+                <ProIcon name="users" /> Annuaire Centralisé des Utilisateurs & Rôles
               </h3>
               <span style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>
                 Gestion et émission de comptes pour les 13 profils d'accès sur toutes les Unions Départementales & Régionales
@@ -787,7 +788,7 @@ export default function SuperAdminGovernance({ setView }) {
                 style={{ borderRadius: '10px', fontWeight: '700', fontSize: '0.85rem' }}
                 onClick={() => setShowCreateModal(true)}
               >
-                ➕ Créer un compte universel (13 Profils & Unions)
+                <ProIcon name="plus" /> Créer un compte universel (13 Profils & Unions)
               </button>
 
               <input
@@ -861,7 +862,7 @@ export default function SuperAdminGovernance({ setView }) {
                         }}
                         style={{ padding: '0.3rem 0.6rem', fontSize: '0.75rem' }}
                       >
-                        ✏️ Éditer Rôle & Correctifs
+                        <ProIcon name="edit" /> Éditer Rôle & Correctifs
                       </button>
                     </td>
                   </tr>
@@ -883,7 +884,7 @@ export default function SuperAdminGovernance({ setView }) {
             }}>
               <div className="card text-left" style={{ width: '450px', padding: '2rem', borderRadius: '16px', background: 'var(--bg-card)' }}>
                 <h4 style={{ margin: '0 0 1rem 0', color: 'var(--primary)' }}>
-                  ✏️ Application de Correctif : {selectedUserEdit.name}
+                  <ProIcon name="edit" /> Application de Correctif : {selectedUserEdit.name}
                 </h4>
 
                 <div className="form-group">
@@ -917,7 +918,7 @@ export default function SuperAdminGovernance({ setView }) {
                     Annuler
                   </button>
                   <button className="btn btn-primary btn-sm" onClick={() => handleApplyUserCorrection(selectedUserEdit.id)}>
-                    💾 Enregistrer Correctif
+                    <ProIcon name="save" /> Enregistrer Correctif
                   </button>
                 </div>
               </div>
@@ -931,7 +932,7 @@ export default function SuperAdminGovernance({ setView }) {
       {activeTab === 'requests' && (
         <div className="card text-left" style={{ padding: '2rem', borderRadius: '16px' }}>
           <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--primary)', marginBottom: '0.5rem' }}>
-            📝 Demandes d'Ouverture de Compte en Attente de Validation
+            <ProIcon name="edit" /> Demandes d'Ouverture de Compte en Attente de Validation
           </h3>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', marginBottom: '1.5rem' }}>
             Examinez et accordez l'ouverture de compte pour les assurés et prestataires ayant entamé la procédure sur la plateforme.
@@ -961,8 +962,8 @@ export default function SuperAdminGovernance({ setView }) {
                         {req.firstName} {req.lastName}
                       </td>
                       <td style={{ padding: '0.75rem' }}>
-                        <div>📧 {req.email}</div>
-                        <small className="text-muted">📞 {req.phone}</small>
+                        <div><ProIcon name="mail" /> {req.email}</div>
+                        <small className="text-muted"><ProIcon name="phone" /> {req.phone}</small>
                       </td>
                       <td style={{ padding: '0.75rem' }}>
                         <span className="badge badge-info" style={{ padding: '0.25rem 0.6rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 'bold' }}>
@@ -985,14 +986,14 @@ export default function SuperAdminGovernance({ setView }) {
                               style={{ borderRadius: '8px', fontSize: '0.75rem', fontWeight: 'bold' }}
                               onClick={() => handleApproveAccountRequest(req.id)}
                             >
-                              ✅ Accorder l'ouverture
+                              <ProIcon name="check-circle" color="#059669" /> Accorder l'ouverture
                             </button>
                             <button
                               className="btn btn-outline btn-sm"
                               style={{ borderRadius: '8px', fontSize: '0.75rem', color: 'var(--danger)' }}
                               onClick={() => handleRefuseAccountRequest(req.id)}
                             >
-                              ❌ Refuser
+                              <ProIcon name="x-circle" color="#dc2626" /> Refuser
                             </button>
                           </div>
                         ) : (
@@ -1014,7 +1015,7 @@ export default function SuperAdminGovernance({ setView }) {
       {activeTab === 'communications' && (
         <div className="card text-left" style={{ padding: '2rem', borderRadius: '16px' }}>
           <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--primary)', marginBottom: '1rem' }}>
-            🔒 Registre Global des Communications Privées Prestataires
+            <ProIcon name="lock" /> Registre Global des Communications Privées Prestataires
           </h3>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', marginBottom: '1.5rem' }}>
             En tant que Super Admin, vous disposez d'un droit de regard complet sur toutes les communications chiffrées/privées envoyées par les prestataires de santé aux destinataires spécifiés.
@@ -1064,7 +1065,7 @@ export default function SuperAdminGovernance({ setView }) {
       {activeTab === 'pages' && (
         <div className="card text-left" style={{ padding: '2rem', borderRadius: '16px' }}>
           <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--primary)', marginBottom: '1rem' }}>
-            🗺️ Navigateur d'Inspection de Toutes les Vues de la Plateforme
+            <ProIcon name="map" /> Navigateur d'Inspection de Toutes les Vues de la Plateforme
           </h3>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', marginBottom: '1.5rem' }}>
             Accédez directement à n'importe quelle page de l'application en mode super-utilisateur pour vérifier la conformité du design et des données.
@@ -1137,10 +1138,10 @@ export default function SuperAdminGovernance({ setView }) {
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
               <h3 style={{ fontSize: '1.15rem', fontWeight: '800', color: 'var(--primary)', margin: 0 }}>
-                ➕ Création Universelle de Compte CSU (13 Profils & Unions)
+                <ProIcon name="plus" /> Création Universelle de Compte CSU (13 Profils & Unions)
               </h3>
               <button className="btn btn-outline btn-sm" onClick={() => setShowCreateModal(false)} style={{ borderRadius: '8px' }}>
-                ✖️
+                <ProIcon name="x" />️
               </button>
             </div>
 
@@ -1240,7 +1241,7 @@ export default function SuperAdminGovernance({ setView }) {
                   Annuler
                 </button>
                 <button type="submit" className="btn btn-success" style={{ flex: 1, fontWeight: '800' }}>
-                  ⚡ Créer & Activer le Compte
+                  <ProIcon name="zap" /> Créer & Activer le Compte
                 </button>
               </div>
             </form>
@@ -1265,7 +1266,7 @@ export default function SuperAdminGovernance({ setView }) {
           fontSize: '0.9rem',
           border: '1px solid #4338ca'
         }}>
-          ✅ {toastMessage}
+          <ProIcon name="check-circle" color="#059669" /> {toastMessage}
         </div>
       )}
     </div>

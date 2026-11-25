@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { getBeneficiaryInfo } from '../utils/csuFormatter';
 import { formatTitleCase, formatSentenceCase } from '../utils/formatters';
 import { detectMsdCode, getMsdWhatsappInfo, refreshMsdWhatsappDirectory, compressImageFile, getMsdWhatsappDirectory } from '../utils/msdWhatsappConfig';
+import ProIcon from '../components/ProIcon';
 
 export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, partnerUser = null, setView = null }) {
   const defaultOrders = [
@@ -428,7 +429,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
         </head>
         <body>
           <div class="no-print">
-            <button onclick="window.print()" class="btn btn-success fw-bold px-4 py-2 me-2" style="background: #059669; border-color: #059669;">🖨️ Imprimer / Télécharger le Bon PDF A4</button>
+            <button onclick="window.print()" class="btn btn-success fw-bold px-4 py-2 me-2" style="background: #059669; border-color: #059669;"><ProIcon name="printer" /> Imprimer / Télécharger le Bon PDF A4</button>
             <button onclick="window.close()" class="btn btn-secondary fw-bold px-3 py-2">Fermer la fenêtre</button>
           </div>
 
@@ -458,19 +459,19 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
             <!-- Identification Assuré -->
             <div class="row g-3 mb-4 p-3 rounded-3" style="background: #f8fafc; border: 1.5px solid #cbd5e1;">
               <div class="col-6">
-                <span class="small fw-bold d-block text-muted">👤 Bénéficiaire assuré :</span>
+                <span class="small fw-bold d-block text-muted"><ProIcon name="user" /> Bénéficiaire assuré :</span>
                 <h5 class="fw-bold mb-0" style="color: #0f172a;">${voucher.first_name} ${voucher.last_name}</h5>
                 <small class="text-muted">N° Carte CSU : <strong>${voucher.cmu_number}</strong></small>
               </div>
               <div class="col-6 text-end">
-                <span class="small fw-bold d-block text-muted">📅 Date d'émission & validité :</span>
+                <span class="small fw-bold d-block text-muted"><ProIcon name="calendar" /> Date d'émission & validité :</span>
                 <strong class="d-block" style="color: #0f172a;">${new Date(voucher.created_at || Date.now()).toLocaleDateString('fr-FR')}</strong>
                 <span class="badge bg-warning text-dark fw-bold">Valide 48 Heures</span>
               </div>
             </div>
 
             <!-- Liste des Médicaments & Tarification Officielle Pharmacie -->
-            <h6 class="fw-bold mb-2" style="color: #047857;">💊 Détail des médicaments prescrits & tarification officielle :</h6>
+            <h6 class="fw-bold mb-2" style="color: #047857;"><ProIcon name="pill" /> Détail des médicaments prescrits & tarification officielle :</h6>
             <table class="table table-bordered align-middle mb-4">
               <thead style="background: #f1f5f9;">
                 <tr>
@@ -726,10 +727,10 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
         <div style={{ maxWidth: '850px', margin: '0 auto' }}>
           <div className="card shadow-lg border-0 p-4 p-md-5 text-center my-4" style={{ borderRadius: '24px', background: 'var(--bg-card)', color: 'var(--text-main)', border: '2px solid #ef4444' }}>
             <div className="d-inline-flex align-items-center justify-content-center p-3 rounded-circle mb-3 mx-auto" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', width: '70px', height: '70px' }}>
-              <span style={{ fontSize: '2.2rem' }}>⚠️</span>
+              <span style={{ fontSize: '2.2rem' }}><ProIcon name="alert-triangle" color="#d97706" /></span>
             </div>
             
-            <h3 className="fw-bold mb-2 text-danger" style={{ fontSize: '1.4rem' }}>⚠️ Accès à la pharmacie refusé — Couverture CSU suspendue</h3>
+            <h3 className="fw-bold mb-2 text-danger" style={{ fontSize: '1.4rem' }}><ProIcon name="alert-triangle" color="#d97706" /> Accès à la pharmacie refusé — Couverture CSU suspendue</h3>
             
             <div className="mb-3">
               <code className="px-3 py-1.5 bg-dark text-warning border border-warning rounded-3 fw-bold d-inline-block" style={{ fontSize: '1.05rem', color: '#f59e0b' }}>
@@ -760,7 +761,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                   window.location.hash = '#payments';
                 }}
               >
-                💳 Renouveler ma cotisation (10 500 FCFA)
+                <ProIcon name="credit-card" /> Renouveler ma cotisation (10 500 FCFA)
               </button>
             </div>
           </div>
@@ -796,7 +797,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               border: '1px solid rgba(255, 255, 255, 0.3)'
             }}
           >
-            🇸🇳 UNAMUSC Sénégal — Bons de Commande Médicaments (Prise en charge 50%)
+            <ProIcon name="senegal-flag" /> UNAMUSC Sénégal — Bons de Commande Médicaments (Prise en charge 50%)
           </span>
           <h1 className="fw-bold mb-2 text-white text-center" style={{ fontSize: '2rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
             {lang === 'wo' ? '💊 Bonu Garab Pharmacie Tiers-Payant' : '💊 Bons de Commande de Médicaments'}
@@ -828,7 +829,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
             className="btn fw-bold px-3.5 py-2 d-inline-flex align-items-center gap-2 text-white shadow-sm"
             style={{ borderRadius: '12px', background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', border: 'none' }}
           >
-            💊 {lang === 'wo' ? 'Bonu Garab (Pharmacie 50%)' : 'Bons de Commande Médicaments (Pharmacie 50%)'}
+            <ProIcon name="pill" /> {lang === 'wo' ? 'Bonu Garab (Pharmacie 50%)' : 'Bons de Commande Médicaments (Pharmacie 50%)'}
           </button>
         </div>
         <div className="d-flex align-items-center gap-2 flex-wrap">
@@ -852,7 +853,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
             style={{ borderRadius: '10px', background: 'rgba(37, 211, 102, 0.14)', color: '#25d366', border: '1.5px solid #25d366' }}
             onClick={() => openOrderWhatsAppModal(lastCreatedOrder || visibleOrders[0] || orders[0])}
           >
-            📲 {lang === 'wo' ? 'Jot sa Bon ci WhatsApp' : 'Recevoir mon Bon sur WhatsApp'}
+            <ProIcon name="smartphone" /> {lang === 'wo' ? 'Jot sa Bon ci WhatsApp' : 'Recevoir mon Bon sur WhatsApp'}
           </button>
         </div>
       </div>
@@ -902,7 +903,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
 
       {redeemSuccess && (
         <div className="alert alert-success d-flex align-items-center mb-4 rounded-3 shadow-sm border-0">
-          <span className="fs-4 me-2">✅</span>
+          <span className="fs-4 me-2"><ProIcon name="check-circle" color="#059669" /></span>
           <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 w-100" style={{ color: 'var(--text-main)' }}>
             <span>{redeemSuccess}</span>
             {(lastCreatedOrder || visibleOrders[0]) && (
@@ -912,7 +913,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                 style={{ background: '#25d366', border: 'none', borderRadius: '10px' }}
                 onClick={() => openOrderWhatsAppModal(lastCreatedOrder || visibleOrders[0])}
               >
-                📲 Recevoir / Envoyer sur WhatsApp
+                <ProIcon name="smartphone" /> Recevoir / Envoyer sur WhatsApp
               </button>
             )}
           </div>
@@ -921,7 +922,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
 
       {agentValidationMsg && (
         <div className="alert alert-info d-flex align-items-center mb-4 rounded-3 shadow-sm border-0">
-          <span className="fs-4 me-2">🛡️</span>
+          <span className="fs-4 me-2"><ProIcon name="shield-check" /></span>
           <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 w-100" style={{ color: 'var(--text-main)' }}>
             <span>{agentValidationMsg}</span>
             {lastCreatedOrder && (
@@ -931,7 +932,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                 style={{ background: '#25d366', border: 'none', borderRadius: '10px' }}
                 onClick={() => openOrderWhatsAppModal(lastCreatedOrder)}
               >
-                📲 Notifier l'assuré sur WhatsApp
+                <ProIcon name="smartphone" /> Notifier l'assuré sur WhatsApp
               </button>
             )}
           </div>
@@ -950,7 +951,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
           border: isSuperAdmin ? '1px solid rgba(234,179,8,0.4)' : 'none'
         }}>
           <span style={{ fontSize: '1.6rem' }}>
-            {isSuperAdmin ? '👑' : isAgent ? '🛡️' : isPharmacist ? '💊' : '🩺'}
+            {isSuperAdmin ? '👑' : isAgent ? '🛡️' : isPharmacist ? <ProIcon name="pill" /> : <ProIcon name="stethoscope" />}
           </span>
           <div className="d-flex flex-column gap-1">
             <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.05rem', color: 'inherit', letterSpacing: '-0.01em' }}>
@@ -1057,9 +1058,9 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
         <div className="mb-4 p-3.5 rounded-4" style={{ background: 'var(--bg-body)', border: '1.5px dashed var(--primary)' }}>
           <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
             <label className="form-label small fw-extrabold mb-0 d-flex align-items-center gap-2 text-primary" style={{ fontSize: '0.95rem' }}>
-              <span>📷 Photo / Scan de l'ordonnance médicale (Smartphone, Tablette ou Ordinateur) *</span>
+              <span><ProIcon name="camera" /> Photo / Scan de l'ordonnance médicale (Smartphone, Tablette ou Ordinateur) *</span>
             </label>
-            {prescriptionPhoto && <span className="badge bg-success text-white">🟢 Ordonnance originale numérisée & jointe</span>}
+            {prescriptionPhoto && <span className="badge bg-success text-white"><ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Ordonnance originale numérisée & jointe</span>}
           </div>
 
           <input 
@@ -1079,7 +1080,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                 style={{ borderRadius: '12px', background: '#059669', borderColor: '#059669', fontSize: '0.9rem' }}
                 onClick={() => document.getElementById('desktopPrescriptionFileInput')?.click()}
               >
-                <span>📷</span> Prendre en photo / Scanner l'ordonnance
+                <span><ProIcon name="camera" /></span> Prendre en photo / Scanner l'ordonnance
               </button>
               <button 
                 type="button" 
@@ -1087,7 +1088,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                 style={{ borderRadius: '12px', fontSize: '0.9rem' }}
                 onClick={() => document.getElementById('desktopPrescriptionFileInput')?.click()}
               >
-                <span>📁</span> Importer un fichier image / PDF
+                <span><ProIcon name="folder" /></span> Importer un fichier image / PDF
               </button>
             </div>
           ) : (
@@ -1107,12 +1108,12 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                 onClick={() => { setPrescriptionPhoto(null); setPrescriptionFileName(''); }}
                 style={{ borderRadius: '10px' }}
               >
-                🗑️ Remplacer
+                <ProIcon name="trash" /> Remplacer
               </button>
             </div>
           )}
           <small className="text-muted d-block mt-2" style={{ fontSize: '0.78rem' }}>
-            💡 Vous pouvez prendre une photo directe avec la caméra de votre téléphone/tablette ou importer le fichier scanné depuis votre ordinateur.
+            <ProIcon name="lightbulb" /> Vous pouvez prendre une photo directe avec la caméra de votre téléphone/tablette ou importer le fichier scanné depuis votre ordinateur.
           </small>
         </div>
 
@@ -1160,7 +1161,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                 className="btn text-white w-100 fw-bold"
                 style={{ height: '48px', borderRadius: '10px', background: 'var(--primary)', borderColor: 'var(--primary)' }}
               >
-                ➕ Ajouter
+                <ProIcon name="plus" /> Ajouter
               </button>
             </div>
           </div>
@@ -1168,7 +1169,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
 
         {items.length > 0 && (
           <div className="border rounded-3 p-3.5 mb-3" style={{ background: 'var(--bg-body)', borderColor: 'var(--border-color)' }}>
-            <h6 className="fw-bold mb-3" style={{ color: 'var(--text-main)' }}>💊 Médicaments sur ce bon de commande :</h6>
+            <h6 className="fw-bold mb-3" style={{ color: 'var(--text-main)' }}><ProIcon name="pill" /> Médicaments sur ce bon de commande :</h6>
             <div className="list-group mb-3">
               {items.map((it, idx) => (
                 <div key={idx} className="list-group-item d-flex justify-content-between align-items-center p-3 rounded-3 mb-2" style={{ background: 'var(--card-bg)', borderColor: 'var(--border-color)', color: 'var(--text-main)' }}>
@@ -1182,7 +1183,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                       <small className="text-success">Pris en charge CSU (50%): {((it.price * it.qty) * 0.5).toLocaleString()} FCFA</small>
                     </div>
                     <button className="btn btn-sm btn-outline-danger py-1 px-2" onClick={() => handleRemoveItem(idx)}>
-                      🗑️
+                      <ProIcon name="trash" />
                     </button>
                   </div>
                 </div>
@@ -1219,7 +1220,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
       {/* BANNIÈRE SÉCURITÉ S'IL S'AGIT D'UN VISITEUR NON CONNECTÉ SANS RECHERCHE */}
       {isPublic && !publicSearchCmu && (
         <div className="card shadow-sm border-0 p-4 mb-4 text-center rounded-4" style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.85) 0%, rgba(4, 120, 87, 0.9) 100%), url("/csu_bsf_real.png") center/cover no-repeat', color: '#ffffff', border: 'none' }}>
-          <div className="fs-1 mb-2">🔒</div>
+          <div className="fs-1 mb-2"><ProIcon name="lock" /></div>
           <h4 className="fw-bold text-white">Accès sécurisé aux bons de commande pharmacie</h4>
           <p className="mx-auto" style={{ maxWidth: '650px', lineHeight: '1.6', color: 'rgba(255,255,255,0.9)' }}>
             Par mesure de protection des données de santé, la consultation des bons de commande est strictement réservée aux assurés identifiés ou aux pharmaciens agréés UNAMUSC.
@@ -1228,7 +1229,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
           <div className="d-flex justify-content-center align-items-center gap-3 flex-wrap mt-2">
             {setView && (
               <button className="btn fw-bold px-4 py-2.5" onClick={() => setView('login')} style={{ borderRadius: '12px', background: '#ffffff', color: '#047857' }}>
-                🔐 Se connecter à mon espace assuré / pharmacie
+                <ProIcon name="lock" /> Se connecter à mon espace assuré / pharmacie
               </button>
             )}
           </div>
@@ -1245,7 +1246,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                 style={{ borderRadius: '12px 0 0 12px', height: '48px' }}
               />
               <button className="btn btn-success fw-bold px-4" style={{ borderRadius: '0 12px 12px 0', background: '#059669' }}>
-                🔍 Consulter
+                <ProIcon name="search" /> Consulter
               </button>
             </div>
           </div>
@@ -1257,7 +1258,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
         <div className="card shadow-sm border-0 p-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
           <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
             <h4 className="fw-bold mb-0" style={{ color: 'var(--text-main)' }}>
-              📋 {isDoctor ? 'Ordonnances & bons de commande prescrits' : isAgent ? 'Gestion & validation des bons pharmacie UNAMUSC' : 'Mes bons de commande médicaments (48h)'}
+              <ProIcon name="clipboard-list" /> {isDoctor ? 'Ordonnances & bons de commande prescrits' : isAgent ? 'Gestion & validation des bons pharmacie UNAMUSC' : 'Mes bons de commande médicaments (48h)'}
             </h4>
 
             <div className="d-flex align-items-center gap-2 flex-wrap">
@@ -1279,12 +1280,12 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                   });
                 }}
               >
-                <span>➕ Émettre un bon de commande pharmacie</span>
+                <span><ProIcon name="plus" /> Émettre un bon de commande pharmacie</span>
               </button>
 
               {isCitizen && (
                 <span className="badge bg-success-subtle text-success border border-success px-3 py-2 fw-bold" style={{ borderRadius: '12px' }}>
-                  👤 Assuré connecté : {activeFirstName} {activeLastName} ({activeCmuNumber})
+                  <ProIcon name="user" /> Assuré connecté : {activeFirstName} {activeLastName} ({activeCmuNumber})
                 </span>
               )}
             </div>
@@ -1294,7 +1295,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
             <div className="text-center py-5 text-muted">Chargement des bons de commande...</div>
           ) : visibleOrders.length === 0 ? (
             <div className="text-center py-5 text-muted">
-              <span style={{ fontSize: '3rem' }}>💊</span>
+              <span style={{ fontSize: '3rem' }}><ProIcon name="pill" /></span>
               <p className="mt-2" style={{ fontSize: '0.9rem' }}>
                 {isCitizen 
                   ? 'Aucun bon de commande disponible pour votre compte assuré.' 
@@ -1338,7 +1339,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                             {ord.order_code || `ORD-2026-${ord.id}`}
                           </code>
                           <small className="text-muted d-block mt-0.5" style={{ fontSize: '0.82rem' }}>
-                            📅 {new Date(ord.created_at).toLocaleDateString('fr-FR')}
+                            <ProIcon name="calendar" /> {new Date(ord.created_at).toLocaleDateString('fr-FR')}
                           </small>
                         </td>
 
@@ -1379,7 +1380,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                           <div className="d-flex flex-wrap gap-1">
                             {itemsList.map((i, idx) => (
                               <span key={idx} className="badge bg-dark-subtle text-body border me-1 my-1 p-2" style={{ borderRadius: '6px', fontSize: '0.8rem' }}>
-                                💊 {i.name} (x{i.qty})
+                                <ProIcon name="pill" /> {i.name} (x{i.qty})
                               </span>
                             ))}
                           </div>
@@ -1408,17 +1409,17 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                         {/* 5. Chrono validité */}
                         <td style={{ padding: '1.1rem 1rem', border: '1px solid rgba(255, 255, 255, 0.2)', verticalAlign: 'top' }}>
                           <span className="badge bg-warning text-dark px-3 py-2 fw-bold d-inline-block shadow-sm" style={{ borderRadius: '10px', fontSize: '0.78rem' }}>
-                            ⏳ Validité 48h
+                            <ProIcon name="hourglass" /> Validité 48h
                           </span>
                         </td>
 
                         {/* 6. Statut & homologation */}
                         <td style={{ padding: '1.1rem 1rem', border: '1px solid rgba(255, 255, 255, 0.2)', verticalAlign: 'top' }}>
-                          {ord.status === 'active' && <span className="badge bg-success px-3 py-2 text-white fw-bold d-inline-block shadow-sm" style={{ borderRadius: '12px', fontSize: '0.8rem' }}>✅ Actif (Prêt)</span>}
-                          {ord.status === 'used' && <span className="badge bg-secondary px-3 py-2 text-white fw-bold d-inline-block shadow-sm" style={{ borderRadius: '12px', fontSize: '0.8rem' }}>🔒 Délivré en pharmacie</span>}
-                          {ord.status === 'expired' && <span className="badge bg-danger px-3 py-2 text-white fw-bold d-inline-block shadow-sm" style={{ borderRadius: '12px', fontSize: '0.8rem' }}>⚠️ Expiré</span>}
-                          {ord.status === 'pending_review' && <span className="badge px-3 py-2 fw-bold d-inline-block shadow-sm" style={{ borderRadius: '12px', background: '#f59e0b', color: '#0f172a', fontSize: '0.8rem' }}>⏳ En attente validation ordonnance</span>}
-                          {ord.status === 'rejected' && <span className="badge bg-danger px-3 py-2 text-white fw-bold d-inline-block shadow-sm" style={{ borderRadius: '12px', fontSize: '0.8rem' }}>❌ Ordonnance rejetée</span>}
+                          {ord.status === 'active' && <span className="badge bg-success px-3 py-2 text-white fw-bold d-inline-block shadow-sm" style={{ borderRadius: '12px', fontSize: '0.8rem' }}><ProIcon name="check-circle" color="#059669" /> Actif (Prêt)</span>}
+                          {ord.status === 'used' && <span className="badge bg-secondary px-3 py-2 text-white fw-bold d-inline-block shadow-sm" style={{ borderRadius: '12px', fontSize: '0.8rem' }}><ProIcon name="lock" /> Délivré en pharmacie</span>}
+                          {ord.status === 'expired' && <span className="badge bg-danger px-3 py-2 text-white fw-bold d-inline-block shadow-sm" style={{ borderRadius: '12px', fontSize: '0.8rem' }}><ProIcon name="alert-triangle" color="#d97706" /> Expiré</span>}
+                          {ord.status === 'pending_review' && <span className="badge px-3 py-2 fw-bold d-inline-block shadow-sm" style={{ borderRadius: '12px', background: '#f59e0b', color: '#0f172a', fontSize: '0.8rem' }}><ProIcon name="hourglass" /> En attente validation ordonnance</span>}
+                          {ord.status === 'rejected' && <span className="badge bg-danger px-3 py-2 text-white fw-bold d-inline-block shadow-sm" style={{ borderRadius: '12px', fontSize: '0.8rem' }}><ProIcon name="x-circle" color="#dc2626" /> Ordonnance rejetée</span>}
                         </td>
 
                         {/* 7. Actions */}
@@ -1430,7 +1431,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                               onClick={() => generateAndPrintPurchaseOrderPDF(ord)}
                               style={{ borderRadius: '10px', fontSize: '0.82rem' }}
                             >
-                              📄 PDF
+                              <ProIcon name="file-text" /> PDF
                             </button>
 
                             {canValidateOrders && ord.status === 'pending_review' && (
@@ -1441,7 +1442,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                                   onClick={() => handleApproveOrder(ord)}
                                   style={{ borderRadius: '10px', fontSize: '0.82rem', background: '#10b981', borderColor: '#10b981' }}
                                 >
-                                  ✅ Valider ordonnance
+                                  <ProIcon name="check-circle" color="#059669" /> Valider ordonnance
                                 </button>
                                 <button
                                   type="button"
@@ -1449,7 +1450,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                                   onClick={() => { setValidatingOrder(ord); setAgentRejectNote(''); }}
                                   style={{ borderRadius: '10px', fontSize: '0.82rem' }}
                                 >
-                                  ❌ Rejeter
+                                  <ProIcon name="x-circle" color="#dc2626" /> Rejeter
                                 </button>
                               </>
                             )}
@@ -1461,7 +1462,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                               style={{ borderRadius: '10px', fontSize: '0.82rem', background: 'rgba(37, 211, 102, 0.16)', color: '#25d366', border: '1.5px solid #25d366' }}
                               title="Recevoir ou envoyer ce bon de commande sur WhatsApp"
                             >
-                              📲 WhatsApp
+                              <ProIcon name="smartphone" /> WhatsApp
                             </button>
 
                             <button
@@ -1471,7 +1472,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                               style={{ borderRadius: '10px', fontSize: '0.82rem' }}
                               title="Aperçu du bon de commande"
                             >
-                              👁️ Bon
+                              <ProIcon name="eye" /> Bon
                             </button>
 
                             {/* Validation délivrance — Pharmacien / SuperAdmin uniquement sur bons actifs */}
@@ -1482,7 +1483,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                                 onClick={() => openPharmacistEditModal(ord)}
                                 style={{ borderRadius: '10px', fontSize: '0.82rem', background: '#059669', borderColor: '#059669' }}
                               >
-                                💊 Valider pharmacie
+                                <ProIcon name="pill" /> Valider pharmacie
                               </button>
                             )}
 
@@ -1504,7 +1505,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                                 setIsNewOrderObj(false);
                               }}
                             >
-                              ✏️ Modifier
+                              <ProIcon name="edit" /> Modifier
                             </button>
 
                             {/* Supprimer le bon de commande */}
@@ -1522,7 +1523,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                               title="Supprimer le bon"
                               onClick={() => handleDeleteOrderObj(ord)}
                             >
-                              🗑️ Supprimer
+                              <ProIcon name="trash" /> Supprimer
                             </button>
                           </div>
                         </td>
@@ -1615,7 +1616,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
           <div className="shadow-lg border-0" style={{ maxWidth: '560px', width: '100%', borderRadius: '20px', background: 'var(--bg-card, #1e293b)', backgroundColor: '#1e293b', color: 'var(--text-main)', margin: 'auto', border: '1px solid var(--border-color, rgba(255,255,255,0.15))', overflow: 'hidden' }}>
             <div className="p-3.5 d-flex justify-content-between align-items-center" style={{ background: '#dc2626', color: '#ffffff' }}>
               <h5 className="fw-bold mb-0" style={{ fontSize: '1.1rem' }}>
-                ❌ Rejet d'ordonnance — #{validatingOrder.order_code}
+                <ProIcon name="x-circle" color="#dc2626" /> Rejet d'ordonnance — #{validatingOrder.order_code}
               </h5>
               <button type="button" className="btn-close btn-close-white" onClick={() => setValidatingOrder(null)}></button>
             </div>
@@ -1644,7 +1645,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                   style={{ background: '#dc2626', borderColor: '#dc2626', borderRadius: '10px' }}
                   onClick={() => handleRejectOrder(validatingOrder.id, agentRejectNote)}
                 >
-                  ❌ Confirmer le rejet
+                  <ProIcon name="x-circle" color="#dc2626" /> Confirmer le rejet
                 </button>
               </div>
             </div>
@@ -1660,7 +1661,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
             {/* Header émeraude */}
             <div className="p-3.5 d-flex justify-content-between align-items-center" style={{ background: 'linear-gradient(135deg, #047857 0%, #059669 50%, #10b981 100%)', color: '#ffffff' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '1.2rem' }}>💊</span>
+                <span style={{ fontSize: '1.2rem' }}><ProIcon name="pill" /></span>
                 <h5 className="fw-bold mb-0" style={{ fontSize: '1.05rem', color: '#ffffff', textTransform: 'none' }}>
                   Validation pharmacie & tarification officielle — #{editingVoucher.order_code}
                 </h5>
@@ -1720,7 +1721,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                   Annuler
                 </button>
                 <button type="submit" className="btn fw-bold text-white" style={{ background: 'linear-gradient(135deg, #047857 0%, #059669 50%, #10b981 100%)', border: 'none', borderRadius: '12px', padding: '0.65rem 1.5rem', boxShadow: '0 4px 14px rgba(5,150,105,0.3)' }}>
-                  ✅ Valider prix & édition automatique PDF
+                  <ProIcon name="check-circle" color="#059669" /> Valider prix & édition automatique PDF
                 </button>
               </div>
             </form>
@@ -1735,7 +1736,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
           <div className="shadow-lg border-0" style={{ maxWidth: '800px', width: '100%', maxHeight: '90vh', overflowY: 'auto', borderRadius: '22px', background: 'var(--bg-card, #1e293b)', backgroundColor: '#1e293b', color: 'var(--text-main)', margin: 'auto', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
             <div className="p-3.5 d-flex justify-content-between align-items-center" style={{ borderBottom: '1px solid var(--border-color)', background: 'var(--bg-card-subtle)' }}>
               <h5 className="fw-bold mb-0" style={{ color: 'var(--text-main)', fontSize: '1.05rem', textTransform: 'none' }}>
-                💊 Bon pharmacie tiers-payant — #{selectedVoucher.order_code || `ORD-${selectedVoucher.id}`}
+                <ProIcon name="pill" /> Bon pharmacie tiers-payant — #{selectedVoucher.order_code || `ORD-${selectedVoucher.id}`}
               </h5>
               <button type="button" className="btn-close" onClick={() => setSelectedVoucher(null)}></button>
             </div>
@@ -1770,7 +1771,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                       const items = typeof selectedVoucher.items_json === 'string' ? JSON.parse(selectedVoucher.items_json) : selectedVoucher.items_json;
                       return items.map((it, idx) => (
                         <li key={idx} className="list-group-item d-flex justify-content-between align-items-center">
-                          <span>💊 {it.name} (x{it.qty})</span>
+                          <span><ProIcon name="pill" /> {it.name} (x{it.qty})</span>
                           <strong>{(it.price * it.qty).toLocaleString()} FCFA</strong>
                       </li>
                     ));
@@ -1800,7 +1801,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                   onClick={() => generateAndPrintPurchaseOrderPDF(selectedVoucher)}
                   style={{ background: '#059669', borderColor: '#059669', borderRadius: '12px' }}
                 >
-                  📥 Télécharger le bon PDF
+                  <ProIcon name="download" /> Télécharger le bon PDF
                 </button>
                 <button
                   type="button"
@@ -1812,7 +1813,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                   }}
                   style={{ background: '#25d366', borderColor: '#25d366', borderRadius: '12px' }}
                 >
-                  📲 Recevoir sur WhatsApp
+                  <ProIcon name="smartphone" /> Recevoir sur WhatsApp
                 </button>
                 <button
                   type="button"
@@ -1825,7 +1826,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                   }}
                   style={{ borderRadius: '12px' }}
                 >
-                  🔍 Vérifier (#/verify)
+                  <ProIcon name="search" /> Vérifier (#/verify)
                 </button>
                 <button type="button" className="btn btn-secondary fw-bold" style={{ borderRadius: '12px' }} onClick={() => setSelectedVoucher(null)}>
                   Fermer
@@ -1847,7 +1848,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
             <div className="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
               <div className="d-flex align-items-center gap-3">
                 <div style={{ width: '48px', height: '48px', borderRadius: '16px', background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 'bold' }}>
-                  💊
+                  <ProIcon name="pill" />
                 </div>
                 <div>
                   <h5 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.15rem' }}>
@@ -1939,11 +1940,11 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                   value={editingOrderObj.status || 'active'}
                   onChange={(e) => setEditingOrderObj({ ...editingOrderObj, status: e.target.value })}
                 >
-                  <option value="active">✅ Actif (Prêt pour pharmacie)</option>
-                  <option value="used">🔒 Délivré en pharmacie</option>
-                  <option value="pending_review">⏳ En attente validation ordonnance</option>
-                  <option value="rejected">❌ Rejeté</option>
-                  <option value="expired">⚠️ Expiré</option>
+                  <option value="active">Actif (Prêt pour pharmacie)</option>
+                  <option value="used">Délivré en pharmacie</option>
+                  <option value="pending_review">En attente validation ordonnance</option>
+                  <option value="rejected">Rejeté</option>
+                  <option value="expired">Expiré</option>
                 </select>
               </div>
             </div>
@@ -1974,7 +1975,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                 className="btn px-4.5 py-2.5 fw-bold text-white" 
                 style={{ background: '#059669', border: 'none', borderRadius: '12px', fontSize: '0.9rem', boxShadow: '0 4px 14px rgba(5,150,105,0.3)' }}
               >
-                💾 Enregistrer le bon pharmacie
+                <ProIcon name="save" /> Enregistrer le bon pharmacie
               </button>
             </div>
 
@@ -1992,7 +1993,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
           <div style={{ maxWidth: '580px', width: '100%', background: 'var(--bg-card, #1e293b)', color: 'var(--text-main, #ffffff)', borderRadius: '24px', border: '2px solid #25d366', boxShadow: '0 25px 60px rgba(0,0,0,0.5)', overflow: 'hidden', margin: 'auto' }}>
             <div className="p-3.5 d-flex justify-content-between align-items-center" style={{ background: 'linear-gradient(135deg, #128c7e 0%, #25d366 100%)', color: '#ffffff' }}>
               <div className="d-flex align-items-center gap-2">
-                <span style={{ fontSize: '1.35rem' }}>📲</span>
+                <span style={{ fontSize: '1.35rem' }}><ProIcon name="smartphone" /></span>
                 <div>
                   <h5 className="fw-bold mb-0" style={{ fontSize: '1.05rem', color: '#ffffff' }}>
                     {lang === 'wo' ? 'Jot Bonu Garab bi ci WhatsApp' : 'Recevoir / Envoyer le Bon de Commande par WhatsApp'}
@@ -2008,7 +2009,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
             <div className="p-4">
               <div className="mb-3">
                 <label className="form-label small fw-bold mb-1" style={{ color: '#25d366' }}>
-                  📱 {lang === 'wo' ? 'Nimero téléphone WhatsApp assuré bi :' : 'Numéro WhatsApp de l\'assuré (Sénégal +221) :'}
+                  <ProIcon name="smartphone" /> {lang === 'wo' ? 'Nimero téléphone WhatsApp assuré bi :' : 'Numéro WhatsApp de l\'assuré (Sénégal +221) :'}
                 </label>
                 <input
                   type="tel"
@@ -2048,7 +2049,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                   style={{ background: '#25d366', border: 'none', borderRadius: '12px', boxShadow: '0 4px 14px rgba(37, 211, 102, 0.35)' }}
                   onClick={() => handleSendOrderWhatsApp(whatsappOrderModal, whatsappPhoneInput)}
                 >
-                  📲 Ouvrir WhatsApp et Envoyer maintenant
+                  <ProIcon name="smartphone" /> Ouvrir WhatsApp et Envoyer maintenant
                 </button>
               </div>
             </div>
@@ -2100,7 +2101,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               className="d-flex justify-content-between align-items-center"
             >
               <div className="d-flex align-items-center gap-2">
-                <span style={{ fontSize: '1.6rem' }}>💊</span>
+                <span style={{ fontSize: '1.6rem' }}><ProIcon name="pill" /></span>
                 <div>
                   <h5 className="fw-bold mb-0 text-white" style={{ fontSize: '1.05rem' }}>
                     Demander un Bon de Commande par WhatsApp
@@ -2131,7 +2132,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               {/* Choix de la MSD / Département */}
               <div className="mb-3">
                 <label className="form-label small fw-bold mb-1" style={{ color: 'var(--text-main)' }}>
-                  🏛️ Mutuelle de Santé (MSD) / Département de rattachement :
+                  <ProIcon name="landmark" /> Mutuelle de Santé (MSD) / Département de rattachement :
                 </label>
                 <select
                   className="form-select"
@@ -2168,7 +2169,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                 </div>
                 <div className="col-md-6">
                   <label className="form-label small fw-bold mb-1" style={{ color: 'var(--text-main)' }}>
-                    💰 Montant estimé ordonnance (FCFA) :
+                    <ProIcon name="wallet" /> Montant estimé ordonnance (FCFA) :
                   </label>
                   <input
                     type="number"
@@ -2186,7 +2187,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               {/* Médicaments prescrits */}
               <div className="mb-3">
                 <label className="form-label small fw-bold mb-1" style={{ color: 'var(--text-main)' }}>
-                  💊 Médicaments prescrits sur l'ordonnance :
+                  <ProIcon name="pill" /> Médicaments prescrits sur l'ordonnance :
                 </label>
                 <input
                   type="text"
@@ -2202,7 +2203,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               {/* PIÈCE JOINTE : PHOTO DE L'ORDONNANCE */}
               <div className="mb-3 p-3 rounded-3" style={{ background: 'rgba(5, 150, 105, 0.08)', border: '1.5px dashed #059669' }}>
                 <label className="form-label small fw-bold mb-1 d-flex align-items-center justify-content-between" style={{ color: 'var(--text-main)' }}>
-                  <span>📎 Joindre l'ordonnance médicale (Photo / Scan) :</span>
+                  <span><ProIcon name="paperclip" /> Joindre l'ordonnance médicale (Photo / Scan) :</span>
                   <span className="badge bg-success" style={{ fontSize: '0.72rem' }}>Recommandé</span>
                 </label>
                 <input
@@ -2214,13 +2215,13 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                 />
                 {waAttachment ? (
                   <div className="d-flex align-items-center gap-2 mt-2 text-success fw-bold small">
-                    <span>✓ Photo de l'ordonnance prête et compressée ({Math.round(waAttachment.length / 1024)} Ko)</span>
+                    <span><ProIcon name="check" color="#059669" /> Photo de l'ordonnance prête et compressée ({Math.round(waAttachment.length / 1024)} Ko)</span>
                     <button
                       type="button"
                       className="btn btn-sm btn-link text-danger p-0 ms-auto text-decoration-none"
                       onClick={() => setWaAttachment('')}
                     >
-                      ✕ Supprimer
+                      <ProIcon name="x" /> Supprimer
                     </button>
                   </div>
                 ) : (
@@ -2234,7 +2235,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
               <div className="row g-2 mb-3">
                 <div className="col-md-6">
                   <label className="form-label small fw-bold mb-1" style={{ color: 'var(--text-main)' }}>
-                    📱 Votre numéro WhatsApp (pour recevoir) :
+                    <ProIcon name="smartphone" /> Votre numéro WhatsApp (pour recevoir) :
                   </label>
                   <input
                     type="tel"
@@ -2247,7 +2248,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                 </div>
                 <div className="col-md-6">
                   <label className="form-label small fw-bold mb-1" style={{ color: 'var(--text-main)' }}>
-                    🏢 Guichet WhatsApp de la Mutuelle :
+                    <ProIcon name="building2" /> Guichet WhatsApp de la Mutuelle :
                   </label>
                   <input
                     type="tel"
@@ -2266,7 +2267,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                         onClick={handleSaveMsdWhatsappNumber}
                         title="Enregistrer ce numéro comme contact officiel de cette MSD"
                       >
-                        💾 Sauvegarder pour la MSD {waSelectedMsd}
+                        <ProIcon name="save" /> Sauvegarder pour la MSD {waSelectedMsd}
                       </button>
                       {waSaveMsg && <span className="text-success small fw-bold">{waSaveMsg}</span>}
                     </div>
@@ -2311,7 +2312,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                   className="btn fw-bold px-4 text-white d-inline-flex align-items-center gap-2"
                   style={{ background: '#25d366', border: 'none', borderRadius: '12px', boxShadow: '0 4px 14px rgba(37, 211, 102, 0.35)' }}
                 >
-                  💬 Enregistrer & Envoyer ma demande sur WhatsApp
+                  <ProIcon name="message-square" /> Enregistrer & Envoyer ma demande sur WhatsApp
                 </button>
               </div>
             </form>
@@ -2331,7 +2332,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
             <div 
               style={{ width: '72px', height: '72px', borderRadius: '24px', background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.35) 100%)', border: '2px solid #ef4444', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2.2rem', margin: '0 auto 1.25rem auto', boxShadow: '0 10px 25px rgba(239, 68, 68, 0.3)' }}
             >
-              🗑️
+              <ProIcon name="trash" />
             </div>
 
             <h4 className="fw-extrabold mb-2" style={{ color: 'var(--text-main)', fontSize: '1.25rem' }}>
@@ -2363,7 +2364,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                   setConfirmDeleteObj(null);
                 }}
               >
-                🗑️ Supprimer définitivement
+                <ProIcon name="trash" /> Supprimer définitivement
               </button>
             </div>
           </div>

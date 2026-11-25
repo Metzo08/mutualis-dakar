@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import DeleteModal from '../components/DeleteModal';
+import ProIcon from '../components/ProIcon';
 
 export default function Complaints({ lang, portalMode, citizenUser, agentUser, partnerUser }) {
   const [deleteConfirmTarget, setDeleteConfirmTarget] = useState(null);
@@ -269,7 +270,7 @@ export default function Complaints({ lang, portalMode, citizenUser, agentUser, p
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
           {submitSuccess ? (
             <div className="card text-center fade-in-up" style={{ padding: '3rem' }}>
-              <div style={{ fontSize: '3.5rem', marginBottom: '1.5rem' }}>✅</div>
+              <div style={{ fontSize: '3.5rem', marginBottom: '1.5rem' }}><ProIcon name="check-circle" color="#059669" /></div>
               <h3 style={{ fontSize: '1.4rem', color: 'var(--success)', marginBottom: '1rem' }}>Enregistré !</h3>
               <p style={{ color: 'var(--text-sub)', lineHeight: '1.6', marginBottom: '2rem' }}>
                 {t.successMsg}
@@ -352,7 +353,7 @@ export default function Complaints({ lang, portalMode, citizenUser, agentUser, p
             return (
               <div className="card mt-4 p-4 fade-in-up" style={{ borderRadius: '16px', background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
                 <h5 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)', fontSize: '1rem' }}>
-                  <span>📋</span> Mes réclamations déposées ({myComplaints.length})
+                  <span><ProIcon name="clipboard-list" /></span> Mes réclamations déposées ({myComplaints.length})
                 </h5>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                   {myComplaints.map(c => (
@@ -447,7 +448,7 @@ export default function Complaints({ lang, portalMode, citizenUser, agentUser, p
                             style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }} 
                             onClick={() => setSelectedComplaint(comp)}
                           >
-                            👁️
+                            <ProIcon name="eye" />
                           </button>
                           {comp.status === 'open' && (
                             <button 
@@ -455,7 +456,7 @@ export default function Complaints({ lang, portalMode, citizenUser, agentUser, p
                               style={{ color: 'var(--success)', borderColor: 'var(--success)', padding: '0.25rem 0.5rem', fontSize: '0.75rem' }} 
                               onClick={() => handleResolve(comp.id)}
                             >
-                              ✓
+                              <ProIcon name="check" color="#059669" />
                             </button>
                           )}
                           <button 
@@ -463,7 +464,7 @@ export default function Complaints({ lang, portalMode, citizenUser, agentUser, p
                             style={{ color: 'var(--danger)', borderColor: 'var(--danger)', padding: '0.25rem 0.5rem', fontSize: '0.75rem' }} 
                             onClick={() => handleDeleteComplaint(comp.id)}
                           >
-                            🗑️
+                            <ProIcon name="trash" />
                           </button>
                         </div>
                       </td>
@@ -487,10 +488,10 @@ export default function Complaints({ lang, portalMode, citizenUser, agentUser, p
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(5,8,15,0.8)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999, padding: '1.5rem' }}>
           <div className="card fade-in-up" style={{ width: '100%', maxWidth: '450px', padding: '2.5rem 2rem', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '24px', textAlign: 'left', position: 'relative' }}>
             <h2 style={{ fontSize: '1.25rem', color: 'var(--text-main)', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem', marginBottom: '1.25rem', fontWeight: '800' }}>
-              ✓ Résoudre la réclamation
+              <ProIcon name="check" color="#059669" /> Résoudre la réclamation
             </h2>
             <button onClick={() => setResolvingId(null)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'transparent', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--text-sub)' }}>
-              ✕
+              <ProIcon name="x" />
             </button>
             <form onSubmit={handleSaveResolution} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div className="form-group" style={{ margin: 0 }}>
@@ -517,10 +518,10 @@ export default function Complaints({ lang, portalMode, citizenUser, agentUser, p
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(5,8,15,0.8)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999, padding: '1.5rem' }}>
           <div className="card fade-in-up" style={{ width: '100%', maxWidth: '500px', padding: '2.5rem 2rem', background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '24px', textAlign: 'left', position: 'relative' }}>
             <h2 style={{ fontSize: '1.25rem', color: 'var(--text-main)', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.75rem', marginBottom: '1.25rem', fontWeight: '800' }}>
-              📋 Fiche de réclamation
+              <ProIcon name="clipboard-list" /> Fiche de réclamation
             </h2>
             <button onClick={() => setSelectedComplaint(null)} style={{ position: 'absolute', top: '24px', right: '24px', background: 'transparent', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--text-sub)' }}>
-              ✕
+              <ProIcon name="x" />
             </button>
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.9rem' }}>
@@ -566,7 +567,7 @@ export default function Complaints({ lang, portalMode, citizenUser, agentUser, p
                   style={{ width: '100%', marginTop: '1rem' }}
                   onClick={() => { handleResolve(selectedComplaint.id); }}
                 >
-                  ✓ Résoudre ce problème
+                  <ProIcon name="check" color="#059669" /> Résoudre ce problème
                 </button>
               )}
             </div>

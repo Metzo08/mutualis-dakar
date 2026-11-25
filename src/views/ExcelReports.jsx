@@ -15,6 +15,7 @@
  */
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch } from '../utils/api';
+import ProIcon from '../components/ProIcon';
 
 const REPORT_TYPES = [
   { value: 'beneficiaries', label: '📋 Bénéficiaires (champs principaux)' },
@@ -87,7 +88,7 @@ export default function ExcelReports() { // props historiques conservées par Ap
 
   return (
     <div className="container py-4">
-      <h1 className="h4 mb-1">📊 Rapports Excel</h1>
+      <h1 className="h4 mb-1"><ProIcon name="bar-chart" /> Rapports Excel</h1>
       <p className="text-muted small mb-3">
         Tous les rapports sont générés côté serveur, filtrés selon votre périmètre MSD et journalisés.
         Le format <strong>.xlsx</strong> est le format de référence ; les montants sont calculés et vérifiés par le serveur.

@@ -5,6 +5,7 @@ import {
 } from 'recharts';
 import { getStoredMembers } from '../utils/beneficiaryStore';
 import { DEPARTMENTAL_UNIONS } from '../utils/cardPrograms';
+import ProIcon from '../components/ProIcon';
 
 /**
  * ═══════════════════════════════════════════════════════════════
@@ -397,7 +398,7 @@ export default function RegionalStats({ lang }) {
       }}>
         <div className="container" style={{ position: 'relative', zIndex: 2 }}>
           <h1 style={{ color: '#fff', fontSize: '2.2rem', fontWeight: '900', marginBottom: '0.6rem', textShadow: '0 2px 6px rgba(0,0,0,0.35)' }}>
-            🗺️ {t.title}
+            <ProIcon name="map" /> {t.title}
           </h1>
           <p style={{ color: '#f8fafc', fontSize: '1.05rem', fontWeight: '600', maxWidth: '750px', margin: '0 auto', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
             {t.subtitle}
@@ -414,7 +415,7 @@ export default function RegionalStats({ lang }) {
           <div className="mb-4">
             <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
               <label className="fw-extrabold text-sub small m-0" style={{ fontSize: '0.92rem' }}>
-                📅 {t.filterPeriod}
+                <ProIcon name="calendar" /> {t.filterPeriod}
               </label>
               
               {/* Actions Rapides Export + Refresh */}
@@ -425,7 +426,7 @@ export default function RegionalStats({ lang }) {
                   style={{ borderRadius: '14px', fontSize: '0.84rem', minHeight: '44px', background: '#059669', color: '#fff', border: '1.5px solid #10b981' }}
                   onClick={handleExportCSV}
                 >
-                  <span>📥</span> Exporter CSV
+                  <span><ProIcon name="download" /></span> Exporter CSV
                 </button>
                 <button 
                   type="button" 
@@ -433,7 +434,7 @@ export default function RegionalStats({ lang }) {
                   style={{ borderRadius: '14px', fontSize: '0.84rem', minHeight: '44px', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)' }}
                   onClick={handleRefresh}
                 >
-                  <span className={loading ? 'spinner-border spinner-border-sm' : ''}>🔄</span> {t.refresh}
+                  <span className={loading ? 'spinner-border spinner-border-sm' : ''}><ProIcon name="refresh" /></span> {t.refresh}
                 </button>
               </div>
             </div>
@@ -479,7 +480,7 @@ export default function RegionalStats({ lang }) {
           <div className="pt-4 border-top" style={{ borderColor: 'var(--border-color)' }}>
             <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
               <label className="fw-extrabold text-sub small m-0" style={{ fontSize: '0.92rem' }}>
-                📍 {t.filterZone}
+                <ProIcon name="map-pin" /> {t.filterZone}
               </label>
               
               {/* Tri Dynamique des Graphiques */}
@@ -491,9 +492,9 @@ export default function RegionalStats({ lang }) {
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                 >
-                  <option value="BENEF">👥 Effectif Assurés (Décroissant)</option>
-                  <option value="REIMB">💰 Remboursements (FCFA)</option>
-                  <option value="RATE">⚡ Taux d'activité (%)</option>
+                  <option value="BENEF">Effectif Assurés (Décroissant)</option>
+                  <option value="REIMB">Remboursements (FCFA)</option>
+                  <option value="RATE">Taux d'activité (%)</option>
                   <option value="NAME">🔤 Nom Région (A-Z)</option>
                 </select>
               </div>
@@ -543,14 +544,14 @@ export default function RegionalStats({ lang }) {
           <div className="card p-4 rounded-4 shadow-sm hover-lift" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '22px' }}>
             <div className="d-flex align-items-center justify-content-between mb-2">
               <span className="text-sub fw-bold" style={{ fontSize: '0.84rem' }}>{t.totalBenef}</span>
-              <span style={{ fontSize: '1.4rem' }}>👥</span>
+              <span style={{ fontSize: '1.4rem' }}><ProIcon name="users" /></span>
             </div>
             <div className="fw-black text-primary" style={{ fontSize: '1.8rem' }}>
               {fmt(dynamicData.kpis.totalBenef)}
             </div>
             <div className="d-flex align-items-center gap-2 mt-2">
               <span className="badge bg-success-subtle text-success fw-extrabold px-2.5 py-1" style={{ fontSize: '0.76rem', borderRadius: '8px' }}>
-                🟢 {dynamicData.kpis.avgRate}% actifs
+                <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> {dynamicData.kpis.avgRate}% actifs
               </span>
               <small className="text-muted" style={{ fontSize: '0.74rem' }}>{fmt(dynamicData.kpis.totalActive)} couverts</small>
             </div>
@@ -560,14 +561,14 @@ export default function RegionalStats({ lang }) {
           <div className="card p-4 rounded-4 shadow-sm hover-lift" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '22px' }}>
             <div className="d-flex align-items-center justify-content-between mb-2">
               <span className="text-sub fw-bold" style={{ fontSize: '0.84rem' }}>{t.totalReimbursed}</span>
-              <span style={{ fontSize: '1.4rem' }}>💰</span>
+              <span style={{ fontSize: '1.4rem' }}><ProIcon name="wallet" /></span>
             </div>
             <div className="fw-black text-emerald" style={{ fontSize: '1.8rem', color: '#10b981' }}>
               {fmt(dynamicData.kpis.totalReimbursed)} <span style={{ fontSize: '0.95rem' }}>FCFA</span>
             </div>
             <div className="d-flex align-items-center gap-2 mt-2">
               <span className="badge bg-primary-subtle text-primary fw-extrabold px-2.5 py-1" style={{ fontSize: '0.76rem', borderRadius: '8px' }}>
-                🏥 {fmt(dynamicData.kpis.totalClaims)} actes
+                <ProIcon name="hospital" /> {fmt(dynamicData.kpis.totalClaims)} actes
               </span>
               <small className="text-muted" style={{ fontSize: '0.74rem' }}>pris en charge</small>
             </div>
@@ -577,14 +578,14 @@ export default function RegionalStats({ lang }) {
           <div className="card p-4 rounded-4 shadow-sm hover-lift" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '22px' }}>
             <div className="d-flex align-items-center justify-content-between mb-2">
               <span className="text-sub fw-bold" style={{ fontSize: '0.84rem' }}>{t.activeMutuelles}</span>
-              <span style={{ fontSize: '1.4rem' }}>🏛️</span>
+              <span style={{ fontSize: '1.4rem' }}><ProIcon name="landmark" /></span>
             </div>
             <div className="fw-black text-warning" style={{ fontSize: '1.8rem' }}>
               {fmt(dynamicData.kpis.totalMutuelles)}
             </div>
             <div className="d-flex align-items-center gap-2 mt-2">
               <span className="badge bg-warning-subtle text-warning fw-extrabold px-2.5 py-1" style={{ fontSize: '0.76rem', borderRadius: '8px' }}>
-                ⚡ 100% connectées
+                <ProIcon name="zap" /> 100% connectées
               </span>
               <small className="text-muted" style={{ fontSize: '0.74rem' }}>via SenMutuelles</small>
             </div>
@@ -594,7 +595,7 @@ export default function RegionalStats({ lang }) {
           <div className="card p-4 rounded-4 shadow-sm hover-lift" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '22px' }}>
             <div className="d-flex align-items-center justify-content-between mb-2">
               <span className="text-sub fw-bold" style={{ fontSize: '0.84rem' }}>{t.coverageScope}</span>
-              <span style={{ fontSize: '1.4rem' }}>🇸🇳</span>
+              <span style={{ fontSize: '1.4rem' }}><ProIcon name="senegal-flag" /></span>
             </div>
             <div className="fw-black text-info" style={{ fontSize: '1.8rem' }}>
               {dynamicData.regions.length} <span style={{ fontSize: '0.92rem', color: 'var(--text-sub)' }}>{dynamicData.kpis.scopeLabel}</span>
@@ -615,7 +616,7 @@ export default function RegionalStats({ lang }) {
           <div className="card p-4 rounded-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '24px' }}>
             <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
               <div>
-                <h3 style={{ fontSize: '1.05rem', fontWeight: '800', margin: 0 }}>📍 {t.byRegion}</h3>
+                <h3 style={{ fontSize: '1.05rem', fontWeight: '800', margin: 0 }}><ProIcon name="map-pin" /> {t.byRegion}</h3>
                 <small className="text-muted" style={{ fontSize: '0.75rem' }}>
                   {selectedZone === 'dakar' ? 'Détail des 5 départements de Dakar' : 'Répartition régionale active'}
                 </small>
@@ -635,7 +636,7 @@ export default function RegionalStats({ lang }) {
                   }}
                   onClick={() => setChartType('BAR')}
                 >
-                  📊 Barres
+                  <ProIcon name="bar-chart" /> Barres
                 </button>
                 <button 
                   type="button" 
@@ -649,7 +650,7 @@ export default function RegionalStats({ lang }) {
                   }}
                   onClick={() => setChartType('AREA')}
                 >
-                  📈 Aire
+                  <ProIcon name="trending-up" /> Aire
                 </button>
               </div>
             </div>
@@ -700,13 +701,13 @@ export default function RegionalStats({ lang }) {
               </ResponsiveContainer>
             ) : <Empty />}
             <small className="text-muted d-block text-center mt-2" style={{ fontSize: '0.74rem' }}>
-              💡 Cliquez sur une barre pour inspecter les détails de la région
+              <ProIcon name="lightbulb" /> Cliquez sur une barre pour inspecter les détails de la région
             </small>
           </div>
 
           {/* Graphique 2 : Prises en charge & Remboursements */}
           <div className="card p-4 rounded-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '24px' }}>
-            <h3 style={{ fontSize: '1.05rem', fontWeight: '800', marginBottom: '1rem' }}>💊 {t.claimsByRegion}</h3>
+            <h3 style={{ fontSize: '1.05rem', fontWeight: '800', marginBottom: '1rem' }}><ProIcon name="pill" /> {t.claimsByRegion}</h3>
             {dynamicData.regions.length > 0 ? (
               <ResponsiveContainer width="100%" height={320}>
                 <BarChart data={dynamicData.regions.map(r => ({ région: r.region, demandes: r.claims, remboursé: r.reimbursed }))} layout="vertical">
@@ -734,7 +735,7 @@ export default function RegionalStats({ lang }) {
 
           {/* Graphique 3 : Top Mutuelles */}
           <div className="card p-4 rounded-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '24px' }}>
-            <h3 style={{ fontSize: '1.05rem', fontWeight: '800', marginBottom: '1rem' }}>🏆 {t.topMutuelles}</h3>
+            <h3 style={{ fontSize: '1.05rem', fontWeight: '800', marginBottom: '1rem' }}><ProIcon name="trophy" color="#eab308" /> {t.topMutuelles}</h3>
             {dynamicData.mutuelles.length > 0 ? (
               <ResponsiveContainer width="100%" height={380}>
                 <BarChart data={dynamicData.mutuelles.slice(0, 8)} layout="vertical">
@@ -756,7 +757,7 @@ export default function RegionalStats({ lang }) {
 
           {/* Graphique 4 : Cotisations par statut */}
           <div className="card p-4 rounded-4 shadow-sm" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '24px' }}>
-            <h3 style={{ fontSize: '1.05rem', fontWeight: '800', marginBottom: '1rem' }}>💰 {t.cotisations}</h3>
+            <h3 style={{ fontSize: '1.05rem', fontWeight: '800', marginBottom: '1rem' }}><ProIcon name="wallet" /> {t.cotisations}</h3>
             {dynamicData.cotisationsDataAvailable && dynamicData.cotisations.length > 0 ? (
               <ResponsiveContainer width="100%" height={380}>
                 <PieChart>
@@ -784,7 +785,7 @@ export default function RegionalStats({ lang }) {
                 className="text-center py-5 px-3"
                 style={{ border: '1.5px dashed var(--border-color)', borderRadius: '18px', color: 'var(--text-sub)' }}
               >
-                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>📭</div>
+                <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}><ProIcon name="inbox" /></div>
                 <div style={{ fontSize: '0.9rem', fontWeight: '700', marginBottom: '0.35rem' }}>
                   Aucune donnée de cotisation disponible
                 </div>
@@ -804,7 +805,7 @@ export default function RegionalStats({ lang }) {
           <div className="card p-4 rounded-4 mb-4 shadow-lg border-2 border-emerald fade-in-up" style={{ background: 'var(--bg-card)', borderRadius: '24px', borderColor: '#10b981' }}>
             <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 pb-3 mb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
               <div className="d-flex align-items-center gap-3">
-                <span style={{ fontSize: '2rem' }}>📍</span>
+                <span style={{ fontSize: '2rem' }}><ProIcon name="map-pin" /></span>
                 <div>
                   <h4 className="fw-black mb-0 text-success" style={{ fontSize: '1.3rem' }}>
                     Détail : {selectedRegionDetail.region}
@@ -818,7 +819,7 @@ export default function RegionalStats({ lang }) {
                 style={{ borderRadius: '12px', background: 'var(--bg-card-subtle)', color: 'var(--text-main)', border: '1.5px solid var(--border-color)' }}
                 onClick={() => setSelectedRegionDetail(null)}
               >
-                ✕ Fermer le détail
+                <ProIcon name="x" /> Fermer le détail
               </button>
             </div>
 
@@ -909,7 +910,7 @@ export default function RegionalStats({ lang }) {
             </div>
           ) : (
             <div className="p-4 text-center text-muted" style={{ background: 'var(--bg-card-subtle)', borderRadius: '16px' }}>
-              🔍 Aucune commune ne correspond à votre recherche "{searchCommune}".
+              <ProIcon name="search" /> Aucune commune ne correspond à votre recherche "{searchCommune}".
             </div>
           )}
         </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ProIcon from '../components/ProIcon';
 
 const formatBadgeName = (name) => {
   if (!name) return '';
@@ -68,7 +69,7 @@ export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
     nextBadge: {
       id: 4,
       name: 'Champion Régional Or',
-      icon: '👑',
+      icon: <ProIcon name="crown" />,
       description: 'Cumuler 1000 points de fidélité pour débloquer le niveau Or',
       threshold: 1000,
       progress: 45
@@ -76,10 +77,10 @@ export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
     unlockedCount: 3,
     totalBadges: 4,
     badges: [
-      { id: 1, name: 'Assuré Fidèle 2026', icon: '🏆', unlocked: true, description: 'Cotisation 2026 intégralement à jour' },
-      { id: 2, name: 'Prévention Santé', icon: '🩺', unlocked: true, description: 'Bilan de santé annuel effectué' },
-      { id: 3, name: 'Parrain Solidaire', icon: '🤝', unlocked: true, description: '1 famille parrainée dans le département' },
-      { id: 4, name: 'Champion Régional Or', icon: '👑', unlocked: false, description: 'Cumuler 1000 points de fidélité' }
+      { id: 1, name: 'Assuré Fidèle 2026', icon: <ProIcon name="trophy" color="#eab308" />, unlocked: true, description: 'Cotisation 2026 intégralement à jour' },
+      { id: 2, name: 'Prévention Santé', icon: <ProIcon name="stethoscope" />, unlocked: true, description: 'Bilan de santé annuel effectué' },
+      { id: 3, name: 'Parrain Solidaire', icon: <ProIcon name="handshake" />, unlocked: true, description: '1 famille parrainée dans le département' },
+      { id: 4, name: 'Champion Régional Or', icon: <ProIcon name="crown" />, unlocked: false, description: 'Cumuler 1000 points de fidélité' }
     ],
     history: [
       { id: 1, reason: 'cotisation_a_temps', points: 150, created_at: '2026-01-04T10:15:00Z' },
@@ -112,7 +113,7 @@ export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
           if (typeof d.nextBadge === 'string') {
             d.nextBadge = {
               name: d.nextBadge,
-              icon: '👑',
+              icon: <ProIcon name="crown" />,
               description: 'Cumuler 1000 points de fidélité',
               threshold: 1000,
               progress: Math.min(100, Math.round((d.totalPoints / 1000) * 100))
@@ -145,7 +146,7 @@ export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
   useEffect(() => { fetchData(); }, [beneficiaryId]);
 
   if (loading) {
-    return <div className="card text-center" style={{ padding: '3rem' }}>⭐ {t.loading}</div>;
+    return <div className="card text-center" style={{ padding: '3rem' }}><ProIcon name="star" color="#f59e0b" /> {t.loading}</div>;
   }
 
   if (!data) {
@@ -156,7 +157,7 @@ export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
   const currentLevel = data.level || 'Argent 🥈';
   const nextBadgeObj = typeof data.nextBadge === 'object' && data.nextBadge !== null ? data.nextBadge : {
     name: typeof data.nextBadge === 'string' ? data.nextBadge : 'Champion Régional Or',
-    icon: '👑',
+    icon: <ProIcon name="crown" />,
     description: 'Cumuler 1000 points de fidélité',
     threshold: 1000,
     progress: Math.min(100, Math.round((currentPoints / 1000) * 100))
@@ -177,7 +178,7 @@ export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
         textAlign: 'center'
       }}>
         <div className="container" style={{ position: 'relative', zIndex: 2 }}>
-          <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>⭐ {t.title}</h1>
+          <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}><ProIcon name="star" color="#f59e0b" /> {t.title}</h1>
           <p style={{ color: '#f8fafc', fontSize: '1rem', fontWeight: '500', maxWidth: '700px', margin: '0 auto', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>{t.subtitle}</p>
         </div>
       </section>
@@ -186,7 +187,7 @@ export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
         {isAgent && (
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1.5rem' }}>
             <button className="btn btn-outline btn-sm" onClick={() => setShowLeaderboard(!showLeaderboard)}>
-              🏆 {t.leaderboard}
+              <ProIcon name="trophy" color="#eab308" /> {t.leaderboard}
             </button>
           </div>
         )}
@@ -221,7 +222,7 @@ export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
 
       {/* Badges */}
       <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
-        <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '1rem' }}>🏅 {t.badges}</h3>
+        <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '1rem' }}><ProIcon name="award" color="#eab308" /> {t.badges}</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '1rem' }}>
           {(data.badges || []).map((b, i) => (
             <div key={i} style={{
@@ -241,7 +242,7 @@ export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
 
       {/* Historique */}
       <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
-        <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '1rem' }}>📜 {t.history}</h3>
+        <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '1rem' }}><ProIcon name="scroll-text" /> {t.history}</h3>
         {data.history && data.history.length > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {data.history.map((h, i) => (
@@ -260,7 +261,7 @@ export default function Loyalty({ lang, citizenUser, agentUser, portalMode }) {
       {/* Classement (agent) */}
       {isAgent && showLeaderboard && (
         <div className="card" style={{ padding: '1.5rem' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '1rem' }}>🏆 {t.leaderboard}</h3>
+          <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '1rem' }}><ProIcon name="trophy" color="#eab308" /> {t.leaderboard}</h3>
           {leaderboard.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               {leaderboard.map((p, i) => (

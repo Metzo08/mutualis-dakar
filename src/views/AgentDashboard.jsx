@@ -5,6 +5,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 import DeleteModal from '../components/DeleteModal';
+import ProIcon from '../components/ProIcon';
 
 // Tableau de bord agent CSU : KPIs temps réel, graphiques (Recharts) et export CSV.
 export default function AgentDashboard({ lang, agentUser, setView }) {
@@ -256,7 +257,7 @@ export default function AgentDashboard({ lang, agentUser, setView }) {
   if (loading) {
     return (
       <div className="card text-center" style={{ padding: '3rem', margin: '2rem auto' }}>
-        <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>📊</div>
+        <div style={{ fontSize: '2rem', marginBottom: '1rem' }}><ProIcon name="bar-chart" /></div>
         <p>{t.loading}</p>
       </div>
     );
@@ -265,7 +266,7 @@ export default function AgentDashboard({ lang, agentUser, setView }) {
   if (error) {
     return (
       <div className="card text-center" style={{ padding: '3rem', margin: '2rem auto' }}>
-        <p style={{ color: 'var(--danger)' }}>❌ {error}</p>
+        <p style={{ color: 'var(--danger)' }}><ProIcon name="x-circle" color="#dc2626" /> {error}</p>
         <button className="btn btn-primary" onClick={fetchStats} style={{ marginTop: '1rem' }}>
           {t.refresh}
         </button>
@@ -280,7 +281,7 @@ export default function AgentDashboard({ lang, agentUser, setView }) {
     return (
       <div className="fade-in-up container py-4 px-3 px-md-4" style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <div className="card p-5 text-center" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border-color)', borderRadius: '24px' }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>📭</div>
+          <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}><ProIcon name="inbox" /></div>
           <h5 className="fw-extrabold mb-2" style={{ fontSize: '1.15rem' }}>Données indisponibles</h5>
           <p className="mb-3" style={{ color: 'var(--text-sub)', fontSize: '0.9rem' }}>
             Les statistiques de la plateforme n'ont pas pu être récupérées du serveur.
@@ -327,7 +328,7 @@ export default function AgentDashboard({ lang, agentUser, setView }) {
       }}>
         <div className="container" style={{ position: 'relative', zIndex: 2 }}>
           <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
-            📊 {t.title} — {isSuperAdmin ? 'Super administration (Sénégal)' : `MSD mutuelle de santé départementale de ${agentUser?.department || 'Dakar'}`}
+            <ProIcon name="bar-chart" /> {t.title} — {isSuperAdmin ? 'Super administration (Sénégal)' : `MSD mutuelle de santé départementale de ${agentUser?.department || 'Dakar'}`}
           </h1>
           <p style={{ color: '#f8fafc', fontSize: '1rem', fontWeight: '500', maxWidth: '700px', margin: '0 auto', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>{t.subtitle}</p>
         </div>
@@ -335,7 +336,7 @@ export default function AgentDashboard({ lang, agentUser, setView }) {
 
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 1rem' }}>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginBottom: '1.5rem' }}>
-          <button className="btn btn-outline btn-sm" onClick={fetchStats}>🔄 {t.refresh}</button>
+          <button className="btn btn-outline btn-sm" onClick={fetchStats}><ProIcon name="refresh" /> {t.refresh}</button>
           <button className="btn btn-primary btn-sm" onClick={exportCsv}>⬇️ {t.exportCsv}</button>
         </div>
 
@@ -366,7 +367,7 @@ export default function AgentDashboard({ lang, agentUser, setView }) {
         {/* Évolution des adhésions */}
         <div className="card" style={{ padding: '1.5rem' }}>
           <div className="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
-            <h3 style={{ fontSize: '1rem', fontWeight: '700', margin: 0 }}>📈 {t.adhesionsTrend}</h3>
+            <h3 style={{ fontSize: '1rem', fontWeight: '700', margin: 0 }}><ProIcon name="trending-up" /> {t.adhesionsTrend}</h3>
             {stats.adhesionsTrend && stats.adhesionsTrend.length > 0 && (
               <div className="d-flex align-items-center gap-2">
                 <span className="badge bg-success-subtle text-success fw-bold px-2 py-1" style={{ fontSize: '0.74rem', borderRadius: '6px' }}>
@@ -439,7 +440,7 @@ export default function AgentDashboard({ lang, agentUser, setView }) {
 
         {/* Répartition par formule */}
         <div className="card" style={{ padding: '1.5rem' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '1rem' }}>📦 {t.byPackage}</h3>
+          <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '1rem' }}><ProIcon name="package" /> {t.byPackage}</h3>
           {stats.byPackage && stats.byPackage.length > 0 ? (
             <div>
               <ResponsiveContainer width="100%" height={210}>
@@ -509,7 +510,7 @@ export default function AgentDashboard({ lang, agentUser, setView }) {
 
         {/* Top 10 mutuelles */}
          <div className="card" style={{ padding: '1.5rem' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '1rem' }}>🏆 {t.byMutuelle}</h3>
+          <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '1rem' }}><ProIcon name="trophy" color="#eab308" /> {t.byMutuelle}</h3>
           {stats.byMutuelle && stats.byMutuelle.length > 0 ? (
             <ResponsiveContainer width="100%" height={400}>
               <BarChart data={stats.byMutuelle.map((m) => {
@@ -536,7 +537,7 @@ export default function AgentDashboard({ lang, agentUser, setView }) {
 
         {/* Bénéficiaires par commune */}
         <div className="card" style={{ padding: '1.5rem' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '1rem' }}>📍 {t.byCommune}</h3>
+          <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '1rem' }}><ProIcon name="map-pin" /> {t.byCommune}</h3>
           {stats.byCommune && stats.byCommune.filter((c) => c.commune).length > 0 ? (
             <ResponsiveContainer width="100%" height={250}>
                <BarChart data={stats.byCommune.filter((c) => c.commune).map((c) => ({ commune: c.commune, count: parseInt(c.count) }))}>
@@ -553,7 +554,7 @@ export default function AgentDashboard({ lang, agentUser, setView }) {
 
       {/* Demandes par statut */}
       <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
-        <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '1rem' }}>📋 {t.claimsByStatus}</h3>
+        <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '1rem' }}><ProIcon name="clipboard-list" /> {t.claimsByStatus}</h3>
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
           {(stats.claims?.byStatus || stats.claimsByStatus) && (stats.claims?.byStatus || stats.claimsByStatus).length > 0 ? (
             (stats.claims?.byStatus || stats.claimsByStatus).map((s, i) => {
@@ -587,7 +588,7 @@ export default function AgentDashboard({ lang, agentUser, setView }) {
       {isSuperAdmin && (
         <div className="card text-left" style={{ padding: '2rem', marginBottom: '2rem', borderRadius: '16px', borderLeft: '5px solid var(--secondary)' }}>
           <h3 style={{ fontSize: '1.2rem', fontWeight: '850', color: 'var(--primary)', marginBottom: '0.5rem' }}>
-            🤝 {lang === 'fr' ? 'Gestion de la campagne de solidarité' : 'Campagne solidarité'}
+            <ProIcon name="handshake" /> {lang === 'fr' ? 'Gestion de la campagne de solidarité' : 'Campagne solidarité'}
           </h3>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', marginBottom: '1.5rem' }}>
             {lang === 'fr' 
@@ -666,15 +667,15 @@ export default function AgentDashboard({ lang, agentUser, setView }) {
               {activeCampaignId > 0 && (
                 <>
                   <button type="button" className="btn btn-outline btn-sm" onClick={handleCampaignUpdate} style={{ color: 'var(--primary)', borderColor: 'var(--primary)' }}>
-                    ✏️ {lang === 'fr' ? 'Modifier la campagne' : 'Modifier'}
+                    <ProIcon name="edit" /> {lang === 'fr' ? 'Modifier la campagne' : 'Modifier'}
                   </button>
                   <button type="button" className="btn btn-outline btn-sm" onClick={handleCampaignDelete} style={{ color: 'var(--danger)', borderColor: 'var(--danger)' }}>
-                    🗑️ {lang === 'fr' ? 'Supprimer' : 'Supprimer'}
+                    <ProIcon name="trash" /> {lang === 'fr' ? 'Supprimer' : 'Supprimer'}
                   </button>
                 </>
               )}
               <button type="submit" className="btn btn-secondary btn-sm">
-                🚀 {lang === 'fr' ? 'Créer & activer' : 'Créer'}
+                <ProIcon name="rocket" /> {lang === 'fr' ? 'Créer & activer' : 'Créer'}
               </button>
             </div>
           </form>
@@ -752,7 +753,7 @@ function SuperAdminDoctorManagement() {
       <div className="d-flex justify-content-between align-items-center mb-4 pb-3 flex-wrap" style={{ gap: '1.5rem', borderBottom: '1.5px solid var(--border-color)' }}>
         <div className="d-flex align-items-center gap-3.5">
           <div style={{ width: '54px', height: '54px', borderRadius: '18px', background: 'linear-gradient(135deg, #059669, #10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.6rem', color: '#fff', boxShadow: '0 6px 18px rgba(16,185,129,0.35)', flexShrink: 0 }}>
-            👨‍⚕️
+            <ProIcon name="stethoscope" />
           </div>
           <div>
             <h4 className="fw-bold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.25rem' }}>
@@ -764,7 +765,7 @@ function SuperAdminDoctorManagement() {
           </div>
         </div>
         <span className="badge px-3.5 py-2.5 fw-bold" style={{ background: 'rgba(16, 185, 129, 0.18)', color: '#10b981', border: '1.5px solid rgba(16, 185, 129, 0.35)', borderRadius: '14px', fontSize: '0.9rem' }}>
-          🟢 {doctors.length} praticien(s) accrédité(s)
+          <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> {doctors.length} praticien(s) accrédité(s)
         </span>
       </div>
 
@@ -775,7 +776,7 @@ function SuperAdminDoctorManagement() {
         <div className="col-lg-5 col-md-12">
           <form onSubmit={handleAddDoctor} className="p-4 border" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)', borderRadius: '22px', boxShadow: '0 6px 20px rgba(0,0,0,0.04)' }}>
             <h5 className="fw-extrabold mb-3.5" style={{ color: '#10b981', fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              ➕ Accréditer un nouveau médecin :
+              <ProIcon name="plus" /> Accréditer un nouveau médecin :
             </h5>
             
             <div className="mb-3.5">
@@ -805,7 +806,7 @@ function SuperAdminDoctorManagement() {
             </div>
 
             <button type="submit" className="btn w-100 fw-extrabold hover-lift text-white" style={{ background: '#059669', border: 'none', borderRadius: '14px', minHeight: '48px', fontSize: '0.94rem', padding: '0.9rem 1.5rem', boxShadow: '0 4px 16px rgba(5,150,105,0.3)' }}>
-              🔒 Habiliter & délivrer les accès télémédecine
+              <ProIcon name="lock" /> Habiliter & délivrer les accès télémédecine
             </button>
           </form>
         </div>
@@ -814,7 +815,7 @@ function SuperAdminDoctorManagement() {
         <div className="col-lg-7 col-md-12">
           <div className="p-4 border h-100" style={{ background: 'var(--bg-card-subtle)', borderColor: 'var(--border-color)', borderRadius: '22px', boxShadow: '0 6px 20px rgba(0,0,0,0.04)' }}>
             <h5 className="fw-extrabold mb-3.5" style={{ color: 'var(--text-main)', fontSize: '1.05rem' }}>
-              📋 Médecins agréés UNAMUSC en activité :
+              <ProIcon name="clipboard-list" /> Médecins agréés UNAMUSC en activité :
             </h5>
             <div className="d-flex flex-column" style={{ gap: '1.25rem', maxHeight: '420px', overflowY: 'auto' }}>
               {doctors.map(d => (
@@ -825,7 +826,7 @@ function SuperAdminDoctorManagement() {
                       {d.specialty} • <code style={{ color: '#10b981', fontWeight: '800', background: 'rgba(16, 185, 129, 0.12)', padding: '0.15rem 0.5rem', borderRadius: '8px' }}>{d.cnom}</code>
                     </small>
                     <small style={{ color: 'var(--text-sub)', fontSize: '0.85rem', fontWeight: '600', display: 'block' }}>
-                      📞 {d.phone}
+                      <ProIcon name="phone" /> {d.phone}
                     </small>
                   </div>
                   <button 
@@ -873,7 +874,7 @@ function KpiCard({ icon, label, value, color, onClick }) {
         <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>{icon}</div>
         {onClick && (
           <span style={{ fontSize: '0.68rem', padding: '2px 6px', borderRadius: '10px', background: `${color}18`, color: color, fontWeight: '700' }}>
-            👉 Voir
+            <ProIcon name="arrow-right" /> Voir
           </span>
         )}
       </div>

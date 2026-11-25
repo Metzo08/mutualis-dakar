@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
 import { detectLanIp, getCachedLanIp, isValidLanIp } from '../utils/lanIp';
+import ProIcon from './ProIcon';
 
 // Carte CSU numérique : affiche les informations de l'assuré + QR code vérifiable haute définition.
 // Le QR code encode une URL de vérification publique (/api/cmu-card/:cmuNumber).
@@ -101,7 +102,7 @@ export default function CmuCard({ citizen }) {
           }}
           onClick={() => setFlipped(!flipped)}
         >
-          🔄 {flipped ? 'Voir la face Recto' : 'Voir la face Verso (QR Code)'}
+          <ProIcon name="refresh" /> {flipped ? 'Voir la face Recto' : 'Voir la face Verso (QR Code)'}
         </button>
 
         <button
@@ -116,7 +117,7 @@ export default function CmuCard({ citizen }) {
           }}
           onClick={() => setShowZoomModal(true)}
         >
-          🔍 Agrandir le QR Code
+          <ProIcon name="search" /> Agrandir le QR Code
         </button>
       </div>
 
@@ -172,7 +173,7 @@ export default function CmuCard({ citizen }) {
                 Couverture Santé Universelle
               </div>
               <div style={{ fontSize: '1.25rem', fontWeight: '900', letterSpacing: '0.5px' }}>
-                SENMUTUELLES 🇸🇳
+                SENMUTUELLES <ProIcon name="senegal-flag" />
               </div>
             </div>
             <span style={{
@@ -190,10 +191,10 @@ export default function CmuCard({ citizen }) {
             </div>
             <div style={{ fontSize: '0.84rem', fontWeight: '750', display: 'flex', gap: '0.65rem', flexWrap: 'wrap' }}>
               <span style={{ background: '#ffffff', color: '#047857', padding: '0.25rem 0.65rem', borderRadius: '10px', boxShadow: '0 2px 6px rgba(0,0,0,0.15)' }}>
-                📦 {citizen.packageType || 'maternité 100%'}
+                <ProIcon name="package" /> {citizen.packageType || 'maternité 100%'}
               </span>
               <span style={{ background: 'rgba(255,255,255,0.22)', padding: '0.25rem 0.65rem', borderRadius: '10px' }}>
-                🏥 {citizen.mutuelleName || 'Mutuelle de la Médina'}
+                <ProIcon name="hospital" /> {citizen.mutuelleName || 'Mutuelle de la Médina'}
               </span>
             </div>
           </div>
@@ -216,7 +217,7 @@ export default function CmuCard({ citizen }) {
               </div>
             </div>
             <div style={{ fontSize: '0.72rem', fontWeight: '800', color: '#ffffff', textAlign: 'right', opacity: 0.95 }}>
-              👆 Toucher pour<br />le QR Code
+              <ProIcon name="scan" /> Toucher pour<br />le QR Code
             </div>
           </div>
         </div>
@@ -246,7 +247,7 @@ export default function CmuCard({ citizen }) {
               UNAMUSC SENEGAL - CARTE NATIONALE D’ASSURANCE SANTÉ
             </span>
             <span className="badge" style={{ backgroundColor: '#059669', color: '#ffffff', fontSize: '0.72rem', borderRadius: '10px', padding: '0.3rem 0.65rem', fontWeight: '800' }}>
-              ⏱️ {secondsLeft}s
+              <ProIcon name="clock" /> {secondsLeft}s
             </span>
           </div>
 
@@ -343,7 +344,7 @@ export default function CmuCard({ citizen }) {
           >
             <div className="d-flex justify-content-between align-items-center mb-3">
               <span className="badge" style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)', color: '#059669', padding: '0.5rem 1rem', borderRadius: '12px', fontSize: '0.85rem', fontWeight: '800' }}>
-                🔒 QR Code Certifié ANACSU
+                <ProIcon name="lock" /> QR Code Certifié ANACSU
               </span>
               <button 
                 type="button" 
@@ -386,7 +387,7 @@ export default function CmuCard({ citizen }) {
             </div>
 
             <div className="d-flex justify-content-between align-items-center mb-4 px-2" style={{ fontSize: '0.82rem', color: '#64748b' }}>
-              <span>⏱️ Renouvellement dans : <strong className="text-success">{secondsLeft}s</strong></span>
+              <span><ProIcon name="clock" /> Renouvellement dans : <strong className="text-success">{secondsLeft}s</strong></span>
               <span>Jeton : <strong style={{ color: '#059669', fontFamily: 'monospace' }}>{otpHash}</strong></span>
             </div>
 
@@ -406,7 +407,7 @@ export default function CmuCard({ citizen }) {
               }}
               onClick={() => setShowZoomModal(false)}
             >
-              ✓ Fermer le plein écran
+              <ProIcon name="check" color="#059669" /> Fermer le plein écran
             </button>
           </div>
         </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
+import ProIcon from '../components/ProIcon';
 
 export default function Home({ lang, setView, setViewTab, portalMode, citizenUser, setCitizenUser, agentUser }) {
   const [qrCodeUrl, setQrCodeUrl] = useState('');
@@ -144,10 +145,10 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
         <body>
           <div class="no-print">
             <button onclick="window.print()" class="btn btn-success btn-lg fw-bold px-4 py-2 me-2" style="background: #059669; border-color: #059669;">
-              🖨️ Imprimer / Télécharger PDF
+              <ProIcon name="printer" /> Imprimer / Télécharger PDF
             </button>
             <button onclick="window.close()" class="btn btn-outline-secondary btn-lg fw-bold px-4 py-2">
-              ❌ Fermer
+              <ProIcon name="x-circle" color="#dc2626" /> Fermer
             </button>
           </div>
 
@@ -179,7 +180,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
                   style="height: 55px; width: auto; object-fit: contain;" 
                 />
                 <span class="badge bg-success-subtle text-success border border-success px-3 py-2 fw-bold d-inline-block" style="font-size: 0.85rem; border-radius: 10px;">
-                  🏛️ UDMS Dakar / UNAMUSC
+                  <ProIcon name="landmark" /> UDMS Dakar / UNAMUSC
                 </span>
               </div>
             </div>
@@ -211,19 +212,19 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
                 </thead>
                 <tbody>
                   <tr style="border-bottom: 1px solid #f1f5f9;">
-                    <td style="padding: 1.1rem 1rem; font-weight: 700; font-size: 0.96rem;">🟢 Mutuelles communautaires (UDMS)</td>
+                    <td style="padding: 1.1rem 1rem; font-weight: 700; font-size: 0.96rem;"><ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Mutuelles communautaires (UDMS)</td>
                     <td style="padding: 1.1rem 1rem; text-align: right; font-weight: 800; color: #047857; font-size: 1.1rem;">${commCount}</td>
                     <td style="padding: 1.1rem 1rem; text-align: right; font-weight: 800; color: #047857; font-size: 1.05rem;">${commPct}%</td>
                     <td style="padding: 1.1rem 1rem; text-align: center;"><span class="badge bg-success px-3 py-1.5 text-white fw-bold" style="font-size: 0.8rem; border-radius: 8px;">Excellent (>80%)</span></td>
                   </tr>
                   <tr style="border-bottom: 1px solid #f1f5f9;">
-                    <td style="padding: 1.1rem 1rem; font-weight: 700; font-size: 0.96rem;">🔵 IPM-Tiers (Secteur privé & entreprises)</td>
+                    <td style="padding: 1.1rem 1rem; font-weight: 700; font-size: 0.96rem;"><ProIcon name="status-green" color="#3b82f6" fill="#3b82f6" size={10} /> IPM-Tiers (Secteur privé & entreprises)</td>
                     <td style="padding: 1.1rem 1rem; text-align: right; font-weight: 800; color: #2563eb; font-size: 1.1rem;">${ipmCount}</td>
                     <td style="padding: 1.1rem 1rem; text-align: right; font-weight: 800; color: #2563eb; font-size: 1.05rem;">${ipmPct}%</td>
                     <td style="padding: 1.1rem 1rem; text-align: center;"><span class="badge bg-primary px-3 py-1.5 text-white fw-bold" style="font-size: 0.8rem; border-radius: 8px;">Bon (60%-80%)</span></td>
                   </tr>
                   <tr style="border-bottom: 1px solid #f1f5f9;">
-                    <td style="padding: 1.1rem 1rem; font-weight: 700; font-size: 0.96rem;">🟠 Reste des mutuelles (scolaires, corporatives)</td>
+                    <td style="padding: 1.1rem 1rem; font-weight: 700; font-size: 0.96rem;"><ProIcon name="status-amber" color="#f97316" fill="#f97316" size={10} /> Reste des mutuelles (scolaires, corporatives)</td>
                     <td style="padding: 1.1rem 1rem; text-align: right; font-weight: 800; color: #d97706; font-size: 1.1rem;">${resteCount}</td>
                     <td style="padding: 1.1rem 1rem; text-align: right; font-weight: 800; color: #d97706; font-size: 1.05rem;">${restePct}%</td>
                     <td style="padding: 1.1rem 1rem; text-align: center;"><span class="badge bg-warning text-dark px-3 py-1.5 fw-bold" style="font-size: 0.8rem; border-radius: 8px;">Moyen (50%-60%)</span></td>
@@ -243,7 +244,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
               <div class="col-4 text-end">
                 <div class="border border-success rounded-3 p-3 d-inline-block text-center" style="background: #f0fdf4; border-width: 2px !important;">
                   <strong class="d-block" style="font-size: 0.78rem; color: #047857;">Cachet officiel UNAMUSC</strong>
-                  <span style="font-size: 0.72rem; color: #059669; font-weight: 700;">✔ Certifié Conforme</span>
+                  <span style="font-size: 0.72rem; color: #059669; font-weight: 700;"><ProIcon name="check" color="#059669" /> Certifié Conforme</span>
                 </div>
               </div>
             </div>
@@ -600,7 +601,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
               {statsLoading ? '...' : (stats.structuresCount || stats.mutuellesCount || '--')}
             </div>
             <span className="badge badge-success" style={{ padding: '0.15rem 0.5rem', fontSize: '0.7rem' }}>
-              ✓ 97% {lang === 'fr' ? 'de couverture' : 'couverture'}
+              <ProIcon name="check" color="#059669" /> 97% {lang === 'fr' ? 'de couverture' : 'couverture'}
             </span>
             <div style={{ height: '3px', backgroundColor: 'var(--border-color)', borderRadius: '2px', overflow: 'hidden', marginTop: '0.75rem' }}>
               <div style={{ width: '97%', height: '100%', backgroundColor: 'var(--success)' }}></div>
@@ -614,7 +615,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
               {statsLoading ? '...' : (stats.cotisationsSum !== undefined ? `${stats.cotisationsSum.toLocaleString('fr-FR')} FCFA` : '0 FCFA')}
             </div>
             <span className="badge badge-info" style={{ padding: '0.15rem 0.5rem', fontSize: '0.7rem', color: 'var(--secondary)', backgroundColor: 'rgba(255, 127, 17, 0.12)' }}>
-              💳 Wave & OM
+              <ProIcon name="credit-card" /> Wave & OM
             </span>
             <div style={{ height: '3px', backgroundColor: 'var(--border-color)', borderRadius: '2px', overflow: 'hidden', marginTop: '0.75rem' }}>
               <div style={{ width: '74%', height: '100%', backgroundColor: 'var(--secondary)' }}></div>
@@ -709,7 +710,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
                       fontSize: '1rem',
                       flexShrink: 0
                     }}>
-                      {act.type === 'join' ? '👤' : act.type === 'payment' ? '💰' : '❤️'}
+                      {act.type === 'join' ? '👤' : act.type === 'payment' ? <ProIcon name="wallet" /> : <ProIcon name="heart" color="#dc2626" />}
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: '600', fontSize: '0.85rem', color: 'var(--text-main)' }}>{act.text}</div>
@@ -838,7 +839,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
                     gap: '0.35rem'
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: '800', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.25rem', marginBottom: '0.25rem' }}>
-                      <span style={{ color: 'var(--primary)' }}>📍 {reg.name}</span>
+                      <span style={{ color: 'var(--primary)' }}><ProIcon name="map-pin" /> {reg.name}</span>
                       <span className="badge badge-success" style={{ fontSize: '0.7rem', padding: '0.1rem 0.4rem', backgroundColor: reg.color, color: '#fff' }}>{reg.couv}%</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -925,13 +926,13 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
           <div className="d-flex align-items-center gap-2 mb-3">
             <span style={{ background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', color: '#ffffff', padding: '6px 16px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '8px', border: '1px solid rgba(255,255,255,0.3)' }}>
               <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34d399', boxShadow: '0 0 12px #34d399', animation: 'pulse-home 1.5s ease-in-out infinite' }} />
-              ✨ Couverture sanitaire universelle - UNAMUSC Sénégal
+              <ProIcon name="sparkles" /> Couverture sanitaire universelle - UNAMUSC Sénégal
             </span>
           </div>
 
           <div className="d-flex align-items-center gap-3 mb-3">
             <div className="home-icon" style={{ width: '56px', height: '56px', borderRadius: '16px', background: 'rgba(255, 255, 255, 0.2)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.75rem', fontWeight: 'bold', color: '#ffffff', boxShadow: '0 8px 20px rgba(0,0,0,0.2)', border: '2px solid rgba(255,255,255,0.3)' }}>
-              🏥
+              <ProIcon name="hospital" />
             </div>
             <h1 style={{ fontSize: '2.3rem', fontWeight: '850', margin: 0, color: '#fff', textShadow: '0 3px 8px rgba(0,0,0,0.3)', letterSpacing: '-0.02em' }}>
               {t.heroTitle}
@@ -947,7 +948,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
               <span style={{ fontSize: '1.2rem' }}>+</span> {t.btnNew}
             </button>
             <button className="btn" onClick={() => setView('parrainage-solidaire')} style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', color: '#ffffff', border: '1.5px solid rgba(255,255,255,0.4)', borderRadius: '14px', fontSize: '0.95rem', fontWeight: '700', padding: '0.85rem 1.75rem', transition: 'all 0.3s', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-              🤝 {lang === 'fr' ? 'Parrainage solidaire' : 'Dimbalé'}
+              <ProIcon name="handshake" /> {lang === 'fr' ? 'Parrainage solidaire' : 'Dimbalé'}
             </button>
             <button className="btn" onClick={() => setView('directory')} style={{ background: 'transparent', color: '#ffffff', border: '1.5px solid rgba(255,255,255,0.5)', borderRadius: '14px', fontSize: '0.95rem', fontWeight: '700', padding: '0.85rem 1.75rem', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', transition: 'all 0.3s' }}>
               {lang === 'fr' ? 'Trouver une mutuelle' : 'Mutuelle yi'}
@@ -960,7 +961,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
       <section style={{ marginBottom: '3rem', textAlign: 'left', padding: '0 0.5rem' }}>
         <div className="d-flex align-items-center gap-3 mb-3">
           <div style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.15) 0%, rgba(16, 185, 129, 0.25) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', boxShadow: '0 4px 12px rgba(5,150,105,0.2)' }}>
-            💡
+            <ProIcon name="lightbulb" />
           </div>
           <div>
             <h2 style={{ fontSize: '1.5rem', fontWeight: '850', margin: 0, color: 'var(--text-main)', letterSpacing: '-0.01em' }}>
@@ -974,10 +975,10 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
 
         <div className="grid grid-4" style={{ gap: '1.25rem' }}>
           {[
-            { icon: '👤', color: '#3b82f6', title: lang === 'fr' ? 'Choisir son profil' : 'Tann sa profil', desc: lang === 'fr' ? 'Connectez-vous en tant que citoyen, prestataire ou parrain solidaire' : 'Duggal en tant que citoyen, prestataire walla parrain' },
-            { icon: '🤝', color: '#10b981', title: lang === 'fr' ? 'Enrôler & parrainer' : 'Mbindu & parrainer', desc: lang === 'fr' ? 'Inscrivez votre famille ou parrainez des talibés et élèves via l\'espace solidaire' : 'Mbindal sa njaboot walla parrainél ay élève' },
-            { icon: '💳', color: '#f59e0b', title: lang === 'fr' ? 'Cotiser en ligne' : 'Fay sa cotisation', desc: lang === 'fr' ? 'Réglez instantanément par Wave, Orange Money ou carte bancaire' : 'Fayal par Wave walla Orange Money' },
-            { icon: '🏥', color: '#059669', title: lang === 'fr' ? 'Soins tiers-payant' : 'Fajj tiers-payant', desc: lang === 'fr' ? 'Présentez votre carte QR pour une prise en charge immédiate à 80%' : 'Wane sa carte QR ngir 80% fajj' }
+            { icon: <ProIcon name="user" />, color: '#3b82f6', title: lang === 'fr' ? 'Choisir son profil' : 'Tann sa profil', desc: lang === 'fr' ? 'Connectez-vous en tant que citoyen, prestataire ou parrain solidaire' : 'Duggal en tant que citoyen, prestataire walla parrain' },
+            { icon: <ProIcon name="handshake" />, color: '#10b981', title: lang === 'fr' ? 'Enrôler & parrainer' : 'Mbindu & parrainer', desc: lang === 'fr' ? 'Inscrivez votre famille ou parrainez des talibés et élèves via l\'espace solidaire' : 'Mbindal sa njaboot walla parrainél ay élève' },
+            { icon: <ProIcon name="credit-card" />, color: '#f59e0b', title: lang === 'fr' ? 'Cotiser en ligne' : 'Fay sa cotisation', desc: lang === 'fr' ? 'Réglez instantanément par Wave, Orange Money ou carte bancaire' : 'Fayal par Wave walla Orange Money' },
+            { icon: <ProIcon name="hospital" />, color: '#059669', title: lang === 'fr' ? 'Soins tiers-payant' : 'Fajj tiers-payant', desc: lang === 'fr' ? 'Présentez votre carte QR pour une prise en charge immédiate à 80%' : 'Wane sa carte QR ngir 80% fajj' }
           ].map((step, i) => (
             <div key={i} className="card home-card" style={{ padding: '1.5rem', background: `linear-gradient(135deg, ${step.color}08 0%, ${step.color}15 100%)`, border: 'none', borderLeft: `4px solid ${step.color}`, borderRadius: '16px', display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 4px 16px rgba(0,0,0,0.06)', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', cursor: 'pointer' }}>
               <div className="d-flex align-items-center justify-content-between">
@@ -1012,7 +1013,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
               {/* Login card */}
               <div className="card text-left citizen-login-card">
                 <h2 style={{ fontSize: '1.5rem', color: 'var(--primary)', marginBottom: '0.5rem', position: 'relative', zIndex: 2 }}>
-                  🔑 {t.citizenLoginTitle}
+                  <ProIcon name="key" /> {t.citizenLoginTitle}
                 </h2>
                 <p style={{ color: 'var(--text-sub)', fontSize: '0.9rem', marginBottom: '2rem' }}>
                   {t.citizenLoginDesc}
@@ -1029,7 +1030,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
                     fontSize: '0.85rem',
                     fontWeight: '500'
                   }}>
-                    ⚠️ {loginError}
+                    <ProIcon name="alert-triangle" color="#d97706" /> {loginError}
                   </div>
                 )}
 
@@ -1064,7 +1065,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
                 </form>
 
                 <div style={{ marginTop: '1.5rem', padding: '0.75rem', background: 'var(--bg-card-subtle)', borderRadius: '8px', fontSize: '0.75rem', color: 'var(--text-sub)', border: '1px dashed var(--border-color)' }}>
-                  💡 {t.loginDemoHint}
+                  <ProIcon name="lightbulb" /> {t.loginDemoHint}
                 </div>
               </div>
 
@@ -1072,7 +1073,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
               <div className="card text-left" style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <div>
                   <h2 style={{ fontSize: '1.5rem', color: 'var(--secondary)', marginBottom: '1rem' }}>
-                    📢 Des questions sur la CMU ?
+                    <ProIcon name="megaphone" /> Des questions sur la CMU ?
                   </h2>
                   <p style={{ color: 'var(--text-sub)', lineHeight: '1.6', marginBottom: '1rem' }}>
                     La Couverture Maladie Universelle vous permet de bénéficier d'une prise en charge des frais de consultations, de médicaments et d'hospitalisations.
@@ -1083,8 +1084,8 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
                 </div>
                 
                 <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
-                  <button className="btn btn-outline btn-sm" onClick={() => setView('map')}>🏥 Carte structures</button>
-                  <button className="btn btn-outline btn-sm" onClick={() => setView('directory')}>📁 Annuaire mutuelles</button>
+                  <button className="btn btn-outline btn-sm" onClick={() => setView('map')}><ProIcon name="hospital" /> Carte structures</button>
+                  <button className="btn btn-outline btn-sm" onClick={() => setView('directory')}><ProIcon name="folder" /> Annuaire mutuelles</button>
                 </div>
               </div>
 
@@ -1092,7 +1093,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
               <div className="card text-left" style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderLeft: '5px solid var(--secondary)' }}>
                 <div>
                   <span className="badge badge-warning" style={{ marginBottom: '1rem', backgroundColor: 'rgba(217, 119, 6, 0.12)', color: 'var(--secondary)' }}>
-                    ❤️ {lang === 'fr' ? 'Solidarité nationale' : 'Mayé & dimbelé'}
+                    <ProIcon name="heart" color="#dc2626" /> {lang === 'fr' ? 'Solidarité nationale' : 'Mayé & dimbelé'}
                   </span>
                   <h2 style={{ fontSize: '1.5rem', color: 'var(--text-main)', marginBottom: '1rem' }}>
                     {lang === 'fr' ? (activeCampaign?.title_fr || '') : (activeCampaign?.title_wo || '')}
@@ -1133,7 +1134,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
             <div className="card text-left parrainage-teaser-banner">
               <div style={{ position: 'relative', zIndex: 2 }}>
                 <span className="badge" style={{ marginBottom: '0.75rem', padding: '0.35rem 0.75rem', backgroundColor: 'rgba(255, 255, 255, 0.2)', color: '#ffffff' }}>
-                  🤝 {lang === 'fr' ? 'Solidarité active' : 'Dimbelé sa réew'}
+                  <ProIcon name="handshake" /> {lang === 'fr' ? 'Solidarité active' : 'Dimbelé sa réew'}
                 </span>
                 <h3 style={{ fontSize: '1.6rem', fontWeight: '800', margin: '0 0 0.5rem 0', color: '#ffffff' }}>
                   {lang === 'fr' ? 'Parrainage solidaire : Offrez la santé à ceux qui en ont besoin' : 'Dimbalé ak Parrainage : Fayal wér-gi-yaram gni ko yelloo'}
@@ -1146,21 +1147,21 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
                 
                 <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', marginBottom: '2rem', fontSize: '0.9rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '1.5rem' }}>👤</span>
+                    <span style={{ fontSize: '1.5rem' }}><ProIcon name="user" /></span>
                     <div>
                       <strong style={{ display: 'block', color: '#a7f3d0' }}>{lang === 'fr' ? 'Individuel' : 'Individuel'}</strong>
                       <span style={{ color: '#cbd5e1' }}>4 500 FCFA / pers.</span>
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '1.5rem' }}>👨‍👩‍👧‍👦</span>
+                    <span style={{ fontSize: '1.5rem' }}><ProIcon name="users" /></span>
                     <div>
                       <strong style={{ display: 'block', color: '#fde047' }}>{lang === 'fr' ? 'Ménages' : 'Njaboot'}</strong>
                       <span style={{ color: '#cbd5e1' }}>1 000 FCFA + 3 500 FCFA / pers.</span>
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '1.5rem' }}>🎓</span>
+                    <span style={{ fontSize: '1.5rem' }}><ProIcon name="graduation-cap" /></span>
                     <div>
                       <strong style={{ display: 'block', color: '#a5f3fc' }}>{lang === 'fr' ? 'Écoles & daaras' : 'Daara & Écoles'}</strong>
                       <span style={{ color: '#cbd5e1' }}>1 000 FCFA / élève</span>
@@ -1173,7 +1174,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
                   style={{ backgroundColor: '#ffffff', border: 'none', color: '#047857', alignSelf: 'flex-start', padding: '0.8rem 1.75rem', fontWeight: 'bold', borderRadius: '10px', boxShadow: '0 4px 10px rgba(0,0,0,0.15)', cursor: 'pointer', transition: 'all 0.2s' }} 
                   onClick={() => setView('parrainage-solidaire')}
                 >
-                  🤝 {lang === 'fr' ? 'Accéder à l\'espace parrainage' : 'Parrainer des bénéficiaires'}
+                  <ProIcon name="handshake" /> {lang === 'fr' ? 'Accéder à l\'espace parrainage' : 'Parrainer des bénéficiaires'}
                 </button>
               </div>
             </div>
@@ -1230,7 +1231,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
                 {loyalty && (
                   <div className="card text-left" style={{ padding: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderLeft: '5px solid var(--primary)', cursor: 'pointer', margin: '0' }} onClick={() => setView('loyalty')}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                      <div style={{ fontSize: '2rem' }}>⭐</div>
+                      <div style={{ fontSize: '2rem' }}><ProIcon name="star" color="#f59e0b" /></div>
                       <div>
                         <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 'bold' }}>
                           Fidélité : {loyalty.totalPoints} points
@@ -1262,14 +1263,14 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
                   
                   {citizenUser.status !== 'active' && (
                     <button className="btn btn-secondary btn-sm" onClick={() => setView('services')}>
-                      💳 {t.btnRenewCot}
+                      <ProIcon name="credit-card" /> {t.btnRenewCot}
                     </button>
                   )}
                 </div>
 
                 {/* Family member card lists */}
                 <div className="card" style={{ padding: '1.5rem' }}>
-                  <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}>👨‍👩‍👧‍ {t.familyTitle}</h3>
+                  <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem' }}><ProIcon name="users" />‍ {t.familyTitle}</h3>
                   
                   {citizenUser.familyMembers && citizenUser.familyMembers.length > 0 ? (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -1301,7 +1302,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
                       + {t.btnNewMember}
                     </button>
                      <button className="btn btn-success btn-sm" style={{ flex: 1, backgroundColor: 'var(--success)', border: 'none', color: '#fff' }} onClick={() => setViewTab('parrainage-solidaire')}>
-                       🤝 {lang === 'fr' ? 'Parrainer' : 'Parrainer'}
+                       <ProIcon name="handshake" /> {lang === 'fr' ? 'Parrainer' : 'Parrainer'}
                      </button>
                   </div>
                 </div>
@@ -1310,7 +1311,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
                 <div className="card text-left" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderLeft: '5px solid var(--secondary)' }}>
                   <div>
                     <span className="badge badge-warning" style={{ marginBottom: '0.75rem', backgroundColor: 'rgba(217, 119, 6, 0.12)', color: 'var(--secondary)' }}>
-                      ❤️ {lang === 'fr' ? 'Solidarité nationale' : 'Mayé & dimbelé'}
+                      <ProIcon name="heart" color="#dc2626" /> {lang === 'fr' ? 'Solidarité nationale' : 'Mayé & dimbelé'}
                     </span>
                     <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>
                       {lang === 'fr' ? (activeCampaign?.title_fr || '') : (activeCampaign?.title_wo || '')}
@@ -1377,7 +1378,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
                 {statsLoading ? '...' : (stats.structuresCount || stats.mutuellesCount || '--')}
               </div>
               <span className="badge badge-success" style={{ padding: '0.15rem 0.5rem', fontSize: '0.7rem' }}>
-                ✓ 97% {lang === 'fr' ? 'de couverture' : 'couverture'}
+                <ProIcon name="check" color="#059669" /> 97% {lang === 'fr' ? 'de couverture' : 'couverture'}
               </span>
               <div style={{ height: '3px', backgroundColor: 'var(--border-color)', borderRadius: '2px', overflow: 'hidden', marginTop: '0.75rem' }}>
                 <div style={{ width: '97%', height: '100%', backgroundColor: 'var(--success)' }}></div>
@@ -1391,7 +1392,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
                 {statsLoading ? '...' : (stats.cotisationsSum !== undefined ? `${stats.cotisationsSum.toLocaleString('fr-FR')} FCFA` : '0 FCFA')}
               </div>
               <span className="badge badge-info" style={{ padding: '0.15rem 0.5rem', fontSize: '0.7rem', color: 'var(--secondary)', backgroundColor: 'rgba(255, 127, 17, 0.12)' }}>
-                💳 Wave & OM
+                <ProIcon name="credit-card" /> Wave & OM
               </span>
               <div style={{ height: '3px', backgroundColor: 'var(--border-color)', borderRadius: '2px', overflow: 'hidden', marginTop: '0.75rem' }}>
                 <div style={{ width: '74%', height: '100%', backgroundColor: 'var(--secondary)' }}></div>
@@ -1490,7 +1491,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
                           justifyContent: 'center',
                           fontSize: '1rem'
                         }}>
-                          {act.type === 'join' ? '👤' : act.type === 'payment' ? '💰' : '❤️'}
+                          {act.type === 'join' ? '👤' : act.type === 'payment' ? <ProIcon name="wallet" /> : <ProIcon name="heart" color="#dc2626" />}
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                           <span style={{ fontSize: '0.85rem', fontWeight: '600' }}>{act.text}</span>
@@ -1623,7 +1624,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
                       gap: '0.35rem'
                     }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: '800', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.25rem', marginBottom: '0.25rem' }}>
-                        <span style={{ color: 'var(--primary)' }}>📍 {reg.name}</span>
+                        <span style={{ color: 'var(--primary)' }}><ProIcon name="map-pin" /> {reg.name}</span>
                         <span className="badge badge-success" style={{ fontSize: '0.7rem', padding: '0.1rem 0.4rem', backgroundColor: reg.color, color: '#fff' }}>{reg.couv}%</span>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>

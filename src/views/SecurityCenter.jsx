@@ -20,6 +20,7 @@
  */
 import { useState, useEffect, useCallback } from 'react';
 import { apiFetch } from '../utils/api';
+import ProIcon from '../components/ProIcon';
 
 function formatDate(iso) {
   if (!iso) return '—';
@@ -233,7 +234,7 @@ export default function SecurityCenter() { // props historiques conservées par 
     <div className="container py-4">
       <div className="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
         <div>
-          <h1 className="h4 mb-1">🛡️ Centre de sécurité et surveillance</h1>
+          <h1 className="h4 mb-1"><ProIcon name="shield-check" /> Centre de sécurité et surveillance</h1>
           <p className="text-muted small mb-0">
             Périmètre : <strong>{overview ? overview.scope : '—'}</strong> · fenêtre d'analyse {overview ? overview.windowMinutes : '—'} min ·
             chaque indicateur est calculé sur des données réelles ; aucun « 100 % sécurisé » n'est affiché.
@@ -249,7 +250,7 @@ export default function SecurityCenter() { // props historiques conservées par 
 
       {/* 4.1 — Indicateurs */}
       <div className="card mb-3">
-        <h5 className="mb-3">📊 Indicateurs de sécurité</h5>
+        <h5 className="mb-3"><ProIcon name="bar-chart" /> Indicateurs de sécurité</h5>
         <div className="row g-2 text-center">
           {[
             { label: 'Comptes actifs', val: s.comptesActifs, color: '#047857' },
@@ -296,8 +297,8 @@ export default function SecurityCenter() { // props historiques conservées par 
       {/* 4.3 — Alertes */}
       <div className="card mb-3">
         <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
-          <h5 className="mb-0">🚨 Alertes de sécurité ({alerts.filter((a) => a.status === 'OUVERTE').length} ouverte(s))</h5>
-          <button className="btn btn-sm btn-outline-secondary" onClick={loadAlerts}>🔄 Recalculer</button>
+          <h5 className="mb-0"><ProIcon name="siren" color="#dc2626" /> Alertes de sécurité ({alerts.filter((a) => a.status === 'OUVERTE').length} ouverte(s))</h5>
+          <button className="btn btn-sm btn-outline-secondary" onClick={loadAlerts}><ProIcon name="refresh" /> Recalculer</button>
         </div>
         {alerts.length === 0 ? (
           <div className="small text-muted mt-2">
@@ -343,8 +344,8 @@ export default function SecurityCenter() { // props historiques conservées par 
       {/* 4.5 — Sessions */}
       <div className="card mb-3">
         <div className="d-flex justify-content-between align-items-center flex-wrap gap-2">
-          <h5 className="mb-0">🔐 Sessions actives</h5>
-          <button className="btn btn-sm btn-outline-secondary" onClick={loadSessions}>🔄 Actualiser</button>
+          <h5 className="mb-0"><ProIcon name="lock" /> Sessions actives</h5>
+          <button className="btn btn-sm btn-outline-secondary" onClick={loadSessions}><ProIcon name="refresh" /> Actualiser</button>
         </div>
         {sessions.error ? (
           <div className="small text-muted mt-2">{sessions.error}</div>
@@ -381,7 +382,7 @@ export default function SecurityCenter() { // props historiques conservées par 
 
       {/* 4.4 — Comptes privilégiés */}
       <div className="card mb-3">
-        <h5 className="mb-2">👑 Revue des comptes privilégiés</h5>
+        <h5 className="mb-2"><ProIcon name="crown" /> Revue des comptes privilégiés</h5>
         {privileged.error ? (
           <div className="small text-muted">{privileged.error}</div>
         ) : privileged.data.length === 0 ? (
@@ -417,7 +418,7 @@ export default function SecurityCenter() { // props historiques conservées par 
       {/* 4.2 — Journal d'audit */}
       <div className="card">
         <div className="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
-          <h5 className="mb-0">📜 Journal d'audit</h5>
+          <h5 className="mb-0"><ProIcon name="scroll-text" /> Journal d'audit</h5>
           <div className="d-flex gap-2 flex-wrap">
             <input className="form-control form-control-sm" placeholder="Filtrer par action" value={auditFilters.action}
               onChange={(e) => setAuditFilters({ ...auditFilters, action: e.target.value })} style={{ maxWidth: 180 }} />

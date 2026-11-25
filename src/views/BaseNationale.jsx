@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery } from '@tanstack/react-query';
+import ProIcon from '../components/ProIcon';
 
 export default function BaseNationale({ lang, setView, setViewTab = null }) {
   const handleJoinMutuelle = (item) => {
@@ -850,14 +851,14 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
                 ${mutuelle.status === 'active' ? 'AGRÉÉE' : 'EN SOMMEIL'}
               </div>
               <h4 style="margin: 0 0 4px 0; color: #0f172a; font-size: 0.95rem; font-weight: 800;">${mutuelle.name}</h4>
-              <p style="margin: 0 0 4px 0; font-size: 0.78rem; color: #475569;">📍 ${mutuelle.commune} (${mutuelle.region})</p>
+              <p style="margin: 0 0 4px 0; font-size: 0.78rem; color: #475569;"><ProIcon name="map-pin" /> ${mutuelle.commune} (${mutuelle.region})</p>
               ${mutuelle.landmark ? `
                 <div style="background: rgba(245, 158, 11, 0.08); border-left: 2.5px solid #f59e0b; padding: 4px 8px; border-radius: 4px; margin: 6px 0; font-size: 0.72rem; color: #b45309;">
-                  📍 <strong>Repère :</strong> ${mutuelle.landmark}
+                  <ProIcon name="map-pin" /> <strong>Repère :</strong> ${mutuelle.landmark}
                 </div>
               ` : ''}
               <p style="margin: 4px 0 0 0; font-size: 0.78rem; font-weight: bold; color: var(--primary);">
-                📞 ${mutuelle.phone}
+                <ProIcon name="phone" /> ${mutuelle.phone}
               </p>
             </div>
           `);
@@ -1130,7 +1131,7 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
                 style={{ marginTop: '0.75rem', width: '100%' }}
                 onClick={clearRoute}
               >
-                ✕ {lang === 'fr' ? 'Effacer l\'itinéraire' : 'Rëy yoon bi'}
+                <ProIcon name="x" /> {lang === 'fr' ? 'Effacer l\'itinéraire' : 'Rëy yoon bi'}
               </button>
             </div>
           )}
@@ -1139,10 +1140,10 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
         {/* Actions & Summary */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
             <button className="btn btn-outline btn-sm" onClick={handleExportPdf}>
-              📄 {t.exportPdf}
+              <ProIcon name="file-text" /> {t.exportPdf}
             </button>
             <button className="btn btn-outline btn-sm" onClick={handleExportCsv}>
-              📊 {t.exportExcel}
+              <ProIcon name="bar-chart" /> {t.exportExcel}
             </button>
           </div>
 
@@ -1213,7 +1214,7 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
               onClick={() => setSelectedMutuelle(null)} 
               style={{ position: 'absolute', top: '24px', right: '24px', background: 'transparent', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--neutral-gray)' }}
             >
-              ✕
+              <ProIcon name="x" />
             </button>
 
             <div>
@@ -1249,7 +1250,7 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
 
               {selectedMutuelle.landmark && (
                 <div className="info-box-landmark" style={{ padding: '0.85rem', display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginTop: '0.25rem', borderRadius: '10px' }}>
-                  <span style={{ fontSize: '1.2rem' }}>📍</span>
+                  <span style={{ fontSize: '1.2rem' }}><ProIcon name="map-pin" /></span>
                   <div>
                     <strong className="info-box-title" style={{ fontSize: '0.75rem', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px' }}>Point de repère</strong>
                     <span className="info-box-text" style={{ fontSize: '0.85rem', fontWeight: '500' }}>{selectedMutuelle.landmark}</span>
@@ -1259,7 +1260,7 @@ export default function BaseNationale({ lang, setView, setViewTab = null }) {
 
               {selectedMutuelle.localInfo && (
                 <div className="info-box-tips" style={{ padding: '0.85rem', display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginTop: '0.25rem', borderRadius: '10px' }}>
-                  <span style={{ fontSize: '1.2rem' }}>💡</span>
+                  <span style={{ fontSize: '1.2rem' }}><ProIcon name="lightbulb" /></span>
                   <div>
                     <strong className="info-box-title" style={{ fontSize: '0.75rem', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px' }}>Conseil aux assurés de la zone</strong>
                     <span className="info-box-text" style={{ fontSize: '0.85rem', lineHeight: '1.4' }}>{selectedMutuelle.localInfo}</span>

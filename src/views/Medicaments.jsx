@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ProIcon from '../components/ProIcon';
 
 export default function Medicaments({ lang }) {
   const [items, setItems] = useState([]);
@@ -152,7 +153,7 @@ export default function Medicaments({ lang }) {
       }}>
         <div style={{ textAlign: 'left', position: 'relative', zIndex: 2 }}>
           <span className="badge badge-info" style={{ marginBottom: '0.75rem', background: 'rgba(255, 255, 255, 0.15)', color: '#fff' }}>
-            🏥 ANNUAIRE CMU SÉNÉGAL
+            <ProIcon name="hospital" /> ANNUAIRE CMU SÉNÉGAL
           </span>
           <h1 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '0.5rem' }}>{t.title}</h1>
           <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.9rem', maxWidth: '800px', lineHeight: '1.5' }}>{t.subtitle}</p>
@@ -262,7 +263,7 @@ export default function Medicaments({ lang }) {
                   fontWeight: '600',
                   textAlign: 'center'
                 }}>
-                  ✓ {t.calcTiersPayant}
+                  <ProIcon name="check" color="#059669" /> {t.calcTiersPayant}
                 </div>
               )}
             </div>

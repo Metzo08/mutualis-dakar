@@ -10,6 +10,7 @@
 
 import { useEffect, useState } from 'react';
 import { loadProtectedPhoto, isProtectedPhotoUrl } from '../utils/photoLoader';
+import ProIcon from './ProIcon';
 
 /**
  * @param {string|null} photoUrl   URL de la photo (API protégée, data:, chemin).
@@ -63,7 +64,7 @@ export default function SecurePhoto({ photoUrl, serverId, style, alt = '', fallb
         style={{ ...style, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f1f5f9', color: '#94a3b8' }}
         title="Photo non disponible"
       >
-        <span style={{ fontSize: '1.6rem' }}>👤</span>
+        <span style={{ fontSize: '1.6rem' }}><ProIcon name="user" /></span>
       </div>
     );
   }

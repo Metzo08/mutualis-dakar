@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useQuery } from '@tanstack/react-query';
+import ProIcon from '../components/ProIcon';
 
 const generateMockMutuelle = (communeName, regionName) => {
   let hash = 0;
@@ -478,7 +479,7 @@ export default function Departements({ lang, setView }) {
                   </p>
                   
                   <div>
-                    <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--neutral-dark)' }}>🏢 {t.deptTitle}</h3>
+                    <h3 style={{ fontSize: '1.25rem', marginBottom: '1rem', color: 'var(--neutral-dark)' }}><ProIcon name="building2" /> {t.deptTitle}</h3>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                       {departements.length > 0 ? departements.map((dept) => {
                         const isActive = activeDeptId === dept.id;
@@ -504,7 +505,7 @@ export default function Departements({ lang, setView }) {
                               gap: '0.25rem'
                             }}
                           >
-                            🏢 {dept.name}
+                            <ProIcon name="building2" /> {dept.name}
                           </button>
                         );
                       }) : (
@@ -536,10 +537,10 @@ export default function Departements({ lang, setView }) {
                                 style={{ height: '35px', objectFit: 'contain' }} 
                               />
                               <h3 style={{ fontSize: '1.15rem', color: 'var(--primary)', margin: 0, fontWeight: '700', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                🛡️ {activeDeptUnion.name}
+                                <ProIcon name="shield-check" /> {activeDeptUnion.name}
                               </h3>
                             </div>
-                            <span className="badge badge-success" style={{ fontSize: '0.8rem' }}>Union Agréée ✅</span>
+                            <span className="badge badge-success" style={{ fontSize: '0.8rem' }}>Union Agréée <ProIcon name="check-circle" color="#059669" /></span>
                           </div>
                           
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', fontSize: '0.9rem', marginTop: '0.25rem' }}>
@@ -564,7 +565,7 @@ export default function Departements({ lang, setView }) {
                           {(activeDeptUnion.map_link || activeDeptUnion.landmark) && (
                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', borderTop: '1px solid var(--border-color)', paddingTop: '0.75rem', marginTop: '0.25rem' }}>
                               <span style={{ fontSize: '0.85rem', color: 'var(--text-sub)', lineHeight: '1.4' }}>
-                                📍 <strong style={{ color: 'var(--text-main)' }}>Repère :</strong> {activeDeptUnion.landmark}
+                                <ProIcon name="map-pin" /> <strong style={{ color: 'var(--text-main)' }}>Repère :</strong> {activeDeptUnion.landmark}
                               </span>
                               {(activeDeptUnion.map_link || activeDeptUnion.name.toLowerCase().includes('dakar')) && (
                                 <a 
@@ -574,7 +575,7 @@ export default function Departements({ lang, setView }) {
                                   className="btn btn-secondary btn-xs"
                                   style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', textDecoration: 'none', padding: '0.35rem 0.75rem', fontSize: '0.75rem', fontWeight: '600', borderRadius: '6px' }}
                                 >
-                                  🗺️ Google Maps
+                                  <ProIcon name="map" /> Google Maps
                                 </a>
                               )}
                             </div>
@@ -584,7 +585,7 @@ export default function Departements({ lang, setView }) {
 
                       {/* Communes de ce département */}
                       <div style={{ backgroundColor: 'var(--bg-color)', padding: '1.5rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                        <h3 style={{ fontSize: '1.1rem', marginBottom: '1.1rem', color: 'var(--primary)', fontWeight: '700' }}>📍 {t.communesTitle} : {activeDept?.name}</h3>
+                        <h3 style={{ fontSize: '1.1rem', marginBottom: '1.1rem', color: 'var(--primary)', fontWeight: '700' }}><ProIcon name="map-pin" /> {t.communesTitle} : {activeDept?.name}</h3>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                           {communes.length > 0 ? communes.map((commune) => (
                             <button
@@ -608,7 +609,7 @@ export default function Departements({ lang, setView }) {
                                 gap: '0.35rem'
                               }}
                             >
-                              🏢 {commune.name}
+                              <ProIcon name="building2" /> {commune.name}
                             </button>
                           )) : (
                             <span style={{ fontStyle: 'italic', fontSize: '0.9rem', color: 'var(--neutral-gray)' }}>Chargement des communes...</span>
@@ -619,7 +620,7 @@ export default function Departements({ lang, setView }) {
                   )}
 
                   <div style={{ backgroundColor: 'var(--card-bg-subtle)', padding: '1.5rem', borderRadius: '12px', marginTop: '1rem' }}>
-                    <h3 style={{ fontSize: '1.2rem', marginBottom: '0.75rem', color: 'var(--secondary)' }}>🌟 {t.initiatives}</h3>
+                    <h3 style={{ fontSize: '1.2rem', marginBottom: '0.75rem', color: 'var(--secondary)' }}><ProIcon name="sparkles" color="#f59e0b" /> {t.initiatives}</h3>
                     <p style={{ fontStyle: 'italic', fontWeight: '500' }}>{stats.initiative}</p>
                   </div>
                 </div>
@@ -627,7 +628,7 @@ export default function Departements({ lang, setView }) {
                 {/* Stats Sidebar & Bureau */}
                 <div className="map-sidebar">
                   <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                    <h3 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>📊 {t.statsTitle}</h3>
+                    <h3 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}><ProIcon name="bar-chart" /> {t.statsTitle}</h3>
                     
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontWeight: '500' }}>{t.activeMutuelles}</span>
@@ -646,7 +647,7 @@ export default function Departements({ lang, setView }) {
                   </div>
 
                   <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    <h3 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>👥 {t.bureauTitle}</h3>
+                    <h3 style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}><ProIcon name="users" /> {t.bureauTitle}</h3>
                     
                     <div>
                       <div style={{ fontSize: '0.8rem', color: 'var(--neutral-gray)', textTransform: 'uppercase' }}>Président / coordinateur</div>
@@ -673,13 +674,13 @@ export default function Departements({ lang, setView }) {
               onClick={() => setSelectedMutuelle(null)} 
               style={{ position: 'absolute', top: '24px', right: '24px', background: 'transparent', border: 'none', fontSize: '1.5rem', cursor: 'pointer', color: 'var(--neutral-gray)' }}
             >
-              ✕
+              <ProIcon name="x" />
             </button>
 
             <div>
               <span className="badge badge-info" style={{ marginRight: '0.5rem' }}>{selectedMutuelle.region}</span>
               <span className="badge badge-success">{selectedMutuelle.commune}</span>
-              <span className="badge badge-warning" style={{ marginLeft: '0.5rem' }}>Active ✅</span>
+              <span className="badge badge-warning" style={{ marginLeft: '0.5rem' }}>Active <ProIcon name="check-circle" color="#059669" /></span>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>
@@ -710,7 +711,7 @@ export default function Departements({ lang, setView }) {
 
               {selectedMutuelle.landmark && (
                 <div className="info-box-landmark" style={{ padding: '0.85rem', display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginTop: '0.25rem', borderRadius: '10px' }}>
-                  <span style={{ fontSize: '1.2rem' }}>📍</span>
+                  <span style={{ fontSize: '1.2rem' }}><ProIcon name="map-pin" /></span>
                   <div>
                     <strong className="info-box-title" style={{ fontSize: '0.75rem', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px' }}>Point de repère</strong>
                     <span className="info-box-text" style={{ fontSize: '0.85rem', fontWeight: '500' }}>{selectedMutuelle.landmark}</span>
@@ -720,7 +721,7 @@ export default function Departements({ lang, setView }) {
 
               {selectedMutuelle.localInfo && (
                 <div className="info-box-tips" style={{ padding: '0.85rem', display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginTop: '0.25rem', borderRadius: '10px' }}>
-                  <span style={{ fontSize: '1.2rem' }}>💡</span>
+                  <span style={{ fontSize: '1.2rem' }}><ProIcon name="lightbulb" /></span>
                   <div>
                     <strong className="info-box-title" style={{ fontSize: '0.75rem', textTransform: 'uppercase', display: 'block', letterSpacing: '0.5px' }}>Infos zone</strong>
                     <span className="info-box-text" style={{ fontSize: '0.85rem', lineHeight: '1.4' }}>{selectedMutuelle.localInfo}</span>

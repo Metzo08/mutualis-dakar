@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import QRCode from 'qrcode';
 import { generateOfficialPdf } from '../utils/pdfGenerator';
 import { outboxAdd } from '../utils/offline';
+import ProIcon from '../components/ProIcon';
 
 export default function ParrainageCSU({ lang, initialPackage = 'individuel', portalMode, agentUser }) {
   // Agent Dashboard states & logic
@@ -571,7 +572,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
           textAlign: 'center'
         }}>
           <div className="container" style={{ position: 'relative', zIndex: 2 }}>
-            <h1 style={{ color: '#fff', fontSize: '2.35rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 3px 6px rgba(0,0,0,0.4)', letterSpacing: '-0.02em' }}>🤝 {lang === 'fr' ? 'Tableau de bord du parrainage solidaire' : 'Tëggali parrainage'}</h1>
+            <h1 style={{ color: '#fff', fontSize: '2.35rem', fontWeight: '800', marginBottom: '0.5rem', textShadow: '0 3px 6px rgba(0,0,0,0.4)', letterSpacing: '-0.02em' }}><ProIcon name="handshake" /> {lang === 'fr' ? 'Tableau de bord du parrainage solidaire' : 'Tëggali parrainage'}</h1>
             <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '1.05rem', fontWeight: '500', maxWidth: '750px', margin: '0 auto', textShadow: '0 1px 3px rgba(0,0,0,0.3)', lineHeight: '1.6' }}>
               {lang === 'fr' ? 'Suivez et gérez les parrainages scolaires, daaras et ménages de Dakar' : 'Topal ak saytul parrainage daara, ecole ak njaboot'}
             </p>
@@ -582,7 +583,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
           {/* Action buttons */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button className="btn btn-outline btn-sm" onClick={fetchSponsors}>🔄 {lang === 'fr' ? 'Actualiser' : 'Yesal'}</button>
+              <button className="btn btn-outline btn-sm" onClick={fetchSponsors}><ProIcon name="refresh" /> {lang === 'fr' ? 'Actualiser' : 'Yesal'}</button>
             </div>
             <button className="btn btn-primary btn-sm" onClick={() => { setShowWizard(true); setRegStep(1); }}>
               ➕ {lang === 'fr' ? 'Enregistrer un parrainage' : 'Dolli parrainage'}
@@ -609,24 +610,24 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
             return (
               <div className="grid grid-3" style={{ gap: '1rem', marginBottom: '2rem' }}>
                 <div className="card text-left" style={{ padding: '1.25rem', borderLeft: '4px solid #059669', background: 'var(--bg-card)' }}>
-                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🤝</div>
+                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}><ProIcon name="handshake" /></div>
                   <div style={{ fontSize: '1.5rem', fontWeight: '800', color: '#059669' }}>{totalSponsors}</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{lang === 'fr' ? 'Sponsors / Parrains' : 'Sponsor yi'}</div>
                 </div>
                 <div className="card text-left" style={{ padding: '1.25rem', borderLeft: '4px solid #d97706', background: 'var(--bg-card)' }}>
-                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🎁</div>
+                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}><ProIcon name="gift" /></div>
                   <div style={{ fontSize: '1.5rem', fontWeight: '800', color: '#d97706' }}>{totalFilleuls}</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{lang === 'fr' ? 'Filleuls enrôlés' : 'Filleul yi'}</div>
                 </div>
                 <div className="card text-left" style={{ padding: '1.25rem', borderLeft: '4px solid #10b981', background: 'var(--bg-card)' }}>
-                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>🪙</div>
+                  <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}><ProIcon name="coins" /></div>
                   <div style={{ fontSize: '1.5rem', fontWeight: '800', color: '#10b981' }}>
                     {knownAmounts.length === 0 ? '—' : new Intl.NumberFormat('fr-FR').format(totalFunds) + ' FCFA'}
                   </div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{lang === 'fr' ? 'Fonds mobilisés' : 'Xalis parrainage'}</div>
                   {missingAmounts > 0 && (
                     <div style={{ fontSize: '0.68rem', color: 'var(--text-sub)', marginTop: '0.35rem' }}>
-                      ⚠️ {missingAmounts} parrain(s) sans montant enregistré — total partiel
+                      <ProIcon name="alert-triangle" color="#d97706" /> {missingAmounts} parrain(s) sans montant enregistré — total partiel
                     </div>
                   )}
                 </div>
@@ -651,7 +652,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
             {sponsorsLoading ? (
               <div style={{ textAlign: 'center', padding: '2rem' }}>{lang === 'fr' ? 'Chargement...' : 'Waaral...'}</div>
             ) : sponsorsError ? (
-              <div style={{ color: 'var(--danger)', textAlign: 'center', padding: '2rem' }}>❌ {sponsorsError}</div>
+              <div style={{ color: 'var(--danger)', textAlign: 'center', padding: '2rem' }}><ProIcon name="x-circle" color="#dc2626" /> {sponsorsError}</div>
             ) : sponsors.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
                 {lang === 'fr' ? 'Aucun parrainage enregistré.' : 'Amul parrainage.'}
@@ -730,14 +731,14 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                               onClick={() => handleViewFiche(s)}
                               style={{ marginRight: '0.5rem', padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
                             >
-                              👁️ {lang === 'fr' ? 'Fiche' : 'Fiche'}
+                              <ProIcon name="eye" /> {lang === 'fr' ? 'Fiche' : 'Fiche'}
                             </button>
                             <button 
                               className="btn btn-secondary btn-xs" 
                               onClick={() => handleDownloadReceiptForSponsor(s)}
                               style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}
                             >
-                              📄 {lang === 'fr' ? 'Reçu (PDF)' : 'Reçu'}
+                              <ProIcon name="file-text" /> {lang === 'fr' ? 'Reçu (PDF)' : 'Reçu'}
                             </button>
                           </td>
                         </tr>
@@ -783,11 +784,11 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                     alignItems: 'center', justifyContent: 'center', padding: 0
                   }}
                 >
-                  ✕
+                  <ProIcon name="x" />
                 </button>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
-                  <span style={{ fontSize: '2rem' }}>🤝</span>
+                  <span style={{ fontSize: '2rem' }}><ProIcon name="handshake" /></span>
                   <div>
                     <h2 style={{ fontSize: '1.35rem', fontWeight: '800', color: 'var(--text-main)', margin: 0 }}>
                       {sFullName}
@@ -818,7 +819,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
 
                 {/* Filleuls table */}
                 <h3 style={{ fontSize: '1rem', fontWeight: '700', marginBottom: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span>🎁 {lang === 'fr' ? 'Bénéficiaires (élèves/filles) parrainés' : 'Filleul yi bokk'}</span>
+                  <span><ProIcon name="gift" /> {lang === 'fr' ? 'Bénéficiaires (élèves/filles) parrainés' : 'Filleul yi bokk'}</span>
                   <span className="badge badge-info" style={{ fontSize: '0.75rem' }}>{filleuls.length} enrôlés</span>
                 </h3>
 
@@ -883,7 +884,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                       className="btn btn-secondary" 
                       onClick={() => handleDownloadReceiptForSponsor(selectedSponsor)}
                     >
-                      📄 {lang === 'fr' ? 'Télécharger Reçu PDF' : 'Télécharger Reçu'}
+                      <ProIcon name="file-text" /> {lang === 'fr' ? 'Télécharger Reçu PDF' : 'Télécharger Reçu'}
                     </button>
                     <button className="btn btn-outline" onClick={() => setSelectedSponsor(null)}>
                       {lang === 'fr' ? 'Fermer' : 'Fermer'}
@@ -904,7 +905,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
       {/* Top Banner */}
       <div className="hero-banner" style={{ background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.38) 0%, rgba(16, 185, 129, 0.18) 100%), url("/csu_parrainage_hero_real.png") center/cover no-repeat', border: '1px solid rgba(255, 255, 255, 0.45)', borderRadius: '24px', padding: '3.75rem 2.5rem', minHeight: '240px', marginBottom: '3.5rem', boxShadow: '0 14px 40px rgba(0, 0, 0, 0.25)' }}>
         <div className="hero-content">
-          <span className="badge" style={{ padding: '0.4rem 0.9rem', backgroundColor: 'rgba(255, 255, 255, 0.22)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '700' }}>🤝 CMU SOLIDARITÉ</span>
+          <span className="badge" style={{ padding: '0.4rem 0.9rem', backgroundColor: 'rgba(255, 255, 255, 0.22)', color: '#ffffff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '20px', fontSize: '0.85rem', fontWeight: '700' }}><ProIcon name="handshake" /> CMU SOLIDARITÉ</span>
           <h1 style={{ fontSize: '2.35rem', fontWeight: '900', margin: '0.5rem 0', color: '#ffffff', letterSpacing: '-0.02em', textShadow: '0 3px 6px rgba(0,0,0,0.4)' }}>
             {lang === 'fr' ? 'Parrainage solidaire' : 'Dimbalé ak Parrainage'}
           </h1>
@@ -941,7 +942,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
         {/* Error notification banner */}
         {error && (
           <div className="alert alert-danger fade-in-up" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', borderRadius: '12px' }}>
-            <span style={{ fontSize: '1.25rem' }}>⚠️</span>
+            <span style={{ fontSize: '1.25rem' }}><ProIcon name="alert-triangle" color="#d97706" /></span>
             <div style={{ fontWeight: '600' }}>{error}</div>
           </div>
         )}
@@ -1054,7 +1055,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                     borderRadius: '12px'
                   }}
                 >
-                  <div style={{ fontSize: '2.5rem' }}>👤</div>
+                  <div style={{ fontSize: '2.5rem' }}><ProIcon name="user" /></div>
                   <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem', fontWeight: '700' }}>{lang === 'fr' ? 'Filleuls individuels' : 'Filleuls individuels'}</h3>
                   <div style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--primary)', margin: '0.5rem 0' }}>4 500 FCFA <span style={{ fontSize: '0.8rem', fontWeight: 'normal' }}>/ pers.</span></div>
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Idéal pour parrainer une ou des personnes spécifiques dans le besoin.' : 'Fayal sa filleul sa cotisation ak sa carte.'}</p>
@@ -1075,7 +1076,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                     borderRadius: '12px'
                   }}
                 >
-                  <div style={{ fontSize: '2.5rem' }}>👨‍👩‍👧‍👦</div>
+                  <div style={{ fontSize: '2.5rem' }}><ProIcon name="users" /></div>
                   <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem', fontWeight: '700' }}>{lang === 'fr' ? 'Ménages & familles' : 'Ménages & familles'}</h3>
                   <div style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--secondary)', margin: '0.5rem 0' }}>Tarif Familial</div>
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? '1 000 FCFA la carte du chef + 3 500 FCFA/pers. Couvrez une famille complète.' : 'Fayal ay njaboot yu bari.'}</p>
@@ -1096,7 +1097,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                     borderRadius: '12px'
                   }}
                 >
-                  <div style={{ fontSize: '2.5rem' }}>🎓</div>
+                  <div style={{ fontSize: '2.5rem' }}><ProIcon name="graduation-cap" /></div>
                   <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem', fontWeight: '700' }}>{lang === 'fr' ? 'Élèves / daara' : 'Élèves / daara'}</h3>
                   <div style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--success)', margin: '0.5rem 0' }}>1 000 FCFA <span style={{ fontSize: '0.8rem', fontWeight: 'normal' }}>/ élève</span></div>
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Tarif groupe subventionné par l\'État pour les écoles élémentaires et Daaras.' : 'Fay subventionné par État bi ngir daara yi ak écoles yi.'}</p>
@@ -1126,7 +1127,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                     borderRadius: '12px'
                   }}
                 >
-                  <div style={{ fontSize: '2.5rem' }}>🎁</div>
+                  <div style={{ fontSize: '2.5rem' }}><ProIcon name="gift" /></div>
                   <h3 style={{ fontSize: '1.1rem', marginTop: '0.5rem', fontWeight: '700' }}>{lang === 'fr' ? 'Packs collectifs' : 'Packs collectifs'}</h3>
                   <div style={{ fontSize: '1.4rem', fontWeight: '800', color: 'var(--primary)', margin: '0.5rem 0' }}>10 000 FCFA <span style={{ fontSize: '0.8rem', fontWeight: 'normal' }}>/ pack 10</span></div>
                   <p style={{ fontSize: '0.8rem', color: 'var(--text-sub)' }}>{lang === 'fr' ? 'Parrainez directement un lot d\'élèves ou talibés sans devoir saisir de données.' : 'Parrainer un lot d\'enfants.'}</p>
@@ -1301,7 +1302,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                             boxShadow: isSelected ? 'var(--shadow-md)' : 'var(--shadow-sm)'
                           }}
                         >
-                          <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🎁</div>
+                          <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}><ProIcon name="gift" /></div>
                           <strong style={{ fontSize: '1.1rem', display: 'block' }}>{pack.desc}</strong>
                           <span style={{ fontSize: '1.3rem', fontWeight: '800', color: 'var(--primary)', display: 'block', marginTop: '0.5rem' }}>
                             {pack.price.toLocaleString()} FCFA
@@ -1311,7 +1312,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                     })}
                   </div>
                   <div style={{ padding: '1rem', backgroundColor: 'var(--bg-card-subtle, rgba(255, 255, 255, 0.05))', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-sub)', fontSize: '0.85rem' }}>
-                    💡 {lang === 'fr' 
+                    <ProIcon name="lightbulb" /> {lang === 'fr' 
                       ? "Ce pack permet de financer anonymement des enfants dans le besoin en attente de parrainage dans la mutuelle sélectionnée."
                       : "Pack bi day dimbale niou niak té beug bokk."}
                   </div>
@@ -1475,7 +1476,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                       marginBottom: '1.5rem',
                       textAlign: 'center'
                     }}>
-                      <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>📋</div>
+                      <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}><ProIcon name="clipboard-list" /></div>
                       <h4 style={{ margin: '0 0 0.25rem 0', fontSize: '1rem', fontWeight: '700' }}>
                         {lang === 'fr' ? "Importation collective en masse (CSV)" : "Mbindum mboloo (CSV)"}
                       </h4>
@@ -1508,7 +1509,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                           className="btn btn-secondary btn-sm"
                           style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem', cursor: 'pointer', margin: 0 }}
                         >
-                          📤 {lang === 'fr' ? 'Sélectionner le fichier CSV' : 'Choisir CSV'}
+                          <ProIcon name="upload" /> {lang === 'fr' ? 'Sélectionner le fichier CSV' : 'Choisir CSV'}
                           <input 
                             type="file" 
                             accept=".csv" 
@@ -1794,7 +1795,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
                   </div>
 
                   <div style={{ marginTop: '0.25rem', padding: '0.75rem', background: 'var(--card-bg-subtle, #f8fafc)', borderRadius: '12px', fontSize: '0.75rem', color: 'var(--text-sub)', border: '1px dashed var(--border-color)', width: '100%', maxWidth: '280px', textAlign: 'center' }}>
-                    💡 {lang === 'fr' ? 'Indice démo : Saisissez le code OTP 7842' : 'Indice démo : Bindal code OTP 7842'}
+                    <ProIcon name="lightbulb" /> {lang === 'fr' ? 'Indice démo : Saisissez le code OTP 7842' : 'Indice démo : Bindal code OTP 7842'}
                   </div>
 
                   <div style={{ display: 'flex', gap: '1rem' }}>
@@ -1809,7 +1810,7 @@ export default function ParrainageCSU({ lang, initialPackage = 'individuel', por
           {/* Step 6: Receipt & Success */}
           {regStep === 6 && (
             <div className="fade-in-up text-center">
-              <div style={{ fontSize: '4.5rem', color: 'var(--success)', marginBottom: '1rem' }}>🎉</div>
+              <div style={{ fontSize: '4.5rem', color: 'var(--success)', marginBottom: '1rem' }}><ProIcon name="sparkles" color="#059669" /></div>
               <h2 style={{ fontSize: '1.75rem', color: 'var(--success)', marginBottom: '0.5rem', fontWeight: '800' }}>
                 {lang === 'fr' ? 'Merci pour votre générosité !' : 'Jërëjëf ci sa maye !'}
               </h2>

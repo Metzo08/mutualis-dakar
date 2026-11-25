@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import ProIcon from '../components/ProIcon';
 
 export default function InstitutionPortal({ portalMode = 'citizen', agentUser = null, setView = null }) {
   // ═══════════════════════════════════════════════════════
@@ -46,7 +47,7 @@ export default function InstitutionPortal({ portalMode = 'citizen', agentUser = 
       <div className="container py-5 fade-in-up">
         <div style={{ maxWidth: '700px', margin: '0 auto' }}>
           <div className="p-5 rounded-4 text-center text-white" style={{ background: 'linear-gradient(135deg, #312e81 0%, #4338ca 100%)', borderRadius: '24px', boxShadow: 'var(--shadow-lg)' }}>
-            <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>🔐</div>
+            <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}><ProIcon name="lock" /></div>
             <span className="badge mb-3 d-inline-block" style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.82rem', fontWeight: 'bold' }}>
               {portalMode === 'agent' ? 'Agent UDMS' : 'Espace Réservé'}
             </span>
@@ -68,7 +69,7 @@ export default function InstitutionPortal({ portalMode = 'citizen', agentUser = 
       {/* Header Portail Institutionnel COUD */}
       <div className="d-flex justify-content-between align-items-center mb-4 p-4 rounded-3 text-white" style={{ background: 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #0369a1 100%)', boxShadow: 'var(--shadow-lg)' }}>
         <div>
-          <span className="badge bg-warning text-dark mb-2">🏛️ Portail Grand Compte Institutionnel</span>
+          <span className="badge bg-warning text-dark mb-2"><ProIcon name="landmark" /> Portail Grand Compte Institutionnel</span>
           <h2 className="fw-bold mb-1">COUD — Centre des Œuvres Universitaires de Dakar</h2>
           <p className="mb-0 text-white-50">Gestion intégrée de la Couverture Santé des Étudiants de l'Université Cheikh Anta Diop (UCAD)</p>
         </div>
@@ -89,7 +90,7 @@ export default function InstitutionPortal({ portalMode = 'citizen', agentUser = 
               <div className="card border-0 p-3 shadow-sm text-center" style={{ borderRadius: '14px', background: 'var(--card-bg)' }}>
                 <span className="text-muted small">Étudiants Actifs Couverts</span>
                 <h3 className="fw-bold text-success mt-1 mb-0">{coudData?.active_students_covered?.toLocaleString() || '1 240'}</h3>
-                <small className="text-success">🟢 100% Cartes QR Générées</small>
+                <small className="text-success"><ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> 100% Cartes QR Générées</small>
               </div>
             </div>
 
@@ -122,7 +123,7 @@ export default function InstitutionPortal({ portalMode = 'citizen', agentUser = 
             {/* Importation en masse d'étudiants */}
             <div className="col-md-6">
               <div className="card shadow-sm border-0 p-4" style={{ borderRadius: '16px', background: 'var(--card-bg)' }}>
-                <h4 className="fw-bold mb-3">📥 Inscription & Importation en Masse (Fichier Excel/CSV)</h4>
+                <h4 className="fw-bold mb-3"><ProIcon name="download" /> Inscription & Importation en Masse (Fichier Excel/CSV)</h4>
                 <p className="small text-muted mb-3">
                   Importez directement les listes d'étudiants inscrits à l'UCAD avec leur matricule. Les cartes de santé numériques avec Code Patient Universel seront générées et envoyées automatiquement par SMS.
                 </p>
@@ -154,10 +155,10 @@ export default function InstitutionPortal({ portalMode = 'citizen', agentUser = 
             {/* Statistiques d'actes médicaux fréquents chez les étudiants */}
             <div className="col-md-6">
               <div className="card shadow-sm border-0 p-4" style={{ borderRadius: '16px', background: 'var(--card-bg)' }}>
-                <h4 className="fw-bold mb-3">📊 Top 5 des Soins Médicaux Consommés à l'UCAD</h4>
+                <h4 className="fw-bold mb-3"><ProIcon name="bar-chart" /> Top 5 des Soins Médicaux Consommés à l'UCAD</h4>
                 <div className="mb-3">
                   <div className="d-flex justify-content-between mb-1">
-                    <span>💊 Consultations Médecine Générale & Paludisme</span>
+                    <span><ProIcon name="pill" /> Consultations Médecine Générale & Paludisme</span>
                     <span className="fw-bold">42%</span>
                   </div>
                   <div className="progress" style={{ height: '8px' }}>
@@ -167,7 +168,7 @@ export default function InstitutionPortal({ portalMode = 'citizen', agentUser = 
 
                 <div className="mb-3">
                   <div className="d-flex justify-content-between mb-1">
-                    <span>🦷 Soins Dentaires & Odontologie</span>
+                    <span><ProIcon name="stethoscope" /> Soins Dentaires & Odontologie</span>
                     <span className="fw-bold">24%</span>
                   </div>
                   <div className="progress" style={{ height: '8px' }}>
@@ -187,7 +188,7 @@ export default function InstitutionPortal({ portalMode = 'citizen', agentUser = 
 
                 <div className="mb-3">
                   <div className="d-flex justify-content-between mb-1">
-                    <span>🔬 Examens de Biologie & Analyses de Sang</span>
+                    <span><ProIcon name="microscope" /> Examens de Biologie & Analyses de Sang</span>
                     <span className="fw-bold">16%</span>
                   </div>
                   <div className="progress" style={{ height: '8px' }}>
@@ -198,7 +199,7 @@ export default function InstitutionPortal({ portalMode = 'citizen', agentUser = 
                 <div className="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
                   <span className="text-muted small">Interconnexion directe avec le Programme National de la Couverture Sanitaire — Ministère de la Santé</span>
                   <button className="btn btn-sm btn-outline-secondary" onClick={() => alert('Exportation du rapport financier COUD au format PDF...')}>
-                    📥 Rapport Financier PDF
+                    <ProIcon name="download" /> Rapport Financier PDF
                   </button>
                 </div>
               </div>

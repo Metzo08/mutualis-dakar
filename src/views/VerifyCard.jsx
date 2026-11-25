@@ -7,6 +7,7 @@ import { generateOfficialPdf } from '../utils/pdfGenerator';
 import { getAdherentCode } from '../utils/csuFormatter';
 import { speakCleanText } from '../services/voiceAudioService';
 import SecurePhoto from '../components/SecurePhoto';
+import ProIcon from '../components/ProIcon';
 
 // Vue publique et médicale de vérification d'une carte CSU.
 // Accessible via #/verify ou #/verify/:cmuNumber — utilisée par les structures de soins,
@@ -1064,13 +1065,13 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem', gap: '0.5rem' }}>
-              <span style={{ fontSize: '0.78rem', fontWeight: 800, opacity: 0.95 }}>SenMutuelles 🇸🇳</span>
+              <span style={{ fontSize: '0.78rem', fontWeight: 800, opacity: 0.95 }}>SenMutuelles <ProIcon name="senegal-flag" /></span>
               <span style={{ background: result.status === 'observation' ? 'rgba(245,158,11,0.92)' : result.valid ? 'rgba(255,255,255,0.2)' : 'rgba(220,38,38,0.88)', padding: '0.2rem 0.65rem', borderRadius: '999px', fontSize: '0.74rem', fontWeight: 800 }}>
                 {result.status === 'observation'
-                  ? `⏳ Observation (${result.observationDaysRemaining ?? 30} j)`
+                  ? <><ProIcon name="hourglass" size={13} /> Observation ({result.observationDaysRemaining ?? 30} j)</>
                   : result.valid
-                    ? '● Carte Active'
-                    : '🔴 Suspendue'}
+                    ? <><ProIcon name="check-circle" size={13} /> Carte Active</>
+                    : <><ProIcon name="x-circle" size={13} /> Suspendue</>}
               </span>
             </div>
 
@@ -1105,7 +1106,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                   fontSize: '2rem'
                 }}
               >
-                👤
+                <ProIcon name="user" />
               </div>
             )}
 
@@ -1120,7 +1121,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
           {/* Formulaire de code d'accès personnel */}
           <div style={{ padding: '1.25rem 1.1rem' }}>
             <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
-              <div style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>🔐</div>
+              <div style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}><ProIcon name="lock" /></div>
               <h3 style={{ fontSize: '1.05rem', fontWeight: 800, margin: '0 0 0.35rem 0', color: 'var(--text-main, #0f172a)' }}>
                 Accès à votre espace mobile assuré
               </h3>
@@ -1153,7 +1154,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
 
               {accessCodeError && (
                 <div className="alert alert-danger py-2 px-3 mb-0 fw-bold" style={{ borderRadius: '12px', fontSize: '0.8rem' }}>
-                  ⚠️ {accessCodeError}
+                  <ProIcon name="alert-triangle" color="#d97706" /> {accessCodeError}
                 </div>
               )}
 
@@ -1170,12 +1171,12 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                   boxShadow: '0 6px 18px rgba(5, 150, 105, 0.28)'
                 }}
               >
-                {unlocking ? '⏳ Vérification en cours...' : '🔓 Ouvrir mon espace assuré'}
+                {unlocking ? <><ProIcon name="hourglass" size={16} /> Vérification en cours...</> : <><ProIcon name="unlock" size={16} /> Ouvrir mon espace assuré</>}
               </button>
             </form>
 
             <div style={{ marginTop: '1rem', paddingTop: '0.85rem', borderTop: '1px solid var(--border-color, #e2e8f0)', textAlign: 'center', fontSize: '0.76rem', color: 'var(--text-sub, #64748b)', lineHeight: 1.5 }}>
-              <div>💡 Code remis par votre agent MSD (ou 4 derniers chiffres de votre téléphone si premier accès).</div>
+              <div><ProIcon name="lightbulb" /> Code remis par votre agent MSD (ou 4 derniers chiffres de votre téléphone si premier accès).</div>
               <button
                 type="button"
                 onClick={() => { if (setView) setView('login'); else window.location.hash = '#/login'; }}
@@ -1219,7 +1220,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             fontSize: '0.82rem',
             border: '1px solid rgba(255, 255, 255, 0.35)'
           }}>
-            🔍 UNAMUSC — Contrôle de validité & hub médical
+            <ProIcon name="search" /> UNAMUSC — Contrôle de validité & hub médical
           </span>
           <h1 style={{ color: '#fff', fontSize: '1.85rem', fontWeight: '850', marginBottom: '0.6rem', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
             Vérification de la carte CSU
@@ -1233,7 +1234,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
       {/* Message de succès d'action */}
       {actionSuccess && (
         <div className="alert alert-success d-flex align-items-center mb-5 rounded-4 border-0 shadow-sm p-4" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#047857', border: '1.5px solid rgba(16, 185, 129, 0.35)', borderRadius: '20px' }}>
-          <span className="fs-3 me-3.5">✅</span>
+          <span className="fs-3 me-3.5"><ProIcon name="check-circle" color="#059669" /></span>
           <div style={{ fontSize: '0.95rem', fontWeight: '600', lineHeight: '1.6' }}>{actionSuccess}</div>
         </div>
       )}
@@ -1256,7 +1257,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
               disabled={loading}
               style={{ minHeight: '56px', borderRadius: '18px', background: '#059669', borderColor: '#059669', fontSize: '0.94rem', whiteSpace: 'nowrap' }}
             >
-              {loading ? 'Vérification...' : '🔍 Vérifier'}
+              {loading ? 'Vérification...' : <><ProIcon name="search" size={16} /> Vérifier</>}
             </button>
             <button
               type="button"
@@ -1265,14 +1266,14 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
               style={{ minHeight: '56px', borderRadius: '18px', fontSize: '0.92rem', border: '2px solid #059669', whiteSpace: 'nowrap' }}
               title="Ouvrir le scanner vidéo ou la modale photo"
             >
-              📷 Caméra / Scan
+              <ProIcon name="camera" /> Caméra / Scan
             </button>
             <label
               className="btn btn-success text-white fw-bold px-3 py-3 shadow-sm d-flex align-items-center justify-content-center gap-2 flex-fill mb-0"
               style={{ minHeight: '56px', borderRadius: '18px', fontSize: '0.92rem', background: '#047857', borderColor: '#047857', cursor: 'pointer', whiteSpace: 'nowrap' }}
               title="Prendre une photo directe du QR code avec l'appareil photo de votre smartphone"
             >
-              <span>📸</span>
+              <span><ProIcon name="camera" /></span>
               <span>Photo QR</span>
               <input
                 type="file"
@@ -1287,7 +1288,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
 
         {error && (
           <div className="alert alert-danger p-4 mt-4 mb-0 rounded-4 d-flex align-items-center shadow-sm" style={{ borderRadius: '18px' }}>
-            <span className="fs-4 me-3">⚠️</span>
+            <span className="fs-4 me-3"><ProIcon name="alert-triangle" color="#d97706" /></span>
             <div style={{ fontSize: '0.94rem', lineHeight: '1.55' }}>{error}</div>
           </div>
         )}
@@ -1301,7 +1302,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
           <div style={{ maxWidth: '520px', width: '100%', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '1.5rem', textAlign: 'center', border: '2px solid #059669', boxShadow: '0 25px 70px rgba(0,0,0,0.75)' }}>
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h5 className="fw-extrabold mb-0 text-success d-flex align-items-center gap-2" style={{ fontSize: '1.1rem' }}>
-                <span>📷</span>
+                <span><ProIcon name="camera" /></span>
                 <span>Scanner un QR Code CSU</span>
               </h5>
               <button type="button" className="btn-close" onClick={stopCameraScan}></button>
@@ -1335,7 +1336,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
               {/* MESSAGE & GUIDAGE PHOTO SI FLUX VIDÉO RESTREINT SUR SMARTPHONE HTTP */}
               {(!cameraActive || cameraError) && (
                 <div className="p-3 text-center" style={{ position: 'relative', zIndex: 2, color: '#f8fafc' }}>
-                  <div style={{ fontSize: '2.6rem', marginBottom: '0.3rem' }}>📸</div>
+                  <div style={{ fontSize: '2.6rem', marginBottom: '0.3rem' }}><ProIcon name="camera" /></div>
                   <h6 className="fw-extrabold mb-1" style={{ fontSize: '1.05rem', color: '#34d399' }}>Numérisation Rapide par Photo</h6>
                   <p className="small mb-0" style={{ fontSize: '0.84rem', color: '#cbd5e1' }}>
                     {cameraError === 'PHOTO_NO_QR'
@@ -1352,7 +1353,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                 className="btn text-white fw-bold w-100 d-flex align-items-center justify-content-center gap-2 shadow-sm"
                 style={{ background: '#059669', borderColor: '#059669', borderRadius: '14px', padding: '0.85rem', fontSize: '0.95rem', cursor: 'pointer' }}
               >
-                <span>📸</span>
+                <span><ProIcon name="camera" /></span>
                 <span>Prendre le QR Code en photo</span>
                 <input
                   type="file"
@@ -1367,7 +1368,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                 className="btn btn-outline-success fw-bold w-100 d-flex align-items-center justify-content-center gap-2"
                 style={{ borderRadius: '14px', padding: '0.75rem', fontSize: '0.9rem', cursor: 'pointer' }}
               >
-                <span>📁</span>
+                <span><ProIcon name="folder" /></span>
                 <span>Choisir une photo dans la galerie</span>
                 <input
                   type="file"
@@ -1381,7 +1382,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             {/* SELECTION RAPIDE DE TEST POUR DÉMONSTRATION EN UN CLIC */}
             <div className="pt-2 border-top text-start" style={{ borderColor: 'var(--border-color)' }}>
               <small className="text-muted fw-bold d-block mb-1.5" style={{ fontSize: '0.76rem' }}>
-                🧪 Ou simulez le scan d'une carte de test :
+                <ProIcon name="flask" /> Ou simulez le scan d'une carte de test :
               </small>
               <div className="d-flex flex-wrap gap-1.5">
                 <button
@@ -1541,7 +1542,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                 className="btn btn-light btn-sm fw-bold flex-shrink-0"
                 style={{ borderRadius: '10px', fontSize: '0.8rem', padding: '0.25rem 0.75rem' }}
               >
-                Fermer ✕
+                Fermer <ProIcon name="x" />
               </button>
             </div>
 
@@ -1550,7 +1551,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
               <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', backgroundImage: 'url("/csu_digital_health_real.jpg")', backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.35 }} />
               <div style={{ position: 'relative', zIndex: 2, maxWidth: '540px' }}>
                 <div className="d-inline-flex align-items-center justify-content-center p-3 rounded-circle mb-3" style={{ background: '#059669', color: '#ffffff', width: '64px', height: '64px', fontSize: '2rem', boxShadow: '0 8px 24px rgba(5,150,105,0.4)' }}>
-                  🎬
+                  <ProIcon name="video" />
                 </div>
                 <h4 className="fw-extrabold text-white mb-2" style={{ fontSize: '1.3rem' }}>
                   Présentation officielle du programme CSU
@@ -1560,10 +1561,10 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                 </p>
                 <div className="d-flex align-items-center justify-content-center gap-3 flex-wrap">
                   <span className="badge bg-emerald-500 text-white px-3 py-1.5 fw-bold" style={{ borderRadius: '10px', fontSize: '0.8rem', background: '#059669' }}>
-                    🟢 UNAMUSC 2026
+                    <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> UNAMUSC 2026
                   </span>
                   <span className="badge bg-blue-600 text-white px-3 py-1.5 fw-bold" style={{ borderRadius: '10px', fontSize: '0.8rem', background: '#1e40af' }}>
-                    🏢 Groupe Patisen & Wave SA
+                    <ProIcon name="building2" /> Groupe Patisen & Wave SA
                   </span>
                 </div>
               </div>
@@ -1572,7 +1573,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             {/* Pied du popup */}
             <div style={{ padding: '1.25rem', textAlign: 'center', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-card-subtle)', flexWrap: 'wrap', gap: '0.5rem', borderTop: '1px solid var(--border-color)' }}>
               <div style={{ fontSize: '0.85rem', color: 'var(--text-sub)' }}>
-                💡 Présentation officielle de la Couverture Santé Universelle
+                <ProIcon name="lightbulb" /> Présentation officielle de la Couverture Santé Universelle
               </div>
               <button 
                 type="button" 
@@ -1580,7 +1581,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                 onClick={() => setShowAdModal(false)}
                 style={{ borderRadius: '12px', padding: '0.6rem 1.5rem', background: '#059669', borderColor: '#059669' }}
               >
-                ✅ Accéder à la carte d'assuré
+                <ProIcon name="check-circle" color="#059669" /> Accéder à la carte d'assuré
               </button>
             </div>
           </div>
@@ -1595,7 +1596,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
           <div className="p-4 text-white" style={{ background: 'linear-gradient(135deg, #047857 0%, #059669 100%)' }}>
             <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
               <span className="badge bg-white text-success fw-bold px-3 py-1.5 rounded-pill shadow-sm" style={{ fontSize: '0.82rem' }}>
-                🟢 Document officiel certifié et infalsifiable
+                <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Document officiel certifié et infalsifiable
               </span>
               <span className="small text-white-50 fw-mono">
                 EMPREINTE : {docResult.cryptoHash}
@@ -1614,7 +1615,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             <div className="row g-3 mb-4">
               <div className="col-md-6">
                 <div className="p-3 rounded-3" style={{ background: 'rgba(5, 150, 105, 0.06)', border: '1px solid rgba(5, 150, 105, 0.18)' }}>
-                  <small className="text-muted fw-bold d-block mb-1">👤 Assuré(e) bénéficiaire</small>
+                  <small className="text-muted fw-bold d-block mb-1"><ProIcon name="user" /> Assuré(e) bénéficiaire</small>
                   <h5 className="fw-bold mb-1" style={{ color: 'var(--text-main)' }}>{docResult.beneficiaryName}</h5>
                   <div className="small text-success fw-bold">N° CSU carte : {docResult.cmuNumber}</div>
                 </div>
@@ -1622,7 +1623,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
 
               <div className="col-md-6">
                 <div className="p-3 rounded-3" style={{ background: 'rgba(15, 23, 42, 0.04)', border: '1px solid rgba(15, 23, 42, 0.12)' }}>
-                  <small className="text-muted fw-bold d-block mb-1">📄 Référence document</small>
+                  <small className="text-muted fw-bold d-block mb-1"><ProIcon name="file-text" /> Référence document</small>
                   <h5 className="fw-bold mb-1" style={{ color: '#059669', fontFamily: 'monospace' }}>#{docResult.referenceNo}</h5>
                   <div className="small text-muted">{docResult.docType}</div>
                 </div>
@@ -1705,7 +1706,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                   });
                 }}
               >
-                📥 Télécharger le PDF Certifié Officiel
+                <ProIcon name="download" /> Télécharger le PDF Certifié Officiel
               </button>
             </div>
           </div>
@@ -1751,7 +1752,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                 style={{ fontSize: '0.8rem', borderRadius: '12px', background: 'var(--bg-card)' }}
                 onClick={() => setShowAdModal(true)}
               >
-                ▶️ Vidéo
+                <ProIcon name="play" /> Vidéo
               </button>
             </div>
           </div>
@@ -1785,7 +1786,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                   Couverture Santé Universelle
                 </span>
                 <h4 className="fw-extrabold mb-0" style={{ fontSize: '1.55rem', color: 'var(--text-main)', letterSpacing: '0.5px' }}>
-                  SenMutuelles 🇸🇳
+                  SenMutuelles <ProIcon name="senegal-flag" />
                 </h4>
               </div>
 
@@ -1807,10 +1808,10 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                 title="Statut officiel certifié par le registre UNAMUSC"
               >
                 {result.status === 'observation'
-                  ? `⏳ Période d'observation (${result.observationDaysRemaining ?? 30} j)`
+                  ? <><ProIcon name="hourglass" size={15} /> Période d&apos;observation ({result.observationDaysRemaining ?? 30} j)</>
                   : (result.valid && result.status !== 'suspended' && result.status !== 'suspendu')
-                    ? '● Actif'
-                    : '🔴 Suspendu'}
+                    ? <><ProIcon name="check-circle" size={15} /> Actif</>
+                    : <><ProIcon name="x-circle" size={15} /> Suspendu</>}
               </span>
             </div>
 
@@ -1830,7 +1831,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                 }}
               >
                 <div style={{ fontWeight: 800, marginBottom: '0.2rem' }}>
-                  ⏳ Période d&apos;observation réglementaire de {result.observationDaysTotal || 30} jours
+                  <ProIcon name="hourglass" /> Période d&apos;observation réglementaire de {result.observationDaysTotal || 30} jours
                 </div>
                 <div>
                   Jour <strong>{Math.min(result.observationDaysTotal || 30, (result.observationDaysElapsed || 0) + 1)}/{result.observationDaysTotal || 30}</strong> à compter du 1er jour de cotisation
@@ -1876,7 +1877,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                     }}
                     title="Photo certifiée en attente"
                   >
-                    👤
+                    <ProIcon name="user" />
                   </div>
                 )}
               </div>
@@ -1888,18 +1889,18 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                   </h3>
                   {result.isDependent ? (
                     <span className="badge fw-bold px-3.5 py-1.5" style={{ background: result.dependentType === 'MAJOR' ? 'rgba(99, 102, 241, 0.18)' : 'rgba(245, 158, 11, 0.18)', color: result.dependentType === 'MAJOR' ? '#818cf8' : '#fbbf24', border: '1px solid var(--border-color)', borderRadius: '12px', fontSize: '0.84rem' }}>
-                      {result.dependentType === 'MAJOR' ? '👤 Ayant-droit majeur' : '👶 Enfant mineur'}
+                      {result.dependentType === 'MAJOR' ? <><ProIcon name="user" size={14} /> Ayant-droit majeur</> : <><ProIcon name="baby" size={14} /> Enfant mineur</>}
                     </span>
                   ) : (
                     <span className="badge fw-bold px-3.5 py-1.5" style={{ background: 'rgba(16, 185, 129, 0.18)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.35)', borderRadius: '12px', fontSize: '0.84rem' }}>
-                      🛡️ Adhérent Principal
+                      <ProIcon name="shield-check" /> Adhérent Principal
                     </span>
                   )}
                 </div>
 
                 {result.isDependent && result.sponsorName && (
                   <div className="p-3 mb-3 rounded-4 border d-flex align-items-center gap-2.5" style={{ background: 'rgba(59, 130, 246, 0.08)', borderColor: 'rgba(59, 130, 246, 0.25)', fontSize: '0.88rem' }}>
-                    <span className="fs-5">🏛️</span>
+                    <span className="fs-5"><ProIcon name="landmark" /></span>
                     <div>
                       <span className="text-muted fw-semibold">Rattaché au titulaire :</span>{' '}
                       <strong className="text-primary">{result.sponsorName}</strong>{' '}
@@ -1910,10 +1911,10 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
 
                 <div className="d-flex flex-wrap gap-2.5 align-items-center">
                   <span className="badge fw-bold px-3.5 py-2 d-inline-flex align-items-center gap-2" style={{ background: 'rgba(16, 185, 129, 0.18)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.35)', borderRadius: '12px', fontSize: '0.86rem' }}>
-                    📦 {result.packageBadge || result.packageType || 'Tiers-payant 80%'}
+                    <ProIcon name="package" /> {result.packageBadge || result.packageType || 'Tiers-payant 80%'}
                   </span>
                   <span className="badge px-3.5 py-2 fw-bold border d-inline-flex align-items-center gap-2" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-sub)', borderColor: 'var(--border-color)', borderRadius: '12px', fontSize: '0.86rem' }}>
-                    🏥 {result.mutuelleName ? result.mutuelleName : 'Mutuelle de santé départementale de Dakar'}
+                    <ProIcon name="hospital" /> {result.mutuelleName ? result.mutuelleName : 'Mutuelle de santé départementale de Dakar'}
                   </span>
                 </div>
 
@@ -1923,7 +1924,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                 {aliasNotice && (
                   <div className="p-3 mt-3 rounded-4 border" style={{ background: 'rgba(245, 158, 11, 0.10)', borderColor: 'rgba(245, 158, 11, 0.35)' }}>
                     <div className="d-flex align-items-start gap-2">
-                      <span style={{ fontSize: '1.05rem' }}>⚠️</span>
+                      <span style={{ fontSize: '1.05rem' }}><ProIcon name="alert-triangle" color="#d97706" /></span>
                       <div>
                         <strong style={{ fontSize: '0.9rem', color: '#b45309', display: 'block', marginBottom: '0.2rem' }}>
                           Ancien code détecté
@@ -1943,7 +1944,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                 {scannedAcademic && (
                   <div className="p-3 mt-3 rounded-4 border" style={{ background: 'rgba(37, 99, 235, 0.07)', borderColor: 'rgba(37, 99, 235, 0.28)' }}>
                     <div className="d-flex align-items-center gap-2 mb-2 flex-wrap">
-                      <span style={{ fontSize: '1.05rem' }}>📚</span>
+                      <span style={{ fontSize: '1.05rem' }}><ProIcon name="book-open" /></span>
                       <strong style={{ fontSize: '0.92rem', color: '#1d4ed8' }}>
                         Données scolaires (lues dans le QR)
                       </strong>
@@ -2003,7 +2004,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             <div className="p-4 p-md-5 text-center my-4 rounded-4" style={{ background: 'var(--bg-card)', border: '2px solid #059669', borderRadius: '24px', boxShadow: '0 10px 30px rgba(5, 150, 105, 0.12)' }}>
               <div className="d-flex align-items-center justify-content-center gap-2 mb-3">
                 <span className="badge bg-success text-white px-3.5 py-1.5 fw-bold" style={{ fontSize: '0.82rem', borderRadius: '12px' }}>
-                  🔒 QR Code Dynamique • ⏱️ {qrSecondsLeft}s
+                  <ProIcon name="lock" /> QR Code Dynamique • <ProIcon name="clock" /> {qrSecondsLeft}s
                 </span>
               </div>
 
@@ -2029,9 +2030,9 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
               </div>
 
               <div className="d-flex align-items-center justify-content-center gap-2 mb-2">
-                <span style={{ fontSize: '1.2rem' }}>🛡️</span>
+                <span style={{ fontSize: '1.2rem' }}><ProIcon name="shield-check" /></span>
                 <span className="fw-extrabold" style={{ fontSize: '0.86rem', color: '#10b981' }}>
-                  Authentifié UNAMUSC Sénégal 🇸🇳
+                  Authentifié UNAMUSC Sénégal <ProIcon name="senegal-flag" />
                 </span>
               </div>
 
@@ -2041,15 +2042,15 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
 
               <div className="d-flex justify-content-center flex-wrap gap-2.5 mb-2.5">
                 <span className="badge bg-success text-white fw-bold px-3 py-1.5" style={{ fontSize: '0.76rem', borderRadius: '10px' }}>
-                  🟢 Signature Cryptographique Valide
+                  <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Signature Cryptographique Valide
                 </span>
                 <span className="badge fw-bold px-3 py-1.5" style={{ fontSize: '0.76rem', borderRadius: '10px', background: 'rgba(16, 185, 129, 0.18)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.35)' }}>
-                  🏛️ URMSCD Dakar
+                  <ProIcon name="landmark" /> URMSCD Dakar
                 </span>
               </div>
 
               <span className="badge px-4 py-2.5 fw-bold border mt-2" style={{ borderRadius: '14px', fontSize: '0.84rem', background: 'rgba(5, 150, 105, 0.15)', color: '#10b981', borderColor: 'rgba(5, 150, 105, 0.35)', whiteSpace: 'normal', lineHeight: '1.5', display: 'inline-block' }}>
-                📱 QR code CSU Certifié • Toucher pour agrandir 👆
+                <ProIcon name="smartphone" /> QR code CSU Certifié • Toucher pour agrandir <ProIcon name="scan" />
               </span>
             </div>
 
@@ -2057,10 +2058,10 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             <div className="p-4 rounded-4 position-relative mt-4" style={{ background: 'var(--bg-card-subtle)', borderRadius: '20px', border: '1px solid var(--border-color)', zIndex: 2 }}>
               <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
                 <small className="fw-bold text-muted" style={{ fontSize: '0.82rem', letterSpacing: '0.05em' }}>
-                  UNAMUSC SENEGAL - CARTE NATIONALE D’ASSURANCE SANTÉ 🇸🇳
+                  UNAMUSC SENEGAL - CARTE NATIONALE D’ASSURANCE SANTÉ <ProIcon name="senegal-flag" />
                 </small>
                 <span className="badge px-3.5 py-2 fw-bold border" style={{ borderRadius: '12px', fontSize: '0.82rem', background: 'var(--bg-card)', color: 'var(--text-main)', borderColor: 'var(--border-color)' }}>
-                  Droits actifs 2026 🟢
+                  Droits actifs 2026 <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} />
                 </span>
               </div>
             </div>
@@ -2078,7 +2079,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             return (
               <div className="card shadow-sm border-0 p-4 p-md-5 mb-4 text-center" style={{ borderRadius: '26px', background: 'var(--bg-card)', color: 'var(--text-main)', border: '2px solid #d97706' }}>
                 <div className="d-inline-flex align-items-center justify-content-center p-3 rounded-circle mb-3 mx-auto" style={{ background: 'rgba(245, 158, 11, 0.16)', color: '#d97706', width: '72px', height: '72px' }}>
-                  <span style={{ fontSize: '2.2rem' }}>⏳</span>
+                  <span style={{ fontSize: '2.2rem' }}><ProIcon name="hourglass" /></span>
                 </div>
 
                 <h3 className="fw-bold mb-2" style={{ fontSize: '1.35rem', color: '#b45309' }}>
@@ -2116,10 +2117,10 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             return (
               <div className="card shadow-sm border-0 p-4 p-md-5 mb-5 text-center" style={{ borderRadius: '26px', background: 'var(--bg-card)', color: 'var(--text-main)', border: '2px solid #ef4444' }}>
                 <div className="d-inline-flex align-items-center justify-content-center p-4 rounded-circle mb-4 mx-auto" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', width: '80px', height: '80px' }}>
-                  <span style={{ fontSize: '2.6rem' }}>⚠️</span>
+                  <span style={{ fontSize: '2.6rem' }}><ProIcon name="alert-triangle" color="#d97706" /></span>
                 </div>
                 
-                <h3 className="fw-bold mb-3 text-danger" style={{ fontSize: '1.55rem' }}>⚠️ Couverture CSU inactive</h3>
+                <h3 className="fw-bold mb-3 text-danger" style={{ fontSize: '1.55rem' }}><ProIcon name="alert-triangle" color="#d97706" /> Couverture CSU inactive</h3>
                 
                 <div className="mb-4">
                   <code className="px-3.5 py-2 bg-dark text-warning border border-warning rounded-3 fw-bold d-inline-block" style={{ fontSize: '1.1rem', color: '#f59e0b' }}>
@@ -2150,7 +2151,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                       else window.location.hash = '#payments';
                     }}
                   >
-                    💳 Renouveler ma cotisation
+                    <ProIcon name="credit-card" /> Renouveler ma cotisation
                   </button>
                 </div>
               </div>
@@ -2158,7 +2159,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
           })() : !isMobileSpaceUnlocked ? (
             <div className="card shadow-sm border-0 p-4 p-md-5 mb-5 text-center" style={{ borderRadius: '24px', background: 'var(--bg-card)', border: '2px solid #059669', maxWidth: '540px', margin: '0 auto 2.5rem auto' }}>
               <div className="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle" style={{ width: '64px', height: '64px', background: 'rgba(5, 150, 105, 0.14)', fontSize: '1.9rem' }}>
-                🔐
+                <ProIcon name="lock" />
               </div>
               <h4 className="fw-extrabold mb-2" style={{ fontSize: '1.22rem', color: 'var(--text-main)' }}>
                 Accès sécurisé à l&apos;espace assuré
@@ -2187,7 +2188,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                 />
                 {accessCodeError && (
                   <div className="alert alert-danger py-2 px-3 mb-0 small fw-bold" style={{ borderRadius: '12px' }}>
-                    ⚠️ {accessCodeError}
+                    <ProIcon name="alert-triangle" color="#d97706" /> {accessCodeError}
                   </div>
                 )}
                 <button
@@ -2196,11 +2197,11 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                   className="btn text-white fw-bold py-3 w-100"
                   style={{ background: '#059669', border: 'none', borderRadius: '14px', fontSize: '0.96rem' }}
                 >
-                  {unlocking ? '⏳ Vérification du code...' : '🔓 Déverrouiller mon espace assuré'}
+                  {unlocking ? <><ProIcon name="hourglass" size={16} /> Vérification du code...</> : <><ProIcon name="unlock" size={16} /> Déverrouiller mon espace assuré</>}
                 </button>
               </form>
               <small className="text-muted d-block mt-3" style={{ fontSize: '0.78rem' }}>
-                💡 Code remis par votre agent MSD (ou 4 derniers chiffres de votre téléphone si premier accès).
+                <ProIcon name="lightbulb" /> Code remis par votre agent MSD (ou 4 derniers chiffres de votre téléphone si premier accès).
               </small>
             </div>
           ) : (
@@ -2211,7 +2212,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                 <div className="d-flex align-items-start justify-content-between flex-wrap gap-2 mb-3 pb-3 border-bottom" style={{ borderColor: 'var(--border-color)' }}>
                   <div style={{ minWidth: 0 }}>
                     <span className="badge fw-bold px-2.5 py-1 mb-1.5 d-inline-block" style={{ background: 'rgba(5, 150, 105, 0.14)', color: '#059669', borderRadius: '10px', fontSize: '0.74rem' }}>
-                      📱 Espace mobile assuré · Connecté
+                      <ProIcon name="smartphone" /> Espace mobile assuré · Connecté
                     </span>
                     <h5 className="fw-extrabold mb-0" style={{ fontSize: '1.12rem', color: 'var(--text-main)', lineHeight: 1.3, wordBreak: 'break-word' }}>
                       {result.firstName} {result.lastName}
@@ -2223,30 +2224,30 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                     style={{ background: '#059669', borderRadius: '12px', border: 'none', fontSize: '0.8rem' }}
                     onClick={handlePrintCertificate}
                   >
-                    📥 Attestation PDF
+                    <ProIcon name="download" /> Attestation PDF
                   </button>
                 </div>
 
                 {/* Synthèse rapide 2x2 propre et aérée */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '0.65rem', marginBottom: '0.85rem' }}>
                   <div className="p-2.5 p-md-3 rounded-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', minWidth: 0 }}>
-                    <small className="text-muted fw-bold d-block mb-1" style={{ fontSize: '0.72rem' }}>📞 Téléphone</small>
+                    <small className="text-muted fw-bold d-block mb-1" style={{ fontSize: '0.72rem' }}><ProIcon name="phone" /> Téléphone</small>
                     <strong style={{ fontSize: '0.84rem', color: 'var(--text-main)', wordBreak: 'break-word', display: 'block' }}>{result.phone || 'Non renseigné'}</strong>
                   </div>
                   <div className="p-2.5 p-md-3 rounded-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', minWidth: 0 }}>
-                    <small className="text-muted fw-bold d-block mb-1" style={{ fontSize: '0.72rem' }}>🩸 Groupe sanguin</small>
+                    <small className="text-muted fw-bold d-block mb-1" style={{ fontSize: '0.72rem' }}><ProIcon name="droplet" color="#dc2626" /> Groupe sanguin</small>
                     <strong style={{ fontSize: '0.82rem', color: result.bloodGroup && result.bloodGroup !== 'Non renseigné' ? '#dc2626' : '#64748b', wordBreak: 'break-word', display: 'block' }}>
                       {result.bloodGroup && result.bloodGroup !== 'Non renseigné' ? result.bloodGroup : 'Non renseigné'}
                     </strong>
                   </div>
                   <div className="p-2.5 p-md-3 rounded-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', minWidth: 0 }}>
-                    <small className="text-muted fw-bold d-block mb-1" style={{ fontSize: '0.72rem' }}>👨‍👩‍👧‍👦 Ayants droit</small>
+                    <small className="text-muted fw-bold d-block mb-1" style={{ fontSize: '0.72rem' }}><ProIcon name="users" /> Ayants droit</small>
                     <strong style={{ fontSize: '0.84rem', color: '#059669', display: 'block' }}>
                       {(result.dependents || result.familyMembers || []).length} enregistré(s)
                     </strong>
                   </div>
                   <div className="p-2.5 p-md-3 rounded-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', minWidth: 0 }}>
-                    <small className="text-muted fw-bold d-block mb-1" style={{ fontSize: '0.72rem' }}>💳 Cotisation</small>
+                    <small className="text-muted fw-bold d-block mb-1" style={{ fontSize: '0.72rem' }}><ProIcon name="credit-card" /> Cotisation</small>
                     <strong style={{ fontSize: '0.82rem', color: '#0284c7', display: 'block' }}>
                       {Array.isArray(result.cotisations) && result.cotisations.length > 0
                         ? `À jour (${Number(result.cotisations[0].amount || 0).toLocaleString('fr-FR')} F)`
@@ -2258,20 +2259,20 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                 {/* Boutons d'accès direct — grille CSS 2 colonnes sans aucun débordement */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(138px, 1fr))', gap: '0.65rem' }}>
                   {[
-                    { id: 'payments', icon: '💳', label: 'Cotisations Wave/OM', sub: 'Payer ou renouveler', color: '#0284c7' },
-                    { id: 'guarantees', icon: '📄', label: `Garanties (${(result.guaranteeLetters || []).length})`, sub: 'Hôpital tiers-payant 80%', color: '#059669' },
-                    { id: 'purchase-orders', icon: '💊', label: `Pharmacie (${(result.purchaseOrders || []).length})`, sub: 'Bons médicaments 50%', color: '#7c3aed' },
-                    { id: 'medical-profile', icon: '🩺', label: 'Dossier médical', sub: 'Antécédents & suivi', color: '#dc2626' },
-                    { id: 'telemedicine', icon: '📹', label: 'Télémédecine', sub: 'Médecin visio 24/7', color: '#0d9488' },
-                    { id: 'maternity', icon: '🤰', label: 'Maternité & CPN', sub: 'Suivi mère & enfant', color: '#db2777' },
-                    { id: 'map', icon: '🏥', label: 'Structures agréées', sub: 'Hôpitaux & cliniques', color: '#d97706' },
-                    { id: 'medicaments', icon: '🧪', label: 'Médicaments CSU', sub: 'Tarifs & panier soins', color: '#2563eb' },
-                    { id: 'programmes', icon: '🛡️', label: 'Programmes CSU', sub: 'Offres & couvertures', color: '#047857' },
-                    { id: 'directory', icon: '📁', label: 'Annuaire mutuelles', sub: 'Unions & contacts', color: '#4f46e5' },
-                    { id: 'parrainage-solidaire', icon: '🤝', label: 'Parrainage', sub: 'Solidarité & dons', color: '#0891b2' },
-                    { id: 'complaints', icon: '💬', label: 'Réclamations', sub: 'Assistance & suivi', color: '#b45309' },
-                    { id: 'profile', icon: '👤', label: 'Mon Profil', sub: 'Infos & compte assuré', color: '#0f766e' },
-                    { id: 'home', icon: '🏠', label: 'Portail Accueil', sub: 'Vue générale CSU', color: '#334155' }
+                    { id: 'payments', icon: <ProIcon name="credit-card" />, label: 'Cotisations Wave/OM', sub: 'Payer ou renouveler', color: '#0284c7' },
+                    { id: 'guarantees', icon: <ProIcon name="file-text" />, label: `Garanties (${(result.guaranteeLetters || []).length})`, sub: 'Hôpital tiers-payant 80%', color: '#059669' },
+                    { id: 'purchase-orders', icon: <ProIcon name="pill" />, label: `Pharmacie (${(result.purchaseOrders || []).length})`, sub: 'Bons médicaments 50%', color: '#7c3aed' },
+                    { id: 'medical-profile', icon: <ProIcon name="stethoscope" />, label: 'Dossier médical', sub: 'Antécédents & suivi', color: '#dc2626' },
+                    { id: 'telemedicine', icon: <ProIcon name="video" />, label: 'Télémédecine', sub: 'Médecin visio 24/7', color: '#0d9488' },
+                    { id: 'maternity', icon: <ProIcon name="heart-pulse" />, label: 'Maternité & CPN', sub: 'Suivi mère & enfant', color: '#db2777' },
+                    { id: 'map', icon: <ProIcon name="hospital" />, label: 'Structures agréées', sub: 'Hôpitaux & cliniques', color: '#d97706' },
+                    { id: 'medicaments', icon: <ProIcon name="flask" />, label: 'Médicaments CSU', sub: 'Tarifs & panier soins', color: '#2563eb' },
+                    { id: 'programmes', icon: <ProIcon name="shield-check" />, label: 'Programmes CSU', sub: 'Offres & couvertures', color: '#047857' },
+                    { id: 'directory', icon: <ProIcon name="folder" />, label: 'Annuaire mutuelles', sub: 'Unions & contacts', color: '#4f46e5' },
+                    { id: 'parrainage-solidaire', icon: <ProIcon name="handshake" />, label: 'Parrainage', sub: 'Solidarité & dons', color: '#0891b2' },
+                    { id: 'complaints', icon: <ProIcon name="message-square" />, label: 'Réclamations', sub: 'Assistance & suivi', color: '#b45309' },
+                    { id: 'profile', icon: <ProIcon name="user" />, label: 'Mon Profil', sub: 'Infos & compte assuré', color: '#0f766e' },
+                    { id: 'home', icon: <ProIcon name="home" />, label: 'Portail Accueil', sub: 'Vue générale CSU', color: '#334155' }
                   ].map((item) => (
                     <button
                       key={item.id}
@@ -2356,7 +2357,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                     <div className="d-flex align-items-center justify-content-between flex-wrap gap-4 mb-4">
                       <div className="d-flex align-items-center gap-3.5">
                         <div style={{ width: '54px', height: '54px', borderRadius: '18px', background: 'rgba(5, 150, 105, 0.2)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.8rem', flexShrink: 0, border: '1.5px solid #059669' }}>
-                          🔊
+                          <ProIcon name="volume" />
                         </div>
                         <div>
                           <h6 className="fw-extrabold mb-1" style={{ fontSize: '1.2rem', color: 'var(--text-main)' }}>
@@ -2369,7 +2370,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                       </div>
 
                       <span className="badge px-4 py-2.5 rounded-pill fw-bold" style={{ background: 'rgba(5, 150, 105, 0.2)', color: '#10b981', border: '1.5px solid #34d399', fontSize: '0.86rem' }}>
-                        🟢 Notification vocale active au scan
+                        <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Notification vocale active au scan
                       </span>
                     </div>
 
@@ -2381,7 +2382,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                           <div className="p-4 p-md-5 rounded-4 h-100 shadow-sm" style={{ background: 'var(--bg-card)', border: '2.5px solid #10b981', boxShadow: '0 8px 24px rgba(16, 185, 129, 0.12)', borderRadius: '26px' }}>
                             <div className="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4 pb-3 border-bottom" style={{ borderColor: 'rgba(16, 185, 129, 0.2)' }}>
                               <span className="badge fw-extrabold px-4 py-2.5" style={{ fontSize: '0.92rem', borderRadius: '14px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-                                👶 Vaccins 0 à 5 ans (PEV Pédiatrique)
+                                <ProIcon name="baby" /> Vaccins 0 à 5 ans (PEV Pédiatrique)
                               </span>
                               <span className="badge bg-success text-white fw-bold px-3.5 py-2" style={{ fontSize: '0.84rem', borderRadius: '12px' }}>
                                 100% Gratuit
@@ -2390,7 +2391,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                             
                             <div className="p-3.5 rounded-3 mb-3.5" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1.5px solid rgba(16, 185, 129, 0.25)', borderRadius: '16px' }}>
                               <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.08rem', color: '#10b981' }}>
-                                👶 Enfant(s) concerné(s) : {childrenUnder5.map(c => `${c.name} (${c.age} an${c.age > 1 ? 's' : ''})`).join(', ')}
+                                <ProIcon name="baby" /> Enfant(s) concerné(s) : {childrenUnder5.map(c => `${c.name} (${c.age} an${c.age > 1 ? 's' : ''})`).join(', ')}
                               </h6>
                             </div>
 
@@ -2399,7 +2400,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                             </p>
                             
                             <div className="p-3.5 rounded-3 fw-bold" style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1.5px solid rgba(16, 185, 129, 0.25)', color: 'var(--text-main)', fontSize: '0.88rem', borderRadius: '16px', lineHeight: '1.6' }}>
-                              🩺 Suivi de croissance & supplémentation Vitamine A programmés au Centre de Santé.
+                              <ProIcon name="stethoscope" /> Suivi de croissance & supplémentation Vitamine A programmés au Centre de Santé.
                             </div>
                           </div>
                         </div>
@@ -2411,7 +2412,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                           <div className="p-4 p-md-5 rounded-4 h-100 shadow-sm" style={{ background: 'var(--bg-card)', border: '2.5px solid #ec4899', boxShadow: '0 8px 24px rgba(236, 72, 153, 0.12)', borderRadius: '26px' }}>
                             <div className="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4 pb-3 border-bottom" style={{ borderColor: 'rgba(236, 72, 153, 0.2)' }}>
                               <span className="badge fw-extrabold px-4 py-2.5" style={{ fontSize: '0.92rem', borderRadius: '14px', background: 'rgba(236, 72, 153, 0.15)', color: '#f472b6', border: '1px solid rgba(236, 72, 153, 0.3)' }}>
-                                🌸 Anti-VPH (Col de l'utérus) • Filles 9-14 ans
+                                <ProIcon name="heart-pulse" color="#ec4899" /> Anti-VPH (Col de l'utérus) • Filles 9-14 ans
                               </span>
                               <span className="badge text-white fw-bold px-3.5 py-2" style={{ fontSize: '0.84rem', borderRadius: '12px', background: '#ec4899' }}>
                                 Prévention VPH
@@ -2420,7 +2421,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                             
                             <div className="p-3.5 rounded-3 mb-3.5" style={{ background: 'rgba(236, 72, 153, 0.08)', border: '1.5px solid rgba(236, 72, 153, 0.25)', borderRadius: '16px' }}>
                               <h6 className="fw-extrabold mb-0" style={{ fontSize: '1.08rem', color: '#f472b6' }}>
-                                🌸 Jeune(s) fille(s) concernée(s) : {girlsAged9to14.map(g => `${g.name} (${g.age} ans)`).join(', ')}
+                                <ProIcon name="heart-pulse" color="#ec4899" /> Jeune(s) fille(s) concernée(s) : {girlsAged9to14.map(g => `${g.name} (${g.age} ans)`).join(', ')}
                               </h6>
                             </div>
 
@@ -2429,7 +2430,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                             </p>
                             
                             <div className="p-3.5 rounded-3 fw-bold" style={{ background: 'rgba(236, 72, 153, 0.08)', border: '1.5px solid rgba(236, 72, 153, 0.25)', color: 'var(--text-main)', fontSize: '0.88rem', borderRadius: '16px', lineHeight: '1.6' }}>
-                              💉 Dose 1 & 2ème dose de rappel à 6 mois 100% prises en charge par la CMU / UNAMUSC.
+                              <ProIcon name="syringe" /> Dose 1 & 2ème dose de rappel à 6 mois 100% prises en charge par la CMU / UNAMUSC.
                             </div>
                           </div>
                         </div>
@@ -2439,7 +2440,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                     {/* RECAPITULATIF VOCAL ET BOUTON LECTURE */}
                     <div className="p-4 p-md-4 rounded-4 mb-5" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-main)', fontSize: '0.98rem', lineHeight: '1.7', borderRadius: '22px' }}>
                       <div className="d-flex align-items-center gap-2.5 mb-2">
-                        <span className="fs-4">🔊</span>
+                        <span className="fs-4"><ProIcon name="volume" /></span>
                         <span className="fw-extrabold" style={{ color: '#10b981', fontSize: '1.05rem' }}>Message vocal lu à voix haute (Wolof / Français) :</span>
                       </div>
                       <div className="p-3 rounded-3" style={{ background: 'var(--bg-card-subtle)', fontStyle: 'italic', borderLeft: '4px solid #10b981', borderRadius: '12px' }}>
@@ -2449,7 +2450,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
 
                     <div className="d-flex align-items-center justify-content-between flex-wrap gap-4 pt-4 border-top" style={{ borderColor: 'var(--border-color)' }}>
                       <div className="d-flex align-items-center gap-2">
-                        <span className="fs-5">📅</span>
+                        <span className="fs-5"><ProIcon name="calendar" /></span>
                         <span style={{ color: 'var(--text-sub)', fontSize: '0.95rem' }}>
                           Prochaine échéance : <strong style={{ color: 'var(--text-main)' }}>Suivi pédiatrique & vaccination • Centre de Santé de Dakar</strong>
                         </span>
@@ -2460,7 +2461,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                         style={{ background: '#059669', color: '#ffffff', border: 'none', borderRadius: '18px', padding: '0.85rem 1.85rem', fontWeight: '700', fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 6px 18px rgba(5, 150, 105, 0.35)' }}
                         onClick={() => playAudioReminder(result.firstName || 'Moustapha', audioTextWolofFr)}
                       >
-                        <span>🔊</span> Réécouter la notification vocale (Wolof / FR)
+                        <span><ProIcon name="volume" /></span> Réécouter la notification vocale (Wolof / FR)
                       </button>
                     </div>
                   </div>
@@ -2493,14 +2494,14 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                     <div className="d-flex align-items-center justify-content-between mb-4 pb-4 border-bottom flex-wrap gap-3" style={{ borderColor: 'var(--border-color)' }}>
                       <div>
                         <h5 className="fw-extrabold mb-1.5 d-flex align-items-center gap-2.5" style={{ color: '#10b981', fontSize: '1.35rem' }}>
-                          <span>👶</span> Enfants mineurs à charge (&lt; 18 ans) rattachés à la carte
+                          <span><ProIcon name="baby" /></span> Enfants mineurs à charge (&lt; 18 ans) rattachés à la carte
                         </h5>
                         <span className="small text-muted" style={{ fontSize: '0.92rem' }}>
                           Bénéficiaires de la gratuité pédiatrique universelle 100% UNAMUSC ({childrenList.length} enfants enregistrés)
                         </span>
                       </div>
                       <span className="badge bg-success-subtle text-success border border-success px-4 py-2.5 fw-bold" style={{ borderRadius: '16px', fontSize: '0.9rem' }}>
-                        🟢 100% Gratuité pédiatrique & PEV
+                        <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> 100% Gratuité pédiatrique & PEV
                       </span>
                     </div>
 
@@ -2553,7 +2554,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                                       color: 'var(--text-sub)',
                                       flexShrink: 0
                                     }}>
-                                      👶
+                                      <ProIcon name="baby" />
                                     </div>
                                   )}
                                   <div style={{ flex: 1 }}>
@@ -2567,7 +2568,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                                       </span>
                                       {child.birthDate && (
                                         <span className="badge px-3 py-1.5 fw-semibold border" style={{ background: 'var(--bg-card-subtle)', color: 'var(--text-main)', borderColor: 'var(--border-color)', borderRadius: '12px', fontSize: '0.84rem' }}>
-                                          📅 Né(e) le {child.birthDate}
+                                          <ProIcon name="calendar" /> Né(e) le {child.birthDate}
                                         </span>
                                       )}
                                     </div>
@@ -2579,8 +2580,8 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                                 </div>
 
                                 <div className="p-4 rounded-4 mb-4" style={{ background: 'var(--bg-card-subtle)', border: '1px solid var(--border-color)', fontSize: '0.92rem', borderRadius: '18px', lineHeight: '1.7', color: 'var(--text-main)' }}>
-                                  <div className="mb-2"><strong>💉 Vaccins :</strong> <span className="fw-bold ms-2" style={{ color: '#10b981' }}>{child.vaccines || 'PEV 100% à jour'}</span></div>
-                                  <div><strong>🩺 Antécédents & Suivi :</strong> <span className="ms-2" style={{ color: 'var(--text-sub)' }}>{child.antecedents || 'Développement pédiatrique normal'}</span></div>
+                                  <div className="mb-2"><strong><ProIcon name="syringe" /> Vaccins :</strong> <span className="fw-bold ms-2" style={{ color: '#10b981' }}>{child.vaccines || 'PEV 100% à jour'}</span></div>
+                                  <div><strong><ProIcon name="stethoscope" /> Antécédents & Suivi :</strong> <span className="ms-2" style={{ color: 'var(--text-sub)' }}>{child.antecedents || 'Développement pédiatrique normal'}</span></div>
                                 </div>
                               </div>
 
@@ -2610,7 +2611,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                 {/* SÉLECTEUR DYNAMIQUE DE BÉNÉFICIAIRE POUR LE PROFESSIONNEL DE SANTÉ */}
                 <div className="p-4 p-md-4 mb-5 rounded-4" style={{ background: 'var(--bg-card-subtle)', border: '2px solid rgba(3, 105, 161, 0.25)', borderRadius: '24px' }}>
                   <div className="d-flex align-items-center gap-2.5 mb-3.5">
-                    <span className="fs-4">🏥</span>
+                    <span className="fs-4"><ProIcon name="hospital" /></span>
                     <h6 className="fw-extrabold mb-0" style={{ color: '#38bdf8', fontSize: '1.05rem', letterSpacing: '0.02em' }}>
                       Sélectionner le bénéficiaire des soins (Médecin / Pharmacien) :
                     </h6>
@@ -2631,7 +2632,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                       }}
                       onClick={() => setSelectedTargetBeneficiary(null)}
                     >
-                      <span>👤</span> {result.firstName} {result.lastName} (Adhérent principal)
+                      <span><ProIcon name="user" /></span> {result.firstName} {result.lastName} (Adhérent principal)
                     </button>
                     {((result.minorDependents && result.minorDependents.length > 0) ? result.minorDependents : (result.dependents || []).filter(d => !d.isMajor)).map((child, idx) => (
                       <button
@@ -2649,7 +2650,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                         }}
                         onClick={() => setSelectedTargetBeneficiary(child)}
                       >
-                        <span>👶</span> {child.name} ({child.age || 6} ans)
+                        <span><ProIcon name="baby" /></span> {child.name} ({child.age || 6} ans)
                       </button>
                     ))}
                   </div>
@@ -2658,14 +2659,14 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                 <div className="d-flex align-items-center justify-content-between mb-4 pb-4 border-bottom flex-wrap gap-3" style={{ borderColor: 'var(--border-color)' }}>
                   <div>
                     <h5 className="fw-extrabold mb-1.5 d-flex align-items-center gap-2.5" style={{ color: '#10b981', fontSize: '1.35rem' }}>
-                      <span>⚡</span> Hub d'actions médicales certifiées Tiers-Payant
+                      <span><ProIcon name="zap" /></span> Hub d'actions médicales certifiées Tiers-Payant
                     </h5>
                     <span className="small text-muted" style={{ fontSize: '0.92rem' }}>
                       Cible de l'acte : <strong className="text-primary">{selectedTargetBeneficiary ? selectedTargetBeneficiary.name : `${result.firstName} ${result.lastName}`}</strong> ({selectedTargetBeneficiary ? selectedTargetBeneficiary.cmuCode : result.cmuNumber})
                     </span>
                   </div>
                   <span className="badge bg-success text-white px-4 py-2.5 fw-bold" style={{ borderRadius: '16px', fontSize: '0.9rem' }}>
-                    🟢 Droits Ouverts UNAMUSC
+                    <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Droits Ouverts UNAMUSC
                   </span>
                 </div>
 
@@ -2693,7 +2694,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                       <div style={{ maxWidth: '100%' }}>
                         <div className="d-flex align-items-center justify-content-between w-100 mb-3 flex-wrap gap-2">
                           <div className="d-flex align-items-center gap-2.5" style={{ minWidth: 0 }}>
-                            <span style={{ width: '46px', height: '46px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>📜</span>
+                            <span style={{ width: '46px', height: '46px', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}><ProIcon name="scroll-text" /></span>
                             <span className="fw-extrabold" style={{ fontSize: '1.1rem', color: 'var(--text-main)', wordBreak: 'break-word', overflowWrap: 'break-word' }}>Lettre de garantie</span>
                           </div>
                           <span className="badge bg-success text-white px-3 py-1.5" style={{ fontSize: '0.78rem', borderRadius: '12px', flexShrink: 0 }}>80-100%</span>
@@ -2731,7 +2732,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                       <div style={{ maxWidth: '100%' }}>
                         <div className="d-flex align-items-center justify-content-between w-100 mb-3 flex-wrap gap-2">
                           <div className="d-flex align-items-center gap-2.5" style={{ minWidth: 0 }}>
-                            <span style={{ width: '46px', height: '46px', background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>💊</span>
+                            <span style={{ width: '46px', height: '46px', background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}><ProIcon name="pill" /></span>
                             <span className="fw-extrabold" style={{ fontSize: '1.1rem', color: 'var(--text-main)', wordBreak: 'break-word', overflowWrap: 'break-word' }}>Bon pharmacie</span>
                           </div>
                           <span className="badge fw-bold px-3 py-1.5" style={{ background: 'rgba(245, 158, 11, 0.2)', color: '#fbbf24', border: '1px solid #f59e0b', fontSize: '0.78rem', borderRadius: '12px', flexShrink: 0 }}>48h Tiers-Payant</span>
@@ -2769,7 +2770,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                       <div style={{ maxWidth: '100%' }}>
                         <div className="d-flex align-items-center justify-content-between w-100 mb-3 flex-wrap gap-2">
                           <div className="d-flex align-items-center gap-2.5" style={{ minWidth: 0 }}>
-                            <span style={{ width: '46px', height: '46px', background: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>🎥</span>
+                            <span style={{ width: '46px', height: '46px', background: 'rgba(59, 130, 246, 0.15)', color: '#60a5fa', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}><ProIcon name="video" /></span>
                             <span className="fw-extrabold" style={{ fontSize: '1.1rem', color: 'var(--text-main)', wordBreak: 'break-word', overflowWrap: 'break-word' }}>Télémédecine</span>
                           </div>
                           <span className="badge text-white px-3 py-1.5" style={{ background: '#1e40af', fontSize: '0.78rem', borderRadius: '12px', flexShrink: 0 }}>Direct 24/7</span>
@@ -2807,7 +2808,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                       <div style={{ maxWidth: '100%' }}>
                         <div className="d-flex align-items-center justify-content-between w-100 mb-3 flex-wrap gap-2">
                           <div className="d-flex align-items-center gap-2.5" style={{ minWidth: 0 }}>
-                            <span style={{ width: '46px', height: '46px', background: 'rgba(168, 85, 247, 0.15)', color: '#c084fc', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>🩻</span>
+                            <span style={{ width: '46px', height: '46px', background: 'rgba(168, 85, 247, 0.15)', color: '#c084fc', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}><ProIcon name="scan" /></span>
                             <span className="fw-extrabold" style={{ fontSize: '1.1rem', color: 'var(--text-main)', wordBreak: 'break-word', overflowWrap: 'break-word' }}>Radios & Labo</span>
                           </div>
                           <span className="badge text-white px-3 py-1.5" style={{ background: '#9333ea', fontSize: '0.78rem', borderRadius: '12px', flexShrink: 0 }}>DICOM</span>
@@ -2845,7 +2846,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                       <div style={{ maxWidth: '100%' }}>
                         <div className="d-flex align-items-center justify-content-between w-100 mb-3 flex-wrap gap-2">
                           <div className="d-flex align-items-center gap-2.5" style={{ minWidth: 0 }}>
-                            <span style={{ width: '46px', height: '46px', background: 'rgba(2, 132, 199, 0.15)', color: '#38bdf8', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>🩺</span>
+                            <span style={{ width: '46px', height: '46px', background: 'rgba(2, 132, 199, 0.15)', color: '#38bdf8', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}><ProIcon name="stethoscope" /></span>
                             <span className="fw-extrabold" style={{ fontSize: '1.1rem', color: 'var(--text-main)', wordBreak: 'break-word', overflowWrap: 'break-word' }}>Spécialités</span>
                           </div>
                           <span className="badge text-white px-3 py-1.5" style={{ background: '#0284c7', fontSize: '0.78rem', borderRadius: '12px', flexShrink: 0 }}>UNAMUSC</span>
@@ -2883,7 +2884,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                       <div style={{ maxWidth: '100%' }}>
                         <div className="d-flex align-items-center justify-content-between w-100 mb-3 flex-wrap gap-2">
                           <div className="d-flex align-items-center gap-2.5" style={{ minWidth: 0 }}>
-                            <span style={{ width: '46px', height: '46px', background: 'rgba(236, 72, 153, 0.15)', color: '#f472b6', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>🧬</span>
+                            <span style={{ width: '46px', height: '46px', background: 'rgba(236, 72, 153, 0.15)', color: '#f472b6', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}><ProIcon name="activity" /></span>
                             <span className="fw-extrabold" style={{ fontSize: '1.1rem', color: 'var(--text-main)', wordBreak: 'break-word', overflowWrap: 'break-word' }}>Pathologies ALD</span>
                           </div>
                           <span className="badge text-white px-3 py-1.5" style={{ background: '#db2777', fontSize: '0.78rem', borderRadius: '12px', flexShrink: 0 }}>100%</span>
@@ -2906,7 +2907,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                 <div className="d-flex justify-content-between align-items-center mb-5 pb-4 border-bottom flex-wrap gap-4" style={{ borderColor: 'var(--border-color)' }}>
                   <div className="d-flex align-items-center gap-4">
                     <div className="d-flex align-items-center justify-content-center rounded-4 p-3.5" style={{ background: 'rgba(5, 150, 105, 0.12)', color: '#10b981', fontSize: '1.8rem', borderRadius: '20px' }}>
-                      🛡️
+                      <ProIcon name="shield-check" />
                     </div>
                     <div>
                       <h5 className="fw-extrabold mb-1" style={{ color: 'var(--text-main)', fontSize: '1.4rem' }}>
@@ -2919,7 +2920,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                   </div>
                   
                   <span className="badge px-4 py-3 fw-bold text-success border border-success d-inline-flex align-items-center gap-2.5" style={{ background: 'rgba(5, 150, 105, 0.12)', borderRadius: '16px', fontSize: '0.88rem' }}>
-                    🔒 Données certifiées UNAMUSC • Accès réservé
+                    <ProIcon name="lock" /> Données certifiées UNAMUSC • Accès réservé
                   </span>
                 </div>
 
@@ -2939,7 +2940,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                       <div>
                         <div className="mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
                           <span className="fw-extrabold me-2" style={{ color: '#10b981', fontSize: '0.92rem' }}>
-                            🏥 Mutuelle de rattachement
+                            <ProIcon name="hospital" /> Mutuelle de rattachement
                           </span>
                           <span className="badge fw-bold px-3.5 py-2 ms-auto" style={{ background: 'rgba(5, 150, 105, 0.15)', color: '#10b981', fontSize: '0.82rem', borderRadius: '12px' }}>
                             Mutuelle agréée
@@ -2972,7 +2973,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                       <div>
                         <div className="mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
                           <span className="fw-extrabold me-2" style={{ color: '#38bdf8', fontSize: '0.92rem' }}>
-                            📋 Formule souscrite
+                            <ProIcon name="clipboard-list" /> Formule souscrite
                           </span>
                           <div className="d-flex align-items-center gap-2.5 ms-auto flex-wrap">
                             <span className="badge fw-bold px-3 py-1.5 me-2" style={{ background: 'rgba(2, 132, 199, 0.15)', color: '#38bdf8', fontSize: '0.82rem', borderRadius: '12px' }}>
@@ -3019,7 +3020,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                       <div>
                         <div className="mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
                           <span className="fw-extrabold me-2" style={{ color: '#60a5fa', fontSize: '0.92rem' }}>
-                            📞 Contact d'urgence & téléphone
+                            <ProIcon name="phone" /> Contact d'urgence & téléphone
                           </span>
                           <span className="badge fw-bold px-3 py-1.5 ms-auto" style={{ background: 'rgba(30, 64, 175, 0.15)', color: '#60a5fa', fontSize: '0.82rem', borderRadius: '12px' }}>
                             Ligne directe 24/7
@@ -3041,7 +3042,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                                   style={{ background: 'var(--bg-card)', color: '#60a5fa', border: '2px solid rgba(59, 130, 246, 0.4)', borderRadius: '18px', fontSize: '1.05rem', cursor: 'pointer', margin: '0.25rem' }}
                                   title={`Appeler le ${trimmed}`}
                                 >
-                                  <span>📞</span>
+                                  <span><ProIcon name="phone" /></span>
                                   <span>{trimmed}</span>
                                 </a>
                               );
@@ -3067,7 +3068,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                       <div>
                         <div className="mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
                           <span className="fw-extrabold me-2" style={{ color: '#f87171', fontSize: '0.92rem' }}>
-                            🩸 Groupe sanguin & allergies
+                            <ProIcon name="droplet" color="#dc2626" /> Groupe sanguin & allergies
                           </span>
                           <span className="badge px-3 py-1.5 fw-bold ms-auto" style={{ background: 'rgba(220, 38, 38, 0.15)', color: '#f87171', fontSize: '0.82rem', borderRadius: '12px' }}>
                             Profil médical certifié
@@ -3075,10 +3076,10 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                         </div>
                         <div className="d-flex align-items-center gap-3 flex-wrap pt-2">
                           <div className="p-3 px-4 rounded-4 fw-extrabold shadow-sm d-inline-flex align-items-center gap-2" style={{ background: '#ef4444', color: '#ffffff', fontSize: '1.15rem', borderRadius: '18px' }}>
-                            <span>🩸</span> Groupe sanguin : {result.bloodGroup && result.bloodGroup !== 'Non renseigné' ? result.bloodGroup : 'Non renseigné (à remplir par un soignant)'}
+                            <span><ProIcon name="droplet" color="#dc2626" /></span> Groupe sanguin : {result.bloodGroup && result.bloodGroup !== 'Non renseigné' ? result.bloodGroup : 'Non renseigné (à remplir par un soignant)'}
                           </div>
                           <div className="p-3 px-4 rounded-4 fw-bold d-inline-flex align-items-center gap-2" style={{ background: 'rgba(220, 38, 38, 0.12)', color: 'var(--text-main)', border: '2px solid rgba(239, 68, 68, 0.35)', fontSize: '1rem', borderRadius: '18px' }}>
-                            <span>🛡️</span> Allergies : {result.allergies || 'Aucune connue'}
+                            <span><ProIcon name="shield-check" /></span> Allergies : {result.allergies || 'Aucune connue'}
                           </div>
                         </div>
                       </div>
@@ -3089,7 +3090,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                 {/* HORODATAGE CERTIFIÉ & BOUTON D'EXPORT PDF */}
                 <div className="pt-4 border-top d-flex justify-content-between align-items-center flex-wrap gap-4 mt-4 p-4 rounded-4" style={{ borderColor: 'var(--border-color)', background: 'rgba(5, 150, 105, 0.08)', borderRadius: '22px' }}>
                   <div className="d-flex align-items-center gap-3" style={{ fontSize: '1.02rem', color: 'var(--text-main)' }}>
-                    <span className="fs-3">🕒</span>
+                    <span className="fs-3"><ProIcon name="clock" /></span>
                     <span>Vérifié en direct le : &nbsp;<strong style={{ color: '#10b981', fontSize: '1.1rem', marginLeft: '6px' }}>{new Date(result.checkedAt).toLocaleString('fr-FR')}</strong></span>
                   </div>
 
@@ -3108,7 +3109,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                       }}
                       style={{ borderRadius: '18px', fontSize: '1rem', background: '#059669', borderColor: '#059669' }}
                     >
-                      <span>💳</span> Cotiser / Renouveler
+                      <span><ProIcon name="credit-card" /></span> Cotiser / Renouveler
                     </button>
                     <button 
                       type="button" 
@@ -3116,7 +3117,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                       onClick={handlePrintCertificate}
                       style={{ borderRadius: '18px', fontSize: '1rem', border: '2px solid #059669' }}
                     >
-                      <span>🖨️</span> Imprimer PDF
+                      <span><ProIcon name="printer" /></span> Imprimer PDF
                     </button>
                   </div>
                 </div>
@@ -3145,13 +3146,13 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             onClick={(e) => e.stopPropagation()}
           >
             <div className="d-flex justify-content-between align-items-center mb-3">
-              <h5 className="fw-extrabold mb-0 text-success" style={{ fontSize: '1.15rem' }}>📱 QR Code CSU Certifié</h5>
+              <h5 className="fw-extrabold mb-0 text-success" style={{ fontSize: '1.15rem' }}><ProIcon name="smartphone" /> QR Code CSU Certifié</h5>
               <button type="button" className="btn-close" onClick={() => setShowQrModal(false)}></button>
             </div>
 
             <div className="d-flex justify-content-center mb-2">
               <span className="badge bg-success text-white px-2.5 py-1 fw-bold" style={{ fontSize: '0.74rem', borderRadius: '8px' }}>
-                🔒 Sceau Rotatif Dynamique • ⏱️ {qrSecondsLeft}s
+                <ProIcon name="lock" /> Sceau Rotatif Dynamique • <ProIcon name="clock" /> {qrSecondsLeft}s
               </span>
             </div>
 
@@ -3173,9 +3174,9 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             {/* BLOC DE CERTIFICATION PAR L'UNAMUSC ET LE MINISTÈRE */}
             <div className="p-3.5 rounded-4 mb-4 text-center" style={{ background: 'rgba(5, 150, 105, 0.08)', border: '1.5px solid #059669', borderRadius: '18px' }}>
               <div className="d-flex align-items-center justify-content-center gap-2 mb-2">
-                <span style={{ fontSize: '1.2rem' }}>🛡️</span>
+                <span style={{ fontSize: '1.2rem' }}><ProIcon name="shield-check" /></span>
                 <span className="fw-extrabold" style={{ fontSize: '0.88rem', color: '#065f46' }}>
-                  Authentifié & certifié UNAMUSC Sénégal 🇸🇳
+                  Authentifié & certifié UNAMUSC Sénégal <ProIcon name="senegal-flag" />
                 </span>
               </div>
 
@@ -3185,7 +3186,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
 
               <div className="d-flex justify-content-center flex-wrap gap-2 mb-2">
                 <span className="badge bg-success text-white fw-bold px-2.5 py-1" style={{ fontSize: '0.75rem', borderRadius: '8px' }}>
-                  🟢 Signature Cryptographique Valide
+                  <ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Signature Cryptographique Valide
                 </span>
                 <span className="badge fw-bold px-2.5 py-1" style={{ fontSize: '0.75rem', borderRadius: '8px', background: '#d1fae5', color: '#065f46' }}>
                   IPP : {result.ippNumber || 'IPP-DKR-2026-88'}
@@ -3193,7 +3194,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
               </div>
 
               <small className="d-block text-muted fw-semibold" style={{ fontSize: '0.76rem', lineHeight: '1.45', color: '#475569' }}>
-                🏛️ <strong>Union Régionale des Mutuelles (URMSCD Dakar)</strong><br />
+                <ProIcon name="landmark" /> <strong>Union Régionale des Mutuelles (URMSCD Dakar)</strong><br />
                 Empreinte digitale anti-falsification • Horodatage certifié Ministère
               </small>
             </div>
@@ -3204,7 +3205,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
               style={{ borderRadius: '14px', background: '#059669', color: '#fff', fontSize: '0.95rem' }}
               onClick={() => setShowQrModal(false)}
             >
-              ✅ Fermer l'inspecteur
+              <ProIcon name="check-circle" color="#059669" /> Fermer l'inspecteur
             </button>
           </div>
         </div>,
@@ -3217,7 +3218,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
           <form onSubmit={handleCreateGuarantee} style={{ maxWidth: '620px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2.25rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h5 className="fw-bold text-success mb-0 d-flex align-items-center gap-2" style={{ fontSize: '1.25rem' }}>
-                <span>📜</span> Émettre une lettre de garantie (Tiers-Payant Hospitalier)
+                <span><ProIcon name="scroll-text" /></span> Émettre une lettre de garantie (Tiers-Payant Hospitalier)
               </h5>
               <button type="button" className="btn-close" onClick={() => setActiveModal(null)}></button>
             </div>
@@ -3268,7 +3269,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
               <label className="form-label small fw-bold mb-1.5">Devis estimé des soins (FCFA) *</label>
               <input type="number" className="form-control input fw-bold" value={guaranteeAmount} onChange={(e) => setGuaranteeAmount(e.target.value)} required style={{ borderRadius: '14px', minHeight: '48px' }} />
               <small className="text-muted d-block mt-1.5" style={{ fontSize: '0.78rem' }}>
-                💡 Estimation prise en charge UNAMUSC ({guaranteeRate}) : <strong>{((Number(guaranteeAmount || 0) * (guaranteeRate === '100%' ? 1 : 0.8))).toLocaleString()} FCFA</strong> — Reste à charge patient : {((Number(guaranteeAmount || 0) * (guaranteeRate === '100%' ? 0 : 0.2))).toLocaleString()} FCFA
+                <ProIcon name="lightbulb" /> Estimation prise en charge UNAMUSC ({guaranteeRate}) : <strong>{((Number(guaranteeAmount || 0) * (guaranteeRate === '100%' ? 1 : 0.8))).toLocaleString()} FCFA</strong> — Reste à charge patient : {((Number(guaranteeAmount || 0) * (guaranteeRate === '100%' ? 0 : 0.2))).toLocaleString()} FCFA
               </small>
             </div>
 
@@ -3287,7 +3288,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
           <form onSubmit={handleCreateOrder} style={{ maxWidth: '640px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2.25rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h5 className="fw-bold text-warning mb-0 d-flex align-items-center gap-2" style={{ fontSize: '1.25rem' }}>
-                <span>💊</span> Bon de commande pharmacie (48h Tiers-Payant)
+                <span><ProIcon name="pill" /></span> Bon de commande pharmacie (48h Tiers-Payant)
               </h5>
               <button type="button" className="btn-close" onClick={() => setActiveModal(null)}></button>
             </div>
@@ -3301,8 +3302,8 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             {/* Téléversement / Capture Photo de l'ordonnance médicale */}
             <div className="mb-4 p-3.5 rounded-4" style={{ background: 'var(--bg-card-subtle)', border: '1.5px dashed #f59e0b' }}>
               <label className="form-label small fw-extrabold mb-2 d-flex align-items-center justify-content-between text-warning" style={{ fontSize: '0.92rem' }}>
-                <span>📷 Photo / Scan de l'ordonnance médicale (Mobile / PC / Tablette) *</span>
-                {prescriptionPhoto && <span className="badge bg-success text-white">🟢 Ordonnance jointe</span>}
+                <span><ProIcon name="camera" /> Photo / Scan de l'ordonnance médicale (Mobile / PC / Tablette) *</span>
+                {prescriptionPhoto && <span className="badge bg-success text-white"><ProIcon name="status-green" color="#10b981" fill="#10b981" size={10} /> Ordonnance jointe</span>}
               </label>
 
               <input 
@@ -3322,7 +3323,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                     style={{ borderRadius: '14px', fontSize: '0.88rem' }}
                     onClick={() => document.getElementById('modalPrescriptionFileInput')?.click()}
                   >
-                    <span>📷</span> Prendre en photo (Appareil photo)
+                    <span><ProIcon name="camera" /></span> Prendre en photo (Appareil photo)
                   </button>
                   <button 
                     type="button" 
@@ -3330,7 +3331,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                     style={{ borderRadius: '14px', fontSize: '0.88rem' }}
                     onClick={() => document.getElementById('modalPrescriptionFileInput')?.click()}
                   >
-                    <span>📁</span> Choisir une photo / PDF
+                    <span><ProIcon name="folder" /></span> Choisir une photo / PDF
                   </button>
                 </div>
               ) : (
@@ -3350,12 +3351,12 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
                     onClick={() => { setPrescriptionPhoto(null); setPrescriptionFileName(''); }}
                     style={{ borderRadius: '10px' }}
                   >
-                    🗑️
+                    <ProIcon name="trash" />
                   </button>
                 </div>
               )}
               <small className="text-muted d-block mt-2" style={{ fontSize: '0.76rem' }}>
-                💡 Prenez une photo nette avec votre smartphone ou téléversez le scan pour obtenir la prise en charge immédiate 50% en officine.
+                <ProIcon name="lightbulb" /> Prenez une photo nette avec votre smartphone ou téléversez le scan pour obtenir la prise en charge immédiate 50% en officine.
               </small>
             </div>
 
@@ -3416,7 +3417,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
               <label className="form-label small fw-bold mb-1.5">Posologie & instructions du praticien *</label>
               <input type="text" className="form-control input" value={medPosology} onChange={(e) => setMedPosology(e.target.value)} placeholder="ex: 1 gélule matin et soir pendant 7 jours" required style={{ borderRadius: '14px', minHeight: '48px' }} />
               <small className="text-muted d-block mt-1.5" style={{ fontSize: '0.78rem' }}>
-                💡 Montant total : <strong>{(Number(medQty) * Number(medPrice)).toLocaleString()} FCFA</strong> — Prise en charge Tiers-Payant 50% UNAMUSC : {(Number(medQty) * Number(medPrice) * 0.5).toLocaleString()} FCFA
+                <ProIcon name="lightbulb" /> Montant total : <strong>{(Number(medQty) * Number(medPrice)).toLocaleString()} FCFA</strong> — Prise en charge Tiers-Payant 50% UNAMUSC : {(Number(medQty) * Number(medPrice) * 0.5).toLocaleString()} FCFA
               </small>
             </div>
 
@@ -3435,7 +3436,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
           <form onSubmit={handleCreateTelemed} style={{ maxWidth: '620px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2.25rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h5 className="fw-extrabold text-primary mb-0 d-flex align-items-center gap-2" style={{ fontSize: '1.25rem' }}>
-                <span>🎥</span> Téléconsultation Télémédecine Direct 24/7
+                <span><ProIcon name="video" /></span> Téléconsultation Télémédecine Direct 24/7
               </h5>
               <button type="button" className="btn-close" onClick={() => setActiveModal(null)}></button>
             </div>
@@ -3449,10 +3450,10 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             <div className="mb-3.5">
               <label className="form-label small fw-bold mb-1.5">Médecin téléconsultant certifié UNAMUSC *</label>
               <select className="form-select input fw-bold" value={telemedDoctor} onChange={(e) => setTelemedDoctor(e.target.value)} style={{ borderRadius: '14px', minHeight: '48px' }}>
-                <option value="Dr. Ousmane Sow (Médecin Généraliste UNAMUSC)">Dr. Ousmane Sow — Médecin Généraliste (En ligne 🟢)</option>
-                <option value="Dr. Mariama Ba (Pédiatre CHU Fann)">Dr. Mariama Ba — Pédiatre & Néonatalogie (En ligne 🟢)</option>
-                <option value="Dr. Aminata Diop (Gynécologue-Obstétricienne)">Dr. Aminata Diop — Gynécologie & Maternité (En ligne 🟢)</option>
-                <option value="Dr. Fatou Diome (Sage-femme DKR)">Dr. Fatou Diome — Sage-femme d'État (En ligne 🟢)</option>
+                <option value="Dr. Ousmane Sow (Médecin Généraliste UNAMUSC)">Dr. Ousmane Sow — Médecin Généraliste (En ligne )</option>
+                <option value="Dr. Mariama Ba (Pédiatre CHU Fann)">Dr. Mariama Ba — Pédiatre & Néonatalogie (En ligne )</option>
+                <option value="Dr. Aminata Diop (Gynécologue-Obstétricienne)">Dr. Aminata Diop — Gynécologie & Maternité (En ligne )</option>
+                <option value="Dr. Fatou Diome (Sage-femme DKR)">Dr. Fatou Diome — Sage-femme d'État (En ligne )</option>
               </select>
             </div>
 
@@ -3481,7 +3482,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
 
             <div className="p-3.5 rounded-4 mb-4" style={{ background: 'rgba(30, 64, 175, 0.08)', border: '1.5px solid rgba(59, 130, 246, 0.3)', borderRadius: '16px' }}>
               <div className="d-flex align-items-center gap-2 fw-bold text-primary mb-1" style={{ fontSize: '0.88rem' }}>
-                <span>🔒</span> Connexion médicale WebRTC de bout en bout
+                <span><ProIcon name="lock" /></span> Connexion médicale WebRTC de bout en bout
               </div>
               <small className="text-muted" style={{ fontSize: '0.78rem' }}>
                 Couverture 100% Tiers-Payant UNAMUSC : aucune avance de frais requise.
@@ -3491,7 +3492,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
             <div className="d-flex justify-content-end gap-3 mt-4 pt-2 border-top" style={{ borderColor: 'var(--border-color)' }}>
               <button type="button" className="btn btn-outline-secondary fw-semibold px-3.5 py-2" style={{ borderRadius: '12px' }} onClick={() => setActiveModal(null)}>Annuler</button>
               <button type="submit" className="btn btn-primary fw-bold px-4 py-2 text-white" style={{ borderRadius: '12px', background: '#1e40af', borderColor: '#1e40af' }}>
-                🎥 Démarrer la visio-consultation HD →
+                <ProIcon name="video" /> Démarrer la visio-consultation HD →
               </button>
             </div>
           </form>
@@ -3505,7 +3506,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
           <form onSubmit={handleAddImaging} style={{ maxWidth: '620px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2.25rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h5 className="fw-bold text-info mb-0 d-flex align-items-center gap-2" style={{ fontSize: '1.25rem' }}>
-                <span>🩻</span> Transmettre un examen radio / biologie (DICOM)
+                <span><ProIcon name="scan" /></span> Transmettre un examen radio / biologie (DICOM)
               </h5>
               <button type="button" className="btn-close" onClick={() => setActiveModal(null)}></button>
             </div>
@@ -3563,7 +3564,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
           <form onSubmit={handleCreateSpecialty} style={{ maxWidth: '620px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2.25rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h5 className="fw-bold text-primary mb-0 d-flex align-items-center gap-2" style={{ fontSize: '1.25rem' }}>
-                <span>🩺</span> Consultation Spécialisée UNAMUSC
+                <span><ProIcon name="stethoscope" /></span> Consultation Spécialisée UNAMUSC
               </h5>
               <button type="button" className="btn-close" onClick={() => setActiveModal(null)}></button>
             </div>
@@ -3611,7 +3612,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
           <form onSubmit={handleCreatePathology} style={{ maxWidth: '620px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: 'var(--bg-card)', color: 'var(--text-main)', borderRadius: '24px', padding: '2.25rem', border: '1px solid var(--border-color)', boxShadow: '0 25px 70px rgba(0,0,0,0.75)', margin: 'auto' }}>
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h5 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ fontSize: '1.25rem', color: '#db2777' }}>
-                <span>🧬</span> Pathologies & Protocole ALD 100%
+                <span><ProIcon name="activity" /></span> Pathologies & Protocole ALD 100%
               </h5>
               <button type="button" className="btn-close" onClick={() => setActiveModal(null)}></button>
             </div>
