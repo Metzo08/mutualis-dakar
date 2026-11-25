@@ -1181,14 +1181,15 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
           </>
         ) : (
             /* Connected Assuré Espace */
-            <div className="grid grid-2" style={{ gap: '2rem' }}>
+            <div className="grid grid-2" style={{ gap: '1.75rem', alignItems: 'start' }}>
               {/* Digital Member Card & Basic detail */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem', alignItems: 'center' }}>
                 <div className="digital-health-card" style={{
                   background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)',
-                  boxShadow: '0 10px 25px rgba(30, 58, 138, 0.25)',
-                  margin: '0',
-                  maxWidth: '100%',
+                  boxShadow: '0 12px 28px rgba(5, 150, 105, 0.24)',
+                  margin: '0 auto',
+                  width: '100%',
+                  maxWidth: '430px',
                   textAlign: 'left'
                 }}>
                   <div className="digital-card-pattern"></div>
@@ -1254,8 +1255,12 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
                   borderLeft: citizenUser.status === 'active' ? '5px solid var(--success)' : '5px solid var(--danger)',
                   padding: '1.5rem'
                 }}>
-                  <h3 style={{ color: citizenUser.status === 'active' ? 'var(--success)' : 'var(--danger)', fontSize: '1.1rem', marginBottom: '0.5rem' }}>
-                    {citizenUser.status === 'active' ? '✓ Couverture active' : '⚠️ Couverture inactive'}
+                  <h3 style={{ color: citizenUser.status === 'active' ? 'var(--success)' : citizenUser.status === 'observation' ? '#d97706' : 'var(--danger)', fontSize: '1.08rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                    {citizenUser.status === 'active'
+                      ? <><ProIcon name="check-circle" color="#059669" size={18} /> Couverture active</>
+                      : citizenUser.status === 'observation'
+                        ? <><ProIcon name="hourglass" color="#d97706" size={18} /> Période d&apos;observation (30 jours)</>
+                        : <><ProIcon name="alert-triangle" color="#dc2626" size={18} /> Couverture inactive</>}
                   </h3>
                   <p style={{ fontSize: '0.85rem', color: 'var(--text-sub)', marginBottom: '1.25rem' }}>
                     {citizenUser.status === 'active' ? t.statusActiveMsg : t.statusSuspendedMsg}
@@ -1343,7 +1348,7 @@ export default function Home({ lang, setView, setViewTab, portalMode, citizenUse
                       }
                     }}
                   >
-                    ❤️ {lang === 'fr' ? 'Faire un don maintenant' : 'Mayé tey'}
+                    <ProIcon name="heart" color="#ffffff" size={15} /> {lang === 'fr' ? 'Faire un don maintenant' : 'Mayé tey'}
                   </button>
                 </div>
               </div>

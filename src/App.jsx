@@ -1144,7 +1144,7 @@ export default function App() {
             <div className="top-navbar-title">
               {view === 'home' && (
                 portalMode === 'citizen'
-                  ? (lang === 'fr' ? 'Portail citoyen 🇸🇳' : 'Portail citoyen')
+                  ? (<span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem' }}>Portail citoyen <ProIcon name="senegal-flag" size={15} /></span>)
                   : (lang === 'fr' ? 'Tableau de bord de couverture' : 'Tableau de bord')
               )}
               {view === 'login' && (lang === 'fr' ? 'Espace connexion' : 'Duggu')}
