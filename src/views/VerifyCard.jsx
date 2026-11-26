@@ -856,7 +856,7 @@ export default function VerifyCard({ setView = null, citizenUser = null, setCiti
         observationDaysRemaining: obsRem,
         valid: finalValid,
         audioReminder: {
-          subtitle: `Assuré : ${cleanFirst} ${cleanLast} • Statut CSU : ${finalvalid ? 'Actif' : (isobservation && !isglobalsuspended ? `Période d'observation (${obsRem} j restants)` : 'Suspendu')}`,
+          subtitle: `Assuré : ${cleanFirst} ${cleanLast} • Statut CSU : ${finalValid ? 'Actif' : (isObservation && !isGlobalSuspended ? `Période d'observation (${obsRem} j restants)` : 'Suspendu')}`,
           transcript: finalValid
             ? `"Nanga def ${cleanFirst} ${cleanLast}! Votre carte CSU Est active. Prise en charge tiers-payant 80% autorisée auprès de toutes les structures conventionnées."`
             : (isObservation && !isGlobalSuspended)

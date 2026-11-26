@@ -626,7 +626,7 @@ export default function MaternalHealth({ citizenUser = null, agentUser = null, p
       let msg = '';
 
       if (type === 'sms' || type === 'whatsapp') {
-        msg = `📲 Notification SMS & WhatsApp délivrée à ${babyProfile.motherName} (${babyProfile.motherPhone}) : "Bonjour ${babyProfile.motherName}, rappel UNAMUSC : la prestation ${targetprestation} pour votre bébé ${babyProfile.name} Est programmée. Prise en charge 100% gratuite."`;
+        msg = `📲 Notification SMS & WhatsApp délivrée à ${babyProfile.motherName} (${babyProfile.motherPhone}) : "Bonjour ${babyProfile.motherName}, rappel UNAMUSC : la prestation ${targetPrestation} pour votre bébé ${babyProfile.name} Est programmée. Prise en charge 100% gratuite."`;
         playHybridVoiceReminder({
           lang: langChoice,
           motherName: babyProfile.motherName,

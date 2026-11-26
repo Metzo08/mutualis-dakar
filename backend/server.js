@@ -2922,7 +2922,11 @@ app.put('/api/agents/:id/photo', authenticateToken, requireRole('agent', 'admin'
     if (req.user.role === 'agent' && req.user.id !== parseInt(id)) {
       return res.status(403).json({ error: 'Vous ne pouvez modifier que votre propre photo.' });
     }
-    await query('UPDATE agents SET photo_url = $1 WHERE id = $2', [photoUrl, id]);
+    const photoCheck = validateUploadedImage(photoUrl);
+    if (!photoCheck.ok) {
+      return res.status(400).json({ error: photoCheck.error });
+    }
+    await query('UPDATE agents SET photo_url = $1 WHERE id = $2', [photoCheck.normalizedUrl, id]);
     res.json({ success: true });
   } catch (err) {
     console.error('Erreur photo upload:', err);

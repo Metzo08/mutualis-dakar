@@ -19,9 +19,15 @@
 
 const express = require('express');
 const { query } = require('./db');
-const { normalizeRole } = require('./rbac');
+const { normalizeRole, authenticateToken } = require('./rbac');
 
 const router = express.Router();
+
+// Garde d'authentification obligatoire sur toutes les routes /api/admin-requests*
+router.use((req, res, next) => {
+  if (!req.path || !req.path.startsWith('/api/admin-requests')) return next();
+  return authenticateToken(req, res, next);
+});
 
 const clean = (v) => String(v || '').trim();
 

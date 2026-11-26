@@ -475,7 +475,7 @@ export default function Header({
             « Tester ce profil ») installe portalMode='agent'. N'accepter qu'un
             seul des deux forçait le Super Admin à passer par Profil puis
             « Tester ce profil » pour voir le Studio Cartes apparaître. */}
-        {agentUser && agentUser.role === 'Super Admin' && (portalMode === 'agent' || portalMode === 'superadmin') && (
+        {agentUser && /^super\s*admin$/i.test(String(agentUser.role || '')) && (portalMode === 'agent' || portalMode === 'superadmin') && (
           <>
             <button 
               className={`nav-item ${currentView === 'audit-logs' ? 'active' : ''}`}
@@ -578,7 +578,7 @@ export default function Header({
         )}
 
         {/* Option 14: Stats inter-régions (Super Admin only) */}
-        {portalMode === 'agent' && agentUser && agentUser.role === 'Super Admin' && (
+        {(portalMode === 'agent' || portalMode === 'superadmin') && agentUser && /^super\s*admin$/i.test(String(agentUser.role || '')) && (
           <button
             className={`nav-item ${currentView === 'regional-stats' ? 'active' : ''}`}
             onClick={() => setView('regional-stats')}
@@ -621,7 +621,7 @@ export default function Header({
           </button>
         )}
         {/* Option 18: Super Admin Governance View — réservée au Super Admin AUTHENTIFIÉ */}
-        {agentUser && (agentUser.role === 'Super Admin' || agentUser.role === 'SuperAdmin') && (
+        {agentUser && /^super\s*admin$/i.test(String(agentUser.role || '')) && (
           <button
             className={`nav-item ${currentView === 'superadmin-governance' ? 'active' : ''}`}
             onClick={() => setView('superadmin-governance')}

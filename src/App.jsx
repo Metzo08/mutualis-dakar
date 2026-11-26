@@ -725,7 +725,7 @@ export default function App() {
         case 'medicaments':
           return <Medicaments lang={lang} />;
         case 'audit-logs':
-          if (portalmode === 'agent' && agentuser && agentUser.role === 'super admin') {
+          if ((portalMode === 'agent' || portalMode === 'superadmin') && agentUser && /^super\s*admin$/i.test(String(agentUser.role || ''))) {
             return <AuditLogs lang={lang} />;
           } else {
             return (
@@ -868,7 +868,7 @@ export default function App() {
         case 'superadmin-governance': {
           // 🔒 Garde d'accès : la Gouvernance Super Admin (comptes, KPI,
           // habilitations) est réservée au Super Administrateur authentifié.
-          const isSuperAdmin = agentUser && (agentUser.role === 'Super Admin' || agentUser.role === 'SuperAdmin');
+          const isSuperAdmin = Boolean(agentUser && /^super\s*admin$/i.test(String(agentUser.role || '')));
           if (isSuperAdmin) {
             return (
               <SuperAdminGovernance
@@ -885,8 +885,8 @@ export default function App() {
               <div style={{ fontSize: '3rem', marginBottom: '1rem' }}><ProIcon name="ban" color="#dc2626" /></div>
               <h2 style={{ color: 'var(--danger)', fontWeight: '850' }}>Accès réservé au super admin</h2>
               <p style={{ color: 'var(--text-sub)', marginTop: '0.5rem' }}>
-                le tableau de bord de gouvernance (comptes utilisateurs, statistiques financières, habilitations médicales)
-                n'Est accessible qu'après authentification avec un compte super administrateur (anacsu / Ministère).
+                Le tableau de bord de gouvernance (comptes utilisateurs, statistiques financières, habilitations médicales)
+                n'est accessible qu'après authentification avec un compte super administrateur (ANACSU / Ministère).
               </p>
               <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginTop: '1.5rem', flexWrap: 'wrap' }}>
                 <button
@@ -905,7 +905,7 @@ export default function App() {
         }
         case 'accounts-cards': {
           // 🗂️ Gestion des comptes et des cartes (Module 3.9) : agent & admin.
-          if (portalMode === 'agent' && agentUser && (agentUser.role === 'agent' || agentUser.role === 'admin' || agentUser.role === 'Super Admin')) {
+          if ((portalMode === 'agent' || portalMode === 'superadmin') && agentUser && (agentUser.role === 'agent' || agentUser.role === 'admin' || /^super\s*admin$/i.test(String(agentUser.role || '')))) {
             return <AccountsAndCards lang={lang} agentUser={agentUser} setView={setView} />;
           }
           return (
@@ -929,7 +929,7 @@ export default function App() {
         case 'security-center': {
           // 🔒 Centre de sécurité : confinement MSD + audit_logs côté serveur.
           // Seuls agent & admin (Super Admin) peuvent y accéder.
-          if (portalMode === 'agent' && agentUser && (agentUser.role === 'agent' || agentUser.role === 'admin' || agentUser.role === 'Super Admin')) {
+          if ((portalMode === 'agent' || portalMode === 'superadmin') && agentUser && (agentUser.role === 'agent' || agentUser.role === 'admin' || /^super\s*admin$/i.test(String(agentUser.role || '')))) {
             return (
               <SecurityCenter
                 lang={lang}
@@ -969,7 +969,7 @@ export default function App() {
         case 'import-control': {
           // 📥 Importation contrôlée (Module 2) : aucune écriture avant
           // prévisualisation + validation explicite. Réservé aux agents/admins.
-          if (portalMode === 'agent' && agentUser && (agentUser.role === 'agent' || agentUser.role === 'admin' || agentUser.role === 'Super Admin')) {
+          if ((portalMode === 'agent' || portalMode === 'superadmin') && agentUser && (agentUser.role === 'agent' || agentUser.role === 'admin' || /^super\s*admin$/i.test(String(agentUser.role || '')))) {
             return <ImportControl lang={lang} agentUser={agentUser} setView={setView} setViewTab={handleSetViewTab} />;
           }
           return <Login lang={lang} setView={setView} portalMode={portalMode} setPortalMode={setPortalMode} setCitizenUser={setCitizenUser} setAgentUser={setAgentUser} setPartnerUser={setPartnerUser} />;
@@ -977,7 +977,7 @@ export default function App() {
         case 'excel-reports': {
           // 📊 Rapports Excel : export au format .xlsx (bénéficiaires, cartes, production, audit).
           // Disponible pour agent, admin et Super Admin.
-          if (portalMode === 'agent' && agentUser && (agentUser.role === 'agent' || agentUser.role === 'admin' || agentUser.role === 'Super Admin')) {
+          if ((portalMode === 'agent' || portalMode === 'superadmin') && agentUser && (agentUser.role === 'agent' || agentUser.role === 'admin' || /^super\s*admin$/i.test(String(agentUser.role || '')))) {
             return <ExcelReports lang={lang} agentUser={agentUser} setView={setView} setViewTab={handleSetViewTab} />;
           }
           return (
@@ -1062,7 +1062,7 @@ export default function App() {
         case 'institution-coud':
           return <InstitutionPortal lang={lang} portalMode={portalMode} agentUser={agentUser} setView={setView} />;
         case 'card-studio':
-          if ((portalmode === 'agent' || portalmode === 'superadmin') && agentuser && agentUser.role === 'super admin') {
+          if ((portalMode === 'agent' || portalMode === 'superadmin') && agentUser && /^super\s*admin$/i.test(String(agentUser.role || ''))) {
             return <CardStudio lang={lang} />;
           } else {
             return (
@@ -1306,7 +1306,7 @@ export default function App() {
                       ))
                     )}
                   </div>
-                  {agentUser && (agentUser.role === 'SuperAdmin' || agentUser.role === 'Super Admin') && (
+                  {agentUser && /^super\s*admin$/i.test(String(agentUser.role || '')) && (
                     <div
                       style={{ padding: '0.75rem', textAlign: 'center', backgroundColor: 'var(--bg-card-subtle)', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--primary)' }}
                       onClick={() => {
