@@ -19,10 +19,12 @@ export const PRESET_ACCOUNTS_13 = [
   { code: 'ACC-13', title: '13. Parrain solidaire & mécène RSE', cat: 'Entreprises & mécènes', email: 'fondation@wave.sn', password: 'Parrain2026!', portal: 'partner', view: 'parrainage-solidaire', icon: <ProIcon name="handshake" />, user: { id: 21, username: 'fondation@wave.sn', contactName: 'Fondation Wave & sonatel mécénat', structureName: 'Parrain solidaire régional', structureType: 'fondation_rse', role: 'parrain_rse' } }
 ];
 
+const IS_DEMO_ENABLED = Boolean(import.meta.env.DEV || import.meta.env.VITE_ALLOW_DEMO_ACCOUNTS === 'true');
+
 export default function Login({ lang, setView, portalMode, setPortalMode, setCitizenUser, setAgentUser, setPartnerUser }) {
-  const [selectedAccCode, setSelectedAccCode] = useState('ACC-01');
-  const [emailInput, setEmailInput] = useState('modou.diop@csu.sn');
-  const [passwordInput, setPasswordInput] = useState('Modou2026!');
+  const [selectedAccCode, setSelectedAccCode] = useState(IS_DEMO_ENABLED ? 'ACC-01' : '');
+  const [emailInput, setEmailInput] = useState(IS_DEMO_ENABLED ? 'modou.diop@csu.sn' : '');
+  const [passwordInput, setPasswordInput] = useState(IS_DEMO_ENABLED ? 'Modou2026!' : '');
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -80,13 +82,42 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
     setError('');
     setLoading(true);
 
-    // 1. Vérification dans les 13 profils prédéfinis
+    // En production (IS_DEMO_ENABLED === false) : authentification 100% serveur (JWT + bcrypt),
+    // aucun compte démo ni contournement localStorage n'est accepté.
+    if (!IS_DEMO_ENABLED) {
+      try {
+        const res = await fetch(`${API_BASE}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: emailInput.trim(), password: passwordInput })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.token && data.agent) {
+          setTokens({ token: data.token, refreshToken: data.refreshToken });
+          const isSuper = /^super\s*admin$/i.test(String(data.agent.role || ''));
+          const mode = isSuper ? 'superadmin' : 'agent';
+          localStorage.setItem('cmu-portal-mode', mode);
+          localStorage.setItem('cmu-agent-user', JSON.stringify(data.agent));
+          if (setAgentUser) setAgentUser(data.agent);
+          if (setPortalMode) setPortalMode(mode);
+          if (setView) setView(isSuper ? 'superadmin-governance' : 'dashboard');
+          setLoading(false);
+          return;
+        }
+        setError(data.error || 'Identifiants invalides. Vérifiez votre compte auprès de votre MSD.');
+      } catch {
+        setError('Serveur d\'authentification injoignable. Veuillez réessayer.');
+      }
+      setLoading(false);
+      return;
+    }
+
+    // Mode développement local uniquement : profils de test rapides
     const matchedPreset = PRESET_ACCOUNTS_13.find(
       a => (a.email.toLowerCase() === emailInput.trim().toLowerCase() || (a.user.phone && a.user.phone === emailInput.trim())) && 
            a.password === passwordInput
     );
 
-    // 2. Vérification dans les comptes créés dynamiquement (cmu-all-accounts)
     let matchedDynamic = null;
     try {
       const stored = localStorage.getItem('cmu-all-accounts');
@@ -196,7 +227,8 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
         </div>
       )}
 
-      {/* Sélection rapide des 13 profils d'accès avec e-mail unique */}
+      {/* Sélection rapide des 13 profils d'accès (développement local uniquement — masquée en production) */}
+      {IS_DEMO_ENABLED && (
       <div style={{ maxWidth: '1100px', margin: '0 auto 2.5rem auto', padding: '0 1rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem' }}>
           <div>
@@ -248,6 +280,7 @@ export default function Login({ lang, setView, portalMode, setPortalMode, setCit
           })}
         </div>
       </div>
+      )}
 
       {/* Formulaire de Connexion Unifié */}
       <div style={{ maxWidth: '500px', margin: '0 auto', padding: '0 1rem' }}>

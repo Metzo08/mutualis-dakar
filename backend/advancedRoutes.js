@@ -289,16 +289,23 @@ router.post('/api/payments/webhook/:provider', async (req, res) => {
     }
     const payment = payRes.rows[0];
 
-    // Vérification de signature (simplifiée — en prod : HMAC-SHA256 avec secret)
-    const expectedSig = req.headers['x-signature'];
-    const webhookSecret = process.env.PAYMENT_WEBHOOK_SECRET || 'dev_webhook_secret';
+    // Vérification stricte de signature HMAC-SHA256 en temps constant (fail-closed en production)
+    const expectedSig = String(req.headers['x-signature'] || '').trim();
+    const webhookSecret = process.env.PAYMENT_WEBHOOK_SECRET || (process.env.NODE_ENV === 'production' ? '' : 'dev_webhook_secret');
+    if (process.env.NODE_ENV === 'production' && !webhookSecret) {
+      await client.query('ROLLBACK');
+      return res.status(503).json({ error: 'Secret webhook paiement non configuré en production.' });
+    }
     const computedSig = crypto
-      .createHmac('sha256', webhookSecret)
+      .createHmac('sha256', webhookSecret || 'dev_webhook_secret')
       .update(JSON.stringify(req.body))
       .digest('hex');
-    if (process.env.NODE_ENV === 'production' && expectedSig !== computedSig) {
+    const sigMatch =
+      expectedSig.length === computedSig.length &&
+      crypto.timingSafeEqual(Buffer.from(expectedSig, 'utf8'), Buffer.from(computedSig, 'utf8'));
+    if (process.env.NODE_ENV === 'production' && !sigMatch) {
       await client.query('ROLLBACK');
-      return res.status(401).json({ error: 'Signature invalide.' });
+      return res.status(401).json({ error: 'Signature HMAC invalide.' });
     }
 
     const finalStatus = status === 'success' ? 'success' : status === 'failed' ? 'failed' : 'pending';

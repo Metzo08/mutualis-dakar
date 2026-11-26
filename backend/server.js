@@ -1052,9 +1052,11 @@ app.post('/api/adhesions', validate(adhesionSchema), async (req, res) => {
 });
 
 // 5. Cotisation Renewal (Connexion & Fay)
+// En production : exige soit un jeton agent/admin valide, soit une référence de paiement
+// Wave / Orange Money confirmée (status = 'success'/'paid') dans la table `payments`.
 app.post('/api/cotisations/renew', validate(cotisationRenewSchema), async (req, res) => {
   try {
-    const { phone } = req.body;
+    const { phone, paymentReference } = req.body;
     // Téléphone déjà validé et normalisé
 
     // Find beneficiary by phone
@@ -1064,6 +1066,35 @@ app.post('/api/cotisations/renew', validate(cotisationRenewSchema), async (req, 
     }
 
     const beneficiary = userResult.rows[0];
+
+    if (process.env.NODE_ENV === 'production') {
+      let authorized = false;
+      const authHeader = String(req.headers.authorization || '');
+      if (authHeader.startsWith('Bearer ')) {
+        try {
+          const decoded = jwt.verify(authHeader.slice(7).trim(), EFFECTIVE_JWT_SECRET);
+          if (decoded && ['agent', 'admin', 'Super Admin'].includes(decoded.role)) {
+            authorized = true;
+          }
+        } catch { /* jeton invalide */ }
+      }
+      if (!authorized && paymentReference) {
+        const payCheck = await query(
+          `SELECT id FROM payments
+            WHERE reference = $1
+              AND status IN ('success', 'paid', 'completed')
+              AND (beneficiary_id = $2 OR phone = $3)
+            LIMIT 1`,
+          [String(paymentReference).trim(), beneficiary.id, phone]
+        ).catch(() => ({ rows: [] }));
+        if (payCheck.rows.length > 0) authorized = true;
+      }
+      if (!authorized) {
+        return res.status(403).json({
+          error: 'Renouvellement direct interdit en production : un paiement Wave/Orange Money confirmé ou une validation agent MSD est requis.'
+        });
+      }
+    }
 
     // Update status to active and simulate renew transaction
     await query('UPDATE beneficiaries SET status = $1 WHERE id = $2', ['active', beneficiary.id]);
