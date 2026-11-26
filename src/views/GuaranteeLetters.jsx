@@ -117,32 +117,8 @@ export default function GuaranteeLetters({ lang = 'fr', userRole = 'citizen', ci
 
   // State pour le hub laboratoire (Bilans & Radios)
   const [labOrdersState, setLabOrdersState] = useState(() => {
-    const defaults = [
-      {
-        id: 1,
-        patientName: 'Amadou Sow',
-        cmuNumber: 'CSU-DKR-2026-8812.2',
-        examName: 'Bilan sanguin complet & sérologies',
-        examDetail: 'Nfs, glycémie, bilan hépatique',
-        doctor: 'Dr. Cheikh anta Diop (Abass Ndao)',
-        coverage: '80% UNAMUSC',
-        status: 'prescrit',
-        fileName: null,
-        notes: ''
-      },
-      {
-        id: 2,
-        patientName: 'Fatou Diop',
-        cmuNumber: 'CMU-DKR-2026-4401',
-        examName: 'Radiographie pulmonaire & scanner dicom',
-        examDetail: 'Imagerie thoracique de contrôle',
-        doctor: 'Dr. Ousmane Sow (hôpital Fann)',
-        coverage: '100% Gratuité',
-        status: 'prescrit',
-        fileName: null,
-        notes: ''
-      }
-    ];
+    // Aucune prescription fictive : uniquement les vrais examens enregistrés
+    const defaults = [];
     try {
       const saved = localStorage.getItem('unamusc_lab_orders');
       if (saved) return sanitizeOrderList(JSON.parse(saved));

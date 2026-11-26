@@ -6,13 +6,8 @@ import { detectMsdCode, getMsdWhatsappInfo, refreshMsdWhatsappDirectory, compres
 import ProIcon from '../components/ProIcon';
 
 export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citizenUser = null, agentUser = null, partnerUser = null, setView = null }) {
-  const defaultOrders = [
-    { id: 101, first_name: 'Amadou', last_name: 'Sow', cmu_number: 'CSU-DKR-2026-8812.2', items_json: JSON.stringify([{ name: 'Amoxicilline 500mg (Gélules)', qty: 2, price: 3500 }, { name: 'Paracétamol 1000mg', qty: 1, price: 1500 }]), total_amount: 8500, cmu_covered: 4250, patient_pay: 4250, status: 'active', created_at: new Date().toISOString(), expires_at: new Date(Date.now() + 48 * 3600 * 1000).toISOString(), order_code: 'ORD-2026-PHARM-881' },
-    { id: 102, first_name: 'Fatou', last_name: 'Diop', cmu_number: 'CMU-DKR-2026-4401', items_json: JSON.stringify([{ name: 'Sirop toux enfant', qty: 1, price: 2800 }, { name: 'Sérum physiologique (boîte)', qty: 2, price: 1200 }]), total_amount: 5200, cmu_covered: 2600, patient_pay: 2600, status: 'used', created_at: new Date(Date.now() - 36 * 3600 * 1000).toISOString(), expires_at: new Date(Date.now() + 12 * 3600 * 1000).toISOString(), order_code: 'ORD-2026-PHARM-440' },
-    { id: 103, first_name: 'Modou', last_name: 'Diop', cmu_number: 'SN-DK-MED-1001.1', items_json: JSON.stringify([{ name: 'Metformine 850mg (Diabète)', qty: 3, price: 4200 }, { name: 'Amlodipine 10mg (HTA)', qty: 2, price: 3800 }]), total_amount: 20200, cmu_covered: 10100, patient_pay: 10100, status: 'used', created_at: new Date(Date.now() - 48 * 3600 * 1000).toISOString(), expires_at: new Date().toISOString(), order_code: 'ORD-2026-PHARM-101' },
-    { id: 104, first_name: 'Awa', last_name: 'Ndiaye', cmu_number: 'SN-DK-PIK-9001', items_json: JSON.stringify([{ name: 'Fer + acide folique maternité', qty: 2, price: 2500 }, { name: 'Calcium + vitamine d3', qty: 1, price: 3100 }]), total_amount: 8100, cmu_covered: 4050, patient_pay: 4050, status: 'used', created_at: new Date(Date.now() - 72 * 3600 * 1000).toISOString(), expires_at: new Date(Date.now() - 24 * 3600 * 1000).toISOString(), order_code: 'ORD-2026-PHARM-900' },
-    { id: 105, first_name: 'Moustapha', last_name: 'Ndiaye', cmu_number: 'SN-DK-PIK-9021', items_json: JSON.stringify([{ name: 'Ibuprofène 400mg', qty: 2, price: 2100 }, { name: 'Bande velpeau 10cm', qty: 3, price: 1500 }]), total_amount: 8700, cmu_covered: 4350, patient_pay: 4350, status: 'active', created_at: new Date().toISOString(), expires_at: new Date(Date.now() + 48 * 3600 * 1000).toISOString(), order_code: 'ORD-2026-PHARM-902' }
-  ];
+  // Aucune donnée fictive : uniquement les vrais bons de commande enregistrés en base PostgreSQL
+  const defaultOrders = [];
 
   const [orderPage, setOrderPage] = useState(1);
 
@@ -580,15 +575,17 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
         headers: token ? { Authorization: `Bearer ${token}` } : {}
       });
       const json = await res.json();
-      if (json.success && json.data && json.data.length > 0) {
-        setOrders([...storedLocal, ...json.data]);
+      if (json.success && Array.isArray(json.data)) {
+        const seen = new Set(json.data.map((o) => String(o.order_code || o.id)));
+        const uniqueLocal = (storedLocal || []).filter((o) => !seen.has(String(o.order_code || o.id)));
+        setOrders([...json.data, ...uniqueLocal]);
       } else {
-        setOrders([...storedLocal, ...defaultOrders]);
+        setOrders(storedLocal || []);
       }
     } catch (err) {
-      console.warn('Utilisation des bons de commande de démonstration:', err);
+      console.warn('API bons de commande indisponible, lecture cache local réel :', err);
       const storedLocal = JSON.parse(localStorage.getItem('cmu_purchase_orders') || '[]');
-      setOrders([...storedLocal, ...defaultOrders]);
+      setOrders(storedLocal || []);
     } finally {
       setLoading(false);
     }
@@ -1014,33 +1011,38 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
           );
         }
 
+        const realTotalCount = visibleOrders.length;
+        const realDeliveredCount = visibleOrders.filter((o) => o.status === 'used' || o.status === 'delivered').length;
+        const realActiveCount = visibleOrders.filter((o) => o.status === 'active' || o.status === 'pending' || o.status === 'pending_agent').length;
+        const realTotalCovered = visibleOrders.reduce((acc, o) => acc + Number(o.cmu_covered ?? Math.round(Number(o.total_amount || 0) * 0.5)), 0);
+
         return (
           <div className="row g-3 mb-4">
             <div className="col-md-3 col-6">
               <div className="card shadow-sm border-0 p-3.5 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
                 <span className="small text-muted mb-1 d-block fw-bold">Bons de commande émis</span>
-                <h3 className="fw-extrabold mb-0 text-primary" style={{ fontSize: '1.75rem' }}>1 240</h3>
+                <h3 className="fw-extrabold mb-0 text-primary" style={{ fontSize: '1.75rem' }}>{realTotalCount.toLocaleString('fr-FR')}</h3>
                 <small className="text-muted" style={{ fontSize: '0.74rem' }}>En pharmacie & officines</small>
               </div>
             </div>
             <div className="col-md-3 col-6">
               <div className="card shadow-sm border-0 p-3.5 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
                 <span className="small text-muted mb-1 d-block fw-bold">Délivrés en officine</span>
-                <h3 className="fw-extrabold mb-0 text-success" style={{ fontSize: '1.75rem' }}>1 080</h3>
+                <h3 className="fw-extrabold mb-0 text-success" style={{ fontSize: '1.75rem' }}>{realDeliveredCount.toLocaleString('fr-FR')}</h3>
                 <small className="text-success fw-bold" style={{ fontSize: '0.74rem' }}>Prise en charge 50% / 100%</small>
               </div>
             </div>
             <div className="col-md-3 col-6">
               <div className="card shadow-sm border-0 p-3.5 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
                 <span className="small text-muted mb-1 d-block fw-bold">En cours de validité (48h)</span>
-                <h3 className="fw-extrabold mb-0 text-warning" style={{ fontSize: '1.75rem' }}>160</h3>
+                <h3 className="fw-extrabold mb-0 text-warning" style={{ fontSize: '1.75rem' }}>{realActiveCount.toLocaleString('fr-FR')}</h3>
                 <small className="text-warning fw-bold" style={{ fontSize: '0.74rem' }}>En attente au guichet</small>
               </div>
             </div>
             <div className="col-md-3 col-6">
               <div className="card shadow-sm border-0 p-3.5 rounded-4" style={{ background: 'var(--card-bg)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
                 <span className="small text-muted mb-1 d-block fw-bold">Total médicaments pris en charge</span>
-                <h3 className="fw-extrabold mb-0 text-success" style={{ fontSize: '1.75rem' }}>42 350 000 FCFA</h3>
+                <h3 className="fw-extrabold mb-0 text-success" style={{ fontSize: '1.75rem' }}>{realTotalCovered.toLocaleString('fr-FR')} FCFA</h3>
                 <small className="text-success fw-bold" style={{ fontSize: '0.74rem' }}>Tiers-payant UNAMUSC</small>
               </div>
             </div>
@@ -1051,7 +1053,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
       {/* Formulaire de création de bon de commande */}
       <div className="card shadow-sm border-0 p-4 mb-4" style={{ borderRadius: '20px', background: 'var(--card-bg)', color: 'var(--text-main)' }}>
         <h4 className="fw-bold mb-3 d-flex align-items-center gap-2" style={{ color: 'var(--text-main)' }}>
-          <span>🛒</span> Nouveau bon de commande / ordonnance médicale UNAMUSC
+          <ProIcon name="pill" size={18} /> Nouveau bon de commande / ordonnance médicale UNAMUSC
         </h4>
 
         {/* Bloc Téléversement / Prise de Photo de l'ordonnance médicale */}
@@ -1565,7 +1567,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                   </>
                 ) : (
                   <>
-                    Affichage de <strong style={{ color: 'var(--text-main)' }}>{startItem.toLocaleString('fr-FR')}</strong> à <strong style={{ color: 'var(--text-main)' }}>{endItem.toLocaleString('fr-FR')}</strong> sur <strong style={{ color: '#059669' }}>1 240 bons de commande pharmacie</strong> (42 350 000 FCFA délivrés)
+                    Affichage de <strong style={{ color: 'var(--text-main)' }}>{startItem.toLocaleString('fr-FR')}</strong> à <strong style={{ color: 'var(--text-main)' }}>{endItem.toLocaleString('fr-FR')}</strong> sur <strong style={{ color: '#059669' }}>{totalVolume.toLocaleString('fr-FR')} bon(s) de commande pharmacie</strong> ({visibleOrders.reduce((acc, o) => acc + Number(o.cmu_covered ?? Math.round(Number(o.total_amount || 0) * 0.5)), 0).toLocaleString('fr-FR')} FCFA pris en charge)
                   </>
                 )}
               </div>
@@ -1578,7 +1580,7 @@ export default function PurchaseOrders({ lang = 'fr', userRole = 'citizen', citi
                     onClick={() => setOrderPage(prev => Math.max(1, prev - 1))}
                     style={{ borderRadius: '10px' }}
                   >
-                    ⬅️ Précédent
+                    <ProIcon name="arrow-left" size={14} /> Précédent
                   </button>
 
                   {getVisiblePages().map((p, idx) => {
