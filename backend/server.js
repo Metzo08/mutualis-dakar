@@ -14,6 +14,7 @@ const {
 const telemedWs = require('./telemedWs');
 const fallbackStore = require('./fallbackStore');
 const { validateUploadedImage, applySafeMediaHeaders } = require('./uploadSecurity');
+const { createAntiScrapeMiddleware } = require('./antiScrapeGuard');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -110,6 +111,7 @@ const {
 
 const app = express();
 app.set('trust proxy', 1);
+app.use(createAntiScrapeMiddleware({ query }));
 const port = process.env.PORT || 5000;
 const os = require('os');
 
