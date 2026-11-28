@@ -34,6 +34,60 @@
 
 name: mutualis-dakar
 
+# ── Backend : une définition commune, trois instances ──────────────────────
+# `deploy.replicas` est ignoré par `docker compose up` hors mode Swarm.
+# On déclare donc trois services qui partagent l'image et la configuration,
+# et ne diffèrent que par INSTANCE_ID (utilisé dans les journaux et pour
+# diagnostiquer la répartition).
+x-backend: &backend
+  build:
+    context: .
+    dockerfile: backend/Dockerfile
+  image: mutualis-backend:latest
+  restart: unless-stopped
+  env_file:
+    - backend/.env
+  environment: &backend-env
+    # Surcharges pour l'intérieur du réseau Docker : ici les services se
+    # trouvent par leur NOM, pas par localhost. Sans ces lignes, l'instance
+    # chercherait PostgreSQL et Redis sur elle-même et échouerait.
+    DB_HOST: pgbouncer
+    REDIS_URL: redis://redis:6379
+    REALTIME_DRIVER: redis
+    NODE_ENV: production
+    # Stockage objet (photos CSU, ordonnances, devis) : MinIO du réseau Docker.
+    # En l'absence de ces variables, le repli se fait sur le disque local
+    # (backend/uploads), non viable à grande échelle (voir objectStorage.js).
+    S3_ENDPOINT: http://minio:9000
+    S3_BUCKET: ${S3_BUCKET:-mutualis-csu}
+    S3_ACCESS_KEY: ${S3_ACCESS_KEY}
+    S3_SECRET_KEY: ${S3_SECRET_KEY}
+    # Dérivation des identifiants TURN exposés aux navigateurs. Doit être
+    # identique à celui du service coturn, sinon les clients reçoivent 401
+    # et la téléconsultation échoue en 4G sans explication visible.
+    TURN_STATIC_AUTH_SECRET: ${TURN_STATIC_AUTH_SECRET:?TURN_STATIC_AUTH_SECRET est obligatoire — identique côté coturn}
+    TURN_REALM: ${TURN_REALM:-senmutuelles.sn}
+    TURN_PUBLIC_URL: ${TURN_PUBLIC_URL:-}
+  # `depends_on` attend la SANTÉ du conteneur, pas son démarrage. La sonde
+  # `health/ready` prend le relais : c'est elle qui décide si l'on peut
+  # envoyer du trafic. Sans elle, le répartiteur viserait une instance dont
+  # la base n'est pas prête.
+  depends_on:
+    pgbouncer:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  healthcheck:
+    test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:'+(process.env.PORT||5000)+'/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+    interval: 15s
+    timeout: 5s
+    retries: 5
+    # Laisse le temps de démarrer avant de juger : une sonde trop pressée
+    # ferait redémarrer un conteneur parfaitement sain.
+    start_period: 60s
+  networks: [privnet]
+
+
 services:
   # ── PostgreSQL ────────────────────────────────────────────────────────────
   postgres:
@@ -90,8 +144,7 @@ services:
     environment:
       DB_USER: ${DB_USER:-postgres}
       DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD obligatoire}
-      DB_HOST: pgbouncer
-      DB_PORT: 5432
+      DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: ${DB_NAME:-mutualis}
       POOL_MODE: transaction
@@ -218,59 +271,6 @@ services:
     # `network_mode: host` est incompatible avec `networks`. Coturn a besoin
     # d'un accès bas niveau pour la traversée de NAT.
 
-  # ── Backend : une définition commune, trois instances ──────────────────────
-  # `deploy.replicas` est ignoré par `docker compose up` hors mode Swarm.
-  # On déclare donc trois services qui partagent l'image et la configuration,
-  # et ne diffèrent que par INSTANCE_ID (utilisé dans les journaux et pour
-  # diagnostiquer la répartition).
-  backend: &backend
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
-    image: mutualis-backend:latest
-    restart: unless-stopped
-    env_file:
-      - backend/.env
-    environment: &backend-env
-      # Surcharges pour l'intérieur du réseau Docker : ici les services se
-      # trouvent par leur NOM, pas par localhost. Sans ces lignes, l'instance
-      # chercherait PostgreSQL et Redis sur elle-même et échouerait.
-      DB_HOST: postgres
-      REDIS_URL: redis://redis:6379
-      REALTIME_DRIVER: redis
-      NODE_ENV: production
-      # Stockage objet (photos CSU, ordonnances, devis) : MinIO du réseau Docker.
-      # En l'absence de ces variables, le repli se fait sur le disque local
-      # (backend/uploads), non viable à grande échelle (voir objectStorage.js).
-      S3_ENDPOINT: http://minio:9000
-      S3_BUCKET: ${S3_BUCKET:-mutualis-csu}
-      S3_ACCESS_KEY: ${S3_ACCESS_KEY}
-      S3_SECRET_KEY: ${S3_SECRET_KEY}
-      # Dérivation des identifiants TURN exposés aux navigateurs. Doit être
-      # identique à celui du service coturn, sinon les clients reçoivent 401
-      # et la téléconsultation échoue en 4G sans explication visible.
-      TURN_STATIC_AUTH_SECRET: ${TURN_STATIC_AUTH_SECRET:?TURN_STATIC_AUTH_SECRET est obligatoire — identique côté coturn}
-      TURN_REALM: ${TURN_REALM:-senmutuelles.sn}
-      TURN_PUBLIC_URL: ${TURN_PUBLIC_URL:-}
-    # `depends_on` attend la SANTÉ du conteneur, pas son démarrage. La sonde
-    # `health/ready` prend le relais : c'est elle qui décide si l'on peut
-    # envoyer du trafic. Sans elle, le répartiteur viserait une instance dont
-    # la base n'est pas prête.
-    depends_on:
-      pgbouncer:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:'+(process.env.PORT||5000)+'/health/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      # Laisse le temps de démarrer avant de juger : une sonde trop pressée
-      # ferait redémarrer un conteneur parfaitement sain.
-      start_period: 60s
-    networks: [privnet]
-
   backend-1:
     <<: *backend
     environment:
@@ -351,10 +351,10 @@ services:
       mc mb --ignore-existing local/mutualis-backups &&
       mc anonymous set none local/mutualis-backups &&
       while true; do
-        TS=$(date -u +%Y%m%d-%H%M%S);
-        pg_dump --no-owner --no-acl | gzip -9 > \"/tmp/mutualis-${TS}.sql.gz\" &&
-        mc cp \"/tmp/mutualis-${TS}.sql.gz\" \"local/mutualis-backups/postgres/mutualis-${TS}.sql.gz\" &&
-        rm -f \"/tmp/mutualis-${TS}.sql.gz\" &&
+        TS=$$(date -u +%Y%m%d-%H%M%S);
+        pg_dump --no-owner --no-acl | gzip -9 > \"/tmp/mutualis-$${TS}.sql.gz\" &&
+        mc cp \"/tmp/mutualis-$${TS}.sql.gz\" \"local/mutualis-backups/postgres/mutualis-$${TS}.sql.gz\" &&
+        rm -f \"/tmp/mutualis-$${TS}.sql.gz\" &&
         mc rm --recursive --force --older-than \"${BACKUP_RETENTION_DAYS}d\" local/mutualis-backups/postgres/ || true;
         sleep 86400;
       done
